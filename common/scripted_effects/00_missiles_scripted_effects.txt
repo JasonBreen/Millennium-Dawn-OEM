@@ -660,7 +660,7 @@ update_GNSS_SBAS = {
 	set_variable = { var_GNSS_mil_SBAS_num = var_GNSS_sat_total }
 	subtract_from_variable = { var_GNSS_mil_SBAS_num = var_GNSS_mil_sat_system_num }
 	set_variable = { var_GNSS_mil_SBAS_bonus = var_GNSS_mil_SBAS_num }
-	divide_variable = { var_GNSS_mil_SBAS_bonus = 100 }
+	multiply_variable = { var_GNSS_mil_SBAS_bonus = 0.01 }
 	set_temp_variable = { temp1 = var_GNSS_mil_coverage }
 	set_temp_variable = { temp2 = 1 }
 	subtract_from_temp_variable = { temp2 = temp1 }
@@ -676,7 +676,7 @@ update_GNSS_SBAS = {
 	set_variable = { var_GNSS_civ_SBAS_num = var_GNSS_sat_total }
 	subtract_from_variable = { var_GNSS_civ_SBAS_num = var_GNSS_civ_sat_system_num }
 	set_variable = { var_GNSS_civ_SBAS_bonus = var_GNSS_civ_SBAS_num }
-	divide_variable = { var_GNSS_civ_SBAS_bonus = 100 }
+	multiply_variable = { var_GNSS_civ_SBAS_bonus = 0.01 }
 	set_temp_variable = { temp1 = var_GNSS_civ_coverage }
 	set_temp_variable = { temp2 = 1 }
 	subtract_from_temp_variable = { temp2 = temp1 }
@@ -2871,10 +2871,6 @@ setup_starting_reactor_stockpile = {
 		set_country_flag = enabled_nuclear_reactor_fuel_production
 	}
 
-	set_variable = { nuclear_reactors = 0 }
-	every_controlled_state = {
-		add_to_variable = { PREV.nuclear_reactors = building_level@nuclear_reactor }
-	}
 	set_temp_variable = { starting_reactor_grade_stockpile = nuclear_reactors }
 	multiply_temp_variable = { starting_reactor_grade_stockpile = 2500 }
 	set_variable = { var_reactor_material_stockpile = starting_reactor_grade_stockpile }
@@ -2936,7 +2932,6 @@ setup_missile_configuration_effect = {
 		set_country_flag = setup_missiles
 		set_variable = { orbit_selected_TAG = THIS.id }
 		set_variable = { nuclear_reactor_fuel_production = 0 }
-		set_variable = { var_nuclear_material_stockpile = 0 }
 		resize_array = { missile_inventory_array = 154 }
 		add_dynamic_modifier = { modifier = satellite_system }
 		set_sat_orbit_startup = yes
