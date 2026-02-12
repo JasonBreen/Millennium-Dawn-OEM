@@ -38,9 +38,12 @@ on_actions = {
 	on_subject_annexed = {
 		effect = { ##Grants Cores on Annexation
 			ROOT = {
-				for_each_scope_loop = {
+				for_each_loop = {
 					array = core_states
-					add_core_of = FROM
+					value = v
+					var:v = {
+						add_core_of = FROM
+					}
 				}
 				if = { limit = { original_tag = LBA }
 					set_country_flag = LBA_prevent_giving_tribal_traits
@@ -160,14 +163,6 @@ on_actions = {
 							}
 							set_variable = { domestic_influence_amount = 100 }
 						}
-						if = {
-							limit = { NOT = { has_variable = corporate_tax_rate } }
-							set_variable = { var = corporate_tax_rate value = 20 }
-						}
-						if = {
-							limit = { NOT = { has_variable = population_tax_rate } }
-							set_variable = { var = population_tax_rate value = 20 }
-						}
 						ingame_init_investment_system = yes
 						init_auto_influence_array = yes
 
@@ -253,15 +248,6 @@ on_actions = {
 						set_temp_variable = { percent_change = 15 }
 						set_temp_variable = { tag_index = FROM.id }
 						set_temp_variable = { influence_target = ROOT.id }
-
-						if = {
-							limit = { NOT = { has_variable = corporate_tax_rate } }
-							set_variable = { var = corporate_tax_rate value = 20 }
-						}
-						if = {
-							limit = { NOT = { has_variable = population_tax_rate } }
-							set_variable = { var = population_tax_rate value = 20 }
-						}
 						ingame_init_investment_system = yes
 						init_auto_influence_array = yes
 
@@ -387,16 +373,6 @@ on_actions = {
 				ingame_init_investment_system = yes
 				init_auto_influence_array = yes
 				inherit_technology = FROM
-				if = {
-					limit = {
-						OR = {
-							NOT = { has_variable = corporate_tax_rate }
-							NOT = { has_variable = population_tax_rate }
-						}
-					}
-					set_variable = { var = corporate_tax_rate value = 20 }
-					set_variable = { var = population_tax_rate value = 20 }
-				}
 
 				calculate_influence_percentage = yes #set alignment drifts from influence
 				startup_politics = yes
@@ -427,14 +403,6 @@ on_actions = {
 						NOT = { has_variable = domestic_influence_amount }
 					}
 					set_variable = { domestic_influence_amount = 100 }
-				}
-				if = {
-					limit = { NOT = { has_variable = corporate_tax_rate } }
-					set_variable = { var = corporate_tax_rate value = 20 }
-				}
-				if = {
-					limit = { NOT = { has_variable = population_tax_rate } }
-					set_variable = { var = population_tax_rate value = 20 }
 				}
 				ingame_init_investment_system = yes
 				init_auto_influence_array = yes
