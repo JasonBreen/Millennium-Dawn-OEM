@@ -140,10 +140,6 @@ focus_tree = {
 		ai_will_do = {
 			factor = 10
 			modifier = {
-				factor = 2
-				has_country_leader = { name = "Idriss Déby" ruling_only = yes }
-			}
-			modifier = {
 				factor = 100
 				has_game_rule = { rule = CHA_ai_behavior option = CHA_AUTHORITARIAN }
 			}
@@ -240,9 +236,15 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHA_security_apparatus"
 			add_ideas = CHA_expanded_security_services
-			swap_ideas = {
-				remove_idea = fossil_fuel_industry
-				add_idea = intelligence_community
+			if = {
+				limit = { has_idea = fossil_fuel_industry }
+				swap_ideas = {
+					remove_idea = fossil_fuel_industry
+					add_idea = intelligence_community
+				}
+			}
+			else = {
+				add_ideas = intelligence_community
 			}
 		}
 
@@ -393,7 +395,7 @@ focus_tree = {
 		}
 
 		ai_will_do = {
-			factor = 5
+			factor = 8
 			modifier = {
 				factor = 100
 				has_game_rule = { rule = CHA_ai_behavior option = CHA_DEMOCRATIC }
@@ -634,7 +636,7 @@ focus_tree = {
 		}
 
 		ai_will_do = {
-			factor = 2
+			factor = 4
 			modifier = {
 				factor = 100
 				has_game_rule = { rule = CHA_ai_behavior option = CHA_ISLAMIST }
@@ -673,6 +675,7 @@ focus_tree = {
 			# Strengthen ties with traditional Islamic areas
 			add_to_variable = { CHA_religious_tension = 3 }
 			CHA_update_religious_tension = yes
+			country_event = { id = chad.1104 days = 1 }
 		}
 
 		ai_will_do = {
@@ -725,6 +728,7 @@ focus_tree = {
 			# Revival of Kanem-Bornu Islamic heritage
 			add_to_variable = { CHA_religious_tension = 3 }
 			CHA_update_religious_tension = yes
+			country_event = { id = chad.1105 days = 1 }
 		}
 
 		ai_will_do = {
@@ -962,10 +966,13 @@ focus_tree = {
 			add_popularity = { ideology = communism popularity = 0.05 }
 			recalculate_party = yes
 			add_stability = -0.03
+			add_political_power = 75
+			add_timed_idea = { idea = CHA_revolutionary_fervor days = 365 }
+			country_event = { id = chad.1102 days = 1 }
 		}
 
 		ai_will_do = {
-			factor = 2
+			factor = 3
 			modifier = {
 				factor = 100
 				has_game_rule = { rule = CHA_ai_behavior option = CHA_SOCIALIST }
@@ -1067,7 +1074,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHA_scientific_socialism"
-			add_ideas = CHA_state_controlled_economy
+			add_ideas = CHA_planned_economy
 			capital_scope = {
 				one_state_industrial_complex = yes
 			}
@@ -1663,6 +1670,7 @@ focus_tree = {
 			}
 			add_stability = 0.05
 			country_event = { id = chad.741 days = 1 }
+			country_event = { id = chad.1107 days = 30 }
 		}
 
 		ai_will_do = {
@@ -1718,6 +1726,7 @@ focus_tree = {
 			modify_treasury_effect = yes
 			one_random_agriculture_district = yes
 			add_ideas = CHA_cotton_exports
+			country_event = { id = chad.1110 days = 90 }
 		}
 
 		ai_will_do = {
@@ -1855,6 +1864,7 @@ focus_tree = {
 				one_state_industrial_complex = yes
 				one_state_infrastructure = yes
 			}
+			country_event = { id = chad.1111 days = 60 }
 		}
 
 		ai_will_do = {
@@ -2325,10 +2335,7 @@ focus_tree = {
 		prerequisite = { focus = CHA_army_modernization }
 
 		available = {
-			OR = {
-				date > 2009.1.1
-				has_completed_focus = CHA_army_modernization
-			}
+			date > 2009.1.1
 		}
 
 		completion_reward = {
@@ -2360,10 +2367,7 @@ focus_tree = {
 		prerequisite = { focus = CHA_counter_terrorism }
 
 		available = {
-			OR = {
-				date > 2014.1.1
-				has_completed_focus = CHA_counter_terrorism
-			}
+			date > 2014.1.1
 		}
 
 		completion_reward = {
@@ -2405,6 +2409,7 @@ focus_tree = {
 			add_opinion_modifier = { target = MAL modifier = military_cooperation }
 			add_opinion_modifier = { target = MAU modifier = military_cooperation }
 			add_opinion_modifier = { target = BFA modifier = military_cooperation }
+			country_event = { id = chad.1113 days = 30 }
 		}
 
 		ai_will_do = {
@@ -2501,6 +2506,7 @@ focus_tree = {
 			FRA = {
 				give_military_access = CHA
 			}
+			country_event = { id = chad.1112 days = 30 }
 		}
 
 		ai_will_do = {
@@ -2636,7 +2642,8 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHA_great_power_relations"
-			add_political_power = 50
+			add_political_power = 25
+			country_event = { id = chad.1106 days = 1 }
 		}
 
 		ai_will_do = {
@@ -3363,6 +3370,7 @@ focus_tree = {
 			add_ideas = military_industry_project2
 			set_temp_variable = { temp_opinion = 5 }
 			change_defense_industry_opinion = yes
+			country_event = { id = chad.1114 days = 60 }
 		}
 
 		ai_will_do = {
@@ -3397,6 +3405,7 @@ focus_tree = {
 			}
 			set_temp_variable = { temp_opinion = 5 }
 			change_the_military_opinion = yes
+			country_event = { id = chad.1115 days = 1 }
 		}
 
 		ai_will_do = {
@@ -3468,7 +3477,7 @@ focus_tree = {
 	focus = {
 		id = CHA_domestic_arms_production
 		icon = M16
-		x = 18
+		x = 19
 		y = 5
 		relative_position_id = CHA_new_millennium
 
@@ -3670,6 +3679,51 @@ focus_tree = {
 
 		ai_will_do = {
 			factor = 6
+		}
+	}
+
+	focus = {
+		id = CHA_french_air_partnership
+		icon = GFX_goal_generic_air_production
+		cost = 10
+		x = 0
+		y = 1
+		relative_position_id = CHA_air_base_expansion
+		prerequisite = { focus = CHA_air_base_expansion }
+		mutually_exclusive = { focus = CHA_diversify_air_suppliers }
+		ai_will_do = { factor = 5 }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHA_french_air_partnership"
+			add_equipment_to_stockpile = {
+				type = fighter_equipment
+				amount = 20
+				producer = FRA
+			}
+			add_opinion_modifier = {
+				target = FRA
+				modifier = CHA_military_cooperation
+			}
+		}
+	}
+
+	focus = {
+		id = CHA_diversify_air_suppliers
+		icon = GFX_goal_generic_air_production
+		cost = 10
+		x = 2
+		y = 1
+		relative_position_id = CHA_air_base_expansion
+		prerequisite = { focus = CHA_air_base_expansion }
+		mutually_exclusive = { focus = CHA_french_air_partnership }
+		ai_will_do = { factor = 4 }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHA_diversify_air_suppliers"
+			add_equipment_to_stockpile = {
+				type = fighter_equipment
+				amount = 15
+				producer = CHI
+			}
+			add_political_power = 50
 		}
 	}
 
@@ -4171,6 +4225,8 @@ focus_tree = {
 			set_temp_variable = { treasury_change = 8 }
 			modify_treasury_effect = yes
 			add_stability = 0.02
+			add_ideas = CHA_livestock_export_program
+			country_event = { id = chad.1103 days = 1 }
 		}
 
 		ai_will_do = {
@@ -4225,7 +4281,7 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHA_constitutional_reform"
 			add_stability = 0.05
 			add_political_power = 75
-			remove_ideas = CHA_term_limits_removed
+			add_ideas = CHA_constitutional_protections
 		}
 
 		ai_will_do = {
@@ -4336,7 +4392,7 @@ focus_tree = {
 			add_stability = 0.05
 			add_political_power = 50
 			# Improve agricultural productivity
-			add_ideas = CHA_agricultural_investment
+			add_ideas = CHA_environmental_restoration
 			# Long-term environmental benefits
 			custom_effect_tooltip = CHA_great_green_wall_tooltip
 			hidden_effect = {
@@ -4945,6 +5001,8 @@ focus_tree = {
 
 		prerequisite = { focus = CHA_car_relations }
 
+		mutually_exclusive = { focus = CHA_car_intervention }
+
 		available = {
 			OR = {
 				date > 2013.1.1
@@ -5003,7 +5061,7 @@ focus_tree = {
 	focus = {
 		id = CHA_car_intervention
 		icon = focus_generic_military_intervention
-		x = 44
+		x = 45
 		y = 3
 		relative_position_id = CHA_new_millennium
 
@@ -5012,6 +5070,8 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_MILITARY }
 
 		prerequisite = { focus = CHA_car_relations }
+
+		mutually_exclusive = { focus = CHA_car_peacekeeping }
 
 		available = {
 			OR = {
@@ -5275,10 +5335,40 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHA_trans_saharan_highway"
-			set_temp_variable = { treasury_change = -25 }
+			set_temp_variable = { treasury_change = -40 }
 			modify_treasury_effect = yes
-			every_owned_state = {
-				one_state_infrastructure = yes
+			random_owned_controlled_state = {
+				limit = {
+					is_controlled_by = ROOT
+					infrastructure < 5
+				}
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = yes
+				}
+			}
+			random_owned_controlled_state = {
+				limit = {
+					is_controlled_by = ROOT
+					infrastructure < 5
+				}
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = yes
+				}
+			}
+			random_owned_controlled_state = {
+				limit = {
+					is_controlled_by = ROOT
+					infrastructure < 5
+				}
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = yes
+				}
 			}
 			add_ideas = CHA_mega_infrastructure
 		}
@@ -5340,10 +5430,12 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHA_ndjamena_international_airport"
 			set_temp_variable = { treasury_change = -12 }
 			modify_treasury_effect = yes
-			capital_scope = {
-				one_state_air_base = yes
-				one_state_air_base = yes
-				one_state_air_base = yes
+			849 = {
+				add_building_construction = {
+					type = air_base
+					level = 3
+					instant_build = yes
+				}
 			}
 			add_stability = 0.02
 		}
@@ -5584,9 +5676,13 @@ focus_tree = {
 		prerequisite = { focus = CHA_invite_cnpc }
 		prerequisite = { focus = CHA_invite_exxon }
 
+		available = {
+			has_stability > 0.4
+		}
+
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHA_world_bank_deal"
-			set_temp_variable = { treasury_change = 50 }
+			set_temp_variable = { treasury_change = 30 }
 			modify_treasury_effect = yes
 			add_ideas = CHA_foreign_investment_boom
 			add_stability = 0.05
@@ -5634,7 +5730,7 @@ focus_tree = {
 		}
 
 		ai_will_do = {
-			factor = 3
+			factor = 4
 			modifier = {
 				factor = 100
 				has_game_rule = { rule = CHA_ai_behavior option = CHA_TRIBAL }
@@ -5825,6 +5921,7 @@ focus_tree = {
 			add_to_variable = { CHA_sara_loyalty = 3 }
 			add_to_variable = { CHA_toubou_loyalty = 3 }
 			CHA_update_tribal_loyalty = yes
+			unlock_decision_category_tooltip = CHA_regional_autonomy_category
 		}
 
 		ai_will_do = {
@@ -5929,7 +6026,7 @@ focus_tree = {
 		}
 
 		ai_will_do = {
-			factor = 3
+			factor = 4
 			modifier = {
 				factor = 100
 				has_game_rule = { rule = CHA_ai_behavior option = CHA_PANAFRICAN }
@@ -6268,7 +6365,7 @@ focus_tree = {
 		}
 
 		ai_will_do = {
-			factor = 3
+			factor = 4
 			modifier = {
 				factor = 100
 				has_game_rule = { rule = CHA_ai_behavior option = CHA_NEOCOLONIAL }
@@ -6359,7 +6456,7 @@ focus_tree = {
 			CHA_update_sovereignty = yes
 			add_ideas = CHA_french_military_presence
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons1
 				amount = 1000
 				producer = FRA
 			}
@@ -6592,7 +6689,7 @@ focus_tree = {
 			add_to_variable = { CHA_sovereignty = -8 }
 			CHA_update_sovereignty = yes
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons1
 				amount = 2000
 				producer = CHI
 			}
@@ -6723,7 +6820,7 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHA_presidential_guard_expansion"
 			army_experience = 20
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons1
 				amount = 1500
 				producer = CHA
 			}
@@ -6814,7 +6911,7 @@ focus_tree = {
 			army_experience = 20
 			add_manpower = 5000
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons1
 				amount = 1000
 				producer = CHA
 			}
@@ -8020,7 +8117,7 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHA_military_pacts"
 			army_experience = 15
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons1
 				amount = 2000
 				producer = CHA
 			}
@@ -8108,7 +8205,7 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHA_russian_arms_deal"
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons1
 				amount = 3000
 				producer = RUS
 			}
@@ -8579,7 +8676,7 @@ focus_tree = {
 			add_manpower = 3000
 			army_experience = 15
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons1
 				amount = 1000
 				producer = CHA
 			}
@@ -9413,7 +9510,7 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHA_cuban_advisors"
 			army_experience = 30
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons1
 				amount = 2000
 				producer = CHA
 			}
@@ -9655,7 +9752,7 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHA_desert_cavalry"
 			army_experience = 15
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons1
 				amount = 1500
 				producer = CHA
 			}
@@ -10420,7 +10517,7 @@ focus_tree = {
 			CHA_update_pan_african_prestige = yes
 			army_experience = 30
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons1
 				amount = 3000
 				producer = CHA
 			}
@@ -10867,8 +10964,8 @@ focus_tree = {
 			set_variable = { CHA_sovereignty = 5 }
 			CHA_update_sovereignty = yes
 			swap_ideas = {
-				remove_idea = CHA_foreign_dependency_2
-				add_idea = CHA_foreign_dependency_3
+				remove_idea = CHA_foreign_dependency_3
+				add_idea = CHA_foreign_dependency_4
 			}
 			set_temp_variable = { treasury_change = 25 }
 			modify_treasury_effect = yes
@@ -10927,7 +11024,7 @@ focus_tree = {
 			CHA_update_sovereignty = yes
 			army_experience = 20
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons1
 				amount = 3000
 				producer = CHA
 			}
