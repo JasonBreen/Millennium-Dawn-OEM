@@ -645,26 +645,24 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_DIPLOMACY FOCUS_FILTER_TRADE FOCUS_FILTER_EUROPEAN_UNION FOCUS_FILTER_FOREIGN_POLICY }
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CES_eu_kazuz executed"
-			every_country = {
-				limit = {
-					has_idea = EU_member
+			if = { limit = { NOT = { has_global_flag = GAME_RULE_eu_disabled } }
+				custom_effect_tooltip = TT_ALL_EU_MEMBER_NATIONS_GAIN
+				effect_tooltip = {
+					add_opinion_modifier = { target = ROOT modifier = improve_trade }
+					reverse_add_opinion_modifier = { target = ROOT modifier = improve_trade }
+					add_opinion_modifier = { target = ROOT modifier = european_commitment }
+					reverse_add_opinion_modifier = { target = ROOT modifier = european_commitment }
 				}
-				add_opinion_modifier = {
-					target = ROOT
-					modifier = improve_trade
+				for_each_scope_loop = {
+					array = global.EU_member
+					add_opinion_modifier = { target = ROOT modifier = improve_trade }
+					reverse_add_opinion_modifier = { target = ROOT modifier = improve_trade }
+					add_opinion_modifier = { target = ROOT modifier = european_commitment }
+					reverse_add_opinion_modifier = { target = ROOT modifier = european_commitment }
 				}
-				reverse_add_opinion_modifier = {
-					target = ROOT
-					modifier = improve_trade
-				}
-				add_opinion_modifier = {
-					target = ROOT
-					modifier = european_commitment
-				}
-				reverse_add_opinion_modifier = {
-					target = ROOT
-					modifier = european_commitment
-				}
+			}
+			else = {
+				add_political_power = 150
 			}
 		}
 
@@ -3011,10 +3009,20 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_EUROPEAN_UNION FOCUS_FILTER_FOREIGN_POLICY }
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CES_european_model executed"
-			every_country = {
-				limit = { has_idea = EU_member }
-				add_opinion_modifier = { target = ROOT modifier = supports_us }
-				reverse_add_opinion_modifier = { target = ROOT modifier = supports_us }
+			if = { limit = { NOT = { has_global_flag = GAME_RULE_eu_disabled } }
+				custom_effect_tooltip = TT_ALL_EU_MEMBER_NATIONS_GAIN
+				effect_tooltip = {
+					add_opinion_modifier = { target = ROOT modifier = supports_us }
+					reverse_add_opinion_modifier = { target = ROOT modifier = supports_us }
+				}
+				for_each_scope_loop = {
+					array = global.EU_member
+					add_opinion_modifier = { target = ROOT modifier = supports_us }
+					reverse_add_opinion_modifier = { target = ROOT modifier = supports_us }
+				}
+				set_temp_variable = { modify_eurosceptic = -0.1 }
+				set_temp_variable = { modify_eurosceptic_target = THIS }
+				eurosceptic_change = yes
 			}
 			if = {
 				limit = {
@@ -3027,9 +3035,6 @@ focus_tree = {
 			}
 			set_temp_variable = { percent_change = -5 }
 			change_domestic_influence_percentage = yes
-			set_temp_variable = { modify_eurosceptic = -0.1 }
-			set_temp_variable = { modify_eurosceptic_target = THIS }
-			eurosceptic_change = yes
 		}
 
 		ai_will_do = {
@@ -3468,6 +3473,20 @@ focus_tree = {
 				RAJ = {
 					country_event = centrasiaev.4
 				}
+			}
+			newline = yes
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				set_temp_variable = { skip_payment = 1 }
+				one_random_industrial_complex = yes
+				SOV = {
+					set_temp_variable = { treasury_change = -7.5 }
+					modify_treasury_effect = yes
+				}
+				set_temp_variable = { percent_change = 5 }
+				set_temp_variable = { tag_index = SOV }
+				set_temp_variable = { influence_target = ROOT }
+				change_influence_percentage = yes
 			}
 		}
 
@@ -5253,56 +5272,36 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_TRADE FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_FOREIGN_INVESTMENTS }
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CES_trade_with_europe executed"
-			if = {
-				limit = {
-					has_game_rule = { rule = RULE_DISABLE_EU option = no }
-				}
-				every_country = {
-					limit = {
-						has_idea = EU_member
-					}
-					add_opinion_modifier = {
-						target = FROM
-						modifier = improve_trade
-					}
-					reverse_add_opinion_modifier = {
-						target = FROM
-						modifier = improve_trade
-					}
+			if = { limit = { NOT = { has_global_flag = GAME_RULE_eu_disabled } }
+				custom_effect_tooltip = TT_ALL_EU_MEMBER_NATIONS_GAIN
+				effect_tooltip = {
+					add_opinion_modifier = { target = FROM modifier = improve_trade }
+					reverse_add_opinion_modifier = { target = FROM modifier = improve_trade }
 					set_temp_variable = { treasury_change = -2 }
 					modify_treasury_effect = yes
 					set_temp_variable = { int_investment_change = 1 }
 					modify_international_investment_effect = yes
 				}
+				for_each_scope_loop = {
+					array = global.EU_member
+					add_opinion_modifier = { target = FROM modifier = improve_trade }
+					reverse_add_opinion_modifier = { target = FROM modifier = improve_trade }
+					set_temp_variable = { treasury_change = -2 }
+					modify_treasury_effect = yes
+					set_temp_variable = { int_investment_change = 1 }
+					modify_international_investment_effect = yes
+				}
+				set_temp_variable = { modify_eurosceptic = -0.1 }
+				set_temp_variable = { modify_eurosceptic_target = THIS }
+				eurosceptic_change = yes
 			}
-			if = {
-				limit = {
-					has_game_rule = { rule = RULE_DISABLE_EU option = yes }
-				}
-				add_opinion_modifier = {
-					target = GER
-					modifier = improve_trade
-				}
-				reverse_add_opinion_modifier = {
-					target = GER
-					modifier = improve_trade
-				}
-				add_opinion_modifier = {
-					target = CZE
-					modifier = improve_trade
-				}
-				reverse_add_opinion_modifier = {
-					target = CZE
-					modifier = improve_trade
-				}
-				add_opinion_modifier = {
-					target = POL
-					modifier = improve_trade
-				}
-				reverse_add_opinion_modifier = {
-					target = POL
-					modifier = improve_trade
-				}
+			else = {
+				add_opinion_modifier = { target = GER modifier = improve_trade }
+				reverse_add_opinion_modifier = { target = GER modifier = improve_trade }
+				add_opinion_modifier = { target = CZE modifier = improve_trade }
+				reverse_add_opinion_modifier = { target = CZE modifier = improve_trade }
+				add_opinion_modifier = { target = POL modifier = improve_trade }
+				reverse_add_opinion_modifier = { target = POL modifier = improve_trade }
 				set_temp_variable = { treasury_change = -2 }
 				modify_treasury_effect = yes
 				set_temp_variable = { int_investment_change = 1 }
@@ -6250,46 +6249,30 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CES_promote_centralasian_jihad executed"
-			every_country = {
+			every_other_country = {
 				limit = {
-					NOT = { original_tag = ROOT }
 					OR = {
 						salafist_kingdom_are_in_power = yes
 						salafist_caliphate_are_in_power = yes
 					}
 				}
-					add_opinion_modifier = {
-						modifier = declaration_of_friendship
-						target = FROM
-					}
+				add_opinion_modifier = { modifier = declaration_of_friendship target = FROM }
 			}
 			if = {
 				limit = {
 					original_tag = KAZ
 				}
 				KYR = {
-					add_opinion_modifier = {
-						modifier = recent_actions_negative
-						target = FROM
-					}
+					add_opinion_modifier = { modifier = recent_actions_negative target = FROM }
 				}
 				UZB = {
-					add_opinion_modifier = {
-						modifier = recent_actions_negative
-						target = FROM
-					}
+					add_opinion_modifier = { modifier = recent_actions_negative target = FROM }
 				}
 				TAJ = {
-					add_opinion_modifier = {
-						modifier = recent_actions_negative
-						target = FROM
-					}
+					add_opinion_modifier = { modifier = recent_actions_negative target = FROM }
 				}
 				TRK = {
-					add_opinion_modifier = {
-						modifier = recent_actions_negative
-						target = FROM
-					}
+					add_opinion_modifier = { modifier = recent_actions_negative target = FROM }
 				}
 			}
 			if = {
@@ -6297,28 +6280,16 @@ focus_tree = {
 					original_tag = UZB
 				}
 				KYR = {
-					add_opinion_modifier = {
-						modifier = recent_actions_negative
-						target = FROM
-					}
+					add_opinion_modifier = { modifier = recent_actions_negative target = FROM }
 				}
 				KAZ = {
-					add_opinion_modifier = {
-						modifier = recent_actions_negative
-						target = FROM
-					}
+					add_opinion_modifier = { modifier = recent_actions_negative target = FROM }
 				}
 				TAJ = {
-					add_opinion_modifier = {
-						modifier = recent_actions_negative
-						target = FROM
-					}
+					add_opinion_modifier = { modifier = recent_actions_negative target = FROM }
 				}
 				TRK = {
-					add_opinion_modifier = {
-						modifier = recent_actions_negative
-						target = FROM
-					}
+					add_opinion_modifier = { modifier = recent_actions_negative target = FROM }
 				}
 			}
 			if = {
@@ -6326,28 +6297,16 @@ focus_tree = {
 					original_tag = KYR
 				}
 				KAZ = {
-					add_opinion_modifier = {
-						modifier = recent_actions_negative
-						target = FROM
-					}
+					add_opinion_modifier = { modifier = recent_actions_negative target = FROM }
 				}
 				UZB = {
-					add_opinion_modifier = {
-						modifier = recent_actions_negative
-						target = FROM
-					}
+					add_opinion_modifier = { modifier = recent_actions_negative target = FROM }
 				}
 				TAJ = {
-					add_opinion_modifier = {
-						modifier = recent_actions_negative
-						target = FROM
-					}
+					add_opinion_modifier = { modifier = recent_actions_negative target = FROM }
 				}
 				TRK = {
-					add_opinion_modifier = {
-						modifier = recent_actions_negative
-						target = FROM
-					}
+					add_opinion_modifier = { modifier = recent_actions_negative target = FROM }
 				}
 			}
 		}
@@ -6863,7 +6822,7 @@ focus_tree = {
 		cost = 5
 		available = { has_government = fascism }
 		relative_position_id = CES_radicals_in_power
-		prerequisite = { focus = CES_symbol_power focus = CES_befriend_taliban  }
+		prerequisite = { focus = CES_symbol_power focus = CES_befriend_taliban }
 		search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_FOREIGN_POLICY }
 		will_lead_to_war_with = CHI
 		completion_reward = {
@@ -8484,7 +8443,7 @@ focus_tree = {
 			}
 		}
 		relative_position_id = CES_new_turkic_state
-		prerequisite = { focus = CES_declare_turan  }
+		prerequisite = { focus = CES_declare_turan }
 		search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CES_finally_united executed"
@@ -9134,7 +9093,7 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CES_airbus_stuff executed"
 			add_tech_bonus = {
-				name = CAT_s_fighter
+				name = CES_airbus_stuff
 				bonus = 0.3
 				uses = 1
 				category = CAT_s_fighter
@@ -9546,7 +9505,7 @@ focus_tree = {
 			set_temp_variable = { treasury_change = -2 }
 			modify_treasury_effect = yes
 			add_tech_bonus = {
-				name = CAT_support_weapons
+				name = CES_us_equip
 				bonus = 0.3
 				uses = 1
 				category = CAT_support_weapons
@@ -9620,7 +9579,7 @@ focus_tree = {
 			set_temp_variable = { treasury_change = -2 }
 			modify_treasury_effect = yes
 			add_tech_bonus = {
-				name = CAT_nvg
+				name = CES_chinese_equip
 				bonus = 0.3
 				uses = 1
 				category = CAT_nvg
@@ -9995,7 +9954,7 @@ focus_tree = {
 			army_experience = 50
 			add_war_support = 0.04
 			add_tech_bonus = {
-				name = CAT_tanks
+				name = CES_buying_tanks
 				bonus = 0.25
 				uses = 1
 				category = CAT_tanks
@@ -10025,7 +9984,7 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CES_chinese_tanks executed"
 			add_tech_bonus = {
-				name = CAT_tanks
+				name = CES_chinese_tanks
 				bonus = 0.25
 				uses = 2
 				category = CAT_tanks
@@ -10090,7 +10049,7 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CES_russian_tanks executed"
 			add_tech_bonus = {
-				name = CAT_tanks
+				name = CES_russian_tanks
 				bonus = 0.25
 				uses = 2
 				category = CAT_tanks
@@ -10155,7 +10114,7 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CES_american_tanks executed"
 			add_tech_bonus = {
-				name = CAT_tanks
+				name = CES_american_tanks
 				bonus = 0.25
 				uses = 2
 				category = CAT_tanks
@@ -10223,7 +10182,7 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CES_urainian_btr executed"
 			add_tech_bonus = {
-				name = CAT_apc
+				name = CES_urainian_btr
 				bonus = 0.25
 				uses = 1
 				category = CAT_apc
@@ -10499,7 +10458,12 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CES_western_prave_rabochich executed"
 			add_to_variable = { CES_liberals_social_cost_multiplier_modifier = 0.20 }
-			add_to_variable = { CES_liberals_local_resources_factor = 0.10 }
+			add_to_variable = { CES_liberals_local_resources_oil_factor = 0.10
+local_resources_aluminium_factor = 0.10
+local_resources_rubber_factor = 0.10
+local_resources_tungsten_factor = 0.10
+local_resources_steel_factor = 0.10
+local_resources_chromium_factor = 0.10 }
 			custom_effect_tooltip = CES_liberals_modifier4_tt
 			set_party_index_to_ruling_party = yes
 			set_temp_variable = { party_popularity_increase = 0.05 }
@@ -10793,7 +10757,7 @@ focus_tree = {
 		prerequisite = { focus = CES_western_sport }
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CES_western_resource executed"
-			one_random_synthetic_refinery = yes
+			one_random_renewable_energy_infra = yes
 		}
 
 		ai_will_do = {

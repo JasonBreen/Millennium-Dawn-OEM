@@ -162,6 +162,11 @@ shared_focus = {
 		y = 25 #20
 		trigger = { tag = CZE }
 	}
+	offset = {
+		x = -40
+		y = 22
+		trigger = { tag = SOV }
+	}
 	# Allow to Make the Tree Visible
 	allow_branch = {
 		OR = {
@@ -220,7 +225,10 @@ shared_focus = {
 			original_tag = SLO
 			original_tag = SLV
 			original_tag = SMA
-			original_tag = SOV
+			AND = {
+				original_tag = SOV
+				has_idea = EU_member
+			}
 			original_tag = SPA
 			original_tag = SPR
 			original_tag = SWE
@@ -512,7 +520,7 @@ shared_focus = {
 	prerequisite = { focus = USoE101 }
 	prerequisite = { focus = USoE103 }
 
-	available = { 
+	available = {
 		has_country_flag = USoE
 		OR = {
 			has_completed_focus = USoE102
@@ -1385,7 +1393,7 @@ shared_focus = {
 	search_filters = { FOCUS_FILTER_ANNEXATION }
 	prerequisite = { focus = USoE320 }
 	mutually_exclusive = { focus = USoE305 }
-	available = { 
+	available = {
 		has_country_flag = USoE
 		NOT = { SOV = { has_idea = european_spirit } }
 	}
@@ -1567,7 +1575,6 @@ shared_focus = {
 		#show_ideas_tooltip = USoE_AI_government
 		hidden_effect = {
 			add_ideas = negligible_corruption
-			ingame_update_setup = yes
 		}
 		custom_effect_tooltip = tooltip_USoE404_effect
 	}
@@ -2093,7 +2100,7 @@ shared_focus = {
 			set_cosmetic_tag = USoE_navy
 		}
 		set_temp_variable = { rul_party_temp = 22 }
-		set_temp_variable = { enable_elections = 1 }
+		set_temp_variable = { disable_elections = 1 }
 		change_ruling_party_effect = yes
 		set_temp_variable = { party_index = 22 }
 		set_temp_variable = { party_popularity_increase = 0.30 }
@@ -2771,7 +2778,6 @@ shared_focus = {
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus USoE632"
 		custom_effect_tooltip = tooltip_USoE632_effect
-		set_country_flag = USoE_house_of_romanov
 		set_temp_variable = { temp_opinion = 5 }
 		change_the_military_opinion = yes
 		change_landowners_opinion = yes
@@ -3327,7 +3333,17 @@ shared_focus = {
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus USoE645"
-		catholic_leadership = yes
+		every_country = {
+			limit = { has_idea = christian }
+			add_opinion_modifier = {
+				target = ROOT
+				modifier = friendly_monarchy
+			}
+			reverse_add_opinion_modifier = {
+				target = ROOT
+				modifier = friendly_monarchy
+			}
+		}
 		custom_effect_tooltip = tooltip_USoE645_effect
 		set_country_flag = USoE_imperial_crown
 	}
@@ -3353,7 +3369,22 @@ shared_focus = {
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus USoE646"
-		christian_leadership = yes
+		every_country = {
+			limit = {
+				OR = {
+					has_idea = christian
+					has_idea = orthodox_christian
+				}
+			}
+			add_opinion_modifier = {
+				target = ROOT
+				modifier = friendly_monarchy
+			}
+			reverse_add_opinion_modifier = {
+				target = ROOT
+				modifier = friendly_monarchy
+			}
+		}
 		custom_effect_tooltip = tooltip_USoE646_effect
 		set_country_flag = USoE_new_crown
 	}
@@ -3492,7 +3523,6 @@ shared_focus = {
 shared_focus = {
 	id = USoE701
 	icon = united_nations
-	#icon = USoE701
 	relative_position_id = USoE204
 	x = 0
 	y = 2

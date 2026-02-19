@@ -934,15 +934,24 @@ types = {
 				NOT = { has_war_with = FROM }
 			}
 			modifier = {
-			 	# Don't target anyone who is not a potential enemy
-			 	factor = 0
-			 	NOT = {
+				factor = 0.05
+				OR = {
+					has_government = democratic
+					has_government = neutrality
+					has_elections = yes
+				}
+				FROM = { has_added_tension_amount < 5 }
+			}
+			modifier = {
+				 # Don't target anyone who is not a potential enemy
+				 factor = 0
+				 NOT = {
 					has_country_flag = promised_retaliation_against@FROM
-			 		is_in_array = {
-			 			array = potential_and_current_enemies
-			 			value = FROM  # Target country
-			 		}
-			 	}
+					 is_in_array = {
+						 array = potential_and_current_enemies
+						 value = FROM  # Target country
+					 }
+				 }
 			}
 			modifier = {
 				factor = 0
@@ -966,6 +975,10 @@ types = {
 				has_country_flag = conceded_to@FROM
 				factor = 0
 			}
+			modifier = {
+				factor = 0.40
+				is_ally_with = FROM
+			}
 		}
 	}
 	#Anti-Missile Strikes
@@ -980,12 +993,7 @@ types = {
 		arrow = {
 			type = air
 		}
-		visible = {
-		}
 
-		allowed = {
-
-		}
 		# Specific Target is visible
 		show_target = {
 			OR = {
@@ -1716,6 +1724,15 @@ types = {
 				threat < 0.10
 			}
 			modifier = {
+				factor = 0.05
+				OR = {
+					has_government = democratic
+					has_government = neutrality
+					has_elections = yes
+				}
+				FROM = { has_added_tension_amount < 5 }
+			}
+			modifier = {
 				factor = 0
 				var:target_state = {
 					rocket_site < 4
@@ -1778,6 +1795,10 @@ types = {
 			modifier = {
 				has_country_flag = conceded_to@FROM
 				factor = 0
+			}
+			modifier = {
+				factor = 0.40
+				is_ally_with = FROM
 			}
 		}
 	}
@@ -1857,6 +1878,13 @@ types = {
 		target_type = {
 			state = {
 				always = yes
+			}
+		}
+
+		unit_requirements = {
+			equipment = {
+				type = { guided_missile_equipment ballistic_missile_equipment hypersonic_missile_equipment }
+				amount = { min = 10 }
 			}
 		}
 
@@ -2326,6 +2354,15 @@ types = {
 				NOT = { has_country_flag = promised_retaliation_against@FROM }
 			}
 			modifier = {
+				factor = 0.05
+				OR = {
+					has_government = democratic
+					has_government = neutrality
+					has_elections = yes
+				}
+				FROM = { has_added_tension_amount < 5 }
+			}
+			modifier = {
 				NOT = {
 					has_country_flag = promised_retaliation_against@FROM
 				}
@@ -2341,6 +2378,10 @@ types = {
 			modifier = {
 				has_country_flag = conceded_to@FROM
 				factor = 0
+			}
+			modifier = {
+				factor = 0.40
+				is_ally_with = FROM
 			}
 		}
 	}

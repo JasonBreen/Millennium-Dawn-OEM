@@ -1522,7 +1522,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus UKR_burshtyn_tes"
-			one_random_synthetic_refinery = yes
+			one_random_renewable_energy_infra = yes
 			if = {
 				limit = {
 					NOT = {
@@ -2733,11 +2733,8 @@ focus_tree = {
 				if = {
 					limit = { NOT = { is_in_array = { ruling_party = 4 } } }
 					set_temp_variable = { rul_party_temp = 4 }
+					set_temp_variable = { disable_elections = 1 }
 					change_ruling_party_effect = yes
-					set_politics = {
-						ruling_party = communism
-						elections_allowed = no
-					}
 				}
 			}
 		}
@@ -2814,11 +2811,8 @@ focus_tree = {
 				if = {
 					limit = { NOT = { is_in_array = { ruling_party = 18 } } }
 					set_temp_variable = { rul_party_temp = 18 }
+					set_temp_variable = { disable_elections = 1 }
 					change_ruling_party_effect = yes
-					set_politics = {
-						ruling_party = neutrality
-						elections_allowed = no
-					}
 				}
 			}
 		}
@@ -2866,7 +2860,7 @@ focus_tree = {
 
 		available = {
 			neutrality_neutral_social_are_in_power = yes
-			emerging_communist_state_are_not_in_power = yes
+			emerging_communist_state_are_in_power = no
 		}
 
 		completion_reward = {
@@ -5492,7 +5486,7 @@ focus_tree = {
 		available = {
 			SOV = {
 				influence_higher_40 = yes
-				emerging_communist_state_are_not_in_power = yes
+				emerging_communist_state_are_in_power = no
 			}
 			emerging_communist_state_are_in_power = yes
 			custom_trigger_tooltip = {
@@ -5572,7 +5566,7 @@ focus_tree = {
 		available = {
 			BLR = {
 				influence_higher_40 = yes
-				emerging_communist_state_are_not_in_power = yes
+				emerging_communist_state_are_in_power = no
 			}
 			emerging_communist_state_are_in_power = yes
 			custom_trigger_tooltip = {
@@ -6344,7 +6338,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus UKR_extend_ukrainian_refineries"
-			two_random_synthetic_refinery = yes
+			two_random_renewable_energy_infra = yes
 			set_temp_variable = { temp_opinion = 5 }
 			change_fossil_fuel_industry_opinion = yes
 		}
@@ -9424,11 +9418,8 @@ focus_tree = {
 				if = {
 					limit = { NOT = { is_in_array = { ruling_party = 21 } } }
 					set_temp_variable = { rul_party_temp = 21 }
+					set_temp_variable = { disable_elections = 1 }
 					change_ruling_party_effect = yes
-					set_politics = {
-						ruling_party = nationalist
-						elections_allowed = no
-					}
 				}
 			}
 		}
@@ -11641,11 +11632,8 @@ focus_tree = {
 				if = {
 					limit = { NOT = { is_in_array = { ruling_party = 6 } } }
 					set_temp_variable = { rul_party_temp = 6 }
+					set_temp_variable = { disable_elections = 1 }
 					change_ruling_party_effect = yes
-					set_politics = {
-						ruling_party = communism
-						elections_allowed = no
-					}
 				}
 			}
 		}
@@ -13606,6 +13594,12 @@ focus_tree = {
 						autonomy_state = autonomy_republic_ukr
 					}
 				}
+				LRP = {
+					if = {
+						limit = { NOT = { has_idea = UKR_republic_ukr } }
+						add_ideas = UKR_republic_ukr
+					}
+				}
 				if = {
 					limit = {
 						OR = {
@@ -13622,6 +13616,12 @@ focus_tree = {
 						set_autonomy = {
 							target = CRM
 							autonomy_state = autonomy_republic_ukr
+						}
+					}
+					CRM = {
+						if = {
+							limit = { NOT = { has_idea = UKR_republic_ukr } }
+							add_ideas = UKR_republic_ukr
 						}
 					}
 				}
@@ -14025,7 +14025,6 @@ focus_tree = {
 					}
 				}
 				set_country_flag = UKR_our_ukraine
-				clr_country_flag = UKR_servant_of_people
 				create_country_leader = {
 					name = "Viktor Yushchenko"
 					picture = "gfx/leaders/UKR/Viktor_Yushchenko.dds"
@@ -14261,18 +14260,22 @@ focus_tree = {
 					modifier = recent_actions_positive
 				}
 			}
-			every_country = {
-				limit = {
-					has_idea = EU_member
+			if = {
+				limit = { NOT = { has_global_flag = GAME_RULE_eu_disabled } }
+				set_temp_variable = { modify_eurosceptic = -0.1 }
+				set_temp_variable = { modify_eurosceptic_target = ROOT }
+				eurosceptic_change = yes
+				custom_effect_tooltip = TT_ALL_EU_MEMBER_NATIONS_GAIN
+				effect_tooltip = {
+					add_opinion_modifier = { target = UKR modifier = recent_actions_positive }
 				}
-				add_opinion_modifier = {
-					target = UKR
-					modifier = recent_actions_positive
+				hidden_effect = {
+					for_each_scope_loop = {
+						array = global.EU_member
+						add_opinion_modifier = { target = UKR modifier = recent_actions_positive }
+					}
 				}
 			}
-			set_temp_variable = { modify_eurosceptic = -0.1 }
-			set_temp_variable = { modify_eurosceptic_target = ROOT }
-			eurosceptic_change = yes
 			if = {
 				limit = {
 					NOT = {
@@ -14626,7 +14629,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus UKR_our_ukraine_alternative_energy_sources"
-			two_random_synthetic_refinery = yes
+			two_random_renewable_energy_infra = yes
 			set_temp_variable = { percent_change = 5 }
 			change_domestic_influence_percentage = yes
 		}
@@ -16127,18 +16130,22 @@ focus_tree = {
 					modifier = recent_actions_positive
 				}
 			}
-			every_country = {
-				limit = {
-					has_idea = EU_member
+			if = {
+				limit = { NOT = { has_global_flag = GAME_RULE_eu_disabled } }
+				set_temp_variable = { modify_eurosceptic = -0.1 }
+				set_temp_variable = { modify_eurosceptic_target = ROOT }
+				eurosceptic_change = yes
+				custom_effect_tooltip = TT_ALL_EU_MEMBER_NATIONS_GAIN
+				effect_tooltip = {
+					add_opinion_modifier = { target = UKR modifier = recent_actions_positive }
 				}
-				add_opinion_modifier = {
-					target = UKR
-					modifier = recent_actions_positive
+				hidden_effect = {
+					for_each_scope_loop = {
+						array = global.EU_member
+						add_opinion_modifier = { target = UKR modifier = recent_actions_positive }
+					}
 				}
 			}
-			set_temp_variable = { modify_eurosceptic = -0.1 }
-			set_temp_variable = { modify_eurosceptic_target = ROOT }
-			eurosceptic_change = yes
 			if = {
 				limit = {
 					NOT = {
@@ -16374,11 +16381,8 @@ focus_tree = {
 				if = {
 					limit = { NOT = { is_in_array = { ruling_party = 2 } } }
 					set_temp_variable = { rul_party_temp = 2 }
+					set_temp_variable = { disable_elections = 1 }
 					change_ruling_party_effect = yes
-					set_politics = {
-						ruling_party = democratic
-						elections_allowed = no
-					}
 				}
 			}
 		}
