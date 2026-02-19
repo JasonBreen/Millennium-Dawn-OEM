@@ -2,6 +2,7 @@
 layout: default
 title: "Getting Started"
 permalink: /getting-started/
+description: "Step-by-step installation and setup guide for playing Millennium Dawn."
 ---
 
 # Getting Started with Millennium Dawn
@@ -21,7 +22,7 @@ Welcome to Millennium Dawn! This guide will help you get up and running with the
 
 ### Manual Installation
 
-1. Download the latest release from [GitHub](https://github.com/millenniumdawnmod/Millennium_Dawn/releases)
+1. Download from the [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2504231514) page
 2. Extract the files to your Hearts of Iron IV mods directory:
    - **Windows**: `Documents/Paradox Interactive/Hearts of Iron IV/mod/`
    - **Mac**: `~/Documents/Paradox Interactive/Hearts of Iron IV/mod/`
@@ -78,16 +79,12 @@ The mod introduces several new mechanics:
 
 Once you're comfortable with the basics:
 
-- Explore the [Tutorials](/tutorials/) section for detailed strategies
-- Check the [Changelog](/changelog/) for the latest updates
-- Join the community to share your experiences
+- Explore the [Tutorials]({{ '/tutorials/' | relative_url }}) section for detailed strategies
+- Check the [Changelog]({{ '/changelogs/' | relative_url }}) for the latest updates
+- Join the [Discord](http://discord.gg/millenniumdawn) to share your experiences
 
 ## Need Help?
 
 - **GitHub Issues**: Report bugs and request features
 - **Steam Workshop**: Community discussions and guides
 - **Discord**: Join our community server for real-time help
-
----
-
-*Ready to shape the modern world? Start your journey today!*

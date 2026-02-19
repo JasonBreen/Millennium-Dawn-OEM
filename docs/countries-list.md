@@ -1,6 +1,8 @@
 ---
 layout: default
 title: "List of Countries"
+page_id: countries-list
+description: "Full list of playable countries available in Millennium Dawn: A Modern Day mod for Hearts of Iron IV."
 permalink: /countries-list/
 ---
 
@@ -10,74 +12,29 @@ The following countries are playable in Millennium Dawn: Modern Day Mod:
 
 The following countries are playable with unique focus trees:
 
-- [Armenia](/Millennium-Dawn/national-content/Armenia)
-- Abkhazia
-- [Afghanistan](/Millennium-Dawn/national-content/Afghan-Northern-Alliance) (Afghan Northern Alliance in 2000)
-- Armenia
-- [Azerbaijan](/Millennium-Dawn/national-content/Azerbaijan)
-- Artsakh
-- Belarus
-- Bosnia
-- [Botswana](/Millennium-Dawn/national-content/Botswana)
-- [Brazil](/Millennium-Dawn/national-content/Brazil)
-- Bulgaria
-- [Canada](/Millennium-Dawn/national-content/Canada)
-- [China](/Millennium-Dawn/national-content/China)
-- [Comoros](/Millennium-Dawn/national-content/Comoros)
-- Czechia
-- Cuba
-- [Denmark](/Millennium-Dawn/national-content/Denmark)
-- Egypt
-- Estonia
-- [Ethiopia](/Millennium-Dawn/national-content/Ethiopia) (Eritrea Puppet Shared)
-- Serbia
-- Shared EU Focus (USoE & POTEF)
-- [Finland](/Millennium-Dawn/national-content/Finland)
-- Fiji
-- [France](/Millennium-Dawn/national-content/France)
-- Gagauzia
-- [Georgia](/Millennium-Dawn/national-content/Georgia)
-- [Germany](/Millennium-Dawn/national-content/Germany)
-- [Greece](/Millennium-Dawn/national-content/Greece)
-- Gulf tree for BHR, KUW, OMA, QAT, SAU, UAE including shared GCC tree also available to EGY, IRQ, JOR, MOR, YEM
-- Hezbollah
-- India
-- Indonesia
-- [Iran](/Millennium-Dawn/national-content/Iran)
-- Iraq
-- Israel
-- [Italy](/Millennium-Dawn/national-content/Italy)
-- [Japan](/Millennium-Dawn/national-content/Japan)
-- Kazakhstan
-- Kosovo
-- Kyrgyzstan
-- Libya
-- [Liechtenstein](/Millennium-Dawn/national-content/Liechtenstein)
-- [Myanmar](/Millennium-Dawn/national-content/Myanmar)
-- Netherlands
-- [Nigeria](/Millennium-Dawn/national-content/Nigeria)
-- [Norway](/Millennium-Dawn/national-content/Norway)
-- [North Korea](/Millennium-Dawn/national-content/North-Korea)
-- [Poland](/Millennium-Dawn/national-content/Poland)
-- Romania
-- [Russia](/Millennium-Dawn/national-content/Russia)
-- San Marino
-- Singapore
-- [Spain](/Millennium-Dawn/national-content/Spain)
-- [Sweden](/Millennium-Dawn/national-content/Sweden)
-- [Switzerland](/Millennium-Dawn/national-content/Switzerland)
-- [South Korea](/Millennium-Dawn/national-content/South-Korea)
-- South Ossetia
-- [Syria](/Millennium-Dawn/national-content/Syria)
-- Tajikistan
-- Trasnistria
-- Turkey
-- [Ukraine](/Millennium-Dawn/national-content/Ukraine)
-- [United Kingdom](/Millennium-Dawn/national-content/United-Kingdom)
-- [United States](/Millennium-Dawn/national-content/United-States)
-- Uzbekistan
-- Venezuela
-- Yugoslavia
+<div class="country-focus-grid" role="list" aria-label="Countries with unique focus trees">
+  {% for item in site.data.unique_focus_trees %}
+  <article class="country-focus-card"
+           role="listitem"
+           {% if item.flag_image %}style="--country-flag-image: url('{{ item.flag_image | relative_url }}');"{% endif %}>
+    {% if item.flag_image %}
+    <span class="country-focus-card__flag-image" aria-hidden="true"></span>
+    {% elsif item.flag %}
+    <span class="country-focus-card__flag" aria-hidden="true">{{ item.flag }}</span>
+    {% endif %}
+    <p class="country-focus-card__title">
+      {% if item.url %}
+      <a href="{{ item.url | relative_url }}">{{ item.name }}</a>
+      {% else %}
+      <span>{{ item.name }}</span>
+      {% endif %}
+    </p>
+    {% if item.note %}
+    <p class="country-focus-card__note">{{ item.note }}</p>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>
 
 ## Full List of Countries
 
