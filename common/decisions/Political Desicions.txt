@@ -2009,6 +2009,8 @@ generic_coalition_politics_decisions = {
 			set_failsafe_values = yes
 			recalculate_party = yes
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	promote_outlook_decision_support_emerging_parties = {
@@ -2031,6 +2033,8 @@ generic_coalition_politics_decisions = {
 			set_failsafe_values = yes
 			recalculate_party = yes
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	promote_outlook_decision_support_the_non_aligned_parties = {
@@ -2074,6 +2078,8 @@ generic_coalition_politics_decisions = {
 			set_failsafe_values = yes
 			recalculate_party = yes
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	promote_outlook_decision_support_the_nationalists = {
@@ -2117,6 +2123,8 @@ generic_coalition_politics_decisions = {
 			set_failsafe_values = yes
 			recalculate_party = yes
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	promote_outlook_decision_support_the_salafists = {
@@ -2216,6 +2224,8 @@ generic_coalition_politics_decisions = {
 			set_failsafe_values = yes
 			recalculate_party = yes
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	# Propaganda to Reduce Spending
@@ -2247,6 +2257,8 @@ generic_coalition_politics_decisions = {
 			expected_welfare_modifier = -1
 			expected_mil_modifier = -1
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	# Discourage Population Growth
@@ -2262,9 +2274,7 @@ generic_coalition_politics_decisions = {
 			stability_factor = -0.05
 		}
 
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision discourage_population_growth_decision"
-		}
+		ai_will_do = { base = 0 }
 	}
 
 	##Generic Political Decisiosn
@@ -2292,6 +2302,8 @@ generic_coalition_politics_decisions = {
 				}
 			}
 		}
+
+		ai_will_do = { base = 0 }
 	}
 	HOL_add_dutchaid = {
 		visible = {
@@ -2309,6 +2321,8 @@ generic_coalition_politics_decisions = {
 			log = "[GetDateText]: [Root.GetName]: Decision HOL_add_dutchaid"
 			add_ideas = HOL_dutchaid
 		}
+
+		ai_will_do = { base = 0 }
 	}
 	HOL_remove_dutchaid = {
 
@@ -2324,6 +2338,8 @@ generic_coalition_politics_decisions = {
 			log = "[GetDateText]: [Root.GetName]: Decision HOL_remove_dutchaid"
 			remove_ideas = HOL_dutchaid
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	GEN_remove_saudi_aid = {
@@ -2349,6 +2365,8 @@ generic_coalition_politics_decisions = {
 			remove_ideas = saudi_aid
 			SAU = { add_opinion_modifier = { target = ROOT modifier = GEN_banned_saudi_mosques } }
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	GEN_crack_down_on_muslim_broterhood = {
@@ -2390,6 +2408,8 @@ generic_coalition_politics_decisions = {
 			QAT = { add_opinion_modifier = { target = ROOT modifier = Is_cracking_down_on_Muslim_Brotherhood } }
 			TUN = { add_opinion_modifier = { target = ROOT modifier = Is_cracking_down_on_Muslim_Brotherhood } }
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	GEN_stop_crackdowns = {
@@ -2427,6 +2447,8 @@ generic_coalition_politics_decisions = {
 			QAT = { add_opinion_modifier = { target = ROOT modifier = GEN_stopped_crackdown } }
 			TUN = { add_opinion_modifier = { target = ROOT modifier = GEN_stopped_crackdown } }
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	GEN_ban_al_jazeera = {
@@ -2464,6 +2486,8 @@ generic_coalition_politics_decisions = {
 				add_idea = al_jazeera_banned
 			}
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	GEN_allow_al_jazeera = {
@@ -2500,6 +2524,8 @@ generic_coalition_politics_decisions = {
 				add_idea = al_jazeera_allowed
 			}
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	# Protests mechanic
@@ -2592,15 +2618,22 @@ generic_coalition_politics_decisions = {
 			base = 25
 			modifier = {
 				factor = 0
+				has_war_with = FRA
+			}
+			modifier = {
+				factor = 0
 				has_government = nationalist
+			}
+			modifier = {
+				factor = 0
+				has_opinion = {
+					target = FRA
+					value < 0
+				}
 			}
 			modifier = {
 				factor = 1.5
 				is_subject_of = FRA
-			}
-			modifier = {
-				factor = 0
-				has_war_with = FRA
 			}
 			modifier = {
 				factor = 0.75
@@ -2628,13 +2661,6 @@ generic_coalition_politics_decisions = {
 				has_opinion = {
 					target = FRA
 					value > 50
-				}
-			}
-			modifier = {
-				factor = 0
-				has_opinion = {
-					target = FRA
-					value < 0
 				}
 			}
 		}
@@ -2891,22 +2917,16 @@ generic_coalition_politics_decisions = {
 	}
 
 	denounce_status_as_the_commonwealth_of_nation_member = {
-		allowed = { has_idea = commonwealth_of_nations_member } # INFO: This should only trigger if the idea exists on game start
 		icon = GFX_decision_generic_leave_commonwealth_of_nation
 
-		visible = {
-			has_idea = commonwealth_of_nations_member
-		}
+		visible = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
 
 		cost = 100
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision denounce_status_as_the_commonwealth_of_nation_member"
-			remove_ideas = commonwealth_of_nations_member
-
-			ENG = {
-				add_opinion_modifier = { target = PREV modifier = left_alliance }
-			}
+			remove_dynamic_modifier = {	modifier = Commonwealth_member_modifier }
+			ENG = { add_opinion_modifier = { target = PREV modifier = left_alliance } }
 		}
 	}
 
@@ -2949,6 +2969,8 @@ generic_coalition_politics_decisions = {
 				add_ideas = RAJ_BRICS_cur
 			}
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	#GLOBAL REACTION CONTENT
