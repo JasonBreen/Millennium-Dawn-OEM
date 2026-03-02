@@ -67,6 +67,7 @@ scripted_gui = {
 				if = {
 					limit = {
 						check_variable = { interest_rate < 20 }
+						check_variable = { gdp_total > 20 }
 						NOT = { has_active_mission = cheap_loan_from_the_imf_mission }
 					}
 					add_to_variable = { treasury = 10 }
@@ -81,6 +82,7 @@ scripted_gui = {
 				if = {
 					limit = {
 						check_variable = { interest_rate < 20 }
+						check_variable = { gdp_total > 150 }
 						NOT = { has_active_mission = cheap_loan_from_the_imf_mission }
 					}
 					add_to_variable = { treasury = 100 }
@@ -142,9 +144,6 @@ scripted_gui = {
 					check_variable = { var = treasury value = debt compare = less_than_or_equals } }
 					subtract_from_variable = { debt = treasury }
 					subtract_from_variable = { treasury = treasury }
-					if = { limit = { is_debug = yes }
-						log = "1b Repay debt Case 5"
-					}
 				}
 				ingame_update_setup = yes
 				if = { limit = { is_debug = yes }
@@ -1093,6 +1092,9 @@ scripted_gui = {
 
 				set_country_flag = { flag = printed_money_recently value = 1 days = 30 }
 				ingame_update_setup = yes
+
+				multiply_temp_variable = { printing = 0.001 }
+				add_to_variable = { print_money_base_add = printing }
 				log = "[GetDateText]: [THIS.GetName]: DEBUG: Print Money. Weekly Balance:[?treasury_rate], # of Times Printed:[?printing_money_var], Int Rate:[?interest_rate]."
 			}
 
@@ -1524,7 +1526,7 @@ scripted_gui = {
 			# Population Tax Rate Clicks
 			increase_population_tax_click = {
 				ai_will_do = {
-					factor = 25
+					base = 25
 					modifier = {
 						factor = 0
 						NOT = {
@@ -1593,7 +1595,7 @@ scripted_gui = {
 			}
 			decrease_population_tax_click = {
 				ai_will_do = {
-					factor = 25
+					base = 25
 					# # Generic
 					# modifier = {
 					# 	set_temp_variable = { negative_interest_rate = interest_rate }
@@ -1620,7 +1622,7 @@ scripted_gui = {
 			# Corporate Tax Rate Clicks
 			increase_corporate_tax_click = {
 				ai_will_do = {
-					factor = 35
+					base = 35
 					modifier = {
 						factor = 0
 						date < 2006.6.1
@@ -1670,7 +1672,7 @@ scripted_gui = {
 			}
 			decrease_corporate_tax_click = {
 				ai_will_do = {
-					factor = 25
+					base = 25
 					modifier = {
 						factor = 5.0
 						tag = USA
@@ -1708,7 +1710,7 @@ scripted_gui = {
 			}
 			print_money_button_click = {
 				ai_will_do = {
-					factor = 1
+					base = 1
 					modifier = {
 						add = interest_rate
 					}

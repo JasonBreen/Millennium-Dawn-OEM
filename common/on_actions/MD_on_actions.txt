@@ -2,24 +2,17 @@
 on_actions = {
 	on_weekly = {
 		effect = {
-			# Random Energy On Weekly
-			random_renewable_variable_calculation = yes
 			worker_requirements_variable_gdpc_converging = yes
 
-			# Other Nuclear Stuff
-			update_sat_systems_stats = yes
-
-			########
-			clear_spy_sat_mission_arrays = yes
-			update_SPY_mission_num = yes
 			missile_ui_update = yes
+
+			microchip_update = yes
+			composite_update = yes
 
 			# Update money system right before adjusting weekly value
 			ingame_update_setup = yes
-
-			# In the past it was every day
+			calculate_energy_load_sharing = yes
 			nuclear_reactor_fuel_consumption = yes
-
 
 			# Remove weekly rate from treasury
 			if = { limit = { has_country_flag = int_reinvestment_flag }
@@ -61,8 +54,8 @@ on_actions = {
 				# Pay down debt automatically this weekly tick
 				if = {
 					limit = {
-						check_variable = { treasury_rate > 0 }
 						has_country_flag = automatically_pay_off_debt_enabled
+						check_variable = { treasury_rate > 0 }
 						check_variable = { debt > 0 }
 					}
 					set_temp_variable = { treasury_rate_debt_payment = treasury_rate }
@@ -84,52 +77,45 @@ on_actions = {
 				automated_debt_taker = yes
 			}
 
-			# Force Update Influencer Map Mode
-			recalculate_influence = yes
-			force_update_map_mode = { mapmode = influence_map_mode }
-
-			# Set the Ideological Power Ideas
-			IP_idea_weekly_configuration = yes
-
-			# Initialize the Investment Pulse for this Week
-			if = {
-				limit = {
-					is_ai = yes
-					check_variable = { interest_rate < 8.000 }
-					OR = {
-						has_idea = regional_power
-						has_idea = large_power
-						has_idea = great_power
-						has_idea = superpower
+			if = { limit = { is_ai = yes }
+				# Initialize the Investment Pulse for this Week
+				if = {
+					limit = {
+						check_variable = { interest_rate < 8.000 }
+						OR = {
+							has_idea = regional_power
+							has_idea = large_power
+							has_idea = great_power
+							has_idea = superpower
+						}
+					}
+					if = {
+						limit = { NOT = { has_country_flag = investment_targets_are_set_up } }
+						yearly_investment_targets_routine = yes
 					}
 
-					# wait for apc-ifv stuff to merge
-					#NOT = { has_idea = mp_optimization_idea }
+					# Check whether the larger nation has an investment target in scope 0
+					if = { limit = { NOT = { check_variable = { investment_targets^0 = 0 } } }
+						country_event = AC_event.500
+					}
 				}
 
+				# Update Operation AI - Vanilla mechanic
 				if = {
-					limit = { NOT = { has_country_flag = investment_targets_are_set_up } }
-					yearly_investment_targets_routine = yes
-				}
-
-				# Check whether the larger nation has an investment target in scope 0
-				if = { limit = { NOT = { check_variable = { investment_targets^0 = 0 } } }
-					country_event = AC_event.500
+					limit = {
+						has_intelligence_agency = yes
+					}
+					update_operation_ai = yes
 				}
 			}
 
 			# European Union Checks
+			# FIXME: This needs to be reworked to not do this. I am not sure why this is still here
 			if = { limit = { NOT = { has_global_flag = GAME_RULE_eu_disabled } }
-				if = { limit = { has_country_flag = EU_potential }
-					if = { limit = { is_debug = yes }
-						log = "[GetDateText]: [ROOT.GetName]: on_weekly check_breach_of_EU_value"
-					}
-					check_breach_of_EU_value = yes
-				}
 				### POTEF election polls
-
 				if = {
 					limit = {
+						has_global_flag = european_federation
 						has_idea = EUU_monitor
 						any_of_scopes = {
 							array = global.EU_potential
@@ -169,160 +155,14 @@ on_actions = {
 
 				clear_variable = project_type
 			}
-			# If child soldier thing
-			if = { limit = { has_idea = child_soldiers }
-				add_to_variable = { child_soldiers = child_soldiers_recruitment }
-			}
 
-			# Update Ledger
-			if = {
-				limit = {
-					check_variable = { ledger_open > 0 }
-					NOT = { has_global_flag = ledger_on_daily_weekly }
-				}
+			if = { limit = { is_in_array = { global.ct_states = THIS } }
 				if = {
-					limit = { is_ai = yes }
-					clear_variable = ledger_open
-				}
-				else = {
-					every_country = {
-						get_strategic_building_levels = yes
-						update_misc_vars = yes
+					limit = {
+						has_country_flag = jihadist_uprising_imminent
 					}
-					set_global_flag = { flag = ledger_on_daily_weekly value = 1 days = 6 }
+					country_event = { id = terror.14 }
 				}
-			}
-
-			# Raise/Lower Conservative Society
-			if = {
-				limit = {
-					OR = {
-						AND = {
-							has_idea = conservative_society
-							check_variable = { social_conservatism_society > 90 }
-						}
-						AND = {
-							has_idea = moderately_conservative_society
-							check_variable = { social_conservatism_society > 64 }
-						}
-						AND = {
-							has_idea = moderately_liberal_society
-							check_variable = { social_conservatism_society > 49 }
-						}
-						AND = {
-							has_idea = liberal_society
-							check_variable = { social_conservatism_society > 29 }
-						}
-						AND = {
-							has_idea = extremely_liberal_society
-							check_variable = { social_conservatism_society > 9 }
-						}
-						AND = {
-							has_idea = shia_conservative_society
-							check_variable = { social_conservatism_society > 90 }
-						}
-						AND = {
-							has_idea = shia_moderately_conservative_society
-							check_variable = { social_conservatism_society > 64 }
-						}
-						AND = {
-							has_idea = shia_moderately_liberal_society
-							check_variable = { social_conservatism_society > 49 }
-						}
-						AND = {
-							has_idea = shia_liberal_society
-							check_variable = { social_conservatism_society > 29 }
-						}
-						AND = {
-							has_idea = shia_extremely_liberal_society
-							check_variable = { social_conservatism_society > 9 }
-						}
-					}
-				}
-				country_event = { id = radicalization.5 days = 1 }
-			}
-			if = {
-				limit = {
-					OR = {
-						AND = {
-							has_idea = extremely_conservative_society
-							check_variable = { social_conservatism_society < 91 }
-						}
-						AND = {
-							has_idea = conservative_society
-							check_variable = { social_conservatism_society < 65 }
-						}
-						AND = {
-							has_idea = moderately_conservative_society
-							check_variable = { social_conservatism_society < 50 }
-						}
-						AND = {
-							has_idea = moderately_liberal_society
-							check_variable = { social_conservatism_society < 30 }
-						}
-						AND = {
-							has_idea = liberal_society
-							check_variable = { social_conservatism_society < 10 }
-						}
-						AND = {
-							has_idea = shia_extremely_conservative_society
-							check_variable = { social_conservatism_society < 91 }
-						}
-						AND = {
-							has_idea = shia_conservative_society
-							check_variable = { social_conservatism_society < 65 }
-						}
-						AND = {
-							has_idea = shia_moderately_conservative_society
-							check_variable = { social_conservatism_society < 50 }
-						}
-						AND = {
-							has_idea = shia_moderately_liberal_society
-							check_variable = { social_conservatism_society < 30 }
-						}
-						AND = {
-							has_idea = shia_liberal_society
-							check_variable = { social_conservatism_society < 10 }
-						}
-					}
-				}
-				country_event = { id = radicalization.6 days = 2 }
-			}
-			if = {
-				limit = {
-					OR = {
-						AND = {
-							NOT = { has_idea = foreign_military_advisors1 }
-							check_variable = { foreign_advisors > 0 }
-							check_variable = { foreign_advisors < 6 }
-						}
-						AND = {
-							NOT = { has_idea = foreign_military_advisors2 }
-							check_variable = { foreign_advisors > 5 }
-							check_variable = { foreign_advisors < 11 }
-						}
-						AND = {
-							NOT = { has_idea = foreign_military_advisors3 }
-							check_variable = { foreign_advisors > 10 }
-						}
-						AND = {
-							OR = {
-								has_idea = foreign_military_advisors1
-								has_idea = foreign_military_advisors2
-								has_idea = foreign_military_advisors3
-							}
-							check_variable = { foreign_advisors = 0 }
-						}
-					}
-				}
-				country_event = { id = advisors.1 days = 2 }
-			}
-			if = {
-				limit = {
-					is_in_array = { global.ct_states = THIS }
-					has_country_flag = jihadist_uprising_imminent
-				}
-				country_event = { id = terror.14 }
 			}
 
 			# Arab Spring
@@ -346,29 +186,6 @@ on_actions = {
 					}
 				}
 			}
-			if = {
-				limit = {
-					NOT = { has_global_flag = MEPP_peace_deal_signed }
-					PAL = { has_country_flag = peace_deal_accepted_@ROOT }
-					ISR = { has_country_flag = peace_deal_accepted_@ROOT }
-				}
-				country_event = { id = peace_plan.7 days = 1 random_days = 14 }
-			}
-
-			if = { limit = { has_idea = saudi_aid }
-				if = {
-					limit = {
-						NOT = { has_government = fascism }
-						NOT = { has_country_flag = keep_saudi_aid }
-						OR = {
-							has_idea = sunni
-							has_idea = sufi_islam
-						}
-						fascism > 0.35
-					}
-					country_event = { id = jihadi.2 days = 3 random_days = 14 }
-				}
-			}
 
 			if = {
 				limit = {
@@ -378,23 +195,10 @@ on_actions = {
 
 				NATO_CSTO_calculate_number_of_batallions = yes
 			}
-
-			if = { limit = { is_ai = no }
-				if = {
-					limit = {
-						has_game_rule = {
-							rule = rule_internal_faction_cost_reduction
-							option = yes
-						}
-						NOT = { has_idea = GAME_RULE_reduce_internal_factions_cost }
-					}
-					add_ideas = GAME_RULE_reduce_internal_factions_cost
-				}
-			}
-
 		}
 	}
 
+	#ROOT is winner #FROM gets annexed - For civil wars on_civil_war_end is also fired
 	on_annex = {
 		effect = {
 			if = {
@@ -434,8 +238,8 @@ on_actions = {
 					log = "[GetDateText]: [ROOT.GetName]: on_annex EU Member"
 					meta_effect = {
 						text = {
-							every_country = {
-								limit = { has_idea = EU_member }
+							for_each_scope_loop = {
+								array = global.EU_member
 								clr_country_flag = focus_[EUXXX]_EP_agenda
 								clr_country_flag = focus_on_EP_agenda
 								clr_country_flag = [PG_X]_influence
@@ -455,18 +259,19 @@ on_actions = {
 								clear_array = global.EU_active_vote_rejecters
 								EU_emergency_vote_clear = yes
 								set_variable = { global.EUU_recently_failed_vote = -1 }
-								leaving_EU = yes
 							}
+							FROM = { leaving_EU = yes }
 						}
 
 						EUXXX = "[EUXXX_EP_agenda]"
 						PG_X = "[PG_X_influence]"
 					}
-					every_country = { limit = { has_idea = EU_member }
+					for_each_scope_loop = {
+						array = global.EU_member
 						remove_mission = EU_parliament_focus_EUXXX_approve_timer
 						remove_mission = EU_voting_mission_focus_EUXXX_QMV_result_timer
 					}
-					every_country = { limit = { has_idea = EU_commission_president }
+					var:global.eucomission = {
 						remove_mission = EU_parliament_focus_EUXXX_approve
 						remove_mission = EU_voting_mission_focus_EUXXX_QMV_result
 					}
@@ -475,7 +280,7 @@ on_actions = {
 					log = "[GetDateText]: [ROOT.GetName]: on_annex EUU_monitor change"
 					random_country = {
 						limit = {
-							has_country_flag = EU_potential
+							is_EU_potential = yes
 							is_ai = yes
 						}
 						add_ideas = EUU_monitor
@@ -485,32 +290,49 @@ on_actions = {
 				}
 			}
 
+			if = {
+				limit = { is_in_array = { global.AU_member = FROM.id } }
+				remove_from_array = { global.AU_member = FROM.id }
+			}
+			if = {
+				limit = { is_in_array = { global.nato_members = FROM.id } }
+				remove_from_array = { global.nato_members = FROM.id }
+			}
+			if = {
+				limit = { is_in_array = { global.CSTO_member = FROM.id } }
+				remove_from_array = { global.CSTO_member = FROM.id }
+			}
+
 			EDU_learn_to_annex_your_neighbours = yes # LITERACY RATE STUFF
 
 			# Grab your Nuclear Reactor Enrichment Facilities
 			add_to_variable = { ROOT.enrichment_facilities = FROM.enrichment_facilities }
 
-			# Cleanup Auto-Influence Arrays
-			if = { limit = { ROOT = { is_ai = no } }
-				ROOT = {
-					for_each_loop = {
-						array = auto_influence_array
-						index = i
-						value = v
+			every_country = {
+				limit = { check_variable = { auto_influence_array^num > 0 } }
+				set_temp_variable = { scoped_nation = THIS.id }
+				for_each_loop = {
+					array = auto_influence_array
+					index = i
+					value = v
 
-						# Clears Auto Influencer Who No Longer Exists
-						if = { limit = { var:auto_influence_array^i = { exists = no } }
-							log = "[GetDateText]: [ROOT.GetName]: [?var:auto_influence_array^i.GetName] var:auto_influence_array^i auto influencer removal request"
-							var:auto_influence_array^i = {
-								ROOT = {
-									remove_auto_influencer_request = yes
-									update_auto_influence_array = yes
-									update_dirty_influence_var = yes
-								}
+					# Clears Auto Influencer Who No Longer Exists
+					if = { limit = { var:auto_influence_array^i = { exists = no } }
+						var:auto_influence_array^i = {
+							var:scoped_nation = {
+								remove_auto_influencer_request = yes
+								update_auto_influence_array = yes
+								update_dirty_influence_var = yes
 							}
 						}
 					}
 				}
+			}
+
+			# Remove Annexed Nation from Influence Arrays
+			every_country = {
+				limit = { is_in_array = { influence_array = FROM.id } }
+				recalculate_influence = yes
 			}
 
 			FROM = {
@@ -589,14 +411,49 @@ on_actions = {
 				}
 				ROOT = { set_country_flag = ribbon_libya_victory_over_chad }
 			}
+
+			# Public War Weariness
+			if = { limit = { NOT = { has_global_flag = GAME_RULE_disable_anti_bully } }
+				if = {
+					limit = {
+						ROOT = {
+							has_an_AB_war = no
+							has_war = no
+							has_dynamic_modifier = { modifier = public_war_weariness_effect }
+						}
+					}
+					ROOT = {
+						remove_dynamic_modifier = { modifier = public_war_weariness_effect }
+						clear_variable = anti_bully_wars
+						clear_variable = penalty_factor
+						clear_variable = war_support_factor_var
+					}
+				}
+				if = {
+					limit = {
+						FROM = {
+							has_an_AB_war = no
+							has_war = no
+							has_dynamic_modifier = { modifier = public_war_weariness_effect }
+						}
+					}
+					FROM = {
+						remove_dynamic_modifier = { modifier = public_war_weariness_effect }
+						clear_variable = anti_bully_wars
+						clear_variable = penalty_factor
+						clear_variable = war_support_factor_var
+					}
+				}
+			}
 		}
 	}
 
 	on_monthly = {
 		effect = {
-			# MD Custom On_Actions
+			# Triggers for one nation
 			if = { limit = { NOT = { has_global_flag = on_monthly_done } }
-				# Jan = 1, Feb = 2, March = 3, April = 4, May = 5,
+				# Jan = 1, Feb = 2, March = 3, April = 4, May = 5, June = 6, July = 7
+				# Aug = 8, Sep = 9, Oct = 10, Nov = 11, Dec = 12
 				if = { limit = { check_variable = { global.month < 12 } }
 					add_to_variable = { global.month = 1 }
 				}
@@ -613,7 +470,6 @@ on_actions = {
 						set_EU_gdp = yes
 						set_global_flag = { flag = EU_gdp_updated value = 1 }
 					}
-
 				}
 
 				calculate_average_world_productivity = yes
@@ -626,6 +482,8 @@ on_actions = {
 					if = { limit = { is_debug = yes }
 						log = "[GetDateText]: [THIS.GetName]: Run the On Yearly Monthly Check"
 					}
+
+					state_init_setup = yes
 
 					every_country = {
 						if = {
@@ -641,6 +499,110 @@ on_actions = {
 
 							yearly_investment_targets_routine = yes
 						}
+
+						if = {
+							limit = {
+								OR = {
+									has_idea = low_level_of_aids
+									has_idea = rising_level_of_aids
+									has_idea = high_level_of_aids
+									has_idea = very_high_level_of_aids
+									has_idea = critical_level_of_aids
+								}
+							}
+							if = { limit = { has_idea = health_01 }
+								random_list = {
+									50 = {
+										country_event = { id = AIDS_events.1 }
+									}
+									50 = {
+										country_event = { id = AIDS_events.2 }
+									}
+									0 = {
+										country_event = { id = AIDS_events.3 }
+									}
+								}
+							}
+							else_if = { limit = { has_idea = health_02 }
+								random_list = {
+									40 = {
+										country_event = { id = AIDS_events.1 }
+									}
+									50 = {
+										country_event = { id = AIDS_events.2 }
+									}
+									10 = {
+										country_event = { id = AIDS_events.3 }
+									}
+								}
+							}
+							else_if = { limit = { has_idea = health_03 }
+								random_list = {
+									30 = {
+										country_event = { id = AIDS_events.1 }
+									}
+									50 = {
+										country_event = { id = AIDS_events.2 }
+									}
+									20 = {
+										country_event = { id = AIDS_events.3 }
+									}
+								}
+							}
+							else_if = { limit = { has_idea = health_04 }
+								random_list = {
+									20 = {
+										country_event = { id = AIDS_events.1 }
+									}
+									50 = {
+										country_event = { id = AIDS_events.2 }
+									}
+									30 = {
+										country_event = { id = AIDS_events.3 }
+									}
+								}
+							}
+							else_if = { limit = { has_idea = health_05 }
+								random_list = {
+									10 = {
+										country_event = { id = AIDS_events.1 }
+									}
+									50 = {
+										country_event = { id = AIDS_events.2 }
+									}
+									40 = {
+										country_event = { id = AIDS_events.3 }
+									}
+								}
+							}
+							else_if = { limit = { has_idea = health_06 }
+								random_list = {
+									0 = {
+										country_event = { id = AIDS_events.1 }
+									}
+									50 = {
+										country_event = { id = AIDS_events.2 }
+									}
+									50 = {
+										country_event = { id = AIDS_events.3 }
+									}
+								}
+							}
+						}
+						if = { limit = { NOT = { has_dlc = "La Resistance" } }
+							random_list = {
+								90 = {
+
+								}
+								10 = {
+									modifier = {
+										factor = 1.30
+										has_idea = robust_cyber_security_infrastructure
+									}
+									country_event = cyber.1
+								}
+							}
+						}
 						# Reduce the Printing Money Var
 						if = { limit = { check_variable = { printing_money_var > 0 } }
 							subtract_from_variable = { printing_money_var = 1 }
@@ -649,6 +611,13 @@ on_actions = {
 						if = { limit = { NOT = { check_variable = { influence_targets^0 = 0 } } }
 							country_event = influence.500
 						}
+					}
+
+					if = {
+						limit = { NOT = { has_global_flag = yearly_export_tracker } }
+
+						set_global_flag = { flag = yearly_export_tracker value = 1 days = 365 }
+						yearly_global_export_normalization = yes
 					}
 
 					# Execute and Start the Yearly ETD Events
@@ -664,6 +633,7 @@ on_actions = {
 				}
 
 				# Counter Terror System
+				#TODO: Doolittle rewrite of this to make this better
 				if = { limit = { check_variable = { global.month = 6 } }
 					random_scope_in_array = {
 						array = global.ct_states
@@ -794,8 +764,7 @@ on_actions = {
 				}
 
 				# Calculate the Migrant Trigger
-				if = {
-					limit = { NOT = { has_global_flag = EUU_migrant_crisis_triggered } }
+				if = { limit = { NOT = { has_global_flag = EUU_migrant_crisis_triggered } }
 					set_temp_variable = { total_population_refugees = 0 }
 					every_country = {
 						limit = {
@@ -839,14 +808,17 @@ on_actions = {
 					}
 				}
 
+				random_renewable_variable_calculation = yes
+
 				# Monthly Single Fire Check
 				every_country = {
 					recalculate_party = yes
-					set_counter_terror_influencer = yes
 					ai_update_build_units = yes
 					recalculate_law_desires = yes
 					update_neighbors_effects = yes
 					update_auto_influence_array = yes
+
+					civilian_microchip_consumption = yes
 
 					# AGRI SHIT
 					AGRI_plow_the_fields = yes
@@ -854,6 +826,11 @@ on_actions = {
 					EDU_annual_pulse_for_learning_stuff = yes
 					# Tick Internal Factions
 					monthly_tick_internal_factions_opinion = yes
+
+					# Space
+					# INFO: This was readded back to the monthly tick due to the nature of the content.
+					# tick speeds and otherwise should not be harmed.
+					update_space_system_values = yes
 
 					# Months at War Calculation
 					if = {
@@ -864,19 +841,19 @@ on_actions = {
 						set_variable = { months_at_war = 0 }
 					}
 
-
-					# Check for Every Other Month
-					if = { limit = { check_variable = { every_other_month = 1 } }
+					# # Check for Every Other Month
+					if = {
+						limit = {
+							check_variable = { every_other_month = 1 }
+							is_in_array = { global.ct_states = THIS.id }
+						}
 						if = {
 							limit = {
-								is_in_array = { global.ct_states = THIS }
 								no_jihadist_government = yes
 							}
 							# Possibility of domestic terror attack - civilian
 							if = {
 								limit = {
-									is_in_array = { global.ct_states = THIS }
-									no_jihadist_government = yes
 									OR = {
 										has_country_flag = threat_level_low
 										has_country_flag = threat_level_moderate
@@ -948,8 +925,6 @@ on_actions = {
 							# Possibility of domestic terror attack - military
 							if = {
 								limit = {
-									is_in_array = { global.ct_states = THIS }
-									no_jihadist_government = yes
 									OR = {
 										has_country_flag = threat_level_severe
 										has_country_flag = threat_level_critical
@@ -997,8 +972,6 @@ on_actions = {
 							# Possibility of international terror attack - civilian
 							if = {
 								limit = {
-									is_in_array = { global.ct_states = THIS }
-									no_jihadist_government = yes
 									OR = {
 										has_country_flag = threat_level_moderate
 										has_country_flag = threat_level_substantial
@@ -1065,8 +1038,6 @@ on_actions = {
 							# Possibility of international terror attack - military
 							if = {
 								limit = {
-									is_in_array = { global.ct_states = THIS }
-									no_jihadist_government = yes
 									OR = {
 										has_country_flag = threat_level_severe
 										has_country_flag = threat_level_critical
@@ -1116,76 +1087,77 @@ on_actions = {
 									}
 								}
 							}
-							# Possibility of jihadists crossing the border
-							if = {
-								limit = {
-									OR = {
-										has_country_flag = threat_level_severe
-										has_country_flag = threat_level_critical
-									}
-								}
-								every_neighbor_country = {
-									limit = {
-										no_jihadist_government = yes
-										is_in_array = { global.ct_states = THIS }
-									}
-									random_owned_state = {
-										limit = {
-											any_neighbor_state = {
-												is_owned_by = ROOT
-											}
-											NOT = { state = 175 }
-										}
-										set_temp_variable = { temp1 = THIS }
-									}
-									random_list = {
-										1 = {
-											country_event = { id = terror.8 days = 45 random_hours = 2400 }
-											modifier = {
-												factor = 5
-												ROOT = { has_country_flag = threat_level_critical }
-											}
-											modifier = {
-												factor = 0.5
-												divisions_in_state = {
-													size > 0
-													state = temp1
-												}
-											}
-											modifier = {
-												factor = 0.5
-												divisions_in_state = {
-													size > 1
-													state = temp1
-												}
-											}
-											modifier = {
-												factor = 0.5
-												divisions_in_state = {
-													size > 2
-													state = temp1
-												}
-											}
-											modifier = {
-												factor = 0.5
-												divisions_in_state = {
-													size > 3
-													state = temp1
-												}
-											}
-											modifier = {
-												factor = 0.5
-												divisions_in_state = {
-													size > 4
-													state = temp1
-												}
-											}
-										}
-										99 = {
-										}
-									}
-								}
-							}
+							# # Possibility of jihadists crossing the border
+							# TODO: This is expensive and needs to be either A: removed or B: optimized
+							# if = {
+							# 	limit = {
+							# 		OR = {
+							# 			has_country_flag = threat_level_severe
+							# 			has_country_flag = threat_level_critical
+							# 		}
+							# 	}
+							# 	every_neighbor_country = {
+							# 		limit = {
+							# 			no_jihadist_government = yes
+							# 			is_in_array = { global.ct_states = THIS }
+							# 		}
+							# 		random_owned_state = {
+							# 			limit = {
+							# 				any_neighbor_state = {
+							# 					is_owned_by = ROOT
+							# 				}
+							# 				NOT = { state = 175 }
+							# 			}
+							# 			set_temp_variable = { temp1 = THIS }
+							# 		}
+							# 		random_list = {
+							# 			1 = {
+							# 				country_event = { id = terror.8 days = 45 random_hours = 2400 }
+							# 				modifier = {
+							# 					factor = 5
+							# 					ROOT = { has_country_flag = threat_level_critical }
+							# 				}
+							# 				modifier = {
+							# 					factor = 0.5
+							# 					divisions_in_state = {
+							# 						size > 0
+							# 						state = temp1
+							# 					}
+							# 				}
+							# 				modifier = {
+							# 					factor = 0.5
+							# 					divisions_in_state = {
+							# 						size > 1
+							# 						state = temp1
+							# 					}
+							# 				}
+							# 				modifier = {
+							# 					factor = 0.5
+							# 					divisions_in_state = {
+							# 						size > 2
+							# 						state = temp1
+							# 					}
+							# 				}
+							# 				modifier = {
+							# 					factor = 0.5
+							# 					divisions_in_state = {
+							# 						size > 3
+							# 						state = temp1
+							# 					}
+							# 				}
+							# 				modifier = {
+							# 					factor = 0.5
+							# 					divisions_in_state = {
+							# 						size > 4
+							# 						state = temp1
+							# 					}
+							# 				}
+							# 			}
+							# 			99 = {
+							# 			}
+							# 		}
+							# 	}
+							# }
 						}
 					}
 
@@ -1194,11 +1166,7 @@ on_actions = {
 					if = { limit = { has_variable = social_conservatism_government }
 						if = { limit = { check_variable = { social_conservatism_government < social_conservatism_society } }
 							subtract_from_variable = { social_conservatism_society = 1 }
-							clamp_variable = {
-								var = social_conservatism_society
-								min = social_conservatism_government
-								max = 100
-							}
+							clamp_variable = { var = social_conservatism_society min = social_conservatism_government max = 100 }
 
 							if = {
 								limit = {
@@ -1266,11 +1234,8 @@ on_actions = {
 
 						if = { limit = { check_variable = { social_conservatism_government > social_conservatism_society } }
 							add_to_variable = { social_conservatism_society = 1 }
-							clamp_variable = {
-								var = social_conservatism_society
-								min = 0
-								max = social_conservatism_government
-							}
+							clamp_variable = { var = social_conservatism_society min = 0 max = social_conservatism_government }
+							update_social_conservatism_idea = yes
 
 							if = {
 								limit = {
@@ -1340,11 +1305,7 @@ on_actions = {
 					if = { limit = { is_in_array = { global.ct_states = THIS } }
 						if = { limit = { check_variable = { ct_training > 0 } }
 							subtract_from_variable = { ct_training = 0.2 }
-							clamp_variable = {
-								var = ct_training
-								min = 0
-								max = 10
-							}
+							clamp_variable = { var = ct_training min = 0 max = 10 }
 						}
 
 						# tri-monthly Radicalization Increase
@@ -1376,88 +1337,180 @@ on_actions = {
 						}
 					}
 
-					if = {
-						limit = {
-							is_ai = no
-							any_of = {
-								array = auto_influence_array
-								NOT = { check_variable = { v = 0 } }
-							}
-						}
-						set_variable = { nations_influenced = 0 }
-
-						set_temp_variable = { percent_change = global.percent_change_value }
-						set_temp_variable = { tag_index = THIS.id }
-						for_each_loop = {
-							array = auto_influence_array
-							index = i
-							value = v
-							if = {
-								limit = {
+					# Player only checks
+					if = { limit = { is_ai = no }
+						if = {
+							limit = {
+								any_of = {
+									array = auto_influence_array
 									NOT = { check_variable = { v = 0 } }
-									var:auto_influence_array^i = { var:tag_index = { NOT = { has_country_flag = spread_influence@PREV } } }
-									var:auto_influence_array^i = { exists = yes }
-								}
-								log = "[GetDateText]: [ROOT.GetName]: Index:[?i], Auto influencing [?var:auto_influence_array^i.GetName]"
-								set_temp_variable = { influence_target = v }
-								change_influence_percentage = yes
-								var:tag_index = {
-									add_to_variable = { nations_influenced = 1 }
 								}
 							}
-							else = {
-								log = "[GetDateText]: [ROOT.GetName]: Index:[?i], Auto influencing failed to influence on index [?i]"
-							}
+							set_variable = { nations_influenced = 0 }
 
-							# Clears Auto Influencer Who No Longer Exists
-							if = { limit = { var:auto_influence_array^i = { exists = no } }
-								log = "[GetDateText]: [ROOT.GetName]: [?var:auto_influence_array^i.GetName] var:auto_influence_array^i auto influencer removal request"
-								var:auto_influence_array^i = {
+							set_temp_variable = { percent_change = global.percent_change_value }
+							set_temp_variable = { tag_index = THIS.id }
+							for_each_loop = {
+								array = auto_influence_array
+								index = i
+								value = v
+								if = {
+									limit = {
+										NOT = { check_variable = { v = 0 } }
+										var:auto_influence_array^i = { var:tag_index = { NOT = { has_country_flag = spread_influence@PREV } } }
+										var:auto_influence_array^i = { exists = yes }
+									}
+									log = "[GetDateText]: [ROOT.GetName]: Index:[?i], Auto influencing [?var:auto_influence_array^i.GetName]"
+									set_temp_variable = { influence_target = v }
+									change_influence_percentage = yes
 									var:tag_index = {
-										remove_auto_influencer_request = yes
-										update_auto_influence_array = yes
-										update_dirty_influence_var = yes
+										add_to_variable = { nations_influenced = 1 }
+									}
+								}
+								else = {
+									log = "[GetDateText]: [ROOT.GetName]: Index:[?i], Auto influencing failed to influence on index [?i]"
+								}
+							}
+							for_each_loop = {
+								array = auto_influence_array
+								index = i
+								value = v
+								if = { limit = { check_variable = { i < nations_influenced } }
+									var:auto_influence_array^i = {
+										ROOT = {
+											if = { limit = { has_global_flag = GAME_RULE_spread_influence_14_days }
+												set_country_flag = { flag = spread_influence@PREV value = 1 days = 14 }
+											}
+											if = { limit = { has_global_flag = GAME_RULE_spread_influence_60_days }
+												set_country_flag = { flag = spread_influence@PREV value = 1 days = 60 }
+											}
+											if = { limit = { has_global_flag = GAME_RULE_spread_influence_30_days }
+												set_country_flag = { flag = spread_influence@PREV value = 1 days = 30 }
+											}
+										}
 									}
 								}
 							}
-						}
-						for_each_loop = {
-							array = auto_influence_array
-							index = i
-							value = v
-							if = { limit = { check_variable = { i < nations_influenced } }
-								var:auto_influence_array^i = {
-									ROOT = {
-										if = { limit = { has_global_flag = GAME_RULE_spread_influence_14_days }
-											set_country_flag = { flag = spread_influence@PREV value = 1 days = 14 }
-										}
-										if = { limit = { has_global_flag = GAME_RULE_spread_influence_60_days }
-											set_country_flag = { flag = spread_influence@PREV value = 1 days = 60 }
-										}
-										if = { limit = { has_global_flag = GAME_RULE_spread_influence_30_days }
-											set_country_flag = { flag = spread_influence@PREV value = 1 days = 30 }
-										}
-									}
-								}
-							}
-						}
-						update_dirty_influence_var = yes
+							update_dirty_influence_var = yes
 
-						if = { limit = { NOT = { has_country_flag = disable_auto_influence_notification } }
-							country_event = influence.54
+							if = { limit = { NOT = { has_country_flag = disable_auto_influence_notification } }
+								country_event = influence.54
+							}
+						}
+						if = {
+							limit = {
+								has_political_power < -100
+							}
+							log = "[GetDateText]: [THIS.GetName]: Political Power is under -100. Clearing the auto-influence array"
+							clear_array = auto_influence_array
+							set_variable = { auto_influence_users = 0 }
+							resize_array = { array = auto_influence_array value = 0 size = 10 } # ONLY 4 MORE SLOTS ARE AVAILABLE
+							update_auto_influence_array = yes
+							update_dirty_influence_var = yes
+						}
+
+						if = { limit = { NOT = { has_global_flag = GAME_RULE_gdp_graph_enabled } }
+							gdp_graph_on_monthly = yes
+							# its a bit bad thing to do it here, but we need to smooth out "bumps" in gdp graph
+							# if gdp increases/drops by more then 5% in 1 month, take gdp value from 3 months back
+							# and use it to "smoothe out" the values between current and 3 months old gdp
+							if = {
+								# atleast couple of months in the game
+								limit = {
+									check_variable = { current_gdp_graph_end > 2 }
+								}
+
+								set_temp_variable = { temp_index = current_gdp_graph_end }
+								subtract_from_temp_variable = { temp_index = 1 }
+								set_temp_variable = { old_gdp = gdp_array^temp_index }
+
+								divide_temp_variable = { old_gdp = gdp_total }
+								if = {
+									limit = {
+										OR = {
+											check_variable = { old_gdp < 0.95 }
+											check_variable = { old_gdp > 1.05 }
+										}
+									}
+
+									correct_gdp_graph = yes
+								}
+							}
 						}
 					}
-					if = {
-						limit = {
-							is_ai = no
-							has_political_power < -100
+					else = {
+						ai_weapon_dump = yes
+
+						# used in strategies, instead of checking it directly there
+						if = {
+							limit = {
+								has_war = no
+								any_country = { has_wargoal_against = ROOT }
+							}
+
+							set_country_flag = { flag = someone_has_wargoal_against_this_flag value = 1 days = 100 }
 						}
-						log = "[GetDateText]: [THIS.GetName]: Political Power is under -100. Clearing the auto-influence array"
-						clear_array = auto_influence_array
-						set_variable = { auto_influence_users = 0 }
-						resize_array = { array = auto_influence_array value = 0 size = 10 } # ONLY 4 MORE SLOTS ARE AVAILABLE
-						update_auto_influence_array = yes
-						update_dirty_influence_var = yes
+
+						if = {
+							limit = {
+								check_variable = { next_slot_from_gdp < 10 }
+								NOT = { has_decision = gdp_gain_slot }
+								NOT = { has_country_flag = gdp_gain_industry_slot_flag }
+								check_variable = { gdp_total > GLOBAL.gdp_slot^next_slot_from_gdp }
+							}
+							set_country_flag = { flag = gdp_gain_industry_slot_flag value = 1 days = 240 }
+							activate_decision = gdp_gain_slot
+						}
+						if = {
+							limit = {
+								check_variable = { next_slot_from_gdp_c < 7 }
+								NOT = { has_decision = gdp_c_gain_slot }
+								NOT = { has_country_flag = gdp_gain_developmental_size_flag }
+								check_variable = { gdp_per_capita > GLOBAL.gdp_c_slot^next_slot_from_gdp_c }
+							}
+							set_country_flag = { flag = gdp_gain_developmental_size_flag value = 1 days = 240 }
+							activate_decision = gdp_c_gain_slot
+						}
+
+						if = {
+							limit = {
+								# with god of war on
+								has_game_rule = {
+									rule = rule_god_of_war
+									option = yes
+								}
+							}
+
+							ai_add_xp = yes
+
+							if = {
+								limit = {
+									# does not have player as ally
+									NOT = {
+										any_of = {
+											array = allies
+											is_ai = no
+										}
+									}
+									# Either WT > 30 OR Player is the enemy
+									OR = {
+										threat > 0.3
+										any_of = {
+											array = enemies
+											is_ai = no
+										}
+									}
+								}
+
+								ai_add_equipment = yes
+								ai_spawn_units = yes
+							}
+						}
+					}
+
+					# If child soldier thing
+					if = { limit = { has_idea = child_soldiers }
+						add_to_variable = { child_soldiers = child_soldiers_recruitment }
 					}
 
 					# Open Borders Impact
@@ -1470,9 +1523,15 @@ on_actions = {
 						set_variable = { months_at_open_borders = 1 }
 					}
 
+					# EU Values Check Monthly
+					if = { limit = { NOT = { has_global_flag = GAME_RULE_eu_disabled } }
+						if = { limit = { is_in_array = { global.EU_potential = THIS.id } }
+							check_breach_of_EU_value = yes
+						}
+					}
+
 					calculate_expected_spending = yes
 					apply_protest_effects = yes
-					ai_weapon_dump = yes
 
 					# Monthly Foreign Influence Tick
 					if = { limit = { difficulty > 1 }
@@ -1484,27 +1543,17 @@ on_actions = {
 						change_domestic_influence_percentage = yes
 					}
 
-					# used in strategies, instead of checking it directly there
-					if = {
-						limit = {
-							has_war = no
-							any_country = { has_wargoal_against = ROOT }
-						}
-
-						set_country_flag = { flag = someone_has_wargoal_against_this_flag value = 1 days = 100 }
-					}
-
 					# Muslim Brotherhood Stuff
 					if = {
 						limit = {
+							NOT = { has_global_flag = GAME_RULE_disable_muslim_brotherhood }
 							Is_Possible_Muslim_Brotherhood = yes
-							has_elections = no
 							NOT = {
-								has_global_flag = GAME_RULE_disable_muslim_brotherhood
 								has_government = neutrality
 								Is_Muslim_Brotherhood = yes
 								has_country_flag = BROTHER_civil_war_has_started
 							}
+							has_elections = no
 						}
 						if = {
 							limit = {
@@ -1538,11 +1587,9 @@ on_actions = {
 								NOT = { has_idea = muslim_brotherhood_crackdown }
 								neutrality > 0.35
 							}
-							random_list = {
-								40 = {
-									country_event = { id = brotherhood.6 }
-								}
-								60 = { }
+							random = {
+								chance = 40
+								country_event = { id = brotherhood.6 }
 							}
 						}
 
@@ -1553,9 +1600,9 @@ on_actions = {
 								NOT = { has_war = yes }
 								neutrality > 0.5
 							}
-							random_list = {
-								35 = { country_event = { id = brotherhood.10 } }
-								65 = { }
+							random = {
+								chance = 35
+								country_event = { id = brotherhood.10 }
 							}
 						}
 					}
@@ -1570,6 +1617,18 @@ on_actions = {
 							country_event = { id = NATO.17 random_days = 7 }
 						}
 					}
+
+					# Arab Spring Monthly Tick
+					if = {
+						limit = {
+							is_in_array = { global.arabic_countries = THIS.id }
+							NOT = { has_country_flag = AS_arab_spring_completed } # DO NOT INCREMENT IF YOU HAVE COMPLETED THE ARAB SPRING MINI GAME
+						}
+
+						increment_arab_spring_strength = yes
+					}
+
+					productivity_growth_effect = yes
 				}
 
 				# Gulf Cooperation Council Unity Additions
@@ -1583,16 +1642,6 @@ on_actions = {
 					add_to_variable = { global.gcc_unity = 5 }
 				}
 				clamp_variable = { var = global.gcc_unity min = 0 max = 100 }
-
-				# Arab Spring Buildup Section
-				every_country = {
-					limit = {
-						is_arabic_nation = yes
-						NOT = { has_country_flag = AS_arab_spring_completed } # DO NOT INCREMENT IF YOU HAVE COMPLETED THE ARAB SPRING MINI GAME
-					}
-
-					increment_arab_spring_strength = yes
-				}
 
 				## This section is just for the instance where someone just need to have it started
 				if = { limit = { NOT = { has_global_flag = global_arab_spring_started } }
@@ -1672,59 +1721,14 @@ on_actions = {
 					}
 				}
 
-				# ISIS Spawns
 				if = {
-					limit = {
-						NOT = { has_global_flag = ISIL_declared }
-						has_global_flag = success_of_operation_iraqi_freedom
-						OR = {
-							check_variable = { global.month = 2 }
-							check_variable = { global.month = 4 }
-							check_variable = { global.month = 6 }
-							check_variable = { global.month = 8 }
-							check_variable = { global.month = 10 }
-							check_variable = { global.month = 12 }
-						}
-						SYR = {
-							OR = {
-								has_war_with = FSA
-								has_war_with = NUS
-							}
-						}
-						IRQ = { is_subject = no }
-					}
+					limit = { NOT = { has_global_flag = resource_prices_adjusted } }
 
-					random_list = {
-						30 = {
-							modifier = {
-								factor = 1.25
-								date > 2011.1.1
-							}
-							modifier = {
-								factor = 1.5
-								date > 2012.1.1
-							}
-							modifier = {
-								factor = 1.75
-								date > 2013.1.1
-							}
-							modifier = {
-								factor = 2
-								date > 2014.1.1
-							}
-							modifier = {
-								factor = 2
-								SYR = { surrender_progress > 0.5 }
-							}
-							modifier = {
-								factor = 10
-								SYR = { has_country_flag = GAME_RULE_guarantee_islamic_state_spawn }
-							}
-							news_event = { id = arab_spring.15 }
-						}
-						70 = {
-							modifier = { factor = 0 date > 2015.1.1 }
-						}
+					set_global_flag = { flag = resource_prices_adjusted value = 1 days = 10 }
+					recalculate_resources_price = yes
+					if = {
+						limit = { is_debug = yes }
+						log = "Current resource prices: steel = [?global.steel_price] rubber = [?global.rubber_price] oil = [?global.oil_price] alum = [?global.aluminium_price] tungsten = [?global.tungsten_price] chromium = [?global.chromium_price] Resource coeff = [?global.resource_gdp_coeff]"
 					}
 				}
 
@@ -1733,108 +1737,6 @@ on_actions = {
 				set_global_flag = { flag = on_monthly_done value = 1 days = 27 }
 				if = { limit = { is_debug = yes }
 					log = "[GetDateText]: [THIS.GetName]: MD Monthly On_Action Triggered Month: [?global.month] Year: [?global.year]"
-				}
-
-			}
-			productivity_growth_effect = yes
-
-			# Research Configuration for AI
-			if = { limit = { is_ai = yes }
-				if = {
-					limit = { check_variable = { gdp_total > GLOBAL.gdp_slot^9 } }
-					set_temp_variable = { temp_research_slot = 9 }
-				}
-				else_if = {
-					limit = { check_variable = { gdp_total > GLOBAL.gdp_slot^8 } }
-					set_temp_variable = { temp_research_slot = 8 }
-				}
-				else_if = {
-					limit = { check_variable = { gdp_total > GLOBAL.gdp_slot^7 } }
-					set_temp_variable = { temp_research_slot = 7 }
-				}
-				else_if = {
-					limit = { check_variable = { gdp_total > GLOBAL.gdp_slot^6 } }
-					set_temp_variable = { temp_research_slot = 6 }
-				}
-				else_if = {
-					limit = { check_variable = { gdp_total > GLOBAL.gdp_slot^5 } }
-					set_temp_variable = { temp_research_slot = 5 }
-				}
-				else_if = {
-					limit = { check_variable = { gdp_total > GLOBAL.gdp_slot^4 } }
-					set_temp_variable = { temp_research_slot = 4 }
-				}
-				else_if = {
-					limit = { check_variable = { gdp_total > GLOBAL.gdp_slot^3 } }
-					set_temp_variable = { temp_research_slot = 3 }
-				}
-				else_if = {
-					limit = { check_variable = { gdp_total > GLOBAL.gdp_slot^2 } }
-					set_temp_variable = { temp_research_slot = 2 }
-				}
-				else = {
-					set_temp_variable = { temp_research_slot = 1 }
-				}
-
-				if = {
-					limit = { check_variable = { gdp_per_capita > GLOBAL.gdp_c_slot^6 } }
-					add_to_temp_variable = { temp_research_slot = 6 }
-				}
-				else_if = {
-					limit = { check_variable = { gdp_per_capita > GLOBAL.gdp_c_slot^5 } }
-					add_to_temp_variable = { temp_research_slot = 5 }
-				}
-				else_if = {
-					limit = { check_variable = { gdp_per_capita > GLOBAL.gdp_c_slot^4 } }
-					add_to_temp_variable = { temp_research_slot = 4 }
-				}
-				else_if = {
-					limit = { check_variable = { gdp_per_capita > GLOBAL.gdp_c_slot^3 } }
-					add_to_temp_variable = { temp_research_slot = 3 }
-				}
-				else_if = {
-					limit = { check_variable = { gdp_per_capita > GLOBAL.gdp_c_slot^2 } }
-					add_to_temp_variable = { temp_research_slot = 2 }
-				}
-				else = {
-					add_to_temp_variable = { temp_research_slot = 1 }
-				}
-
-				set_research_slots = temp_research_slot
-
-				if = {
-					limit = {
-						# with god of war on
-						has_game_rule = {
-							rule = rule_god_of_war
-							option = yes
-						}
-					}
-
-					ai_add_xp = yes
-
-					if = {
-						limit = {
-							# does not have player as ally
-							NOT = {
-								any_of = {
-									array = allies
-									is_ai = no
-								}
-							}
-							# Either WT > 30 OR Player is the enemy
-							OR = {
-								threat > 0.3
-								any_of = {
-									array = enemies
-									is_ai = no
-								}
-							}
-						}
-
-						ai_add_equipment = yes
-						ai_spawn_units = yes
-					}
 				}
 			}
 		}

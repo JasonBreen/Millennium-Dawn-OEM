@@ -1443,7 +1443,16 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_MILITARY }
 
 		available = {
-			PER = { has_tech = Air_UAV1 }
+			if = {
+				limit = {
+					has_dlc = "By Blood Alone"
+				}
+				PER = { has_tech = gen_3_medium }
+
+				else = {
+					PER = { has_tech = Air_Kamikaze1 }
+				}
+			}
 			country_exists = PER
 			NOT = {
 				has_war_with = PER
@@ -1468,19 +1477,13 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CUB_upgrade_airbase"
 			add_equipment_to_stockpile = {
-				type = Kamikaze_drone_equipment
+				type = medium_plane_suicide_airframe
 				amount = 500
 				producer = PER
 			}
-			add_opinion_modifier = {
-				target = PER
-				modifier = military_deals
-			}
-		   PER = {
-			add_opinion_modifier = {
-				target = CUB
-				modifier = military_deals
-				}
+			add_opinion_modifier = { target = PER modifier = military_deals }
+			PER = {
+				add_opinion_modifier = { target = CUB modifier = military_deals }
 			}
 			set_temp_variable = { treasury_change = -10 }
 			modify_treasury_effect = yes
@@ -2363,17 +2366,11 @@ focus_tree = {
 				western_conservatism_are_in_power = yes
 				western_social_democrats_are_in_power = yes
 			}
-			any_country = {
-				has_idea = eu_member
-			}
+			EU_european_union_currently_exists = yes
 		}
 
 		bypass = {
-			NOT = {
-				any_country = {
-					has_idea = eu_member
-				}
-			}
+			EU_european_union_currently_exists = no
 		}
 
 		completion_reward = {
@@ -2718,7 +2715,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CUB_energy_rev"
-			one_random_synthetic_refinery = yes
+			one_random_renewable_energy_infra = yes
 		}
 
 		ai_will_do = {
@@ -4428,17 +4425,11 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
-			any_country = {
-				has_idea = eu_member
-			}
+			EU_european_union_currently_exists = yes
 		}
 
 		bypass = {
-			NOT = {
-				any_country = {
-					has_idea = eu_member
-				}
-			}
+			EU_european_union_currently_exists = no
 		}
 
 		completion_reward = {
@@ -4714,9 +4705,7 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
-			any_country = {
-				has_idea = RAJ_BRICS
-			}
+			has_global_flag = BRICS_has_formed
 		}
 
 		completion_reward = {
@@ -5179,7 +5168,7 @@ focus_tree = {
 			if = {
 				limit = { NOT = { is_in_array = { ruling_party = 4 } } }
 				set_temp_variable = { rul_party_temp = 4 }
-				set_temp_variable = { enable_elections = 1 }
+				set_temp_variable = { disable_elections = 1 }
 				change_ruling_party_effect = yes
 			}
 			set_temp_variable = { party_index = 4 }
@@ -6096,40 +6085,32 @@ icon = CUB_fidelcastro
 
 		available = {
 			western_autocrats_are_in_power = yes
-			any_country = {
-				has_idea = eu_member
-			}
+			EU_european_union_currently_exists = yes
 		}
 
 		bypass = {
-			NOT = {
-				any_country = {
-					has_idea = eu_member
-				}
-			}
+			EU_european_union_currently_exists = no
 		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CUB_cooperation_with_EU"
-			every_country = {
-				limit = {
-					has_idea = EU_member
+			if = {
+				limit = { NOT = { has_global_flag = GAME_RULE_eu_disabled } }
+				custom_effect_tooltip = TT_ALL_EU_MEMBER_NATIONS_GAIN
+				effect_tooltip = {
+					add_opinion_modifier = { target = ROOT modifier = improve_trade }
+					reverse_add_opinion_modifier = { target = ROOT modifier = improve_trade }
+					add_opinion_modifier = { target = ROOT modifier = european_commitment }
+					reverse_add_opinion_modifier = { target = ROOT modifier = european_commitment }
 				}
-				add_opinion_modifier = {
-					target = ROOT
-					modifier = improve_trade
-				}
-				reverse_add_opinion_modifier = {
-					target = ROOT
-					modifier = improve_trade
-				}
-				add_opinion_modifier = {
-					target = ROOT
-					modifier = european_commitment
-				}
-				reverse_add_opinion_modifier = {
-					target = ROOT
-					modifier = european_commitment
+				hidden_effect = {
+					for_each_scope_loop = {
+						array = global.EU_member
+						add_opinion_modifier = { target = ROOT modifier = improve_trade }
+						reverse_add_opinion_modifier = { target = ROOT modifier = improve_trade }
+						add_opinion_modifier = { target = ROOT modifier = european_commitment }
+						reverse_add_opinion_modifier = { target = ROOT modifier = european_commitment }
+					}
 				}
 			}
 		}
@@ -6157,17 +6138,11 @@ icon = CUB_fidelcastro
 
 		available = {
 			western_autocrats_are_in_power = yes
-			any_country = {
-				has_idea = NATO_member
-			}
+			NATO_currently_exists = yes
 		}
 
 		bypass = {
-			NOT = {
-				any_country = {
-					has_idea = NATO_member
-				}
-			}
+			NATO_currently_exists = no
 		}
 
 		completion_reward = {
@@ -6196,31 +6171,27 @@ icon = CUB_fidelcastro
 
 		available = {
 			western_autocrats_are_in_power = yes
-			any_country = {
-				has_idea = NATO_member
-			}
+			NATO_currently_exists = yes
 		}
 
 		bypass = {
-			NOT = {
-				any_country = {
-					has_idea = NATO_member
-				}
-			}
+			NATO_currently_exists = no
 		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CUB_cuba_nato_exercises"
-			every_country = {
-				limit = { has_idea = NATO_member }
+			custom_effect_tooltip = TT_ALL_NATO_MEMBER_NATIONS_GAIN
+			effect_tooltip = {
 				add_opinion_modifier = { target = ROOT modifier = military_cooperation }
 				reverse_add_opinion_modifier = { target = ROOT modifier = military_cooperation }
 			}
-			news_event = {
-				hours = 6
-				id = cuba_news.29
+			for_each_scope_loop = {
+				array = global.nato_members
+				add_opinion_modifier = { target = ROOT modifier = military_cooperation }
+				reverse_add_opinion_modifier = { target = ROOT modifier = military_cooperation }
 			}
-		give_military_access = USA
+			news_event = { hours = 6 id = cuba_news.29 }
+			give_military_access = USA
 		}
 
 		ai_will_do = {
@@ -9813,7 +9784,7 @@ icon = CUB_fidelcastro
 			if = {
 				limit = { NOT = { is_in_array = { ruling_party = 21 } } }
 				set_temp_variable = { rul_party_temp = 21 }
-				set_temp_variable = { enable_elections = 1 }
+				set_temp_variable = { disable_elections = 1 }
 				change_ruling_party_effect = yes
 			}
 			clr_country_flag = party22_banned

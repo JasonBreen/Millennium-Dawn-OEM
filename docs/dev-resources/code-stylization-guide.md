@@ -4,6 +4,28 @@ title: "Code Stylization Guide"
 description: "Millennium Dawn's Code Stylization Guide"
 ---
 
+# Table of Contents
+
+- [Performance Tips](#performance)
+- [Focus Trees](#focus-trees)
+- [Decisions](#decisions)
+- [Events](#events)
+- [Ideas](#ideas)
+- [Code Formatting Rules](#code-formatting-rules)
+- [Military-Industrial Organisations (MIO)](#military-industrial-organisations-mio)
+
+
+## Performance Tips
+
+Generalized performance tips for the Millennium Dawn modding team.
+
+- **Division**: Division is inherently more expensive than multiplication. If you do not need to divide, use multiplication instead. (Ex: Instead of dividing by 100, multiply by 0.01)
+- **Logging**: Avoid excessive logging in events. Logging causes I/O overhead which can degrade performance on lower-end machines. Only log when there are meaningful effects being executed.
+- **Checks**: Use simpler checks and early exit patterns to prevent unnecessarily complex evaluations. Structure conditions so that the most likely-to-fail or cheapest checks execute first.
+- **Mean Time to Happen (MTTH)**: MTTH events without `is_triggered_only = yes` continuously evaluate and are extremely detrimental to performance. Avoid open-fire MTTH events unless specifically approved and necessary.
+- **On Actions**: Ensure on actions are properly scoped using tag-specific variants (e.g., `on_daily_TAG` or `on_weekly_TAG`) rather than global triggers. Keep trigger conditions as simple and efficient as possible.
+- **Cleanup**: If you are doing any work and you are not using something. Delete it. Don't just leave trash around in your code.
+
 ## Focus Trees
 
 The following section delineates a stylization guide for Millennium Dawn and coding best practices for the Hearts of Iron IV feature "Focus Trees".
@@ -152,6 +174,8 @@ URA_world_opr = {
 - Include proper logging
 - Use `major = yes` sparingly for news events
 - Structure events with clear options and effects
+- **Performance:** Any events that do not have an effects in their triggered or option block do not require a log. Only log if there is something actually happening in the event.
+- **Performance:** Any event that needs to be triggered by a date should be triggered via `00_yearly_effects.txt`.
 
 ### Example Event Structure
 ```python
@@ -174,6 +198,14 @@ country_event = {
             base = 1
         }
     }
+
+	option = {
+		name = france_md.504.b
+
+		ai_chance = {
+			base = 0
+		}
+	}
 }
 ```
 
@@ -185,13 +217,13 @@ country_event = {
 - Structure modifiers clearly
 - Implement balanced effects
 - **Performance**: Remove unnecessary `allowed = { always = no }` statements as they add drag to performance - since `always = no` is the default behavior, these lines provide no functional benefit while consuming processing resources
+- **Performance**: Remove all ``on_add`` logs unless you need to do something in the on add like math or otherwise
 
 ### Example Idea Structure
 ```python
 BRA_idea_higher_minimun_wage_1 = {
     name = BRA_idea_higher_minimun_wage
     allowed_civil_war = { always = yes }
-    on_add = { log = "[GetDateText]: [THIS.GetName]: add idea BRA_idea_higher_minimun_wage_1" }
 
     picture = gold
 
@@ -229,4 +261,114 @@ Example:
 MOR.conservatism: "£MOR_NRI (RNI) - National Rally of Independents"
 MOR.conservatism_icon: "£MOR_NRI"
 MOR.conservatism_desc: "(Classic Liberalism) - National Rally of Independents (Arabic: Altajamue Alwataniu Lil'ahrar, French: Rassemblement National des Indépendants, Standard Moroccan Tamazight: Agraw Anamur y Insimann, RNI)\n\nNominally a social-democratic party, the party often cooperates with other parties with liberal orientation and is heavily described as pro-business and liberal. Formed in 1978 by then-Prime Minister Ahmed Osman the party has consistently remained a major player in Moroccan politics. Furthermore, the party is a national observer of the Liberal International and is affiliated with the Africa Liberal Network and the European People's Party."
+```
+## Military-Industrial Organisations (MIO)
+
+### Guidelines on Companies
+- Use one company for multiple categories.
+- Add per category `5 OR 3 Task Capacity` if the company is not a national company but has factories in the country
+
+### Example MIO Company Structure
+```python
+CHI_norinco_manufacturer = {
+	allowed = { original_tag = CHI }
+	icon = GFX_idea_Norinco_CHI
+
+	task_capacity = 18
+
+	equipment_type = {
+		Inf_equipment
+		artillery_equipment
+		L_AT_Equipment
+		H_AT_Equipment
+		util_vehicle_equipment
+		mio_cat_all_armor
+		sam_missile_equipment
+		guided_missile_equipment
+	}
+
+	research_categories = {
+		CAT_infrastructure
+		CAT_excavation_tech
+		CAT_fuel_oil
+		CAT_missile
+		CAT_armor
+		CAT_artillery
+		CAT_inf
+	}
+
+	tree_header_text = {
+		text = "Infantry Equipment & Mobility"
+		x = 1
+	}
+	tree_header_text = {
+		text = "Armored Vehicles & AFV Systems"
+		x = 5
+	}
+	tree_header_text = {
+		text = "Missiles, Air Defence & Drones"
+		x = 8
+	}
+
+	initial_trait = {
+		name = CHI_norinco_company_trait
+
+		equipment_bonus = {
+			reliability = 0.03
+			build_cost_ic = -0.03
+		}
+
+		organization_modifier = {
+			military_industrial_organization_research_bonus = 0.08
+			military_industrial_organization_funds_gain = 0.02
+		}
+	}
+}
+```
+
+### Guidelines on Traits
+- The maximum grid is `y = 0 - 9` Don't forget this when you are using relative position.
+
+### Example MIO Trait Structure
+```python
+trait = {
+    token = CHI_norinco_trait_suppressed_pdw_systems
+    name = CHI_norinco_trait_suppressed_pdw_systems
+    icon = GFX_generic_mio_trait_icon_smallarms_attack
+
+    relative_position_id = CHI_norinco_trait_field_proven_rifle_design
+    position = { x = -1 y = 1 }
+    all_parents = { CHI_norinco_trait_field_proven_rifle_design }
+
+    limit_to_equipment_type = {
+        Inf_equipment
+    }
+
+    equipment_bonus = {
+        soft_attack = 0.06
+        reliability = 0.02
+    }
+
+    on_complete = {
+        if = {
+            limit = {
+                check_variable = { free_trait_picks > 0 }
+            }
+            add_to_variable = { free_trait_picks = -1 }
+        }
+        else = {
+            FROM = {
+                small_expenditure = yes
+            }
+        }
+    }
+
+    ai_will_do = {
+        base = 10
+        modifier = {
+            factor = 0
+            check_variable = { FROM.interest_rate > 8 }
+        }
+    }
+}
 ```

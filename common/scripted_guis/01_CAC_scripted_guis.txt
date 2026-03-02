@@ -78,7 +78,7 @@ scripted_gui = {
 				check_variable = { CAC_companies_selected_ceo^i = -1 }
 			}
 		}
-		
+
 		effects = {
 			companies_details_button_click = {
 				for_each_loop = {
@@ -683,7 +683,7 @@ scripted_gui = {
 			}
 		}
 
-		triggers = {			
+		triggers = {
 			country_action_1_visible = {
 				has_country_flag = country_actions_ui
 			}
@@ -709,18 +709,18 @@ scripted_gui = {
 			company_action_2_visible = {
 				NOT = {
 					has_country_flag = country_actions_ui
-				}	
+				}
 			}
 
 			company_action_3_visible = {
 				NOT = {
 					has_country_flag = country_actions_ui
-				}	
+				}
 			}
 			company_action_4_visible = {
 				NOT = {
 					has_country_flag = country_actions_ui
-				}	
+				}
 			}
 
 			company_action_1_click_enabled = {
@@ -745,7 +745,7 @@ scripted_gui = {
 			company_action_2_click_enabled = {
 				set_temp_variable = { cac_needed_money_base = 2.5 }
 				set_temp_variable = { cac_slot = opened_company_details }
-				
+
 				set_temp_variable = { cac_less_than_or_equals_income_per_factory = 0.5 }
 				AND = {
 					cac_needed_money_for_action = yes
@@ -872,7 +872,7 @@ scripted_gui = {
 			company_action_switch_page_country_click = {
 				set_country_flag = country_actions_ui
 			}
-			
+
 			company_action_1_click = {
 				set_country_flag = {
 					flag = company_action_1_timeout
@@ -899,7 +899,7 @@ scripted_gui = {
                 set_temp_variable = { cac_money_change = -2.5 }
 				set_temp_variable = { cac_slot = opened_company_details }
 				CAC_modify_money_effect = yes
-				
+
 				set_temp_variable = { cac_income_per_factory_change = 0.02 }
 				set_temp_variable = { cac_slot = opened_company_details }
 				CAC_modify_income_per_factory_effect = yes
@@ -955,7 +955,7 @@ scripted_gui = {
 				}
 
 				set_temp_variable = { cac_money_change = -2 }
-				
+
 				set_temp_variable = { cac_money_change_modifier = 1 }
 				add_to_temp_variable = { cac_money_change_modifier = CAC_companies_modifier_from_size^opened_company_details }
 				multiply_temp_variable = { cac_money_change = cac_money_change_modifier }
@@ -969,7 +969,7 @@ scripted_gui = {
 				CAC_modify_money_effect = yes
 
 				add_political_power = -100
-				
+
 				ROOT = {
 					if = {
 						limit = { check_variable = { CAC_companies_type^opened_company_details = 0 } }
@@ -1082,7 +1082,7 @@ scripted_gui = {
 				}
 
 				set_temp_variable = { cac_money_change = -3 }
-				
+
 				set_temp_variable = { cac_money_change_modifier = 1 }
 				add_to_temp_variable = { cac_money_change_modifier = CAC_companies_modifier_from_size^opened_company_details }
 				multiply_temp_variable = { cac_money_change = cac_money_change_modifier }
@@ -1117,7 +1117,7 @@ scripted_gui = {
 						add_tech_bonus = {
 							bonus = 0.1
 							uses = 2
-							category = CAT_energy
+							category = CAT_energy_tech
 						}
 					}
 					else_if = {
@@ -1189,7 +1189,7 @@ scripted_gui = {
 				}
 
 				set_temp_variable = { cac_money_change = -5 }
-				
+
 				set_temp_variable = { cac_money_change_modifier = 1 }
 				add_to_temp_variable = { cac_money_change_modifier = CAC_companies_modifier_from_size^opened_company_details }
 				multiply_temp_variable = { cac_money_change = cac_money_change_modifier }
@@ -1214,7 +1214,7 @@ scripted_gui = {
 				}
 
 				set_temp_variable = { cac_money_change = -8 }
-				
+
 				set_temp_variable = { cac_money_change_modifier = 1 }
 				add_to_temp_variable = { cac_money_change_modifier = CAC_companies_modifier_from_size^opened_company_details }
 				multiply_temp_variable = { cac_money_change = cac_money_change_modifier }
@@ -1363,363 +1363,363 @@ scripted_gui = {
 		}
 	}
 
-	adopt_foreign_company_window = {
-		window_name = "adopt_foreign_company_window"
-        context_type = diplomatic_action
-
-		triggers = {
-			foreign_available_companies_select_click_enabled = {
-				if = {
-					limit = { NOT = { check_variable = { THIS.CAC_companies^num = ROOT.CAC_foreign_sorted_companies^num } } }
-
-					clear_array = ROOT.CAC_foreign_sorted_companies
-
-					for_each_loop = {
-						array = THIS.CAC_companies
-						value = v
-						add_to_array = { ROOT.CAC_foreign_sorted_companies = v }
-					}
-				}
-
-				AND = {
-					check_variable = { ROOT.CAC_foreign_companies_limit > ROOT.CAC_foreign_companies^num }
-					NOT = {
-						any_of = {
-							array = ROOT.CAC_foreign_companies
-							index = index
-							value = company_id
-							
-							AND = {
-								check_variable = { company_id = v }
-								check_variable = { ROOT.CAC_foreign_companies_countries^index = THIS }
-							}
-						}
-					}
-				}
-			}
-			companies_dismiss_button_click_enabled = {
-				any_of = {
-					array = ROOT.CAC_foreign_companies
-					index = index
-					value = company_id
-					
-					AND = {
-						check_variable = { company_id = v }
-						check_variable = { ROOT.CAC_foreign_companies_countries^index = THIS }
-					}
-				}
-			}
-		}
-
-		effects = {
-			sort_size_click = {
-				clear_array = ROOT.CAC_foreign_sorted_companies
-
-				for_loop_effect = {
-					start = 0
-					end = CAC_companies^num
-					value = i
-
-					set_temp_variable = { added = 0 }
-
-					for_each_loop = {
-						array = ROOT.CAC_foreign_sorted_companies
-						index = j
-						value = v
-						break = added
-
-						set_temp_variable = { index = ROOT.CAC_foreign_sorted_companies^j }
-
-						if = {
-							limit = {
-								AND = {
-									check_variable = { CAC_companies_size^v < CAC_companies_size^i }
-								}
-							}
-
-							add_to_array = {
-								array = ROOT.CAC_foreign_sorted_companies
-								value = CAC_companies^i
-								index = j
-							}
-
-							set_temp_variable = { added = 1 }
-						}
-					}
-
-					if = {
-						limit = { check_variable = { added = 0 } }
-
-						add_to_array = {
-							array = ROOT.CAC_foreign_sorted_companies
-							value = CAC_companies^i
-							index = ROOT.CAC_foreign_sorted_companies^num
-						}
-					}
-				}
-			}
-
-			sort_money_click = {
-				clear_array = ROOT.CAC_foreign_sorted_companies
-
-				for_loop_effect = {
-					start = 0
-					end = CAC_companies^num
-					value = i
-
-					set_temp_variable = { added = 0 }
-
-					for_each_loop = {
-						array = ROOT.CAC_foreign_sorted_companies
-						index = j
-						value = v
-						break = added
-
-						set_temp_variable = { index = ROOT.CAC_foreign_sorted_companies^j }
-
-						if = {
-							limit = {
-								AND = {
-									check_variable = { CAC_companies_money^v < CAC_companies_money^i }
-								}
-							}
-
-							add_to_array = {
-								array = ROOT.CAC_foreign_sorted_companies
-								value = CAC_companies^i
-								index = j
-							}
-
-							set_temp_variable = { added = 1 }
-						}
-					}
-
-					if = {
-						limit = { check_variable = { added = 0 } }
-
-						add_to_array = {
-							array = ROOT.CAC_foreign_sorted_companies
-							value = CAC_companies^i
-							index = ROOT.CAC_foreign_sorted_companies^num
-						}
-					}
-				}
-			}
-
-			sort_value_click = {
-				clear_array = ROOT.CAC_foreign_sorted_companies
-
-				for_loop_effect = {
-					start = 0
-					end = CAC_companies^num
-					value = i
-
-					set_temp_variable = { added = 0 }
-
-					for_each_loop = {
-						array = ROOT.CAC_foreign_sorted_companies
-						index = j
-						value = v
-						break = added
-
-						set_temp_variable = { index = ROOT.CAC_foreign_sorted_companies^j }
-
-						if = {
-							limit = {
-								AND = {
-									check_variable = { CAC_companies_value^v < CAC_companies_value^i }
-								}
-							}
-
-							add_to_array = {
-								array = ROOT.CAC_foreign_sorted_companies
-								value = CAC_companies^i
-								index = j
-							}
-
-							set_temp_variable = { added = 1 }
-						}
-					}
-
-					if = {
-						limit = { check_variable = { added = 0 } }
-
-						add_to_array = {
-							array = ROOT.CAC_foreign_sorted_companies
-							value = CAC_companies^i
-							index = ROOT.CAC_foreign_sorted_companies^num
-						}
-					}
-				}
-			}
-
-			sort_revenue_click = {
-				clear_array = ROOT.CAC_foreign_sorted_companies
-
-				for_loop_effect = {
-					start = 0
-					end = CAC_companies^num
-					value = i
-
-					set_temp_variable = { added = 0 }
-
-					for_each_loop = {
-						array = ROOT.CAC_foreign_sorted_companies
-						index = j
-						value = v
-						break = added
-
-						set_temp_variable = { index = ROOT.CAC_foreign_sorted_companies^j }
-
-						if = {
-							limit = {
-								AND = {
-									check_variable = { CAC_companies_revenue^v < CAC_companies_revenue^i }
-								}
-							}
-
-							add_to_array = {
-								array = ROOT.CAC_foreign_sorted_companies
-								value = CAC_companies^i
-								index = j
-							}
-
-							set_temp_variable = { added = 1 }
-						}
-					}
-
-					if = {
-						limit = { check_variable = { added = 0 } }
-
-						add_to_array = {
-							array = ROOT.CAC_foreign_sorted_companies
-							value = CAC_companies^i
-							index = ROOT.CAC_foreign_sorted_companies^num
-						}
-					}
-				}
-			}
-
-			sort_factories_click = {
-				clear_array = ROOT.CAC_foreign_sorted_companies
-
-				for_loop_effect = {
-					start = 0
-					end = CAC_companies^num
-					value = i
-
-					set_temp_variable = { added = 0 }
-
-					for_each_loop = {
-						array = ROOT.CAC_foreign_sorted_companies
-						index = j
-						value = v
-						break = added
-
-						set_temp_variable = { index = ROOT.CAC_foreign_sorted_companies^j }
-
-						if = {
-							limit = {
-								AND = {
-									check_variable = { CAC_companies_factories^v < CAC_companies_factories^i }
-								}
-							}
-
-							add_to_array = {
-								array = ROOT.CAC_foreign_sorted_companies
-								value = CAC_companies^i
-								index = j
-							}
-
-							set_temp_variable = { added = 1 }
-						}
-					}
-
-					if = {
-						limit = { check_variable = { added = 0 } }
-
-						add_to_array = {
-							array = ROOT.CAC_foreign_sorted_companies
-							value = CAC_companies^i
-							index = ROOT.CAC_foreign_sorted_companies^num
-						}
-					}
-				}
-			}
-			
-			foreign_available_companies_select_click = {
-				for_each_loop = {
-					array = THIS.CAC_companies
-					value = company_id
-					index = index
-					break = break
-
-					if = {
-						limit = {
-							check_variable = { v = company_id }
-						}
-
-						set_variable = { selected_foreign_company = THIS.CAC_companies^index }
-						set_temp_variable = { break = 1 }
-					}
-				}
-			}
-
-			companies_dismiss_button_click = {
-				for_each_loop = {
-					array = ROOT.CAC_foreign_companies
-					index = index
-					value = company_id
-					break = break
-
-					if = {
-						limit = {
-							AND = {
-								check_variable = { company_id = v }
-								check_variable = { ROOT.CAC_foreign_companies_countries^index = THIS }
-							}
-						}
-
-						remove_from_array = {
-							array = ROOT.CAC_foreign_companies
-							index = index
-						}
-						remove_from_array = {
-							array = ROOT.CAC_foreign_companies_countries
-							index = index
-						}
-
-						set_temp_variable = { cac_type = THIS.CAC_companies_type^i }
-						ROOT = { CAC_remove_bonuses_from_foreign_company_effect = yes }
-
-						THIS = {
-							set_variable = { CAC_companies_income_modifier^i = -0.1 }
-
-							set_temp_variable = { cac_slot = v }
-							set_temp_variable = { cac_additional_income_change = -0.1 }
-							CAC_modify_additional_income_effect = yes
-						}
-
-						set_temp_variable = { break = 1 }
-					}
-				}
-			}
-		}
-
-		properties = {
-			foreign_companies_grid_item_icon = {
-				image = "[CAC_icon_of_company]"
-			}
-			#foreign_available_companies_select = {
-			#	frame = ROOT.
-			#}
-		}
-
-		dynamic_lists = {
-			foreign_available_companies_grid = {
-                array = THIS.CAC_companies
-                entry_container = "foreign_available_companies_grid_list_item"
-            }
-		}
-	}
+	# adopt_foreign_company_window = {
+	# 	window_name = "adopt_foreign_company_window"
+    #     context_type = diplomatic_action
+
+	# 	triggers = {
+	# 		foreign_available_companies_select_click_enabled = {
+	# 			if = {
+	# 				limit = { NOT = { check_variable = { THIS.CAC_companies^num = ROOT.CAC_foreign_sorted_companies^num } } }
+
+	# 				clear_array = ROOT.CAC_foreign_sorted_companies
+
+	# 				for_each_loop = {
+	# 					array = THIS.CAC_companies
+	# 					value = v
+	# 					add_to_array = { ROOT.CAC_foreign_sorted_companies = v }
+	# 				}
+	# 			}
+
+	# 			AND = {
+	# 				check_variable = { ROOT.CAC_foreign_companies_limit > ROOT.CAC_foreign_companies^num }
+	# 				NOT = {
+	# 					any_of = {
+	# 						array = ROOT.CAC_foreign_companies
+	# 						index = index
+	# 						value = company_id
+
+	# 						AND = {
+	# 							check_variable = { company_id = v }
+	# 							check_variable = { ROOT.CAC_foreign_companies_countries^index = THIS }
+	# 						}
+	# 					}
+	# 				}
+	# 			}
+	# 		}
+	# 		companies_dismiss_button_click_enabled = {
+	# 			any_of = {
+	# 				array = ROOT.CAC_foreign_companies
+	# 				index = index
+	# 				value = company_id
+
+	# 				AND = {
+	# 					check_variable = { company_id = v }
+	# 					check_variable = { ROOT.CAC_foreign_companies_countries^index = THIS }
+	# 				}
+	# 			}
+	# 		}
+	# 	}
+
+	# 	effects = {
+	# 		sort_size_click = {
+	# 			clear_array = ROOT.CAC_foreign_sorted_companies
+
+	# 			for_loop_effect = {
+	# 				start = 0
+	# 				end = CAC_companies^num
+	# 				value = i
+
+	# 				set_temp_variable = { added = 0 }
+
+	# 				for_each_loop = {
+	# 					array = ROOT.CAC_foreign_sorted_companies
+	# 					index = j
+	# 					value = v
+	# 					break = added
+
+	# 					set_temp_variable = { index = ROOT.CAC_foreign_sorted_companies^j }
+
+	# 					if = {
+	# 						limit = {
+	# 							AND = {
+	# 								check_variable = { CAC_companies_size^v < CAC_companies_size^i }
+	# 							}
+	# 						}
+
+	# 						add_to_array = {
+	# 							array = ROOT.CAC_foreign_sorted_companies
+	# 							value = CAC_companies^i
+	# 							index = j
+	# 						}
+
+	# 						set_temp_variable = { added = 1 }
+	# 					}
+	# 				}
+
+	# 				if = {
+	# 					limit = { check_variable = { added = 0 } }
+
+	# 					add_to_array = {
+	# 						array = ROOT.CAC_foreign_sorted_companies
+	# 						value = CAC_companies^i
+	# 						index = ROOT.CAC_foreign_sorted_companies^num
+	# 					}
+	# 				}
+	# 			}
+	# 		}
+
+	# 		sort_money_click = {
+	# 			clear_array = ROOT.CAC_foreign_sorted_companies
+
+	# 			for_loop_effect = {
+	# 				start = 0
+	# 				end = CAC_companies^num
+	# 				value = i
+
+	# 				set_temp_variable = { added = 0 }
+
+	# 				for_each_loop = {
+	# 					array = ROOT.CAC_foreign_sorted_companies
+	# 					index = j
+	# 					value = v
+	# 					break = added
+
+	# 					set_temp_variable = { index = ROOT.CAC_foreign_sorted_companies^j }
+
+	# 					if = {
+	# 						limit = {
+	# 							AND = {
+	# 								check_variable = { CAC_companies_money^v < CAC_companies_money^i }
+	# 							}
+	# 						}
+
+	# 						add_to_array = {
+	# 							array = ROOT.CAC_foreign_sorted_companies
+	# 							value = CAC_companies^i
+	# 							index = j
+	# 						}
+
+	# 						set_temp_variable = { added = 1 }
+	# 					}
+	# 				}
+
+	# 				if = {
+	# 					limit = { check_variable = { added = 0 } }
+
+	# 					add_to_array = {
+	# 						array = ROOT.CAC_foreign_sorted_companies
+	# 						value = CAC_companies^i
+	# 						index = ROOT.CAC_foreign_sorted_companies^num
+	# 					}
+	# 				}
+	# 			}
+	# 		}
+
+	# 		sort_value_click = {
+	# 			clear_array = ROOT.CAC_foreign_sorted_companies
+
+	# 			for_loop_effect = {
+	# 				start = 0
+	# 				end = CAC_companies^num
+	# 				value = i
+
+	# 				set_temp_variable = { added = 0 }
+
+	# 				for_each_loop = {
+	# 					array = ROOT.CAC_foreign_sorted_companies
+	# 					index = j
+	# 					value = v
+	# 					break = added
+
+	# 					set_temp_variable = { index = ROOT.CAC_foreign_sorted_companies^j }
+
+	# 					if = {
+	# 						limit = {
+	# 							AND = {
+	# 								check_variable = { CAC_companies_value^v < CAC_companies_value^i }
+	# 							}
+	# 						}
+
+	# 						add_to_array = {
+	# 							array = ROOT.CAC_foreign_sorted_companies
+	# 							value = CAC_companies^i
+	# 							index = j
+	# 						}
+
+	# 						set_temp_variable = { added = 1 }
+	# 					}
+	# 				}
+
+	# 				if = {
+	# 					limit = { check_variable = { added = 0 } }
+
+	# 					add_to_array = {
+	# 						array = ROOT.CAC_foreign_sorted_companies
+	# 						value = CAC_companies^i
+	# 						index = ROOT.CAC_foreign_sorted_companies^num
+	# 					}
+	# 				}
+	# 			}
+	# 		}
+
+	# 		sort_revenue_click = {
+	# 			clear_array = ROOT.CAC_foreign_sorted_companies
+
+	# 			for_loop_effect = {
+	# 				start = 0
+	# 				end = CAC_companies^num
+	# 				value = i
+
+	# 				set_temp_variable = { added = 0 }
+
+	# 				for_each_loop = {
+	# 					array = ROOT.CAC_foreign_sorted_companies
+	# 					index = j
+	# 					value = v
+	# 					break = added
+
+	# 					set_temp_variable = { index = ROOT.CAC_foreign_sorted_companies^j }
+
+	# 					if = {
+	# 						limit = {
+	# 							AND = {
+	# 								check_variable = { CAC_companies_revenue^v < CAC_companies_revenue^i }
+	# 							}
+	# 						}
+
+	# 						add_to_array = {
+	# 							array = ROOT.CAC_foreign_sorted_companies
+	# 							value = CAC_companies^i
+	# 							index = j
+	# 						}
+
+	# 						set_temp_variable = { added = 1 }
+	# 					}
+	# 				}
+
+	# 				if = {
+	# 					limit = { check_variable = { added = 0 } }
+
+	# 					add_to_array = {
+	# 						array = ROOT.CAC_foreign_sorted_companies
+	# 						value = CAC_companies^i
+	# 						index = ROOT.CAC_foreign_sorted_companies^num
+	# 					}
+	# 				}
+	# 			}
+	# 		}
+
+	# 		sort_factories_click = {
+	# 			clear_array = ROOT.CAC_foreign_sorted_companies
+
+	# 			for_loop_effect = {
+	# 				start = 0
+	# 				end = CAC_companies^num
+	# 				value = i
+
+	# 				set_temp_variable = { added = 0 }
+
+	# 				for_each_loop = {
+	# 					array = ROOT.CAC_foreign_sorted_companies
+	# 					index = j
+	# 					value = v
+	# 					break = added
+
+	# 					set_temp_variable = { index = ROOT.CAC_foreign_sorted_companies^j }
+
+	# 					if = {
+	# 						limit = {
+	# 							AND = {
+	# 								check_variable = { CAC_companies_factories^v < CAC_companies_factories^i }
+	# 							}
+	# 						}
+
+	# 						add_to_array = {
+	# 							array = ROOT.CAC_foreign_sorted_companies
+	# 							value = CAC_companies^i
+	# 							index = j
+	# 						}
+
+	# 						set_temp_variable = { added = 1 }
+	# 					}
+	# 				}
+
+	# 				if = {
+	# 					limit = { check_variable = { added = 0 } }
+
+	# 					add_to_array = {
+	# 						array = ROOT.CAC_foreign_sorted_companies
+	# 						value = CAC_companies^i
+	# 						index = ROOT.CAC_foreign_sorted_companies^num
+	# 					}
+	# 				}
+	# 			}
+	# 		}
+
+	# 		foreign_available_companies_select_click = {
+	# 			for_each_loop = {
+	# 				array = THIS.CAC_companies
+	# 				value = company_id
+	# 				index = index
+	# 				break = break
+
+	# 				if = {
+	# 					limit = {
+	# 						check_variable = { v = company_id }
+	# 					}
+
+	# 					set_variable = { selected_foreign_company = THIS.CAC_companies^index }
+	# 					set_temp_variable = { break = 1 }
+	# 				}
+	# 			}
+	# 		}
+
+	# 		companies_dismiss_button_click = {
+	# 			for_each_loop = {
+	# 				array = ROOT.CAC_foreign_companies
+	# 				index = index
+	# 				value = company_id
+	# 				break = break
+
+	# 				if = {
+	# 					limit = {
+	# 						AND = {
+	# 							check_variable = { company_id = v }
+	# 							check_variable = { ROOT.CAC_foreign_companies_countries^index = THIS }
+	# 						}
+	# 					}
+
+	# 					remove_from_array = {
+	# 						array = ROOT.CAC_foreign_companies
+	# 						index = index
+	# 					}
+	# 					remove_from_array = {
+	# 						array = ROOT.CAC_foreign_companies_countries
+	# 						index = index
+	# 					}
+
+	# 					set_temp_variable = { cac_type = THIS.CAC_companies_type^i }
+	# 					ROOT = { CAC_remove_bonuses_from_foreign_company_effect = yes }
+
+	# 					THIS = {
+	# 						set_variable = { CAC_companies_income_modifier^i = -0.1 }
+
+	# 						set_temp_variable = { cac_slot = v }
+	# 						set_temp_variable = { cac_additional_income_change = -0.1 }
+	# 						CAC_modify_additional_income_effect = yes
+	# 					}
+
+	# 					set_temp_variable = { break = 1 }
+	# 				}
+	# 			}
+	# 		}
+	# 	}
+
+	# 	properties = {
+	# 		foreign_companies_grid_item_icon = {
+	# 			image = "[CAC_icon_of_company]"
+	# 		}
+	# 		#foreign_available_companies_select = {
+	# 		#	frame = ROOT.
+	# 		#}
+	# 	}
+
+	# 	dynamic_lists = {
+	# 		foreign_available_companies_grid = {
+    #             array = THIS.CAC_companies
+    #             entry_container = "foreign_available_companies_grid_list_item"
+    #         }
+	# 	}
+	# }
 }
