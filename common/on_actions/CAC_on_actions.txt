@@ -129,62 +129,74 @@ on_actions = {
 
 	on_declare_war = {
 		effect = {
-			for_each_loop = {
-				array = ROOT.CAC_foreign_companies
-				index = index
-				break = break
+			# Remove foreign companies FROM invested in ROOT — reverse iterate for safe removal
+			set_temp_variable = { cac_loop_count = ROOT.CAC_foreign_companies^num }
+			for_loop_effect = {
+				start = 0
+				end = cac_loop_count
+				value = cac_fwd
+
+				set_temp_variable = { cac_rev = cac_loop_count }
+				subtract_from_temp_variable = { cac_rev = 1 }
+				subtract_from_temp_variable = { cac_rev = cac_fwd }
 
 				if = {
-					limit = { check_variable = { ROOT.CAC_foreign_companies_countries^index = THIS } }
+					limit = { check_variable = { ROOT.CAC_foreign_companies_countries^cac_rev = FROM } }
+
+					set_temp_variable = { cac_type = FROM.CAC_companies_type^cac_rev }
+					ROOT = { CAC_remove_bonuses_from_foreign_company_effect = yes }
+
+					FROM = {
+						set_variable = { CAC_companies_income_modifier^cac_rev = -0.1 }
+
+						set_temp_variable = { cac_slot = cac_rev }
+						set_temp_variable = { cac_additional_income_change = -0.1 }
+						CAC_modify_additional_income_effect = yes
+					}
 
 					remove_from_array = {
 						array = ROOT.CAC_foreign_companies
-						index = index
+						index = cac_rev
 					}
 					remove_from_array = {
 						array = ROOT.CAC_foreign_companies_countries
-						index = index
-					}
-
-					set_temp_variable = { cac_type = THIS.CAC_companies_type^i }
-					ROOT = { CAC_remove_bonuses_from_foreign_company_effect = yes }
-
-					THIS = {
-						set_variable = { CAC_companies_income_modifier^i = -0.1 }
-
-						set_temp_variable = { cac_slot = v }
-						set_temp_variable = { cac_additional_income_change = -0.1 }
-						CAC_modify_additional_income_effect = yes
+						index = cac_rev
 					}
 				}
 			}
 
-			for_each_loop = {
-				array = FROM.CAC_foreign_companies
-				index = index
-				break = break
+			# Remove foreign companies ROOT invested in FROM — reverse iterate for safe removal
+			set_temp_variable = { cac_loop_count = FROM.CAC_foreign_companies^num }
+			for_loop_effect = {
+				start = 0
+				end = cac_loop_count
+				value = cac_fwd
+
+				set_temp_variable = { cac_rev = cac_loop_count }
+				subtract_from_temp_variable = { cac_rev = 1 }
+				subtract_from_temp_variable = { cac_rev = cac_fwd }
 
 				if = {
-					limit = { check_variable = { FROM.CAC_foreign_companies_countries^index = ROOT } }
+					limit = { check_variable = { FROM.CAC_foreign_companies_countries^cac_rev = ROOT } }
 
-					remove_from_array = {
-						array = FROM.CAC_foreign_companies
-						index = index
-					}
-					remove_from_array = {
-						array = FROM.CAC_foreign_companies_countries
-						index = index
-					}
-
-					set_temp_variable = { cac_type = ROOT.CAC_companies_type^i }
+					set_temp_variable = { cac_type = ROOT.CAC_companies_type^cac_rev }
 					FROM = { CAC_remove_bonuses_from_foreign_company_effect = yes }
 
 					FROM = {
-						set_variable = { CAC_companies_income_modifier^i = -0.1 }
+						set_variable = { CAC_companies_income_modifier^cac_rev = -0.1 }
 
-						set_temp_variable = { cac_slot = v }
+						set_temp_variable = { cac_slot = cac_rev }
 						set_temp_variable = { cac_additional_income_change = -0.1 }
 						CAC_modify_additional_income_effect = yes
+					}
+
+					remove_from_array = {
+						array = FROM.CAC_foreign_companies
+						index = cac_rev
+					}
+					remove_from_array = {
+						array = FROM.CAC_foreign_companies_countries
+						index = cac_rev
 					}
 				}
 			}

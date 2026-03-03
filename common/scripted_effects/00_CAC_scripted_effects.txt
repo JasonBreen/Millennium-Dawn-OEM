@@ -60,10 +60,12 @@ CAC_add_company = {
             index = company_slot_temp
         }
 
+        set_temp_variable = { cac_skip_update = 1 }
+
         set_temp_variable = { cac_money_change = 5 }
         set_temp_variable = { cac_slot = company_slot_temp }
         CAC_modify_money_effect = yes
-        
+
         add_to_array = {
             array = CAC_companies_revenue
             value = 0
@@ -119,8 +121,8 @@ CAC_add_company = {
         CAC_modify_expenses_per_factory_effect = yes
 
         if = {
-            limit = { 
-                NOT = { check_variable = { cac_company_additional_income = 0 } } 
+            limit = {
+                NOT = { check_variable = { cac_company_additional_income = 0 } }
             }
 
             add_to_array = {
@@ -138,8 +140,8 @@ CAC_add_company = {
         }
 
         if = {
-            limit = { 
-                NOT = { check_variable = { cac_company_additional_expenses = 0 } } 
+            limit = {
+                NOT = { check_variable = { cac_company_additional_expenses = 0 } }
             }
 
             add_to_array = {
@@ -159,48 +161,48 @@ CAC_add_company = {
         add_to_array = {
 			array = CAC_companies_income
 			value = 0.0
-			index = selected_companies_num_temp
+			index = company_slot_temp
 		}
         add_to_array = {
 			array = CAC_companies_expenses
 			value = 0.0
-			index = selected_companies_num_temp
+			index = company_slot_temp
 		}
         add_to_array = {
 			array = CAC_companies_taxes
 			value = 0.0
-			index = selected_companies_num_temp
+			index = company_slot_temp
 		}
 
         # ceo
         add_to_array = {
 			array = CAC_companies_selected_ceo
 			value = -1
-			index = selected_companies_num_temp
+			index = company_slot_temp
 		}
 
         add_to_array = {
 			array = CAC_companies_selected_ceo_xp
 			value = 0
-			index = selected_companies_num_temp
+			index = company_slot_temp
 		}
 
         add_to_array = {
 			array = CAC_companies_selected_ceo_level
 			value = 0
-			index = selected_companies_num_temp
+			index = company_slot_temp
 		}
 
         add_to_array = {
 			array = CAC_companies_selected_ceo_salary
 			value = 0
-			index = selected_companies_num_temp
+			index = company_slot_temp
 		}
 
         add_to_array = {
 			array = CAC_companies_selected_ceo_level_modifier
 			value = 0
-			index = selected_companies_num_temp
+			index = company_slot_temp
 		}
 
         # company modifiers
@@ -220,6 +222,9 @@ CAC_add_company = {
             value = 0
             index = company_slot_temp
         }
+
+        set_temp_variable = { cac_skip_update = 0 }
+        CAC_update_variables = yes
 
         # upgrades
         if = {
@@ -248,9 +253,9 @@ CAC_add_company = {
             }
         }
 
-        if = { 
+        if = {
             limit = { check_variable = { cac_company_type = 0 } }
-            
+
             set_temp_variable = { index = company_slot_temp }
             multiply_temp_variable = { index = 30 }
             add_to_temp_variable = { index = 0 }
@@ -263,9 +268,9 @@ CAC_add_company = {
 
             set_variable = { CAC_companies_upgrades_2d^index = 2 }
         }
-        else_if = { 
-            limit = { check_variable = { cac_company_type = 1 } } 
-            
+        else_if = {
+            limit = { check_variable = { cac_company_type = 1 } }
+
             set_temp_variable = { index = company_slot_temp }
             multiply_temp_variable = { index = 30 }
             add_to_temp_variable = { index = 0 }
@@ -399,7 +404,7 @@ CAC_modify_money_effect = {
 
         add_to_variable = { CAC_companies_money^cac_slot = cac_money_change }
         add_to_variable = { CAC_companies_value^cac_slot = cac_money_change }
-        
+
         CAC_update_variables = yes
     }
 }
@@ -661,7 +666,7 @@ CAC_complete_upgrade_effect = {
 
     add_to_variable = { CAC_companies_money^cac_slot = cac_base_money_change }
     add_to_variable = { CAC_companies_value^cac_slot = cac_base_money_change }
-        
+
     CAC_update_variables = yes
 }
 
@@ -1162,6 +1167,11 @@ CAC_remove_bonuses_from_foreign_company_effect = {
 CAC_update_variables = {
     if = {
         limit = {
+            check_variable = { cac_skip_update = 1 }
+        }
+    }
+    else_if = {
+        limit = {
             check_variable = { CAC_companies^num > 0 }
         }
 
@@ -1201,7 +1211,7 @@ CAC_update_variables = {
             multiply_temp_variable = { company_expenses_temp = CAC_companies_expenses_per_factory^i }
             add_to_temp_variable = { company_expenses_temp = CAC_companies_additional_expenses^i }
             add_to_temp_variable = { company_expenses_temp = CAC_companies_selected_ceo_salary^i }
-            
+
             set_temp_variable = { company_expenses_modifiers = 1 }
             add_to_temp_variable = { company_expenses_modifiers = modifier@companies_expenses_modifier }
             add_to_temp_variable = { company_expenses_modifiers = CAC_companies_expenses_modifier^i }
@@ -1230,7 +1240,7 @@ CAC_update_variables = {
                 set_variable = { CAC_companies_taxes^i = CAC_companies_revenue^i }
 
                 multiply_variable = { CAC_companies_taxes^i = corporate_tax_rate }
-                divide_variable = { CAC_companies_taxes^i = -100 }
+                multiply_variable = { CAC_companies_taxes^i = -0.01 }
 
                 set_temp_variable = { company_taxes_modifiers = 1 }
                 add_to_temp_variable = { company_taxes_modifiers = modifier@companies_taxes_modifier }
@@ -1278,7 +1288,7 @@ CAC_update_upkeep = {
                 limit = {
                     check_variable = { company_new_value < 0 }
                 }
-                
+
                 set_variable = { CAC_companies_value^i = 0 }
 
                 ROOT = {
@@ -1309,9 +1319,9 @@ CAC_manage_companies_ai = {
             end = CAC_companies^num
             value = i
 
-            # upgrades 
+            # upgrades
             # factories
-            # 
+            #
             #
             #
             #
@@ -1325,8 +1335,6 @@ CAC_change_influence = {
         limit = {
             check_variable = { CAC_foreign_companies^num > 0 }
         }
-
-        CAC_update_variables = yes
 
         for_loop_effect = {
             start = 0
@@ -1346,7 +1354,7 @@ CAC_update_global_stats = {
     clear_array = CAC_global_companies
 
     every_country = {
-        
+
     }
     #CAC_global_companies
     #global_stats_list_length
