@@ -1526,75 +1526,85 @@ CAC_update_variables = {
             add_to_temp_variable = { company_expenses_temp = sector_maintenance }
 
             # Workforce costs: building count × GDP/C × per-building rate (not scaled by expense modifiers)
+            # Piecewise wage factor: full rate to GDP/C=100, then 1/3 rate above (upper band capped at 400).
+            # Developing nations pay proportionally less; late-game GDP explosion is bounded.
+            # Factor range: 0–232. At 2020 typical GDP/C≈60, identical to previous behaviour.
+            set_temp_variable = { workforce_gdp_factor = gdp_per_capita }
+            clamp_variable = { var = workforce_gdp_factor max = 100 }
+            set_temp_variable = { wgf_upper = gdp_per_capita }
+            subtract_from_temp_variable = { wgf_upper = 100 }
+            clamp_variable = { var = wgf_upper min = 0 max = 400 }
+            multiply_temp_variable = { wgf_upper = 0.33 }
+            add_to_temp_variable = { workforce_gdp_factor = wgf_upper }
             set_temp_variable = { sector_workforce = 0 }
             if = {
                 limit = { check_variable = { CAC_companies_type^i = 0 } }
                 set_temp_variable = { sector_workforce = office_park_total }
                 multiply_temp_variable = { sector_workforce = -0.0000225 }
-                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+                multiply_temp_variable = { sector_workforce = workforce_gdp_factor }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 1 } }
                 set_temp_variable = { sector_workforce = synthetic_refinery_total }
                 multiply_temp_variable = { sector_workforce = -0.0000065625 }
-                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+                multiply_temp_variable = { sector_workforce = workforce_gdp_factor }
                 set_temp_variable = { temp_w = fuel_silos }
                 multiply_temp_variable = { temp_w = -0.000005625 }
-                multiply_temp_variable = { temp_w = gdp_per_capita }
+                multiply_temp_variable = { temp_w = workforce_gdp_factor }
                 add_to_temp_variable = { sector_workforce = temp_w }
                 set_temp_variable = { temp_w = agriculture_district_total }
                 multiply_temp_variable = { temp_w = -0.0000140625 }
-                multiply_temp_variable = { temp_w = gdp_per_capita }
+                multiply_temp_variable = { temp_w = workforce_gdp_factor }
                 add_to_temp_variable = { sector_workforce = temp_w }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 2 } }
                 set_temp_variable = { sector_workforce = renewable_energy_infra }
                 multiply_temp_variable = { sector_workforce = -0.0000159375 }
-                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+                multiply_temp_variable = { sector_workforce = workforce_gdp_factor }
                 set_temp_variable = { temp_w = nuclear_reactors }
                 multiply_temp_variable = { temp_w = -0.000016875 }
-                multiply_temp_variable = { temp_w = gdp_per_capita }
+                multiply_temp_variable = { temp_w = workforce_gdp_factor }
                 add_to_temp_variable = { sector_workforce = temp_w }
                 set_temp_variable = { temp_w = number_of_fossil_pps }
                 multiply_temp_variable = { temp_w = -0.000011250 }
-                multiply_temp_variable = { temp_w = gdp_per_capita }
+                multiply_temp_variable = { temp_w = workforce_gdp_factor }
                 add_to_temp_variable = { sector_workforce = temp_w }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 3 } }
                 set_temp_variable = { sector_workforce = military_fac }
                 multiply_temp_variable = { sector_workforce = -0.0000140625 }
-                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+                multiply_temp_variable = { sector_workforce = workforce_gdp_factor }
                 set_temp_variable = { temp_w = dockyard_fac }
                 multiply_temp_variable = { temp_w = -0.0000140625 }
-                multiply_temp_variable = { temp_w = gdp_per_capita }
+                multiply_temp_variable = { temp_w = workforce_gdp_factor }
                 add_to_temp_variable = { sector_workforce = temp_w }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 4 } }
                 set_temp_variable = { sector_workforce = microchip_plant_total }
                 multiply_temp_variable = { sector_workforce = -0.000018750 }
-                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+                multiply_temp_variable = { sector_workforce = workforce_gdp_factor }
                 set_temp_variable = { temp_w = composite_plant_total }
                 multiply_temp_variable = { temp_w = -0.0000159375 }
-                multiply_temp_variable = { temp_w = gdp_per_capita }
+                multiply_temp_variable = { temp_w = workforce_gdp_factor }
                 add_to_temp_variable = { sector_workforce = temp_w }
                 set_temp_variable = { temp_w = internet_station_total }
                 multiply_temp_variable = { temp_w = -0.000005625 }
-                multiply_temp_variable = { temp_w = gdp_per_capita }
+                multiply_temp_variable = { temp_w = workforce_gdp_factor }
                 add_to_temp_variable = { sector_workforce = temp_w }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 5 } }
                 set_temp_variable = { sector_workforce = industrial_complex_total }
                 multiply_temp_variable = { sector_workforce = -0.0000140625 }
-                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+                multiply_temp_variable = { sector_workforce = workforce_gdp_factor }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 6 } }
                 set_temp_variable = { sector_workforce = population_total_m }
-                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+                multiply_temp_variable = { sector_workforce = workforce_gdp_factor }
                 multiply_temp_variable = { sector_workforce = -0.0000120 }
             }
             set_variable = { CAC_companies_workforce^i = sector_workforce }
@@ -1606,19 +1616,15 @@ CAC_update_variables = {
             add_to_variable = { CAC_companies_revenue^i = CAC_companies_expenses^i }
 
             # taxes :(
+            # All sectors use gross income as the tax base — expenses reduce company net revenue for
+            # display purposes but don't reduce the nation's tax take.
             if = {
-                limit = {
-                    check_variable = { CAC_companies_revenue^i > 0 }
-                }
-
-                set_variable = { CAC_companies_taxes^i = CAC_companies_revenue^i }
-
+                limit = { check_variable = { CAC_companies_income^i > 0 } }
+                set_variable = { CAC_companies_taxes^i = CAC_companies_income^i }
                 multiply_variable = { CAC_companies_taxes^i = corporate_tax_rate }
                 multiply_variable = { CAC_companies_taxes^i = -0.01 }
-
                 set_temp_variable = { company_taxes_modifiers = 1 }
                 add_to_temp_variable = { company_taxes_modifiers = modifier@companies_taxes_modifier }
-
                 multiply_variable = { CAC_companies_taxes^i = company_taxes_modifiers }
             }
             else = {
