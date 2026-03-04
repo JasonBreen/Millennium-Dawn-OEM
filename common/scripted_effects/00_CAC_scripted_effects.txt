@@ -194,37 +194,6 @@ CAC_add_company = {
             index = company_slot_temp
         }
 
-        # ceo
-        add_to_array = {
-			array = CAC_companies_selected_ceo
-			value = -1
-			index = company_slot_temp
-		}
-
-        add_to_array = {
-			array = CAC_companies_selected_ceo_xp
-			value = 0
-			index = company_slot_temp
-		}
-
-        add_to_array = {
-			array = CAC_companies_selected_ceo_level
-			value = 0
-			index = company_slot_temp
-		}
-
-        add_to_array = {
-			array = CAC_companies_selected_ceo_salary
-			value = 0
-			index = company_slot_temp
-		}
-
-        add_to_array = {
-			array = CAC_companies_selected_ceo_level_modifier
-			value = 0
-			index = company_slot_temp
-		}
-
         # company modifiers
         add_to_array = {
             array = CAC_companies_income_modifier
@@ -536,9 +505,6 @@ CAC_modify_factories_effect = {
         add_to_variable = { CAC_companies_factories^cac_slot = cac_factories_change }
         add_to_variable = { CAC_companies_size^cac_slot = size_change_temp }
 
-        set_temp_variable = { cac_xp_change = 50 }
-        CAC_modify_ceo_xp_effect = yes
-
         if = {
             limit = { check_variable = { cac_ignore_value = 0 } }
 
@@ -758,14 +724,6 @@ CAC_modify_upgrade_status_effect = {
 CAC_complete_upgrade_effect = {
     set_temp_variable = { cac_money_change_modifier = 1 }
     add_to_temp_variable = { cac_money_change_modifier = CAC_companies_modifier_from_size^cac_slot }
-
-    if = {
-        limit = {
-            check_variable = { CAC_companies_selected_ceo^cac_slot = 0 }
-        }
-
-        add_to_temp_variable = { cac_money_change_modifier = CAC_companies_selected_ceo_level_modifier^cac_slot }
-    }
 
     multiply_temp_variable = { cac_base_money_change = cac_money_change_modifier }
 
@@ -1049,100 +1007,6 @@ CAC_modify_modifier_research_speed_effect = {
     add_to_variable = { CAC_modifier_research_speed = cac_modifier_research_speed_change }
 }
 
-# CAC_select_ceo_effect
-# Required Input: cac_selected_ceo (int)
-# Required Input: cac_slot (int)
-# Purpose: Change company factory expenses on slot cac_slot by cac_upgrade
-CAC_select_ceo_effect = {
-    if = {
-        limit = {
-            AND = {
-                check_variable = { cac_slot > -1 }
-                check_variable = { cac_slot < CAC_companies^num }
-            }
-        }
-
-        set_variable = { CAC_companies_selected_ceo^cac_slot = cac_selected_ceo }
-        set_variable = { CAC_companies_selected_ceo_level^cac_slot = 1 }
-        set_variable = { CAC_companies_selected_ceo_xp^cac_slot = 0 }
-        set_variable = { CAC_companies_selected_ceo_salary^cac_slot = 0 }
-        set_variable = { CAC_companies_selected_ceo_level_modifier^cac_slot = 0 }
-
-        if = {
-            limit = { check_variable = { CAC_companies_selected_ceo^cac_slot = 0 } }
-
-            set_variable = { CAC_companies_selected_ceo_salary^cac_slot = -0.02 }
-            set_variable = { CAC_companies_selected_ceo_level_modifier^cac_slot = -0.1 }
-        }
-        else_if = {
-            limit = { check_variable = { CAC_companies_selected_ceo^cac_slot = 1 } }
-
-            set_variable = { CAC_companies_selected_ceo_salary^cac_slot = -0.03 }
-            set_variable = { CAC_companies_selected_ceo_level_modifier^cac_slot = -0.15 }
-        }
-        else_if = {
-            limit = { check_variable = { CAC_companies_selected_ceo^cac_slot = 2 } }
-
-            set_variable = { CAC_companies_selected_ceo_salary^cac_slot = -0.04 }
-            set_variable = { CAC_companies_selected_ceo_level_modifier^cac_slot = -0.1 }
-        }
-        else_if = {
-            limit = { check_variable = { CAC_companies_selected_ceo^cac_slot = 3 } }
-
-            set_variable = { CAC_companies_selected_ceo_salary^cac_slot = -0.05 }
-            set_variable = { CAC_companies_selected_ceo_level_modifier^cac_slot = 0.1 }
-        }
-    }
-}
-
-# CAC_modify_ceo_xp_effect
-# Required Input: cac_xp_change (int)
-# Required Input: cac_slot (int)
-# Purpose: Change ceo xp by cac_xp_change on slot cac_slot
-CAC_modify_ceo_xp_effect = {
-    #custom_effect_tooltip = CAC_modify_ceo_xp_tt
-
-    set_temp_variable = { new_xp = CAC_companies_selected_ceo_xp^cac_slot }
-    add_to_temp_variable = { new_xp = cac_xp_change }
-
-    if = {
-        limit = { check_variable = { new_xp > 500 } }
-
-        subtract_from_temp_variable = { new_xp = 500 }
-
-        set_variable = { CAC_companies_selected_ceo_xp^cac_slot = new_xp }
-        add_to_variable = { CAC_companies_selected_ceo_level^cac_slot = 1 }
-
-        if = {
-            limit = { check_variable = { cac_selected_ceo = 0 } }
-
-            add_to_variable = { CAC_companies_selected_ceo_level_modifier^cac_slot = -0.05 }
-        }
-        else_if = {
-            limit = { check_variable = { cac_selected_ceo = 1 } }
-
-            add_to_variable = { CAC_companies_selected_ceo_level_modifier^cac_slot = -0.05 }
-        }
-        else_if = {
-            limit = { check_variable = { cac_selected_ceo = 2 } }
-
-            add_to_variable = { CAC_companies_selected_ceo_level_modifier^cac_slot = -0.05 }
-        }
-        else_if = {
-            limit = { check_variable = { cac_selected_ceo = 3 } }
-
-            add_to_variable = { CAC_companies_selected_ceo_level_modifier^cac_slot = 0.05 }
-        }
-
-        add_to_variable = { CAC_companies_selected_ceo_salary^cac_slot = -0.01 }
-    }
-    else = {
-        add_to_variable = { CAC_companies_selected_ceo_xp^cac_slot = cac_xp_change }
-    }
-
-    log = "[GetDateText]: [Root.GetName]: added xp [?cac_xp_change]"
-}
-
 # Foreign Companies
 
 # CAC_add_bonuses_from_foreign_company_effect
@@ -1381,45 +1245,123 @@ CAC_update_variables = {
 
             add_to_variable = { CAC_companies_modifier_from_size^i = size_impact_modifier }
 
-            # Income: derive from sector pool share
+            # Sector type: income weight, buildings, maintenance, workforce
             if = {
                 limit = { check_variable = { CAC_companies_type^i = 0 } }
+                # Banking & Finance
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_0 }
                 set_variable = { CAC_companies_sector_buildings^i = office_park_total }
+                set_temp_variable = { sector_maintenance = office_park_total }
+                multiply_temp_variable = { sector_maintenance = -0.30 }
+                set_temp_variable = { sector_workforce = office_park_total }
+                multiply_temp_variable = { sector_workforce = -0.003 }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 1 } }
+                # Mining & Resources
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_1 }
                 set_variable = { CAC_companies_sector_buildings^i = synthetic_refinery_total }
                 add_to_variable = { CAC_companies_sector_buildings^i = fuel_silos }
                 add_to_variable = { CAC_companies_sector_buildings^i = agriculture_district_total }
+                set_temp_variable = { sector_maintenance = synthetic_refinery_total }
+                multiply_temp_variable = { sector_maintenance = -0.0875 }
+                set_temp_variable = { temp_m = fuel_silos }
+                multiply_temp_variable = { temp_m = -0.075 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+                set_temp_variable = { temp_m = agriculture_district_total }
+                multiply_temp_variable = { temp_m = -0.1875 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+                set_temp_variable = { sector_workforce = synthetic_refinery_total }
+                multiply_temp_variable = { sector_workforce = -0.003 }
+                set_temp_variable = { temp_w = fuel_silos }
+                multiply_temp_variable = { temp_w = -0.003 }
+                add_to_temp_variable = { sector_workforce = temp_w }
+                set_temp_variable = { temp_w = agriculture_district_total }
+                multiply_temp_variable = { temp_w = -0.003 }
+                add_to_temp_variable = { sector_workforce = temp_w }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 2 } }
+                # Energy & Utilities
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_2 }
                 set_variable = { CAC_companies_sector_buildings^i = renewable_energy_infra }
                 add_to_variable = { CAC_companies_sector_buildings^i = nuclear_reactors }
+                set_temp_variable = { sector_maintenance = renewable_energy_infra }
+                multiply_temp_variable = { sector_maintenance = -0.2125 }
+                set_temp_variable = { temp_m = nuclear_reactors }
+                multiply_temp_variable = { temp_m = -0.225 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+                set_temp_variable = { temp_m = number_of_fossil_pps }
+                multiply_temp_variable = { temp_m = -0.08125 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+                set_temp_variable = { sector_workforce = renewable_energy_infra }
+                multiply_temp_variable = { sector_workforce = -0.003 }
+                set_temp_variable = { temp_w = nuclear_reactors }
+                multiply_temp_variable = { temp_w = -0.003 }
+                add_to_temp_variable = { sector_workforce = temp_w }
+                set_temp_variable = { temp_w = number_of_fossil_pps }
+                multiply_temp_variable = { temp_w = -0.003 }
+                add_to_temp_variable = { sector_workforce = temp_w }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 3 } }
+                # Defense
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_3 }
                 set_variable = { CAC_companies_sector_buildings^i = military_fac }
                 add_to_variable = { CAC_companies_sector_buildings^i = dockyard_fac }
+                set_temp_variable = { sector_maintenance = military_fac }
+                multiply_temp_variable = { sector_maintenance = -0.1875 }
+                set_temp_variable = { temp_m = dockyard_fac }
+                multiply_temp_variable = { temp_m = -0.1875 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+                set_temp_variable = { sector_workforce = military_fac }
+                multiply_temp_variable = { sector_workforce = -0.003 }
+                set_temp_variable = { temp_w = dockyard_fac }
+                multiply_temp_variable = { temp_w = -0.003 }
+                add_to_temp_variable = { sector_workforce = temp_w }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 4 } }
+                # Media & Telecommunications
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_4 }
                 set_variable = { CAC_companies_sector_buildings^i = microchip_plant_total }
                 add_to_variable = { CAC_companies_sector_buildings^i = composite_plant_total }
+                set_temp_variable = { sector_maintenance = microchip_plant_total }
+                multiply_temp_variable = { sector_maintenance = -0.25 }
+                set_temp_variable = { temp_m = composite_plant_total }
+                multiply_temp_variable = { temp_m = -0.2125 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+                set_temp_variable = { temp_m = internet_station_total }
+                multiply_temp_variable = { temp_m = -0.075 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+                set_temp_variable = { sector_workforce = microchip_plant_total }
+                multiply_temp_variable = { sector_workforce = -0.003 }
+                set_temp_variable = { temp_w = composite_plant_total }
+                multiply_temp_variable = { temp_w = -0.003 }
+                add_to_temp_variable = { sector_workforce = temp_w }
+                set_temp_variable = { temp_w = internet_station_total }
+                multiply_temp_variable = { temp_w = -0.003 }
+                add_to_temp_variable = { sector_workforce = temp_w }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 5 } }
+                # Construction & Infrastructure
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_5 }
                 set_variable = { CAC_companies_sector_buildings^i = industrial_complex_total }
+                set_temp_variable = { sector_maintenance = industrial_complex_total }
+                multiply_temp_variable = { sector_maintenance = -0.1875 }
+                set_temp_variable = { sector_workforce = industrial_complex_total }
+                multiply_temp_variable = { sector_workforce = -0.003 }
             }
             else = {
+                # type 6: Pharmaceuticals & Healthcare
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_6 }
                 set_variable = { CAC_companies_sector_buildings^i = 0 }
+                set_temp_variable = { sector_maintenance = num_owned_states }
+                multiply_temp_variable = { sector_maintenance = health_budget }
+                multiply_temp_variable = { sector_maintenance = -0.05 }
+                set_temp_variable = { sector_workforce = population_total_m }
+                multiply_temp_variable = { sector_workforce = -0.003 }
             }
 
             if = {
@@ -1469,91 +1411,19 @@ CAC_update_variables = {
             add_to_temp_variable = { company_income_modifiers = modifier@companies_income_modifier }
             add_to_temp_variable = { company_income_modifiers = CAC_companies_income_modifier^i }
 
-            if = {
-                limit = { check_variable = { CAC_companies_selected_ceo^i = 3 } }
-
-                add_to_temp_variable = { company_income_modifiers = CAC_companies_selected_ceo_level_modifier^i }
-            }
-
             multiply_temp_variable = { company_income_temp = company_income_modifiers }
 
             set_variable = { CAC_companies_income^i = company_income_temp }
 
-            # Expenses: CEO salary and upgrade-added costs only
+            # Expenses: upgrade-added costs only
             set_temp_variable = { company_expenses_temp = CAC_companies_additional_expenses^i }
-            add_to_temp_variable = { company_expenses_temp = CAC_companies_selected_ceo_salary^i }
 
             set_temp_variable = { company_expenses_modifiers = 1 }
             add_to_temp_variable = { company_expenses_modifiers = modifier@companies_expenses_modifier }
             add_to_temp_variable = { company_expenses_modifiers = CAC_companies_expenses_modifier^i }
 
-            if = {
-                limit = { check_variable = { CAC_companies_selected_ceo^i = 1 } }
-
-                add_to_temp_variable = { company_expenses_modifiers = CAC_companies_selected_ceo_level_modifier^i }
-            }
-
             multiply_temp_variable = { company_expenses_temp = company_expenses_modifiers }
 
-            # Building maintenance: 2.5% of listed MD dollar price per building (not scaled by expense modifiers)
-            set_temp_variable = { sector_maintenance = 0 }
-            if = {
-                limit = { check_variable = { CAC_companies_type^i = 0 } }
-                set_temp_variable = { sector_maintenance = office_park_total }
-                multiply_temp_variable = { sector_maintenance = -0.30 }
-            }
-            else_if = {
-                limit = { check_variable = { CAC_companies_type^i = 1 } }
-                set_temp_variable = { sector_maintenance = synthetic_refinery_total }
-                multiply_temp_variable = { sector_maintenance = -0.0875 }
-                set_temp_variable = { temp_m = fuel_silos }
-                multiply_temp_variable = { temp_m = -0.075 }
-                add_to_temp_variable = { sector_maintenance = temp_m }
-                set_temp_variable = { temp_m = agriculture_district_total }
-                multiply_temp_variable = { temp_m = -0.1875 }
-                add_to_temp_variable = { sector_maintenance = temp_m }
-            }
-            else_if = {
-                limit = { check_variable = { CAC_companies_type^i = 2 } }
-                set_temp_variable = { sector_maintenance = renewable_energy_infra }
-                multiply_temp_variable = { sector_maintenance = -0.2125 }
-                set_temp_variable = { temp_m = nuclear_reactors }
-                multiply_temp_variable = { temp_m = -0.225 }
-                add_to_temp_variable = { sector_maintenance = temp_m }
-                set_temp_variable = { temp_m = number_of_fossil_pps }
-                multiply_temp_variable = { temp_m = -0.08125 }
-                add_to_temp_variable = { sector_maintenance = temp_m }
-            }
-            else_if = {
-                limit = { check_variable = { CAC_companies_type^i = 3 } }
-                set_temp_variable = { sector_maintenance = military_fac }
-                multiply_temp_variable = { sector_maintenance = -0.1875 }
-                set_temp_variable = { temp_m = dockyard_fac }
-                multiply_temp_variable = { temp_m = -0.1875 }
-                add_to_temp_variable = { sector_maintenance = temp_m }
-            }
-            else_if = {
-                limit = { check_variable = { CAC_companies_type^i = 4 } }
-                set_temp_variable = { sector_maintenance = microchip_plant_total }
-                multiply_temp_variable = { sector_maintenance = -0.25 }
-                set_temp_variable = { temp_m = composite_plant_total }
-                multiply_temp_variable = { temp_m = -0.2125 }
-                add_to_temp_variable = { sector_maintenance = temp_m }
-                set_temp_variable = { temp_m = internet_station_total }
-                multiply_temp_variable = { temp_m = -0.075 }
-                add_to_temp_variable = { sector_maintenance = temp_m }
-            }
-            else_if = {
-                limit = { check_variable = { CAC_companies_type^i = 5 } }
-                set_temp_variable = { sector_maintenance = industrial_complex_total }
-                multiply_temp_variable = { sector_maintenance = -0.1875 }
-            }
-            else_if = {
-                limit = { check_variable = { CAC_companies_type^i = 6 } }
-                set_temp_variable = { sector_maintenance = num_owned_states }
-                multiply_temp_variable = { sector_maintenance = health_budget }
-                multiply_temp_variable = { sector_maintenance = -0.05 }
-            }
             # Apply inflation to building maintenance costs
             set_temp_variable = { cac_inflation_mult = inflation_rate_var }
             add_to_temp_variable = { cac_inflation_mult = 1 }
@@ -1561,64 +1431,6 @@ CAC_update_variables = {
             set_variable = { CAC_companies_maintenance^i = sector_maintenance }
             add_to_temp_variable = { company_expenses_temp = sector_maintenance }
 
-            # Workforce costs: building/population-million × -0.003 × GDP/C
-            set_temp_variable = { sector_workforce = 0 }
-            if = {
-                limit = { check_variable = { CAC_companies_type^i = 0 } }
-                set_temp_variable = { sector_workforce = office_park_total }
-                multiply_temp_variable = { sector_workforce = -0.003 }
-            }
-            else_if = {
-                limit = { check_variable = { CAC_companies_type^i = 1 } }
-                set_temp_variable = { sector_workforce = synthetic_refinery_total }
-                multiply_temp_variable = { sector_workforce = -0.003 }
-                set_temp_variable = { temp_w = fuel_silos }
-                multiply_temp_variable = { temp_w = -0.003 }
-                add_to_temp_variable = { sector_workforce = temp_w }
-                set_temp_variable = { temp_w = agriculture_district_total }
-                multiply_temp_variable = { temp_w = -0.003 }
-                add_to_temp_variable = { sector_workforce = temp_w }
-            }
-            else_if = {
-                limit = { check_variable = { CAC_companies_type^i = 2 } }
-                set_temp_variable = { sector_workforce = renewable_energy_infra }
-                multiply_temp_variable = { sector_workforce = -0.003 }
-                set_temp_variable = { temp_w = nuclear_reactors }
-                multiply_temp_variable = { temp_w = -0.003 }
-                add_to_temp_variable = { sector_workforce = temp_w }
-                set_temp_variable = { temp_w = number_of_fossil_pps }
-                multiply_temp_variable = { temp_w = -0.003 }
-                add_to_temp_variable = { sector_workforce = temp_w }
-            }
-            else_if = {
-                limit = { check_variable = { CAC_companies_type^i = 3 } }
-                set_temp_variable = { sector_workforce = military_fac }
-                multiply_temp_variable = { sector_workforce = -0.003 }
-                set_temp_variable = { temp_w = dockyard_fac }
-                multiply_temp_variable = { temp_w = -0.003 }
-                add_to_temp_variable = { sector_workforce = temp_w }
-            }
-            else_if = {
-                limit = { check_variable = { CAC_companies_type^i = 4 } }
-                set_temp_variable = { sector_workforce = microchip_plant_total }
-                multiply_temp_variable = { sector_workforce = -0.003 }
-                set_temp_variable = { temp_w = composite_plant_total }
-                multiply_temp_variable = { temp_w = -0.003 }
-                add_to_temp_variable = { sector_workforce = temp_w }
-                set_temp_variable = { temp_w = internet_station_total }
-                multiply_temp_variable = { temp_w = -0.003 }
-                add_to_temp_variable = { sector_workforce = temp_w }
-            }
-            else_if = {
-                limit = { check_variable = { CAC_companies_type^i = 5 } }
-                set_temp_variable = { sector_workforce = industrial_complex_total }
-                multiply_temp_variable = { sector_workforce = -0.003 }
-            }
-            else_if = {
-                limit = { check_variable = { CAC_companies_type^i = 6 } }
-                set_temp_variable = { sector_workforce = population_total_m }
-                multiply_temp_variable = { sector_workforce = -0.003 }
-            }
             multiply_temp_variable = { sector_workforce = gdp_per_capita }
             set_variable = { CAC_companies_workforce^i = sector_workforce }
             add_to_temp_variable = { company_expenses_temp = sector_workforce }
@@ -1740,12 +1552,3 @@ CAC_update_global_stats = {
     #global_stats_list_length
 }
 
-CAC_save_history = {
-    for_loop_effect = {
-        start = 0
-        end = CAC_companies^num
-        value = i
-
-        # Save company history
-    }
-}

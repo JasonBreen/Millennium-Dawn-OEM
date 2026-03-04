@@ -47,12 +47,6 @@ scripted_gui = {
 			}
 		}
 
-		triggers = {
-			has_ceo_icon_visible = {
-				check_variable = { CAC_companies_selected_ceo^i = -1 }
-			}
-		}
-
 		effects = {
 			companies_details_button_click = {
 				for_each_loop = {
@@ -348,17 +342,8 @@ scripted_gui = {
 			company_detail_icon = {
 				image = "[CAC_icon_of_company_detail]"
 			}
-			company_history_tab = {
-				frame = companies_history_tab
-			}
 			company_upgrades_tab = {
 				frame = companies_upgrades_tab
-			}
-			selected_ceo_portrait = {
-				image = "[CAC_get_selected_ceo_portrait]"
-			}
-			ceo_level_progressbar = {
-				frame = CAC_companies_selected_ceo_xp^opened_company_details
 			}
 		}
 
@@ -416,35 +401,6 @@ scripted_gui = {
 				}
 			}
 
-			selected_ceo_portrait_visible = {
-				check_variable = { CAC_companies_selected_ceo^opened_company_details > -1 }
-			}
-			selected_ceo_name_visible = {
-				check_variable = { CAC_companies_selected_ceo^opened_company_details > -1 }
-			}
-			selected_ceo_type_visible = {
-				check_variable = { CAC_companies_selected_ceo^opened_company_details > -1 }
-			}
-			ceo_level_progressbar_bg_visible = {
-				check_variable = { CAC_companies_selected_ceo^opened_company_details > -1 }
-			}
-			ceo_level_progressbar_visible = {
-				check_variable = { CAC_companies_selected_ceo^opened_company_details > -1 }
-			}
-			ceo_level_icon_visible = {
-				AND = {
-					check_variable = { CAC_companies_selected_ceo^opened_company_details > -1 }
-				}
-			}
-			ceo_level_value_visible = {
-				AND = {
-					check_variable = { CAC_companies_selected_ceo^opened_company_details > -1 }
-				}
-			}
-
-			select_ceo_button_empty_visible = {
-				check_variable = { CAC_companies_selected_ceo^opened_company_details = -1 }
-			}
 		}
 
 		effects = {
@@ -686,29 +642,8 @@ scripted_gui = {
 				CAC_modify_money_effect = yes
 			}
 
-			select_ceo_btn_click = {
-				if = {
-					limit = { has_country_flag = ceo_window_open }
-
-					clr_country_flag = ceo_window_open
-				}
-				else = {
-					set_country_flag = ceo_window_open
-				}
-			}
-
-			company_history_tab_click = {
-				set_variable = { companies_history_tab = 1 }
-				set_variable = { companies_upgrades_tab = 2 }
-
-				clr_country_flag = ceo_window_open
-			}
-
 			company_upgrades_tab_click = {
-				set_variable = { companies_history_tab = 2 }
 				set_variable = { companies_upgrades_tab = 1 }
-
-				clr_country_flag = ceo_window_open
 			}
 
 			close_click = {
@@ -717,107 +652,4 @@ scripted_gui = {
 		}
 	}
 
-	company_history_window = {
-		window_name = "company_history_window"
-		context_type = player_context
-		parent_window_name = "company_detail_window"
-
-		visible = {
-			ROOT = {
-				AND = {
-					is_ai = no
-					check_variable = { opened_company_details > -1 }
-					check_variable = { companies_history_tab = 1 }
-				}
-			}
-		}
-
-		dynamic_lists = {
-            company_statistics_grid = {
-                array = CAC_companies
-                entry_container = "company_statistics_grid_item"
-            }
-
-			company_global_statistics_grid = {
-                array = global.CAC_global_companies
-                entry_container = "company_global_statistics_grid_item"
-            }
-        }
-
-		properties = {
-			company_statistics_grid_icon = {
-				image = "[CAC_icon_of_company_detail]"
-			}
-			company_global_statistics_grid_icon = {
-				image = "[CAC_icon_of_company]"
-			}
-		}
-	}
-
-	company_select_ceo_window = {
-		window_name = "company_select_ceo_window"
-        context_type = player_context
-		parent_window_name = "company_detail_window"
-
-		visible = {
-			ROOT = {
-				AND = {
-					has_country_flag = ceo_window_open
-				}
-			}
-		}
-
-		triggers = {
-			select_ceo_btn_click_enabled = {
-				AND = {
-					has_political_power > 99
-					check_variable = { CAC_companies_selected_ceo^opened_company_details = -1 }
-				}
-			}
-			ceo_list_item_btn_click_enabled = {
-				check_variable = {
-					var = v
-					value = CAC_companies_selected_ceo^opened_company_details
-					compare = not_equals
-				}
-			}
-			ceo_unassign_click_enabled = {
-				check_variable = { CAC_companies_selected_ceo^opened_company_details > -1 }
-			}
-		}
-
-		effects = {
-			select_ceo_btn_click = {
-				add_political_power = -100
-
-				set_temp_variable = { cac_selected_ceo = v }
-				set_temp_variable = { cac_slot = opened_company_details }
-				CAC_select_ceo_effect = yes
-			}
-			ceo_unassign_click = {
-				set_temp_variable = { cac_selected_ceo = -1 }
-				set_temp_variable = { cac_slot = opened_company_details }
-				CAC_select_ceo_effect = yes
-			}
-			close_click = {
-				clr_country_flag = ceo_window_open
-			}
-		}
-
-		dynamic_lists = {
-			select_ceo_list_grid = {
-				array = global.CAC_available_ceo_list
-				entry_container = "select_ceo_list_item"
-			}
-		}
-
-		properties = {
-			ceo_list_portrait = {
-				image = "[CAC_get_ceo_portrait]"
-			}
-			ceo_type_icon = {
-				image = "[CAC_get_ceo_type_icon]"
-			}
-		}
-	}
 }
