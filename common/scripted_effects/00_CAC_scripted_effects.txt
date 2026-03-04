@@ -179,6 +179,16 @@ CAC_add_company = {
             index = company_slot_temp
         }
         add_to_array = {
+            array = CAC_companies_maintenance
+            value = 0.0
+            index = company_slot_temp
+        }
+        add_to_array = {
+            array = CAC_companies_workforce
+            value = 0.0
+            index = company_slot_temp
+        }
+        add_to_array = {
             array = CAC_companies_sector_buildings
             value = 0
             index = company_slot_temp
@@ -448,6 +458,16 @@ CAC_remove_company_by_slot = {
 
         remove_from_array = {
             array = CAC_companies_taxes
+            index = cac_slot
+        }
+
+        remove_from_array = {
+            array = CAC_companies_maintenance
+            index = cac_slot
+        }
+
+        remove_from_array = {
+            array = CAC_companies_workforce
             index = cac_slot
         }
 
@@ -1237,6 +1257,9 @@ CAC_calculate_sector_pool = {
     multiply_temp_variable = { temp_pool = 1.5 }
     add_to_variable = { CAC_sector_pool = temp_pool }
 
+    set_temp_variable = { temp_pool = agriculture_district_total }
+    add_to_variable = { CAC_sector_pool = temp_pool }
+
     set_temp_variable = { temp_pool = renewable_energy_infra }
     add_to_variable = { CAC_sector_pool = temp_pool }
 
@@ -1249,10 +1272,6 @@ CAC_calculate_sector_pool = {
     add_to_variable = { CAC_sector_pool = temp_pool }
 
     set_temp_variable = { temp_pool = military_fac }
-    add_to_variable = { CAC_sector_pool = temp_pool }
-
-    set_temp_variable = { temp_pool = rocket_sites }
-    multiply_temp_variable = { temp_pool = 0.75 }
     add_to_variable = { CAC_sector_pool = temp_pool }
 
     set_temp_variable = { temp_pool = microchip_plant_total }
@@ -1284,6 +1303,12 @@ CAC_calculate_sector_weights = {
     # Sector 1: Mining & Resources
     set_variable = { CAC_sector_weight_1 = synthetic_refinery_total }
     multiply_variable = { CAC_sector_weight_1 = 3.0 }
+    set_temp_variable = { temp_w = fuel_silos }
+    multiply_temp_variable = { temp_w = 1.5 }
+    add_to_variable = { CAC_sector_weight_1 = temp_w }
+    set_temp_variable = { temp_w = agriculture_district_total }
+    multiply_temp_variable = { temp_w = 2.5 }
+    add_to_variable = { CAC_sector_weight_1 = temp_w }
     add_to_variable = { CAC_sector_weight_1 = 1.0 }
 
     # Sector 2: Energy & Utilities
@@ -1292,33 +1317,27 @@ CAC_calculate_sector_weights = {
     set_temp_variable = { temp_w = nuclear_reactors }
     multiply_temp_variable = { temp_w = 3.0 }
     add_to_variable = { CAC_sector_weight_2 = temp_w }
-    set_temp_variable = { temp_w = fuel_silos }
-    multiply_temp_variable = { temp_w = 1.5 }
-    add_to_variable = { CAC_sector_weight_2 = temp_w }
     add_to_variable = { CAC_sector_weight_2 = 0.5 }
 
     # Sector 3: Defense
     set_variable = { CAC_sector_weight_3 = military_fac }
     multiply_variable = { CAC_sector_weight_3 = 2.0 }
-    set_temp_variable = { temp_w = rocket_sites }
-    multiply_temp_variable = { temp_w = 3.0 }
+    set_temp_variable = { temp_w = dockyard_fac }
+    multiply_temp_variable = { temp_w = 2.0 }
     add_to_variable = { CAC_sector_weight_3 = temp_w }
     add_to_variable = { CAC_sector_weight_3 = 0.5 }
 
     # Sector 4: Media & Telecommunications
     set_variable = { CAC_sector_weight_4 = microchip_plant_total }
     multiply_variable = { CAC_sector_weight_4 = 4.0 }
+    set_temp_variable = { temp_w = composite_plant_total }
+    multiply_temp_variable = { temp_w = 1.75 }
+    add_to_variable = { CAC_sector_weight_4 = temp_w }
     add_to_variable = { CAC_sector_weight_4 = 1.5 }
 
     # Sector 5: Construction & Infrastructure
     set_variable = { CAC_sector_weight_5 = industrial_complex_total }
     multiply_variable = { CAC_sector_weight_5 = 1.5 }
-    set_temp_variable = { temp_w = composite_plant_total }
-    multiply_temp_variable = { temp_w = 1.75 }
-    add_to_variable = { CAC_sector_weight_5 = temp_w }
-    set_temp_variable = { temp_w = dockyard_fac }
-    multiply_temp_variable = { temp_w = 0.6 }
-    add_to_variable = { CAC_sector_weight_5 = temp_w }
     add_to_variable = { CAC_sector_weight_5 = 1.0 }
 
     # Sector 6: Pharmaceuticals & Healthcare (GDP-derived)
@@ -1372,31 +1391,31 @@ CAC_update_variables = {
                 limit = { check_variable = { CAC_companies_type^i = 1 } }
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_1 }
                 set_variable = { CAC_companies_sector_buildings^i = synthetic_refinery_total }
+                add_to_variable = { CAC_companies_sector_buildings^i = fuel_silos }
+                add_to_variable = { CAC_companies_sector_buildings^i = agriculture_district_total }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 2 } }
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_2 }
                 set_variable = { CAC_companies_sector_buildings^i = renewable_energy_infra }
                 add_to_variable = { CAC_companies_sector_buildings^i = nuclear_reactors }
-                add_to_variable = { CAC_companies_sector_buildings^i = fuel_silos }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 3 } }
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_3 }
                 set_variable = { CAC_companies_sector_buildings^i = military_fac }
-                add_to_variable = { CAC_companies_sector_buildings^i = rocket_sites }
+                add_to_variable = { CAC_companies_sector_buildings^i = dockyard_fac }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 4 } }
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_4 }
                 set_variable = { CAC_companies_sector_buildings^i = microchip_plant_total }
+                add_to_variable = { CAC_companies_sector_buildings^i = composite_plant_total }
             }
             else_if = {
                 limit = { check_variable = { CAC_companies_type^i = 5 } }
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_5 }
                 set_variable = { CAC_companies_sector_buildings^i = industrial_complex_total }
-                add_to_variable = { CAC_companies_sector_buildings^i = composite_plant_total }
-                add_to_variable = { CAC_companies_sector_buildings^i = dockyard_fac }
             }
             else = {
                 set_temp_variable = { sector_weight_temp = CAC_sector_weight_6 }
@@ -1444,6 +1463,142 @@ CAC_update_variables = {
             }
 
             multiply_temp_variable = { company_expenses_temp = company_expenses_modifiers }
+
+            # Building maintenance: 5% of listed MD dollar price per building (not scaled by expense modifiers)
+            set_temp_variable = { sector_maintenance = 0 }
+            if = {
+                limit = { check_variable = { CAC_companies_type^i = 0 } }
+                set_temp_variable = { sector_maintenance = office_park_total }
+                multiply_temp_variable = { sector_maintenance = -0.60 }
+            }
+            else_if = {
+                limit = { check_variable = { CAC_companies_type^i = 1 } }
+                set_temp_variable = { sector_maintenance = synthetic_refinery_total }
+                multiply_temp_variable = { sector_maintenance = -0.175 }
+                set_temp_variable = { temp_m = fuel_silos }
+                multiply_temp_variable = { temp_m = -0.15 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+                set_temp_variable = { temp_m = agriculture_district_total }
+                multiply_temp_variable = { temp_m = -0.375 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+            }
+            else_if = {
+                limit = { check_variable = { CAC_companies_type^i = 2 } }
+                set_temp_variable = { sector_maintenance = renewable_energy_infra }
+                multiply_temp_variable = { sector_maintenance = -0.425 }
+                set_temp_variable = { temp_m = nuclear_reactors }
+                multiply_temp_variable = { temp_m = -0.45 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+                set_temp_variable = { temp_m = number_of_fossil_pps }
+                multiply_temp_variable = { temp_m = -0.1625 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+            }
+            else_if = {
+                limit = { check_variable = { CAC_companies_type^i = 3 } }
+                set_temp_variable = { sector_maintenance = military_fac }
+                multiply_temp_variable = { sector_maintenance = -0.375 }
+                set_temp_variable = { temp_m = dockyard_fac }
+                multiply_temp_variable = { temp_m = -0.375 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+            }
+            else_if = {
+                limit = { check_variable = { CAC_companies_type^i = 4 } }
+                set_temp_variable = { sector_maintenance = microchip_plant_total }
+                multiply_temp_variable = { sector_maintenance = -0.50 }
+                set_temp_variable = { temp_m = composite_plant_total }
+                multiply_temp_variable = { temp_m = -0.425 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+                set_temp_variable = { temp_m = internet_station_total }
+                multiply_temp_variable = { temp_m = -0.15 }
+                add_to_temp_variable = { sector_maintenance = temp_m }
+            }
+            else_if = {
+                limit = { check_variable = { CAC_companies_type^i = 5 } }
+                set_temp_variable = { sector_maintenance = industrial_complex_total }
+                multiply_temp_variable = { sector_maintenance = -0.375 }
+            }
+            # Sector 6 (Pharmaceuticals): sector_maintenance stays 0 — no building proxy
+            # Apply inflation to building maintenance costs
+            set_temp_variable = { cac_inflation_mult = inflation_rate_var }
+            add_to_temp_variable = { cac_inflation_mult = 1 }
+            multiply_temp_variable = { sector_maintenance = cac_inflation_mult }
+            set_variable = { CAC_companies_maintenance^i = sector_maintenance }
+            add_to_temp_variable = { company_expenses_temp = sector_maintenance }
+
+            # Workforce costs: building count × GDP/C × per-building rate (not scaled by expense modifiers)
+            set_temp_variable = { sector_workforce = 0 }
+            if = {
+                limit = { check_variable = { CAC_companies_type^i = 0 } }
+                set_temp_variable = { sector_workforce = office_park_total }
+                multiply_temp_variable = { sector_workforce = -0.0000225 }
+                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+            }
+            else_if = {
+                limit = { check_variable = { CAC_companies_type^i = 1 } }
+                set_temp_variable = { sector_workforce = synthetic_refinery_total }
+                multiply_temp_variable = { sector_workforce = -0.0000065625 }
+                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+                set_temp_variable = { temp_w = fuel_silos }
+                multiply_temp_variable = { temp_w = -0.000005625 }
+                multiply_temp_variable = { temp_w = gdp_per_capita }
+                add_to_temp_variable = { sector_workforce = temp_w }
+                set_temp_variable = { temp_w = agriculture_district_total }
+                multiply_temp_variable = { temp_w = -0.0000140625 }
+                multiply_temp_variable = { temp_w = gdp_per_capita }
+                add_to_temp_variable = { sector_workforce = temp_w }
+            }
+            else_if = {
+                limit = { check_variable = { CAC_companies_type^i = 2 } }
+                set_temp_variable = { sector_workforce = renewable_energy_infra }
+                multiply_temp_variable = { sector_workforce = -0.0000159375 }
+                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+                set_temp_variable = { temp_w = nuclear_reactors }
+                multiply_temp_variable = { temp_w = -0.000016875 }
+                multiply_temp_variable = { temp_w = gdp_per_capita }
+                add_to_temp_variable = { sector_workforce = temp_w }
+                set_temp_variable = { temp_w = number_of_fossil_pps }
+                multiply_temp_variable = { temp_w = -0.000011250 }
+                multiply_temp_variable = { temp_w = gdp_per_capita }
+                add_to_temp_variable = { sector_workforce = temp_w }
+            }
+            else_if = {
+                limit = { check_variable = { CAC_companies_type^i = 3 } }
+                set_temp_variable = { sector_workforce = military_fac }
+                multiply_temp_variable = { sector_workforce = -0.0000140625 }
+                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+                set_temp_variable = { temp_w = dockyard_fac }
+                multiply_temp_variable = { temp_w = -0.0000140625 }
+                multiply_temp_variable = { temp_w = gdp_per_capita }
+                add_to_temp_variable = { sector_workforce = temp_w }
+            }
+            else_if = {
+                limit = { check_variable = { CAC_companies_type^i = 4 } }
+                set_temp_variable = { sector_workforce = microchip_plant_total }
+                multiply_temp_variable = { sector_workforce = -0.000018750 }
+                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+                set_temp_variable = { temp_w = composite_plant_total }
+                multiply_temp_variable = { temp_w = -0.0000159375 }
+                multiply_temp_variable = { temp_w = gdp_per_capita }
+                add_to_temp_variable = { sector_workforce = temp_w }
+                set_temp_variable = { temp_w = internet_station_total }
+                multiply_temp_variable = { temp_w = -0.000005625 }
+                multiply_temp_variable = { temp_w = gdp_per_capita }
+                add_to_temp_variable = { sector_workforce = temp_w }
+            }
+            else_if = {
+                limit = { check_variable = { CAC_companies_type^i = 5 } }
+                set_temp_variable = { sector_workforce = industrial_complex_total }
+                multiply_temp_variable = { sector_workforce = -0.0000140625 }
+                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+            }
+            else_if = {
+                limit = { check_variable = { CAC_companies_type^i = 6 } }
+                set_temp_variable = { sector_workforce = population_total_m }
+                multiply_temp_variable = { sector_workforce = gdp_per_capita }
+                multiply_temp_variable = { sector_workforce = -0.0000120 }
+            }
+            set_variable = { CAC_companies_workforce^i = sector_workforce }
+            add_to_temp_variable = { company_expenses_temp = sector_workforce }
 
             set_variable = { CAC_companies_expenses^i = company_expenses_temp }
 
