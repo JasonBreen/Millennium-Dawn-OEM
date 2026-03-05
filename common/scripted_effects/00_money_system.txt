@@ -3764,16 +3764,6 @@ calculate_resource_sale_rate = {
 	multiply_temp_variable = { CIC_from_trade = -1 }
 	clamp_temp_variable = { var = CIC_from_trade max = 1 min = 0 }
 
-	#Scale down everything based on above
-	multiply_variable = { oil_exports = CIC_from_trade }
-	multiply_variable = { steel_exports = CIC_from_trade }
-	multiply_variable = { aluminium_exports = CIC_from_trade }
-	multiply_variable = { tungsten_exports = CIC_from_trade }
-	multiply_variable = { chromium_exports = CIC_from_trade }
-	multiply_variable = { rubber_exports = CIC_from_trade }
-	multiply_variable = { microchip_exports = CIC_from_trade }
-	multiply_variable = { composite_exports = CIC_from_trade }
-
 	#Multiply with cost to get money generated
 	multiply_variable = { oil_exports = global.oil_price }
 	multiply_variable = { steel_exports = global.steel_price }
@@ -3837,18 +3827,21 @@ calculate_resource_sale_rate = {
 	clamp_variable = { var = microchip_exports min = 0 }
 	clamp_variable = { var = composite_exports min = 0 }
 
-	#Add total cost
-	set_variable = { resource_sale_rate = oil_exports }
-	add_to_variable = { resource_sale_rate = steel_exports }
-	add_to_variable = { resource_sale_rate = aluminium_exports }
-	add_to_variable = { resource_sale_rate = tungsten_exports }
-	add_to_variable = { resource_sale_rate = chromium_exports }
-	add_to_variable = { resource_sale_rate = rubber_exports }
-	add_to_variable = { resource_sale_rate = microchip_exports }
-	add_to_variable = { resource_sale_rate = composite_exports }
+	# Full pre-CIC resource income — used by CAC mining company
+	set_variable = { CAC_resource_sale_raw = oil_exports }
+	add_to_variable = { CAC_resource_sale_raw = steel_exports }
+	add_to_variable = { CAC_resource_sale_raw = aluminium_exports }
+	add_to_variable = { CAC_resource_sale_raw = tungsten_exports }
+	add_to_variable = { CAC_resource_sale_raw = chromium_exports }
+	add_to_variable = { CAC_resource_sale_raw = rubber_exports }
+	add_to_variable = { CAC_resource_sale_raw = microchip_exports }
+	add_to_variable = { CAC_resource_sale_raw = composite_exports }
+	clamp_variable = { var = CAC_resource_sale_raw min = 0 }
+
+	# National resource_sale_rate applies CIC trade adjustment to avoid double-counting
+	set_variable = { resource_sale_rate = CAC_resource_sale_raw }
+	multiply_variable = { resource_sale_rate = CIC_from_trade }
 	clamp_variable = { var = resource_sale_rate min = 0 }
-	# Store a clean copy for CAC mining sector income — unaffected by later display-only overrides
-	set_variable = { CAC_resource_sale_raw = resource_sale_rate }
 }
 
 update_display = {
@@ -4655,17 +4648,6 @@ calculate_gdp = {
 	set_temp_variable = { gdp_from_composite_plants = composite_plant_total }
 	set_temp_variable = { gdp_from_synthetic_refinery = synthetic_refinery_total }
 
-	set_temp_variable = { gdp_from_companies = 0 }
-
-	for_loop_effect = {
-		start = 0
-        end = CAC_companies^num
-
-        value = i
-
-		add_to_temp_variable = { gdp_from_companies = CAC_companies_value^i }
-	}
-
 	multiply_temp_variable = { gdp_from_civs = 17.5 }	#was 15, original 24.8
 	multiply_temp_variable = { gdp_from_mils = 1.5 }	#was 9, original 15.5
 	multiply_temp_variable = { gdp_from_dockyards = 1.5 }	#was 9, original 15.5
@@ -4674,7 +4656,6 @@ calculate_gdp = {
 	multiply_temp_variable = { gdp_from_composite_plants = 30 }
 	multiply_temp_variable = { gdp_from_synthetic_refinery = 10 }
 	multiply_temp_variable = { gdp_from_agriculture_district = 25 }	#was 26, original 38.8
-	multiply_temp_variable = { gdp_from_companies = 20 }
 
 	set_temp_variable = { temp_productivity_contribution = industrial_complex_total }
 	multiply_temp_variable = { temp_productivity_contribution = 20 }

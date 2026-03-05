@@ -336,3 +336,143 @@ TAG.ideology_desc: "(Ideology Group) - Party Name (Native Name, ABBRV)\n\nDescri
 - [Game Rules Reference](./docs/player-tutorials/game-rules.md) - Complete game rules guide
 - [Error Debug Codes](./docs/dev-resources/error-debug-codes.md)
 - [Contributing Guidelines](./CONTRIBUTING.md)
+
+# HOI4 Mod Balance Analysis Tools
+
+This project includes Python balance analysis scripts in `tools/`.
+
+## Available Tools
+
+### Subunit Stats
+```bash
+python tools/parse_hoi4.py --scan-dir . --summary
+```
+Compares infantry, artillery, armor, etc. combat stats. Flags outliers and dominance.
+
+### Designer Equipment (Tanks, Planes, Ships)
+```bash
+python tools/design_simulator.py --scan-dir . --balance-report
+```
+Analyzes chassis/module balance. Detects dominated, overpowered, and underpowered modules.
+
+### Integrated Analysis (Subunits + Equipment + Doctrines)
+```bash
+python tools/integrated_analyzer.py --scan-dir . --report
+```
+Full picture: subunit stats with designer equipment scenarios, module balance issues mapped to affected subunits, cross-comparison, and doctrine-adjusted stats.
+
+### Doctrine Balance
+```bash
+# Individual component analysis (grand doctrines, subdoctrines, milestones, rewards)
+python tools/doctrine_analyzer.py --scan-dir . --report
+
+# Build combination analysis (enumerates all valid subdoctrine builds per grand doctrine)
+python tools/doctrine_analyzer.py --scan-dir . --builds
+
+# Both together
+python tools/doctrine_analyzer.py --scan-dir . --report --builds
+
+# List structure overview
+python tools/doctrine_analyzer.py --scan-dir . --list
+```
+
+### Defines (Game Constants)
+```bash
+# Show combat-relevant defines that differ from vanilla
+python tools/defines_parser.py --scan-dir . --combat
+
+# Show all defines
+python tools/defines_parser.py --scan-dir . --all
+```
+
+### Air Combat Balance
+```bash
+# Standalone air balance report
+python tools/air_analyzer.py --scan-dir . --report
+
+# Include air-to-air duel matrix
+python tools/air_analyzer.py --scan-dir . --report --duels
+
+# Custom wing size (default 100)
+python tools/air_analyzer.py --scan-dir . --report --wing-size 200
+
+# JSON export
+python tools/air_analyzer.py --scan-dir . --output air.json
+```
+Analyzes fighters, CAS, bombers, and naval strike planes. Computes per-plane stats, mission effectiveness scores, cost efficiency, air-to-air duel exchange ratios, and wing aggregation. Applies air doctrine modifiers and uses NAir.* defines for combat math.
+
+The integrated analyzer includes air analysis automatically when air units are detected:
+```bash
+# Land + air in one report
+python tools/integrated_analyzer.py --scan-dir . --report
+
+# With air duel matrix
+python tools/integrated_analyzer.py --scan-dir . --report --air-duels
+```
+
+### Naval Combat Balance
+```bash
+# Standalone naval balance report
+python tools/naval_analyzer.py --scan-dir . --report
+
+# Include ship-to-ship duel matrix
+python tools/naval_analyzer.py --scan-dir . --report --duels
+
+# JSON export
+python tools/naval_analyzer.py --scan-dir . --output naval.json
+```
+Analyzes destroyers, cruisers, battleships, carriers, and submarines. Covers light/heavy attack, torpedo combat with critical hits, naval armor/piercing curves, screening ratios, positioning mechanics, naval dominance (1.17), carrier sortie efficiency, submarine detection/stealth, task force composition analysis, and convoy raiding. Uses NNavy.* defines for all combat math.
+
+The integrated analyzer includes naval analysis automatically when naval units are detected:
+```bash
+# Land + air + naval in one report
+python tools/integrated_analyzer.py --scan-dir . --report
+
+# With ship duel matrix
+python tools/integrated_analyzer.py --scan-dir . --report --naval-duels
+
+# All duels
+python tools/integrated_analyzer.py --scan-dir . --report --air-duels --naval-duels
+```
+
+All scripts auto-load defines from `common/defines/*.lua` when using `--scan-dir`. The mod's values are used for armor/piercing aggregation formulas, damage curves, and other combat math instead of vanilla defaults.
+
+## Common Flags
+
+All scripts support:
+- `--scan-dir .` — Point at the mod root (auto-discovers file layout)
+- `--output file.json` — Export data as JSON
+- `--report-file file.txt` — Save report to file instead of stdout
+
+The integrated analyzer also supports:
+- `--designs designs.json` — User-specified equipment designs
+- `--doctrines-dir /path` — Separate doctrines directory
+- `--subunit-report` / `--module-report` — Include standalone reports
+- `--air-report` — Include air balance report
+- `--air-duels` — Include air-to-air duel matrix
+- `--naval-report` — Include naval balance report
+- `--naval-duels` — Include ship-to-ship duel matrix
+
+## File Layout Expected
+
+```
+mod-root/
+├── common/
+│   ├── units/              ← subunit definitions
+│   │   └── equipment/      ← static equipment + modules/
+│   ├── doctrines/          ← 1.17+ doctrine system
+│   │   ├── folders/
+│   │   ├── grand_doctrines/
+│   │   ├── tracks/
+│   │   └── subdoctrines/
+│   └── defines/            ← game constants (*.lua)
+├── tools/                ← these analysis tools
+│   ├── parse_hoi4.py
+│   ├── design_simulator.py
+│   ├── integrated_analyzer.py
+│   ├── doctrine_analyzer.py
+│   ├── defines_parser.py
+│   ├── air_analyzer.py
+│   └── naval_analyzer.py
+└── CLAUDE.md               ← this file
+```
