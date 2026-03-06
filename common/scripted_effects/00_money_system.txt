@@ -175,6 +175,14 @@ calculate_tax_gain = {
 
 	# Corporate Tax Expansion
 	set_variable = { corporate_tax = 0 }
+	set_variable = { civil_gross_income = 0 }
+	set_variable = { military_gross_income = 0 }
+	set_variable = { dockyard_gross_income = 0 }
+	set_variable = { office_gross_income = 0 }
+	set_variable = { agriculture_district_gross_income = 0 }
+	set_variable = { microchip_gross_income = 0 }
+	set_variable = { composite_gross_income = 0 }
+	set_variable = { synthetic_gross_income = 0 }
 
 	# Subsistence Agriculture Tax Gain Income
 	set_variable = { agriculture_tax_gain = gdp_from_agriculture }
@@ -219,9 +227,11 @@ calculate_tax_gain = {
 
 	# Build the unified multiplier
 	set_temp_variable = { unified_building_multiplier = @money_control_factor_scaling }
+	multiply_temp_variable = { unified_building_multiplier = 0.007 } # 7-day display
+	set_temp_variable = { gross_unified_base = unified_building_multiplier }
 	multiply_temp_variable = { unified_building_multiplier = corporate_tax_rate }
 	multiply_temp_variable = { unified_building_multiplier = tax_gain_multiplier }
-	multiply_temp_variable = { unified_building_multiplier = 0.007 } # 7-day display
+	multiply_temp_variable = { gross_unified_base = tax_gain_multiplier }
 
 	# Corporate Tax Modifier
 	set_temp_variable = { corporate_tax_gain_multiplier = 1 }
@@ -232,127 +242,208 @@ calculate_tax_gain = {
 	set_temp_variable = { productivity_calculations_var = overall_productivity }
 	multiply_temp_variable = { productivity_calculations_var = 0.001 }
 	multiply_temp_variable = { unified_building_multiplier = productivity_calculations_var }
+	multiply_temp_variable = { gross_unified_base = productivity_calculations_var }
 
 	# Apply building-specific modifiers, productivity, employment, then building-specific unified multiplier
 	# Each building: base_count * (1 + tax_modifier) * (1 + productivity_modifier) * employment * building_unified
 	# Civilian Factories
 	if = { limit = { check_variable = { civil_fac_tax > 0 } }
-		set_temp_variable = { civil_unified = unified_building_multiplier }
-		multiply_temp_variable = { civil_unified = 2.5 }
+		# Pass 1: Gross income
+		set_temp_variable = { civil_gross_unified = gross_unified_base }
+		multiply_temp_variable = { civil_gross_unified = 2.5 }
 
-		set_temp_variable = { building_final_modifier = 1 }
-		add_to_temp_variable = { building_final_modifier = modifier@civilian_industry_tax_modifier }
-		set_temp_variable = { temp_prod_mod = 1 }
-		add_to_temp_variable = { temp_prod_mod = modifier@civilian_factories_productivity }
-		multiply_temp_variable = { building_final_modifier = temp_prod_mod }
-		multiply_temp_variable = { building_final_modifier = civilian_factories_manpower_fulfillment }
-		multiply_temp_variable = { building_final_modifier = civil_unified }
-		multiply_variable = { civil_fac_tax = building_final_modifier }
+		set_temp_variable = { civil_prod_mod = 1 }
+		add_to_temp_variable = { civil_prod_mod = modifier@civilian_factories_productivity }
+		multiply_temp_variable = { civil_prod_mod = civilian_factories_manpower_fulfillment }
+		multiply_temp_variable = { civil_prod_mod = civil_gross_unified }
+
+		set_variable = { civil_gross_income = civil_fac_tax }
+		multiply_variable = { civil_gross_income = civil_prod_mod }
+
+		# Pass 2: Tax extracted from gross
+		set_temp_variable = { civil_tax_mod = corporate_tax_rate }
+		set_temp_variable = { civil_sector_tax_adj = 1 }
+		add_to_temp_variable = { civil_sector_tax_adj = modifier@civilian_industry_tax_modifier }
+		multiply_temp_variable = { civil_tax_mod = civil_sector_tax_adj }
+		multiply_temp_variable = { civil_tax_mod = corporate_tax_gain_multiplier }
+
+		set_variable = { civil_fac_tax = civil_gross_income }
+		multiply_variable = { civil_fac_tax = civil_tax_mod }
 	}
 
 	# Military Factories
 	if = { limit = { check_variable = { military_fac_tax > 0 } }
-		set_temp_variable = { military_unified = unified_building_multiplier }
-		multiply_temp_variable = { military_unified = 0.2 }
+		# Pass 1: Gross income
+		set_temp_variable = { military_gross_unified = gross_unified_base }
+		multiply_temp_variable = { military_gross_unified = 0.2 }
 
-		set_temp_variable = { building_final_modifier = 1 }
-		add_to_temp_variable = { building_final_modifier = modifier@military_industry_tax_modifier }
-		set_temp_variable = { temp_prod_mod = 1 }
-		add_to_temp_variable = { temp_prod_mod = modifier@military_factories_productivity }
-		multiply_temp_variable = { building_final_modifier = temp_prod_mod }
-		multiply_temp_variable = { building_final_modifier = military_factories_manpower_fulfillment }
-		multiply_temp_variable = { building_final_modifier = military_unified }
-		multiply_variable = { military_fac_tax = building_final_modifier }
+		set_temp_variable = { military_prod_mod = 1 }
+		add_to_temp_variable = { military_prod_mod = modifier@military_factories_productivity }
+		multiply_temp_variable = { military_prod_mod = military_factories_manpower_fulfillment }
+		multiply_temp_variable = { military_prod_mod = military_gross_unified }
+
+		set_variable = { military_gross_income = military_fac_tax }
+		multiply_variable = { military_gross_income = military_prod_mod }
+
+		# Pass 2: Tax extracted from gross
+		set_temp_variable = { military_tax_mod = corporate_tax_rate }
+		set_temp_variable = { military_sector_tax_adj = 1 }
+		add_to_temp_variable = { military_sector_tax_adj = modifier@military_industry_tax_modifier }
+		multiply_temp_variable = { military_tax_mod = military_sector_tax_adj }
+		multiply_temp_variable = { military_tax_mod = corporate_tax_gain_multiplier }
+
+		set_variable = { military_fac_tax = military_gross_income }
+		multiply_variable = { military_fac_tax = military_tax_mod }
 	}
 
 	# Dockyards
 	if = { limit = { check_variable = { dockyard_tax > 0 } }
-		set_temp_variable = { dockyard_unified = unified_building_multiplier }
-		multiply_temp_variable = { dockyard_unified = 0.2 }
+		# Pass 1: Gross income
+		set_temp_variable = { dockyard_gross_unified = gross_unified_base }
+		multiply_temp_variable = { dockyard_gross_unified = 0.2 }
 
-		set_temp_variable = { building_final_modifier = 1 }
-		add_to_temp_variable = { building_final_modifier = modifier@dockyard_income_tax_modifier }
-		set_temp_variable = { temp_prod_mod = 1 }
-		add_to_temp_variable = { temp_prod_mod = modifier@dockyard_productivity }
-		multiply_temp_variable = { building_final_modifier = temp_prod_mod }
-		multiply_temp_variable = { building_final_modifier = naval_factories_manpower_fulfillment }
-		multiply_temp_variable = { building_final_modifier = dockyard_unified }
-		multiply_variable = { dockyard_tax = building_final_modifier }
+		set_temp_variable = { dockyard_prod_mod = 1 }
+		add_to_temp_variable = { dockyard_prod_mod = modifier@dockyard_productivity }
+		multiply_temp_variable = { dockyard_prod_mod = naval_factories_manpower_fulfillment }
+		multiply_temp_variable = { dockyard_prod_mod = dockyard_gross_unified }
+
+		set_variable = { dockyard_gross_income = dockyard_tax }
+		multiply_variable = { dockyard_gross_income = dockyard_prod_mod }
+
+		# Pass 2: Tax extracted from gross
+		set_temp_variable = { dockyard_tax_mod = corporate_tax_rate }
+		set_temp_variable = { dockyard_sector_tax_adj = 1 }
+		add_to_temp_variable = { dockyard_sector_tax_adj = modifier@dockyard_income_tax_modifier }
+		multiply_temp_variable = { dockyard_tax_mod = dockyard_sector_tax_adj }
+		multiply_temp_variable = { dockyard_tax_mod = corporate_tax_gain_multiplier }
+
+		set_variable = { dockyard_tax = dockyard_gross_income }
+		multiply_variable = { dockyard_tax = dockyard_tax_mod }
 	}
 
 	# Offices
 	if = { limit = { check_variable = { office_tax > 0 } }
-		set_temp_variable = { office_unified = unified_building_multiplier }
-		multiply_temp_variable = { office_unified = 5 }
+		# Pass 1: Gross income
+		set_temp_variable = { office_gross_unified = gross_unified_base }
+		multiply_temp_variable = { office_gross_unified = 5 }
 
-		set_temp_variable = { building_final_modifier = 1 }
-		add_to_temp_variable = { building_final_modifier = modifier@office_park_income_tax_modifier }
-		set_temp_variable = { temp_prod_mod = 1 }
-		add_to_temp_variable = { temp_prod_mod = modifier@offices_productivity }
-		multiply_temp_variable = { building_final_modifier = temp_prod_mod }
-		multiply_temp_variable = { building_final_modifier = offices_manpower_fulfillment }
-		multiply_temp_variable = { building_final_modifier = office_unified }
-		multiply_variable = { office_tax = building_final_modifier }
+		set_temp_variable = { office_prod_mod = 1 }
+		add_to_temp_variable = { office_prod_mod = modifier@offices_productivity }
+		multiply_temp_variable = { office_prod_mod = offices_manpower_fulfillment }
+		multiply_temp_variable = { office_prod_mod = office_gross_unified }
+
+		set_variable = { office_gross_income = office_tax }
+		multiply_variable = { office_gross_income = office_prod_mod }
+
+		# Pass 2: Tax extracted from gross
+		set_temp_variable = { office_tax_mod = corporate_tax_rate }
+		set_temp_variable = { office_sector_tax_adj = 1 }
+		add_to_temp_variable = { office_sector_tax_adj = modifier@office_park_income_tax_modifier }
+		multiply_temp_variable = { office_tax_mod = office_sector_tax_adj }
+		multiply_temp_variable = { office_tax_mod = corporate_tax_gain_multiplier }
+
+		set_variable = { office_tax = office_gross_income }
+		multiply_variable = { office_tax = office_tax_mod }
 	}
 
 	# Agriculture Districts
 	if = { limit = { check_variable = { agriculture_district_tax > 0 } }
-		set_temp_variable = { agriculture_district_unified = unified_building_multiplier }
-		multiply_temp_variable = { agriculture_district_unified = 2.60 }
+		# Pass 1: Gross income
+		set_temp_variable = { agri_district_gross_unified = gross_unified_base }
+		multiply_temp_variable = { agri_district_gross_unified = 2.60 }
 
-		set_temp_variable = { building_final_modifier = 1 }
-		add_to_temp_variable = { building_final_modifier = modifier@agriculture_district_income_tax_modifier }
-		set_temp_variable = { temp_prod_mod = 1 }
-		add_to_temp_variable = { temp_prod_mod = modifier@agricolture_productivity_modifier }
-		multiply_temp_variable = { building_final_modifier = temp_prod_mod }
-		multiply_temp_variable = { building_final_modifier = agriculture_district_manpower_fulfillment }
-		multiply_temp_variable = { building_final_modifier = agriculture_district_unified }
-		multiply_variable = { agriculture_district_tax = building_final_modifier }
+		set_temp_variable = { agri_district_prod_mod = 1 }
+		add_to_temp_variable = { agri_district_prod_mod = modifier@agricolture_productivity_modifier }
+		multiply_temp_variable = { agri_district_prod_mod = agriculture_district_manpower_fulfillment }
+		multiply_temp_variable = { agri_district_prod_mod = agri_district_gross_unified }
+
+		set_variable = { agriculture_district_gross_income = agriculture_district_tax }
+		multiply_variable = { agriculture_district_gross_income = agri_district_prod_mod }
+
+		# Pass 2: Tax extracted from gross
+		set_temp_variable = { agri_district_tax_mod = corporate_tax_rate }
+		set_temp_variable = { agri_district_sector_tax_adj = 1 }
+		add_to_temp_variable = { agri_district_sector_tax_adj = modifier@agriculture_district_income_tax_modifier }
+		multiply_temp_variable = { agri_district_tax_mod = agri_district_sector_tax_adj }
+		multiply_temp_variable = { agri_district_tax_mod = corporate_tax_gain_multiplier }
+
+		set_variable = { agriculture_district_tax = agriculture_district_gross_income }
+		multiply_variable = { agriculture_district_tax = agri_district_tax_mod }
 	}
 
 	# Microchip Plants
 	if = { limit = { check_variable = { microchip_plant_tax > 0 } }
-		set_temp_variable = { microchip_unified = unified_building_multiplier }
-		multiply_temp_variable = { microchip_unified = 4 }
+		# Pass 1: Gross income
+		set_temp_variable = { microchip_gross_unified = gross_unified_base }
+		multiply_temp_variable = { microchip_gross_unified = 4 }
 
-		set_temp_variable = { building_final_modifier = 1 }
-		add_to_temp_variable = { building_final_modifier = modifier@microchip_plant_income_tax_modifier }
-		set_temp_variable = { temp_prod_mod = 1 }
-		add_to_temp_variable = { temp_prod_mod = modifier@microchip_plant_productivity_modifier }
-		multiply_temp_variable = { building_final_modifier = temp_prod_mod }
-		multiply_temp_variable = { building_final_modifier = microchip_plant_manpower_fulfillment }
-		multiply_temp_variable = { building_final_modifier = microchip_unified }
-		multiply_variable = { microchip_plant_tax = building_final_modifier }
+		set_temp_variable = { microchip_prod_mod = 1 }
+		add_to_temp_variable = { microchip_prod_mod = modifier@microchip_plant_productivity_modifier }
+		multiply_temp_variable = { microchip_prod_mod = microchip_plant_manpower_fulfillment }
+		multiply_temp_variable = { microchip_prod_mod = microchip_gross_unified }
+
+		set_variable = { microchip_gross_income = microchip_plant_tax }
+		multiply_variable = { microchip_gross_income = microchip_prod_mod }
+
+		# Pass 2: Tax extracted from gross
+		set_temp_variable = { microchip_tax_mod = corporate_tax_rate }
+		set_temp_variable = { microchip_sector_tax_adj = 1 }
+		add_to_temp_variable = { microchip_sector_tax_adj = modifier@microchip_plant_income_tax_modifier }
+		multiply_temp_variable = { microchip_tax_mod = microchip_sector_tax_adj }
+		multiply_temp_variable = { microchip_tax_mod = corporate_tax_gain_multiplier }
+
+		set_variable = { microchip_plant_tax = microchip_gross_income }
+		multiply_variable = { microchip_plant_tax = microchip_tax_mod }
 	}
 
 	# Composite Plants
 	if = { limit = { check_variable = { composite_plant_tax > 0 } }
-		set_temp_variable = { composite_unified = unified_building_multiplier }
-		multiply_temp_variable = { composite_unified = 3.5 }
+		# Pass 1: Gross income
+		set_temp_variable = { composite_gross_unified = gross_unified_base }
+		multiply_temp_variable = { composite_gross_unified = 3.5 }
 
-		set_temp_variable = { building_final_modifier = 1 }
-		add_to_temp_variable = { building_final_modifier = modifier@composite_plant_income_tax_modifier }
-		set_temp_variable = { temp_prod_mod = 1 }
-		add_to_temp_variable = { temp_prod_mod = modifier@composite_plant_productivity_modifier }
-		multiply_temp_variable = { building_final_modifier = temp_prod_mod }
-		multiply_temp_variable = { building_final_modifier = composite_plant_manpower_fulfillment }
-		multiply_temp_variable = { building_final_modifier = composite_unified }
-		multiply_variable = { composite_plant_tax = building_final_modifier }
+		set_temp_variable = { composite_prod_mod = 1 }
+		add_to_temp_variable = { composite_prod_mod = modifier@composite_plant_productivity_modifier }
+		multiply_temp_variable = { composite_prod_mod = composite_plant_manpower_fulfillment }
+		multiply_temp_variable = { composite_prod_mod = composite_gross_unified }
+
+		set_variable = { composite_gross_income = composite_plant_tax }
+		multiply_variable = { composite_gross_income = composite_prod_mod }
+
+		# Pass 2: Tax extracted from gross
+		set_temp_variable = { composite_tax_mod = corporate_tax_rate }
+		set_temp_variable = { composite_sector_tax_adj = 1 }
+		add_to_temp_variable = { composite_sector_tax_adj = modifier@composite_plant_income_tax_modifier }
+		multiply_temp_variable = { composite_tax_mod = composite_sector_tax_adj }
+		multiply_temp_variable = { composite_tax_mod = corporate_tax_gain_multiplier }
+
+		set_variable = { composite_plant_tax = composite_gross_income }
+		multiply_variable = { composite_plant_tax = composite_tax_mod }
 	}
 
 	# Synthetic Refineries
 	if = { limit = { check_variable = { synthetic_refinery_tax > 0 } }
-		set_temp_variable = { synthetic_unified = unified_building_multiplier }
-		multiply_temp_variable = { synthetic_unified = 3 }
+		# Pass 1: Gross income
+		set_temp_variable = { synthetic_gross_unified = gross_unified_base }
+		multiply_temp_variable = { synthetic_gross_unified = 3 }
 
-		set_temp_variable = { building_final_modifier = 1 }
-		add_to_temp_variable = { building_final_modifier = modifier@synthetic_refinery_income_tax_modifier }
-		set_temp_variable = { temp_prod_mod = 1 }
-		add_to_temp_variable = { temp_prod_mod = modifier@synthetic_refinery_productivity_modifier }
-		multiply_temp_variable = { building_final_modifier = temp_prod_mod }
-		multiply_temp_variable = { building_final_modifier = synthetic_refinery_manpower_fulfillment }
-		multiply_temp_variable = { building_final_modifier = synthetic_unified }
-		multiply_variable = { synthetic_refinery_tax = building_final_modifier }
+		set_temp_variable = { synthetic_prod_mod = 1 }
+		add_to_temp_variable = { synthetic_prod_mod = modifier@synthetic_refinery_productivity_modifier }
+		multiply_temp_variable = { synthetic_prod_mod = synthetic_refinery_manpower_fulfillment }
+		multiply_temp_variable = { synthetic_prod_mod = synthetic_gross_unified }
+
+		set_variable = { synthetic_gross_income = synthetic_refinery_tax }
+		multiply_variable = { synthetic_gross_income = synthetic_prod_mod }
+
+		# Pass 2: Tax extracted from gross
+		set_temp_variable = { synthetic_tax_mod = corporate_tax_rate }
+		set_temp_variable = { synthetic_sector_tax_adj = 1 }
+		add_to_temp_variable = { synthetic_sector_tax_adj = modifier@synthetic_refinery_income_tax_modifier }
+		multiply_temp_variable = { synthetic_tax_mod = synthetic_sector_tax_adj }
+		multiply_temp_variable = { synthetic_tax_mod = corporate_tax_gain_multiplier }
+
+		set_variable = { synthetic_refinery_tax = synthetic_gross_income }
+		multiply_variable = { synthetic_refinery_tax = synthetic_tax_mod }
 	}
 
 	##POP
