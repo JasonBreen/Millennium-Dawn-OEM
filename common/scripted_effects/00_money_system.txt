@@ -74,7 +74,6 @@ ingame_update_setup = {
 	#Various
 	update_economic_cycle_cost = yes
 	update_cyber_cost = yes
-	CAC_update_variables = yes
 	update_employment_productivity_output_dynamic_modifier = yes
 	calculate_migration_mechanic_values = yes
 
@@ -288,7 +287,7 @@ calculate_tax_gain = {
 
 		# Pass 1: Gross income
 		set_temp_variable = { military_gross_unified = gross_unified_base }
-		multiply_temp_variable = { military_gross_unified = 0.4 }
+		multiply_temp_variable = { military_gross_unified = 0.2 }
 
 		set_temp_variable = { military_prod_mod = 1 }
 		add_to_temp_variable = { military_prod_mod = modifier@military_factories_productivity }
@@ -297,7 +296,7 @@ calculate_tax_gain = {
 
 		set_temp_variable = { active_factory_income = active_factories }
 		multiply_temp_variable = { active_factory_income = military_prod_mod }
-		multiply_temp_variable = { active_factory_income = 1.6 }
+		multiply_temp_variable = { active_factory_income = 3 }
 
 		set_temp_variable = { inactive_factory_income = inactive_factories }
 		multiply_temp_variable = { inactive_factory_income = military_prod_mod }
@@ -320,6 +319,9 @@ calculate_tax_gain = {
 
 	# Dockyards
 	if = { limit = { check_variable = { dockyard_tax > 0 } }
+		set_temp_variable = { active_dockyards = military_fac_tax }
+		set_temp_variable = { inactive_dockyards = num_of_available_naval_factories }
+		subtract_from_temp_variable = { active_dockyards = inactive_dockyards }
 		# Pass 1: Gross income
 		set_temp_variable = { dockyard_gross_unified = gross_unified_base }
 		multiply_temp_variable = { dockyard_gross_unified = 0.2 }
@@ -329,8 +331,16 @@ calculate_tax_gain = {
 		multiply_temp_variable = { dockyard_prod_mod = naval_factories_manpower_fulfillment }
 		multiply_temp_variable = { dockyard_prod_mod = dockyard_gross_unified }
 
-		set_variable = { dockyard_gross_income = dockyard_tax }
-		multiply_variable = { dockyard_gross_income = dockyard_prod_mod }
+		set_temp_variable = { active_dockyard_income = active_dockyards }
+		multiply_temp_variable = { active_dockyard_income = dockyard_prod_mod }
+		multiply_temp_variable = { active_dockyard_income = 4.5 }
+
+		set_temp_variable = { inactive_dockyard_income = inactive_dockyards }
+		multiply_temp_variable = { inactive_dockyard_income = dockyard_prod_mod }
+
+
+		set_variable = { dockyard_gross_income = active_dockyard_income }
+		add_to_variable = { dockyard_gross_income = inactive_dockyard_income }
 
 		# Pass 2: Tax extracted from gross
 		set_temp_variable = { dockyard_tax_mod = corporate_tax_rate_decimal_adjuster }
@@ -503,27 +513,32 @@ calculate_tax_gain = {
 	# Apply consolidated multiplier
 	multiply_variable = { population_tax = pop_tax_gdp_c_multiplier }
 
-	# Clamp the component values to 0 so we don't have our government gifting back tax money to the people
-	clamp_variable = { var = agriculture_district_tax min = 0 }
-	clamp_variable = { var = agriculture_tax_gain min = 0 }
-	clamp_variable = { var = civil_fac_tax min = 0 }
-	clamp_variable = { var = military_fac_tax min = 0 }
-	clamp_variable = { var = dockyard_tax min = 0 }
-	clamp_variable = { var = office_tax min = 0 }
-	clamp_variable = { var = microchip_plant_tax min = 0 }
-	clamp_variable = { var = composite_plant_tax min = 0 }
-	clamp_variable = { var = synthetic_refinery_tax min = 0 }
+	CAC_update_variables = yes
 
 	# Add Corporate Tax Rates Together
-	add_to_variable = { corporate_tax = agriculture_tax_gain }
-	add_to_variable = { corporate_tax = agriculture_district_tax }
-	add_to_variable = { corporate_tax = civil_fac_tax }
-	add_to_variable = { corporate_tax = military_fac_tax }
-	add_to_variable = { corporate_tax = dockyard_tax }
-	add_to_variable = { corporate_tax = office_tax }
-	add_to_variable = { corporate_tax = microchip_plant_tax }
-	add_to_variable = { corporate_tax = composite_plant_tax }
-	add_to_variable = { corporate_tax = synthetic_refinery_tax }
+	set_variable = { finance_sc = CAC_companies_taxes^0 }
+	set_variable = { mining_sc = CAC_companies_taxes^1 }
+	set_variable = { energy_sec = CAC_companies_taxes^2 }
+	set_variable = { defense_sec = CAC_companies_taxes^3 }
+	set_variable = { tech_sec = CAC_companies_taxes^4 }
+	set_variable = { const_sec = CAC_companies_taxes^5 }
+	set_variable = { healthcare_sec = CAC_companies_taxes^6 }
+
+	multiply_variable = { finance_sc = -1 }
+	multiply_variable = { mining_sc = -1 }
+	multiply_variable = { energy_sec = -1 }
+	multiply_variable = { defense_sec = -1 }
+	multiply_variable = { tech_sec = -1 }
+	multiply_variable = { const_sec = -1 }
+	multiply_variable = { healthcare_sec = -1 }
+
+	add_to_variable = { corporate_tax = finance_sc }
+	add_to_variable = { corporate_tax = mining_sc }
+	add_to_variable = { corporate_tax = energy_sec }
+	add_to_variable = { corporate_tax = defense_sec }
+	add_to_variable = { corporate_tax = tech_sec }
+	add_to_variable = { corporate_tax = const_sec }
+	add_to_variable = { corporate_tax = healthcare_sec }
 
 	# Clamps Corporate and Population Tax Rates to 0 to prevent negative incomes
 	clamp_variable = { var = corporate_tax min = 0 }
