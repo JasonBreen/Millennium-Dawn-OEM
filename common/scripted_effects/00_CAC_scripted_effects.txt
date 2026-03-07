@@ -816,7 +816,7 @@ CAC_update_building_stats = {
 	multiply_variable = { CAC_companies_workforce^0 = -1 }
 	set_variable = { CAC_companies_sector_buildings^0 = office_park_total }
 
-	# Slot 1 — Mining & Resources (synthetic refineries + agriculture)
+	# Slot 1 — Mining & Resources (synthetic refineries + agriculture + resource extraction)
 	set_variable = { CAC_companies_maintenance^1 = synthetic_refinery_total }
 	multiply_variable = { CAC_companies_maintenance^1 = 0.00630 }         # 6.00 * 0.15 * 0.007
 	set_temp_variable = { cac_agri_maintenance = agriculture_district_total }
@@ -825,10 +825,17 @@ CAC_update_building_stats = {
 	multiply_variable = { CAC_companies_maintenance^1 = -1 }
 	set_temp_variable = { cac_workforce_cost = synthetic_refinery_total }
 	multiply_temp_variable = { cac_workforce_cost = 0.245 }               # workers_per_synthetic_refinery
+	multiply_temp_variable = { cac_workforce_cost = synthetic_refinery_manpower_fulfillment }
 	set_temp_variable = { cac_agri_workforce = agriculture_district_total }
 	multiply_temp_variable = { cac_agri_workforce = 0.250 }               # workers_per_agriculture_district
+	multiply_temp_variable = { cac_agri_workforce = agriculture_district_manpower_fulfillment }
 	add_to_temp_variable = { cac_workforce_cost = cac_agri_workforce }
 	multiply_temp_variable = { cac_workforce_cost = cac_gdpc_scaled }
+	# Add resource extraction workers (already in millions, GDP-adjusted; scale by wage factor)
+	set_temp_variable = { cac_resource_workforce_cost = resource_sector_workers }
+	multiply_temp_variable = { cac_resource_workforce_cost = resource_sector_worker_fulfillment }
+	multiply_temp_variable = { cac_resource_workforce_cost = cac_gdpc_scaled }
+	add_to_temp_variable = { cac_workforce_cost = cac_resource_workforce_cost }
 	set_variable = { CAC_companies_workforce^1 = cac_workforce_cost }
 	multiply_variable = { CAC_companies_workforce^1 = -1 }
 	set_variable = { CAC_companies_sector_buildings^1 = synthetic_refinery_total }
@@ -851,12 +858,15 @@ CAC_update_building_stats = {
 	multiply_temp_variable = { cac_workforce_cost = 0.010 }               # workers_per_fuel_silo
 	set_temp_variable = { cac_energy_workforce = number_of_fossil_pps }
 	multiply_temp_variable = { cac_energy_workforce = 0.075 }             # workers_per_fossil_powerplant
+	multiply_temp_variable = { cac_energy_workforce = fossil_powerplant_manpower_fulfillment }
 	add_to_temp_variable = { cac_workforce_cost = cac_energy_workforce }
 	set_temp_variable = { cac_energy_workforce = nuclear_reactors }
 	multiply_temp_variable = { cac_energy_workforce = 0.100 }             # workers_per_nuclear_reactor
+	multiply_temp_variable = { cac_energy_workforce = nuclear_reactor_manpower_fulfillment }
 	add_to_temp_variable = { cac_workforce_cost = cac_energy_workforce }
 	set_temp_variable = { cac_energy_workforce = renewable_energy_infra }
 	multiply_temp_variable = { cac_energy_workforce = 0.030 }             # workers_per_renewable_energy
+	multiply_temp_variable = { cac_energy_workforce = renewable_energy_infra_manpower_fulfillment }
 	add_to_temp_variable = { cac_workforce_cost = cac_energy_workforce }
 	multiply_temp_variable = { cac_workforce_cost = cac_gdpc_scaled }
 	set_variable = { CAC_companies_workforce^2 = cac_workforce_cost }
@@ -897,6 +907,7 @@ CAC_update_building_stats = {
 	add_to_temp_variable = { cac_workforce_cost = cac_composite_workforce }
 	set_temp_variable = { cac_internet_workforce = internet_station_total }
 	multiply_temp_variable = { cac_internet_workforce = 0.030 }           # workers_per_internet_station
+	multiply_temp_variable = { cac_internet_workforce = internet_station_manpower_fulfillment }
 	add_to_temp_variable = { cac_workforce_cost = cac_internet_workforce }
 	multiply_temp_variable = { cac_workforce_cost = cac_gdpc_scaled }
 	set_variable = { CAC_companies_workforce^4 = cac_workforce_cost }
