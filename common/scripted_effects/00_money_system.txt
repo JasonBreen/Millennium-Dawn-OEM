@@ -183,6 +183,7 @@ calculate_tax_gain = {
 	set_variable = { microchip_gross_income = 0 }
 	set_variable = { composite_gross_income = 0 }
 	set_variable = { synthetic_gross_income = 0 }
+	set_variable = { internet_station_gross_income = 0 }
 
 	# Subsistence Agriculture Tax Gain Income
 	set_variable = { agriculture_tax_gain = gdp_from_agriculture }
@@ -204,6 +205,7 @@ calculate_tax_gain = {
 	# Composites Plants - base constant 3.5
 	# Synthetic Refineries - base constant 3
 	# Agriculture Districts - base constant 2.60
+	# Internet Stations - base constant 1.5
 	set_variable = { civil_fac_tax = industrial_complex_total }
 	set_variable = { military_fac_tax = military_fac }
 	set_variable = { dockyard_tax = dockyard_fac }
@@ -212,6 +214,7 @@ calculate_tax_gain = {
 	set_variable = { composite_plant_tax = composite_plant_total }
 	set_variable = { synthetic_refinery_tax = synthetic_refinery_total }
 	set_variable = { agriculture_district_tax = agriculture_district_total }
+	set_variable = { internet_station_tax = internet_station_total }
 
 	# Calculate unified building tax multiplier (applied once at the end)
 	# This combines: control_factor, corporate_tax_rate, tax_gain_multiplier,
@@ -348,8 +351,6 @@ calculate_tax_gain = {
 
 		set_variable = { office_tax = office_gross_income }
 		multiply_variable = { office_tax = office_tax_mod }
-
-		log = "Office Gross: [?office_gross_income] - Office Tax: [?office_tax]"
 	}
 
 	# Agriculture Districts
@@ -425,6 +426,23 @@ calculate_tax_gain = {
 
 		set_variable = { composite_plant_tax = composite_gross_income }
 		multiply_variable = { composite_plant_tax = composite_tax_mod }
+	}
+
+	# Internet Stations
+	if = { limit = { check_variable = { internet_station_tax > 0 } }
+		# Pass 1: Gross income (base constant = 0.175, manpower always fulfilled)
+		set_temp_variable = { internet_station_gross_unified = gross_unified_base }
+		multiply_temp_variable = { internet_station_gross_unified = 0.175 }
+
+		set_variable = { internet_station_gross_income = internet_station_tax }
+		multiply_variable = { internet_station_gross_income = internet_station_gross_unified }
+
+		# Pass 2: Tax extracted from gross
+		set_temp_variable = { internet_station_tax_mod = corporate_tax_rate_decimal_adjuster }
+		multiply_temp_variable = { internet_station_tax_mod = corporate_tax_gain_multiplier }
+
+		set_variable = { internet_station_tax = internet_station_gross_income }
+		multiply_variable = { internet_station_tax = internet_station_tax_mod }
 	}
 
 	# Synthetic Refineries

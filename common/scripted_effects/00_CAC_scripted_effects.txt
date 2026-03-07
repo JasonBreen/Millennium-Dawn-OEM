@@ -870,21 +870,14 @@ CAC_update_variables = {
 		set_variable = { CAC_companies_maintenance^2 = fuel_silos }
 		multiply_variable = { CAC_companies_maintenance^2 = 0.00315 }    # 3.00 * 0.15 * 0.007
 		set_temp_variable = { cac_energy_maint = number_of_fossil_pps }
-		log = "[?cac_energy_maint] is the number of fossil pps, which was [?number_of_fossil_pps]"
 		multiply_temp_variable = { cac_energy_maint = 0.00341 }        # 3.25 * 0.15 * 0.007
-		log = "[?cac_energy_maint] is the value after multiplication"
 		add_to_variable = { CAC_companies_maintenance^2 = cac_energy_maint }
-		log = "[?CAC_companies_maintenance^2] is the value after fossil fuel plants"
 		set_temp_variable = { cac_energy_maint = nuclear_reactors }
 		multiply_temp_variable = { cac_energy_maint = 0.00945 }          # 9.00 * 0.15 * 0.007
 		add_to_variable = { CAC_companies_maintenance^2 = cac_energy_maint }
-		log = "[?CAC_companies_maintenance^2] is the value after nuclear reactors"
 		set_temp_variable = { cac_energy_maint = renewable_energy_infra }
 		multiply_temp_variable = { cac_energy_maint = 0.00893 }         # 8.50 * 0.15 * 0.007
 		add_to_variable = { CAC_companies_maintenance^2 = cac_energy_maint }
-		log = "[?CAC_companies_maintenance^2] is the value after renewable energy"
-
-		log = "[?CAC_companies_maintenance^2] is the total"
 
 		set_temp_variable = { cac_workforce_cost = fuel_silos }
 		multiply_temp_variable = { cac_workforce_cost = 0.010 }          # workers_per_fuel_silo
@@ -967,24 +960,32 @@ CAC_update_variables = {
 		set_variable = { CAC_companies_sector_buildings^3 = military_fac }
 		add_to_variable = { CAC_companies_sector_buildings^3 = dockyard_fac }
 
-		# Slot 4 — Technology & Communications (microchip plants + composite plants)
+		# Slot 4 — Technology & Communications (microchip plants + composite plants + internet stations)
 		set_variable = { CAC_companies_maintenance^4 = microchip_plant_total }
 		multiply_variable = { CAC_companies_maintenance^4 = 0.01575 } # 15.00 * 0.15 * 0.007
 		set_temp_variable = { cac_composite_maintenance = composite_plant_total }
 		multiply_temp_variable = { cac_composite_maintenance = 0.01365 } # 13.00 * 0.15 * 0.007
 		add_to_variable = { CAC_companies_maintenance^4 = cac_composite_maintenance }
+		set_temp_variable = { cac_internet_maintenance = internet_station_total }
+		multiply_temp_variable = { cac_internet_maintenance = 0.00315 } # 3.00 * 0.15 * 0.007
+		add_to_variable = { CAC_companies_maintenance^4 = cac_internet_maintenance }
 		set_temp_variable = { cac_workforce_cost = microchip_plant_total }
 		multiply_temp_variable = { cac_workforce_cost = 0.050 }    # workers_per_microchip_plant
 		set_temp_variable = { cac_composite_workforce = composite_plant_total }
 		multiply_temp_variable = { cac_composite_workforce = 0.050 }    # workers_per_composite_plant
 		add_to_temp_variable = { cac_workforce_cost = cac_composite_workforce }
+		set_temp_variable = { cac_internet_workforce = internet_station_total }
+		multiply_temp_variable = { cac_internet_workforce = 0.030 }    # workers_per_internet_station (fixed)
+		add_to_temp_variable = { cac_workforce_cost = cac_internet_workforce }
 		multiply_temp_variable = { cac_workforce_cost = gdp_per_capita }
 		multiply_temp_variable = { cac_workforce_cost = 0.007 }
 		set_variable = { CAC_companies_workforce^4 = cac_workforce_cost }
 		set_variable = { CAC_companies_income^4 = microchip_gross_income }
 		add_to_variable = { CAC_companies_income^4 = composite_gross_income }
+		add_to_variable = { CAC_companies_income^4 = internet_station_gross_income }
 		set_variable = { CAC_companies_taxes^4 = microchip_plant_tax }
 		add_to_variable = { CAC_companies_taxes^4 = composite_plant_tax }
+		add_to_variable = { CAC_companies_taxes^4 = internet_station_tax }
 		set_variable = { CAC_companies_revenue^4 = CAC_companies_income^4 }
 		subtract_from_variable = { CAC_companies_revenue^4 = CAC_companies_taxes^4 }
 		add_to_variable = { CAC_companies_revenue^4 = CAC_companies_additional_income^4 }
@@ -1001,6 +1002,7 @@ CAC_update_variables = {
 		multiply_variable = { CAC_companies_workforce^4 = -1 }
 		set_variable = { CAC_companies_sector_buildings^4 = microchip_plant_total }
 		add_to_variable = { CAC_companies_sector_buildings^4 = composite_plant_total }
+		add_to_variable = { CAC_companies_sector_buildings^4 = internet_station_total }
 
 		# Slot 5 — Construction & Infrastructure (civilian factories)
 		set_variable = { CAC_companies_maintenance^5 = industrial_complex_total }
