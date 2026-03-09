@@ -166,7 +166,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_convert_to_euro"
-			unlock_decision_tooltip = EU_join_the_Euro
+			unlock_decision_tooltip = EU_join_the_euro_decision
 			unlock_decision_tooltip = GRE_lie_about_financial_records_decision
 		}
 
@@ -255,29 +255,21 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_military_industrial"
-			add_ideas = GRE_hellenic_arms_subsidies
-			set_temp_variable = { treasury_change = -5 }
-			modify_treasury_effect = yes
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = arms_factory
-						size > 0
-						include_locked = yes
-					}
-					is_core_of = ROOT
-				}
-				add_extra_state_shared_building_slots = 1
-				add_building_construction = {
-					type = arms_factory
-					level = 1
-					instant_build = yes
+			one_random_arms_factory = yes
+			if = {
+				limit = { has_dlc = "Arms Against Tyranny" }
+				mio:GRE_eas_materiel_manufacturer = {
+					add_mio_funds = 25
 				}
 			}
 		}
 
 		ai_will_do = {
 			base = 1
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 		}
 	}
 
@@ -285,7 +277,7 @@ focus_tree = {
 		id = GRE_agriculture_sector
 		icon = focus_CHL_focus_on_cattle_and_wool
 
-		x = 8
+		x = 9
 		y = 1
 		relative_position_id = GRE_hellenic_economy
 
@@ -297,13 +289,24 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_agriculture_sector"
-			add_ideas = GRE_agriculture_modernization
-			set_temp_variable = { treasury_change = -3 }
-			modify_treasury_effect = yes
+			add_ideas = GRE_agriculture_modernization_1
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { debt_change = 2 }
+				modify_debt_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -2 }
+				modify_treasury_effect = yes
+			}
 		}
 
 		ai_will_do = {
 			base = 1
+			modifier = {
+				factor = 0
+				NOT = { has_country_flag = GRE_defer_payments_flag }
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 		}
 	}
 
@@ -324,9 +327,6 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_power_corporations"
-			add_ideas = GRE_energy_independence
-			set_temp_variable = { treasury_change = -5 }
-			modify_treasury_effect = yes
 		}
 
 		ai_will_do = {
@@ -545,13 +545,13 @@ focus_tree = {
 		id = GRE_transport_sector
 		icon = construction4
 
-		x = 2
-		y = 1
+		x = 3
+		y = 0
 		relative_position_id = GRE_military_industrial
 
 		cost = 5
 
-		prerequisite = { focus = GRE_military_industrial }
+		prerequisite = { focus = GRE_hellenic_economy }
 
 		search_filters = { FOCUS_FILTER_INDUSTRY }
 
@@ -583,13 +583,27 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_vintage_wines"
-			add_ideas = GRE_wine_exports
-			set_temp_variable = { treasury_change = -2 }
-			modify_treasury_effect = yes
+			swap_ideas = {
+				remove_idea = GRE_agriculture_modernization_1
+				add_idea = GRE_agriculture_modernization_2
+			}
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { debt_change = 2 }
+				modify_debt_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -2 }
+				modify_treasury_effect = yes
+			}
 		}
 
 		ai_will_do = {
 			base = 1
+			modifier = {
+				factor = 0
+				NOT = { has_country_flag = GRE_defer_payments_flag }
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 		}
 	}
 
@@ -609,13 +623,16 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_tobacco_plantations"
-			add_ideas = GRE_tobacco_industry
-			set_temp_variable = { treasury_change = -2 }
-			modify_treasury_effect = yes
+			one_random_agriculture_district = yes
 		}
 
 		ai_will_do = {
 			base = 1
+			modifier = {
+				factor = 0
+				NOT = { has_country_flag = GRE_defer_payments_flag }
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 		}
 	}
 
@@ -635,26 +652,6 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_gas_oil_plants"
-			add_ideas = GRE_refinery_expansion
-			set_temp_variable = { treasury_change = -6 }
-			modify_treasury_effect = yes
-			random_owned_controlled_state = {
-				limit = {
-					is_coastal = yes
-					is_core_of = ROOT
-					free_building_slots = {
-						building = industrial_complex
-						size > 0
-						include_locked = yes
-					}
-				}
-				add_extra_state_shared_building_slots = 1
-				add_building_construction = {
-					type = industrial_complex
-					level = 1
-					instant_build = yes
-				}
-			}
 		}
 
 		ai_will_do = {
@@ -678,10 +675,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_aegean_pipelines"
-			add_ideas = GRE_pipeline_corridor
-			set_temp_variable = { treasury_change = -8 }
-			modify_treasury_effect = yes
-			add_political_power = 50
+			# TODO: Add an effect
 		}
 
 		ai_will_do = {
@@ -717,7 +711,7 @@ focus_tree = {
 	}
 
 	focus = {
-		id = GRE_yen_debt_swaps
+		id = GRE_debt_swaps
 		icon = chinese_rmb
 
 		x = 0
@@ -731,7 +725,7 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_ECONOMY }
 
 		completion_reward = {
-			log = "[GetDateText]: [This.GetName]: focus GRE_yen_debt_swaps"
+			log = "[GetDateText]: [This.GetName]: focus GRE_debt_swaps"
 			add_ideas = GRE_yen_swap_agreement
 			add_political_power = 50
 		}
@@ -888,21 +882,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_rare_element_prospecting"
-			random_owned_controlled_state = {
-				limit = {
-					is_core_of = ROOT
-				}
-				add_resource = {
-					type = tungsten
-					amount = 4
-				}
-				add_resource = {
-					type = chromium
-					amount = 4
-				}
-			}
-			set_temp_variable = { treasury_change = -5 }
-			modify_treasury_effect = yes
+			# TODO: Add a prospecting
 		}
 
 		ai_will_do = {
@@ -922,7 +902,7 @@ focus_tree = {
 		id = GRE_western_shipping_magnate
 		icon = develop_polish_shipbuilding
 
-		x = 1
+		x = 2
 		y = 1
 		relative_position_id = GRE_new_railways
 
@@ -1004,7 +984,7 @@ focus_tree = {
 		id = GRE_cotton_plantations
 		icon = GEO_wine
 
-		x = 0
+		x = -1
 		y = 1
 		relative_position_id = GRE_vintage_wines
 
@@ -1016,13 +996,27 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_cotton_plantations"
-			add_ideas = GRE_cotton_industry
-			set_temp_variable = { treasury_change = -2 }
-			modify_treasury_effect = yes
+			swap_ideas = {
+				remove_idea = GRE_agriculture_modernization_2
+				add_idea = GRE_agriculture_modernization_3
+			}
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { debt_change = 2 }
+				modify_debt_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -2 }
+				modify_treasury_effect = yes
+			}
 		}
 
 		ai_will_do = {
 			base = 1
+			modifier = {
+				factor = 0
+				NOT = { has_country_flag = GRE_defer_payments_flag }
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 		}
 	}
 
@@ -1030,7 +1024,7 @@ focus_tree = {
 		id = GRE_fisheries_expansion
 		icon = Canned_Fish
 
-		x = 0
+		x = -1
 		y = 1
 		relative_position_id = GRE_tobacco_plantations
 
@@ -1042,13 +1036,16 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_fisheries_expansion"
-			add_ideas = GRE_fisheries_modernization
-			set_temp_variable = { treasury_change = -2 }
-			modify_treasury_effect = yes
+			one_random_agriculture_district = yes
 		}
 
 		ai_will_do = {
 			base = 1
+			modifier = {
+				factor = 0
+				NOT = { has_country_flag = GRE_defer_payments_flag }
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 		}
 	}
 
@@ -1068,17 +1065,6 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_aegean_wind_banks"
-			add_ideas = GRE_wind_energy
-			set_temp_variable = { treasury_change = -5 }
-			modify_treasury_effect = yes
-			every_owned_state = {
-				limit = {
-					is_coastal = yes
-					is_core_of = ROOT
-				}
-				set_temp_variable = { electric_addition = 0.2 }
-				add_wind_energy_production_effect = yes
-			}
 		}
 
 		ai_will_do = {
@@ -1102,7 +1088,6 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_prinos_basin"
-			add_ideas = GRE_prinos_oil
 			140 = {
 				add_resource = {
 					type = oil
@@ -1130,7 +1115,7 @@ focus_tree = {
 
 		cost = 5
 
-		prerequisite = { focus = GRE_trim_the_fat focus = GRE_yen_debt_swaps }
+		prerequisite = { focus = GRE_trim_the_fat focus = GRE_debt_swaps }
 
 		search_filters = { FOCUS_FILTER_ECONOMY }
 
@@ -1288,9 +1273,6 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_helleniq_energy"
-			add_ideas = GRE_helleniq_dominance
-			set_temp_variable = { treasury_change = -4 }
-			modify_treasury_effect = yes
 		}
 
 		ai_will_do = {
@@ -1314,14 +1296,6 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_north_macedonian_pipelines"
-			add_ideas = GRE_balkan_pipeline
-			set_temp_variable = { treasury_change = -5 }
-			modify_treasury_effect = yes
-			if = {
-				limit = { country_exists = FYR }
-				add_opinion_modifier = { target = FYR modifier = economic_cooperation }
-				reverse_add_opinion_modifier = { target = FYR modifier = economic_cooperation }
-			}
 		}
 
 		ai_will_do = {
@@ -1345,22 +1319,6 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_turkish_pipeline"
-			add_ideas = GRE_turkish_pipeline_idea
-			set_temp_variable = { treasury_change = -6 }
-			modify_treasury_effect = yes
-			if = {
-				limit = { country_exists = TUR }
-				TUR = {
-					add_opinion_modifier = {
-						target = ROOT
-						modifier = economic_cooperation
-					}
-				}
-				reverse_add_opinion_modifier = {
-					target = TUR
-					modifier = economic_cooperation
-				}
-			}
 		}
 
 		ai_will_do = {
@@ -1384,9 +1342,6 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_ionian_solar"
-			add_ideas = GRE_solar_energy
-			set_temp_variable = { treasury_change = -5 }
-			modify_treasury_effect = yes
 		}
 
 		ai_will_do = {
@@ -1498,7 +1453,7 @@ focus_tree = {
 		id = GRE_strength
 		icon = industrial_complexes
 
-		x = 2
+		x = 1
 		y = 1
 		relative_position_id = GRE_unemployed
 
@@ -1530,7 +1485,7 @@ focus_tree = {
 		id = GRE_pharma
 		icon = pharma_drugs
 
-		x = 0
+		x = 1
 		y = 1
 		relative_position_id = GRE_strength
 
@@ -1717,10 +1672,9 @@ focus_tree = {
 					instant_build = yes
 				}
 			}
-			if = {
-				limit = { has_dlc = "Arms Against Tyranny" }
+			if = { limit = { has_dlc = "Arms Against Tyranny" }
 				mio:GRE_hellenic_vehicle_industry_tank_manufacturer = {
-					add_mio_funds = 450
+					add_mio_funds = 50
 				}
 			}
 		}
@@ -1850,10 +1804,36 @@ focus_tree = {
 	}
 
 	focus = {
+		id = GRE_golden_visa_deals
+		icon = classic_liberal_economy
+
+		x = -4
+		y = 2
+		relative_position_id = GRE_glass_cannon_economics
+
+		cost = 7.15
+
+		prerequisite = { focus = GRE_strength }
+
+		available = {
+			nationalist_fascist_are_in_power = no
+			emerging_communist_state_are_in_power = no
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [This.GetName]: focus GRE_golden_visa_deals executed"
+		}
+
+		ai_will_do = {
+			base = 1
+		}
+	}
+
+	focus = {
 		id = GRE_chi_investments
 		icon = red_industry
 
-		x = 2
+		x = 0
 		y = 1
 		relative_position_id = GRE_glass_cannon_economics
 
@@ -1888,7 +1868,7 @@ focus_tree = {
 		id = GRE_ICBC
 		icon = chinese_rmb
 
-		x = -2
+		x = 2
 		y = 1
 		relative_position_id = GRE_chi_investments
 
@@ -1969,7 +1949,7 @@ focus_tree = {
 		id = GRE_invest_elliniko
 		icon = construction4
 
-		x = -2
+		x = -1
 		y = 1
 		relative_position_id = GRE_chi_nationwide_investments
 
