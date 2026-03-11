@@ -150,7 +150,6 @@ scripted_gui = {
 			# Other Buttons
 			build_enrichment_facility_button_click = {
 				log = "[GetDateText]: [Root.GetName]: Energy GUI build_enrichment_facility_button"
-				clr_country_flag = build_three_enrichment_facility
 				clr_country_flag = single_enrichment_facility
 				set_country_flag = single_enrichment_facility
 				set_variable = { enrichment_facility_time = 120 }
@@ -161,7 +160,7 @@ scripted_gui = {
 						random_country = {
 							limit = {
 								OR = {
-									has_idea = superpower
+									has_idea = super_power
 									has_idea = large_power
 									has_idea = great_power
 								}
@@ -198,55 +197,13 @@ scripted_gui = {
 			}
 			build_enrichment_facility_button_shift_click = {
 				log = "[GetDateText]: [Root.GetName]: Energy GUI build_enrichment_facility_button"
-				clr_country_flag = build_three_enrichment_facility
 				clr_country_flag = single_enrichment_facility
-				set_country_flag = build_three_enrichment_facility
 				set_variable = { enrichment_facility_time = 290 }
 				activate_mission = energy_building_enrichment_facilities
-				if = { limit = { NOT = { is_in_array = { global.enrichment_countries = THIS.id } } }
-					random = {
-						chance = 30
-						random_country = {
-							limit = {
-								OR = {
-									has_idea = superpower
-									has_idea = large_power
-									has_idea = great_power
-								}
-								has_enrichment_facilities = yes
-								OR = {
-									AND = {
-										PREV = { has_government = democratic }
-										NOT = { has_government = democratic }
-									}
-									AND = {
-										PREV = { has_government = neutrality }
-										NOT = { has_government = neutrality }
-									}
-									AND = {
-										PREV = { has_government = communism }
-										NOT = { has_government = communism }
-									}
-									AND = {
-										PREV = { has_government = nationalist }
-										NOT = { has_government = nationalist }
-									}
-									AND = {
-										PREV = { has_government = fascism }
-										NOT = { has_government = fascism }
-									}
-								}
-							}
-							set_variable = { new_enrichment_country = PREV.id }
-							country_event = energy.4
-						}
-					}
-				}
 				update_global_energy_ui = yes
 			}
 			build_battery_park_button_click = {
 				log = "[GetDateText]: [Root.GetName]: Energy GUI build_battery_park_button_click"
-				clr_country_flag = build_three_battery_park
 				clr_country_flag = single_battery_park
 				set_country_flag = single_battery_park
 				set_variable = { battery_park_time = 75 }
@@ -255,9 +212,7 @@ scripted_gui = {
 			}
 			build_battery_park_button_shift_click = {
 				log = "[GetDateText]: [Root.GetName]: Energy GUI build_battery_park_button_shift_click"
-				clr_country_flag = build_three_battery_park
 				clr_country_flag = single_battery_park
-				set_country_flag = build_three_battery_park
 				set_variable = { battery_park_time = 250 }
 				activate_mission = energy_building_battery_parks
 				update_global_energy_ui = yes
@@ -327,7 +282,9 @@ scripted_gui = {
 		# ai_max_weight_taken_per_test - Determines the number of elements to check for the GUI
 
 		# If you wish to see the values outputted from this. enable human_ai and view ai.log in the logs
-		ai_enabled = { always = yes }
+		ai_enabled = {
+			NOT = { original_tag = ZOM }
+		}
 		ai_test_interval = 240
 		ai_max_weight_taken_per_test = 1
 

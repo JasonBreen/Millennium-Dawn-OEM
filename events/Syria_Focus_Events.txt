@@ -749,7 +749,6 @@ country_event = {
 				num_divisions < 15			#If we took heavy casualties, integrate
 			}
 		}
-		set_country_flag = FSA_Syrian_Arab_Army_Decision
 		add_popularity = { ideology = communism popularity = 0.1 }
 		# Reduction of 20% for the ruling party
 		set_party_index_to_ruling_party = yes
@@ -785,8 +784,6 @@ country_event = {
 		set_temp_variable = { party_popularity_increase = 0.10 }
 		set_temp_variable = { temp_outlook_increase = 0.05 }
 		add_relative_party_popularity = yes
-
-		set_country_flag = FSA_Syrian_Arab_Army_Decision
 	}
 }
 
@@ -807,7 +804,6 @@ country_event = {
 		set_temp_variable = { party_popularity_increase = -0.10 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
-
 
 		set_temp_variable = { temp_opinion = 5 }
 		change_the_military_opinion = yes
@@ -2296,10 +2292,8 @@ country_event = {
 		name = SyriaFocus.55.a
 		log = "[GetDateText]: [This.GetName]: SyriaFocus.55.a executed"
 		ai_chance = { base = 100 }
-		clear_array = ruling_party
-		clear_array = gov_coalition_array
-		add_to_array = { ruling_party = 20 }
-		set_politics = { ruling_party = nationalist }
+		set_temp_variable = { rul_party_temp = 20 }
+		change_ruling_party_effect = yes
 		FROM = { country_event = SyriaFocus.56 }
 	}
 	option = {
@@ -3213,16 +3207,16 @@ country_event = {
 				factor = 0.2
 				OR = {
 					FROM = {
-						OR = {
-							owns_state = 145
-							owns_state = 146
+						owns_any_state_of = {
+							145
+							146
 						}
 					}
 					FROM = {
 						any_subject_country = {
-							OR = {
-								owns_state = 145
-								owns_state = 146
+							owns_any_state_of = {
+								145
+								146
 							}
 						}
 					}
@@ -3275,16 +3269,16 @@ country_event = {
 				factor = 5
 				OR = {
 					FROM = {
-						OR = {
-							owns_state = 145
-							owns_state = 146
+						owns_any_state_of = {
+							145
+							146
 						}
 					}
 					FROM = {
 						any_subject_country = {
-							OR = {
-								owns_state = 145
-								owns_state = 146
+							owns_any_state_of = {
+								145
+								146
 							}
 						}
 					}
@@ -4282,10 +4276,10 @@ country_event = {
 		meta_effect = {
 			text = {
 				set_politics = {
-				ruling_party = democratic
-				elections_allowed = yes
-				last_election = "[YEAR].[MONTH].1"
-				election_frequency = 60
+					ruling_party = democratic
+					elections_allowed = yes
+					last_election = "[YEAR].[MONTH].1"
+					election_frequency = 60
 				}
 			}
 			YEAR = global.year
@@ -4333,7 +4327,6 @@ country_event = {
 		ai_chance = { base = 50 }
 		set_temp_variable = { add_col_one = 17 }
 		add_coalition_members_effect = yes
-		set_country_flag = federalists_in_coalition
 		set_temp_variable = { party_index = 17 }
 		set_temp_variable = { party_popularity_increase = 0.10 }
 		set_temp_variable = { temp_outlook_increase = 0.10 }
@@ -4346,7 +4339,6 @@ country_event = {
 		ai_chance = { base = 50 }
 		set_temp_variable = { add_col_one = 20 }
 		add_coalition_members_effect = yes
-		set_country_flag = nationalists_in_coalition
 		set_temp_variable = { party_index = 20 }
 		set_temp_variable = { party_popularity_increase = 0.10 }
 		set_temp_variable = { temp_outlook_increase = 0.10 }
@@ -4600,10 +4592,9 @@ country_event = {
 				}
 			}
 			ALA = {
-				clear_array = ruling_party
-				clear_array = gov_coalition_array
-				add_to_array = { ruling_party = 22 }
-				set_politics = { ruling_party = nationalist elections_allowed = no }
+				set_temp_variable = { rul_party_temp = 22 }
+				set_temp_variable = { disable_elections = 1 }
+				change_ruling_party_effect = yes
 				add_popularity = { ideology = nationalist popularity = 0.6 }
 			}
 		}
@@ -4914,7 +4905,6 @@ country_event = {
 	}
 
 }
-
 
 ###################
 ### News Events ###
