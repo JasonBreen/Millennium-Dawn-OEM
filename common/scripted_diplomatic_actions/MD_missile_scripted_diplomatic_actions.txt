@@ -47,6 +47,92 @@ scripted_diplomatic_actions = {
 		#### AI SECTION ###
 		ai_desire = {
 			base = 0
+			modifier = {
+				# Offer/request to allied and friendly nations
+				add = 100
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
+			}
+			modifier = {
+				# Withhold from geopolitical adversaries and rivals
+				add = -100
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
+			}
+			modifier = {
+				add = 50
+				check_variable = { PREV.var_GNSS_mil_system_idx > ROOT.var_GNSS_mil_system_idx }
+			}
 		}
 		ai_acceptance = {
 			base_desire = {
@@ -61,30 +147,110 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		}
-
-		condition_commonwealth = {
+			opinion_condition = {
 				base = 0
 				modifier = {
-					add = 5
-					AND = {
-					ROOT = { has_idea = commonwealth_of_nations_member }
-					PREV = { has_idea = commonwealth_of_nations_member }
+					set_temp_variable = { opinion_calculator = opinion@ROOT }
+					multiply_temp_variable = { opinion_calculator = 0.15 }
+					add = opinion_calculator
 				}
 			}
-		}
-			friends_condition = {
+			military_cooperation_condition = {
 				base = 0
 				modifier = {
-					add = 100
-					ai_acceptance_request_satellites_with_friends = yes
+					add = 15
+					OR = {
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							THIS = { has_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 99 } }
+							THIS = { gives_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							OR = {
+								ROOT = { has_volunteers_amount_from = { tag = THIS count > 0 } }
+								THIS = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+							}
+						}
+					}
 				}
 			}
-			foes_condition = {
+			condition_four = {
 				base = 0
 				modifier = {
-					add = -100
-					NOT_ai_acceptance_request_satellites_with_foes = yes
+					add = 20
+					THIS = { has_idea = NATO_member }
+					ROOT = { has_idea = NATO_member }
+				}
+			}
+			condition_five = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { has_idea = EU_member }
+					ROOT = { has_idea = EU_member }
+				}
+			}
+			condition_six = {
+				base = 0
+				modifier = {
+					add = 25
+					THIS = { is_in_faction_with = ROOT }
+				}
+			}
+			war_ally_condition = {
+				base = 0
+				modifier = {
+					add = 10
+					ROOT = { has_war_together_with = THIS }
+				}
+			}
+			usa_ally_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = USA }
+					ROOT = {
+						OR = {
+							has_idea = Major_Non_NATO_Ally
+							has_idea = NATO_member
+						}
+					}
+				}
+			}
+			commonwealth_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = ENG }
+					ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+				}
+			}
+			sco_member_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = CHI }
+					ROOT = {
+						OR = {
+							has_idea = sco_member
+							has_idea = sco_member_mil
+						}
+					}
+				}
+			}
+			opposing_factions_condition = {
+				base = 0
+				modifier = {
+					add = -40
+					THIS = { is_in_faction = yes }
+					ROOT = {
+						is_in_faction = yes
+						NOT = { is_in_faction_with = THIS }
+					}
 				}
 			}
 			war_condition = {
@@ -174,13 +340,88 @@ scripted_diplomatic_actions = {
 
 		#### AI SECTION ###
 		ai_desire = {
+			base = 0
 			modifier = {
+				# Offer/request to allied and friendly nations
 				add = 100
-				share_satellites_with_friends = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
 			}
 			modifier = {
+				# Withhold from geopolitical adversaries and rivals
 				add = -100
-				NOT_share_satellites_with_foes = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
 			}
 			modifier = {
 				add = -100
@@ -215,23 +456,118 @@ scripted_diplomatic_actions = {
 			condition_CANZUK = {
 				base = 0
 				modifier = {
-					add = 10
+					add = 10   #for some reason this isnt working but commonwealth is
 					AND = {
 					ROOT = { has_country_flag = CANZUK_candidate_flag }
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		}
-		condition_commonwealth = {
+			opinion_condition = {
 				base = 0
 				modifier = {
-					add = 5
-					AND = {
-					ROOT = { has_idea = commonwealth_of_nations_member }
-					PREV = { has_idea = commonwealth_of_nations_member }
+					set_temp_variable = { opinion_calculator = opinion@ROOT }
+					multiply_temp_variable = { opinion_calculator = 0.15 }
+					add = opinion_calculator
 				}
 			}
-		}
+			military_cooperation_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					OR = {
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							THIS = { has_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 99 } }
+							THIS = { gives_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							OR = {
+								ROOT = { has_volunteers_amount_from = { tag = THIS count > 0 } }
+								THIS = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+							}
+						}
+					}
+				}
+			}
+			condition_four = {
+				base = 0
+				modifier = {
+					add = 20
+					THIS = { has_idea = NATO_member }
+					ROOT = { has_idea = NATO_member }
+				}
+			}
+			condition_five = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { has_idea = EU_member }
+					ROOT = { has_idea = EU_member }
+				}
+			}
+			condition_six = {
+				base = 0
+				modifier = {
+					add = 25
+					THIS = { is_in_faction_with = ROOT }
+				}
+			}
+			war_ally_condition = {
+				base = 0
+				modifier = {
+					add = 10
+					ROOT = { has_war_together_with = THIS }
+				}
+			}
+			usa_ally_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = USA }
+					ROOT = {
+						OR = {
+							has_idea = Major_Non_NATO_Ally
+							has_idea = NATO_member
+						}
+					}
+				}
+			}
+			commonwealth_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = ENG }
+					ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+				}
+			}
+			sco_member_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = CHI }
+					ROOT = {
+						OR = {
+							has_idea = sco_member
+							has_idea = sco_member_mil
+						}
+					}
+				}
+			}
+			opposing_factions_condition = {
+				base = 0
+				modifier = {
+					add = -40
+					THIS = { is_in_faction = yes }
+					ROOT = {
+						is_in_faction = yes
+						NOT = { is_in_faction_with = THIS }
+					}
+				}
+			}
 			war_condition = {
 				base = 0
 				modifier = {
@@ -311,9 +647,71 @@ scripted_diplomatic_actions = {
 
 		#### AI SECTION ###
 		ai_desire = {
+			base = 0
 			modifier = {
+				# Do not revoke from allied and friendly nations
 				add = -100
-				share_satellites_with_friends = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
 			}
 				modifier = {
 					add = -10
@@ -322,7 +720,7 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		
+
 				modifier = {
 					add = -5
 					AND = {
@@ -330,10 +728,23 @@ scripted_diplomatic_actions = {
 					PREV = { has_idea = commonwealth_of_nations_member }
 				}
 			}
-		
+
 			modifier = {
+				# Revoke from geopolitical adversaries and rivals
 				add = 300
-				NOT_share_satellites_with_foes = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
 			}
 			modifier = {
 				add = -100
@@ -404,6 +815,92 @@ scripted_diplomatic_actions = {
 		#### AI SECTION ###
 		ai_desire = {
 			base = 0
+			modifier = {
+				# Offer/request to allied and friendly nations
+				add = 100
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
+			}
+			modifier = {
+				# Withhold from geopolitical adversaries and rivals
+				add = -100
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
+			}
+			modifier = {
+				add = 50
+				check_variable = { PREV.var_GNSS_civ_system_idx > ROOT.var_GNSS_civ_system_idx }
+			}
 		}
 		ai_acceptance = {
 			base_desire = {
@@ -418,29 +915,110 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		}
-			condition_commonwealth = {
+			opinion_condition = {
 				base = 0
 				modifier = {
-					add = 5
-					AND = {
-					ROOT = { has_idea = commonwealth_of_nations_member }
-					PREV = { has_idea = commonwealth_of_nations_member }
+					set_temp_variable = { opinion_calculator = opinion@ROOT }
+					multiply_temp_variable = { opinion_calculator = 0.15 }
+					add = opinion_calculator
 				}
 			}
-		}
-			friends_condition = {
+			military_cooperation_condition = {
 				base = 0
 				modifier = {
-					add = 100
-					ai_acceptance_request_satellites_with_friends = yes
+					add = 15
+					OR = {
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							THIS = { has_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 99 } }
+							THIS = { gives_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							OR = {
+								ROOT = { has_volunteers_amount_from = { tag = THIS count > 0 } }
+								THIS = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+							}
+						}
+					}
 				}
 			}
-			foes_condition = {
+			condition_four = {
 				base = 0
 				modifier = {
-					add = -100
-					NOT_ai_acceptance_request_satellites_with_foes = yes
+					add = 20
+					THIS = { has_idea = NATO_member }
+					ROOT = { has_idea = NATO_member }
+				}
+			}
+			condition_five = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { has_idea = EU_member }
+					ROOT = { has_idea = EU_member }
+				}
+			}
+			condition_six = {
+				base = 0
+				modifier = {
+					add = 25
+					THIS = { is_in_faction_with = ROOT }
+				}
+			}
+			war_ally_condition = {
+				base = 0
+				modifier = {
+					add = 10
+					ROOT = { has_war_together_with = THIS }
+				}
+			}
+			usa_ally_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = USA }
+					ROOT = {
+						OR = {
+							has_idea = Major_Non_NATO_Ally
+							has_idea = NATO_member
+						}
+					}
+				}
+			}
+			commonwealth_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = ENG }
+					ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+				}
+			}
+			sco_member_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = CHI }
+					ROOT = {
+						OR = {
+							has_idea = sco_member
+							has_idea = sco_member_mil
+						}
+					}
+				}
+			}
+			opposing_factions_condition = {
+				base = 0
+				modifier = {
+					add = -40
+					THIS = { is_in_faction = yes }
+					ROOT = {
+						is_in_faction = yes
+						NOT = { is_in_faction_with = THIS }
+					}
 				}
 			}
 			war_condition = {
@@ -539,13 +1117,88 @@ scripted_diplomatic_actions = {
 
 		#### AI SECTION ###
 		ai_desire = {
+			base = 0
 			modifier = {
+				# Offer/request to allied and friendly nations
 				add = 100
-				share_satellites_with_friends = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
 			}
 			modifier = {
+				# Withhold from geopolitical adversaries and rivals
 				add = -100
-				NOT_share_satellites_with_foes = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
 			}
 			modifier = {
 				add = -100
@@ -586,17 +1239,112 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		}
-			condition_commonwealth = {
+			opinion_condition = {
 				base = 0
 				modifier = {
-					add = 5
-					AND = {
-					ROOT = { has_idea = commonwealth_of_nations_member }
-					PREV = { has_idea = commonwealth_of_nations_member }
+					set_temp_variable = { opinion_calculator = opinion@ROOT }
+					multiply_temp_variable = { opinion_calculator = 0.15 }
+					add = opinion_calculator
 				}
 			}
-		}
+			military_cooperation_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					OR = {
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							THIS = { has_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 99 } }
+							THIS = { gives_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							OR = {
+								ROOT = { has_volunteers_amount_from = { tag = THIS count > 0 } }
+								THIS = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+							}
+						}
+					}
+				}
+			}
+			condition_four = {
+				base = 0
+				modifier = {
+					add = 20
+					THIS = { has_idea = NATO_member }
+					ROOT = { has_idea = NATO_member }
+				}
+			}
+			condition_five = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { has_idea = EU_member }
+					ROOT = { has_idea = EU_member }
+				}
+			}
+			condition_six = {
+				base = 0
+				modifier = {
+					add = 25
+					THIS = { is_in_faction_with = ROOT }
+				}
+			}
+			war_ally_condition = {
+				base = 0
+				modifier = {
+					add = 10
+					ROOT = { has_war_together_with = THIS }
+				}
+			}
+			usa_ally_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = USA }
+					ROOT = {
+						OR = {
+							has_idea = Major_Non_NATO_Ally
+							has_idea = NATO_member
+						}
+					}
+				}
+			}
+			commonwealth_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = ENG }
+					ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+				}
+			}
+			sco_member_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = CHI }
+					ROOT = {
+						OR = {
+							has_idea = sco_member
+							has_idea = sco_member_mil
+						}
+					}
+				}
+			}
+			opposing_factions_condition = {
+				base = 0
+				modifier = {
+					add = -40
+					THIS = { is_in_faction = yes }
+					ROOT = {
+						is_in_faction = yes
+						NOT = { is_in_faction_with = THIS }
+					}
+				}
+			}
 			war_condition = {
 				base = 0
 				modifier = {
@@ -671,9 +1419,71 @@ scripted_diplomatic_actions = {
 
 		#### AI SECTION ###
 		ai_desire = {
+			base = 0
 			modifier = {
+				# Do not revoke from allied and friendly nations
 				add = -100
-				share_satellites_with_friends = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
 			}
 
 				modifier = {
@@ -690,10 +1500,23 @@ scripted_diplomatic_actions = {
 					PREV = { has_idea = commonwealth_of_nations_member }
 				}
 			}
-		
+
 			modifier = {
+				# Revoke from geopolitical adversaries and rivals
 				add = 400
-				NOT_share_satellites_with_foes = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
 			}
 			modifier = {
 				add = -100
@@ -761,6 +1584,92 @@ scripted_diplomatic_actions = {
 		#### AI SECTION ###
 		ai_desire = {
 			base = 0
+			modifier = {
+				# Offer/request to allied and friendly nations
+				add = 100
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
+			}
+			modifier = {
+				# Withhold from geopolitical adversaries and rivals
+				add = -100
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
+			}
+			modifier = {
+				add = 50
+				check_variable = { PREV.var_COM_mil_system_idx > ROOT.var_COM_mil_system_idx }
+			}
 		}
 		ai_acceptance = {
 			base_desire = {
@@ -775,29 +1684,110 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		}
-			condition_commonwealth = {
+			opinion_condition = {
 				base = 0
 				modifier = {
-					add = 5
-					AND = {
-					ROOT = { has_idea = commonwealth_of_nations_member }
-					PREV = { has_idea = commonwealth_of_nations_member }
+					set_temp_variable = { opinion_calculator = opinion@ROOT }
+					multiply_temp_variable = { opinion_calculator = 0.15 }
+					add = opinion_calculator
 				}
 			}
-		}
-			friends_condition = {
+			military_cooperation_condition = {
 				base = 0
 				modifier = {
-					add = 100
-					ai_acceptance_request_satellites_with_friends = yes
+					add = 15
+					OR = {
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							THIS = { has_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 99 } }
+							THIS = { gives_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							OR = {
+								ROOT = { has_volunteers_amount_from = { tag = THIS count > 0 } }
+								THIS = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+							}
+						}
+					}
 				}
 			}
-			foes_condition = {
+			condition_four = {
 				base = 0
 				modifier = {
-					add = -100
-					NOT_ai_acceptance_request_satellites_with_foes = yes
+					add = 20
+					THIS = { has_idea = NATO_member }
+					ROOT = { has_idea = NATO_member }
+				}
+			}
+			condition_five = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { has_idea = EU_member }
+					ROOT = { has_idea = EU_member }
+				}
+			}
+			condition_six = {
+				base = 0
+				modifier = {
+					add = 25
+					THIS = { is_in_faction_with = ROOT }
+				}
+			}
+			war_ally_condition = {
+				base = 0
+				modifier = {
+					add = 10
+					ROOT = { has_war_together_with = THIS }
+				}
+			}
+			usa_ally_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = USA }
+					ROOT = {
+						OR = {
+							has_idea = Major_Non_NATO_Ally
+							has_idea = NATO_member
+						}
+					}
+				}
+			}
+			commonwealth_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = ENG }
+					ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+				}
+			}
+			sco_member_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = CHI }
+					ROOT = {
+						OR = {
+							has_idea = sco_member
+							has_idea = sco_member_mil
+						}
+					}
+				}
+			}
+			opposing_factions_condition = {
+				base = 0
+				modifier = {
+					add = -40
+					THIS = { is_in_faction = yes }
+					ROOT = {
+						is_in_faction = yes
+						NOT = { is_in_faction_with = THIS }
+					}
 				}
 			}
 			war_condition = {
@@ -888,13 +1878,88 @@ scripted_diplomatic_actions = {
 
 		#### AI SECTION ###
 		ai_desire = {
+			base = 0
 			modifier = {
+				# Offer/request to allied and friendly nations
 				add = 100
-				share_satellites_with_friends = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
 			}
 			modifier = {
+				# Withhold from geopolitical adversaries and rivals
 				add = -100
-				NOT_share_satellites_with_foes = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
 			}
 			modifier = {
 				add = -100
@@ -935,17 +2000,112 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		}
-			condition_commonwealth = {
+			opinion_condition = {
 				base = 0
 				modifier = {
-					add = 5
-					AND = {
-					ROOT = { has_idea = commonwealth_of_nations_member }
-					PREV = { has_idea = commonwealth_of_nations_member }
+					set_temp_variable = { opinion_calculator = opinion@ROOT }
+					multiply_temp_variable = { opinion_calculator = 0.15 }
+					add = opinion_calculator
 				}
 			}
-		}
+			military_cooperation_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					OR = {
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							THIS = { has_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 99 } }
+							THIS = { gives_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							OR = {
+								ROOT = { has_volunteers_amount_from = { tag = THIS count > 0 } }
+								THIS = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+							}
+						}
+					}
+				}
+			}
+			condition_four = {
+				base = 0
+				modifier = {
+					add = 20
+					THIS = { has_idea = NATO_member }
+					ROOT = { has_idea = NATO_member }
+				}
+			}
+			condition_five = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { has_idea = EU_member }
+					ROOT = { has_idea = EU_member }
+				}
+			}
+			condition_six = {
+				base = 0
+				modifier = {
+					add = 25
+					THIS = { is_in_faction_with = ROOT }
+				}
+			}
+			war_ally_condition = {
+				base = 0
+				modifier = {
+					add = 10
+					ROOT = { has_war_together_with = THIS }
+				}
+			}
+			usa_ally_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = USA }
+					ROOT = {
+						OR = {
+							has_idea = Major_Non_NATO_Ally
+							has_idea = NATO_member
+						}
+					}
+				}
+			}
+			commonwealth_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = ENG }
+					ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+				}
+			}
+			sco_member_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = CHI }
+					ROOT = {
+						OR = {
+							has_idea = sco_member
+							has_idea = sco_member_mil
+						}
+					}
+				}
+			}
+			opposing_factions_condition = {
+				base = 0
+				modifier = {
+					add = -40
+					THIS = { is_in_faction = yes }
+					ROOT = {
+						is_in_faction = yes
+						NOT = { is_in_faction_with = THIS }
+					}
+				}
+			}
 			war_condition = {
 				base = 0
 				modifier = {
@@ -1020,9 +2180,71 @@ scripted_diplomatic_actions = {
 		}
 		#### AI SECTION ###
 		ai_desire = {
+			base = 0
 			modifier = {
+				# Do not revoke from allied and friendly nations
 				add = -100
-				share_satellites_with_friends = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
 			}
 
 				modifier = {
@@ -1032,7 +2254,7 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		
+
 				modifier = {
 					add = -5
 					AND = {
@@ -1042,8 +2264,21 @@ scripted_diplomatic_actions = {
 			}
 
 			modifier = {
+				# Revoke from geopolitical adversaries and rivals
 				add = 400
-				NOT_share_satellites_with_foes = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
 			}
 			modifier = {
 				add = 200
@@ -1112,6 +2347,92 @@ scripted_diplomatic_actions = {
 		#### AI SECTION ###
 		ai_desire = {
 			base = 0
+			modifier = {
+				# Offer/request to allied and friendly nations
+				add = 100
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
+			}
+			modifier = {
+				# Withhold from geopolitical adversaries and rivals
+				add = -100
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
+			}
+			modifier = {
+				add = 50
+				check_variable = { PREV.var_COM_civ_system_idx > ROOT.var_COM_civ_system_idx }
+			}
 		}
 		ai_acceptance = {
 			base_desire = {
@@ -1126,29 +2447,110 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		}
-			condition_commonwealth = {
+			opinion_condition = {
 				base = 0
 				modifier = {
-					add = 5
-					AND = {
-					ROOT = { has_idea = commonwealth_of_nations_member }
-					PREV = { has_idea = commonwealth_of_nations_member }
+					set_temp_variable = { opinion_calculator = opinion@ROOT }
+					multiply_temp_variable = { opinion_calculator = 0.15 }
+					add = opinion_calculator
 				}
 			}
-		}
-			friends_condition = {
+			military_cooperation_condition = {
 				base = 0
 				modifier = {
-					add = 100
-					ai_acceptance_request_satellites_with_friends = yes
+					add = 15
+					OR = {
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							THIS = { has_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 99 } }
+							THIS = { gives_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							OR = {
+								ROOT = { has_volunteers_amount_from = { tag = THIS count > 0 } }
+								THIS = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+							}
+						}
+					}
 				}
 			}
-			foes_condition = {
+			condition_four = {
 				base = 0
 				modifier = {
-					add = -100
-					NOT_ai_acceptance_request_satellites_with_foes = yes
+					add = 20
+					THIS = { has_idea = NATO_member }
+					ROOT = { has_idea = NATO_member }
+				}
+			}
+			condition_five = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { has_idea = EU_member }
+					ROOT = { has_idea = EU_member }
+				}
+			}
+			condition_six = {
+				base = 0
+				modifier = {
+					add = 25
+					THIS = { is_in_faction_with = ROOT }
+				}
+			}
+			war_ally_condition = {
+				base = 0
+				modifier = {
+					add = 10
+					ROOT = { has_war_together_with = THIS }
+				}
+			}
+			usa_ally_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = USA }
+					ROOT = {
+						OR = {
+							has_idea = Major_Non_NATO_Ally
+							has_idea = NATO_member
+						}
+					}
+				}
+			}
+			commonwealth_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = ENG }
+					ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+				}
+			}
+			sco_member_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = CHI }
+					ROOT = {
+						OR = {
+							has_idea = sco_member
+							has_idea = sco_member_mil
+						}
+					}
+				}
+			}
+			opposing_factions_condition = {
+				base = 0
+				modifier = {
+					add = -40
+					THIS = { is_in_faction = yes }
+					ROOT = {
+						is_in_faction = yes
+						NOT = { is_in_faction_with = THIS }
+					}
 				}
 			}
 			war_condition = {
@@ -1234,9 +2636,71 @@ scripted_diplomatic_actions = {
 		}
 		#### AI SECTION ###
 		ai_desire = {
+			base = 0
 			modifier = {
+				# Offer/request to allied and friendly nations
 				add = 100
-				share_satellites_with_friends = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
 			}
 
 				modifier = {
@@ -1254,10 +2718,23 @@ scripted_diplomatic_actions = {
 					PREV = { has_idea = commonwealth_of_nations_member }
 				}
 			}
-		
+
 			modifier = {
+				# Withhold from geopolitical adversaries and rivals
 				add = -100
-				NOT_share_satellites_with_foes = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
 			}
 			modifier = {
 				add = -100
@@ -1298,17 +2775,112 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		}
-			condition_commonwealth = {
+			opinion_condition = {
 				base = 0
 				modifier = {
-					add = 5
-					AND = {
-					ROOT = { has_idea = commonwealth_of_nations_member }
-					PREV = { has_idea = commonwealth_of_nations_member }
+					set_temp_variable = { opinion_calculator = opinion@ROOT }
+					multiply_temp_variable = { opinion_calculator = 0.15 }
+					add = opinion_calculator
 				}
 			}
-		}
+			military_cooperation_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					OR = {
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							THIS = { has_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 99 } }
+							THIS = { gives_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							OR = {
+								ROOT = { has_volunteers_amount_from = { tag = THIS count > 0 } }
+								THIS = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+							}
+						}
+					}
+				}
+			}
+			condition_four = {
+				base = 0
+				modifier = {
+					add = 20
+					THIS = { has_idea = NATO_member }
+					ROOT = { has_idea = NATO_member }
+				}
+			}
+			condition_five = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { has_idea = EU_member }
+					ROOT = { has_idea = EU_member }
+				}
+			}
+			condition_six = {
+				base = 0
+				modifier = {
+					add = 25
+					THIS = { is_in_faction_with = ROOT }
+				}
+			}
+			war_ally_condition = {
+				base = 0
+				modifier = {
+					add = 10
+					ROOT = { has_war_together_with = THIS }
+				}
+			}
+			usa_ally_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = USA }
+					ROOT = {
+						OR = {
+							has_idea = Major_Non_NATO_Ally
+							has_idea = NATO_member
+						}
+					}
+				}
+			}
+			commonwealth_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = ENG }
+					ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+				}
+			}
+			sco_member_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = CHI }
+					ROOT = {
+						OR = {
+							has_idea = sco_member
+							has_idea = sco_member_mil
+						}
+					}
+				}
+			}
+			opposing_factions_condition = {
+				base = 0
+				modifier = {
+					add = -40
+					THIS = { is_in_faction = yes }
+					ROOT = {
+						is_in_faction = yes
+						NOT = { is_in_faction_with = THIS }
+					}
+				}
+			}
 			war_condition = {
 				base = 0
 				modifier = {
@@ -1384,9 +2956,71 @@ scripted_diplomatic_actions = {
 		}
 		#### AI SECTION ###
 		ai_desire = {
+			base = 0
 			modifier = {
+				# Do not revoke from allied and friendly nations
 				add = -100
-				share_satellites_with_friends = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
 			}
 				modifier = {
 					add = -10
@@ -1395,7 +3029,7 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		
+
 				base = 0
 				modifier = {
 					add = -5
@@ -1406,8 +3040,21 @@ scripted_diplomatic_actions = {
 			}
 
 			modifier = {
+				# Revoke from geopolitical adversaries and rivals
 				add = 400
-				NOT_share_satellites_with_foes = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
 			}
 			modifier = {
 				add = 200
@@ -1478,6 +3125,92 @@ scripted_diplomatic_actions = {
 		#### AI SECTION ###
 		ai_desire = {
 			base = 0
+			modifier = {
+				# Offer/request to allied and friendly nations
+				add = 100
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
+			}
+			modifier = {
+				# Withhold from geopolitical adversaries and rivals
+				add = -100
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
+			}
+			modifier = {
+				add = 50
+				check_variable = { PREV.var_SPY_mil_system_idx > ROOT.var_SPY_mil_system_idx }
+			}
 		}
 		ai_acceptance = {
 			base_desire = {
@@ -1492,29 +3225,110 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		}
-			condition_commonwealth = {
+			opinion_condition = {
 				base = 0
 				modifier = {
-					add = 5
-					AND = {
-					ROOT = { has_idea = commonwealth_of_nations_member }
-					PREV = { has_idea = commonwealth_of_nations_member }
+					set_temp_variable = { opinion_calculator = opinion@ROOT }
+					multiply_temp_variable = { opinion_calculator = 0.15 }
+					add = opinion_calculator
 				}
 			}
-		}
-			friends_condition = {
+			military_cooperation_condition = {
 				base = 0
 				modifier = {
-					add = 100
-					ai_acceptance_request_satellites_with_friends = yes
+					add = 15
+					OR = {
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							THIS = { has_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 99 } }
+							THIS = { gives_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							OR = {
+								ROOT = { has_volunteers_amount_from = { tag = THIS count > 0 } }
+								THIS = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+							}
+						}
+					}
 				}
 			}
-			foes_condition = {
+			condition_four = {
 				base = 0
 				modifier = {
-					add = -100
-					NOT_ai_acceptance_request_satellites_with_foes = yes
+					add = 20
+					THIS = { has_idea = NATO_member }
+					ROOT = { has_idea = NATO_member }
+				}
+			}
+			condition_five = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { has_idea = EU_member }
+					ROOT = { has_idea = EU_member }
+				}
+			}
+			condition_six = {
+				base = 0
+				modifier = {
+					add = 25
+					THIS = { is_in_faction_with = ROOT }
+				}
+			}
+			war_ally_condition = {
+				base = 0
+				modifier = {
+					add = 10
+					ROOT = { has_war_together_with = THIS }
+				}
+			}
+			usa_ally_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = USA }
+					ROOT = {
+						OR = {
+							has_idea = Major_Non_NATO_Ally
+							has_idea = NATO_member
+						}
+					}
+				}
+			}
+			commonwealth_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = ENG }
+					ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+				}
+			}
+			sco_member_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = CHI }
+					ROOT = {
+						OR = {
+							has_idea = sco_member
+							has_idea = sco_member_mil
+						}
+					}
+				}
+			}
+			opposing_factions_condition = {
+				base = 0
+				modifier = {
+					add = -40
+					THIS = { is_in_faction = yes }
+					ROOT = {
+						is_in_faction = yes
+						NOT = { is_in_faction_with = THIS }
+					}
 				}
 			}
 			war_condition = {
@@ -1604,13 +3418,88 @@ scripted_diplomatic_actions = {
 
 		#### AI SECTION ###
 		ai_desire = {
+			base = 0
 			modifier = {
+				# Offer/request to allied and friendly nations
 				add = 100
-				share_satellites_with_friends = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
 			}
 			modifier = {
+				# Withhold from geopolitical adversaries and rivals
 				add = -100
-				NOT_share_satellites_with_foes = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
 			}
 			modifier = {
 				add = -100
@@ -1651,17 +3540,112 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		}
-			condition_commonwealth = {
+			opinion_condition = {
 				base = 0
 				modifier = {
-					add = 5
-					AND = {
-					ROOT = { has_idea = commonwealth_of_nations_member }
-					PREV = { has_idea = commonwealth_of_nations_member }
+					set_temp_variable = { opinion_calculator = opinion@ROOT }
+					multiply_temp_variable = { opinion_calculator = 0.15 }
+					add = opinion_calculator
 				}
 			}
-		}
+			military_cooperation_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					OR = {
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							THIS = { has_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 99 } }
+							THIS = { gives_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							OR = {
+								ROOT = { has_volunteers_amount_from = { tag = THIS count > 0 } }
+								THIS = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+							}
+						}
+					}
+				}
+			}
+			condition_four = {
+				base = 0
+				modifier = {
+					add = 20
+					THIS = { has_idea = NATO_member }
+					ROOT = { has_idea = NATO_member }
+				}
+			}
+			condition_five = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { has_idea = EU_member }
+					ROOT = { has_idea = EU_member }
+				}
+			}
+			condition_six = {
+				base = 0
+				modifier = {
+					add = 25
+					THIS = { is_in_faction_with = ROOT }
+				}
+			}
+			war_ally_condition = {
+				base = 0
+				modifier = {
+					add = 10
+					ROOT = { has_war_together_with = THIS }
+				}
+			}
+			usa_ally_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = USA }
+					ROOT = {
+						OR = {
+							has_idea = Major_Non_NATO_Ally
+							has_idea = NATO_member
+						}
+					}
+				}
+			}
+			commonwealth_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = ENG }
+					ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+				}
+			}
+			sco_member_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = CHI }
+					ROOT = {
+						OR = {
+							has_idea = sco_member
+							has_idea = sco_member_mil
+						}
+					}
+				}
+			}
+			opposing_factions_condition = {
+				base = 0
+				modifier = {
+					add = -40
+					THIS = { is_in_faction = yes }
+					ROOT = {
+						is_in_faction = yes
+						NOT = { is_in_faction_with = THIS }
+					}
+				}
+			}
 			war_condition = {
 				base = 0
 				modifier = {
@@ -1741,9 +3725,71 @@ scripted_diplomatic_actions = {
 
 		#### AI SECTION ###
 		ai_desire = {
+			base = 0
 			modifier = {
+				# Do not revoke from allied and friendly nations
 				add = -100
-				share_satellites_with_friends = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
 			}
 
 				modifier = {
@@ -1761,10 +3807,23 @@ scripted_diplomatic_actions = {
 					PREV = { has_idea = commonwealth_of_nations_member }
 				}
 			}
-		
+
 			modifier = {
+				# Revoke from geopolitical adversaries and rivals
 				add = 400
-				NOT_share_satellites_with_foes = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
 			}
 			modifier = {
 				add = -100
@@ -1832,6 +3891,92 @@ scripted_diplomatic_actions = {
 		#### AI SECTION ###
 		ai_desire = {
 			base = 0
+			modifier = {
+				# Offer/request to allied and friendly nations
+				add = 100
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
+			}
+			modifier = {
+				# Withhold from geopolitical adversaries and rivals
+				add = -100
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
+			}
+			modifier = {
+				add = 50
+				check_variable = { PREV.var_SPY_civ_system_idx > ROOT.var_SPY_civ_system_idx }
+			}
 		}
 		ai_acceptance = {
 			base_desire = {
@@ -1846,29 +3991,110 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		}
-			condition_commonwealth = {
+			opinion_condition = {
 				base = 0
 				modifier = {
-					add = 5
-					AND = {
-					ROOT = { has_idea = commonwealth_of_nations_member }
-					PREV = { has_idea = commonwealth_of_nations_member }
+					set_temp_variable = { opinion_calculator = opinion@ROOT }
+					multiply_temp_variable = { opinion_calculator = 0.15 }
+					add = opinion_calculator
 				}
 			}
-		}
-			friends_condition = {
+			military_cooperation_condition = {
 				base = 0
 				modifier = {
-					add = 100
-					ai_acceptance_request_satellites_with_friends = yes
+					add = 15
+					OR = {
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							THIS = { has_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 99 } }
+							THIS = { gives_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							OR = {
+								ROOT = { has_volunteers_amount_from = { tag = THIS count > 0 } }
+								THIS = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+							}
+						}
+					}
 				}
 			}
-			foes_condition = {
+			condition_four = {
 				base = 0
 				modifier = {
-					add = -100
-					NOT_ai_acceptance_request_satellites_with_foes = yes
+					add = 20
+					THIS = { has_idea = NATO_member }
+					ROOT = { has_idea = NATO_member }
+				}
+			}
+			condition_five = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { has_idea = EU_member }
+					ROOT = { has_idea = EU_member }
+				}
+			}
+			condition_six = {
+				base = 0
+				modifier = {
+					add = 25
+					THIS = { is_in_faction_with = ROOT }
+				}
+			}
+			war_ally_condition = {
+				base = 0
+				modifier = {
+					add = 10
+					ROOT = { has_war_together_with = THIS }
+				}
+			}
+			usa_ally_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = USA }
+					ROOT = {
+						OR = {
+							has_idea = Major_Non_NATO_Ally
+							has_idea = NATO_member
+						}
+					}
+				}
+			}
+			commonwealth_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = ENG }
+					ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+				}
+			}
+			sco_member_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = CHI }
+					ROOT = {
+						OR = {
+							has_idea = sco_member
+							has_idea = sco_member_mil
+						}
+					}
+				}
+			}
+			opposing_factions_condition = {
+				base = 0
+				modifier = {
+					add = -40
+					THIS = { is_in_faction = yes }
+					ROOT = {
+						is_in_faction = yes
+						NOT = { is_in_faction_with = THIS }
+					}
 				}
 			}
 			war_condition = {
@@ -1955,13 +4181,88 @@ scripted_diplomatic_actions = {
 
 		#### AI SECTION ###
 		ai_desire = {
+			base = 0
 			modifier = {
+				# Offer/request to allied and friendly nations
 				add = 100
-				share_satellites_with_friends = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
 			}
 			modifier = {
+				# Withhold from geopolitical adversaries and rivals
 				add = -100
-				NOT_share_satellites_with_foes = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
 			}
 			modifier = {
 				add = -100
@@ -2002,17 +4303,112 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		}
-			condition_commonwealth = {
+			opinion_condition = {
 				base = 0
 				modifier = {
-					add = 5
-					AND = {
-					ROOT = { has_idea = commonwealth_of_nations_member }
-					PREV = { has_idea = commonwealth_of_nations_member }
+					set_temp_variable = { opinion_calculator = opinion@ROOT }
+					multiply_temp_variable = { opinion_calculator = 0.15 }
+					add = opinion_calculator
 				}
 			}
-		}
+			military_cooperation_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					OR = {
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							THIS = { has_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 99 } }
+							THIS = { gives_military_access_to = ROOT }
+						}
+						AND = {
+							THIS = { has_opinion = { target = ROOT value > 49 } }
+							OR = {
+								ROOT = { has_volunteers_amount_from = { tag = THIS count > 0 } }
+								THIS = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+							}
+						}
+					}
+				}
+			}
+			condition_four = {
+				base = 0
+				modifier = {
+					add = 20
+					THIS = { has_idea = NATO_member }
+					ROOT = { has_idea = NATO_member }
+				}
+			}
+			condition_five = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { has_idea = EU_member }
+					ROOT = { has_idea = EU_member }
+				}
+			}
+			condition_six = {
+				base = 0
+				modifier = {
+					add = 25
+					THIS = { is_in_faction_with = ROOT }
+				}
+			}
+			war_ally_condition = {
+				base = 0
+				modifier = {
+					add = 10
+					ROOT = { has_war_together_with = THIS }
+				}
+			}
+			usa_ally_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = USA }
+					ROOT = {
+						OR = {
+							has_idea = Major_Non_NATO_Ally
+							has_idea = NATO_member
+						}
+					}
+				}
+			}
+			commonwealth_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = ENG }
+					ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+				}
+			}
+			sco_member_condition = {
+				base = 0
+				modifier = {
+					add = 15
+					THIS = { original_tag = CHI }
+					ROOT = {
+						OR = {
+							has_idea = sco_member
+							has_idea = sco_member_mil
+						}
+					}
+				}
+			}
+			opposing_factions_condition = {
+				base = 0
+				modifier = {
+					add = -40
+					THIS = { is_in_faction = yes }
+					ROOT = {
+						is_in_faction = yes
+						NOT = { is_in_faction_with = THIS }
+					}
+				}
+			}
 			war_condition = {
 				base = 0
 				modifier = {
@@ -2085,9 +4481,71 @@ scripted_diplomatic_actions = {
 		}
 		#### AI SECTION ###
 		ai_desire = {
+			base = 0
 			modifier = {
+				# Do not revoke from allied and friendly nations
 				add = -100
-				share_satellites_with_friends = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value > 149 } }
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 99 } }
+						ROOT = { gives_military_access_to = PREV }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						PREV = { has_volunteers_amount_from = { tag = ROOT count > 0 } }
+					}
+					AND = {
+						ROOT = { has_opinion = { target = PREV value > 49 } }
+						ROOT = { has_volunteers_amount_from = { tag = PREV count > 0 } }
+					}
+					AND = {
+						ROOT = { has_idea = NATO_member }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { has_idea = EU_member }
+						PREV = { has_idea = EU_member }
+					}
+					ROOT = { is_in_faction_with = PREV }
+					PREV = { has_war_together_with = ROOT }
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = Major_Non_NATO_Ally }
+					}
+					AND = {
+						ROOT = { original_tag = USA }
+						PREV = { has_idea = NATO_member }
+					}
+					AND = {
+						ROOT = { original_tag = ENG }
+						PREV = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						PREV = { original_tag = ENG }
+						ROOT = { has_dynamic_modifier = { modifier = Commonwealth_member_modifier } }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member }
+					}
+					AND = {
+						ROOT = { original_tag = CHI }
+						PREV = { has_idea = sco_member_mil }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member }
+					}
+					AND = {
+						PREV = { original_tag = CHI }
+						ROOT = { has_idea = sco_member_mil }
+					}
+				}
 			}
 
 				modifier = {
@@ -2097,7 +4555,7 @@ scripted_diplomatic_actions = {
 					PREV = { has_country_flag = CANZUK_candidate_flag }
 				}
 			}
-		
+
 				modifier = {
 					add = -5
 					AND = {
@@ -2107,8 +4565,21 @@ scripted_diplomatic_actions = {
 			}
 
 			modifier = {
+				# Revoke from geopolitical adversaries and rivals
 				add = 400
-				NOT_share_satellites_with_foes = yes
+				OR = {
+					ROOT = { has_opinion = { target = PREV value < 150 } }
+					PREV = { has_war_with = ROOT }
+					PREV = { is_justifying_wargoal_against = ROOT }
+					PREV = { has_wargoal_against = ROOT }
+					AND = {
+						ROOT = { is_in_faction = yes }
+						PREV = {
+							is_in_faction = yes
+							NOT = { is_in_faction_with = ROOT }
+						}
+					}
+				}
 			}
 			modifier = {
 				add = -100
