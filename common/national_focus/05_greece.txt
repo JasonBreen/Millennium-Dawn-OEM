@@ -739,13 +739,25 @@ focus_tree = {
 				MODIFIER = GRE_landforces_modifier
 			}
 			add_to_variable = { GRE_land_night_attack_landforces = 0.15 tooltip = land_night_attack_tt }
+			newline = yes
+			random_owned_state = {
+				add_building_construction = {
+					type = arms_factory
+					level = 1
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 1
+			}
+			newline = yes
 			if = {
 				limit = { has_dlc = "Arms Against Tyranny" }
-				newline	= yes
 				mio:GRE_eas_materiel_manufacturer = {
 					add_mio_funds_gain_factor = 0.05
 				}
+				newline = yes
 			}
+			set_temp_variable = { treasury_change = -8.50 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 10 }
@@ -1335,6 +1347,8 @@ focus_tree = {
 					category = CAT_drones
 				}
 			}
+			newline = yes
+			one_random_arms_factory = yes
 		}
 
 		ai_will_do = { base = 10 }
@@ -1462,7 +1476,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = { base = 60 }
+		ai_will_do = { base = 10 }
 	}
 	focus = {
 		id = GRE_submarine_wolf_packs
@@ -1500,6 +1514,10 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_missile_corvette_network"
+			swap_ideas = {
+				remove_idea = GRE_navy_bad_1
+				add_idea = GRE_navy_bad_2
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -1521,6 +1539,10 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_aegean_minefield_doctrine"
+			swap_ideas = {
+				remove_idea = GRE_navy_bad_2
+				add_idea = GRE_navy_bad_3
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -1541,6 +1563,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_sea_denial_complete"
+			remove_ideas = GRE_navy_bad_3
 		}
 
 		ai_will_do = { base = 10 }
@@ -1615,6 +1638,19 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_asw_training"
+			if = {
+				limit = { has_idea = GRE_navy_bad_1 }
+				swap_ideas = {
+					remove_idea = GRE_navy_bad_1
+					add_idea = GRE_navy_bad_2
+				}
+			}
+			else = {
+				swap_ideas = {
+					remove_idea = GRE_navy_bad_2
+					add_idea = GRE_navy_bad_3
+				}
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -1635,6 +1671,19 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_fleet_coordination"
+			if = {
+				limit = { has_idea = GRE_navy_bad_1 }
+				swap_ideas = {
+					remove_idea = GRE_navy_bad_1
+					add_idea = GRE_navy_bad_2
+				}
+			}
+			else = {
+				swap_ideas = {
+					remove_idea = GRE_navy_bad_2
+					add_idea = GRE_navy_bad_3
+				}
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -1660,14 +1709,15 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_eastern_med_taskforce"
+			remove_ideas = GRE_navy_bad_3
 		}
 
 		ai_will_do = { base = 10 }
 	}
 
 	focus = {
-		id = GRE_kimon_class_frigate
-		icon = frigates
+		id = GRE_roussen_attack_craft
+		icon = arm_Reformador
 
 		x = 18
 		y = 1
@@ -1683,68 +1733,90 @@ focus_tree = {
 				has_completed_focus = GRE_eastern_med_doctrine
 			}
 		}
+		offset = {
+			x = -2
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_aegean_fortress_doctrine
+			}
+		}
 
-		cost = 10
+		cost = 5
 
 		prerequisite = { focus = GRE_vision_2030 }
 
 		search_filters = { FOCUS_FILTER_EQUIPMENT }
 
 		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus GRE_kimon_class_frigate"
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_roussen_attack_craft"
+			create_equipment_variant = {
+				name = "Roussen Class"
+				type = corvette_hull_2
+				modules = {
+					fixed_ship_engine_slot = module_light_surface_diesel_power_1
+					fixed_ship_fire_control_system_slot = module_digital_integrated_fire_control
+					fixed_ship_radar_slot = module_radar_2
+					fixed_ship_auxillary_slot = module_aa_missiles_2
+					fixed_ship_battery_slot = module_chain_gun
+					front_1_custom_slot = module_asm_2
+					rear_1_custom_slot = module_asm_2
+				}
+				allow_without_tech = yes
+			}
 		}
 
 		ai_will_do = { base = 10 }
 	}
 
-	focus = {
-		id = GRE_constellation_co_production
-		icon = frigates
-
-		x = 0
-		y = 1
-		relative_position_id = GRE_kimon_class_frigate
-
-		cost = 10
-
-		prerequisite = { focus = GRE_kimon_class_frigate }
-
-		search_filters = { FOCUS_FILTER_EQUIPMENT }
-
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus GRE_constellation_co_production"
-		}
-
-		ai_will_do = { base = 10 }
-	}
 
 	focus = {
 		id = GRE_souda_bay_expansion
-		icon = frigates
+		icon = civitavecchia_port
 
 		x = 0
-		y = 2
-		relative_position_id = GRE_kimon_class_frigate
+		y = 1
+		relative_position_id = GRE_roussen_attack_craft
 
 		cost = 10
 
-		prerequisite = { focus = GRE_constellation_co_production }
+		prerequisite = { focus = GRE_roussen_attack_craft }
 
 		search_filters = { FOCUS_FILTER_EQUIPMENT }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_souda_bay_expansion"
+			144 = {
+				add_building_construction = {
+					type = dockyard
+					level = 4
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 4
+			}
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_industrial_capacity_dockyard_navy = 0.05 tooltip = industrial_capacity_dockyard_tt }
+			newline = yes
+			set_temp_variable = { treasury_change = -30 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 10 }
 	}
 	focus = {
 		id = GRE_alexandroupolis_strategic_hub
-		icon = frigates
+		icon = gioia_tauro_port
 
 		x = 0
-		y = 3
-		relative_position_id = GRE_kimon_class_frigate
+		y = 2
+		relative_position_id = GRE_roussen_attack_craft
 
 		cost = 10
 
@@ -1754,6 +1826,45 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_alexandroupolis_strategic_hub"
+			140 = {
+				add_building_construction = {
+					type = naval_base
+					level = 2
+					instant_build = yes
+					province = 11818
+				}
+				add_building_construction = {
+					type = naval_supply_hub
+					level = 1
+					instant_build = yes
+					province = 11818
+				}
+				add_building_construction = {
+					type = radar_station
+					level = 1
+					instant_build = yes
+				}
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = yes
+				}
+				add_building_construction = {
+					type = dockyard
+					level = 2
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 2
+			}
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_navy_max_range_factor_navy = 0.05 tooltip = navy_max_range_factor_tt }
+			newline = yes
+			set_temp_variable = { treasury_change = -25.75 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 10 }
@@ -1761,20 +1872,303 @@ focus_tree = {
 
 	focus = {
 		id = GRE_fremm_frigate
-		icon = frigates
+		icon = generic_ship2
 
 		x = -2
 		y = 2
-		relative_position_id = GRE_kimon_class_frigate
+		relative_position_id = GRE_roussen_attack_craft
 
-		cost = 10
+		cost = 5
 
-		prerequisite = { focus = GRE_kimon_class_frigate }
+		prerequisite = { focus = GRE_roussen_attack_craft }
+
+		available = {
+			FRA = {
+				has_opinion = {
+					target = GRE
+					value > 80
+				}
+			}
+			ITA = {
+				has_opinion = {
+					target = GRE
+					value > 80
+				}
+			}
+		}
 
 		search_filters = { FOCUS_FILTER_EQUIPMENT }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_fremm_frigate"
+			create_equipment_variant = {
+				name = "European Multi-Purpose Frigate"
+				type = frigate_hull_3
+				parent_version = 0
+				modules = {
+					fixed_ship_engine_slot = module_light_surface_diesel_power_2
+					fixed_ship_fire_control_system_slot = module_digital_integrated_fire_control
+					fixed_ship_radar_slot = module_radar_4
+					fixed_ship_auxillary_slot_2 = module_asm_4
+					fixed_ship_auxillary_slot_1 = module_torpedoes_3
+					fixed_ship_auxillary_slot = module_ciws_3
+					fixed_ship_battery_slot = module_76mm_gun_2
+					front_1_custom_slot = module_aa_missiles_3
+					rear_1_custom_slot = module_light_helipad_2
+
+				}
+				allow_without_tech = yes
+				icon = "gfx/interface/technologies/FRA/NAV/F3_FREMM.dds"
+			}
+			newline = yes
+			add_equipment_production = {
+				equipment = {
+					version_name = "European Multi-Purpose Frigate"
+					type = frigate_hull_3
+				}
+				amount = 1
+				progress = 0.15
+				requested_factories = 1
+			}
+			add_equipment_production = {
+				equipment = {
+					version_name = "European Multi-Purpose Frigate"
+					type = frigate_hull_3
+				}
+				amount = 1
+				progress = 0.15
+				requested_factories = 1
+			}
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	focus = {
+		id = GRE_constellation_co_production
+		icon = USA_american_coat_of_arm
+
+		x = 0
+		y = 3
+		relative_position_id = GRE_roussen_attack_craft
+
+		cost = 10
+
+		prerequisite = { focus = GRE_alexandroupolis_strategic_hub }
+
+		available = {
+			USA = {
+				has_opinion = {
+					target = GRE
+					value > 80
+				}
+			}
+		}
+
+		search_filters = { FOCUS_FILTER_EQUIPMENT }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_constellation_co_production"
+			create_equipment_variant = {
+				name = "Constellation Class"
+				type = battle_cruiser_hull_2
+				parent_version = 0
+				modules = {
+					fixed_ship_engine_slot = module_surface_jet_turbine_power3
+					fixed_ship_fire_control_system_slot = module_digital_integrated_fire_control
+					fixed_ship_radar_slot = module_radar_3
+					fixed_ship_battery_slot = module_76mm_gun_4
+					fixed_ship_battery_slot_2 = module_aa_missiles_3
+					fixed_ship_battery_slot_3 = module_vls_lam_3
+					fixed_ship_battery_slot_4 = module_aa_missiles_3
+					front_1_custom_slot = module_asm_3
+					front_2_custom_slot = module_vls_sam_3
+					mid_1_custom_slot = module_vls_lam_3
+					mid_2_custom_slot = module_anti_submarine_missile_4
+					rear_1_custom_slot = module_light_helipad_2
+
+				}
+				allow_without_tech = yes
+				icon = "gfx/interface/technologies/USA/NAV/Cons.dds"
+			}
+			newline = yes
+			two_random_dockyards = yes
+		}
+
+		ai_will_do = { base = 10 }
+	}
+	focus = {
+		id = GRE_elli_class
+		icon = modernize
+
+		x = -2
+		y = 3
+		relative_position_id = GRE_roussen_attack_craft
+
+		cost = 10
+
+		prerequisite = { focus = GRE_fremm_frigate }
+
+		available = {
+			HOL = {
+				has_opinion = {
+					target = GRE
+					value > 80
+				}
+			}
+		}
+
+		search_filters = { FOCUS_FILTER_EQUIPMENT }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_elli_class"
+			create_equipment_variant = {
+				name = "Elli Class"
+				type = frigate_hull_2
+				parent_version = 1
+				modules = {
+					fixed_ship_engine_slot = module_light_surface_diesel_power_1
+					fixed_ship_fire_control_system_slot = module_analog_fire_control
+					fixed_ship_radar_slot = module_radar_2
+					fixed_ship_auxillary_slot_2 = module_76mm_gun_1
+					fixed_ship_auxillary_slot_1 = module_chain_gun
+					fixed_ship_battery_slot = module_76mm_gun_1
+					rear_1_custom_slot = module_light_helipad_1
+				}
+				allow_without_tech = yes
+			}
+			newline = yes
+			create_ship = {
+				type = frigate_hull_2
+				equipment_variant = "Elli Class"
+				creator = HOL
+			}
+			create_ship = {
+				type = frigate_hull_2
+				equipment_variant = "Elli Class"
+				creator = HOL
+			}
+			create_ship = {
+				type = frigate_hull_2
+				equipment_variant = "Elli Class"
+				creator = HOL
+			}
+			newline = yes
+			add_equipment_production = {
+				equipment = {
+					version_name = "Elli Class"
+					type = frigate_hull_3
+				}
+				amount = 1
+				progress = 0.15
+				requested_factories = 1
+			}
+			add_equipment_production = {
+				equipment = {
+					version_name = "Elli Class"
+					type = frigate_hull_3
+				}
+				amount = 1
+				progress = 0.15
+				requested_factories = 1
+			}
+			add_equipment_production = {
+				equipment = {
+					version_name = "Elli Class"
+					type = frigate_hull_3
+				}
+				amount = 1
+				progress = 0.15
+				requested_factories = 1
+			}
+			add_equipment_production = {
+				equipment = {
+					version_name = "Elli Class"
+					type = frigate_hull_3
+				}
+				amount = 1
+				progress = 0.15
+				requested_factories = 1
+			}
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	focus = {
+		id = GRE_kimon_class_frigate
+		icon = frigates
+
+		x = -6
+		y = 3
+		relative_position_id = GRE_roussen_attack_craft
+
+		cost = 10
+
+		prerequisite = { focus = GRE_fremm_frigate }
+
+		search_filters = { FOCUS_FILTER_EQUIPMENT }
+
+		available = {
+			has_tech = frigate_hull_4
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_kimon_class_frigate"
+			set_technology = {
+				heavy_frigate = 1
+			}
+			newline = yes
+			create_equipment_variant = {
+				name = "Kimon Class"
+				type = frigate_hull_5
+				modules = {
+					fixed_ship_engine_slot = module_light_surface_diesel_power_3
+					fixed_ship_fire_control_system_slot = module_digital_integrated_fire_control
+					fixed_ship_radar_slot = module_radar_4
+					fixed_ship_auxillary_slot_2 = module_aa_missiles_3
+					fixed_ship_auxillary_slot_1 = module_ciws_3
+					fixed_ship_auxillary_slot = module_fuel_tank
+					fixed_ship_battery_slot = module_100mm_battery
+					front_1_custom_slot = module_asm_2
+					rear_1_custom_slot = module_heavy_frigate_upgrade_package
+				}
+				icon = "gfx/interface/technologies/FRA/NAV/F5.dds"
+			}
+			if = {
+				limit = { has_doctrine = frigate_capitals }
+				newline = yes
+				add_mastery = {
+					amount = 20
+					sub_doctrine = frigate_capitals
+				}
+			}
+		}
+
+		ai_will_do = { base = 10 }
+	}
+	focus = {
+		id = GRE_hydra_class_upgrade
+		icon = naval_upgrade
+
+		x = -4
+		y = 3
+		relative_position_id = GRE_roussen_attack_craft
+
+		cost = 10
+
+		prerequisite = { focus = GRE_fremm_frigate }
+
+		search_filters = { FOCUS_FILTER_EQUIPMENT }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_hydra_class_upgrade"
+			add_tech_bonus = {
+				name = GRE_hydra_class_upgrade
+				bonus = 0.50
+				uses = 4
+				category = CAT_naval_modules
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -1782,20 +2176,40 @@ focus_tree = {
 
 	focus = {
 		id = GRE_submarine_expansion
-		icon = frigates
+		icon = Generic_Submarine1
 
 		x = 2
 		y = 1
-		relative_position_id = GRE_kimon_class_frigate
+		relative_position_id = GRE_roussen_attack_craft
 
-		cost = 10
+		cost = 5
 
-		prerequisite = { focus = GRE_kimon_class_frigate }
+		prerequisite = { focus = GRE_roussen_attack_craft }
 
 		search_filters = { FOCUS_FILTER_EQUIPMENT }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_submarine_expansion"
+			add_tech_bonus = {
+				name = GRE_submarine_expansion
+				category = CAT_sub
+				uses = 3
+				bonus = 0.15
+			}
+			create_equipment_variant = {
+			name = "Papanikolis Class"
+			type = attack_submarine_hull_3
+			modules = {
+				fixed_ship_engine_slot = module_sub_diesel_electric_power2
+				fixed_ship_radar_slot = module_sonar_4
+				fixed_ship_auxillary_slot_3 = module_torpedoes_2
+				fixed_ship_auxillary_slot_2 = module_sub_esm_2
+				fixed_ship_auxillary_slot_1 = module_vls_sub_asm_2
+				fixed_ship_auxillary_slot = module_torpedoes_2
+				fixed_ship_battery_slot = module_anti_ship_torpedoes_2
+			}
+			icon = "gfx/interface/technologies/GER/NAV/209.dds"
+		}
 		}
 
 		ai_will_do = { base = 10 }
@@ -1803,13 +2217,13 @@ focus_tree = {
 
 	focus = {
 		id = GRE_bluewhale_submarines
-		icon = frigates
+		icon = wolfpacks
 
 		x = 2
 		y = 2
-		relative_position_id = GRE_kimon_class_frigate
+		relative_position_id = GRE_roussen_attack_craft
 
-		cost = 10
+		cost = 7.8
 
 		prerequisite = { focus = GRE_submarine_expansion }
 
@@ -1817,9 +2231,21 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_bluewhale_submarines"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_convoy_raiding_efficiency_factor_navy = 0.05 tooltip = convoy_raiding_efficiency_factor_tt }
+			if = {
+				limit = { NOT = { is_special_project_completed = sp:sp_drone_submarine } }
+				newline = yes
+				sp:sp_drone_submarine = {
+					add_project_progress_ratio = 0.5
+				}
+			}
 		}
 
-		ai_will_do = { base = 60 }
+		ai_will_do = { base = 10 }
 	}
 
 	focus = {
@@ -1838,6 +2264,17 @@ focus_tree = {
 					option = HIDE
 				}
 				has_completed_focus = GRE_eastern_med_doctrine
+			}
+		}
+		offset = {
+			x = -2
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_aegean_fortress_doctrine
 			}
 		}
 
@@ -3885,6 +4322,17 @@ focus_tree = {
 					option = HIDE
 				}
 				has_completed_focus = GRE_eastern_med_doctrine
+			}
+		}
+		offset = {
+			x = -2
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_aegean_fortress_doctrine
 			}
 		}
 
