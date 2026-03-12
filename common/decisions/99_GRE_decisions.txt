@@ -744,6 +744,34 @@ GRE_homelessness_crisis_category = {
 }
 
 GRE_generic_decisions_category = {
+	GRE_defense_innovation_research_mission = {
+		allowed = { original_tag = GRE }
+		icon = x
+
+		days_mission_timeout = 100
+		fire_only_once = no
+		is_good = yes
+
+		fixed_random_seed = no
+
+		available = {
+			hidden_trigger = {
+				always = no
+			}
+		}
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: mission timeout_effect GRE_defense_innovation_research_mission"
+			random_list = {
+				20 = { add_tech_bonus = { name = GRE_defense_innovation_research_mission bonus = 1 ahead_reduction = 3.5 uses = 1 category = CAT_armor} }
+				20 = { add_tech_bonus = { name = GRE_defense_innovation_research_mission bonus = 1 ahead_reduction = 3.5 uses = 1 category = CAT_artillery } }
+				20 = { add_tech_bonus = { name = GRE_defense_innovation_research_mission bonus = 1 ahead_reduction = 3.5 uses = 1 category = CAT_inf } }
+				20 = { add_tech_bonus = { name = GRE_defense_innovation_research_mission bonus = 1 ahead_reduction = 3.5 uses = 1 category = CAT_air_eqp } }
+				20 = { add_tech_bonus = { name = GRE_defense_innovation_research_mission bonus = 1 ahead_reduction = 3.5 uses = 1 category = CAT_naval_all } }
+			}
+		}
+	}
+
 	GRE_rename_istanbul = {
 		icon = generic
 
@@ -1179,7 +1207,7 @@ GRE_generic_decisions_category = {
 
 	GRE_archipelago_air_defense_expansion = {
 		allowed = { original_tag = GRE }
-		icon = x
+		icon = decision_generic_construction
 
 		cost = 75
 		days_remove = 90
@@ -1208,6 +1236,282 @@ GRE_generic_decisions_category = {
 		remove_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision GRE_archipelago_air_defense_expansion remove"
 			clr_country_flag = GRE_archipelago_decision_active
+		}
+
+		ai_will_do = {
+			base = 5
+		}
+	}
+
+	GRE_aegean_survey = {
+		allowed = { original_tag = GRE }
+		icon = oil
+
+		cost = 50
+		days_remove = 70
+		fire_only_once = yes
+
+		visible = {
+			has_completed_focus = GRE_sovereign_waters
+		}
+
+		available = {
+			143 = { is_owned_by = GRE }
+			naval_strength_ratio = {
+				tag = TUR
+				ratio > 1.5
+			}
+		}
+
+		complete_effect = {
+			set_temp_variable = { treasury_change = -4.50 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_aegean_survey remove"
+			set_country_flag = GRE_aegean_surveyed
+			143 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 1
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 2
+				naval_strength_ratio = { tag = TUR ratio > 1.25 }
+			}
+		}
+	}
+
+	GRE_aegean_extraction = {
+		allowed = { original_tag = GRE }
+		icon = oil
+
+		cost = 75
+		days_remove = 120
+		fire_only_once = yes
+
+		visible = {
+			has_completed_focus = GRE_sovereign_waters
+		}
+
+		available = {
+			143 = { is_owned_by = GRE }
+			has_country_flag = GRE_aegean_surveyed
+			naval_strength_ratio = {
+				tag = TUR
+				ratio > 1.6
+			}
+		}
+
+		complete_effect = {
+			set_temp_variable = { treasury_change = -3.75 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_aegean_extraction remove"
+			set_country_flag = GRE_aegean_extracting
+			143 = {
+				add_resource = {
+					type = oil
+					amount = 4
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+		}
+	}
+
+	GRE_aegean_offshore_industry = {
+		allowed = { original_tag = GRE }
+		icon = oil
+
+		cost = 100
+		days_remove = 150
+		fire_only_once = yes
+
+		visible = {
+			has_completed_focus = GRE_sovereign_waters
+		}
+
+		available = {
+			143 = { is_owned_by = GRE }
+			has_country_flag = GRE_aegean_extracting
+			naval_strength_ratio = {
+				tag = TUR
+				ratio > 1.75
+			}
+		}
+
+		complete_effect = {
+			set_temp_variable = { treasury_change = -13.50 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_aegean_offshore_industry remove"
+			set_country_flag = GRE_aegean_industry_built
+			143 = {
+				add_resource = {
+					type = oil
+					amount = 8
+				}
+				add_building_construction = {
+					type = synthetic_refinery
+					level = 1
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 1
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+		}
+	}
+
+	GRE_crete_survey = {
+		allowed = { original_tag = GRE }
+		icon = oil
+
+		cost = 50
+		days_remove = 70
+		fire_only_once = yes
+
+		visible = {
+			has_completed_focus = GRE_sovereign_waters
+		}
+
+		available = {
+			144 = { is_owned_by = GRE }
+			naval_strength_ratio = {
+				tag = TUR
+				ratio > 1.5
+			}
+		}
+
+		complete_effect = {
+			set_temp_variable = { treasury_change = -4.50 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_crete_survey remove"
+			set_country_flag = GRE_crete_surveyed
+			144 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 1
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 2
+				naval_strength_ratio = { tag = TUR ratio > 1.25 }
+			}
+		}
+	}
+
+	GRE_crete_extraction = {
+		allowed = { original_tag = GRE }
+		icon = oil
+
+		cost = 75
+		days_remove = 120
+		fire_only_once = yes
+
+		visible = {
+			has_completed_focus = GRE_sovereign_waters
+		}
+
+		available = {
+			144 = { is_owned_by = GRE }
+			has_country_flag = GRE_crete_surveyed
+			naval_strength_ratio = {
+				tag = TUR
+				ratio > 1.6
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_crete_extraction complete"
+			set_temp_variable = { treasury_change = -5.63 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_crete_extraction remove"
+			set_country_flag = GRE_crete_extracting
+			144 = {
+				add_resource = {
+					type = oil
+					amount = 6
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+		}
+	}
+
+	GRE_crete_offshore_industry = {
+		allowed = { original_tag = GRE }
+		icon = oil
+
+		cost = 100
+		days_remove = 150
+		fire_only_once = yes
+
+		visible = {
+			has_completed_focus = GRE_sovereign_waters
+		}
+
+		available = {
+			144 = { is_owned_by = GRE }
+			has_country_flag = GRE_crete_extracting
+			naval_strength_ratio = {
+				tag = TUR
+				ratio > 1.75
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_crete_offshore_industry"
+			set_temp_variable = { treasury_change = -19.75 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_crete_offshore_industry remove"
+			set_country_flag = GRE_crete_industry_built
+			144 = {
+				add_resource = {
+					type = oil
+					amount = 12
+				}
+				add_building_construction = {
+					type = industrial_complex
+					level = 1
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 1
+			}
 		}
 
 		ai_will_do = {

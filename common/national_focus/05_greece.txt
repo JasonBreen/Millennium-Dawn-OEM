@@ -111,6 +111,16 @@ focus_tree = {
 		prerequisite = { focus = GRE_joint_operations_reform }
 		prerequisite = { focus = GRE_armored_transition }
 
+		available = {
+			has_army_size = {
+				size > 9
+				type = armor
+			}
+			fighting_army_strength_ratio = {
+				tag = THIS
+			}
+		}
+
 		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
@@ -278,6 +288,13 @@ focus_tree = {
 		prerequisite = { focus = GRE_f16_modernisation }
 
 		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+		available = {
+			has_deployed_air_force_size = {
+				size > 9
+				type = cas
+			}
+		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_sead_doctrine"
@@ -886,7 +903,7 @@ focus_tree = {
 	}
 	focus = {
 		id = GRE_sovereign_waters
-		icon = frigates
+		icon = seize_oil
 
 		x = 2
 		y = 5
@@ -910,6 +927,36 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_sovereign_waters"
+			if = {
+				limit = { country_exists = TUR }
+				TUR = {
+					country_event = { id = greece_military.02 days = 1 }
+				}
+			}
+			unlock_decision_tooltip = {
+				decision = GRE_aegean_survey
+				show_effect_tooltip = yes
+			}
+			unlock_decision_tooltip = {
+				decision = GRE_aegean_extraction
+				show_effect_tooltip = yes
+			}
+			unlock_decision_tooltip = {
+				decision = GRE_aegean_offshore_industry
+				show_effect_tooltip = yes
+			}
+			unlock_decision_tooltip = {
+				decision = GRE_crete_survey
+				show_effect_tooltip = yes
+			}
+			unlock_decision_tooltip = {
+				decision = GRE_crete_extraction
+				show_effect_tooltip = yes
+			}
+			unlock_decision_tooltip = {
+				decision = GRE_crete_offshore_industry
+				show_effect_tooltip = yes
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -1308,6 +1355,17 @@ focus_tree = {
 		x = 0
 		y = 3
 		relative_position_id = GRE_centauros_anti_drone
+		offset = {
+			x = 1
+			y = -1
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_eastern_med_doctrine
+			}
+		}
 
 		cost = 10
 
@@ -1437,7 +1495,7 @@ focus_tree = {
 
 	focus = {
 		id = GRE_aegean_fortress_doctrine
-		icon = naval_doctrine
+		icon = navy2
 
 		x = 10
 		y = 1
@@ -1463,6 +1521,14 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_aegean_fortress_doctrine"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_jeune_ecole_mastery_gain_factor_navy = 0.05 tooltip = jeune_ecole_mastery_gain_factor_tt }
+			add_to_variable = { GRE_trait_spotter_xp_gain_factor_navy = 0.15 tooltip = trait_spotter_xp_gain_factor_tt }
+			add_to_variable = { GRE_navy_leader_start_defense_level_navy = 1 tooltip = navy_leader_start_defense_level_tt }
+			custom_effect_tooltip = GRE_aegean_fortress_doctrine_effect
 			hidden_effect = {
 				if = {
 					limit = {
@@ -1480,7 +1546,7 @@ focus_tree = {
 	}
 	focus = {
 		id = GRE_submarine_wolf_packs
-		icon = naval_doctrine
+		icon = submarines
 
 		x = -1
 		y = 1
@@ -1494,13 +1560,20 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_submarine_wolf_packs"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_naval_retreat_chance_after_initial_combat_navy = 0.05 tooltip = naval_retreat_chance_after_initial_combat_tt }
+			add_to_variable = { GRE_navy_submarine_detection_factor_navy = 0.05 tooltip = navy_submarine_detection_factor_tt }
+			add_to_variable = { GRE_navy_submarine_attack_factor_navy = 0.10 tooltip = navy_submarine_attack_factor_tt }
 		}
 
 		ai_will_do = { base = 10 }
 	}
 	focus = {
 		id = GRE_missile_corvette_network
-		icon = naval_doctrine
+		icon = cruisers
 
 		x = 1
 		y = 1
@@ -1518,13 +1591,20 @@ focus_tree = {
 				remove_idea = GRE_navy_bad_1
 				add_idea = GRE_navy_bad_2
 			}
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_night_spotting_chance_navy = 0.05 tooltip = night_spotting_chance_tt }
+			add_to_variable = { GRE_positioning_navy = 0.075 tooltip = positioning_tt }
+			add_to_variable = { GRE_navy_org_factor_navy = 0.075 tooltip = navy_org_factor_tt }
 		}
 
 		ai_will_do = { base = 10 }
 	}
 	focus = {
 		id = GRE_aegean_minefield_doctrine
-		icon = naval_doctrine
+		icon = focus_JAP_mine_warfare_force
 
 		x = 0
 		y = 2
@@ -1543,13 +1623,19 @@ focus_tree = {
 				remove_idea = GRE_navy_bad_2
 				add_idea = GRE_navy_bad_3
 			}
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_mines_planting_by_fleets_factor_navy = 0.10 tooltip = mines_planting_by_fleets_factor_tt }
+			add_to_variable = { GRE_naval_mine_hit_chance_navy = 0.10 tooltip = naval_mine_hit_chance_tt }
 		}
 
 		ai_will_do = { base = 10 }
 	}
 	focus = {
 		id = GRE_sea_denial_complete
-		icon = naval_doctrine
+		icon = no_blueprint_ship
 
 		x = 0
 		y = 3
@@ -1564,19 +1650,27 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_sea_denial_complete"
 			remove_ideas = GRE_navy_bad_3
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_navy_visibility_navy = -0.10 tooltip = navy_visibility_tt }
+			add_to_variable = { GRE_positioning_navy = 0.10 tooltip = positioning_tt }
+			add_to_variable = { GRE_naval_defense_factor_navy = 0.15 tooltip = naval_defense_factor_tt }
 		}
 
 		ai_will_do = { base = 10 }
 	}
 	focus = {
 		id = GRE_eastern_med_doctrine
-		icon = naval_doctrine
+		icon = navy3
 
 		x = 14
 		y = 1
 		relative_position_id = GRE_vision_2030
 		offset = {
-			x = -4
+			x = -3
 			y = 0
 			trigger = {
 				has_game_rule = {
@@ -1607,6 +1701,14 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_eastern_med_doctrine"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_green_water_mastery_gain_factor_navy = 0.05 tooltip = green_water_mastery_gain_facotr_tt }
+			add_to_variable = { GRE_trait_green_water_expert_xp_gain_factor_navy = 0.15 tooltip = trait_green_water_expert_xp_gain_factor_tt }
+			add_to_variable = { GRE_navy_leader_start_coordination_level_navy = 1 tooltip = navy_leader_start_coordination_level_tt }
+			add_to_variable = { GRE_experience_gain_factor_navy = 0.25 tooltip = leader_experience_gain_factor_tt }
 			hidden_effect = {
 				if = {
 					limit = {
@@ -1624,7 +1726,7 @@ focus_tree = {
 	}
 	focus = {
 		id = GRE_asw_training
-		icon = naval_doctrine
+		icon = anti_submarine
 
 		x = -1
 		y = 1
@@ -1651,6 +1753,13 @@ focus_tree = {
 					add_idea = GRE_navy_bad_3
 				}
 			}
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_navy_submarine_detection_factor_navy = 0.15 tooltip = navy_submarine_detection_factor_tt }
+			add_to_variable = { GRE_naval_torpedo_hit_chance_factor_navy = 0.15 tooltip = naval_torpedo_hit_chance_factor_tt }
+			add_to_variable = { GRE_naval_enemy_retreat_chance_navy = -0.10 tooltip = naval_enemy_retreat_chance_tt }
 		}
 
 		ai_will_do = { base = 10 }
@@ -1684,13 +1793,20 @@ focus_tree = {
 					add_idea = GRE_navy_bad_3
 				}
 			}
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_positioning_navy = 0.15 tooltip = positioning_tt }
+			add_to_variable = { GRE_naval_hit_chance_navy = 0.10 tooltip = naval_hit_chance_tt }
+			add_to_variable = { GRE_naval_retreat_chance_after_initial_combat_navy = 0.125 tooltip = naval_retreat_chance_after_initial_combat_tt }
 		}
 
 		ai_will_do = { base = 10 }
 	}
 	focus = {
 		id = GRE_eastern_med_taskforce
-		icon = naval_doctrine
+		icon = Focus_BEL_antwerp_maritime_academy
 
 		x = 0
 		y = 2
@@ -1710,6 +1826,15 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_eastern_med_taskforce"
 			remove_ideas = GRE_navy_bad_3
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_green_water_mastery_gain_factor_navy = 0.10 tooltip = green_water_mastery_gain_facotr_tt }
+			add_to_variable = { GRE_naval_accidents_chance_navy = -0.15 tooltip = naval_accidents_chance_tt }
+			add_to_variable = { GRE_experience_gain_navy_unit_factor_navy = 0.15 tooltip = experience_gain_navy_unit_factor_tt }
+			add_to_variable = { GRE_naval_damage_factor_navy = 0.10 tooltip = naval_damage_factor_tt }
 		}
 
 		ai_will_do = { base = 10 }
@@ -1723,7 +1848,7 @@ focus_tree = {
 		y = 1
 		relative_position_id = GRE_vision_2030
 		offset = {
-			x = -4
+			x = -3
 			y = 0
 			trigger = {
 				has_game_rule = {
@@ -2256,7 +2381,7 @@ focus_tree = {
 		y = 1
 		relative_position_id = GRE_vision_2030
 		offset = {
-			x = -4
+			x = -3
 			y = 0
 			trigger = {
 				has_game_rule = {
@@ -2286,6 +2411,50 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_defense_manufacturing"
+			add_timed_idea = {
+				idea = GRE_defense_manufacturing_idea
+				days = 940
+			}
+			newline = yes
+			custom_effect_tooltip = on_remove_idea_tt
+			effect_tooltip = {
+				random_owned_state = {
+					add_building_construction = {
+						type = arms_factory
+						level = 1
+						instant_build = yes
+					}
+					add_extra_state_shared_building_slots = 1
+				}
+				random_owned_state = {
+					add_building_construction = {
+						type = arms_factory
+						level = 1
+						instant_build = yes
+					}
+					add_extra_state_shared_building_slots = 1
+				}
+				random_owned_state = {
+					add_building_construction = {
+						type = arms_factory
+						level = 1
+						instant_build = yes
+					}
+					add_extra_state_shared_building_slots = 1
+				}
+				random_owned_state = {
+					add_building_construction = {
+						type = arms_factory
+						level = 1
+						instant_build = yes
+					}
+					add_extra_state_shared_building_slots = 1
+				}
+			}
+			newline = yes
+			custom_effect_tooltip = current_effect_tooltip
+			set_temp_variable = { treasury_change = -34.00 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 10 }
@@ -2293,7 +2462,7 @@ focus_tree = {
 
 	focus = {
 		id = GRE_research_hubs
-		icon = industry_military
+		icon = tech_sharing
 
 		x = 0
 		y = 1
@@ -2307,6 +2476,49 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_research_hubs"
+			add_dynamic_modifier = { modifier = GRE_defense_industry_modifier }
+			newline = yes
+			if = {
+				limit = { nuclear_facility < 1 }
+				random_owned_state = {
+					add_building_construction = {
+						type = nuclear_facility
+						level = 1
+						instant_build = yes
+					}
+				}
+			}
+			else_if = {
+				limit = { naval_facility < 1 }
+				random_owned_state = {
+					add_building_construction = {
+						type = naval_facility
+						level = 1
+						instant_build = yes
+					}
+				}
+			}
+			else_if = {
+				limit = { air_facility < 1 }
+				random_owned_state = {
+					add_building_construction = {
+						type = air_facility
+						level = 1
+						instant_build = yes
+					}
+				}
+			}
+			else = {
+				random_owned_state = {
+					add_building_construction = {
+						type = land_facility
+						level = 1
+						instant_build = yes
+					}
+				}
+			}
+			set_temp_variable = { treasury_change = -15.00 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 10 }
@@ -2314,7 +2526,7 @@ focus_tree = {
 
 	focus = {
 		id = GRE_defense_innovation_center
-		icon = industry_military
+		icon = scientific_exchange
 
 		x = -1
 		y = 3
@@ -2328,13 +2540,21 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_defense_innovation_center"
+			activate_mission = GRE_defense_innovation_research_mission
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_defense_industry
+			}
+			add_to_variable = { GRE_research_speed_factor_di = 0.05 tooltip = research_speed_factor_tt }
+			add_to_variable = { GRE_scientist_research_bonus_factor_di = 0.10 tooltip = scientist_research_bonus_factor_tt }
 		}
 
 		ai_will_do = { base = 10 }
 	}
 	focus = {
 		id = GRE_rheinmetall_greece
-		icon = industry_military
+		icon = tank_production2
 
 		x = -1
 		y = 4
@@ -2348,6 +2568,9 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_rheinmetall_greece"
+			unlock_military_industrial_organization_tooltip = mio:GRE_rheinmetall_manufacturer
+			newline = yes
+			one_random_arms_factory = yes
 		}
 
 		ai_will_do = { base = 10 }
@@ -2355,7 +2578,7 @@ focus_tree = {
 
 	focus = {
 		id = GRE_communication_satellites
-		icon = industry_military
+		icon = international_space_station
 
 		x = 1
 		y = 2
@@ -2365,10 +2588,27 @@ focus_tree = {
 
 		prerequisite = { focus = GRE_research_hubs }
 
+		available = {
+			if = {
+				limit = { has_dlc = "Gotterdammerung" }
+				is_special_project_completed = sp:sp_space_program_gdm
+			}
+			else = {
+				is_special_project_completed = sp:sp_space_program_non_gdm
+			}
+		}
+
 		search_filters = { FOCUS_FILTER_INDUSTRY }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_communication_satellites"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_defense_industry
+			}
+			add_to_variable = { GRE_spysat_production_speed_modifier_di = -0.25 tooltip = spysat_production_speed_modifier_tt }
+			add_to_variable = { GRE_comsat_production_speed_modifier_di = -0.25 tooltip = comsat_production_speed_modifier_tt }
+			add_to_variable = { GRE_gnss_production_speed_modifier_di = -0.25 tooltip = gnss_production_speed_modifier_tt }
 		}
 
 		ai_will_do = { base = 10 }
@@ -2376,7 +2616,7 @@ focus_tree = {
 
 	focus = {
 		id = GRE_theon_international
-		icon = industry_military
+		icon = army_nightvision
 
 		x = 1
 		y = 3
@@ -2390,13 +2630,39 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_theon_international"
+			if = {
+				limit = { has_dlc = "Arms Against Tyranny" }
+				mio:GRE_eas_materiel_manufacturer = {
+					complete_mio_trait = GRE_eas_mio_trait_theon_night_vision_integration
+					complete_mio_trait = GRE_eas_mio_trait_theon_platoon_battle_management_system
+				}
+			}
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_night_spotting_chance_navy = 0.15 tooltip = night_spotting_chance_tt }
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_airforce_modifier
+			}
+			add_to_variable = { GRE_air_night_penalty_airforce = -0.15 tooltip = air_night_penalty_tt }
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_landforces_modifier
+			}
+			add_to_variable = { GRE_land_night_attack_landforces = 0.15 tooltip = land_night_attack_tt }
+			newline = yes
+			two_random_arms_factory = yes
 		}
 
 		ai_will_do = { base = 10 }
 	}
 	focus = {
 		id = GRE_eyes_of_poseidon
-		icon = industry_military
+		icon = army_logistics
 
 		x = 1
 		y = 4
@@ -2410,6 +2676,49 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_eyes_of_poseidon"
+			143 = {
+				add_building_construction = {
+					type = radar_station
+					level = 2
+					instant_build = yes
+				}
+				add_building_construction = {
+					type = air_base
+					level = 2
+					instant_build = yes
+				}
+			}
+			144 = {
+				add_building_construction = {
+					type = radar_station
+					level = 2
+					instant_build = yes
+				}
+				add_building_construction = {
+					type = air_base
+					level = 2
+					instant_build = yes
+				}
+			}
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_landforces_modifier
+			}
+			add_to_variable = { GRE_recon_factor_landforces = 0.15 tooltip = recon_factor_tt }
+			add_to_variable = { GRE_max_planning_factor_landforces = 0.15 tooltip = max_planning_factor_tt }
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_airforce_modifier
+			}
+			add_to_variable = { GRE_air_detection_airforce = 0.10 tooltip = air_detection_tt }
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_naval_detection_navy = 0.10 tooltip = naval_detection_tt }
 		}
 
 		ai_will_do = { base = 10 }
@@ -2417,7 +2726,7 @@ focus_tree = {
 
 	focus = {
 		id = GRE_industrial_synergy
-		icon = industry_military
+		icon = merge_plants
 
 		x = -5
 		y = 4
@@ -2428,30 +2737,44 @@ focus_tree = {
 		prerequisite = { focus = GRE_defense_innovation_center }
 		prerequisite = { focus = GRE_fremm_frigate focus = GRE_f35_program }
 
+		available = {
+			arms_factory > 14
+			dockyard > 9
+		}
+
 		search_filters = { FOCUS_FILTER_INDUSTRY }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_industrial_synergy"
-		}
-
-		ai_will_do = { base = 10 }
-	}
-	focus = {
-		id = GRE_single_information_space
-		icon = industry_military
-
-		x = 0
-		y = 1
-		relative_position_id = GRE_industrial_synergy
-
-		cost = 10
-
-		prerequisite = { focus = GRE_industrial_synergy }
-
-		search_filters = { FOCUS_FILTER_INDUSTRY }
-
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus GRE_single_information_space"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_defense_industry_modifier
+			}
+			add_to_variable = { GRE_industrial_capacity_dockyard_di = 0.15 tooltip = industrial_capacity_dockyard_tt }
+			add_to_variable = { GRE_industrial_capacity_factory_di = 0.15 tooltip = industrial_capacity_factory_tt }
+			add_to_variable = { GRE_production_factory_start_efficiency_factor_di = 0.125 tooltip = production_factory_start_efficiency_factor_tt }
+			newline = yes
+			random_owned_state = {
+				add_building_construction = {
+					type = arms_factory
+					level = 2
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 2
+			}
+			random_owned_state = {
+				limit = {
+					is_coastal = yes
+				}
+				add_building_construction = {
+					type = dockyard
+					level = 2
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 2
+			}
+			set_temp_variable = { treasury_change = -34.00 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 10 }
@@ -4314,7 +4637,7 @@ focus_tree = {
 		x = 88
 		y = 0
 		offset = {
-			x = -4
+			x = -3
 			y = 0
 			trigger = {
 				has_game_rule = {
@@ -4333,6 +4656,28 @@ focus_tree = {
 					option = HIDE
 				}
 				has_completed_focus = GRE_aegean_fortress_doctrine
+			}
+		}
+		offset = {
+			x = -8
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_new_greece_old_ways
+			}
+		}
+		offset = {
+			x = -8
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_the_hellenic_republic
 			}
 		}
 
@@ -4355,6 +4700,28 @@ focus_tree = {
 		x = 8
 		y = 1
 		relative_position_id = GRE_turn_century
+		offset = {
+			x = -8
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_the_hellenic_republic
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_new_greece_old_ways }
+			}
+		}
 
 		cost = 5
 
@@ -4367,6 +4734,17 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: focus GRE_the_hellenic_republic executed"
 			add_stability = 0.10
 			add_political_power = 100
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = {
@@ -4396,6 +4774,28 @@ focus_tree = {
 		x = -8
 		y = 1
 		relative_position_id = GRE_turn_century
+		offset = {
+			x = 8
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_new_greece_old_ways
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_the_hellenic_republic }
+			}
+		}
 
 		cost = 10
 
@@ -4411,6 +4811,17 @@ focus_tree = {
 			set_temp_variable = { modify_eurosceptic_target = ROOT }
 			eurosceptic_change = yes
 			add_stability = -0.05
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = {
@@ -4440,6 +4851,29 @@ focus_tree = {
 		x = -5
 		y = 1
 		relative_position_id = GRE_new_greece_old_ways
+		offset = {
+			x = 5
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_kke
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_the_hellenic_republic }
+				NOT = { has_completed_focus = GRE_golden_dawn }
+			}
+		}
 
 		cost = 10
 
@@ -4469,6 +4903,17 @@ focus_tree = {
 				modifier = GRE_drift_modifiers
 			}
 			custom_Effect_tooltip = GRE_increase_drift_TT
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = {
@@ -4786,6 +5231,17 @@ focus_tree = {
 		x = 5
 		y = 1
 		relative_position_id = GRE_election_com
+		offset = {
+			x = -5
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_kke
+			}
+		}
 
 		cost = 2
 
@@ -4834,6 +5290,28 @@ focus_tree = {
 
 		prerequisite = { focus = GRE_constitution }
 		mutually_exclusive = { focus = GRE_com_democratic }
+		offset = {
+			x = -1
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_com_authoritarian
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_com_democratic }
+			}
+		}
 
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
@@ -4846,6 +5324,15 @@ focus_tree = {
 			add_political_power = 200
 			hidden_effect = {
 				country_event = { id = greece.15 days = 5 random_days = 10 }
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
 			}
 		}
 
@@ -4859,6 +5346,28 @@ focus_tree = {
 		x = -6
 		y = 1
 		relative_position_id = GRE_constitution
+		offset = {
+			x = 3
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_com_democratic
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_com_authoritarian }
+			}
+		}
 
 		cost = 7.15
 
@@ -4876,6 +5385,15 @@ focus_tree = {
 			add_stability = 0.1
 			hidden_effect = {
 				country_event = { id = greece.15 days = 5 random_days = 10 }
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
 			}
 		}
 
@@ -4911,6 +5429,17 @@ focus_tree = {
 		x = 1
 		y = 1
 		relative_position_id = GRE_com_democratic
+		offset = {
+			x = -4
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_com_authoritarian
+			}
+		}
 
 		cost = 5.72
 
@@ -4945,6 +5474,17 @@ focus_tree = {
 		x = 5
 		y = 3
 		relative_position_id = GRE_com_democratic
+		offset = {
+			x = -4
+			y = -2
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_com_authoritarian
+			}
+		}
 
 		cost = 10
 
@@ -5078,6 +5618,17 @@ focus_tree = {
 		x = 0
 		y = 3
 		relative_position_id = GRE_handle_bankers
+		offset = {
+			x = 0
+			y = -2
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_com_authoritarian
+			}
+		}
 
 		cost = 10
 
@@ -5157,6 +5708,17 @@ focus_tree = {
 		x = 2
 		y = 1
 		relative_position_id = GRE_com_constitutionalism
+		offset = {
+			x = 0
+			y = -2
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_com_authoritarian
+			}
+		}
 
 		cost = 5.72
 
@@ -5392,6 +5954,28 @@ focus_tree = {
 		x = 0
 		y = 2
 		relative_position_id = GRE_militarist_education
+		offset = {
+			x = -4
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_com_democratic
+			}
+		}
+		offset = {
+			x = 4
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_com_authoritarian
+			}
+		}
 
 		cost = 10
 
@@ -5589,6 +6173,29 @@ focus_tree = {
 		x = 5
 		y = 1
 		relative_position_id = GRE_new_greece_old_ways
+		offset = {
+			x = -5
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_golden_dawn
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_kke }
+				NOT = { has_completed_focus = GRE_the_hellenic_republic }
+			}
+		}
 
 		cost = 10
 
@@ -5612,6 +6219,17 @@ focus_tree = {
 			set_variable = { GRE_nationalist_drift_effect = 0.02 }
 			add_dynamic_modifier = { modifier = GRE_drift_modifiers }
 			custom_Effect_tooltip = GRE_increase_drift_TT
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = {
@@ -6585,6 +7203,28 @@ focus_tree = {
 		x = 1
 		y = 1
 		relative_position_id = GRE_strike_albania
+		offset = {
+			x = 1
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_greater_greece
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_great_greece }
+			}
+		}
 
 		cost = 10
 
@@ -6603,6 +7243,17 @@ focus_tree = {
 			add_war_support = -0.1
 			add_state_claim = 133
 			add_state_claim = 134
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -6615,6 +7266,28 @@ focus_tree = {
 		x = -1
 		y = 1
 		relative_position_id = GRE_strike_bulgaria
+		offset = {
+			x = -1
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_great_greece
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_greater_greece }
+			}
+		}
 
 		cost = 7.15
 
@@ -6629,6 +7302,17 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: GRE_great_greece"
 			add_ideas = GRE_perfect_greece
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -6683,6 +7367,29 @@ focus_tree = {
 		x = -1
 		y = 1
 		relative_position_id = GRE_the_hellenic_republic
+		offset = {
+			x = 1
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_discredit_eu
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_support_eu }
+				NOT = { has_completed_focus = GRE_new_greece_old_ways }
+			}
+		}
 
 		cost = 2
 
@@ -6696,6 +7403,17 @@ focus_tree = {
 			set_temp_variable = { modify_eurosceptic = 0.05 }
 			set_temp_variable = { modify_eurosceptic_target = ROOT }
 			eurosceptic_change = yes
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = {
@@ -6714,6 +7432,29 @@ focus_tree = {
 		x = 1
 		y = 1
 		relative_position_id = GRE_the_hellenic_republic
+		offset = {
+			x = -1
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_support_eu
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_discredit_eu }
+				NOT = { has_completed_focus = GRE_new_greece_old_ways }
+			}
+		}
 
 		cost = 2
 
@@ -6728,6 +7469,17 @@ focus_tree = {
 			set_temp_variable = { modify_eurosceptic_target = ROOT }
 			eurosceptic_change = yes
 			add_stability = 0.05
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -6740,6 +7492,17 @@ focus_tree = {
 		x = -1
 		y = 1
 		relative_position_id = GRE_support_eu
+		offset = {
+			x = 1
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_support_eu
+			}
+		}
 
 		cost = 5
 
@@ -6773,6 +7536,29 @@ focus_tree = {
 		x = -3
 		y = 1
 		relative_position_id = GRE_dominant_party
+		offset = {
+			x = 3
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_new_democracy
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_socialist_coalition }
+				NOT = { has_completed_focus = GRE_new_greece_old_ways }
+			}
+		}
 
 		cost = 7.15
 
@@ -6794,6 +7580,17 @@ focus_tree = {
 			set_temp_variable = { party_index = 3 }
 			set_temp_variable = { party_popularity_increase = -0.10 }
 			add_relative_party_popularity = yes
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -6806,6 +7603,40 @@ focus_tree = {
 		x = 3
 		y = 1
 		relative_position_id = GRE_dominant_party
+		offset = {
+			x = 3
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_new_democracy
+			}
+		}
+		offset = {
+			x = -3
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_socialist_coalition
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_new_democracy }
+				NOT = { has_completed_focus = GRE_new_greece_old_ways }
+			}
+		}
 
 		cost = 7.15
 
@@ -6829,6 +7660,17 @@ focus_tree = {
 			set_temp_variable = { party_popularity_increase = -0.10 }
 			set_temp_variable = { temp_outlook_increase = -0.05 }
 			add_relative_party_popularity = yes
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -7237,7 +8079,17 @@ focus_tree = {
 		x = 3
 		y = 1
 		relative_position_id = GRE_increase_industrial_privatization
-
+		offset = {
+			x = -3
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_new_democracy
+			}
+		}
 		cost = 10
 
 		prerequisite = {
@@ -7413,6 +8265,28 @@ focus_tree = {
 		x = -22
 		y = 0
 		relative_position_id = GRE_turn_century
+		offset = {
+			x = 8
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_new_greece_old_ways
+			}
+		}
+		offset = {
+			x = 8
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_the_hellenic_republic
+			}
+		}
 
 		cost = 6.8
 
@@ -7434,6 +8308,28 @@ focus_tree = {
 		x = 4
 		y = 1
 		relative_position_id = GRE_foreign_relations
+		offset = {
+			x = -2
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_west_align
+			}
+		}
+		offset = {
+			x = -2
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_east_align
+			}
+		}
 
 		cost = 6.8
 
@@ -7459,6 +8355,28 @@ focus_tree = {
 		x = -1
 		y = 1
 		relative_position_id = GRE_tale
+		offset = {
+			x = 1
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_anti_turkish_diplomacy
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_reconcile_turkey }
+			}
+		}
 
 		cost = 6.8
 
@@ -7471,6 +8389,17 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: GRE_anti_turkish_diplomacy"
 			add_opinion_modifier = { target = TUR modifier = no_diplomatic_ties }
 			reverse_add_opinion_modifier = { target = TUR modifier = no_diplomatic_ties }
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -7483,6 +8412,28 @@ focus_tree = {
 		x = 1
 		y = 1
 		relative_position_id = GRE_tale
+		offset = {
+			x = -1
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_reconcile_turkey
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_anti_turkish_diplomacy }
+			}
+		}
 
 		cost = 6.8
 
@@ -7498,6 +8449,17 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: GRE_reconcile_turkey"
 			add_opinion_modifier = { target = TUR modifier = declaration_of_friendship }
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = {
@@ -7610,6 +8572,17 @@ focus_tree = {
 		x = 1
 		y = 1
 		relative_position_id = GRE_revive_aegean_dispute
+		offset = {
+			x = -1
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_anti_turkish_diplomacy
+			}
+		}
 
 		cost = 6.8
 
@@ -7644,6 +8617,28 @@ focus_tree = {
 		x = 0
 		y = 1
 		relative_position_id = GRE_foreign_relations
+		offset = {
+			x = -2
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_west_align
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_east_align }
+			}
+		}
 
 		cost = 5
 
@@ -7669,6 +8664,17 @@ focus_tree = {
 				reverse_add_opinion_modifier = { target = GRE modifier = declaration_of_friendship }
 				set_temp_variable = { influence_target = THIS.id }
 				change_influence_percentage = yes
+			}
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
 			}
 		}
 
@@ -7822,6 +8828,28 @@ focus_tree = {
 		x = -4
 		y = 1
 		relative_position_id = GRE_foreign_relations
+		offset = {
+			x = 2
+			y = 0
+			trigger = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				has_completed_focus = GRE_east_align
+			}
+		}
+		allow_branch = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				NOT = { has_completed_focus = GRE_west_align }
+			}
+		}
 
 		cost = 5
 
@@ -7844,6 +8872,17 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: GRE_east_align"
 			NATO_leave = yes
+			hidden_effect = {
+				if = {
+					limit = {
+						has_game_rule = {
+							rule = obsolete_focus_branches_visibility
+							option = HIDE
+						}
+					}
+					mark_focus_tree_layout_dirty = yes
+				}
+			}
 		}
 
 		ai_will_do = {
