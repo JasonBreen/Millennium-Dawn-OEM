@@ -1,0 +1,32 @@
+# Ammunition System
+# Passive daily production proportional to military factory count.
+# Consumption is handled natively by the low reliability (0.2) on MD_ammunition_type —
+# units expend ammo naturally as they fight and operate, at ~6x the rate of infantry weapons.
+
+ammunition_daily_production = {
+	if = {
+		limit = { num_of_military_factories > 0 }
+		set_temp_variable = { ammo_prod = num_of_military_factories }
+		multiply_temp_variable = { ammo_prod = 15 }
+		add_equipment_to_stockpile = {
+			type = MD_Ammunition_1
+			amount = var:ammo_prod
+			producer = THIS
+		}
+	}
+}
+
+# Called once per country in the on_startup every_country loop.
+# Seeds 180 days of production as a starting buffer so no nation begins the game ammo-starved.
+ammunition_startup_stockpile = {
+	if = {
+		limit = { num_of_military_factories > 0 }
+		set_temp_variable = { ammo_start = num_of_military_factories }
+		multiply_temp_variable = { ammo_start = 2500 }
+		add_equipment_to_stockpile = {
+			type = MD_Ammunition_1
+			amount = var:ammo_start
+			producer = THIS
+		}
+	}
+}
