@@ -169,5 +169,61 @@ on_actions = {
 				}
 			}
 		}
+
+		# ========================================
+		# HOUSE OF COMMONS - Election Countdown
+		# ========================================
+		if = {
+			limit = {
+				has_country_flag = ENG_hoc_enabled
+				NOT = { has_country_flag = ENG_devolution_purged }
+				check_variable = { ENG_hoc_election_var > 0 }
+			}
+			add_to_variable = { var = ENG_hoc_election_var value = -1 }
+			clamp_variable = { var = ENG_hoc_election_var min = 0 max = 60 }
+		}
+		if = {
+			limit = {
+				has_country_flag = ENG_hoc_enabled
+				NOT = { has_country_flag = ENG_devolution_purged }
+				check_variable = { ENG_hoc_election_var < 1 }
+			}
+			add_to_variable = { var = ENG_hoc_election_var value = 60 }
+			clamp_variable = { var = ENG_hoc_election_var min = 0 max = 60 }
+			country_event = { id = ENG_parliament.1 days = 18 }
+		}
+
+		# By-election random chance (5% monthly, 6-month cooldown)
+		if = {
+			limit = {
+				has_country_flag = ENG_hoc_enabled
+				NOT = { has_country_flag = ENG_devolution_purged }
+				check_variable = { ENG_hoc_by_election_cooldown > 0 }
+			}
+			add_to_variable = { var = ENG_hoc_by_election_cooldown value = -1 }
+		}
+		if = {
+			limit = {
+				has_country_flag = ENG_hoc_enabled
+				NOT = { has_country_flag = ENG_devolution_purged }
+				check_variable = { ENG_hoc_by_election_cooldown < 1 }
+			}
+			random_list = {
+				5 = {
+					country_event = { id = ENG_parliament.100 days = 7 }
+					set_variable = { ENG_hoc_by_election_cooldown = 6 }
+				}
+				95 = { }
+			}
+		}
+
+		# Coalition satisfaction monthly check
+		if = {
+			limit = {
+				has_country_flag = ENG_hoc_enabled
+				has_country_flag = ENG_hoc_coalition_active
+			}
+			ENG_hoc_coalition_monthly_check = yes
+		}
 	}
 }
