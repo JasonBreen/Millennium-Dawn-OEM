@@ -143,14 +143,14 @@ decentralized_command = {
 	rewards = {
 		brigade_structure = {
 			category_army = {
-				 max_organisation = 3
-				 soft_attack = 0.25
-				 hard_attack = 0.15
-				 breakthrough = 0.20
-				 defense = 0.25
+				 max_organisation = 5
+				 soft_attack = 0.15
+				 hard_attack = 0.10
+				 breakthrough = 0.15
+				 defense = 0.15
 			 }
 			additional_brigade_column_size = 1
-			 coordination_bonus = 0.10
+			 coordination_bonus = 0.15
 		}
 		mid_level_command_initiative = {
 			initiative_factor = 0.05
@@ -436,7 +436,7 @@ scavenging_supply_theory = {
 			pocket_penalty = -0.25
 		}
 		low_supply_needs = {
-			supply_consumption_factor = -0.15
+			supply_consumption_factor = -0.10
 		}
 		with_sticks_and_stones = {
 			out_of_supply_factor = -0.15
@@ -538,6 +538,7 @@ deep_battle = {
 	enable_tactic = tactic_deep_battle_push
 	 enable_tactic = tactic_deep_battle_assault
 	 enable_tactic = tactic_deep_battle_encirclement
+	 enable_tactic = tactic_breakthrough
 
 	 no_supply_grace = 196
 	 org_loss_when_moving = -0.05
@@ -556,10 +557,12 @@ deep_battle = {
 		}
 		offensive_fires = {
 			breakthrough_factor = 0.025
+			enable_tactic = tactic_suppression_advance_recon
 		}
 		massed_penetration_missions = {
 			breakthrough_factor = 0.05
 			army_attack_factor = 0.1
+			enable_tactic = tactic_deep_battle_rush
 		}
 	}
 }
@@ -624,6 +627,7 @@ thunder_run = {
 
 	# EFFECTS
 	enable_tactic = tactic_thunder_run_breakthrough
+	enable_tactic = tactic_breakthrough
 
 	 org_loss_when_moving = -0.15
 	army_fuel_consumption_factor = -0.15
@@ -642,6 +646,7 @@ thunder_run = {
 		}
 		force_reconassiance = {
 			recon_factor = 0.15
+			enable_tactic = tactic_pincer_recon
 		}
 		offensive_fires = {
 			breakthrough_factor = 0.025
@@ -709,6 +714,7 @@ light_infantry_warfare = {
 		infiltration_groups = {
 			recon_factor = 0.1
 			initiative_factor = 0.1
+			enable_tactic = tactic_mobile_recon
 		}
 		coordinated_pre_mission_bombardments = {
 			L_Recce_Comp = {
@@ -931,6 +937,7 @@ static_defense = {
 		forward_defensive_deployments = {
 			max_dig_in = 3
 			 dig_in_speed_factor = 0.15
+			enable_tactic = tactic_delay
 		}
 		anti_tank_ambushes = {
 			category_front_line = {
@@ -967,7 +974,7 @@ static_defense = {
 		}
 		minefield_defences = {
 			army_defence_factor = 0.10
-			#todo: add some special ability here to mine states / provinces
+			enable_tactic = tactic_dedicated_emplacements
 		}
 		defence_in_depth = {
 			army_core_defence_factor = 0.15
@@ -1016,6 +1023,7 @@ elastic_defense = {
 		static_to_kinetic = {
 			max_dig_in_factor = 0.05
 			 org_loss_when_moving = -0.04
+			enable_tactic = tactic_flexible_lines
 		}
 		rapid_force_relocation = {
 			army_retreat_speed_factor = 0.15
@@ -1099,6 +1107,7 @@ mobile_defense = {
 		delay = {
 			cas_damage_reduction = 0.10
 			 coordination_bonus = 0.10
+			max_dig_in_factor = 0.05
 		}
 		freedom_of_maneuver = {
 			army_speed_factor = 0.075
@@ -1111,6 +1120,7 @@ mobile_defense = {
 		collapsing_defense = {
 			army_speed_factor = 0.05
 			 land_reinforce_rate = 0.05
+			army_core_defence_factor = 0.05
 		}
 	}
 }
@@ -1257,6 +1267,168 @@ insurgent_operations = {
 		}
 	}
 }
+counter_insurgency_ops = {
+	track = operational_theory
+	name = SUBDOCTRINE_OPERATION_COIN
+	description = SUBDOCTRINE_OPERATION_COIN_DESC
+	icon = GFX_doctrine_insurgent_operations
+
+	xp_cost = 75
+	xp_type = army
+
+	available = {
+		does_not_have_counter_insurgency_ops_doctrine = yes
+	}
+
+	ai_will_do = {
+		base = 1
+		modifier = {
+			add = 15
+			has_government = democratic
+			is_major_power = yes
+		}
+		modifier = {
+			add = 8
+			is_in_faction_with = USA
+		}
+		modifier = {
+			add = 5
+			has_government = democratic
+			is_minor_power = yes
+		}
+		modifier = {
+			factor = 0
+			has_doctrine = guerrilla_warfare
+		}
+		modifier = {
+			factor = 0
+			is_non_power = yes
+		}
+	}
+
+	# EFFECTS
+	enable_tactic = tactic_counter_cordon_search
+	army_infantry_defence_factor = 0.05
+
+	rewards = {
+		population_control = {
+			recon_factor = 0.10
+			initiative_factor = 0.05
+		}
+		direct_action_raids = {
+			enable_tactic = tactic_counter_stronghold_raid
+			coordination_bonus = 0.10
+		}
+		rapid_response_forces = {
+			enable_tactic = tactic_counter_fireforce
+			army_speed_factor = 0.05
+			army_retreat_speed_factor = 0.10
+		}
+		civil_military_operations = {
+			stability_factor = 0.05
+			recruitable_population_factor = 0.05
+		}
+		persistent_presence = {
+			cas_damage_reduction = 0.15
+			max_dig_in_factor = 0.10
+		}
+	}
+}
+
+urban_warfare_ops = {
+	track = operational_theory
+	name = SUBDOCTRINE_OPERATION_URBAN_WARFARE
+	description = SUBDOCTRINE_OPERATION_URBAN_WARFARE_DESC
+	icon = GFX_doctrine_light_infantry_warfare
+
+	xp_cost = 75
+	xp_type = army
+
+	available = {
+		does_not_have_urban_warfare_ops_doctrine = yes
+	}
+
+	ai_will_do = {
+		base = 1
+		modifier = {
+			add = 12
+			is_major_power = yes
+			num_of_military_factories > 30
+		}
+		modifier = {
+			add = 8
+			has_government = democratic
+			is_major_power = yes
+		}
+		modifier = {
+			add = 5
+			has_country_flag = middle_east_flag
+			is_major_power = yes
+		}
+		modifier = {
+			factor = 0
+			is_non_power = yes
+			NOT = { num_of_military_factories > 8 }
+		}
+	}
+
+	# EFFECTS
+	enable_tactic = tactic_city_node_attack
+	enable_tactic = tactic_city_all_round_defense
+
+	L_Inf_Bat = {
+		urban = { attack = 0.05  defence = 0.05 }
+		supercity = { attack = 0.05  defence = 0.05 }
+	}
+	Mot_Inf_Bat = {
+		urban = { attack = 0.05  defence = 0.05 }
+		supercity = { attack = 0.05  defence = 0.05 }
+	}
+	Militia_Bat = {
+		urban = { attack = 0.05  defence = 0.05 }
+		supercity = { attack = 0.05  defence = 0.05 }
+	}
+	Mot_Militia_Bat = {
+		urban = { attack = 0.05  defence = 0.05 }
+		supercity = { attack = 0.05  defence = 0.05 }
+	}
+
+	rewards = {
+		breaching_tactics = {
+			enable_tactic = tactic_city_infiltration_attack
+			L_Inf_Bat = {
+				urban = { attack = 0.10 }
+				supercity = { attack = 0.10 }
+			}
+			Mot_Inf_Bat = { urban = { attack = 0.10 }  supercity = { attack = 0.10 } }
+			Militia_Bat = { urban = { attack = 0.10 }  supercity = { attack = 0.10 } }
+			Mot_Militia_Bat = { urban = { attack = 0.10 }  supercity = { attack = 0.10 } }
+		}
+		interlocking_fields_of_fire = {
+			enable_tactic = tactic_city_crossfire_defense
+			L_Inf_Bat = {
+				urban = { defence = 0.10 }
+				supercity = { defence = 0.10 }
+			}
+			Mot_Inf_Bat = { urban = { defence = 0.10 }  supercity = { defence = 0.10 } }
+			Militia_Bat = { urban = { defence = 0.10 }  supercity = { defence = 0.10 } }
+			Mot_Militia_Bat = { urban = { defence = 0.10 }  supercity = { defence = 0.10 } }
+		}
+		sector_clearance = {
+			coordination_bonus = 0.10
+			initiative_factor = 0.05
+		}
+		street_level_intelligence = {
+			recon_factor = 0.10
+			intel_from_combat_factor = 0.10
+		}
+		combined_arms_urban = {
+			army_infantry_attack_factor = 0.05
+			breakthrough_factor = 0.05
+		}
+	}
+}
+
 #Special Operational Doctrines
 adverse_condition_ops = {
 	track = operational_theory
