@@ -1,26 +1,67 @@
-### Layout constants ###
-@NC_WINDOW_WIDTH = 600
-@NC_WINDOW_HEIGHT = 890
-
 # Leader section
-@LEADER_Y = 35
 @LEADER_PORTRAIT_SIZE = 120
 
 # Committee slots section
-@COMMITTEE_Y = 235
+@COMMITTEE_Y = 280
 @COMMITTEE_WIDTH = 160
 @COMMITTEE_HEIGHT = 210
+@COMMITTEE_ICON_X = -20
+@COMMITTEE_ICON_Y = 20
+
+@COMMITTEE_DEPT_NAME_X = -60
+@COMMITTEE_DEPT_NAME_Y = 90
+
+#Secretaries slots
+@SECRETARY_WIDTH = 60
+@SECRETARY_HEIGHT = 66
+@SECRETARY_Y = 130
+@SECRETARY_1_X = 10
+@SECRETARY_2_X = 58
+@SECRETARY_3_X = 106
+@SECRETARY_SCALE = 0.7
 
 # Selection section
-@SELECTION_Y = 465
+@SELECTION_Y = 520
 @SEL_BTN_WIDTH = 170
 @SEL_BTN_ROW_H = 35
+@SELECTION_ROW_1 = 8
+@SELECTION_ROW_2 = 46
+@SELECTION_ROW_3 = 84
+@SELECTION_ROW_4 = 122
 
-# Influence bars section
-@INFLUENCE_Y = 620
-@INF_BAR_WIDTH = 30
-@INF_BAR_HEIGHT = 120
-@INF_SLOT_WIDTH = 76
+# Influence bars section — per row: milestones (top) → bar + label (bottom)
+@INFLUENCE_BAR_X = 240
+@INFLUENCE_LABEL_MAXWIDTH = 210
+
+@INFLUENCE_MILESTONE_Y_1 = 0
+@INFLUENCE_ROW_1 = 18
+@INFLUENCE_ROW_LABEL_1 = 23
+
+@INFLUENCE_MILESTONE_Y_2 = 55
+@INFLUENCE_ROW_2 = 73
+@INFLUENCE_ROW_LABEL_2 = 78
+
+@INFLUENCE_MILESTONE_Y_3 = 110
+@INFLUENCE_ROW_3 = 128
+@INFLUENCE_ROW_LABEL_3 = 133
+
+@INFLUENCE_MILESTONE_Y_4 = 165
+@INFLUENCE_ROW_4 = 183
+@INFLUENCE_ROW_LABEL_4 = 188
+
+@INFLUENCE_MILESTONE_Y_5 = 220
+@INFLUENCE_ROW_5 = 238
+@INFLUENCE_ROW_LABEL_5 = 243
+
+@INFLUENCE_MILESTONE_Y_6 = 275
+@INFLUENCE_ROW_6 = 293
+@INFLUENCE_ROW_LABEL_6 = 298
+
+@INFLUENCE_MILESTONE_Y_7 = 330
+@INFLUENCE_ROW_7 = 348
+@INFLUENCE_ROW_LABEL_7 = 353
+
+
 
 guiTypes = {
 
@@ -28,7 +69,7 @@ guiTypes = {
 		name = "chi_national_comittee_ui_window"
 		orientation = lower_left
 		position = { x = 0 y = 0 }
-		size = { width = @NC_WINDOW_WIDTH height = @NC_WINDOW_HEIGHT }
+		size = { width = 600 height = 670 }
 		clipping = no
 
 		# BACKGROUND
@@ -36,14 +77,7 @@ guiTypes = {
 			name = "background"
 			quadTextureSprite = "GFX_CHI_nc_bg"
 			alwaystransparent = yes
-		}
-
-		#BACKGROUND SPOTLIGHT
-		background = {
-			name = "background_spotlight"
-			position = { x=23 y=24 }
-			quadTextureSprite="GFX_spotlight_overlay"
-			alwaystransparent = yes
+			position = { x = 0 y = -10 }
 		}
 
 		# TITLE
@@ -65,7 +99,7 @@ guiTypes = {
 		containerWindowType = {
 			name = "leader_container"
 			orientation = center_up
-			position = { x = -80 y = @LEADER_Y }
+			position = { x = -80 y = 60 }
 			size = { width = 160 height = 170 }
 			clipping = no
 
@@ -74,7 +108,7 @@ guiTypes = {
 				name = "leader_portrait"
 				spriteType = "GFX_CHI_nc_leader_placeholder"
 				orientation = center_up
-				position = { x = -60 y = 0 }
+				position = { x = -80 y = 0 }
 				alwaystransparent = yes
 			}
 
@@ -83,7 +117,7 @@ guiTypes = {
 				name = "leader_frame"
 				spriteType = "GFX_circular_frame_red"
 				orientation = center
-				position = { x = 0 y = 60 }
+				position = { x = 0 y = 0 }
 				centerposition = yes
 			}
 
@@ -106,6 +140,7 @@ guiTypes = {
 				position = { x = -180 y = 25 }
 				font = "hoi_18mbs"
 				text = CHI_nc_leader_title
+				text_color_code = Y
 				format = center
 				maxWidth = 360
 				alwaystransparent = yes
@@ -136,14 +171,14 @@ guiTypes = {
 				name = "slot_1_dept_icon"
 				spriteType = "GFX_CHI_nc_dept_empty"
 				orientation = center_up
-				position = { x = -25 y = 8 }
+				position = { x = @COMMITTEE_ICON_X y = @COMMITTEE_ICON_Y }
 			}
 
 			# SLOT HEADER
 			instantTextBoxType = {
 				name = "slot_1_header"
 				orientation = center_up
-				position = { x = -75 y = 55 }
+				position = { x = -80 y = -3 }
 				font = "hoi_16mbs"
 				text = CHI_nc_slot_header_1
 				format = center
@@ -155,7 +190,7 @@ guiTypes = {
 			instantTextBoxType = {
 				name = "slot_1_dept_name"
 				orientation = center_up
-				position = { x = -75 y = 68 }
+				position = { x = @COMMITTEE_DEPT_NAME_X y = @COMMITTEE_DEPT_NAME_Y }
 				font = "hoi_18mbs"
 				context_aware_text = "CHI_nc_slot_1_name_text"
 				format = center
@@ -166,45 +201,45 @@ guiTypes = {
 			# SECRETARY 1
 			containerWindowType = {
 				name = "slot_1_sec_1"
-				position = { x = 10 y = 130 }
-				size = { width = 40 height = 56 }
-				clipping = yes
+				position = { x = @SECRETARY_1_X y = @SECRETARY_Y }
+				size = { width = @SECRETARY_WIDTH height = @SECRETARY_HEIGHT }
+				clipping = no
 
 				iconType = {
 					name = "slot_1_sec_1_portrait"
 					spriteType = "GFX_CHI_nc_sec_blank"
 					position = { x = 0 y = 0 }
-					scale = 0.5
+					scale = @SECRETARY_SCALE
 				}
 			}
 
 			# SECRETARY 2
 			containerWindowType = {
 				name = "slot_1_sec_2"
-				position = { x = 58 y = 130 }
-				size = { width = 40 height = 56 }
-				clipping = yes
+				position = { x = @SECRETARY_2_X y = @SECRETARY_Y }
+				size = { width = @SECRETARY_WIDTH height = @SECRETARY_HEIGHT }
+				clipping = no
 
 				iconType = {
 					name = "slot_1_sec_2_portrait"
 					spriteType = "GFX_CHI_nc_sec_blank"
 					position = { x = 0 y = 0 }
-					scale = 0.5
+					scale = @SECRETARY_SCALE
 				}
 			}
 
 			# SECRETARY 3
 			containerWindowType = {
 				name = "slot_1_sec_3"
-				position = { x = 106 y = 130 }
-				size = { width = 40 height = 56 }
-				clipping = yes
+				position = { x = @SECRETARY_3_X y = @SECRETARY_Y }
+				size = { width = @SECRETARY_WIDTH height = @SECRETARY_HEIGHT }
+				clipping = no
 
 				iconType = {
 					name = "slot_1_sec_3_portrait"
 					spriteType = "GFX_CHI_nc_sec_blank"
 					position = { x = 0 y = 0 }
-					scale = 0.5
+					scale = @SECRETARY_SCALE
 				}
 			}
 		}
@@ -226,13 +261,13 @@ guiTypes = {
 				name = "slot_2_dept_icon"
 				spriteType = "GFX_CHI_nc_dept_empty"
 				orientation = center_up
-				position = { x = -25 y = 8 }
+				position = { x = @COMMITTEE_ICON_X y = @COMMITTEE_ICON_Y }
 			}
 
 			instantTextBoxType = {
 				name = "slot_2_header"
 				orientation = center_up
-				position = { x = -75 y = 55 }
+				position = { x = -80 y = -3 }
 				font = "hoi_16mbs"
 				text = CHI_nc_slot_header_2
 				format = center
@@ -243,7 +278,7 @@ guiTypes = {
 			instantTextBoxType = {
 				name = "slot_2_dept_name"
 				orientation = center_up
-				position = { x = -75 y = 68 }
+				position = { x = @COMMITTEE_DEPT_NAME_X y = @COMMITTEE_DEPT_NAME_Y }
 				font = "hoi_18mbs"
 				context_aware_text = "CHI_nc_slot_2_name_text"
 				format = center
@@ -253,43 +288,43 @@ guiTypes = {
 
 			containerWindowType = {
 				name = "slot_2_sec_1"
-				position = { x = 10 y = 130 }
-				size = { width = 40 height = 56 }
-				clipping = yes
+				position = { x = @SECRETARY_1_X y = @SECRETARY_Y }
+				size = { width = @SECRETARY_WIDTH height = @SECRETARY_HEIGHT }
+				clipping = no
 
 				iconType = {
 					name = "slot_2_sec_1_portrait"
 					spriteType = "GFX_CHI_nc_sec_blank"
 					position = { x = 0 y = 0 }
-					scale = 0.5
+					scale = @SECRETARY_SCALE
 				}
 			}
 
 			containerWindowType = {
 				name = "slot_2_sec_2"
-				position = { x = 58 y = 130 }
-				size = { width = 40 height = 56 }
-				clipping = yes
+				position = { x = @SECRETARY_2_X y = @SECRETARY_Y }
+				size = { width = @SECRETARY_WIDTH height = @SECRETARY_HEIGHT }
+				clipping = no
 
 				iconType = {
 					name = "slot_2_sec_2_portrait"
 					spriteType = "GFX_CHI_nc_sec_blank"
 					position = { x = 0 y = 0 }
-					scale = 0.5
+					scale = @SECRETARY_SCALE
 				}
 			}
 
 			containerWindowType = {
 				name = "slot_2_sec_3"
-				position = { x = 106 y = 130 }
-				size = { width = 40 height = 56 }
-				clipping = yes
+				position = { x = @SECRETARY_3_X y = @SECRETARY_Y }
+				size = { width = @SECRETARY_WIDTH height = @SECRETARY_HEIGHT }
+				clipping = no
 
 				iconType = {
 					name = "slot_2_sec_3_portrait"
 					spriteType = "GFX_CHI_nc_sec_blank"
 					position = { x = 0 y = 0 }
-					scale = 0.5
+					scale = @SECRETARY_SCALE
 				}
 			}
 		}
@@ -311,13 +346,13 @@ guiTypes = {
 				name = "slot_3_dept_icon"
 				spriteType = "GFX_CHI_nc_dept_empty"
 				orientation = center_up
-				position = { x = -25 y = 8 }
+				position = { x = @COMMITTEE_ICON_X y = @COMMITTEE_ICON_Y }
 			}
 
 			instantTextBoxType = {
 				name = "slot_3_header"
 				orientation = center_up
-				position = { x = -75 y = 55 }
+				position = { x = -80 y = -3 }
 				font = "hoi_16mbs"
 				text = CHI_nc_slot_header_3
 				format = center
@@ -328,7 +363,7 @@ guiTypes = {
 			instantTextBoxType = {
 				name = "slot_3_dept_name"
 				orientation = center_up
-				position = { x = -75 y = 68 }
+				position = { x = @COMMITTEE_DEPT_NAME_X y = @COMMITTEE_DEPT_NAME_Y }
 				font = "hoi_18mbs"
 				context_aware_text = "CHI_nc_slot_3_name_text"
 				format = center
@@ -338,43 +373,43 @@ guiTypes = {
 
 			containerWindowType = {
 				name = "slot_3_sec_1"
-				position = { x = 10 y = 130 }
-				size = { width = 40 height = 56 }
-				clipping = yes
+				position = { x = @SECRETARY_1_X y = @SECRETARY_Y }
+				size = { width = @SECRETARY_WIDTH height = @SECRETARY_HEIGHT }
+				clipping = no
 
 				iconType = {
 					name = "slot_3_sec_1_portrait"
 					spriteType = "GFX_CHI_nc_sec_blank"
 					position = { x = 0 y = 0 }
-					scale = 0.5
+					scale = @SECRETARY_SCALE
 				}
 			}
 
 			containerWindowType = {
 				name = "slot_3_sec_2"
-				position = { x = 58 y = 130 }
-				size = { width = 40 height = 56 }
-				clipping = yes
+				position = { x = @SECRETARY_2_X y = @SECRETARY_Y }
+				size = { width = @SECRETARY_WIDTH height = @SECRETARY_HEIGHT }
+				clipping = no
 
 				iconType = {
 					name = "slot_3_sec_2_portrait"
 					spriteType = "GFX_CHI_nc_sec_blank"
 					position = { x = 0 y = 0 }
-					scale = 0.5
+					scale = @SECRETARY_SCALE
 				}
 			}
 
 			containerWindowType = {
 				name = "slot_3_sec_3"
-				position = { x = 106 y = 130 }
-				size = { width = 40 height = 56 }
-				clipping = yes
+				position = { x = @SECRETARY_3_X y = @SECRETARY_Y }
+				size = { width = @SECRETARY_WIDTH height = @SECRETARY_HEIGHT }
+				clipping = no
 
 				iconType = {
 					name = "slot_3_sec_3_portrait"
 					spriteType = "GFX_CHI_nc_sec_blank"
 					position = { x = 0 y = 0 }
-					scale = 0.5
+					scale = @SECRETARY_SCALE
 				}
 			}
 		}
@@ -388,7 +423,7 @@ guiTypes = {
 			name = "selection_container"
 			orientation = center_up
 			position = { x = -270 y = @SELECTION_Y }
-			size = { width = 540 height = 140 }
+			size = { width = 540 height = 180 }
 			clipping = no
 
 			# SELECTION BACKGROUND
@@ -407,10 +442,10 @@ guiTypes = {
 				maxWidth = 540
 			}
 
-			# ROW 1: Org, Pub, UFWD
+			# ROW 1: Org, Pub,
 			buttonType = {
 				name = "chi_dept_org_btn"
-				position = { x = 10 y = 8 }
+				position = { x = 10 y = @SELECTION_ROW_1 }
 				quadTextureSprite = "GFX_sort_button_202x29_button"
 				text = CHI_ic_org_t1
 				pdx_tooltip = CHI_nc_dept_org_tt
@@ -419,27 +454,18 @@ guiTypes = {
 			}
 			buttonType = {
 				name = "chi_dept_pub_btn"
-				position = { x = 185 y = 8 }
+				position = { x = 250 y = @SELECTION_ROW_1 }
 				quadTextureSprite = "GFX_sort_button_202x29_button"
 				text = CHI_ic_pub_t1
 				pdx_tooltip = CHI_nc_dept_pub_tt
 				buttonFont = "hoi_18mbs"
 				clicksound = click_default
 			}
-			buttonType = {
-				name = "chi_dept_ufwd_btn"
-				position = { x = 360 y = 8 }
-				quadTextureSprite = "GFX_sort_button_202x29_button"
-				text = CHI_ic_ufwd_t1
-				pdx_tooltip = CHI_nc_dept_ufwd_tt
-				buttonFont = "hoi_18mbs"
-				clicksound = click_default
-			}
 
-			# ROW 2: Intl, CPLAC
+			# ROW 2: Intl, UFWD
 			buttonType = {
 				name = "chi_dept_intl_btn"
-				position = { x = 95 y = 46 }
+				position = { x = 10 y = @SELECTION_ROW_2 }
 				quadTextureSprite = "GFX_sort_button_202x29_button"
 				text = CHI_ic_intl_t1
 				pdx_tooltip = CHI_nc_dept_intl_tt
@@ -447,19 +473,29 @@ guiTypes = {
 				clicksound = click_default
 			}
 			buttonType = {
+				name = "chi_dept_ufwd_btn"
+				position = { x = 250 y = @SELECTION_ROW_2 }
+				quadTextureSprite = "GFX_sort_button_288x29_button"
+				text = CHI_ic_ufwd_t1
+				pdx_tooltip = CHI_nc_dept_ufwd_tt
+				buttonFont = "hoi_18mbs"
+				clicksound = click_default
+			}
+			# Row 3 CPLAC
+			buttonType = {
 				name = "chi_dept_cplac_btn"
-				position = { x = 270 y = 46 }
-				quadTextureSprite = "GFX_sort_button_202x29_button"
+				position = { x = 10 y = @SELECTION_ROW_3 }
+				quadTextureSprite = "GFX_sort_button_288x29_button"
 				text = CHI_ic_cplac_t1
 				pdx_tooltip = CHI_nc_dept_cplac_tt
 				buttonFont = "hoi_18mbs"
 				clicksound = click_default
 			}
 
-			# ROW 3: Social, NSC (unlock later)
+			# ROW 4: Social, NSC (unlock later)
 			buttonType = {
 				name = "chi_dept_social_btn"
-				position = { x = 95 y = 84 }
+				position = { x = 10 y = @SELECTION_ROW_4 }
 				quadTextureSprite = "GFX_sort_button_202x29_button"
 				text = CHI_ic_social_t1
 				pdx_tooltip = CHI_nc_dept_social_tt
@@ -468,8 +504,8 @@ guiTypes = {
 			}
 			buttonType = {
 				name = "chi_dept_nsc_btn"
-				position = { x = 270 y = 84 }
-				quadTextureSprite = "GFX_sort_button_202x29_button"
+				position = { x = 250 y = @SELECTION_ROW_4 }
+				quadTextureSprite = "GFX_sort_button_288x29_button"
 				text = CHI_ic_nsc_t1
 				pdx_tooltip = CHI_nc_dept_nsc_tt
 				buttonFont = "hoi_18mbs"
@@ -477,201 +513,514 @@ guiTypes = {
 			}
 		}
 
+	}
+}
 
-		###########################################
-		### SECTION 4: INFLUENCE BARS (7x)      ###
-		###########################################
+### DECISION CATEGORY: INFLUENCE BARS ###
+
+# Milestone marker positions (below bar, at 35%/70%/100% along the bar width)
+@MILESTONE_35_X = 318
+@MILESTONE_70_X = 407
+@MILESTONE_100_X = 475
+
+guiTypes = {
+
+	containerWindowType = {
+		name = "CHI_national_committee_decision_gui"
+		size = { width = 50 height = 400 }
 
 		containerWindowType = {
-			name = "influence_container"
-			orientation = center_up
-			position = { x = -270 y = @INFLUENCE_Y }
-			size = { width = 540 height = 200 }
-			clipping = no
+			name = "progressbar_container"
+			position = { x = 0 y = 5 }
 
-			# SECTION LABEL
+			# ORG (dept_id = 1)
 			instantTextBoxType = {
-				name = "influence_title"
-				position = { x = 0 y = -18 }
+				name = "inf_org_label"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_1 }
 				font = "hoi_18mbs"
-				text = CHI_nc_influence_title
-				format = center
-				maxWidth = 540
+				text = CHI_ic_org_t1
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
 			}
-
-			# ORG INFLUENCE BAR (x = 10)
-			iconType = {
-				name = "chi_inf_org_bar_bg"
-				spriteType = "GFX_CHI_nc_inf_bar_bg"
-				position = { x = 23 y = 5 }
+			instantTextBoxType = {
+				name = "inf_org_label_yellow"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_1 }
+				font = "hoi_18mbs"
+				text = CHI_ic_org_t1
+				text_color_code = Y
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
 			}
 			iconType = {
 				name = "chi_inf_org_bar"
-				spriteType = "GFX_CHI_nc_inf_bar_fill"
-				position = { x = 23 y = 5 }
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_1 }
 			}
 			iconType = {
-				name = "chi_inf_org_glow"
-				spriteType = "GFX_CHI_nc_inf_bar_glow"
-				position = { x = 23 y = 5 }
+				name = "chi_inf_org_bar_active"
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar_active"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_1 }
+				alwaystransparent = yes
 			}
-			instantTextBoxType = {
-				name = "inf_org_value"
-				position = { x = 0 y = 130 }
-				font = "hoi_16mbs"
-				context_aware_text = CHI_nc_inf_org_value
-				format = center
-				maxWidth = @INF_SLOT_WIDTH
+			iconType = {
+				name = "chi_m_org_35_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_1 }
+				pdx_tooltip = CHI_nc_m_org_35_off
+			}
+			iconType = {
+				name = "chi_m_org_35_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_1 }
+				pdx_tooltip = CHI_nc_m_org_35_on
+			}
+			iconType = {
+				name = "chi_m_org_70_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_1 }
+				pdx_tooltip = CHI_nc_m_org_70_off
+			}
+			iconType = {
+				name = "chi_m_org_70_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_1 }
+				pdx_tooltip = CHI_nc_m_org_70_on
+			}
+			iconType = {
+				name = "chi_m_org_100_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_1 }
+				pdx_tooltip = CHI_nc_m_org_100_off
+			}
+			iconType = {
+				name = "chi_m_org_100_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_1 }
+				pdx_tooltip = CHI_nc_m_org_100_on
 			}
 
-			# PUB INFLUENCE BAR (x = 76)
-			iconType = {
-				name = "chi_inf_pub_bar_bg"
-				spriteType = "GFX_CHI_nc_inf_bar_bg"
-				position = { x = 99 y = 5 }
+			# PUB (dept_id = 2)
+			instantTextBoxType = {
+				name = "inf_pub_label"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_2 }
+				font = "hoi_18mbs"
+				text = CHI_ic_pub_t1
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
+			}
+			instantTextBoxType = {
+				name = "inf_pub_label_yellow"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_2 }
+				font = "hoi_18mbs"
+				text = CHI_ic_pub_t1
+				text_color_code = Y
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
 			}
 			iconType = {
 				name = "chi_inf_pub_bar"
-				spriteType = "GFX_CHI_nc_inf_bar_fill"
-				position = { x = 99 y = 5 }
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_2 }
 			}
 			iconType = {
-				name = "chi_inf_pub_glow"
-				spriteType = "GFX_CHI_nc_inf_bar_glow"
-				position = { x = 99 y = 5 }
+				name = "chi_inf_pub_bar_active"
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar_active"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_2 }
+				alwaystransparent = yes
 			}
-			instantTextBoxType = {
-				name = "inf_pub_value"
-				position = { x = 76 y = 130 }
-				font = "hoi_16mbs"
-				context_aware_text = CHI_nc_inf_pub_value
-				format = center
-				maxWidth = @INF_SLOT_WIDTH
+			iconType = {
+				name = "chi_m_pub_35_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_2 }
+				pdx_tooltip = CHI_nc_m_pub_35_off
+			}
+			iconType = {
+				name = "chi_m_pub_35_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_2 }
+				pdx_tooltip = CHI_nc_m_pub_35_on
+			}
+			iconType = {
+				name = "chi_m_pub_70_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_2 }
+				pdx_tooltip = CHI_nc_m_pub_70_off
+			}
+			iconType = {
+				name = "chi_m_pub_70_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_2 }
+				pdx_tooltip = CHI_nc_m_pub_70_on
+			}
+			iconType = {
+				name = "chi_m_pub_100_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_2 }
+				pdx_tooltip = CHI_nc_m_pub_100_off
+			}
+			iconType = {
+				name = "chi_m_pub_100_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_2 }
+				pdx_tooltip = CHI_nc_m_pub_100_on
 			}
 
-			# UFWD INFLUENCE BAR (x = 152)
-			iconType = {
-				name = "chi_inf_ufwd_bar_bg"
-				spriteType = "GFX_CHI_nc_inf_bar_bg"
-				position = { x = 175 y = 5 }
+			# UFWD (dept_id = 3)
+			instantTextBoxType = {
+				name = "inf_ufwd_label"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_3 }
+				font = "hoi_18mbs"
+				text = CHI_ic_ufwd_t1
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
+			}
+			instantTextBoxType = {
+				name = "inf_ufwd_label_yellow"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_3 }
+				font = "hoi_18mbs"
+				text = CHI_ic_ufwd_t1
+				text_color_code = Y
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
 			}
 			iconType = {
 				name = "chi_inf_ufwd_bar"
-				spriteType = "GFX_CHI_nc_inf_bar_fill"
-				position = { x = 175 y = 5 }
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_3 }
 			}
 			iconType = {
-				name = "chi_inf_ufwd_glow"
-				spriteType = "GFX_CHI_nc_inf_bar_glow"
-				position = { x = 175 y = 5 }
+				name = "chi_inf_ufwd_bar_active"
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar_active"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_3 }
+				alwaystransparent = yes
 			}
-			instantTextBoxType = {
-				name = "inf_ufwd_value"
-				position = { x = 152 y = 130 }
-				font = "hoi_16mbs"
-				context_aware_text = CHI_nc_inf_ufwd_value
-				format = center
-				maxWidth = @INF_SLOT_WIDTH
+			iconType = {
+				name = "chi_m_ufwd_35_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_3 }
+				pdx_tooltip = CHI_nc_m_ufwd_35_off
+			}
+			iconType = {
+				name = "chi_m_ufwd_35_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_3 }
+				pdx_tooltip = CHI_nc_m_ufwd_35_on
+			}
+			iconType = {
+				name = "chi_m_ufwd_70_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_3 }
+				pdx_tooltip = CHI_nc_m_ufwd_70_off
+			}
+			iconType = {
+				name = "chi_m_ufwd_70_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_3 }
+				pdx_tooltip = CHI_nc_m_ufwd_70_on
+			}
+			iconType = {
+				name = "chi_m_ufwd_100_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_3 }
+				pdx_tooltip = CHI_nc_m_ufwd_100_off
+			}
+			iconType = {
+				name = "chi_m_ufwd_100_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_3 }
+				pdx_tooltip = CHI_nc_m_ufwd_100_on
 			}
 
-			# INTL INFLUENCE BAR (x = 228)
-			iconType = {
-				name = "chi_inf_intl_bar_bg"
-				spriteType = "GFX_CHI_nc_inf_bar_bg"
-				position = { x = 251 y = 5 }
+			# INTL (dept_id = 4)
+			instantTextBoxType = {
+				name = "inf_intl_label"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_4 }
+				font = "hoi_18mbs"
+				text = CHI_ic_intl_t1
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
+			}
+			instantTextBoxType = {
+				name = "inf_intl_label_yellow"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_4 }
+				font = "hoi_18mbs"
+				text = CHI_ic_intl_t1
+				text_color_code = Y
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
 			}
 			iconType = {
 				name = "chi_inf_intl_bar"
-				spriteType = "GFX_CHI_nc_inf_bar_fill"
-				position = { x = 251 y = 5 }
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_4 }
 			}
 			iconType = {
-				name = "chi_inf_intl_glow"
-				spriteType = "GFX_CHI_nc_inf_bar_glow"
-				position = { x = 251 y = 5 }
+				name = "chi_inf_intl_bar_active"
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar_active"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_4 }
+				alwaystransparent = yes
 			}
-			instantTextBoxType = {
-				name = "inf_intl_value"
-				position = { x = 228 y = 130 }
-				font = "hoi_16mbs"
-				context_aware_text = CHI_nc_inf_intl_value
-				format = center
-				maxWidth = @INF_SLOT_WIDTH
+			iconType = {
+				name = "chi_m_intl_35_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_4 }
+				pdx_tooltip = CHI_nc_m_intl_35_off
+			}
+			iconType = {
+				name = "chi_m_intl_35_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_4 }
+				pdx_tooltip = CHI_nc_m_intl_35_on
+			}
+			iconType = {
+				name = "chi_m_intl_70_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_4 }
+				pdx_tooltip = CHI_nc_m_intl_70_off
+			}
+			iconType = {
+				name = "chi_m_intl_70_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_4 }
+				pdx_tooltip = CHI_nc_m_intl_70_on
+			}
+			iconType = {
+				name = "chi_m_intl_100_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_4 }
+				pdx_tooltip = CHI_nc_m_intl_100_off
+			}
+			iconType = {
+				name = "chi_m_intl_100_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_4 }
+				pdx_tooltip = CHI_nc_m_intl_100_on
 			}
 
-			# SOCIAL INFLUENCE BAR (x = 304)
-			iconType = {
-				name = "chi_inf_social_bar_bg"
-				spriteType = "GFX_CHI_nc_inf_bar_bg"
-				position = { x = 327 y = 5 }
+			# SOCIAL (dept_id = 5)
+			instantTextBoxType = {
+				name = "inf_social_label"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_5 }
+				font = "hoi_18mbs"
+				text = CHI_ic_social_t1
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
+			}
+			instantTextBoxType = {
+				name = "inf_social_label_yellow"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_5 }
+				font = "hoi_18mbs"
+				text = CHI_ic_social_t1
+				text_color_code = Y
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
 			}
 			iconType = {
 				name = "chi_inf_social_bar"
-				spriteType = "GFX_CHI_nc_inf_bar_fill"
-				position = { x = 327 y = 5 }
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_5 }
 			}
 			iconType = {
-				name = "chi_inf_social_glow"
-				spriteType = "GFX_CHI_nc_inf_bar_glow"
-				position = { x = 327 y = 5 }
+				name = "chi_inf_social_bar_active"
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar_active"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_5 }
+				alwaystransparent = yes
 			}
-			instantTextBoxType = {
-				name = "inf_social_value"
-				position = { x = 304 y = 130 }
-				font = "hoi_16mbs"
-				context_aware_text = CHI_nc_inf_social_value
-				format = center
-				maxWidth = @INF_SLOT_WIDTH
+			iconType = {
+				name = "chi_m_social_35_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_5 }
+				pdx_tooltip = CHI_nc_m_social_35_off
+			}
+			iconType = {
+				name = "chi_m_social_35_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_5 }
+				pdx_tooltip = CHI_nc_m_social_35_on
+			}
+			iconType = {
+				name = "chi_m_social_70_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_5 }
+				pdx_tooltip = CHI_nc_m_social_70_off
+			}
+			iconType = {
+				name = "chi_m_social_70_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_5 }
+				pdx_tooltip = CHI_nc_m_social_70_on
+			}
+			iconType = {
+				name = "chi_m_social_100_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_5 }
+				pdx_tooltip = CHI_nc_m_social_100_off
+			}
+			iconType = {
+				name = "chi_m_social_100_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_5 }
+				pdx_tooltip = CHI_nc_m_social_100_on
 			}
 
-			# CPLAC INFLUENCE BAR (x = 380)
-			iconType = {
-				name = "chi_inf_cplac_bar_bg"
-				spriteType = "GFX_CHI_nc_inf_bar_bg"
-				position = { x = 403 y = 5 }
+			# CPLAC (dept_id = 6)
+			instantTextBoxType = {
+				name = "inf_cplac_label"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_6 }
+				font = "hoi_18mbs"
+				text = CHI_ic_cplac_t1
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
+			}
+			instantTextBoxType = {
+				name = "inf_cplac_label_yellow"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_6 }
+				font = "hoi_18mbs"
+				text = CHI_ic_cplac_t1
+				text_color_code = Y
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
 			}
 			iconType = {
 				name = "chi_inf_cplac_bar"
-				spriteType = "GFX_CHI_nc_inf_bar_fill"
-				position = { x = 403 y = 5 }
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_6 }
 			}
 			iconType = {
-				name = "chi_inf_cplac_glow"
-				spriteType = "GFX_CHI_nc_inf_bar_glow"
-				position = { x = 403 y = 5 }
+				name = "chi_inf_cplac_bar_active"
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar_active"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_6 }
+				alwaystransparent = yes
 			}
-			instantTextBoxType = {
-				name = "inf_cplac_value"
-				position = { x = 380 y = 130 }
-				font = "hoi_16mbs"
-				context_aware_text = CHI_nc_inf_cplac_value
-				format = center
-				maxWidth = @INF_SLOT_WIDTH
+			iconType = {
+				name = "chi_m_cplac_35_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_6 }
+				pdx_tooltip = CHI_nc_m_cplac_35_off
+			}
+			iconType = {
+				name = "chi_m_cplac_35_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_6 }
+				pdx_tooltip = CHI_nc_m_cplac_35_on
+			}
+			iconType = {
+				name = "chi_m_cplac_70_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_6 }
+				pdx_tooltip = CHI_nc_m_cplac_70_off
+			}
+			iconType = {
+				name = "chi_m_cplac_70_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_6 }
+				pdx_tooltip = CHI_nc_m_cplac_70_on
+			}
+			iconType = {
+				name = "chi_m_cplac_100_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_6 }
+				pdx_tooltip = CHI_nc_m_cplac_100_off
+			}
+			iconType = {
+				name = "chi_m_cplac_100_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_6 }
+				pdx_tooltip = CHI_nc_m_cplac_100_on
 			}
 
-			# NSC INFLUENCE BAR (x = 456)
-			iconType = {
-				name = "chi_inf_nsc_bar_bg"
-				spriteType = "GFX_CHI_nc_inf_bar_bg"
-				position = { x = 479 y = 5 }
+			# NSC (dept_id = 7)
+			instantTextBoxType = {
+				name = "inf_nsc_label"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_7 }
+				font = "hoi_18mbs"
+				text = CHI_ic_nsc_t1
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
+			}
+			instantTextBoxType = {
+				name = "inf_nsc_label_yellow"
+				position = { x = 8 y = @INFLUENCE_ROW_LABEL_7 }
+				font = "hoi_18mbs"
+				text = CHI_ic_nsc_t1
+				text_color_code = Y
+				maxWidth = @INFLUENCE_LABEL_MAXWIDTH
 			}
 			iconType = {
 				name = "chi_inf_nsc_bar"
-				spriteType = "GFX_CHI_nc_inf_bar_fill"
-				position = { x = 479 y = 5 }
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_7 }
 			}
 			iconType = {
-				name = "chi_inf_nsc_glow"
-				spriteType = "GFX_CHI_nc_inf_bar_glow"
-				position = { x = 479 y = 5 }
+				name = "chi_inf_nsc_bar_active"
+				quadTextureSprite = "GFX_CHI_national_committee_progressbar_active"
+				position = { x = @INFLUENCE_BAR_X y = @INFLUENCE_ROW_7 }
+				alwaystransparent = yes
 			}
-			instantTextBoxType = {
-				name = "inf_nsc_value"
-				position = { x = 456 y = 130 }
-				font = "hoi_16mbs"
-				context_aware_text = CHI_nc_inf_nsc_value
-				format = center
-				maxWidth = @INF_SLOT_WIDTH
+			iconType = {
+				name = "chi_m_nsc_35_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_7 }
+				pdx_tooltip = CHI_nc_m_nsc_35_off
+			}
+			iconType = {
+				name = "chi_m_nsc_35_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_35_X y = @INFLUENCE_MILESTONE_Y_7 }
+				pdx_tooltip = CHI_nc_m_nsc_35_on
+			}
+			iconType = {
+				name = "chi_m_nsc_70_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_7 }
+				pdx_tooltip = CHI_nc_m_nsc_70_off
+			}
+			iconType = {
+				name = "chi_m_nsc_70_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_70_X y = @INFLUENCE_MILESTONE_Y_7 }
+				pdx_tooltip = CHI_nc_m_nsc_70_on
+			}
+			iconType = {
+				name = "chi_m_nsc_100_off"
+				spriteType = "GFX_bop_indicator"
+				frame = 1
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_7 }
+				pdx_tooltip = CHI_nc_m_nsc_100_off
+			}
+			iconType = {
+				name = "chi_m_nsc_100_on"
+				spriteType = "GFX_bop_indicator"
+				frame = 2
+				position = { x = @MILESTONE_100_X y = @INFLUENCE_MILESTONE_Y_7 }
+				pdx_tooltip = CHI_nc_m_nsc_100_on
 			}
 		}
 	}
