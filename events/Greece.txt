@@ -751,8 +751,8 @@ country_event = {
 		add_political_power = 15
 		add_war_support = 0.01
 		if = {
-			limit = { country_exists = GBR }
-			GBR = {
+			limit = { country_exists = ENG }
+			ENG = {
 				add_opinion_modifier = {
 					target = ROOT
 					modifier = medium_increase
@@ -1487,6 +1487,7 @@ country_event = {
 		}
 	}
 }
+
 country_event = {
 	id = greece_military.01
 	title = greece_military.01.t
@@ -1497,6 +1498,7 @@ country_event = {
 
 	option = {
 		name = greece_military.01.a
+		log = "[GetDateText]: [This.GetName]: greece_military.01.a executed"
 		mio:GRE_eas_materiel_manufacturer = {
 			add_mio_size = 1
 			complete_mio_trait = GRE_eas_mio_trait_pyrkal_propellant_and_motor_casting
@@ -1549,7 +1551,7 @@ country_event = {
 country_event = {
 	id = greece_debt.1
 	title = greece_debt.1.t
-	desc = greece_debt.1.d
+	desc = greece_debt.1.desc
 	#picture = #TODO
 
 	is_triggered_only = yes
@@ -1560,7 +1562,12 @@ country_event = {
 		trigger = {
 			country_exists = RAJ
 		}
+		log = "[GetDateText]: [This.GetName]: greece_debt.1.a executed"
 		RAJ = { country_event = { id = greece_debt.2 days = 2 random_hours = 12 } }
+
+		ai_chance = {
+			base = 10
+		}
 	}
 
 	# Russia
@@ -1569,7 +1576,12 @@ country_event = {
 		trigger = {
 			country_exists = SOV
 		}
+		log = "[GetDateText]: [This.GetName]: greece_debt.1.b executed"
 		SOV = { country_event = { id = greece_debt.2 days = 2 random_hours = 12 } }
+
+		ai_chance = {
+			base = 10
+		}
 	}
 
 	# China
@@ -1578,21 +1590,34 @@ country_event = {
 		trigger = {
 			country_exists = CHI
 		}
+		log = "[GetDateText]: [This.GetName]: greece_debt.1.c executed"
 		CHI = { country_event = { id = greece_debt.2 days = 2 random_hours = 12 } }
+
+		ai_chance = {
+			base = 10
+		}
 	}
 
 	# Look to Europe
 	option = {
-		name = greece_debt.1.e
+		name = greece_debt.1.d
+		trigger = {
+			any_other_country = { has_idea = ECB_president }
+		}
+		log = "[GetDateText]: [This.GetName]: greece_debt.1.d executed"
 		random_other_country = {
 			limit = { has_idea = ECB_president }
+			country_event = { id = greece_debt.2 days = 2 random_hours = 12 }
+		}
 
+		ai_chance = {
+			base = 5
 		}
 	}
 
 	# Stay the Course
 	option = {
-		name = greece_debt.1.f
+		name = greece_debt.1.e
 
 		add_political_power = 100
 
@@ -1608,15 +1633,16 @@ country_event = {
 
 # [FROM.GetName] Requests Debt Swap Deals
 country_event = {
-	id = greece_debt.1
-	title = greece_debt.1.t
-	desc = greece_debt.1.d
+	id = greece_debt.2
+	title = greece_debt.2.t
+	desc = greece_debt.2.d
 	#picture = #TODO
 	is_triggered_only = yes
 
 	# Reject the Deal
 	option = {
 		name = greece_debt.2.a
+		log = "[GetDateText]: [This.GetName]: greece_debt.2.a executed"
 
 		ai_chance = {
 			base = 1
@@ -1626,10 +1652,1220 @@ country_event = {
 	# Accept the Deal
 	option = {
 		name = greece_debt.2.b
+		log = "[GetDateText]: [This.GetName]: greece_debt.2.b executed"
 		set_variable = { GRE.debt_swap_holder_nation = THIS.id }
 
 		ai_chance = {
 			base = 100
 		}
+	}
+}
+
+# Small Debt Proposal - Sent to potential creditor
+country_event = {
+	id = greece_debt.10
+	title = greece_debt.10.t
+	desc = greece_debt.10.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Accept the Deal
+	option = {
+		name = greece_debt.10.a
+		log = "[GetDateText]: [This.GetName]: greece_debt.10.a executed"
+
+		# Pay cost from our treasury (we're buying their debt)
+		set_temp_variable = { our_cost = FROM.GRE_proposed_debt_amount }
+		multiply_temp_variable = { our_cost = 0.75 }
+		subtract_from_variable = { treasury = our_cost }
+
+		FROM = { country_event = { id = greece_debt.12 days = 1 } }
+
+		ai_chance = {
+			base = 50
+			modifier = {
+				factor = 2
+				has_opinion = { target = FROM value > 50 }
+			}
+			modifier = {
+				factor = 0.5
+				has_opinion = { target = FROM value < 0 }
+			}
+			modifier = {
+				factor = 1.5
+				check_variable = { treasury > 500 }
+			}
+		}
+	}
+
+	# Reject the Deal
+	option = {
+		name = greece_debt.10.b
+		log = "[GetDateText]: [This.GetName]: greece_debt.10.b executed"
+		FROM = { country_event = { id = greece_debt.13 days = 1 } }
+
+		ai_chance = {
+			base = 25
+			modifier = {
+				factor = 3
+				has_opinion = { target = FROM value < -25 }
+			}
+		}
+	}
+
+	# Counter-Offer - Higher Interest Rate
+	option = {
+		name = greece_debt.10.c
+		log = "[GetDateText]: [This.GetName]: greece_debt.10.c executed"
+
+		set_temp_variable = { our_cost = FROM.GRE_proposed_debt_amount }
+		multiply_temp_variable = { our_cost = 0.75 }
+		subtract_from_variable = { treasury = our_cost }
+
+		# Set a higher rate for counter-offer
+		set_variable = { GRE_counter_offer_rate = 5 }
+		FROM = { country_event = { id = greece_debt.14 days = 1 } }
+
+		ai_chance = {
+			base = 25
+			modifier = {
+				factor = 2
+				check_variable = { treasury > 200 }
+			}
+		}
+	}
+}
+
+# Large Debt Proposal - Sent to potential creditor
+country_event = {
+	id = greece_debt.11
+	title = greece_debt.11.t
+	desc = greece_debt.11.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Accept the Deal
+	option = {
+		name = greece_debt.11.a
+		log = "[GetDateText]: [This.GetName]: greece_debt.11.a executed"
+
+		set_temp_variable = { our_cost = FROM.GRE_proposed_debt_amount }
+		multiply_temp_variable = { our_cost = 0.75 }
+		subtract_from_variable = { treasury = our_cost }
+
+		FROM = { country_event = { id = greece_debt.12 days = 1 } }
+
+		ai_chance = {
+			base = 25
+			modifier = {
+				factor = 2
+				has_opinion = { target = FROM value > 50 }
+			}
+			modifier = {
+				factor = 0.3
+				has_opinion = { target = FROM value < 0 }
+			}
+			modifier = {
+				factor = 2
+				check_variable = { treasury > 1000 }
+			}
+		}
+	}
+
+	# Reject the Deal
+	option = {
+		name = greece_debt.11.b
+		log = "[GetDateText]: [This.GetName]: greece_debt.11.b executed"
+		FROM = { country_event = { id = greece_debt.13 days = 1 } }
+
+		ai_chance = {
+			base = 40
+			modifier = {
+				factor = 3
+				has_opinion = { target = FROM value < -25 }
+			}
+		}
+	}
+
+	# Counter-Offer - Higher Interest Rate
+	option = {
+		name = greece_debt.11.c
+		log = "[GetDateText]: [This.GetName]: greece_debt.11.c executed"
+
+		set_temp_variable = { our_cost = FROM.GRE_proposed_debt_amount }
+		multiply_temp_variable = { our_cost = 0.75 }
+		subtract_from_variable = { treasury = our_cost }
+
+		set_variable = { GRE_counter_offer_rate = 6 }
+		FROM = { country_event = { id = greece_debt.14 days = 1 } }
+
+		ai_chance = {
+			base = 35
+			modifier = {
+				factor = 2
+				check_variable = { treasury > 500 }
+			}
+		}
+	}
+}
+
+# Deal Accepted - Sent to Greece
+country_event = {
+	id = greece_debt.12
+	title = greece_debt.12.t
+	desc = greece_debt.12.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece_debt.12.a
+		log = "[GetDateText]: [This.GetName]: greece_debt.12.a executed"
+		GRE_add_creditor = yes
+	}
+}
+
+# Deal Rejected - Sent to Greece
+country_event = {
+	id = greece_debt.13
+	title = greece_debt.13.t
+	desc = greece_debt.13.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece_debt.13.a
+		log = "[GetDateText]: [This.GetName]: greece_debt.13.a executed"
+		add_political_power = 25
+	}
+}
+
+# Counter-Offer Received - Sent to Greece
+country_event = {
+	id = greece_debt.14
+	title = greece_debt.14.t
+	desc = greece_debt.14.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Accept counter-offer at higher rate
+	option = {
+		name = greece_debt.14.a
+		log = "[GetDateText]: [This.GetName]: greece_debt.14.a executed"
+
+		# Override the default rate with the counter-offer rate
+		set_variable = { GRE_creditor_target = FROM.id }
+		GRE_add_creditor = yes
+
+		# Update the rate to the counter-offered one
+		for_each_loop = {
+			array = GRE_creditors
+			if = {
+				limit = { check_variable = { v = FROM.id } }
+				set_variable = { GRE_creditor_rate^i = FROM.GRE_counter_offer_rate }
+			}
+		}
+		FROM = {
+			set_variable = { GRE_our_interest_rate = GRE_counter_offer_rate }
+		}
+
+		ai_chance = {
+			base = 60
+			modifier = {
+				factor = 2
+				gdp_debt_ratio_higher_90 = yes
+			}
+		}
+	}
+
+	# Reject counter-offer
+	option = {
+		name = greece_debt.14.b
+		log = "[GetDateText]: [This.GetName]: greece_debt.14.b executed"
+
+		# Refund the creditor since the deal fell through
+		FROM = {
+			set_temp_variable = { refund = GRE.GRE_proposed_debt_amount }
+			multiply_temp_variable = { refund = 0.75 }
+			add_to_variable = { treasury = refund }
+		}
+
+		ai_chance = {
+			base = 40
+		}
+	}
+}
+
+# Interest Rate Changed - Notification to Greece
+country_event = {
+	id = greece_debt.15
+	title = greece_debt.15.t
+	desc = greece_debt.15.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece_debt.15.a
+	}
+}
+
+# Debt Called In - Sent to Greece
+country_event = {
+	id = greece_debt.16
+	title = greece_debt.16.t
+	desc = greece_debt.16.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Comply - Pay the demanded amount
+	option = {
+		name = greece_debt.16.a
+		log = "[GetDateText]: [This.GetName]: greece_debt.16.a executed"
+		trigger = {
+			check_variable = { treasury > FROM.GRE_called_amount }
+		}
+
+		# Find creditor index and repay
+		for_each_loop = {
+			array = GRE_creditors
+			if = {
+				limit = { check_variable = { v = FROM.id } }
+				set_temp_variable = { GRE_repay_index = i }
+				set_temp_variable = { GRE_repay_amount = FROM.GRE_called_amount }
+				GRE_repay_creditor_debt = yes
+			}
+		}
+
+		ai_chance = {
+			base = 70
+		}
+	}
+
+	# Refuse - Diplomatic consequences
+	option = {
+		name = greece_debt.16.b
+		log = "[GetDateText]: [This.GetName]: greece_debt.16.b executed"
+
+		add_opinion_modifier = { target = FROM modifier = GRE_refused_debt_call_opinion }
+		add_stability = -0.05
+
+		ai_chance = {
+			base = 30
+			modifier = {
+				factor = 3
+				check_variable = { treasury < FROM.GRE_called_amount }
+			}
+		}
+	}
+}
+
+# Debt Forgiven - Notification to Greece
+country_event = {
+	id = greece_debt.17
+	title = greece_debt.17.t
+	desc = greece_debt.17.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece_debt.17.a
+		log = "[GetDateText]: [This.GetName]: greece_debt.17.a executed"
+		add_opinion_modifier = { target = FROM modifier = GRE_debt_forgiven_opinion }
+	}
+}
+
+# Greece Fully Repaid - Notification to Creditor
+country_event = {
+	id = greece_debt.18
+	title = greece_debt.18.t
+	desc = greece_debt.18.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece_debt.18.a
+		log = "[GetDateText]: [This.GetName]: greece_debt.18.a executed"
+		add_opinion_modifier = { target = FROM modifier = GRE_debt_fully_repaid_opinion }
+	}
+}
+
+###################################
+# Chinese Investment Events
+###################################
+
+# GRE_chi_investments - Request to China for industrial investment
+country_event = {
+	id = greece.28
+	title = greece.28.t
+	desc = greece.28.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Accept - China pays and invests
+	option = {
+		name = greece.28.a
+		log = "[GetDateText]: [This.GetName]: greece.28.a executed"
+		set_temp_variable = { treasury_change = -3 }
+		modify_treasury_effect = yes
+		set_temp_variable = { percent_change = 3 }
+		set_temp_variable = { tag_index = THIS.id }
+		set_temp_variable = { influence_target = FROM.id }
+		change_influence_percentage = yes
+		FROM = { country_event = { id = greece.29 days = 1 } }
+
+		ai_chance = {
+			base = 80
+			modifier = {
+				factor = 0.3
+				has_opinion = { target = FROM value < 0 }
+			}
+		}
+	}
+
+	# Reject
+	option = {
+		name = greece.28.b
+		log = "[GetDateText]: [This.GetName]: greece.28.b executed"
+		FROM = { country_event = { id = greece.30 days = 1 } }
+
+		ai_chance = {
+			base = 20
+			modifier = {
+				factor = 3
+				has_opinion = { target = FROM value < -25 }
+			}
+		}
+	}
+}
+
+# China accepted industrial investment - GRE receives buildings
+country_event = {
+	id = greece.29
+	title = greece.29.t
+	desc = greece.29.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.29.a
+		log = "[GetDateText]: [This.GetName]: greece.29.a executed"
+		140 = {
+			add_extra_state_shared_building_slots = 1
+			add_building_construction = {
+				type = industrial_complex
+				level = 1
+				instant_build = yes
+			}
+		}
+	}
+}
+
+# China rejected industrial investment - GRE can self-fund
+country_event = {
+	id = greece.30
+	title = greece.30.t
+	desc = greece.30.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Self-fund
+	option = {
+		name = greece.30.a
+		log = "[GetDateText]: [This.GetName]: greece.30.a executed"
+		if = { limit = { has_country_flag = GRE_defer_payments_flag }
+			set_temp_variable = { skip_payment = 1 }
+			set_temp_variable = { debt_change = 3 }
+			GRE_defer_payment = yes
+		}
+		else = {
+			set_temp_variable = { treasury_change = -3 }
+			modify_treasury_effect = yes
+		}
+		140 = {
+			add_extra_state_shared_building_slots = 1
+			add_building_construction = {
+				type = industrial_complex
+				level = 1
+				instant_build = yes
+			}
+		}
+
+		ai_chance = { base = 70 }
+	}
+
+	# Abandon
+	option = {
+		name = greece.30.b
+
+		ai_chance = { base = 30 }
+	}
+}
+
+# GRE_chi_investments_piraeus - Request to China for Piraeus port
+country_event = {
+	id = greece.31
+	title = greece.31.t
+	desc = greece.31.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.31.a
+		log = "[GetDateText]: [This.GetName]: greece.31.a executed"
+		set_temp_variable = { treasury_change = -5 }
+		modify_treasury_effect = yes
+		set_temp_variable = { percent_change = 5 }
+		set_temp_variable = { tag_index = THIS.id }
+		set_temp_variable = { influence_target = FROM.id }
+		change_influence_percentage = yes
+		FROM = { country_event = { id = greece.32 days = 1 } }
+
+		ai_chance = { base = 90 }
+	}
+
+	option = {
+		name = greece.31.b
+		log = "[GetDateText]: [This.GetName]: greece.31.b executed"
+		FROM = { country_event = { id = greece.33 days = 1 } }
+
+		ai_chance = { base = 10 }
+	}
+}
+
+# China accepted Piraeus investment
+country_event = {
+	id = greece.32
+	title = greece.32.t
+	desc = greece.32.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.32.a
+		log = "[GetDateText]: [This.GetName]: greece.32.a executed"
+		141 = {
+			add_building_construction = {
+				type = infrastructure
+				level = 1
+				instant_build = yes
+			}
+			add_extra_state_shared_building_slots = 1
+			add_building_construction = {
+				type = dockyard
+				level = 1
+				instant_build = yes
+			}
+		}
+	}
+}
+
+# China rejected Piraeus investment
+country_event = {
+	id = greece.33
+	title = greece.33.t
+	desc = greece.33.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.33.a
+		log = "[GetDateText]: [This.GetName]: greece.33.a executed"
+		if = { limit = { has_country_flag = GRE_defer_payments_flag }
+			set_temp_variable = { skip_payment = 1 }
+			set_temp_variable = { debt_change = 5 }
+			GRE_defer_payment = yes
+		}
+		else = {
+			set_temp_variable = { treasury_change = -5 }
+			modify_treasury_effect = yes
+		}
+		141 = {
+			add_building_construction = {
+				type = infrastructure
+				level = 1
+				instant_build = yes
+			}
+			add_extra_state_shared_building_slots = 1
+			add_building_construction = {
+				type = dockyard
+				level = 1
+				instant_build = yes
+			}
+		}
+
+		ai_chance = { base = 60 }
+	}
+
+	option = {
+		name = greece.33.b
+
+		ai_chance = { base = 40 }
+	}
+}
+
+# GRE_chi_real_estate - Request to China for real estate development
+country_event = {
+	id = greece.34
+	title = greece.34.t
+	desc = greece.34.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.34.a
+		log = "[GetDateText]: [This.GetName]: greece.34.a executed"
+		set_temp_variable = { treasury_change = -2 }
+		modify_treasury_effect = yes
+		set_temp_variable = { percent_change = 3 }
+		set_temp_variable = { tag_index = THIS.id }
+		set_temp_variable = { influence_target = FROM.id }
+		change_influence_percentage = yes
+		FROM = { country_event = { id = greece.35 days = 1 } }
+
+		ai_chance = { base = 85 }
+	}
+
+	option = {
+		name = greece.34.b
+		log = "[GetDateText]: [This.GetName]: greece.34.b executed"
+		FROM = { country_event = { id = greece.36 days = 1 } }
+
+		ai_chance = { base = 15 }
+	}
+}
+
+# China accepted real estate investment
+country_event = {
+	id = greece.35
+	title = greece.35.t
+	desc = greece.35.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.35.a
+		log = "[GetDateText]: [This.GetName]: greece.35.a executed"
+		141 = {
+			add_extra_state_shared_building_slots = 3
+		}
+	}
+}
+
+# China rejected real estate investment
+country_event = {
+	id = greece.36
+	title = greece.36.t
+	desc = greece.36.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.36.a
+		log = "[GetDateText]: [This.GetName]: greece.36.a executed"
+		141 = {
+			add_extra_state_shared_building_slots = 3
+		}
+
+		ai_chance = { base = 80 }
+	}
+
+	option = {
+		name = greece.36.b
+
+		ai_chance = { base = 20 }
+	}
+}
+
+# GRE_chi_nationwide_investments - Request to China for nationwide programme
+country_event = {
+	id = greece.37
+	title = greece.37.t
+	desc = greece.37.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.37.a
+		log = "[GetDateText]: [This.GetName]: greece.37.a executed"
+		set_temp_variable = { treasury_change = -3 }
+		modify_treasury_effect = yes
+		set_temp_variable = { percent_change = 5 }
+		set_temp_variable = { tag_index = THIS.id }
+		set_temp_variable = { influence_target = FROM.id }
+		change_influence_percentage = yes
+		FROM = { country_event = { id = greece.38 days = 1 } }
+
+		ai_chance = { base = 75 }
+	}
+
+	option = {
+		name = greece.37.b
+		log = "[GetDateText]: [This.GetName]: greece.37.b executed"
+		FROM = { country_event = { id = greece.39 days = 1 } }
+
+		ai_chance = { base = 25 }
+	}
+}
+
+# China accepted nationwide investment
+country_event = {
+	id = greece.38
+	title = greece.38.t
+	desc = greece.38.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.38.a
+		log = "[GetDateText]: [This.GetName]: greece.38.a executed"
+		set_temp_variable = { skip_payment = 1 }
+		one_air_base = yes
+		one_random_industrial_complex = yes
+		one_office_construction = yes
+	}
+}
+
+# China rejected nationwide investment
+country_event = {
+	id = greece.39
+	title = greece.39.t
+	desc = greece.39.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.39.a
+		log = "[GetDateText]: [This.GetName]: greece.39.a executed"
+		one_air_base = yes
+		one_random_industrial_complex = yes
+		one_office_construction = yes
+
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = greece.39.b
+
+		ai_chance = { base = 50 }
+	}
+}
+
+# GRE_invest_elliniko - Request to China for Elliniko development
+country_event = {
+	id = greece.40
+	title = greece.40.t
+	desc = greece.40.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.40.a
+		log = "[GetDateText]: [This.GetName]: greece.40.a executed"
+		set_temp_variable = { treasury_change = -7 }
+		modify_treasury_effect = yes
+		set_temp_variable = { percent_change = 3 }
+		set_temp_variable = { tag_index = THIS.id }
+		set_temp_variable = { influence_target = FROM.id }
+		change_influence_percentage = yes
+		FROM = { country_event = { id = greece.41 days = 1 } }
+
+		ai_chance = { base = 70 }
+	}
+
+	option = {
+		name = greece.40.b
+		log = "[GetDateText]: [This.GetName]: greece.40.b executed"
+		FROM = { country_event = { id = greece.42 days = 1 } }
+
+		ai_chance = { base = 30 }
+	}
+}
+
+# China accepted Elliniko development
+country_event = {
+	id = greece.41
+	title = greece.41.t
+	desc = greece.41.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.41.a
+		log = "[GetDateText]: [This.GetName]: greece.41.a executed"
+		141 = {
+			add_building_construction = {
+				type = infrastructure
+				level = 1
+				instant_build = yes
+			}
+		}
+		142 = {
+			add_building_construction = {
+				type = infrastructure
+				level = 1
+				instant_build = yes
+			}
+		}
+	}
+}
+
+# China rejected Elliniko development
+country_event = {
+	id = greece.42
+	title = greece.42.t
+	desc = greece.42.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.42.a
+		log = "[GetDateText]: [This.GetName]: greece.42.a executed"
+		if = { limit = { has_country_flag = GRE_defer_payments_flag }
+			set_temp_variable = { skip_payment = 1 }
+			set_temp_variable = { debt_change = 7 }
+			GRE_defer_payment = yes
+		}
+		else = {
+			set_temp_variable = { treasury_change = -7 }
+			modify_treasury_effect = yes
+		}
+		141 = {
+			add_building_construction = {
+				type = infrastructure
+				level = 1
+				instant_build = yes
+			}
+		}
+		142 = {
+			add_building_construction = {
+				type = infrastructure
+				level = 1
+				instant_build = yes
+			}
+		}
+
+		ai_chance = { base = 60 }
+	}
+
+	option = {
+		name = greece.42.b
+
+		ai_chance = { base = 40 }
+	}
+}
+
+###################################
+# Aegean Pipeline - Turkey Events
+###################################
+
+# Propose joint Aegean energy exploitation to Turkey
+country_event = {
+	id = greece.43
+	title = greece.43.t
+	desc = greece.43.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Accept - shared exploitation, both get oil
+	option = {
+		name = greece.43.a
+		log = "[GetDateText]: [This.GetName]: greece.43.a executed"
+		FROM = { country_event = { id = greece.44 days = 1 } }
+		# Turkey gets a share of oil
+		random_owned_state = {
+			limit = { is_coastal = yes }
+			add_resource = { type = oil amount = 3 }
+		}
+		add_opinion_modifier = { target = FROM modifier = earthquake_diplomacy }
+
+		ai_chance = {
+			base = 30
+			modifier = {
+				factor = 3
+				has_opinion = { target = FROM value > 25 }
+			}
+			modifier = {
+				factor = 0.1
+				has_opinion = { target = FROM value < -25 }
+			}
+		}
+	}
+
+	# Reject - Turkey refuses shared exploitation
+	option = {
+		name = greece.43.b
+		log = "[GetDateText]: [This.GetName]: greece.43.b executed"
+		FROM = { country_event = { id = greece.45 days = 1 } }
+		add_opinion_modifier = { target = FROM modifier = airspace_violations }
+
+		ai_chance = {
+			base = 70
+			modifier = {
+				factor = 0.5
+				has_opinion = { target = FROM value > 50 }
+			}
+		}
+	}
+}
+
+# Turkey accepted Aegean pipeline deal
+country_event = {
+	id = greece.44
+	title = greece.44.t
+	desc = greece.44.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.44.a
+		log = "[GetDateText]: [This.GetName]: greece.44.a executed"
+		if = { limit = { has_country_flag = GRE_defer_payments_flag }
+			set_temp_variable = { skip_payment = 1 }
+			set_temp_variable = { debt_change = 4 }
+			GRE_defer_payment = yes
+		}
+		else = {
+			set_temp_variable = { treasury_change = -4 }
+			modify_treasury_effect = yes
+		}
+		143 = {
+			add_resource = { type = oil amount = 6 }
+		}
+		add_opinion_modifier = { target = TUR modifier = earthquake_diplomacy }
+	}
+}
+
+# Turkey rejected Aegean pipeline deal
+country_event = {
+	id = greece.45
+	title = greece.45.t
+	desc = greece.45.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Go ahead unilaterally
+	option = {
+		name = greece.45.a
+		log = "[GetDateText]: [This.GetName]: greece.45.a executed"
+		if = { limit = { has_country_flag = GRE_defer_payments_flag }
+			set_temp_variable = { skip_payment = 1 }
+			set_temp_variable = { debt_change = 4 }
+			GRE_defer_payment = yes
+		}
+		else = {
+			set_temp_variable = { treasury_change = -4 }
+			modify_treasury_effect = yes
+		}
+		143 = {
+			add_resource = { type = oil amount = 4 }
+		}
+		add_opinion_modifier = { target = TUR modifier = airspace_violations }
+
+		ai_chance = { base = 70 }
+	}
+
+	# Abandon the project
+	option = {
+		name = greece.45.b
+
+		ai_chance = { base = 30 }
+	}
+}
+
+###################################
+# ICBC Loan Events
+###################################
+
+# ICBC loan request - Sent to China
+country_event = {
+	id = greece.46
+	title = greece.46.t
+	desc = greece.46.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Accept - China pays, Greece receives
+	option = {
+		name = greece.46.a
+		log = "[GetDateText]: [This.GetName]: greece.46.a executed"
+		# China pays from treasury
+		set_temp_variable = { loan_amount = FROM.gdp_total }
+		multiply_temp_variable = { loan_amount = 0.10 }
+		clamp_temp_variable = { var = loan_amount max = 100 }
+		subtract_from_variable = { treasury = loan_amount }
+		# China gains influence over Greece
+		set_temp_variable = { percent_change = 5 }
+		set_temp_variable = { tag_index = THIS.id }
+		set_temp_variable = { influence_target = FROM.id }
+		change_influence_percentage = yes
+		FROM = { country_event = { id = greece.47 days = 1 } }
+
+		ai_chance = {
+			base = 80
+			modifier = {
+				factor = 0.3
+				check_variable = { treasury < 50 }
+			}
+		}
+	}
+
+	# Reject
+	option = {
+		name = greece.46.b
+		log = "[GetDateText]: [This.GetName]: greece.46.b executed"
+		FROM = { country_event = { id = greece.48 days = 1 } }
+
+		ai_chance = {
+			base = 20
+		}
+	}
+}
+
+# ICBC loan accepted - Greece receives funds
+country_event = {
+	id = greece.47
+	title = greece.47.t
+	desc = greece.47.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.47.a
+		log = "[GetDateText]: [This.GetName]: greece.47.a executed"
+		set_temp_variable = { treasury_change = gdp_total }
+		multiply_temp_variable = { treasury_change = 0.10 }
+		clamp_temp_variable = { var = treasury_change max = 100 }
+		modify_treasury_effect = yes
+	}
+}
+
+# ICBC loan rejected - Greece gets nothing
+country_event = {
+	id = greece.48
+	title = greece.48.t
+	desc = greece.48.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.48.a
+	}
+}
+
+###################################
+# North Macedonian Pipeline Events
+###################################
+
+# Pipeline proposal to North Macedonia
+country_event = {
+	id = greece.49
+	title = greece.49.t
+	desc = greece.49.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Accept - shared pipeline, both benefit
+	option = {
+		name = greece.49.a
+		log = "[GetDateText]: [This.GetName]: greece.49.a executed"
+		FROM = { country_event = { id = greece.50 days = 1 } }
+		random_owned_state = {
+			limit = { is_core_of = ROOT }
+			add_resource = { type = oil amount = 2 }
+		}
+		add_opinion_modifier = { target = FROM modifier = earthquake_diplomacy }
+
+		ai_chance = {
+			base = 60
+			modifier = {
+				factor = 2
+				has_opinion = { target = FROM value > 25 }
+			}
+		}
+	}
+
+	# Reject
+	option = {
+		name = greece.49.b
+		log = "[GetDateText]: [This.GetName]: greece.49.b executed"
+		FROM = { country_event = { id = greece.51 days = 1 } }
+
+		ai_chance = {
+			base = 40
+		}
+	}
+}
+
+# North Macedonia accepted pipeline
+country_event = {
+	id = greece.50
+	title = greece.50.t
+	desc = greece.50.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.50.a
+		log = "[GetDateText]: [This.GetName]: greece.50.a executed"
+		if = { limit = { has_country_flag = GRE_defer_payments_flag }
+			set_temp_variable = { skip_payment = 1 }
+			set_temp_variable = { debt_change = 3 }
+			GRE_defer_payment = yes
+		}
+		else = {
+			set_temp_variable = { treasury_change = -3 }
+			modify_treasury_effect = yes
+		}
+		140 = {
+			add_resource = { type = oil amount = 4 }
+		}
+		add_opinion_modifier = { target = FYR modifier = earthquake_diplomacy }
+	}
+}
+
+# North Macedonia rejected pipeline
+country_event = {
+	id = greece.51
+	title = greece.51.t
+	desc = greece.51.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Build unilaterally
+	option = {
+		name = greece.51.a
+		log = "[GetDateText]: [This.GetName]: greece.51.a executed"
+		if = { limit = { has_country_flag = GRE_defer_payments_flag }
+			set_temp_variable = { skip_payment = 1 }
+			set_temp_variable = { debt_change = 3 }
+			GRE_defer_payment = yes
+		}
+		else = {
+			set_temp_variable = { treasury_change = -3 }
+			modify_treasury_effect = yes
+		}
+		140 = {
+			add_resource = { type = oil amount = 3 }
+		}
+
+		ai_chance = { base = 70 }
+	}
+
+	# Abandon
+	option = {
+		name = greece.51.b
+
+		ai_chance = { base = 30 }
+	}
+}
+
+###################################
+# Turkish Pipeline Events
+###################################
+
+# Pipeline proposal to Turkey
+country_event = {
+	id = greece.52
+	title = greece.52.t
+	desc = greece.52.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Accept - shared pipeline
+	option = {
+		name = greece.52.a
+		log = "[GetDateText]: [This.GetName]: greece.52.a executed"
+		FROM = { country_event = { id = greece.53 days = 1 } }
+		random_owned_state = {
+			limit = { is_core_of = ROOT is_coastal = yes }
+			add_resource = { type = oil amount = 3 }
+		}
+		add_opinion_modifier = { target = FROM modifier = earthquake_diplomacy }
+
+		ai_chance = {
+			base = 30
+			modifier = {
+				factor = 2
+				has_opinion = { target = FROM value > 25 }
+			}
+			modifier = {
+				factor = 0.2
+				has_opinion = { target = FROM value < -25 }
+			}
+		}
+	}
+
+	# Reject
+	option = {
+		name = greece.52.b
+		log = "[GetDateText]: [This.GetName]: greece.52.b executed"
+		FROM = { country_event = { id = greece.54 days = 1 } }
+
+		ai_chance = {
+			base = 70
+		}
+	}
+}
+
+# Turkey accepted pipeline
+country_event = {
+	id = greece.53
+	title = greece.53.t
+	desc = greece.53.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	option = {
+		name = greece.53.a
+		log = "[GetDateText]: [This.GetName]: greece.53.a executed"
+		if = { limit = { has_country_flag = GRE_defer_payments_flag }
+			set_temp_variable = { skip_payment = 1 }
+			set_temp_variable = { debt_change = 3 }
+			GRE_defer_payment = yes
+		}
+		else = {
+			set_temp_variable = { treasury_change = -3 }
+			modify_treasury_effect = yes
+		}
+		140 = {
+			add_resource = { type = oil amount = 4 }
+		}
+		add_opinion_modifier = { target = TUR modifier = earthquake_diplomacy }
+	}
+}
+
+# Turkey rejected pipeline
+country_event = {
+	id = greece.54
+	title = greece.54.t
+	desc = greece.54.d
+	picture = GFX_report_generic_sign_treaty2
+	is_triggered_only = yes
+
+	# Build alone
+	option = {
+		name = greece.54.a
+		log = "[GetDateText]: [This.GetName]: greece.54.a executed"
+		if = { limit = { has_country_flag = GRE_defer_payments_flag }
+			set_temp_variable = { skip_payment = 1 }
+			set_temp_variable = { debt_change = 3 }
+			GRE_defer_payment = yes
+		}
+		else = {
+			set_temp_variable = { treasury_change = -3 }
+			modify_treasury_effect = yes
+		}
+		140 = {
+			add_resource = { type = oil amount = 3 }
+		}
+		add_opinion_modifier = { target = TUR modifier = airspace_violations }
+
+		ai_chance = { base = 60 }
+	}
+
+	# Abandon
+	option = {
+		name = greece.54.b
+
+		ai_chance = { base = 40 }
 	}
 }

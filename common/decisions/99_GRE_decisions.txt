@@ -69,7 +69,7 @@ GRE_debt_crisis_category = {
 					remove_idea = GRE_austerity_1
 					add_idea = GRE_austerity_2
 				}
-				activate_mission = GRE_austerity_tension
+				activate_mission = GRE_austerity_tension_mission
 			}
 			else_if = {
 				limit = { has_idea = GRE_austerity_2 }
@@ -77,7 +77,7 @@ GRE_debt_crisis_category = {
 					remove_idea = GRE_austerity_2
 					add_idea = GRE_austerity_3
 				}
-				activate_mission = GRE_austerity_tension
+				activate_mission = GRE_austerity_tension_mission
 			}
 			else_if = {
 				limit = { has_idea = GRE_austerity_3 }
@@ -85,7 +85,7 @@ GRE_debt_crisis_category = {
 					remove_idea = GRE_austerity_3
 					add_idea = GRE_austerity_4
 				}
-				activate_mission = GRE_austerity_tension
+				activate_mission = GRE_austerity_tension_mission
 			}
 			else_if = {
 				limit = { has_idea = GRE_austerity_4 }
@@ -199,6 +199,152 @@ GRE_debt_crisis_category = {
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision GRE_do_not_defer_payments_decision"
 			clr_country_flag = GRE_defer_payments_flag
+		}
+	}
+
+	# Creditor Negotiation Decisions
+
+	GRE_propose_debt_deal = {
+		icon = GFX_decision_bancru_ask_button
+
+		cost = 100
+
+		target_trigger = {
+			FROM = {
+				GRE_is_eligible_creditor = yes
+			}
+		}
+
+		visible = {
+			gdp_debt_ratio_higher_50 = yes
+			NOT = { has_country_flag = GRE_debt_crisis_concluded }
+		}
+
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = GRE_debt_ratio_above_50_tt
+				gdp_debt_ratio_higher_50 = yes
+			}
+		}
+
+		days_re_enable = 90
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_propose_debt_deal"
+			# Propose 10% of current debt
+			set_temp_variable = { GRE_proposed_debt_amount = debt }
+			multiply_temp_variable = { GRE_proposed_debt_amount = 0.1 }
+			round_temp_variable = GRE_proposed_debt_amount
+			set_variable = { GRE_proposed_debt_amount = GRE_proposed_debt_amount }
+			set_variable = { GRE_creditor_target = FROM.id }
+			FROM = { country_event = { id = greece_debt.10 days = 2 random_hours = 12 } }
+		}
+
+		ai_will_do = {
+			factor = 5
+			modifier = {
+				factor = 3
+				gdp_debt_ratio_higher_90 = yes
+			}
+		}
+	}
+
+	GRE_propose_large_debt_deal = {
+		icon = GFX_decision_bancru_ask_button
+
+		cost = 200
+
+		target_trigger = {
+			FROM = {
+				GRE_is_eligible_creditor = yes
+			}
+		}
+
+		visible = {
+			gdp_debt_ratio_higher_90 = yes
+			NOT = { has_country_flag = GRE_debt_crisis_concluded }
+		}
+
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = GRE_debt_ratio_above_90_tt
+				gdp_debt_ratio_higher_90 = yes
+			}
+		}
+
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_propose_large_debt_deal"
+			# Propose 25% of current debt
+			set_temp_variable = { GRE_proposed_debt_amount = debt }
+			multiply_temp_variable = { GRE_proposed_debt_amount = 0.25 }
+			round_temp_variable = GRE_proposed_debt_amount
+			set_variable = { GRE_proposed_debt_amount = GRE_proposed_debt_amount }
+			set_variable = { GRE_creditor_target = FROM.id }
+			FROM = { country_event = { id = greece_debt.11 days = 2 random_hours = 12 } }
+		}
+
+		ai_will_do = {
+			factor = 10
+			modifier = {
+				factor = 0
+				NOT = { gdp_debt_ratio_higher_90 = yes }
+			}
+		}
+	}
+
+	GRE_repay_creditor = {
+		icon = GFX_decision_bancru_ask_button
+
+		cost = 25
+
+		target_trigger = {
+			FROM = {
+				GRE_is_creditor_of_greece = yes
+			}
+		}
+
+		visible = {
+			GRE_has_creditors = yes
+		}
+
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = GRE_has_positive_treasury_tt
+				check_variable = { treasury > 10 }
+			}
+		}
+
+		days_re_enable = 30
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_repay_creditor"
+			# Find the creditor index
+			set_temp_variable = { GRE_repay_index = -1 }
+			for_each_loop = {
+				array = GRE_creditors
+				if = {
+					limit = { check_variable = { v = FROM.id } }
+					set_temp_variable = { GRE_repay_index = i }
+				}
+			}
+			if = {
+				limit = { check_variable = { GRE_repay_index > -1 } }
+				# Repay 10% of debt to this creditor
+				set_temp_variable = { GRE_repay_amount = GRE_creditor_debt^GRE_repay_index }
+				multiply_temp_variable = { GRE_repay_amount = 0.1 }
+				round_temp_variable = GRE_repay_amount
+				GRE_repay_creditor_debt = yes
+			}
+		}
+
+		ai_will_do = {
+			factor = 3
+			modifier = {
+				factor = 5
+				check_variable = { treasury > 100 }
+			}
 		}
 	}
 }
@@ -1524,4 +1670,813 @@ GRE_generic_decisions_category = {
 			base = 5
 		}
 	}
+}
+
+GRE_creditor_management_category = {
+
+	GRE_creditor_raise_interest = {
+		icon = GFX_decision_bancru_ask_button
+
+		cost = 25
+
+		visible = {
+			GRE_is_creditor_of_greece = yes
+		}
+
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = GRE_interest_rate_below_cap_tt
+				check_variable = { GRE_our_interest_rate < 8 }
+			}
+		}
+
+		days_re_enable = 60
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_creditor_raise_interest"
+			add_to_variable = { GRE_our_interest_rate = 0.5 }
+			clamp_variable = { var = GRE_our_interest_rate min = 0.5 max = 8 }
+			# Update the rate in GRE's parallel array
+			GRE = {
+				for_each_loop = {
+					array = GRE_creditors
+					if = {
+						limit = { check_variable = { v = FROM.id } }
+						set_variable = { GRE_creditor_rate^i = FROM.GRE_our_interest_rate }
+					}
+				}
+				country_event = { id = greece_debt.15 days = 1 }
+			}
+			add_opinion_modifier = { target = GRE modifier = GRE_raised_interest_opinion }
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = {
+				factor = 5
+				check_variable = { GRE_our_interest_rate < 3 }
+			}
+			modifier = {
+				factor = 0
+				has_opinion = { target = GRE value > 50 }
+			}
+		}
+	}
+
+	GRE_creditor_lower_interest = {
+		icon = GFX_decision_bancru_ask_button
+
+		cost = 25
+
+		visible = {
+			GRE_is_creditor_of_greece = yes
+		}
+
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = GRE_interest_rate_above_min_tt
+				check_variable = { GRE_our_interest_rate > 0.5 }
+			}
+		}
+
+		days_re_enable = 60
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_creditor_lower_interest"
+			subtract_from_variable = { GRE_our_interest_rate = 0.5 }
+			clamp_variable = { var = GRE_our_interest_rate min = 0.5 max = 8 }
+			# Update the rate in GRE's parallel array
+			GRE = {
+				for_each_loop = {
+					array = GRE_creditors
+					if = {
+						limit = { check_variable = { v = FROM.id } }
+						set_variable = { GRE_creditor_rate^i = FROM.GRE_our_interest_rate }
+					}
+				}
+				country_event = { id = greece_debt.15 days = 1 }
+			}
+			add_opinion_modifier = { target = GRE modifier = GRE_lowered_interest_opinion }
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = {
+				factor = 5
+				has_opinion = { target = GRE value > 75 }
+			}
+		}
+	}
+
+	GRE_creditor_call_in_debt = {
+		icon = GFX_decision_bancru_ask_button
+
+		cost = 150
+
+		visible = {
+			GRE_is_creditor_of_greece = yes
+			check_variable = { GRE_debt_held_by_us > 10 }
+		}
+
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = GRE_creditor_holds_significant_debt_tt
+				check_variable = { GRE_debt_held_by_us > 10 }
+			}
+		}
+
+		days_re_enable = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_creditor_call_in_debt"
+			# Demand 20% of held debt
+			set_temp_variable = { GRE_called_amount = GRE_debt_held_by_us }
+			multiply_temp_variable = { GRE_called_amount = 0.2 }
+			round_temp_variable = GRE_called_amount
+			set_variable = { GRE_called_amount = GRE_called_amount }
+			GRE = { country_event = { id = greece_debt.16 days = 1 } }
+		}
+
+		ai_will_do = {
+			factor = 0
+			modifier = {
+				factor = 5
+				has_opinion = { target = GRE value < -25 }
+			}
+		}
+	}
+
+	GRE_creditor_forgive_debt = {
+		icon = GFX_decision_bancru_ask_button
+
+		cost = 150
+
+		visible = {
+			GRE_is_creditor_of_greece = yes
+			check_variable = { GRE_debt_held_by_us > 0.01 }
+		}
+
+		days_re_enable = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_creditor_forgive_debt"
+			# Forgive 25% of held debt
+			set_temp_variable = { GRE_forgive_amount = GRE_debt_held_by_us }
+			multiply_temp_variable = { GRE_forgive_amount = 0.25 }
+			round_temp_variable = GRE_forgive_amount
+
+			# Find our index in GRE's creditor array
+			GRE = {
+				for_each_loop = {
+					array = GRE_creditors
+					if = {
+						limit = { check_variable = { v = FROM.id } }
+						subtract_from_variable = { GRE_creditor_debt^i = FROM.GRE_forgive_amount }
+						subtract_from_variable = { GRE_total_creditor_debt = FROM.GRE_forgive_amount }
+						# Check if fully forgiven
+						if = {
+							limit = { check_variable = { GRE_creditor_debt^i < 0.01 } }
+							set_temp_variable = { GRE_creditor_remove_index = i }
+							GRE_remove_creditor = yes
+						}
+					}
+				}
+				country_event = { id = greece_debt.17 days = 1 }
+			}
+
+			subtract_from_variable = { GRE_debt_held_by_us = GRE_forgive_amount }
+			clamp_variable = { var = GRE_debt_held_by_us min = 0 max = 999999 }
+			add_opinion_modifier = { target = GRE modifier = GRE_forgave_debt_opinion }
+		}
+
+		ai_will_do = {
+			factor = 0
+			modifier = {
+				factor = 3
+				has_opinion = { target = GRE value > 75 }
+			}
+		}
+	}
+
+}
+
+GRE_prospecting_category = {
+
+	# Halkidiki Gold & Chromium (State 140)
+
+	GRE_halkidiki_prospecting_1 = {
+		name = GRE_halkidiki_prospecting
+		icon = generic_resource_extr
+
+		cost = 50
+		days_remove = 30
+		fire_only_once = yes
+
+		visible = {
+			has_completed_focus = GRE_rare_element_prospecting
+		}
+
+		available = {
+			owns_state = 140
+			controls_state = 140
+			140 = { fuel_silo > 0 }
+			has_tech = excavation1
+		}
+
+		highlight_states = {
+			highlight_state_targets = { state = 140 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_halkidiki_prospecting_1"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 3 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -3 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision remove GRE_halkidiki_prospecting_1"
+			add_resource = { type = chromium amount = 4 state = 140 }
+			set_country_flag = GRE_halkidiki_prospecting_1_done
+		}
+
+		ai_will_do = {
+			factor = 100
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	GRE_halkidiki_prospecting_2 = {
+		name = GRE_halkidiki_prospecting
+		icon = generic_resource_extr
+
+		cost = 50
+		days_remove = 30
+		fire_only_once = yes
+
+		visible = {
+			has_country_flag = GRE_halkidiki_prospecting_1_done
+		}
+
+		available = {
+			owns_state = 140
+			controls_state = 140
+			140 = { fuel_silo > 1 }
+			has_tech = excavation2
+		}
+
+		highlight_states = {
+			highlight_state_targets = { state = 140 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_halkidiki_prospecting_2"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 4 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -4 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision remove GRE_halkidiki_prospecting_2"
+			add_resource = { type = chromium amount = 4 state = 140 }
+			set_country_flag = GRE_halkidiki_prospecting_2_done
+		}
+
+		ai_will_do = {
+			factor = 100
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	GRE_halkidiki_prospecting_3 = {
+		name = GRE_halkidiki_prospecting
+		icon = generic_resource_extr
+
+		cost = 50
+		days_remove = 30
+		fire_only_once = yes
+
+		visible = {
+			has_country_flag = GRE_halkidiki_prospecting_2_done
+		}
+
+		available = {
+			owns_state = 140
+			controls_state = 140
+			140 = { fuel_silo > 2 }
+			has_tech = excavation3
+		}
+
+		highlight_states = {
+			highlight_state_targets = { state = 140 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_halkidiki_prospecting_3"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 5 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -5 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision remove GRE_halkidiki_prospecting_3"
+			add_resource = { type = steel amount = 3 state = 140 }
+			set_country_flag = GRE_halkidiki_prospecting_3_done
+		}
+
+		ai_will_do = {
+			factor = 100
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	GRE_halkidiki_prospecting_4 = {
+		name = GRE_halkidiki_prospecting
+		icon = generic_resource_extr
+
+		cost = 50
+		days_remove = 30
+		fire_only_once = yes
+
+		visible = {
+			has_country_flag = GRE_halkidiki_prospecting_3_done
+		}
+
+		available = {
+			owns_state = 140
+			controls_state = 140
+			140 = { fuel_silo > 3 }
+			has_tech = excavation5
+		}
+
+		highlight_states = {
+			highlight_state_targets = { state = 140 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_halkidiki_prospecting_4"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 7 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -7 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision remove GRE_halkidiki_prospecting_4"
+			add_resource = { type = chromium amount = 4 state = 140 }
+		}
+
+		ai_will_do = {
+			factor = 100
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	# Peloponnese Bauxite (State 142)
+
+	GRE_peloponnese_bauxite_1 = {
+		name = GRE_peloponnese_bauxite
+		icon = generic_resource_extr
+
+		cost = 50
+		days_remove = 30
+		fire_only_once = yes
+
+		visible = {
+			has_completed_focus = GRE_rare_element_prospecting
+		}
+
+		available = {
+			owns_state = 142
+			controls_state = 142
+			142 = { fuel_silo > 0 }
+			has_tech = excavation1
+		}
+
+		highlight_states = {
+			highlight_state_targets = { state = 142 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_peloponnese_bauxite_1"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 3 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -3 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision remove GRE_peloponnese_bauxite_1"
+			add_resource = { type = aluminium amount = 4 state = 142 }
+			set_country_flag = GRE_peloponnese_bauxite_1_done
+		}
+
+		ai_will_do = {
+			factor = 100
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	GRE_peloponnese_bauxite_2 = {
+		name = GRE_peloponnese_bauxite
+		icon = generic_resource_extr
+
+		cost = 50
+		days_remove = 30
+		fire_only_once = yes
+
+		visible = {
+			has_country_flag = GRE_peloponnese_bauxite_1_done
+		}
+
+		available = {
+			owns_state = 142
+			controls_state = 142
+			142 = { fuel_silo > 1 }
+			has_tech = excavation2
+		}
+
+		highlight_states = {
+			highlight_state_targets = { state = 142 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_peloponnese_bauxite_2"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 4 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -4 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision remove GRE_peloponnese_bauxite_2"
+			add_resource = { type = aluminium amount = 4 state = 142 }
+			set_country_flag = GRE_peloponnese_bauxite_2_done
+		}
+
+		ai_will_do = {
+			factor = 100
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	GRE_peloponnese_bauxite_3 = {
+		name = GRE_peloponnese_bauxite
+		icon = generic_resource_extr
+
+		cost = 50
+		days_remove = 30
+		fire_only_once = yes
+
+		visible = {
+			has_country_flag = GRE_peloponnese_bauxite_2_done
+		}
+
+		available = {
+			owns_state = 142
+			controls_state = 142
+			142 = { fuel_silo > 2 }
+			has_tech = excavation4
+		}
+
+		highlight_states = {
+			highlight_state_targets = { state = 142 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_peloponnese_bauxite_3"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 6 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -6 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision remove GRE_peloponnese_bauxite_3"
+			add_resource = { type = aluminium amount = 5 state = 142 }
+		}
+
+		ai_will_do = {
+			factor = 100
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	# Thessaly Nickel & Steel (State 139)
+
+	GRE_thessaly_mining_1 = {
+		name = GRE_thessaly_mining
+		icon = generic_resource_extr
+
+		cost = 50
+		days_remove = 30
+		fire_only_once = yes
+
+		visible = {
+			has_completed_focus = GRE_rare_element_prospecting
+		}
+
+		available = {
+			owns_state = 139
+			controls_state = 139
+			139 = { fuel_silo > 0 }
+			has_tech = excavation2
+		}
+
+		highlight_states = {
+			highlight_state_targets = { state = 139 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_thessaly_mining_1"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 3 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -3 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision remove GRE_thessaly_mining_1"
+			add_resource = { type = steel amount = 3 state = 139 }
+			set_country_flag = GRE_thessaly_mining_1_done
+		}
+
+		ai_will_do = {
+			factor = 100
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	GRE_thessaly_mining_2 = {
+		name = GRE_thessaly_mining
+		icon = generic_resource_extr
+
+		cost = 50
+		days_remove = 30
+		fire_only_once = yes
+
+		visible = {
+			has_country_flag = GRE_thessaly_mining_1_done
+		}
+
+		available = {
+			owns_state = 139
+			controls_state = 139
+			139 = { fuel_silo > 1 }
+			has_tech = excavation3
+		}
+
+		highlight_states = {
+			highlight_state_targets = { state = 139 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_thessaly_mining_2"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 4 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -4 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision remove GRE_thessaly_mining_2"
+			add_resource = { type = steel amount = 3 state = 139 }
+			set_country_flag = GRE_thessaly_mining_2_done
+		}
+
+		ai_will_do = {
+			factor = 100
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	GRE_thessaly_mining_3 = {
+		name = GRE_thessaly_mining
+		icon = generic_resource_extr
+
+		cost = 50
+		days_remove = 30
+		fire_only_once = yes
+
+		visible = {
+			has_country_flag = GRE_thessaly_mining_2_done
+		}
+
+		available = {
+			owns_state = 139
+			controls_state = 139
+			139 = { fuel_silo > 2 }
+			has_tech = excavation5
+		}
+
+		highlight_states = {
+			highlight_state_targets = { state = 139 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_thessaly_mining_3"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 6 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -6 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision remove GRE_thessaly_mining_3"
+			add_resource = { type = steel amount = 2 state = 139 }
+			add_resource = { type = chromium amount = 2 state = 139 }
+		}
+
+		ai_will_do = {
+			factor = 100
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	# Aegean Islands Minerals (State 143)
+
+	GRE_aegean_mining_1 = {
+		name = GRE_aegean_mining
+		icon = generic_resource_extr
+
+		cost = 50
+		days_remove = 30
+		fire_only_once = yes
+
+		visible = {
+			has_completed_focus = GRE_rare_element_prospecting
+		}
+
+		available = {
+			owns_state = 143
+			controls_state = 143
+			143 = { fuel_silo > 0 }
+			has_tech = excavation2
+		}
+
+		highlight_states = {
+			highlight_state_targets = { state = 143 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_aegean_mining_1"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 3 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -3 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision remove GRE_aegean_mining_1"
+			add_resource = { type = aluminium amount = 3 state = 143 }
+			set_country_flag = GRE_aegean_mining_1_done
+		}
+
+		ai_will_do = {
+			factor = 100
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	GRE_aegean_mining_2 = {
+		name = GRE_aegean_mining
+		icon = generic_resource_extr
+
+		cost = 50
+		days_remove = 30
+		fire_only_once = yes
+
+		visible = {
+			has_country_flag = GRE_aegean_mining_1_done
+		}
+
+		available = {
+			owns_state = 143
+			controls_state = 143
+			143 = { fuel_silo > 1 }
+			has_tech = excavation4
+		}
+
+		highlight_states = {
+			highlight_state_targets = { state = 143 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_aegean_mining_2"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 5 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -5 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision remove GRE_aegean_mining_2"
+			add_resource = { type = aluminium amount = 3 state = 143 }
+		}
+
+		ai_will_do = {
+			factor = 100
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
 }
