@@ -3150,7 +3150,7 @@ focus_tree = {
 				name = GRE_power_corporations
 				bonus = 0.5
 				uses = 1
-				category = CAT_energy
+				category = CAT_fuel_oil
 			}
 		}
 
@@ -3623,7 +3623,31 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_trim_the_fat"
 			increase_economic_growth = yes
 			add_ideas = GRE_government_efficiency
-			add_political_power = 100
+			newline = yes
+			# Reduce generic debt by 3%
+			set_temp_variable = { debt_change = debt }
+			multiply_temp_variable = { debt_change = -0.03 }
+			modify_debt_effect = yes
+			# Also reduce creditor-held debt by 3%
+			if = {
+				limit = { check_variable = { GRE_creditors^num > 0 } }
+				for_each_loop = {
+					array = GRE_creditors
+					value = v
+					index = i
+					set_temp_variable = { GRE_reduce = GRE_creditor_debt^i }
+					multiply_temp_variable = { GRE_reduce = 0.03 }
+					subtract_from_variable = { GRE_creditor_debt^i = GRE_reduce }
+					var:GRE_creditors^i = {
+						subtract_from_variable = { GRE_debt_held_by_us = ROOT.GRE_reduce }
+					}
+				}
+				set_temp_variable = { GRE_total_reduce = GRE_total_creditor_debt }
+				multiply_temp_variable = { GRE_total_reduce = 0.03 }
+				subtract_from_variable = { GRE_total_creditor_debt = GRE_total_reduce }
+			}
+			GRE_calculate_unified_debt = yes
+			custom_effect_tooltip = GRE_lowers_debt_TT
 		}
 
 		ai_will_do = { base = 10 }
@@ -3646,9 +3670,9 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_debt_swaps"
 			add_political_power = 75
+			unlock_decision_tooltip = GRE_propose_debt_deal
 			newline = yes
 			country_event = { id = greece_debt.1 days = 3 }
-
 		}
 
 		ai_will_do = { base = 10 }
