@@ -42,11 +42,33 @@ if = {
 }
 ```
 
+**Multiple streams per country** — When a country has 2+ streams, they all go inside a single `original_tag` wrapper to avoid redundant tag checks every tick. Only add the outer `if = { limit = { original_tag = TAG } }` if one doesn't already exist; otherwise nest the new inner `if` block alongside the existing ones:
+
+```
+# Single wrapper for all TAG incomes
+if = {
+    limit = { original_tag = TAG }
+    if = {
+        limit = { has_completed_focus = TAG_focus_a }
+        set_variable = { TAG_stream_a_income = gdp_total }
+        multiply_variable = { TAG_stream_a_income = 0.003 }
+        add_to_variable = { additional_income_rate = TAG_stream_a_income }
+    }
+    if = {
+        limit = { has_idea = TAG_stream_b_idea }
+        set_variable = { TAG_stream_b_income = 0.200 }
+        add_to_variable = { additional_income_rate = TAG_stream_b_income }
+    }
+}
+```
+
+The same wrapper pattern applies to expenses inside `calculate_additional_expense_rate`.
+
 Key rules:
 
 - The variable name (e.g. `TAG_stream_name_income` or `TAG_stream_name_expense`) is what the tooltip will display
 - Income adds to `additional_income_rate`; expense adds to `additional_expenses_rate`
-- If the country already has a section, add the new block inside it rather than creating a duplicate
+- **Never create a duplicate `original_tag` wrapper** — always check if one exists and nest inside it
 - The condition (`has_completed_focus`, `has_idea`, `has_country_flag`, `has_decision`) determines when the stream is active
 - Value can be GDP-scaled (`gdp_total * factor`) or flat (`set_variable = { var = 0.500 }`)
 
