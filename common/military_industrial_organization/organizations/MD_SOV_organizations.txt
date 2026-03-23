@@ -25,6 +25,44 @@ SOV_uralvagonzavod_tank_manufacturer = {
 	icon = GFX_idea_Uralvagonzavod_SOV
 	name = SOV_uralvagonzavod_tank_manufacturer
 	include = generic_specialized_tank_organization
+
+	trait = {
+		token = SOV_chi_rare_earth_supply
+		name = SOV_chi_rare_earth_supply
+		icon = GFX_generic_mio_trait_icon_resources
+		special_trait_background = yes
+
+		available = { FROM = { has_completed_focus = CHI_SOV_defense_industrial } }
+
+		position = { x = 0 y = 0 }
+
+		equipment_bonus = {
+			reliability = 0.04
+			build_cost_ic = -0.05
+		}
+
+		on_complete = {
+			if = {
+				limit = {
+					check_variable = { free_trait_picks > 0 }
+				}
+				add_to_variable = { free_trait_picks = -1 }
+			}
+			else = {
+				FROM = {
+					small_expenditure = yes
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 10
+			modifier = {
+				factor = 0
+				check_variable = { FROM.interest_rate > 8 }
+			}
+		}
+	}
 }
 
 SOV_rostec_materiel_manufacturer = {
