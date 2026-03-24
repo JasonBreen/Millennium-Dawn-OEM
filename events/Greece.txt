@@ -469,6 +469,11 @@ country_event = {
 			set_temp_variable = { influence_target = THIS.id }
 			change_influence_percentage = yes
 		}
+		diplomatic_relation = {
+			country = GRE
+			relation = docking_rights
+			active = yes
+		}
 		set_temp_variable = { treasury_change = -1 }
 		modify_treasury_effect = yes
 	}
@@ -1595,6 +1600,7 @@ country_event = {
 	option = {
 		name = greece_debt.2.a
 		log = "[GetDateText]: [This.GetName]: greece_debt.2.a executed"
+		add_opinion_modifier = { target = FROM modifier = GRE_debt_swap_rejected_opinion }
 
 		ai_chance = {
 			base = 1
@@ -1605,8 +1611,13 @@ country_event = {
 	option = {
 		name = greece_debt.2.b
 		log = "[GetDateText]: [This.GetName]: greece_debt.2.b executed"
-		set_variable = { GRE.debt_swap_holder_nation = THIS.id }
-		custom_effect_tooltip =
+		FROM = {
+			set_variable = { debt_swap_holder_nation = PREV.id }
+			set_variable = { GRE_creditor_target = PREV.id }
+			set_temp_variable = { GRE_creditor_debt_change = 50 }
+			GRE_add_creditor = yes
+		}
+		add_opinion_modifier = { target = FROM modifier = GRE_debt_swap_accepted_opinion }
 
 		ai_chance = {
 			base = 100
@@ -1773,6 +1784,7 @@ country_event = {
 	option = {
 		name = greece_debt.12.a
 		log = "[GetDateText]: [This.GetName]: greece_debt.12.a executed"
+		set_temp_variable = { GRE_creditor_debt_change = GRE_proposed_debt_amount }
 		GRE_add_creditor = yes
 	}
 }
@@ -1807,6 +1819,7 @@ country_event = {
 
 		# Override the default rate with the counter-offer rate
 		set_variable = { GRE_creditor_target = FROM.id }
+		set_temp_variable = { GRE_creditor_debt_change = GRE_proposed_debt_amount }
 		GRE_add_creditor = yes
 
 		# Update the rate to the counter-offered one
