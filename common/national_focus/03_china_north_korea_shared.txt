@@ -1,7 +1,7 @@
 # Original Author(s): TheGeneral
 joint_focus = {
 	id = CHI_NKO_bilateral_cooperation
-	icon = consumer_goods
+	icon = focus_chi_nko_friendship
 	text_icon = JOINT_NKO_CHI_focus_style
 	x = 60
 	y = 20
@@ -40,7 +40,6 @@ joint_focus = {
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_bilateral_cooperation"
-		add_political_power = 25
 		if = {
 			limit = { original_tag = CHI }
 			add_opinion_modifier = {
@@ -75,7 +74,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_NKO_border_trade_zones
-	icon = consumer_goods
+	icon = GFX_goal_generic_trade
 	text_icon = JOINT_NKO_CHI_focus_style
 	x = -6
 	y = 1
@@ -99,23 +98,21 @@ joint_focus = {
 		}
 	}
 
-	completion_reward = {
-		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_border_trade_zones"
-		add_stability = 0.01
-		if = {
-			limit = { original_tag = NKO }
-			add_timed_idea = {
-				idea = CHI_NKO_border_trade_idea
-				days = 720
-			}
+	completion_reward_joint_originator = {
+		add_timed_idea = {
+			idea = CHI_NKO_border_trade_idea
+			years = 4
 		}
-		if = {
-			limit = { original_tag = CHI }
-			add_opinion_modifier = {
-				target = NKO
-				modifier = mutual_trade_agreement
-			}
+		set_temp_variable = { temp_opinion = 10 }
+		change_small_medium_business_owners_opinion = yes
+	}
+	completion_reward_joint_member = {
+		add_timed_idea = {
+			idea = CHI_NKO_border_trade_idea
+			years = 2
 		}
+		set_temp_variable = { temp_opinion = 5 }
+		change_small_medium_business_owners_opinion = yes
 	}
 
 	ai_will_do = {
@@ -125,7 +122,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_NKO_rason_sez
-	icon = consumer_goods
+	icon = civitavecchia_port
 	text_icon = JOINT_NKO_focus_style
 	x = -7
 	y = 2
@@ -151,14 +148,13 @@ joint_focus = {
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_rason_sez"
-	}
-	completion_reward_joint_originator = {
 		601 = {
 			add_building_construction = {
-				type = industrial_complex
+				type = dockyard
 				level = 1
 				instant_build = yes
 			}
+			add_extra_state_shared_building_slots = 1
 			add_building_construction = {
 				type = infrastructure
 				level = 1
@@ -166,9 +162,28 @@ joint_focus = {
 			}
 		}
 	}
-	completion_reward_joint_member = {
-		set_temp_variable = { treasury_change = -3 }
-		modify_treasury_effect = yes
+	completion_reward_joint_originator = {
+		if = {
+			limit = { original_tag = CHI }
+			554 = {
+				add_building_construction = {
+					type = industrial_complex
+					level = 1
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 1
+			}
+			set_temp_variable = { percent_change = 5 }
+			set_temp_variable = { tag_index = CHI }
+			set_temp_variable = { influence_target = NKO }
+			change_influence_percentage = yes
+		}
+		else = {
+			add_timed_idea = {
+				idea = CHI_NKO_chinese_investments_idea
+				years = 2
+			}
+		}
 	}
 
 	ai_will_do = {
@@ -178,7 +193,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_NKO_dandong_trade_hub
-	icon = consumer_goods
+	icon = crane_and_tower
 	text_icon = JOINT_CHI_focus_style
 	x = -5
 	y = 2
@@ -202,18 +217,54 @@ joint_focus = {
 		}
 	}
 
-	completion_reward = {
-		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_dandong_trade_hub"
-	}
 	completion_reward_joint_originator = {
-		552 = {
-			add_building_construction = {
-				type = industrial_complex
-				level = 1
-				instant_build = yes
+		if = {
+			limit = { original_tag = CHI }
+			552 = {
+				add_building_construction = {
+					type = offices
+					level = 2
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 2
 			}
 		}
-		set_temp_variable = { treasury_change = -3 }
+		else = {
+			1200 = {
+				add_building_construction = {
+					type = offices
+					level = 2
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 2
+			}
+		}
+		set_temp_variable = { treasury_change = -13.00 }
+		modify_treasury_effect = yes
+	}
+	completion_reward_joint_member = {
+		if = {
+			limit = { original_tag = CHI }
+			552 = {
+				add_building_construction = {
+					type = offices
+					level = 1
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 1
+			}
+		}
+		else = {
+			1200 = {
+				add_building_construction = {
+					type = offices
+					level = 1
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 1
+			}
+		}
+		set_temp_variable = { treasury_change = -13.00 }
 		modify_treasury_effect = yes
 	}
 
@@ -224,7 +275,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_NKO_mineral_extraction
-	icon = consumer_goods
+	icon = steel_production
 	text_icon = JOINT_NKO_CHI_focus_style
 	x = -7
 	y = 3
@@ -250,16 +301,38 @@ joint_focus = {
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_mineral_extraction"
-		if = {
-			limit = { original_tag = NKO }
-			set_temp_variable = { treasury_change = 3 }
-			modify_treasury_effect = yes
+		601 = {
+			add_resource = {
+				type = steel
+				amount = 12
+			}
+			add_building_construction = {
+				type = infrastructure
+				level = 1
+				instant_build = yes
+			}
 		}
-		if = {
-			limit = { original_tag = CHI }
-			set_temp_variable = { treasury_change = -2 }
-			modify_treasury_effect = yes
+		random_owned_state = {
+			limit = {
+				is_owned_and_controlled_by = CHI
+			}
+			add_resource = {
+				type = steel
+				amount = 6
+			}
 		}
+		set_temp_variable = { percent_change = 5 }
+		set_temp_variable = { tag_index = CHI }
+		set_temp_variable = { influence_target = NKO }
+		change_influence_percentage = yes
+	}
+
+	completion_reward_joint_originator = {
+		custom_effect_tooltip = {
+			localization_key = modifies_dynamic_modifier_tt
+			MODIFIER = CHI_NKO_shared_modifier
+		}
+		add_to_variable = { CHI_NKO_local_resources_steel_factor = 0.05 tooltip = local_resources_steel_factor_tt }
 	}
 
 	ai_will_do = {
@@ -269,7 +342,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_NKO_fisheries_agreement
-	icon = consumer_goods
+	icon = Canned_Fish
 	text_icon = JOINT_NKO_CHI_focus_style
 	x = -5
 	y = 3
@@ -295,11 +368,14 @@ joint_focus = {
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_fisheries_agreement"
-		add_stability = 0.01
 		if = {
 			limit = { original_tag = NKO }
-			set_temp_variable = { treasury_change = 1 }
+			set_temp_variable = { treasury_change = 65 }
 			modify_treasury_effect = yes
+		}
+		if = {
+			limit = { original_tag = CHI }
+			# Something for agriculture
 		}
 	}
 
@@ -337,6 +413,14 @@ joint_focus = {
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_yuan_settlement"
+		if = {
+			limit = { original_tag = NKO }
+			swap_ideas = {
+				remove_idea = no_foreign_reserve
+				add_idea = chinese_yuan
+			}
+			newline = yes
+		}
 		add_ideas = CHI_NKO_yuan_trade_idea
 	}
 
@@ -347,7 +431,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_NKO_labor_export
-	icon = consumer_goods
+	icon = NKO_workers
 	text_icon = JOINT_NKO_focus_style
 	x = -6
 	y = 5
@@ -385,8 +469,11 @@ joint_focus = {
 		}
 		if = {
 			limit = { has_dlc = "Arms Against Tyranny" }
-			mio:CHI_norinco_manufacturer = {
-				unlock_mio_trait_tooltip = CHI_nko_juche_production
+			newline = yes
+			CHI = {
+				mio:CHI_norinco_manufacturer = {
+					unlock_mio_trait_tooltip = CHI_nko_juche_production
+				}
 			}
 		}
 	}
@@ -422,27 +509,40 @@ joint_focus = {
 		}
 	}
 
-	completion_reward = {
-		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_yalu_river_bridge"
+	completion_reward_joint_originator = {
 		if = {
 			limit = { original_tag = NKO }
-			1200 = {
-				add_building_construction = {
-					type = infrastructure
-					level = 1
-					instant_build = yes
-				}
-			}
+			set_temp_variable = { percent_change = 5 }
+			set_temp_variable = { tag_index = NKO }
+			set_temp_variable = { influence_target = CHI }
+			change_influence_percentage = yes
 		}
-		if = {
-			limit = { original_tag = CHI }
-			552 = {
-				add_building_construction = {
-					type = infrastructure
-					level = 1
-					instant_build = yes
-				}
+		else = {
+			set_temp_variable = { percent_change = 5 }
+			set_temp_variable = { tag_index = CHI }
+			set_temp_variable = { influence_target = NKO }
+			change_influence_percentage = yes
+		}
+		set_temp_variable = { treasury_change = -4.50 }
+		modify_treasury_effect = yes
+	}
+
+	completion_reward = {
+		1200 = {
+			add_building_construction = {
+				type = infrastructure
+				level = 1
+				instant_build = yes
 			}
+			add_extra_state_shared_building_slots = 1
+		}
+		552 = {
+			add_building_construction = {
+				type = infrastructure
+				level = 1
+				instant_build = yes
+			}
+			add_extra_state_shared_building_slots = 1
 		}
 	}
 
@@ -451,11 +551,64 @@ joint_focus = {
 	}
 }
 
+
 joint_focus = {
-	id = CHI_NKO_rail_modernization
-	icon = infrastructure
+	id = CHI_NKO_energy_cooperation
+	icon = oil_production
+	text_icon = JOINT_CHI_focus_style
+	x = -3
+	y = 2
+	relative_position_id = CHI_NKO_bilateral_cooperation
+
+	cost = 10
+
+	prerequisite = { focus = CHI_NKO_yalu_river_bridge }
+	search_filters = { FOCUS_FILTER_INDUSTRY }
+
+	available = {
+		original_tag = CHI
+		country_exists = NKO
+		NOT = { has_war_with = NKO }
+	}
+
+	joint_trigger = {
+		OR = {
+			tag = CHI
+			tag = NKO
+		}
+	}
+
+	completion_reward = {
+		552 = {
+			add_resource = {
+				type = oil
+				amount = 4
+			}
+		}
+		1200 = {
+			add_resource = {
+				type = oil
+				amount = 4
+			}
+		}
+	}
+	completion_reward_joint_originator = {
+		add_timed_idea = {
+			idea = CHI_NKO_energy_supply_idea
+			days = 1095
+		}
+	}
+
+	ai_will_do = {
+		base = 5
+	}
+}
+
+joint_focus = {
+	id = CHI_NKO_telecom_network
+	icon = economic_internet
 	text_icon = JOINT_NKO_CHI_focus_style
-	x = -2
+	x = -1
 	y = 2
 	relative_position_id = CHI_NKO_bilateral_cooperation
 
@@ -478,117 +631,27 @@ joint_focus = {
 	}
 
 	completion_reward = {
-		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_rail_modernization"
-		if = {
-			limit = { original_tag = NKO }
-			602 = {
-				add_building_construction = {
-					type = infrastructure
-					level = 1
-					instant_build = yes
-				}
-			}
-			1200 = {
-				add_building_construction = {
-					type = infrastructure
-					level = 1
-					instant_build = yes
-				}
-			}
-		}
-		if = {
-			limit = { original_tag = CHI }
-			set_temp_variable = { treasury_change = -5 }
-			modify_treasury_effect = yes
-		}
-	}
-
-	ai_will_do = {
-		base = 10
-	}
-}
-
-joint_focus = {
-	id = CHI_NKO_energy_cooperation
-	icon = infrastructure
-	text_icon = JOINT_CHI_focus_style
-	x = -3
-	y = 3
-	relative_position_id = CHI_NKO_bilateral_cooperation
-
-	cost = 10
-
-	prerequisite = { focus = CHI_NKO_rail_modernization }
-	search_filters = { FOCUS_FILTER_INDUSTRY }
-
-	available = {
-		original_tag = CHI
-		country_exists = NKO
-		NOT = { has_war_with = NKO }
-	}
-
-	joint_trigger = {
-		OR = {
-			tag = CHI
-			tag = NKO
-		}
-	}
-
-	completion_reward = {
-		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_energy_cooperation"
-	}
-	completion_reward_joint_originator = {
-		set_temp_variable = { treasury_change = -5 }
-		modify_treasury_effect = yes
-	}
-	completion_reward_joint_member = {
-		add_timed_idea = {
-			idea = CHI_NKO_energy_supply_idea
-			days = 1095
-		}
-	}
-
-	ai_will_do = {
-		base = 5
-	}
-}
-
-joint_focus = {
-	id = CHI_NKO_telecom_network
-	icon = infrastructure
-	text_icon = JOINT_NKO_CHI_focus_style
-	x = -1
-	y = 3
-	relative_position_id = CHI_NKO_bilateral_cooperation
-
-	cost = 10
-
-	prerequisite = { focus = CHI_NKO_rail_modernization }
-	search_filters = { FOCUS_FILTER_INDUSTRY }
-
-	available = {
-		country_exists = CHI
-		country_exists = NKO
-		CHI = { NOT = { has_war_with = NKO } }
-	}
-
-	joint_trigger = {
-		OR = {
-			tag = CHI
-			tag = NKO
-		}
-	}
-
-	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_telecom_network"
-		add_political_power = 10
-		if = {
-			limit = { original_tag = NKO }
-			add_timed_idea = {
-				idea = CHI_NKO_telecom_idea
-				days = 720
+		CHI = {
+			random_owned_state = {
+				add_building_construction = {
+					type = industrial_complex
+					level = 1
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 1
+			}
+			random_owned_state = {
+				add_building_construction = {
+					type = industrial_complex
+					level = 1
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 1
 			}
 		}
+		newline = yes
+		NKO = { add_ideas = CHI_NKO_telecom_idea }
 	}
 
 	ai_will_do = {
@@ -598,10 +661,10 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_NKO_power_grid_link
-	icon = infrastructure
+	icon = Hydro_sheep
 	text_icon = JOINT_NKO_CHI_focus_style
 	x = -2
-	y = 4
+	y = 3
 	relative_position_id = CHI_NKO_bilateral_cooperation
 
 	cost = 10
@@ -624,21 +687,15 @@ joint_focus = {
 	}
 
 	completion_reward = {
-		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_power_grid_link"
-		if = {
-			limit = { original_tag = NKO }
-			602 = {
-				add_building_construction = {
-					type = arms_factory
-					level = 1
-					instant_build = yes
-				}
-			}
+		554 = {
+			set_temp_variable = { electric_addition = 1.653 }
+			set_temp_variable = { storage_addition = 0.6 }
+			add_hydroelectric_energy_production_effect = yes
 		}
-		if = {
-			limit = { original_tag = CHI }
-			set_temp_variable = { treasury_change = -3 }
-			modify_treasury_effect = yes
+		601 = {
+			set_temp_variable = { electric_addition = 1.571 }
+			set_temp_variable = { storage_addition = 0.5 }
+			add_hydroelectric_energy_production_effect = yes
 		}
 	}
 
@@ -649,10 +706,10 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_NKO_paektu_tourism
-	icon = consumer_goods
+	icon = NKO_huichon
 	text_icon = JOINT_NKO_focus_style
 	x = -2
-	y = 5
+	y = 4
 	relative_position_id = CHI_NKO_bilateral_cooperation
 
 	cost = 10
@@ -674,12 +731,7 @@ joint_focus = {
 	}
 
 	completion_reward = {
-		log = "[GetDateText]: [Root.GetName]: Focus CHI_NKO_paektu_tourism"
-		add_stability = 0.02
-	}
-	completion_reward_joint_originator = {
-		set_temp_variable = { treasury_change = 1 }
-		modify_treasury_effect = yes
+		# Something for productivy or tax cost. for the dynamic modifier
 	}
 
 	ai_will_do = {
@@ -693,7 +745,7 @@ joint_focus = {
 	id = CHI_NKO_defense_consultations
 	icon = recruitment
 	text_icon = JOINT_NKO_CHI_focus_style
-	x = 2
+	x = 6
 	y = 1
 	relative_position_id = CHI_NKO_bilateral_cooperation
 
@@ -729,9 +781,9 @@ joint_focus = {
 	id = CHI_NKO_military_exchanges
 	icon = recruitment
 	text_icon = JOINT_NKO_CHI_focus_style
-	x = 2
-	y = 2
-	relative_position_id = CHI_NKO_bilateral_cooperation
+	x = 0
+	y = 1
+	relative_position_id = CHI_NKO_defense_consultations
 
 	cost = 10
 
@@ -767,8 +819,8 @@ joint_focus = {
 	icon = recruitment
 	text_icon = JOINT_CHI_focus_style
 	x = 1
-	y = 3
-	relative_position_id = CHI_NKO_bilateral_cooperation
+	y = 2
+	relative_position_id = CHI_NKO_defense_consultations
 
 	cost = 10
 
@@ -810,9 +862,9 @@ joint_focus = {
 	id = CHI_NKO_air_defense_umbrella
 	icon = recruitment
 	text_icon = JOINT_CHI_focus_style
-	x = 3
-	y = 3
-	relative_position_id = CHI_NKO_bilateral_cooperation
+	x = -1
+	y = 2
+	relative_position_id = CHI_NKO_defense_consultations
 
 	cost = 10
 
@@ -852,9 +904,9 @@ joint_focus = {
 	id = CHI_NKO_arms_transfers
 	icon = recruitment
 	text_icon = JOINT_CHI_focus_style
-	x = 2
-	y = 4
-	relative_position_id = CHI_NKO_bilateral_cooperation
+	x = 0
+	y = 3
+	relative_position_id = CHI_NKO_defense_consultations
 
 	cost = 10
 
@@ -907,9 +959,9 @@ joint_focus = {
 	id = CHI_NKO_buffer_state_doctrine
 	icon = recruitment
 	text_icon = JOINT_NKO_CHI_focus_style
-	x = 2
-	y = 5
-	relative_position_id = CHI_NKO_bilateral_cooperation
+	x = 0
+	y = 4
+	relative_position_id = CHI_NKO_defense_consultations
 
 	cost = 15
 
@@ -945,7 +997,7 @@ joint_focus = {
 	id = CHI_NKO_party_to_party_dialogue
 	icon = generic_government
 	text_icon = JOINT_NKO_CHI_focus_style
-	x = 6
+	x = 2
 	y = 1
 	relative_position_id = CHI_NKO_bilateral_cooperation
 
@@ -981,9 +1033,9 @@ joint_focus = {
 	id = CHI_NKO_cultural_exchanges
 	icon = generic_government
 	text_icon = JOINT_NKO_CHI_focus_style
-	x = 6
-	y = 2
-	relative_position_id = CHI_NKO_bilateral_cooperation
+	x = 0
+	y = 1
+	relative_position_id = CHI_NKO_party_to_party_dialogue
 
 	cost = 10
 
@@ -1018,9 +1070,9 @@ joint_focus = {
 	id = CHI_NKO_un_coordination
 	icon = generic_government
 	text_icon = JOINT_NKO_focus_style
-	x = 5
-	y = 3
-	relative_position_id = CHI_NKO_bilateral_cooperation
+	x = 1
+	y = 2
+	relative_position_id = CHI_NKO_party_to_party_dialogue
 
 	cost = 10
 
@@ -1058,9 +1110,9 @@ joint_focus = {
 	id = CHI_NKO_sanctions_circumvention
 	icon = generic_government
 	text_icon = JOINT_NKO_focus_style
-	x = 7
-	y = 3
-	relative_position_id = CHI_NKO_bilateral_cooperation
+	x = -1
+	y = 2
+	relative_position_id = CHI_NKO_party_to_party_dialogue
 
 	cost = 10
 
@@ -1098,9 +1150,9 @@ joint_focus = {
 	id = CHI_NKO_strategic_partnership
 	icon = generic_government
 	text_icon = JOINT_NKO_CHI_focus_style
-	x = 6
-	y = 4
-	relative_position_id = CHI_NKO_bilateral_cooperation
+	x = 0
+	y = 3
+	relative_position_id = CHI_NKO_party_to_party_dialogue
 
 	cost = 15
 
