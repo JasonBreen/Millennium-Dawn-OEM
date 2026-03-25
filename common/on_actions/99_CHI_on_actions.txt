@@ -1,0 +1,70 @@
+
+on_actions = {
+	on_monthly_HKG = {
+		effect = {
+			if = {
+				limit = {
+					check_variable = { CHI_HKG_autonomy_index < 40 }
+					is_subject_of = CHI
+					NOT = { has_country_flag = HKG_brain_drain_recent }
+					NOT = { has_idea = HKG_brain_drain }
+				}
+				set_country_flag = { flag = HKG_brain_drain_recent days = 365 }
+				add_timed_idea = { idea = HKG_brain_drain days = 365 }
+			}
+			if = {
+				limit = {
+					check_variable = { CHI_HKG_autonomy_index < 20 }
+					is_subject_of = CHI
+					CHI = { exists = yes }
+					NOT = { has_country_flag = HKG_crisis_event_recent }
+				}
+				set_country_flag = { flag = HKG_crisis_event_recent days = 365 }
+				CHI = { country_event = { id = CHI_SAR_relations.25 days = 7 } }
+			}
+		}
+	}
+	on_monthly_MAC = {
+		effect = {
+			if = {
+				limit = {
+					has_idea = MAC_diversification_boom
+					NOT = { has_idea = MAC_diversification_success }
+					NOT = { has_country_flag = MAC_diversification_success_fired }
+					is_subject_of = CHI
+				}
+				set_country_flag = { flag = MAC_diversification_success_fired }
+				country_event = { id = CHI_SAR_relations.28 days = 180 }
+			}
+		}
+	}
+	on_monthly_CHI = {
+		effect = {
+			if = {
+				limit = {
+					HKG = {
+						exists = yes
+						is_subject_of = CHI
+						check_variable = { CHI_HKG_autonomy_index < 30 }
+					}
+					NOT = { has_country_flag = CHI_HKG_condemnation_recent }
+				}
+				set_country_flag = { flag = CHI_HKG_condemnation_recent days = 365 }
+				country_event = { id = CHI_SAR_relations.23 days = 14 }
+			}
+			if = {
+				limit = {
+					ETK = {
+						exists = yes
+						is_subject_of = CHI
+						check_variable = { CHI_ETK_autonomy_index < 20 }
+					}
+					NOT = { has_country_flag = CHI_ETK_condemnation_recent }
+				}
+				set_country_flag = { flag = CHI_ETK_condemnation_recent days = 365 }
+				country_event = { id = CHI_SAR_relations.24 days = 14 }
+			}
+		}
+	}
+
+}
