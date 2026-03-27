@@ -6,27 +6,45 @@ joint_focus = {
 
 	x = 126
 	y = 0
+	offset = {
+		x = -64
+		y = 0
+		trigger = {
+			original_tag = ETK
+		}
+	}
+	offset = {
+		x = -66
+		y = 0
+		trigger = {
+			OR = {
+				original_tag = HKG
+				original_tag = TIB
+			}
+		}
+	}
+	offset = {
+		x = -64
+		y = 0
+		trigger = {
+			original_tag = MAC
+		}
+	}
+	offset = {
+		x = -68
+		y = 0
+		trigger = {
+			original_tag = TAI
+		}
+	}
 
 	cost = 5
 
-	allow_branch = {
-		CHI_any_SAR_joint_focus_available = yes
-	}
+	allow_branch = { CHI_SAR_all_trigger = yes }
 
 	search_filters = { FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-			original_tag = MAC
-			original_tag = TIB
-			original_tag = ETK
-			original_tag = TAI
-			original_tag = OMG
-			original_tag = MON
-		}
-	}
+	joint_trigger = { original_tag = CHI }
 
 	available = {
 		original_tag = CHI
@@ -43,7 +61,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_SAR_liaison_office_reform
-	icon = MEX_Bribe_the_judiciary
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = -1
@@ -56,21 +74,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-			original_tag = MAC
-			original_tag = TIB
-			original_tag = ETK
-			original_tag = TAI
-			original_tag = OMG
-		}
-	}
-
-	available = {
-		original_tag = CHI
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_SAR_liaison_office_reform"
@@ -83,12 +87,25 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_SAR_two_systems_commitment
-	icon = chinese_social_democracy
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = -1
 	y = 2
 	relative_position_id = CHI_SAR_one_china_framework
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				original_tag = CHI
+			}
+			NOT = { has_completed_focus = CHI_SAR_one_system_declaration }
+		}
+	}
 
 	cost = 7
 
@@ -97,24 +114,20 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-			original_tag = MAC
-			original_tag = TIB
-			original_tag = ETK
-			original_tag = TAI
-			original_tag = OMG
-		}
-	}
-
-	available = {
-		original_tag = CHI
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
-		log = "[GetDateText]: [Root.GetName]: Focus CHI_SAR_two_systems_commitment"
+		hidden_effect = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				mark_focus_tree_layout_dirty = yes
+			}
+		}
 	}
 
 	ai_will_do = {
@@ -123,8 +136,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_SAR_research_sharing
-	icon = chinese_social_democracy
-	text_icon = JOINT_CHI_focus_style
+	icon = peoples_republic_of_china
 
 	x = -1
 	y = 1
@@ -136,21 +148,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-			original_tag = MAC
-			original_tag = TIB
-			original_tag = ETK
-			original_tag = TAI
-			original_tag = OMG
-		}
-	}
-
-	available = {
-		original_tag = CHI
-	}
+	joint_trigger = { CHI_SAR_no_china_trigger = yes }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_SAR_two_systems_commitment"
@@ -162,8 +160,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_SAR_military_corporation_sharing
-	icon = chinese_social_democracy
-	text_icon = JOINT_CHI_focus_style
+	icon = peoples_republic_of_china
 
 	x = 1
 	y = 1
@@ -175,21 +172,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-			original_tag = MAC
-			original_tag = TIB
-			original_tag = ETK
-			original_tag = TAI
-			original_tag = OMG
-		}
-	}
-
-	available = {
-		original_tag = CHI
-	}
+	joint_trigger = { CHI_SAR_no_china_trigger = yes }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_SAR_two_systems_commitment"
@@ -202,7 +185,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_SAR_national_security_framework
-	icon = MEX_Defy_the_constitution
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 1
@@ -212,12 +195,9 @@ joint_focus = {
 	cost = 7
 
 	prerequisite = { focus = CHI_SAR_one_china_framework }
+	joint_trigger = { original_tag = CHI }
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
-
-	available = {
-		original_tag = CHI
-	}
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_SAR_national_security_framework"
@@ -238,6 +218,19 @@ joint_focus = {
 	y = 2
 	relative_position_id = CHI_SAR_one_china_framework
 
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+				original_tag = CHI
+			}
+			NOT = { has_completed_focus = CHI_SAR_two_systems_commitment }
+		}
+	}
+
 	cost = 7
 
 	prerequisite = { focus = CHI_SAR_national_security_framework }
@@ -245,24 +238,20 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_WAR_SUPPORT }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-			original_tag = MAC
-			original_tag = TIB
-			original_tag = ETK
-			original_tag = TAI
-			original_tag = OMG
-		}
-	}
-
-	available = {
-		original_tag = CHI
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
-		log = "[GetDateText]: [Root.GetName]: Focus CHI_SAR_one_system_declaration"
+		hidden_effect = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = obsolete_focus_branches_visibility
+						option = HIDE
+					}
+				}
+				mark_focus_tree_layout_dirty = yes
+			}
+		}
 	}
 
 	ai_will_do = {
@@ -272,22 +261,26 @@ joint_focus = {
 ### Hong Kong Branch
 joint_focus = {
 	id = CHI_HKG_greater_bay_area
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_HKG_CHI_focus_style
 
 	x = 4
 	y = 1
 	relative_position_id = CHI_SAR_one_china_framework
+	offset = {
+		x = -9
+		y = 0
+		trigger = {
+			original_tag = HKG
+		}
+	}
 
 	cost = 7
 
 	allow_branch = {
 		OR = {
 			original_tag = CHI
-			AND = {
-				original_tag = HKG
-				is_subject_of = CHI
-			}
+			original_tag = HKG
 		}
 	}
 
@@ -295,16 +288,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-		}
-	}
-
-	available = {
-		CHI_HKG_joint_focus_available = yes
-	}
+	joint_trigger = { CHI_HKG_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_greater_bay_area"
@@ -333,7 +317,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_HKG_financial_integration
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_HKG_CHI_focus_style
 
 	x = 0
@@ -346,16 +330,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INDUSTRY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-		}
-	}
-
-	available = {
-		CHI_HKG_joint_focus_available = yes
-	}
+	joint_trigger = { CHI_HKG_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_financial_integration"
@@ -382,7 +357,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_HKG_express_rail_link
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_HKG_CHI_focus_style
 
 	x = 1
@@ -395,16 +370,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INDUSTRY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-		}
-	}
-
-	available = {
-		CHI_HKG_joint_focus_available = yes
-	}
+	joint_trigger = { CHI_HKG_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_financial_integration"
@@ -420,7 +386,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_HKG_individual_visit_scheme
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_HKG_CHI_focus_style
 
 	x = -1
@@ -433,16 +399,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INDUSTRY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-		}
-	}
-
-	available = {
-		CHI_HKG_joint_focus_available = yes
-	}
+	joint_trigger = { CHI_HKG_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_financial_integration"
@@ -458,7 +415,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_HKG_shenzhen_hk_stock_connect
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_HKG_CHI_focus_style
 
 	x = -1
@@ -471,16 +428,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INDUSTRY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-		}
-	}
-
-	available = {
-		CHI_HKG_joint_focus_available = yes
-	}
+	joint_trigger = { CHI_HKG_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_financial_integration"
@@ -497,13 +445,40 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_HKG_media_freedom
-	icon = chinese_social_democracy
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 	overlay = GFX_focus_overlay_chinese_flag
 
 	x = -2
 	y = 4
 	relative_position_id = CHI_HKG_greater_bay_area
+	offset = {
+		x = 2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_one_system_declaration }
+			OR = {
+				original_tag = CHI
+				original_tag = HKG
+			}
+		}
+	}
 
 	cost = 7
 
@@ -513,16 +488,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-		}
-	}
-
-	available = {
-		CHI_HKG_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_media_freedom"
@@ -539,12 +505,39 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_HKG_electoral_reform
-	icon = MEX_Bribe_the_judiciary
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 2
 	y = 4
 	relative_position_id = CHI_HKG_greater_bay_area
+	offset = {
+		x = -2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_two_systems_commitment }
+			OR = {
+				original_tag = CHI
+				original_tag = HKG
+			}
+		}
+	}
 
 	cost = 7
 
@@ -554,16 +547,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-		}
-	}
-
-	available = {
-		CHI_HKG_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_electoral_reform"
@@ -580,7 +564,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_HKG_censorship
-	icon = chinese_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 0
@@ -593,16 +577,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-		}
-	}
-
-	available = {
-		CHI_HKG_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_censorship"
@@ -618,7 +593,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_HKG_moral_national_education
-	icon = chinese_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_HKG_CHI_focus_style
 
 	x = 2
@@ -631,16 +606,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = HKG
-		}
-	}
-
-	available = {
-		CHI_HKG_joint_focus_available = yes
-	}
+	joint_trigger = { CHI_HKG_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_censorship"
@@ -671,15 +637,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = HKG
-		HKG = { is_subject_of = CHI }
-	}
+	joint_trigger = { CHI_HKG_joint_trigger = yes }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_national_security_law"
@@ -692,7 +650,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_SAR_integrate_HKG
-	icon = Hong_kong_2047
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 1
@@ -729,7 +687,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_HKG_lok_ma_chau_loop
-	icon = generic_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_HKG_focus_style
 
 	x = 0
@@ -742,14 +700,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		original_tag = HKG
-		original_tag = CHI
-	}
-
-	available = {
-		CHI_HKG_SAR_only_focus_available = yes
-	}
+	joint_trigger = { original_tag = HKG }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_lok_ma_chau_loop"
@@ -761,7 +712,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_HKG_2030_study
-	icon = generic_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_HKG_focus_style
 
 	x = -1
@@ -774,14 +725,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		original_tag = HKG
-		original_tag = CHI
-	}
-
-	available = {
-		CHI_HKG_SAR_only_focus_available = yes
-	}
+	joint_trigger = { original_tag = HKG }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_2030_study"
@@ -793,12 +737,23 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_HKG_palace_museum
-	icon = generic_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_HKG_CHI_focus_style
 
 	x = 2
 	y = 1
 	relative_position_id = CHI_HKG_media_freedom
+	offset = {
+		x = -2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
 
 	cost = 7
 
@@ -806,14 +761,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		original_tag = HKG
-		original_tag = CHI
-	}
-
-	available = {
-		CHI_HKG_SAR_only_focus_available = yes
-	}
+	joint_trigger = { CHI_HKG_joint_trigger = yes }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_lok_ma_chau_loop"
@@ -825,7 +773,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_HKG_zhuhai_macau_bridge
-	icon = generic_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_HKG_CHI_focus_style
 
 	x = -1
@@ -838,14 +786,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		original_tag = HKG
-		original_tag = CHI
-	}
-
-	available = {
-		CHI_HKG_SAR_only_focus_available = yes
-	}
+	joint_trigger = { CHI_HKG_joint_trigger = yes }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_zhuhai_macau_bridge"
@@ -857,7 +798,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_HKG_lok_ma_chau_station
-	icon = generic_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_HKG_CHI_focus_style
 
 	x = 1
@@ -870,14 +811,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		original_tag = HKG
-		original_tag = CHI
-	}
-
-	available = {
-		CHI_HKG_SAR_only_focus_available = yes
-	}
+	joint_trigger = { CHI_HKG_joint_trigger = yes }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_HKG_lok_ma_chau_station"
@@ -890,22 +824,38 @@ joint_focus = {
 ##### Macau Branch
 joint_focus = {
 	id = CHI_MAC_pearl_river_delta
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_MAC_CHI_focus_style
 
 	x = 9
 	y = 1
 	relative_position_id = CHI_SAR_one_china_framework
+	offset = {
+		x = -1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+			original_tag = CHI
+		}
+	}
+	offset = {
+		x = -15
+		y = 0
+		trigger = {
+			original_tag = MAC
+		}
+	}
 
 	cost = 7
 
 	allow_branch = {
 		OR = {
 			original_tag = CHI
-			AND = {
-				original_tag = MAC
-				is_subject_of = CHI
-			}
+			original_tag = MAC
 		}
 	}
 
@@ -913,16 +863,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = MAC
-		}
-	}
-
-	available = {
-		CHI_MAC_joint_focus_available = yes
-	}
+	joint_trigger = { CHI_MAC_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_MAC_pearl_river_delta"
@@ -951,12 +892,23 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_MAC_lotus_flower_economy
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_MAC_CHI_focus_style
 
 	x = -1
 	y = 1
 	relative_position_id = CHI_MAC_pearl_river_delta
+	offset = {
+		x = -1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
 
 	cost = 7
 
@@ -964,16 +916,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = MAC
-		}
-	}
-
-	available = {
-		CHI_MAC_joint_focus_available = yes
-	}
+	joint_trigger = { CHI_MAC_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_MAC_lotus_flower_economy"
@@ -990,12 +933,39 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_MAC_gaming_diversification
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_MAC_CHI_focus_style
 
 	x = 1
 	y = 1
 	relative_position_id = CHI_MAC_lotus_flower_economy
+	offset = {
+		x = 1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_one_system_declaration }
+			OR = {
+				original_tag = CHI
+				original_tag = MAC
+			}
+		}
+	}
 
 	cost = 7
 
@@ -1004,16 +974,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = MAC
-		}
-	}
-
-	available = {
-		CHI_MAC_joint_focus_available = yes
-	}
+	joint_trigger = { CHI_MAC_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_MAC_lotus_flower_economy"
@@ -1030,31 +991,52 @@ joint_focus = {
 }
 
 joint_focus = {
-	id = MAC_cultural_autonomy_push
-	icon = generic_nationalism
+	id = CHI_MAC_cultural_autonomy_push
+	icon = peoples_republic_of_china
 	text_icon = JOINT_MAC_CHI_focus_style
 
 	x = -1
 	y = 1
 	relative_position_id = CHI_MAC_lotus_flower_economy
+	offset = {
+		x = 1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_one_system_declaration }
+			OR = {
+				original_tag = CHI
+				original_tag = MAC
+			}
+		}
+	}
 
 	cost = 7
 
 	prerequisite = { focus = CHI_MAC_lotus_flower_economy }
-	mutually_exclusive = { focus = CHI_MAC_gaming_diversification }
+	mutually_exclusive = { focus = CHI_MAC_infrastructure_link }
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		original_tag = MAC
-	}
-
-	available = {
-		CHI_MAC_SAR_only_focus_available = yes
-	}
+	joint_trigger = { CHI_MAC_joint_trigger = yes }
 
 	completion_reward = {
-		log = "[GetDateText]: [Root.GetName]: Focus MAC_cultural_autonomy_push"
+		log = "[GetDateText]: [Root.GetName]: Focus CHI_MAC_cultural_autonomy_push"
 		add_stability = 0.04
 		add_political_power = 25
 		set_temp_variable = { percent_change = -5 }
@@ -1070,26 +1052,20 @@ joint_focus = {
 
 joint_focus = {
 	id = MAC_lusophone_connections
-	icon = generic_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_MAC_CHI_focus_style
 
-	x = -1
+	x = 0
 	y = 2
 	relative_position_id = CHI_MAC_lotus_flower_economy
 
 	cost = 7
 
-	prerequisite = { focus = MAC_cultural_autonomy_push }
+	prerequisite = { focus = CHI_MAC_cultural_autonomy_push }
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		original_tag = MAC
-	}
-
-	available = {
-		CHI_MAC_SAR_only_focus_available = yes
-	}
+	joint_trigger = { CHI_MAC_joint_trigger = yes }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus MAC_lusophone_connections"
@@ -1110,12 +1086,23 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_MAC_financial_services
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_MAC_CHI_focus_style
 
 	x = 1
 	y = 1
 	relative_position_id = CHI_MAC_pearl_river_delta
+	offset = {
+		x = -1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
 
 	cost = 7
 
@@ -1123,16 +1110,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = MAC
-		}
-	}
-
-	available = {
-		CHI_MAC_joint_focus_available = yes
-	}
+	joint_trigger = { CHI_MAC_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_MAC_financial_services"
@@ -1159,13 +1137,40 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_MAC_infrastructure_link
-	icon = infrastructure
+	icon = peoples_republic_of_china
 	text_icon = JOINT_MAC_CHI_focus_style
 	overlay = GFX_focus_overlay_chinese_flag
 
 	x = 2
 	y = 2
 	relative_position_id = CHI_MAC_pearl_river_delta
+	offset = {
+		x = -2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_two_systems_commitment }
+			OR = {
+				original_tag = CHI
+				original_tag = MAC
+			}
+		}
+	}
 
 	cost = 7
 
@@ -1175,16 +1180,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = MAC
-		}
-	}
-
-	available = {
-		CHI_MAC_joint_focus_available = yes
-	}
+	joint_trigger = { CHI_MAC_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_MAC_infrastructure_link"
@@ -1212,12 +1208,24 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_MAC_guangdong_integration
-	icon = chinese_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 2
 	y = 3
 	relative_position_id = CHI_MAC_pearl_river_delta
+	offset = {
+		x = -2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+			original_tag = CHI
+		}
+	}
 
 	cost = 7
 
@@ -1225,16 +1233,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = MAC
-		}
-	}
-
-	available = {
-		CHI_MAC_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_MAC_guangdong_integration"
@@ -1258,12 +1257,24 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_SAR_integrate_MAC
-	icon = MEX_Bribe_the_judiciary
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 2
 	y = 4
 	relative_position_id = CHI_MAC_pearl_river_delta
+	offset = {
+		x = -2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+			original_tag = CHI
+		}
+	}
 
 	cost = 10
 
@@ -1271,9 +1282,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_ANNEXATION }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
+	joint_trigger = { original_tag = CHI }
 
 	available = {
 		original_tag = CHI
@@ -1304,22 +1313,38 @@ joint_focus = {
 ######### Tibet
 joint_focus = {
 	id = CHI_TIB_plateau_development
-	icon = generic_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = -13
 	y = 1
 	relative_position_id = CHI_SAR_one_china_framework
+	offset = {
+		x = 4
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+			original_tag = CHI
+		}
+	}
+	offset = {
+		x = 8
+		y = 0
+		trigger = {
+			original_tag = TIB
+		}
+	}
 
 	cost = 7
 
 	allow_branch = {
 		OR = {
 			original_tag = CHI
-			AND = {
-				original_tag = TIB
-				is_subject_of = CHI
-			}
+			original_tag = TIB
 		}
 	}
 
@@ -1327,16 +1352,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = TIB
-		}
-	}
-
-	available = {
-		CHI_TIB_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TIB_plateau_development"
@@ -1369,6 +1385,33 @@ joint_focus = {
 	x = 1
 	y = 1
 	relative_position_id = CHI_TIB_plateau_development
+	offset = {
+		x = -1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_two_systems_commitment }
+		}
+		OR = {
+			original_tag = CHI
+			original_tag = TIB
+		}
+	}
 
 	cost = 7
 
@@ -1377,12 +1420,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = TIB
-		}
-	}
+	joint_trigger = { original_tag = CHI }
 
 	available = {
 		CHI_TIB_joint_focus_available = yes
@@ -1414,6 +1452,17 @@ joint_focus = {
 	x = 1
 	y = 2
 	relative_position_id = CHI_TIB_plateau_development
+	offset = {
+		x = -1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
 
 	cost = 7
 
@@ -1421,12 +1470,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = TIB
-		}
-	}
+	joint_trigger = { original_tag = CHI }
 
 	available = {
 		CHI_TIB_joint_focus_available = yes
@@ -1458,6 +1502,33 @@ joint_focus = {
 	x = -1
 	y = 1
 	relative_position_id = CHI_TIB_plateau_development
+	offset = {
+		x = 1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_one_system_declaration }
+		}
+		OR = {
+			original_tag = CHI
+			original_tag = TIB
+		}
+	}
 
 	cost = 7
 
@@ -1466,12 +1537,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = TIB
-		}
-	}
+	joint_trigger = { original_tag = CHI }
 
 	available = {
 		CHI_TIB_joint_focus_available = yes
@@ -1497,6 +1563,17 @@ joint_focus = {
 	x = -1
 	y = 2
 	relative_position_id = CHI_TIB_plateau_development
+	offset = {
+		x = 1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
 
 	cost = 7
 
@@ -1504,12 +1581,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = TIB
-		}
-	}
+	joint_trigger = { original_tag = CHI }
 
 	available = {
 		CHI_TIB_joint_focus_available = yes
@@ -1529,7 +1601,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_TIB_railway_modernization
-	icon = construction_development
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 0
@@ -1542,16 +1614,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = TIB
-		}
-	}
-
-	available = {
-		CHI_TIB_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TIB_railway_modernization"
@@ -1578,7 +1641,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_TIB_monastery_economy
-	icon = generic_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 0
@@ -1591,9 +1654,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		original_tag = TIB
-	}
+	joint_trigger = { original_tag = CHI }
 
 	available = {
 		CHI_TIB_SAR_only_focus_available = yes
@@ -1611,12 +1672,39 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_TIB_autonomy_preservation
-	icon = chinese_social_democracy
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = -1
 	y = 5
 	relative_position_id = CHI_TIB_plateau_development
+	offset = {
+		x = 1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_one_system_declaration }
+		}
+		OR = {
+			original_tag = CHI
+			original_tag = TIB
+		}
+	}
 
 	cost = 7
 
@@ -1625,16 +1713,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = TIB
-		}
-	}
-
-	available = {
-		CHI_TIB_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TIB_autonomy_preservation"
@@ -1659,12 +1738,23 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_TIB_buddhist_cultural_zone
-	icon = chinese_social_democracy
+	icon = peoples_republic_of_china
 	text_icon = JOINT_TIB_focus_style
 
 	x = -1
 	y = 6
 	relative_position_id = CHI_TIB_plateau_development
+	offset = {
+		x = 1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
 
 	cost = 7
 
@@ -1672,16 +1762,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = TIB
-		}
-	}
-
-	available = {
-		CHI_TIB_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = TIB }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TIB_buddhist_cultural_zone"
@@ -1711,6 +1792,33 @@ joint_focus = {
 	x = 1
 	y = 5
 	relative_position_id = CHI_TIB_plateau_development
+	offset = {
+		x = -1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_two_systems_commitment }
+		}
+		OR = {
+			original_tag = CHI
+			original_tag = TIB
+		}
+	}
 
 	cost = 10
 
@@ -1719,9 +1827,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_ANNEXATION }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
+	joint_trigger = { original_tag = CHI }
 
 	available = {
 		original_tag = CHI
@@ -1747,12 +1853,23 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_TIB_silk_road_gateway
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_TIB_CHI_focus_style
 
 	x = 0
 	y = 7
 	relative_position_id = CHI_TIB_plateau_development
+	offset = {
+		x = 0
+		y = -1
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
 
 	cost = 7
 
@@ -1800,13 +1917,24 @@ joint_focus = {
 
 
 joint_focus = {
-	id = TIB_plateau_resources
-	icon = generic_resource_extr
+	id = CHI_TIB_plateau_resources
+	icon = peoples_republic_of_china
 	text_icon = JOINT_TIB_CHI_focus_style
 
 	x = 0
 	y = 8
 	relative_position_id = CHI_TIB_plateau_development
+	offset = {
+		x = 0
+		y = -1
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
 
 	cost = 7
 
@@ -1815,15 +1943,12 @@ joint_focus = {
 	search_filters = { FOCUS_FILTER_INDUSTRY }
 
 	joint_trigger = {
+		original_tag = CHI
 		original_tag = TIB
 	}
 
-	available = {
-		CHI_TIB_SAR_only_focus_available = yes
-	}
-
 	completion_reward = {
-		log = "[GetDateText]: [Root.GetName]: Focus TIB_plateau_resources"
+		log = "[GetDateText]: [Root.GetName]: Focus CHI_TIB_plateau_resources"
 		random_owned_state = {
 			add_extra_state_shared_building_slots = 1
 			add_building_construction = {
@@ -1842,22 +1967,38 @@ joint_focus = {
 ##### Xinjiang
 joint_focus = {
 	id = CHI_ETK_corridor_investment
-	icon = construction_development
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = -18
 	y = 1
 	relative_position_id = CHI_SAR_one_china_framework
+	offset = {
+		x = 13
+		y = 0
+		trigger = {
+			original_tag = ETK
+		}
+	}
+	offset = {
+		x = 5
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+			original_tag = CHI
+		}
+	}
 
 	cost = 7
 
 	allow_branch = {
 		OR = {
 			original_tag = CHI
-			AND = {
-				original_tag = ETK
-				is_subject_of = CHI
-			}
+			original_tag = ETK
 		}
 	}
 
@@ -1865,16 +2006,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = ETK
-		}
-	}
-
-	available = {
-		CHI_ETK_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_ETK_corridor_investment"
@@ -1890,7 +2022,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_ETK_silk_road_commerce
-	icon = generic_factory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 0
@@ -1903,13 +2035,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = {
-		original_tag = ETK
-	}
-
-	available = {
-		CHI_ETK_SAR_only_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_ETK_silk_road_commerce"
@@ -1931,12 +2057,34 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_ETK_oilfield_development
-	icon = generic_gas
+	icon = peoples_republic_of_china
 	text_icon = JOINT_ETK_CHI_focus_style
 
 	x = 0
 	y = 3
 	relative_position_id = CHI_ETK_corridor_investment
+	offset = {
+		x = 1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
+	offset = {
+		x = -2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
 
 	cost = 7
 
@@ -1945,11 +2093,10 @@ joint_focus = {
 	search_filters = { FOCUS_FILTER_INDUSTRY }
 
 	joint_trigger = {
-		original_tag = ETK
-	}
-
-	available = {
-		CHI_ETK_SAR_only_focus_available = yes
+		OR = {
+			CHI_ETK_SAR_only_joint_trigger = yes
+			original_tag = CHI
+		}
 	}
 
 	completion_reward = {
@@ -1969,12 +2116,34 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_ETK_resource_extraction
-	icon = generic_resource_extr
+	icon = peoples_republic_of_china
 	text_icon = JOINT_ETK_CHI_focus_style
 
 	x = 0
 	y = 4
 	relative_position_id = CHI_ETK_corridor_investment
+	offset = {
+		x = 1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
+	offset = {
+		x = -2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
 
 	cost = 7
 
@@ -1984,13 +2153,9 @@ joint_focus = {
 
 	joint_trigger = {
 		OR = {
+			CHI_ETK_SAR_only_joint_trigger = yes
 			original_tag = CHI
-			original_tag = ETK
 		}
-	}
-
-	available = {
-		CHI_ETK_joint_focus_available = yes
 	}
 
 	completion_reward_joint_originator = {
@@ -2027,6 +2192,33 @@ joint_focus = {
 	x = 1
 	y = 2
 	relative_position_id = CHI_ETK_corridor_investment
+	offset = {
+		x = -1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_two_systems_commitment }
+		}
+		OR = {
+			original_tag = CHI
+			original_tag = ETK
+		}
+	}
 
 	cost = 7
 
@@ -2035,16 +2227,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = ETK
-		}
-	}
-
-	available = {
-		CHI_ETK_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_ETK_sinification"
@@ -2066,12 +2249,23 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_ETK_surveillance_infrastructure
-	icon = MEX_Defy_the_constitution
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 2
 	y = 3
 	relative_position_id = CHI_ETK_corridor_investment
+	offset = {
+		x = -2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
 
 	cost = 7
 
@@ -2079,16 +2273,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = ETK
-		}
-	}
-
-	available = {
-		CHI_ETK_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_ETK_surveillance_infrastructure"
@@ -2119,6 +2304,17 @@ joint_focus = {
 	x = 2
 	y = 4
 	relative_position_id = CHI_ETK_corridor_investment
+	offset = {
+		x = -2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
 
 	cost = 7
 
@@ -2126,16 +2322,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = ETK
-		}
-	}
-
-	available = {
-		CHI_ETK_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_ETK_reeducation_initiative"
@@ -2164,6 +2351,17 @@ joint_focus = {
 	x = 2
 	y = 5
 	relative_position_id = CHI_ETK_corridor_investment
+	offset = {
+		x = -2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
 
 	cost = 7
 
@@ -2171,16 +2369,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = ETK
-		}
-	}
-
-	available = {
-		CHI_ETK_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_ETK_total_survaillance_infrastructure"
@@ -2203,6 +2392,17 @@ joint_focus = {
 	x = 2
 	y = 6
 	relative_position_id = CHI_ETK_corridor_investment
+	offset = {
+		x = -2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
 
 	cost = 10
 
@@ -2210,9 +2410,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_ANNEXATION }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
+	joint_trigger = { original_tag = CHI }
 
 	available = {
 		original_tag = CHI
@@ -2236,12 +2434,39 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_ETK_cultural_accommodation
-	icon = chinese_social_democracy
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = -1
 	y = 2
 	relative_position_id = CHI_ETK_corridor_investment
+	offset = {
+		x = 1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_one_system_declaration }
+		}
+		OR = {
+			original_tag = CHI
+			original_tag = ETK
+		}
+	}
 
 	cost = 7
 
@@ -2250,16 +2475,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = ETK
-		}
-	}
-
-	available = {
-		CHI_ETK_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_ETK_cultural_accommodation"
@@ -2285,12 +2501,23 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_ETK_islamic_governance_framework
-	icon = chinese_social_democracy
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = -2
 	y = 3
 	relative_position_id = CHI_ETK_corridor_investment
+	offset = {
+		x = 1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
 
 	cost = 7
 
@@ -2298,16 +2525,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = ETK
-		}
-	}
-
-	available = {
-		CHI_ETK_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_ETK_islamic_governance_framework"
@@ -2330,12 +2548,23 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_ETK_BRI_hub
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_ETK_focus_style
 
 	x = -2
 	y = 4
 	relative_position_id = CHI_ETK_corridor_investment
+	offset = {
+		x = 1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
 
 	cost = 7
 
@@ -2344,14 +2573,13 @@ joint_focus = {
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_POLITICAL }
 
 	joint_trigger = {
-		OR = {
-			original_tag = CHI
+		if = {
+			limit = {
+				original_tag = ETK
+				is_subject_of = CHI
+			}
 			original_tag = ETK
 		}
-	}
-
-	available = {
-		CHI_ETK_joint_focus_available = yes
 	}
 
 	completion_reward_joint_originator = {
@@ -2384,40 +2612,45 @@ joint_focus = {
 ########### Taiwan
 joint_focus = {
 	id = CHI_TAI_cross_strait_policy
-	icon = chinese_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 14
 	y = 1
 	relative_position_id = CHI_SAR_one_china_framework
-
-	cost = 7
-
-	allow_branch = {
-		OR = {
-			AND = {
-				original_tag = CHI
-				country_exists = TAI
-			}
-			AND = {
-				original_tag = TAI
-				is_subject_of = CHI
-			}
+	offset = {
+		x = -17
+		y = 3
+		trigger = {
+			original_tag = TAI
 		}
 	}
 
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_one_system_declaration }
+		}
+		OR = {
+				original_tag = CHI
+				original_tag = TAI
+			}
+	}
+
+	cost = 7
+
 	search_filters = { FOCUS_FILTER_POLITICAL }
 	prerequisite = { focus = CHI_SAR_one_china_framework }
-
-	joint_trigger = {
-		original_tag = CHI
+	mutually_exclusive = {
+		focus = CHI_Combat_the_Traitors
 	}
 
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-		NOT = { has_war_with = TAI }
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_cross_strait_policy"
@@ -2432,7 +2665,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_TAI_economic_interdependence
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_TAI_CHI_focus_style
 
 	x = -1
@@ -2445,15 +2678,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-		NOT = { has_war_with = TAI }
-	}
+	joint_trigger = { CHI_TAI_joint_trigger = yes }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_economic_interdependence"
@@ -2468,7 +2693,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_TAI_92_consensus_revival
-	icon = chinese_social_democracy
+	icon = peoples_republic_of_china
 	text_icon = JOINT_TAI_focus_style
 
 	x = 1
@@ -2481,9 +2706,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
+	joint_trigger = { CHI_TAI_SAR_only_joint_trigger = yes }
 
 	available = {
 		original_tag = CHI
@@ -2507,7 +2730,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_TAI_pro_china_networks
-	icon = chinese_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 0
@@ -2521,15 +2744,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-		NOT = { has_war_with = TAI }
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_pro_china_networks"
@@ -2544,7 +2759,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_TAI_back_channel_negotiations
-	icon = MEX_Bribe_the_judiciary
+	icon = peoples_republic_of_china
 	text_icon = JOINT_TAI_CHI_focus_style
 
 	x = 0
@@ -2557,16 +2772,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-		NOT = { has_war_with = TAI }
-		TAI = { has_opinion = { target = CHI value > 15 } }
-	}
+	joint_trigger = { CHI_TAI_joint_trigger = yes }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_back_channel_negotiations"
@@ -2579,7 +2785,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_TAI_peaceful_reunification_accord
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_TAI_CHI_focus_style
 
 	x = 0
@@ -2592,19 +2798,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			AND = {
-				original_tag = TAI
-				CHI_TAI_prereunification_focus_available = yes
-			}
-		}
-	}
-
-	available = {
-		CHI_TAI_prereunification_focus_available = yes
-	}
+	joint_trigger = { CHI_TAI_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_peaceful_reunification_accord"
@@ -2630,7 +2824,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_TAI_economic_miracle
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_TAI_focus_style
 
 	x = 0
@@ -2643,16 +2837,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = TAI
-		}
-	}
-
-	available = {
-		CHI_TAI_SAR_joint_focus_available = yes
-	}
+	joint_trigger = { CHI_TAI_SAR_only_joint_trigger = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_economic_miracle"
@@ -2686,34 +2871,52 @@ joint_focus = {
 	x = 18
 	y = 1
 	relative_position_id = CHI_SAR_one_china_framework
-
-	cost = 7
-
-	allow_branch = {
-		OR = {
-			AND = {
-				original_tag = CHI
-				country_exists = TAI
+	offset = {
+		x = -6
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
 			}
-			AND = {
-				original_tag = TAI
-				is_subject_of = CHI
-			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+			original_tag = CHI
+		}
+	}
+	offset = {
+		x = -15
+		y = 3
+		trigger = {
+			original_tag = TAI
 		}
 	}
 
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_two_systems_commitment }
+		}
+		OR = {
+			original_tag = TAI
+			original_tag = CHI
+		}
+	}
+
+	cost = 7
+
+
 	search_filters = { FOCUS_FILTER_POLITICAL }
 	prerequisite = { focus = CHI_SAR_one_china_framework }
-
-	joint_trigger = {
-		original_tag = CHI
+	mutually_exclusive = {
+		focus = CHI_TAI_cross_strait_policy
 	}
 
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-		NOT = { has_war_with = TAI }
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_cross_strait_policy"
@@ -2740,14 +2943,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_MILITARY FOCUS_FILTER_WAR_SUPPORT }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_military_buildup"
@@ -2774,14 +2970,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_MILITARY FOCUS_FILTER_WAR_SUPPORT }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_military_buildup"
@@ -2808,14 +2997,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_MILITARY FOCUS_FILTER_WAR_SUPPORT }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_cut_us_support"
@@ -2841,14 +3023,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_MILITARY }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_amphibious_doctrine"
@@ -2884,15 +3059,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_MILITARY FOCUS_FILTER_WAR_SUPPORT }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-		NOT = { has_war_with = TAI }
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_blockade_declaration"
@@ -2935,15 +3102,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_MILITARY FOCUS_FILTER_ANNEXATION }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-		NOT = { has_war_with = TAI }
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_operation_storm"
@@ -2972,15 +3131,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_MILITARY FOCUS_FILTER_ANNEXATION }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-		NOT = { has_war_with = TAI }
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_outward_island_infrastructure"
@@ -2993,22 +3144,31 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_OMG_steppe_development
-	icon = generic_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = -6
 	y = 1
 	relative_position_id = CHI_SAR_one_china_framework
+	offset = {
+		x = 1
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+			original_tag = CHI
+		}
+	}
 
 	cost = 7
 
 	allow_branch = {
 		OR = {
 			original_tag = CHI
-			AND = {
-				original_tag = OMG
-				is_subject_of = CHI
-			}
+			original_tag = OMG
 		}
 	}
 
@@ -3016,12 +3176,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = OMG
-		}
-	}
+	joint_trigger = { original_tag = CHI }
 
 	available = {
 		CHI_OMG_joint_focus_available = yes
@@ -3042,7 +3197,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_OMG_northern_corridor
-	icon = construction_development
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = -1
@@ -3055,16 +3210,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = OMG
-		}
-	}
-
-	available = {
-		CHI_OMG_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_OMG_northern_corridor"
@@ -3088,6 +3234,33 @@ joint_focus = {
 	x = 2
 	y = 3
 	relative_position_id = CHI_OMG_steppe_development
+	offset = {
+		x = -2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_one_system_declaration
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_two_systems_commitment }
+		}
+		OR = {
+			original_tag = CHI
+			original_tag = OMG
+		}
+	}
 
 	cost = 7
 
@@ -3096,16 +3269,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = OMG
-		}
-	}
-
-	available = {
-		CHI_OMG_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_OMG_sinicization"
@@ -3122,12 +3286,39 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_OMG_mongol_identity_recognition
-	icon = chinese_social_democracy
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = -2
 	y = 3
 	relative_position_id = CHI_OMG_steppe_development
+	offset = {
+		x = 2
+		y = 0
+		trigger = {
+			has_game_rule = {
+			rule = obsolete_focus_branches_visibility
+			option = HIDE
+			}
+			has_completed_focus = CHI_SAR_two_systems_commitment
+		}
+	}
+
+	allow_branch = {
+		if = {
+			limit = {
+				has_game_rule = {
+					rule = obsolete_focus_branches_visibility
+					option = HIDE
+				}
+			}
+			NOT = { has_completed_focus = CHI_SAR_one_system_declaration }
+		}
+		OR = {
+			original_tag = CHI
+			original_tag = OMG
+		}
+	}
 
 	cost = 7
 
@@ -3136,16 +3327,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = OMG
-		}
-	}
-
-	available = {
-		CHI_OMG_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_OMG_mongol_identity_recognition"
@@ -3165,7 +3347,7 @@ joint_focus = {
 	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
-	x = 1
+	x = 0
 	y = 1
 	relative_position_id = CHI_OMG_sinicization
 
@@ -3175,16 +3357,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = OMG
-		}
-	}
-
-	available = {
-		CHI_OMG_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_OMG_han_settlement_program"
@@ -3220,18 +3393,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_ANNEXATION }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = OMG
-		OMG = {
-			is_subject_of = CHI
-			influence_higher_80 = yes
-		}
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_SAR_integrate_OMG"
@@ -3246,7 +3408,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_OMG_mongolian_sar
-	icon = chinese_social_democracy
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = -1
@@ -3259,16 +3421,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = OMG
-		}
-	}
-
-	available = {
-		CHI_OMG_joint_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_OMG_mongolian_sar"
@@ -3290,7 +3443,7 @@ joint_focus = {
 }
 joint_focus = {
 	id = CHI_MON_economic_partnership
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_MON_focus_style
 
 	x = -1
@@ -3303,15 +3456,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			AND = {
-				original_tag = MON
-				CHI_MON_country_joint_focus_available = yes
-			}
-		}
-	}
+	joint_trigger = { original_tag = OMG }
 
 	available = {
 		CHI_MON_country_joint_focus_available = yes
@@ -3332,7 +3477,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_OMG_greater_mongolia_vision
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_MON_focus_style
 
 	x = 1
@@ -3345,17 +3490,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
 
-	joint_trigger = {
-		OR = {
-			original_tag = CHI
-			original_tag = OMG
-		}
-	}
-
-	available = {
-		CHI_OMG_joint_focus_available = yes
-		has_country_flag = CHI_OMG_mongol_path
-	}
+	joint_trigger = { original_tag = OMG }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_OMG_greater_mongolia_vision"
@@ -3377,7 +3512,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_OMG_steppe_livestock_industry
-	icon = generic_factory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 1
@@ -3390,13 +3525,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY }
 
-	joint_trigger = {
-		original_tag = OMG
-	}
-
-	available = {
-		CHI_OMG_SAR_only_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_OMG_steppe_livestock_industry"
@@ -3409,7 +3538,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_OMG_mongolian_mining_expansion
-	icon = generic_resource_extr
+	icon = peoples_republic_of_china
 	text_icon = JOINT_CHI_focus_style
 
 	x = 0
@@ -3423,13 +3552,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY }
 
-	joint_trigger = {
-		original_tag = OMG
-	}
-
-	available = {
-		CHI_OMG_SAR_only_focus_available = yes
-	}
+	joint_trigger = { original_tag = CHI }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_OMG_mongolian_mining_expansion"
@@ -3442,7 +3565,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_MON_diplomatic_outreach
-	icon = chinese_nationalism
+	icon = peoples_republic_of_china
 	text_icon = JOINT_MON_focus_style
 
 	x = 1
@@ -3455,17 +3578,7 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = {
-		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = MON
-		NOT = { MON = { is_subject_of = CHI } }
-		NOT = { has_war_with = MON }
-		has_country_flag = CHI_OMG_greater_mongolia_active
-	}
+	joint_trigger = { original_tag = OMG }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_MON_diplomatic_outreach"
@@ -3481,7 +3594,7 @@ joint_focus = {
 
 joint_focus = {
 	id = CHI_MON_reunification_offer
-	icon = chinese_glory
+	icon = peoples_republic_of_china
 	text_icon = JOINT_MON_CHI_focus_style
 
 	x = 0
@@ -3497,14 +3610,7 @@ joint_focus = {
 
 	joint_trigger = {
 		original_tag = CHI
-	}
-
-	available = {
-		original_tag = CHI
-		country_exists = MON
-		NOT = { MON = { is_subject_of = CHI } }
-		MON = { has_opinion = { target = CHI value > 24 } }
-		NOT = { has_war_with = MON }
+		original_tag = OMG
 	}
 
 	completion_reward = {
