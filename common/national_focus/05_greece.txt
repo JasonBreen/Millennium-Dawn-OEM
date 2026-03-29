@@ -570,7 +570,7 @@ focus_tree = {
 				limit = { has_dlc = "No Step Back" }
 				create_equipment_variant = {
 					name = "M270"
-					type = medium_tank_artillery_chassis_1
+					type = medium_tank_rocket_chassis_1
 					parent_version = 0
 					modules = {
 						main_armament_slot = art_med_rocket_gen3
@@ -1243,14 +1243,14 @@ focus_tree = {
 						}
 						icon = "gfx/interface/technologies/GRE/AIR/F35GR.dds"
 					}
-					else = {
-						add_equipment_to_stockpile = {
-							type = AS_Fighter5
-							amount = 50
-							variant_name = "F-35A"
-						}
-						newline = yes
+				}
+				else = {
+					add_equipment_to_stockpile = {
+						type = AS_Fighter5
+						amount = 50
+						variant_name = "F-35A"
 					}
+					newline = yes
 				}
 			}
 		}
@@ -1393,7 +1393,7 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_grypas_ucav"
 			if = {
-				limit = { has_dlc = "Arms Against Tyranny" }
+				limit = { has_dlc = "By Blood Alone" }
 				create_equipment_variant = {
 					name = "Grypas"
 					type = small_plane_suicide_airframe_1
@@ -1407,9 +1407,11 @@ focus_tree = {
 						special_slot_type_2 = spec_recon_2
 					}
 					icon = "gfx/interface/technologies/USA/AIR/RQ4.dds"
-					design_team = mio:GRE_eab_manufacturer
 				}
 				newline = yes
+			}
+			if = {
+				limit = { has_dlc = "Arms Against Tyranny" }
 				mio:GRE_eab_manufacturer = {
 					add_mio_task_capacity = 1
 				}
@@ -2116,6 +2118,7 @@ focus_tree = {
 
 		available = {
 			USA = {
+				has_tech = frigate_hull_5
 				has_opinion = {
 					target = GRE
 					value > 80
@@ -2127,22 +2130,18 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_constellation_co_production"
 			create_equipment_variant = {
 				name = "Constellation Class"
-				type = battle_cruiser_hull_2
+				type = frigate_hull_5
 				parent_version = 0
 				modules = {
-					fixed_ship_engine_slot = module_surface_jet_turbine_power3
+					fixed_ship_engine_slot = module_light_surface_diesel_power_3
 					fixed_ship_fire_control_system_slot = module_digital_integrated_fire_control
 					fixed_ship_radar_slot = module_radar_3
 					fixed_ship_battery_slot = module_76mm_gun_4
-					fixed_ship_battery_slot_2 = module_aa_missiles_3
-					fixed_ship_battery_slot_3 = module_vls_lam_3
-					fixed_ship_battery_slot_4 = module_aa_missiles_3
+					fixed_ship_auxillary_slot = module_vls_sam_3
+					fixed_ship_auxillary_slot_1 = module_anti_submarine_missile_4
+					fixed_ship_auxillary_slot_2 = module_aa_missiles_3
 					front_1_custom_slot = module_asm_3
-					front_2_custom_slot = module_vls_sam_3
-					mid_1_custom_slot = module_vls_lam_3
-					mid_2_custom_slot = module_anti_submarine_missile_4
 					rear_1_custom_slot = module_light_helipad_2
-
 				}
 				allow_without_tech = yes
 				icon = "gfx/interface/technologies/USA/NAV/Cons.dds"
@@ -2218,7 +2217,7 @@ focus_tree = {
 			add_equipment_production = {
 				equipment = {
 					version_name = "Elli Class"
-					type = frigate_hull_3
+					type = frigate_hull_2
 				}
 				amount = 1
 				progress = 0.15
@@ -2227,7 +2226,7 @@ focus_tree = {
 			add_equipment_production = {
 				equipment = {
 					version_name = "Elli Class"
-					type = frigate_hull_3
+					type = frigate_hull_2
 				}
 				amount = 1
 				progress = 0.15
@@ -2236,7 +2235,7 @@ focus_tree = {
 			add_equipment_production = {
 				equipment = {
 					version_name = "Elli Class"
-					type = frigate_hull_3
+					type = frigate_hull_2
 				}
 				amount = 1
 				progress = 0.15
@@ -2245,7 +2244,7 @@ focus_tree = {
 			add_equipment_production = {
 				equipment = {
 					version_name = "Elli Class"
-					type = frigate_hull_3
+					type = frigate_hull_2
 				}
 				amount = 1
 				progress = 0.15
@@ -2506,53 +2505,25 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_research_hubs"
 			add_dynamic_modifier = { modifier = GRE_defense_industry_modifier }
 			newline = yes
-			if = {
-				limit = { nuclear_facility < 1 }
-				random_owned_state = {
-					add_building_construction = {
-						type = nuclear_facility
-						level = 1
-						instant_build = yes
-					}
-				}
-			}
-			else_if = {
-				limit = { naval_facility < 1 }
-				random_owned_state = {
-					add_building_construction = {
-						type = naval_facility
-						level = 1
-						instant_build = yes
-					}
-				}
-			}
-			else_if = {
-				limit = { air_facility < 1 }
-				random_owned_state = {
-					add_building_construction = {
-						type = air_facility
-						level = 1
-						instant_build = yes
-					}
-				}
-			}
-			else = {
-				random_owned_state = {
-					add_building_construction = {
-						type = land_facility
-						level = 1
-						instant_build = yes
-					}
-				}
-			}
 			if = { limit = { has_country_flag = GRE_defer_payments_flag }
 				set_temp_variable = { skip_payment = 1 }
 				set_temp_variable = { debt_change = 15 }
 				GRE_defer_payment = yes
 			}
+			if = {
+				limit = { nuclear_facility < 1 }
+				one_random_nuclear_facility = yes
+			}
+			else_if = {
+				limit = { naval_facility < 1 }
+				one_random_naval_facility = yes
+			}
+			else_if = {
+				limit = { air_facility < 1 }
+				one_random_air_facility = yes
+			}
 			else = {
-				set_temp_variable = { treasury_change = -15.00 }
-				modify_treasury_effect = yes
+				one_random_land_facility = yes
 			}
 		}
 
@@ -4744,9 +4715,8 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_golden_visa_deals executed"
-			add_political_power = 50
-			add_stability = 0.03
 			add_ideas = GRE_golden_visa_money
+			newline = yes
 			141 = {
 				add_extra_state_shared_building_slots = 2
 			}
