@@ -1,3 +1,5 @@
+import { TOC_DRAWER_BODY_LOCK_CLASS } from "@/shared/config/body-scroll-lock";
+
 export const TOC_IDS = {
   sidebar: "toc-sidebar",
   heading: "toc-heading",
@@ -11,20 +13,12 @@ export const TOC_IDS = {
 
 export const TOC_ATTRS = {
   tocId: "data-toc-id",
+  link: "data-toc-link",
   expand: "data-toc-expand",
   sublist: "data-toc-sublist",
 } as const;
 
-export const TOC_CLASSES = {
-  list: "toc-sidebar__list",
-  sublist: "toc-sidebar__sublist",
-  item: "toc-sidebar__item",
-  parentItem: "toc-sidebar__item--parent",
-  row: "toc-sidebar__row",
-  link: "toc-sidebar__link",
-  sublink: "toc-sidebar__sublink",
-  deepSublink: "toc-sidebar__sublink--deep",
-  expandButton: "toc-sidebar__expand",
+export const TOC_STATES = {
   active: "is-active",
   expanded: "is-expanded",
 } as const;
@@ -48,8 +42,8 @@ export const TOC_SELECTORS = {
   content: ".main-content",
   header: ".site-header",
   footer: ".site-footer",
-  link: `.${TOC_CLASSES.link}`,
-  expandButton: `.${TOC_CLASSES.expandButton}`,
+  link: `[${TOC_ATTRS.link}]`,
+  expandButton: `[${TOC_ATTRS.expand}]`,
   headings: buildHeadingSelector(TOC_HEADING_RANGE.minDepth, TOC_HEADING_RANGE.maxDepth),
 } as const;
 
@@ -69,7 +63,7 @@ export const TOC_DEFAULTS = {
 } as const;
 
 export const TOC_DRAWER = {
-  bodyLockClass: "toc-lock",
+  bodyLockClass: TOC_DRAWER_BODY_LOCK_CLASS,
   inertSelectors: ["#main-content", TOC_SELECTORS.header, TOC_SELECTORS.footer],
   openLabels: { expanded: "true", ariaLabel: TOC_LABELS.close },
   closedLabels: { expanded: "false", ariaLabel: TOC_LABELS.open },

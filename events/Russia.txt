@@ -114,6 +114,57 @@ country_event = {
 	}
 }
 
+##Belarus Accepts Integration: execute the annexation or puppeting
+country_event = {
+	id = russia.3
+	title = russia.3.t
+	desc = russia.3.d
+	picture = GFX_SOV_generic
+	is_triggered_only = yes
+
+	option = {
+		name = russia.3.o1
+		log = "[GetDateText]: [This.GetName]: russia.3.o1 executed"
+		if = {
+			limit = { BLR = { is_subject_of = SOV } }
+			BLR = {
+				every_owned_state = {
+					limit = { NOT = { is_core_of = SOV } }
+					add_core_of = SOV
+				}
+				every_unit_leader = {
+					set_nationality = SOV
+				}
+			}
+			annex_country = { target = BLR transfer_troops = yes }
+		}
+		if = {
+			limit = { BLR = { NOT = { is_subject_of = SOV } } }
+			BLR = {
+				every_owned_state = {
+					limit = { NOT = { is_core_of = SOV } }
+					add_core_of = SOV
+				}
+			}
+			puppet = BLR
+		}
+	}
+}
+
+##Belarus Refuses Integration: notification to Russia
+country_event = {
+	id = russia.4
+	title = russia.4.t
+	desc = russia.4.d
+	picture = GFX_SOV_generic
+	is_triggered_only = yes
+
+	option = {
+		name = russia.4.o1
+		log = "[GetDateText]: [This.GetName]: russia.4.o1 executed"
+	}
+}
+
 #Faction members (not Belarus): Russian imperialism
 country_event = {
 	id = russia.5
@@ -408,7 +459,7 @@ country_event = {
 	#Belarus Refuses!
 	option = {
 		name = russia.10.o2
-		log = "[GetDateText]: [This.GetName]: russia.10.o3 executed"
+		log = "[GetDateText]: [This.GetName]: russia.10.o2 executed"
 		if = {
 			limit = { BLR = { is_subject_of = SOV } }
 			SOV = { release_puppet = BLR }
@@ -418,6 +469,8 @@ country_event = {
 				}
 			}
 			SOV = {
+				set_temp_variable = { wargoal_on = BLR }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = BLR
 					type = take_state_focus
@@ -432,6 +485,9 @@ country_event = {
 				}
 			}
 			SOV = {
+				set_temp_variable = { wargoal_on = BLR }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = BLR
 					type = annex_everything
@@ -509,6 +565,9 @@ country_event = {
 			limit = { tag = ABK }
 			SOV = {
 				set_country_flag = ABK_refused_russias_annexation
+				set_temp_variable = { wargoal_on = ABK }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = ABK
 					type = annex_everything
@@ -520,6 +579,9 @@ country_event = {
 			limit = { tag = SOO }
 			SOV = {
 				set_country_flag = SOO_refused_russias_annexation
+				set_temp_variable = { wargoal_on = SOO }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = SOO
 					type = annex_everything
@@ -636,6 +698,9 @@ country_event = {
 		if = {
 			limit = { FROM = { tag = ABK } }
 			effect_tooltip = {
+				set_temp_variable = { wargoal_on = ABK }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = ABK
 					type = annex_everything
@@ -645,6 +710,9 @@ country_event = {
 		if = {
 			limit = { FROM = { tag = SOO } }
 			effect_tooltip = {
+				set_temp_variable = { wargoal_on = SOO }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = SOO
 					type = annex_everything
@@ -986,7 +1054,7 @@ country_event = {
 
 	option = {
 		name = russia.29.o1
-		log = "[GetDateText]: [This.GetName]: russia.29.o2 executed"
+		log = "[GetDateText]: [This.GetName]: russia.29.o1 executed"
 		if = {
 			limit = { NOT = { country_exists = CHE } }
 			release_autonomy = {
@@ -1533,6 +1601,8 @@ country_event = {
 	option = {
 		name = russia.50.a
 		log = "[GetDateText]: [This.GetName]: russia.50.a executed"
+		set_temp_variable = { wargoal_on = GEO }
+		add_threat_from_wargoal_effect = yes
 		create_wargoal = {
 			type = puppet_wargoal_focus
 			target = GEO
@@ -1769,6 +1839,16 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: russia.58.a"
 		set_country_flag = SOV_unlock_2001_reform_generals
 		effect_tooltip = {
+			create_corps_commander = {
+				name = "Alexander Lapin"
+				portrait_path = "gfx/leaders/SOV/Gen_Alexander_Lapin.dds"
+				traits = { armoured_cavalry_leader panzer_leader }
+				skill = 2
+				attack_skill = 3
+				defense_skill = 2
+				planning_skill = 2
+				logistics_skill = 2
+			}
 			create_corps_commander = {
 				name = "Sergey Kisel"
 				portrait_path = "gfx/leaders/SOV/Gen_Sergey_Kisel.dds"
@@ -2450,7 +2530,7 @@ country_event = {
 	is_triggered_only = yes
 	option = {
 		name = russia.78.o1
-		log = "[GetDateText]: [This.GetName]: russia.38.o1 executed"
+		log = "[GetDateText]: [This.GetName]: russia.78.o1 executed"
 	}
 }
 country_event = {
@@ -2538,7 +2618,7 @@ country_event = {
 	is_triggered_only = yes
 
 	option = {
-		name = russia.80.o1
+		name = russia.83.o1
 		log = "[GetDateText]: [This.GetName]: russia.83.o1 executed"
 		GEO = {
 			puppet = ROOT
@@ -2558,6 +2638,8 @@ country_event = {
 		name = russia.83.o2
 		log = "[GetDateText]: [This.GetName]: russia.83.o2 executed"
 		SOV = {
+			set_temp_variable = { wargoal_on = ROOT }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = ROOT
@@ -2667,7 +2749,7 @@ country_event = {
 	is_triggered_only = yes
 	option = {
 		name = russia.87.o1
-		log = "[GetDateText]: [This.GetName]: russia.38.o1 executed"
+		log = "[GetDateText]: [This.GetName]: russia.87.o1 executed"
 	}
 }
 country_event = {
@@ -2692,6 +2774,7 @@ country_event = {
 	option = {
 		name = russia.89.o1
 		log = "[GetDateText]: [This.GetName]: russia.89.o1 executed"
+		set_temp_variable = { temp_change = 1 }
 		build_enrichment_facilities_effect = yes
 		random_owned_controlled_state = {
 			add_building_construction = {
@@ -2714,6 +2797,7 @@ country_event = {
 		set_temp_variable = { treasury_change = -25 }
 		modify_treasury_effect = yes
 		SOV = {
+			set_temp_variable = { temp_change = 1 }
 			build_enrichment_facilities_effect = yes
 			random_owned_controlled_state = {
 				add_building_construction = {
@@ -2751,7 +2835,7 @@ country_event = {
 	}
 	option = {
 		name = russia.89.o2
-		log = "[GetDateText]: [This.GetName]: russia.86.o2 executed"
+		log = "[GetDateText]: [This.GetName]: russia.89.o2 executed"
 		add_opinion_modifier = {
 			target = SOV
 			modifier = medium_decrease
@@ -3500,6 +3584,9 @@ country_event = {
 				}
 			}
 			SOV = {
+				set_temp_variable = { wargoal_on = LIT }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = LIT
 					type = annex_everything
@@ -3620,6 +3707,9 @@ country_event = {
 				}
 			}
 			SOV = {
+				set_temp_variable = { wargoal_on = LAT }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = LAT
 					type = annex_everything
@@ -3740,6 +3830,9 @@ country_event = {
 				}
 			}
 			SOV = {
+				set_temp_variable = { wargoal_on = EST }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = EST
 					type = annex_everything
@@ -3858,6 +3951,9 @@ country_event = {
 				}
 			}
 			SOV = {
+				set_temp_variable = { wargoal_on = GEO }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = GEO
 					type = annex_everything
@@ -3975,6 +4071,9 @@ country_event = {
 				}
 			}
 			SOV = {
+				set_temp_variable = { wargoal_on = MLV }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = MLV
 					type = annex_everything
@@ -4140,6 +4239,9 @@ country_event = {
 				}
 			}
 			SOV = {
+				set_temp_variable = { wargoal_on = BLR }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = BLR
 					type = annex_everything
@@ -4232,6 +4334,9 @@ country_event = {
 				}
 			}
 			SOV = {
+				set_temp_variable = { wargoal_on = BLR }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = BLR
 					type = annex_everything
@@ -4389,6 +4494,9 @@ country_event = {
 				}
 			}
 			SOV = {
+				set_temp_variable = { wargoal_on = ARM }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = ARM
 					type = annex_everything
@@ -4455,6 +4563,9 @@ country_event = {
 				}
 			}
 			SOV = {
+				set_temp_variable = { wargoal_on = ARM }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = ARM
 					type = annex_everything
@@ -4514,7 +4625,6 @@ news_event = {
 
 	option = {
 		name = russia_news.10000.a
-		log = "[GetDateText]: [This.GetName]: russia_news.10000.a executed"
 	}
 }
 
@@ -4529,7 +4639,6 @@ news_event = {
 
 	option = {
 		name = russia_news.1.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.1.o1 executed"
 	}
 }
 
@@ -4545,7 +4654,6 @@ news_event = {
 
 	option = {
 		name = russia_news.2.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.2.o1 executed"
 	}
 }
 
@@ -4561,7 +4669,6 @@ news_event = {
 
 	option = {
 		name = russia_news.3.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.3.o1 executed"
 	}
 }
 
@@ -4577,13 +4684,11 @@ news_event = {
 
 	option = {
 		name = russia_news.4.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.4.o1 executed"
 		trigger = { original_tag = SOV }
 	}
 
 	option = {
 		name = russia_news.4.o2
-		log = "[GetDateText]: [This.GetName]: russia_news.4.o2 executed"
 		trigger = { NOT = { original_tag = SOV } }
 	}
 }
@@ -4600,13 +4705,11 @@ news_event = {
 
 	option = {
 		name = russia_news.5.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.5.o1 executed"
 		trigger = { original_tag = SOV }
 	}
 
 	option = {
 		name = russia_news.5.o2
-		log = "[GetDateText]: [This.GetName]: russia_news.5.o2 executed"
 		trigger = {
 			is_in_faction_with = SOV
 			NOT = { original_tag = SOV }
@@ -4615,7 +4718,6 @@ news_event = {
 
 	option = {
 		name = russia_news.5.o3
-		log = "[GetDateText]: [This.GetName]: russia_news.5.o3 executed"
 		trigger = {
 			NOT = { is_in_faction_with = SOV }
 			NOT = { original_tag = SOV }
@@ -4625,7 +4727,6 @@ news_event = {
 
 	option = {
 		name = russia_news.5.o4
-		log = "[GetDateText]: [This.GetName]: russia_news.5.o4 executed"
 		trigger = {
 			has_war_with = SOV
 		}
@@ -4643,13 +4744,11 @@ news_event = {
 	fire_only_once = yes
 	option = {
 		name = russia_news.6.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.6.o1 executed"
 		trigger = { original_tag = SOV }
 	}
 
 	option = {
 		name = russia_news.6.o2
-		log = "[GetDateText]: [This.GetName]: russia_news.6.o2 executed"
 		trigger = {
 			is_in_faction_with = SOV
 			NOT = { original_tag = SOV }
@@ -4658,7 +4757,6 @@ news_event = {
 
 	option = {
 		name = russia_news.6.o3
-		log = "[GetDateText]: [This.GetName]: russia_news.6.o3 executed"
 		trigger = {
 			NOT = { is_in_faction_with = SOV }
 			NOT = { original_tag = SOV }
@@ -4668,7 +4766,6 @@ news_event = {
 
 	option = {
 		name = russia_news.6.o4
-		log = "[GetDateText]: [This.GetName]: russia_news.6.o4 executed"
 		trigger = {
 			has_war_with = SOV
 		}
@@ -4726,14 +4823,12 @@ news_event = {
 	fire_only_once = yes
 	option = {
 		name = russia_news.8.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.8.o1 executed"
 		trigger = {
 			NOT = { original_tag = SOV }
 		}
 	}
 	option = {
 		name = russia_news.8.o2
-		log = "[GetDateText]: [This.GetName]: russia_news.8.o2 executed"
 		trigger = { original_tag = SOV }
 	}
 }
@@ -4749,7 +4844,6 @@ news_event = {
 	fire_only_once = yes
 	option = {
 		name = russia_news.9.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.9.o1 executed"
 		trigger = {
 			NOT = { original_tag = SOV }
 			NOT = { original_tag = UKR }
@@ -4757,12 +4851,10 @@ news_event = {
 	}
 	option = {
 		name = russia_news.9.o2
-		log = "[GetDateText]: [This.GetName]: russia_news.9.o2 executed"
 		trigger = { original_tag = SOV }
 	}
 	option = {
 		name = russia_news.9.o3
-		log = "[GetDateText]: [This.GetName]: russia_news.9.o3 executed"
 		trigger = { original_tag = UKR }
 	}
 }
@@ -4776,19 +4868,16 @@ news_event = {
 	fire_only_once = yes
 	option = {
 		name = russia_news.10.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.10.o1 executed"
 		trigger = {
 			NOT = { original_tag = SOV }
 		}
 	}
 	option = {
 		name = russia_news.10.o2
-		log = "[GetDateText]: [This.GetName]: russia_news.10.o2 executed"
 		trigger = { original_tag = SOV }
 	}
 	option = {
 		name = russia_news.10.o3
-		log = "[GetDateText]: [This.GetName]: russia_news.10.o3 executed"
 		trigger = {
 			NOT = { is_in_faction_with = SOV }
 			NOT = { original_tag = SOV }
@@ -4806,13 +4895,11 @@ news_event = {
 	fire_only_once = yes
 	option = {
 		name = russia_news.11.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.11.o1 executed"
 		trigger = { original_tag = SOV }
 	}
 
 	option = {
 		name = russia_news.11.o2
-		log = "[GetDateText]: [This.GetName]: russia_news.11.o2 executed"
 		trigger = {
 			is_in_faction_with = SOV
 			NOT = { original_tag = SOV }
@@ -4821,7 +4908,6 @@ news_event = {
 
 	option = {
 		name = russia_news.11.o3
-		log = "[GetDateText]: [This.GetName]: russia_news.11.o3 executed"
 		trigger = {
 			has_idea = NATO_member
 		}
@@ -4829,7 +4915,6 @@ news_event = {
 
 	option = {
 		name = russia_news.11.o4
-		log = "[GetDateText]: [This.GetName]: russia_news.11.o4 executed"
 		trigger = {
 			OR = {
 				has_war_with = SOV
@@ -4840,7 +4925,6 @@ news_event = {
 
 	option = {
 		name = russia_news.11.o5
-		log = "[GetDateText]: [This.GetName]: russia_news.11.o5 executed"
 		trigger = {
 			NOT = { is_in_faction_with = SOV }
 			NOT = { has_idea = NATO_member }
@@ -4858,12 +4942,10 @@ news_event = {
 	fire_only_once = yes
 	option = {
 		name = russia_news.12.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.12.o1 executed"
 		trigger = { original_tag = SOV }
 	}
 	option = {
 		name = russia_news.12.o2
-		log = "[GetDateText]: [This.GetName]: russia_news.12.o2 executed"
 		trigger = {
 			is_in_faction_with = SOV
 			NOT = { original_tag = SOV }
@@ -4871,14 +4953,12 @@ news_event = {
 	}
 	option = {
 		name = russia_news.12.o3
-		log = "[GetDateText]: [This.GetName]: russia_news.12.o3 executed"
 		trigger = {
 			has_idea = NATO_member
 		}
 	}
 	option = {
 		name = russia_news.12.o4
-		log = "[GetDateText]: [This.GetName]: russia_news.6.o4 executed"
 		trigger = {
 			OR = {
 				has_war_with = SOV
@@ -4888,7 +4968,6 @@ news_event = {
 	}
 	option = {
 		name = russia_news.12.o5
-		log = "[GetDateText]: [This.GetName]: russia_news.12.o5 executed"
 		trigger = {
 			NOT = { is_in_faction_with = SOV }
 			NOT = { has_idea = NATO_member }
@@ -4906,12 +4985,10 @@ news_event = {
 	fire_only_once = yes
 	option = {
 		name = russia_news.13.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.13.o1 executed"
 		trigger = { original_tag = SOV }
 	}
 	option = {
 		name = russia_news.13.o2
-		log = "[GetDateText]: [This.GetName]: russia_news.11.o2 executed"
 		trigger = {
 			is_in_faction_with = SOV
 			NOT = { original_tag = SOV }
@@ -4919,14 +4996,12 @@ news_event = {
 	}
 	option = {
 		name = russia_news.13.o3
-		log = "[GetDateText]: [This.GetName]: russia_news.13.o3 executed"
 		trigger = {
 			has_idea = NATO_member
 		}
 	}
 	option = {
 		name = russia_news.13.o4
-		log = "[GetDateText]: [This.GetName]: russia_news.11.o4 executed"
 		trigger = {
 			OR = {
 				has_war_with = SOV
@@ -4936,7 +5011,6 @@ news_event = {
 	}
 	option = {
 		name = russia_news.13.o5
-		log = "[GetDateText]: [This.GetName]: russia_news.13.o5 executed"
 		trigger = {
 			NOT = { is_in_faction_with = SOV }
 			NOT = { has_idea = NATO_member }
@@ -4956,13 +5030,11 @@ news_event = {
 
 	option = {
 		name = russia_news.50.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.50.o1 executed"
 		trigger = { original_tag = SOV }
 	}
 
 	option = {
 		name = russia_news.50.o2
-		log = "[GetDateText]: [This.GetName]: russia_news.50.o2 executed"
 		trigger = {
 			is_in_faction_with = SOV
 			NOT = { original_tag = SOV }
@@ -4971,7 +5043,6 @@ news_event = {
 
 	option = {
 		name = russia_news.50.o3
-		log = "[GetDateText]: [This.GetName]: russia_news.50.o3 executed"
 		trigger = {
 			NOT = { is_in_faction_with = SOV }
 			NOT = { original_tag = SOV }
@@ -4981,7 +5052,6 @@ news_event = {
 
 	option = {
 		name = russia_news.50.o4
-		log = "[GetDateText]: [This.GetName]: russia_news.50.o4 executed"
 		trigger = {
 			has_war_with = SOV
 		}
@@ -5003,13 +5073,11 @@ news_event = {
 	}
 	option = {
 		name = russia_news.51.o1
-		log = "[GetDateText]: [This.GetName]: russia_news.51.o1 executed"
 		trigger = { original_tag = SOV }
 	}
 
 	option = {
 		name = russia_news.51.o2
-		log = "[GetDateText]: [This.GetName]: russia_news.51.o2 executed"
 		trigger = {
 			NOT = { original_tag = SOV }
 		}
@@ -5136,7 +5204,7 @@ country_event = {
 	}
 
 	option = {
-		name = rusboloto.2.b
+		name = rusboloto.1.b
 		log = "[GetDateText]: [This.GetName]: sov_vybory.1.a executed"
 		hidden_effect = {
 			add_to_variable = { party_pop_array^20 = 0.05 }
@@ -5385,28 +5453,36 @@ country_event = {
 		}
 		log = "[GetDateText]: [This.GetName]: sov_vybory.1.a executed"
 		hidden_effect = {
-			NOV = {
-				remove_state_core = 1076
-				remove_state_core = 1075
-				remove_state_core = 693
-				remove_state_core = 669
-				remove_state_core = 694
-				remove_state_core = 1030
-				remove_state_core = 1087
-				remove_state_core = 696
-				remove_state_core = 1085
-				remove_state_core = 1086
-				remove_state_core = 333
-				remove_state_core = 695
+			if = {
+				limit = { country_exists = NOV }
+				NOV = {
+					remove_state_core = 1076
+					remove_state_core = 1075
+					remove_state_core = 693
+					remove_state_core = 669
+					remove_state_core = 694
+					remove_state_core = 1030
+					remove_state_core = 1087
+					remove_state_core = 696
+					remove_state_core = 1085
+					remove_state_core = 1086
+					remove_state_core = 333
+					remove_state_core = 695
+				}
 			}
-			DPR = {
-				remove_state_core = 693
-				remove_state_core = 1030
-
+			if = {
+				limit = { country_exists = DPR }
+				DPR = {
+					remove_state_core = 693
+					remove_state_core = 1030
+				}
 			}
-			LPR = {
-				remove_state_core = 1076
-				remove_state_core = 1075
+			if = {
+				limit = { country_exists = LPR }
+				LPR = {
+					remove_state_core = 1076
+					remove_state_core = 1075
+				}
 			}
 			set_temp_variable = { percent_change = 20 }
 			set_temp_variable = { tag_index = SOV }
@@ -5449,28 +5525,36 @@ country_event = {
 		add_state_core = 333
 		add_state_core = 695
 		hidden_effect = {
-			NOV = {
-				remove_state_core = 1076
-				remove_state_core = 1075
-				remove_state_core = 693
-				remove_state_core = 669
-				remove_state_core = 694
-				remove_state_core = 1030
-				remove_state_core = 1087
-				remove_state_core = 696
-				remove_state_core = 1085
-				remove_state_core = 1086
-				remove_state_core = 333
-				remove_state_core = 695
+			if = {
+				limit = { country_exists = NOV }
+				NOV = {
+					remove_state_core = 1076
+					remove_state_core = 1075
+					remove_state_core = 693
+					remove_state_core = 669
+					remove_state_core = 694
+					remove_state_core = 1030
+					remove_state_core = 1087
+					remove_state_core = 696
+					remove_state_core = 1085
+					remove_state_core = 1086
+					remove_state_core = 333
+					remove_state_core = 695
+				}
 			}
-			DPR = {
-				remove_state_core = 693
-				remove_state_core = 1030
-
+			if = {
+				limit = { country_exists = DPR }
+				DPR = {
+					remove_state_core = 693
+					remove_state_core = 1030
+				}
 			}
-			LPR = {
-				remove_state_core = 1076
-				remove_state_core = 1075
+			if = {
+				limit = { country_exists = LPR }
+				LPR = {
+					remove_state_core = 1076
+					remove_state_core = 1075
+				}
 			}
 		}
 	}
@@ -6756,6 +6840,8 @@ country_event = {
 	option = {
 		name = sov_nationalists.10.a
 		log = "[GetDateText]: [This.GetName]: sov_nationalists.10.a"
+		set_temp_variable = { wargoal_on = PER }
+		add_threat_from_wargoal_effect = yes
 		create_wargoal = {
 			target = PER
 			type = puppet_wargoal_focus
@@ -7131,6 +7217,9 @@ country_event = {
 			}
 		}
 		SOV = {
+			set_temp_variable = { wargoal_on = ROOT }
+			set_temp_variable = { wargoal_type = 2 }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				target = ROOT
 				type = annex_everything
@@ -7391,6 +7480,8 @@ country_event = {
 			limit = { tag = CHI }
 			SOV = {
 				set_country_flag = CHI_refused_annexation
+				set_temp_variable = { wargoal_on = CHI }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = CHI
 					type = take_claimed_state
@@ -7458,6 +7549,8 @@ country_event = {
 		if = {
 			limit = { FROM = { tag = CHI } }
 			effect_tooltip = {
+				set_temp_variable = { wargoal_on = CHI }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = CHI
 					type = take_claimed_state
@@ -7518,6 +7611,9 @@ country_event = {
 			base = 50
 		}
 		SOV = {
+			set_temp_variable = { wargoal_on = ROOT }
+			set_temp_variable = { wargoal_type = 2 }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				target = ROOT
 				type = annex_everything
@@ -7560,6 +7656,8 @@ country_event = {
 			base = 0
 		}
 		SOV = {
+			set_temp_variable = { wargoal_on = ROOT }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = ROOT
@@ -8079,6 +8177,9 @@ country_event = {
 			add_opinion_modifier = { target = ROM modifier = betrayed_our_cause }
 		}
 		SOV = {
+			set_temp_variable = { wargoal_on = ROM }
+			set_temp_variable = { wargoal_type = 2 }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				target = ROM
 				type = annex_everything
@@ -8492,7 +8593,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.1.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.1.a executed"
 	}
 }
 
@@ -8506,7 +8606,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.2.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.2.a executed"
 	}
 }
 news_event = {
@@ -8519,7 +8618,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.3.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.3.a executed"
 	}
 }
 news_event = {
@@ -8532,7 +8630,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.4.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.4.a executed"
 	}
 }
 news_event = {
@@ -8545,7 +8642,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.5.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.5.a executed"
 	}
 }
 news_event = {
@@ -8558,7 +8654,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.6.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.6.a executed"
 	}
 }
 news_event = {
@@ -8571,7 +8666,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.7.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.7.a executed"
 	}
 }
 news_event = {
@@ -8584,7 +8678,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.8.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.8.a executed"
 	}
 }
 news_event = {
@@ -8597,7 +8690,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.9.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.9.a executed"
 	}
 }
 news_event = {
@@ -8610,7 +8702,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.10.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.10.a executed"
 	}
 }
 news_event = {
@@ -8623,7 +8714,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.11.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.11.a executed"
 	}
 }
 news_event = {
@@ -8636,7 +8726,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.12.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.12.a executed"
 	}
 }
 news_event = {
@@ -8649,7 +8738,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.13.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.13.a executed"
 	}
 }
 news_event = {
@@ -8662,7 +8750,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.14.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.14.a executed"
 	}
 }
 news_event = {
@@ -8675,7 +8762,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.15.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.15.a executed"
 	}
 }
 news_event = {
@@ -8688,7 +8774,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.16.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.16.a executed"
 	}
 }
 news_event = {
@@ -8701,7 +8786,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.17.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.17.a executed"
 	}
 }
 news_event = {
@@ -8714,7 +8798,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.18.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.18.a executed"
 	}
 }
 news_event = {
@@ -8727,7 +8810,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.19.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.19.a executed"
 	}
 }
 news_event = {
@@ -8740,7 +8822,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.20.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.20.a executed"
 	}
 }
 news_event = {
@@ -8753,7 +8834,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.21.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.21.a executed"
 	}
 }
 news_event = {
@@ -8766,7 +8846,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.22.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.22.a executed"
 	}
 }
 news_event = {
@@ -8779,7 +8858,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.23.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.23.a executed"
 	}
 }
 news_event = {
@@ -8792,7 +8870,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.24.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.24.a executed"
 	}
 }
 news_event = {
@@ -8805,7 +8882,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.25.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.25.a executed"
 	}
 }
 news_event = {
@@ -8818,7 +8894,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.26.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.26.a executed"
 	}
 }
 news_event = {
@@ -8831,7 +8906,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.27.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.27.a executed"
 	}
 }
 news_event = {
@@ -8844,7 +8918,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.28.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.28.a executed"
 	}
 }
 news_event = {
@@ -8857,7 +8930,6 @@ news_event = {
 	major = yes
 	option = {
 		name = sov_nationalists_news.29.a
-		log = "[GetDateText]: [This.GetName]: sov_nationalists_news.29.a executed"
 	}
 }
 ### Operation in Ukraine Events
@@ -9069,6 +9141,8 @@ country_event = {
 		ai_chance = {
 			base = 50
 		}
+		set_temp_variable = { wargoal_on = UKR }
+		add_threat_from_wargoal_effect = yes
 		create_wargoal = {
 			target = UKR
 			type = puppet_wargoal_focus
@@ -9321,7 +9395,6 @@ news_event = {
 	major = yes
 	option = {
 		name = Sov_warsaw_pact.1.a
-		log = "[GetDateText]: [This.GetName]: Sov_warsaw_pact.2.a"
 		ai_chance = {
 			base = 100
 		}
@@ -9353,7 +9426,6 @@ news_event = {
 	is_triggered_only = yes
 	option = {
 		name = Sov_warsaw_pact.4.a
-		log = "[GetDateText]: [This.GetName]: Sov_warsaw_pact.4.a"
 		ai_chance = {
 			base = 100
 		}
@@ -9427,7 +9499,6 @@ news_event = {
 	is_triggered_only = yes
 	option = {
 		name = Sov_warsaw_pact.8.a
-		log = "[GetDateText]: [This.GetName]: Sov_warsaw_pact.8.a"
 		ai_chance = {
 			base = 100
 		}
@@ -9545,7 +9616,6 @@ news_event = {
 	is_triggered_only = yes
 	option = {
 		name = Sov_warsaw_pact.10.a
-		log = "[GetDateText]: [This.GetName]: Sov_warsaw_pact.10.a"
 		ai_chance = {
 			base = 100
 		}
@@ -9578,7 +9648,6 @@ news_event = {
 	is_triggered_only = yes
 	option = {
 		name = Sov_warsaw_pact.12.a
-		log = "[GetDateText]: [This.GetName]: Sov_warsaw_pact.12.a"
 		ai_chance = {
 			base = 100
 		}
@@ -9594,7 +9663,6 @@ news_event = {
 	is_triggered_only = yes
 	option = {
 		name = Sov_warsaw_pact.13.a
-		log = "[GetDateText]: [This.GetName]: Sov_warsaw_pact.13.a"
 		ai_chance = {
 			base = 100
 		}
@@ -9671,6 +9739,8 @@ country_event = {
 		add_stability = 0.02
 		add_war_support = 0.05
 		SOV = {
+			set_temp_variable = { wargoal_on = GER }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = take_state_focus
 				target = GER
@@ -9738,7 +9808,6 @@ news_event = {
 
 	option = {
 		name = Sov_warsaw_pact.19.a
-		log = "[GetDateText]: [This.GetName]: Sov_warsaw_pact.19.a"
 		ai_chance = {
 			base = 100
 		}
@@ -11030,7 +11099,7 @@ country_event = {
 		ai_chance = { base = 100 }
 	}
 	option = {
-		name = sov_dissolution.4.b
+		name = sov_dissolution.5.b
 		FROM = { country_event = { id = sov_dissolution.8 days = 1 } }
 		log = "[GetDateText]: [This.GetName]: sov_dissolution.4.a executed"
 	}
@@ -11206,7 +11275,7 @@ country_event = { # Media in Frenzy
 	}
 	option = {
 		name = russia.301.b
-		log = "[GetDateText]: [This.GetName]: russia.301.a executed"
+		log = "[GetDateText]: [This.GetName]: russia.301.b executed"
 		add_political_power = 150
 		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = 0.055 }
@@ -11239,6 +11308,12 @@ country_event = { # Repaired
 				instant_build = yes
 				province = 7600
 			}
+			add_extra_state_shared_building_slots = 2
+			add_building_construction = {
+				type = infrastructure
+				level = 1
+				instant_build = yes
+			}
 		}
 	}
 }
@@ -11254,7 +11329,6 @@ news_event = {
 
 	option = {
 		name = russia.3022.a
-		log = "[GetDateText]: [This.GetName]: russia.3022.a executed"
 	}
 }
 
@@ -11289,7 +11363,6 @@ news_event = {
 
 	option = {
 		name = russia.3033.a
-		log = "[GetDateText]: [This.GetName]: russia.3033.a executed"
 	}
 }
 
@@ -11325,7 +11398,6 @@ news_event = {
 
 	option = {
 		name = russia.3044.a
-		log = "[GetDateText]: [This.GetName]: russia.3044.a executed"
 	}
 }
 country_event = {
@@ -13052,6 +13124,8 @@ country_event = {
 	option = {
 		name = sov_liberals.6.b
 		log = "[GetDateText]: [This.GetName]: sov_liberals.6.b"
+		set_temp_variable = { wargoal_on = FROM }
+		add_threat_from_wargoal_effect = yes
 		create_wargoal = {
 			type = puppet_wargoal_focus
 			target = FROM
@@ -13797,6 +13871,9 @@ country_event = {
 	option = {
 		name = sov_liberals.27.a
 		log = "[GetDateText]: [This.GetName]: sov_liberals.27.a"
+		set_temp_variable = { wargoal_on = GEO }
+		set_temp_variable = { wargoal_type = 2 }
+		add_threat_from_wargoal_effect = yes
 		create_wargoal = {
 			target = GEO
 			type = annex_everything
@@ -13849,6 +13926,13 @@ country_event = {
 	desc = sov_liberals.29.d
 	picture = GFX_nemtsov_killers
 	is_triggered_only = yes
+
+	trigger = {
+		OR = {
+			emerging_reactionaries_are_in_power = yes
+			neutrality_neutral_oligarch_are_in_power = yes
+		}
+	}
 
 	option = {
 		name = sov_liberals.29.a
@@ -13930,7 +14014,6 @@ news_event = {
 
 	option = {
 		name = sov_liberals_news.1.a
-		log = "[GetDateText]: [This.GetName]: sov_liberals_news.1.a executed"
 	}
 }
 
@@ -13968,6 +14051,8 @@ country_event = {
 			base = 0
 		}
 		SOV = {
+			set_temp_variable = { wargoal_on = ROOT }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = ROOT
@@ -14070,6 +14155,8 @@ country_event = {
 			}
 		}
 		SOV = {
+			set_temp_variable = { wargoal_on = ROOT }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = ROOT
@@ -14347,7 +14434,7 @@ country_event = {
 	is_triggered_only = yes
 	picture = GFX_wagner_events
 	option = {
-		name = sov_gru.6.a
+		name = sov_gru.10.a
 		log = "[GetDateText]: [This.GetName]: sov_gru.10.a executed"
 		add_ideas = SOV_wagner_foreign_africa
 		set_temp_variable = { percent_change = 4 }
