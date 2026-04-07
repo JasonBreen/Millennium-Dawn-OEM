@@ -37,18 +37,18 @@ scripted_gui = {
 
 		triggers = {
 			cyber_gui_ledger_button_click_enabled = {
-			 	if = {
-			 		limit = {
-			 			has_dlc = "La Resistance"
-			 		}
-			 		has_done_agency_upgrade = upgrade_establish_cyber_operations_division
-			 	}else = {
-			 		custom_trigger_tooltip = {
-			 			tooltip = is_cyber_complete_techs_to_unlock_tt
-			 			has_tech = encryption1
-			 			has_tech = decryption1
-			 		}
-			 	}
+				 if = {
+					 limit = {
+						 has_dlc = "La Resistance"
+					 }
+					 has_done_agency_upgrade = upgrade_establish_cyber_operations_division
+				 } else = {
+					 custom_trigger_tooltip = {
+						 tooltip = is_cyber_complete_techs_to_unlock_tt
+						 has_tech = encryption1
+						 has_tech = decryption1
+					 }
+				 }
 			 }
 		}
 
@@ -230,7 +230,7 @@ scripted_gui = {
 	MD_countrymissilesview_production_gui = {
 		window_name = MD_countrymissilesview_production
 		context_type = player_context
-		parent_window_name = MD_space_program_window
+		parent_window_name = MD_space_program_window_instance
 
 		dirty = global.missile_ui_updated
 
@@ -1245,7 +1245,7 @@ scripted_gui = {
 	MD_countrymissilesview_space_gui = {
 		window_name = MD_countrymissilesview_space
 		context_type = player_context
-		parent_window_name = MD_space_program_window
+		parent_window_name = MD_space_program_window_instance
 
 		dirty = global.missile_ui_updated
 
@@ -1473,6 +1473,19 @@ scripted_gui = {
 				set_variable = { ROOT.var_anti_satellite_weapon_num = ROOT.var_KILLSAT_salvo }
 				anti_satellite_weapon_use = yes
 				remove_killsat_used = yes
+				missile_ui_update = yes
+			}
+
+			open_satellite_orbit_screen_click = {
+				if = {
+					limit = {
+						NOT = { has_country_flag = rods_search_target }
+					}
+					set_country_flag = rods_search_target
+				}
+				else = {
+					clr_country_flag = rods_search_target
+				}
 				missile_ui_update = yes
 			}
 		}
@@ -1918,7 +1931,7 @@ scripted_gui = {
 	MD_countrymissilesview_satellites_gui = {
 		window_name = MD_countrymissilesview_satellites
 		context_type = player_context
-		parent_window_name = MD_space_program_window
+		parent_window_name = MD_space_program_window_instance
 
 		dirty = global.missile_ui_updated
 
@@ -2873,7 +2886,7 @@ scripted_gui = {
 						}
 						set_temp_variable = { focus_increase = 0.02 }
 						add_to_variable = { international_terror_org_specific_intel^i = focus_increase }
-					}else = {
+					} else = {
 						set_temp_variable = { focus_decrease = -0.01 }
 						add_to_variable = { international_terror_org_specific_intel^i = focus_decrease }
 					}
@@ -2896,7 +2909,7 @@ scripted_gui = {
 						}
 						set_temp_variable = { focus_increase = -0.02 }
 						add_to_variable = { international_terror_org_specific_intel^i = focus_increase }
-					}else = {
+					} else = {
 						set_temp_variable = { focus_decrease = 0.01 }
 						add_to_variable = { international_terror_org_specific_intel^i = focus_decrease }
 					}
@@ -2937,7 +2950,7 @@ scripted_gui = {
 				set_temp_variable = { party_popularity_increase = 0.02 }
 				add_relative_party_popularity = yes
 
-				set_temp_variable = { defense_var = -1}
+				set_temp_variable = { defense_var = -1 }
 				add_to_variable = { ct_home_defense_var = defense_var }
 				set_temp_variable = { intel_gain_var = -1 }
 				add_to_variable = { ct_global_base_detect_var = intel_gain_var }
@@ -3359,6 +3372,65 @@ scripted_gui = {
 				}
 			}
 		}
+
+		effects = {
+			remove_light_inf_button_click = {
+				if = { limit = { has_country_flag = blackwater_sel } delete_light_infantry_blackwater = yes }
+				else_if = { limit = { has_country_flag = aegis_sel } delete_light_infantry_aegis = yes }
+				else_if = { limit = { has_country_flag = constellis_sel } delete_light_infantry_constellis = yes }
+				else_if = { limit = { has_country_flag = wagner_sel } delete_light_infantry_wagner = yes }
+				else_if = { limit = { has_country_flag = md_sel } delete_light_infantry_md = yes }
+				missile_ui_update = yes
+			}
+			remove_mot_inf_button_click = {
+				if = { limit = { has_country_flag = blackwater_sel } delete_mot_infantry_blackwater = yes }
+				else_if = { limit = { has_country_flag = aegis_sel } delete_mot_infantry_aegis = yes }
+				else_if = { limit = { has_country_flag = constellis_sel } delete_mot_infantry_constellis = yes }
+				else_if = { limit = { has_country_flag = wagner_sel } delete_mot_infantry_wagner = yes }
+				else_if = { limit = { has_country_flag = md_sel } delete_mot_infantry_md = yes }
+				missile_ui_update = yes
+			}
+			remove_mech_inf_button_click = {
+				if = { limit = { has_country_flag = blackwater_sel } delete_mech_infantry_blackwater = yes }
+				else_if = { limit = { has_country_flag = aegis_sel } delete_mech_infantry_aegis = yes }
+				else_if = { limit = { has_country_flag = constellis_sel } delete_mech_infantry_constellis = yes }
+				else_if = { limit = { has_country_flag = wagner_sel } delete_mech_infantry_wagner = yes }
+				else_if = { limit = { has_country_flag = md_sel } delete_mech_infantry_md = yes }
+				missile_ui_update = yes
+			}
+			remove_hvy_inf_button_click = {
+				if = { limit = { has_country_flag = blackwater_sel } delete_heavy_mech_infantry_blackwater = yes }
+				else_if = { limit = { has_country_flag = aegis_sel } delete_heavy_mech_infantry_aegis = yes }
+				else_if = { limit = { has_country_flag = constellis_sel } delete_heavy_mech_infantry_constellis = yes }
+				else_if = { limit = { has_country_flag = wagner_sel } delete_heavy_mech_infantry_wagner = yes }
+				else_if = { limit = { has_country_flag = md_sel } delete_heavy_mech_infantry_md = yes }
+				missile_ui_update = yes
+			}
+			remove_spec_inf_button_click = {
+				if = { limit = { has_country_flag = blackwater_sel } delete_special_unit_blackwater = yes }
+				else_if = { limit = { has_country_flag = aegis_sel } delete_special_unit_aegis = yes }
+				else_if = { limit = { has_country_flag = constellis_sel } delete_special_unit_constellis = yes }
+				else_if = { limit = { has_country_flag = wagner_sel } delete_special_unit_wagner = yes }
+				else_if = { limit = { has_country_flag = md_sel } delete_special_unit_md = yes }
+				missile_ui_update = yes
+			}
+			remove_tank_button_click = {
+				if = { limit = { has_country_flag = blackwater_sel } delete_tank_unit_blackwater = yes }
+				else_if = { limit = { has_country_flag = aegis_sel } delete_tank_unit_aegis = yes }
+				else_if = { limit = { has_country_flag = constellis_sel } delete_tank_unit_constellis = yes }
+				else_if = { limit = { has_country_flag = wagner_sel } delete_tank_unit_wagner = yes }
+				else_if = { limit = { has_country_flag = md_sel } delete_tank_unit_md = yes }
+				missile_ui_update = yes
+			}
+			remove_sf_inf_button_click = {
+				if = { limit = { has_country_flag = blackwater_sel } delete_specops_unit_blackwater = yes }
+				else_if = { limit = { has_country_flag = aegis_sel } delete_specops_unit_aegis = yes }
+				else_if = { limit = { has_country_flag = constellis_sel } delete_specops_unit_constellis = yes }
+				else_if = { limit = { has_country_flag = wagner_sel } delete_specops_unit_wagner = yes }
+				else_if = { limit = { has_country_flag = md_sel } delete_specops_unit_md = yes }
+				missile_ui_update = yes
+			}
+		}
 	}
 	#UN System
 	MD_UN_main_gui = {
@@ -3422,7 +3494,7 @@ scripted_gui = {
 	MD_UN_system_gui = {
 		window_name = MD_UN_system_window
 		context_type = player_context
-		parent_window_name = MD_UN_main_window
+		parent_window_name = MD_UN_main_window_instance
 
 		dirty = global.missile_ui_updated
 
@@ -3762,7 +3834,7 @@ scripted_gui = {
 	MD_UN_SC_gui = {
 		window_name = MD_UN_SC_window
 		context_type = player_context
-		parent_window_name = MD_UN_main_window
+		parent_window_name = MD_UN_main_window_instance
 
 		dirty = global.missile_ui_updated
 
@@ -3773,9 +3845,6 @@ scripted_gui = {
 		}
 
 		triggers = {
-			un_sc_pop_out_window_visible = {
-				has_country_flag = show_sc_vote_view
-			}
 			unsc_actions_text_visible = {
 				is_on_un_sec_council = yes
 			}
@@ -3889,10 +3958,25 @@ scripted_gui = {
 			}
 		}
 	}
+
+	MD_unsc_pop_out_window = {
+		window_name = "UNSC_pop_out_window"
+		context_type = player_context
+
+		dirty = global.missile_ui_updated
+
+		visible = {
+			check_variable = { var_open_MD_un_council = 2 }
+			check_variable = { var_open_MD_UN_gui = 2 }
+			has_country_flag = open_MD_countrymissilesview
+			has_country_flag = show_sc_vote_view
+		}
+	}
+
 	MD_UN_GA_gui = {
 		window_name = MD_UN_GA_window
 		context_type = player_context
-		parent_window_name = MD_UN_main_window
+		parent_window_name = MD_UN_main_window_instance
 
 		dirty = global.missile_ui_updated
 
@@ -3903,13 +3987,6 @@ scripted_gui = {
 		}
 
 		triggers = {
-			un_ga_pop_out_window_visible = {
-				OR = {
-					has_country_flag = show_full_ga_list
-					has_country_flag = show_ga_vote_list
-					has_country_flag = show_ga_propose_resolutions
-				}
-			}
 			unga_yes_text_visible = {
 				has_global_flag = current_ongoing_ga_vote
 			}
@@ -3998,7 +4075,7 @@ scripted_gui = {
 					}
 					clr_country_flag = auto_accept_all_ga_votes
 					set_variable = { UN_GA_auto_accept_frame_var = 1 }
-				}else = {
+				} else = {
 					set_country_flag = auto_accept_all_ga_votes
 					set_variable = { UN_GA_auto_accept_frame_var = 2 }
 				}
@@ -4020,7 +4097,7 @@ scripted_gui = {
 					}
 					clr_country_flag = auto_reject_all_ga_votes
 					set_variable = { UN_GA_auto_reject_frame_var = 1 }
-				}else = {
+				} else = {
 					set_country_flag = auto_reject_all_ga_votes
 					set_variable = { UN_GA_auto_reject_frame_var = 2 }
 				}
@@ -4046,10 +4123,29 @@ scripted_gui = {
 			}
 		}
 	}
+
+	MD_unga_pop_out_window = {
+		window_name = "UNGA_pop_out_window"
+		context_type = player_context
+
+		dirty = global.missile_ui_updated
+
+		visible = {
+			check_variable = { var_open_MD_un_assembly = 2 }
+			check_variable = { var_open_MD_UN_gui = 2 }
+			has_country_flag = open_MD_countrymissilesview
+			OR = {
+				has_country_flag = show_full_ga_list
+				has_country_flag = show_ga_vote_list
+				has_country_flag = show_ga_propose_resolutions
+			}
+		}
+	}
+
 	MD_UN_aid_gui = {
 		window_name = MD_UN_aid_window
 		context_type = player_context
-		parent_window_name = MD_UN_main_window
+		parent_window_name = MD_UN_main_window_instance
 
 		dirty = global.missile_ui_updated
 
@@ -4164,12 +4260,15 @@ scripted_gui = {
 			}
 			is_un_increase_esco_contribution_button_click_enabled = {
 				has_idea = un_aid_esco_member
+				check_variable = { united_nations_esco_optional_funding < 5 }
 			}
 			is_un_increase_ido_contribution_button_click_enabled = {
 				has_idea = un_aid_ido_member
+				check_variable = { united_nations_ido_optional_funding < 5 }
 			}
 			is_un_increase_cdf_contribution_button_click_enabled = {
 				has_idea = un_aid_cdf_member
+				check_variable = { united_nations_cdf_optional_funding < 5 }
 			}
 			is_un_decrease_esco_contribution_button_click_enabled = {
 				check_variable = { united_nations_esco_optional_funding > 0 }
@@ -4315,7 +4414,7 @@ scripted_gui = {
 							}
 						}
 					}
-				}else = {
+				} else = {
 					add_ideas = un_aid_esco_member
 					custom_effect_tooltip = TT_ALL_UN_MEMBER_NATIONS_GAIN
 					effect_tooltip = {
@@ -4364,7 +4463,7 @@ scripted_gui = {
 							}
 						}
 					}
-				}else = {
+				} else = {
 					add_ideas = un_aid_ido_member
 					custom_effect_tooltip = TT_ALL_UN_MEMBER_NATIONS_GAIN
 					effect_tooltip = {
@@ -4412,7 +4511,7 @@ scripted_gui = {
 							}
 						}
 					}
-				}else = {
+				} else = {
 					add_ideas = un_aid_cdf_member
 					custom_effect_tooltip = TT_ALL_UN_MEMBER_NATIONS_GAIN
 					effect_tooltip = {
@@ -7095,6 +7194,7 @@ scripted_gui = {
 		dirty = global.missile_ui_updated
 
 		visible = {
+			check_variable = { var_open_MD_un_council = 2 }
 			check_variable = { var_open_MD_UN_gui = 2 }
 			has_country_flag = open_MD_countrymissilesview
 		}
@@ -7318,6 +7418,7 @@ scripted_gui = {
 		dirty = global.missile_ui_updated
 
 		visible = {
+			check_variable = { var_open_MD_un_council = 2 }
 			check_variable = { var_open_MD_UN_gui = 2 }
 			has_country_flag = open_MD_countrymissilesview
 			is_on_un_sec_council = yes
@@ -7365,12 +7466,13 @@ scripted_gui = {
 
 	is_un_sc_pending_vote_dynamic_lists = {
 		context_type = player_context
-		parent_scripted_gui = MD_UN_SC_gui
+		parent_scripted_gui = MD_unsc_pop_out_window
 		window_name = "IS_UN_SC_pending_votes_container"
 
 		dirty = global.missile_ui_updated
 
 		visible = {
+			check_variable = { var_open_MD_un_council = 2 }
 			check_variable = { var_open_MD_UN_gui = 2 }
 			has_country_flag = open_MD_countrymissilesview
 			has_country_flag = show_sc_vote_view
@@ -7431,12 +7533,13 @@ scripted_gui = {
 
 	is_un_ga_pending_vote_dynamic_lists = {
 		context_type = player_context
-		parent_scripted_gui = MD_UN_GA_gui
+		parent_scripted_gui = MD_unga_pop_out_window
 		window_name = "IS_UN_GA_pending_votes_container"
 
 		dirty = global.missile_ui_updated
 
 		visible = {
+			check_variable = { var_open_MD_un_assembly = 2 }
 			check_variable = { var_open_MD_UN_gui = 2 }
 			has_country_flag = open_MD_countrymissilesview
 			has_country_flag = show_ga_vote_list
@@ -7503,6 +7606,7 @@ scripted_gui = {
 		dirty = global.missile_ui_updated
 
 		visible = {
+			check_variable = { var_open_MD_un_assembly = 2 }
 			check_variable = { var_open_MD_UN_gui = 2 }
 			has_country_flag = open_MD_countrymissilesview
 			has_global_flag = current_ongoing_ga_vote
@@ -7583,6 +7687,7 @@ scripted_gui = {
 		dirty = global.missile_ui_updated
 
 		visible = {
+			check_variable = { var_open_MD_un_assembly = 2 }
 			check_variable = { var_open_MD_UN_gui = 2 }
 			has_country_flag = open_MD_countrymissilesview
 			has_global_flag = current_ongoing_ga_vote
@@ -7663,6 +7768,7 @@ scripted_gui = {
 		dirty = global.missile_ui_updated
 
 		visible = {
+			check_variable = { var_open_MD_un_assembly = 2 }
 			check_variable = { var_open_MD_UN_gui = 2 }
 			has_country_flag = open_MD_countrymissilesview
 			has_global_flag = current_ongoing_ga_vote
@@ -7733,12 +7839,13 @@ scripted_gui = {
 
 	is_un_ga_nation_dynamic_lists = {
 		context_type = player_context
-		parent_scripted_gui = MD_UN_GA_gui
+		parent_scripted_gui = MD_unga_pop_out_window
 		window_name = "IS_UN_GA_member_container"
 
 		dirty = global.missile_ui_updated
 
 		visible = {
+			check_variable = { var_open_MD_un_assembly = 2 }
 			check_variable = { var_open_MD_UN_gui = 2 }
 			has_country_flag = open_MD_countrymissilesview
 			has_country_flag = show_full_ga_list
@@ -7755,12 +7862,13 @@ scripted_gui = {
 
 	is_un_ga_propose_resolution_gui = {
 		context_type = player_context
-		parent_scripted_gui = MD_UN_GA_gui
+		parent_scripted_gui = MD_unga_pop_out_window
 		window_name = "IS_UN_GA_propose_resolution_container"
 
 		dirty = global.missile_ui_updated
 
 		visible = {
+			check_variable = { var_open_MD_un_assembly = 2 }
 			check_variable = { var_open_MD_UN_gui = 2 }
 			has_country_flag = open_MD_countrymissilesview
 			has_country_flag = show_ga_propose_resolutions
@@ -8108,6 +8216,7 @@ scripted_gui = {
 		dirty = global.missile_ui_updated
 
 		visible = {
+			check_variable = { var_open_MD_state_recog = 2 }
 			check_variable = { var_open_MD_UN_gui = 2 }
 			has_country_flag = open_MD_countrymissilesview
 		}
@@ -8152,6 +8261,7 @@ scripted_gui = {
 
 		visible = {
 			has_idea = Lacks_International_Recognition
+			check_variable = { var_open_MD_state_recog = 2 }
 			check_variable = { var_open_MD_UN_gui = 2 }
 			has_country_flag = open_MD_countrymissilesview
 		}
