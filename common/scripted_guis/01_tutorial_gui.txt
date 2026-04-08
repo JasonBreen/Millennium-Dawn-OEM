@@ -1,0 +1,43 @@
+scripted_gui = {
+	open_tutorial_window_scripted_gui = {
+		context_type = player_context
+		window_name = "tutorial_open_button_window"
+		parent_window_name = "MapmodesInterface_Ingame"
+		dirty = tutorial_gui_dirty_var
+
+		visible = {
+			is_ai = no
+		}
+
+		effects = {
+			open_tutorial_window_button_click = {
+				if = {
+					limit = { NOT = { has_country_flag = open_tutorial_window } }
+					set_country_flag = open_tutorial_window
+				}
+				else = {
+					clr_country_flag = open_tutorial_window
+				}
+				add_to_variable = { tutorial_gui_dirty_var = 1 }
+			}
+		}
+	}
+
+	tutorial_main_scripted_gui = {
+		context_type = player_context
+		window_name = "tutorial_main_background_window"
+		dirty = tutorial_gui_dirty_var
+
+		visible = {
+			is_ai = no
+			has_country_flag = open_tutorial_window
+		}
+
+		effects = {
+			tutorial_close_button_click = {
+				clr_country_flag = open_tutorial_window
+				add_to_variable = { tutorial_gui_dirty_var = 1 }
+			}
+		}
+	}
+}
