@@ -1,49 +1,77 @@
 
 on_actions = {
-	on_unit_leader_level_up = {
+	on_army_leader_won_combat = {
 		effect = {
 			if = {
 				limit = {
-					FROM = {
-						original_tag = CHI
-						OR = {
-							has_country_flag = {
-								flag = CHI_cnc_general_quote_used
-								days > 30
-							}
-							NOT = { has_country_flag = CHI_cnc_general_quote_used }
-						}
+					has_game_rule = {
+						rule = allow_easter_eggs
+						option = yes
 					}
 				}
-				ROOT = {
+				if = {
+					limit = {
+						FROM = {
+							original_tag = CHI
+							OR = {
+								has_country_flag = {
+									flag = CHI_cnc_general_quote_used
+									days > 30
+								}
+								NOT = { has_country_flag = CHI_cnc_general_quote_used }
+							}
+						}
+					}
 					if = {
-						limit = { is_character = CHI_general_fai }
-						FROM = {
-							scoped_sound_effect = "CHI_general_fai_shout"
-							clr_country_flag = CHI_cnc_general_quote_used
-							set_country_flag = CHI_cnc_general_quote_used
-						}
-					}
-					else_if = {
-						limit = { is_character = CHI_general_kwai  }
-						FROM = {
-							scoped_sound_effect = "CHI_general_kwai_shout"
-							clr_country_flag = CHI_cnc_general_quote_used
-							set_country_flag = CHI_cnc_general_quote_used
-						}
-					}
-					else_if = {
-						limit = { is_character = CHI_general_leang }
+						limit = { ROOT = { has_trait = CHI_special_weapons_general } }
 						FROM = {
 							scoped_sound_effect = "CHI_general_leang_shout"
 							clr_country_flag = CHI_cnc_general_quote_used
 							set_country_flag = CHI_cnc_general_quote_used
 						}
 					}
-					else_if = {
-						limit = { is_character = CHI_general_tao }
+				}
+			}
+		}
+	}
+	on_unit_leader_level_up = {
+		effect = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = allow_easter_eggs
+						option = yes
+					}
+				}
+				if = {
+					limit = { FROM = { original_tag = CHI } }
+					if = {
+						limit = { ROOT = { has_trait = CHI_special_weapons_general } }
 						FROM = {
-							scoped_sound_effect = "CHI_general_tao_shout"
+							scoped_sound_effect = "CHI_general_leang_shout"
+							clr_country_flag = CHI_cnc_general_quote_used
+							set_country_flag = CHI_cnc_general_quote_used
+						}
+					}
+				}
+			}
+		}
+	}
+	on_unit_leader_created = {
+		effect = {
+			if = {
+				limit = {
+					has_game_rule = {
+						rule = allow_easter_eggs
+						option = yes
+					}
+				}
+				if = {
+					limit = { FROM = { original_tag = CHI } }
+					if = {
+						limit = { ROOT = { has_trait = CHI_special_weapons_general } }
+						FROM = {
+							scoped_sound_effect = "CHI_general_leang_shout"
 							clr_country_flag = CHI_cnc_general_quote_used
 							set_country_flag = CHI_cnc_general_quote_used
 						}
