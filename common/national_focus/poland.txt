@@ -5543,11 +5543,1680 @@ focus_tree = {
 
 #################################################################### [HERE LIES OLD COMMUNIST TREE BY ROSERU] ##################################################################################
 
+
+
+########################################################################## Economy tree by Maja Budziak ########################################################################################
+	
+	focus = {
+		id = POL_economy_initial_idea
+		
+		x = 85
+		y = 0
+		cost = 5
+		
+		offset = {
+			x = -40
+			trigger = {
+				has_completed_focus = POL_stay_on_track
+			}
+		}
+		
+		completion_reward = {
+			add_political_power = 10
+		}
+	}
+	
+	
+	### industrial policy sub-branch
+	
+	focus = {
+		id = POL_industrial_policy
+		
+		x = -14
+		y = 1
+		relative_position_id = POL_economy_initial_idea
+		cost = 2
+		
+		prerequisite = {
+			focus = POL_economy_initial_idea
+		}
+		
+		completion_reward = {
+			set_temp_variable = { treasury_change = 2.5 }
+			modify_treasury_effect = yes
+			
+		}
+	}
+	
+	focus = {
+		id = POL_construction_industry
+		
+		x = -4
+		y = 1
+		relative_position_id = POL_industrial_policy
+		cost = 5
+		
+		prerequisite = {
+			focus = POL_industrial_policy
+		}
+		
+		completion_reward = {
+			one_random_industrial_complex = yes
+		}
+	}
+	
+	focus = {
+		id = POL_cop_revival
+		
+		x = -2
+		y = 1
+		relative_position_id = POL_construction_industry
+		cost = 10
+		
+		prerequisite = {
+			focus = POL_construction_industry
+		}
+		
+		completion_reward = {
+			one_random_industrial_complex = yes
+			one_random_industrial_complex = yes
+		}
+	}
+
+	focus = {
+		id = POL_mass_scale_construction
+
+		x = -1
+		y = 1
+		relative_position_id = POL_cop_revival
+		cost = 5
+
+		mutually_exclusive = {
+			focus = POL_innovation_in_construction
+		}
+
+		prerequisite = {
+			focus = POL_construction_industry
+		}
+
+		completion_reward = {
+			# +25% construction
+			# -0.15 productivity
+		}
+
+	}
+
+	focus = {
+		id = POL_innovation_in_construction
+
+		x = 1
+		y = 1
+		relative_position_id = POL_cop_revival
+		cost = 5
+
+		mutually_exclusive = {
+			focus = POL_mass_scale_construction
+		}
+
+		prerequisite = {
+			focus = POL_construction_industry
+		}
+
+		completion_reward = {
+			# -15% construction
+			# +0.25 productivity
+		}
+
+	}
+
+	focus = {
+		id = POL_korean_housing_expertise
+		
+		x = 1
+		y = 1
+		relative_position_id = POL_construction_industry
+		cost = 5
+
+		mutually_exclusive = {
+			focus = POL_dutch_housing_expertise
+		}
+
+		
+		prerequisite = {
+			focus = POL_construction_industry
+		}
+		
+		completion_reward = {
+			KOR = {
+				set_temp_variable = { percent_change = 2 }
+				set_temp_variable = { tag_index = THIS.id }
+				set_temp_variable = { influence_target = ROOT.id }
+				change_influence_percentage = yes
+			}
+
+		}
+	}
+
+	focus = {
+		id = POL_dutch_housing_expertise
+		
+		x = 3
+		y = 1
+		relative_position_id = POL_construction_industry
+		cost = 5
+
+		mutually_exclusive = {
+			focus = POL_korean_housing_expertise
+		}
+		
+		prerequisite = {
+			focus = POL_construction_industry
+		}
+		
+		completion_reward = {
+			HOL = {
+				set_temp_variable = { percent_change = 2 }
+				set_temp_variable = { tag_index = THIS.id }
+				set_temp_variable = { influence_target = ROOT.id }
+				change_influence_percentage = yes
+			}
+			
+		}
+	}
+
+
+	focus = {
+		id = POL_mieszkanie_plus_program
+
+		x = 1
+		y = 1
+		relative_position_id = POL_mass_scale_construction
+		cost = 10
+
+		mutually_exclusive = {
+			focus = POL_safe_mortgage_program
+			focus = POL_jeonse_rental_scheme
+		}
+
+		
+		prerequisite = {
+			focus = POL_mass_scale_construction
+			focus = POL_innovation_in_construction
+		}
+
+		prerequisite = {
+			focus = POL_dutch_housing_expertise
+		}
+
+		completion_reward = {
+
+			if = {
+				limit = { has_completed_focus = POL_mass_scale_construction }
+				# +7% stability
+				set_temp_variable = { treasury_change = -3 }
+				modify_treasury_effect = yes
+			}
+			else_if = {
+				limit = { has_completed_focus = POL_innovation_in_construction }
+				# +10% stability
+				set_temp_variable = { treasury_change = -5 }
+				modify_treasury_effect = yes
+			}
+
+		}
+
+	}
+
+	focus = {
+		id = POL_safe_mortgage_program
+
+		x = 1
+		y = 1
+		relative_position_id = POL_innovation_in_construction
+		cost = 10
+
+		mutually_exclusive = {
+			focus = POL_mieszkanie_plus_program
+			focus = POL_jeonse_rental_scheme
+		}
+
+		
+		prerequisite = {
+			focus = POL_mass_scale_construction
+			focus = POL_innovation_in_construction
+		}
+
+		prerequisite = {
+			focus = POL_dutch_housing_expertise
+			focus = POL_korean_housing_expertise
+		}
+
+		completion_reward = {
+
+			if = {
+				limit = { has_completed_focus = POL_mass_scale_construction }
+				# +3% stability
+				# +0.25% ROI
+				set_temp_variable = { treasury_change = -6 }
+				modify_treasury_effect = yes
+			}
+			else_if = {
+				limit = { has_completed_focus = POL_innovation_in_construction }
+				# +5% stability
+				# +0.5% ROI
+				set_temp_variable = { treasury_change = -10 }
+				modify_treasury_effect = yes
+			}
+
+		}
+
+	}
+
+	focus = {
+		id = POL_jeonse_rental_scheme
+
+		x = 1
+		y = 1
+		relative_position_id = POL_dutch_housing_expertise
+		cost = 10
+
+		mutually_exclusive = {
+			focus = POL_mieszkanie_plus_program
+			focus = POL_safe_mortgage_program
+		}
+
+		
+		prerequisite = {
+			focus = POL_innovation_in_construction
+		}
+
+		prerequisite = {
+			focus = POL_korean_housing_expertise
+		}
+
+		completion_reward = {
+			# -5% stability
+			# +1.5% ROI
+		}
+
+	}
+	
+	
+	
+	focus = {
+		id = POL_high_tech_industry
+		
+		x = 3
+		y = 1
+		relative_position_id = POL_industrial_policy
+		cost = 5
+		
+		prerequisite = {
+			focus = POL_industrial_policy
+		}
+		
+		completion_reward = {
+			one_random_renewable_energy_infra = yes
+		}
+	}
+
+	focus = {
+		id = POL_focus_on_data_centers
+
+		x = -2
+		y = 1
+		relative_position_id = POL_high_tech_industry
+		cost = 2
+
+		mutually_exclusive = {
+			focus = POL_go_all_in
+			focus = POL_focus_on_semiconductors
+		}
+
+		prerequisite = {
+			focus = POL_high_tech_industry
+		}
+
+		completion_reward = {
+			# +0.10 productivity
+		}		
+	}
+
+	focus = {
+		id = POL_go_all_in
+
+		x = 0
+		y = 1
+		relative_position_id = POL_high_tech_industry
+		cost = 4
+
+		mutually_exclusive = {
+			focus = POL_focus_on_data_centers
+			focus = POL_focus_on_semiconductors
+		}
+
+		prerequisite = {
+			focus = POL_high_tech_industry
+		}
+
+		completion_reward = {
+			# +0.20 productivity
+		}		
+	}
+
+	focus = {
+		id = POL_focus_on_semiconductors
+
+		x = 2
+		y = 1
+		relative_position_id = POL_high_tech_industry
+		cost = 2
+
+		mutually_exclusive = {
+			focus = POL_focus_on_data_centers
+			focus = POL_go_all_in
+		}
+
+		prerequisite = {
+			focus = POL_high_tech_industry
+		}
+
+		completion_reward = {
+			# +0.10 productivity
+		}		
+	}
+
+	focus = {
+		id = POL_invite_microsoft
+
+		x = -1
+		y = 1
+		relative_position_id = POL_focus_on_data_centers
+		cost = 10
+
+		mutually_exclusive = {
+			focus = POL_beyond_dc1
+		}
+
+		prerequisite = {
+			focus = POL_focus_on_data_centers
+			focus = POL_go_all_in
+		}
+
+		completion_reward = {
+			# office productivity +20%
+			# office tax +5%
+			if = {
+				limit = { has_completed_focus = POL_go_all_in }
+				set_temp_variable = { treasury_change = -1.2 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -1 }
+				modify_treasury_effect = yes
+			}
+			USA = {
+				set_temp_variable = { percent_change = 2 }
+				set_temp_variable = { tag_index = THIS.id }
+				set_temp_variable = { influence_target = ROOT.id }
+				change_influence_percentage = yes
+			}
+
+		}
+	}
+
+	focus = {
+		id = POL_azure_poland
+
+		x = 0
+		y = 1
+		relative_position_id = POL_invite_microsoft
+		cost = 10
+
+		prerequisite = {
+			focus = POL_invite_microsoft
+		}
+
+		completion_reward = {
+			# monthly independence +0.02
+			# office tax +10%
+			# productivity +0.10
+			if = {
+				limit = { has_completed_focus = POL_go_all_in }
+				set_temp_variable = { treasury_change = -4.8 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -4 }
+				modify_treasury_effect = yes
+			}
+			USA = {
+				set_temp_variable = { percent_change = 3 }
+				set_temp_variable = { tag_index = THIS.id }
+				set_temp_variable = { influence_target = ROOT.id }
+				change_influence_percentage = yes
+			}
+		}
+	}
+
+	focus = {
+		id = POL_azure_europe
+
+		x = -1
+		y = 1
+		relative_position_id = POL_azure_poland
+		cost = 10
+
+		allowed = {
+			has_idea = EU_member
+			OR = {
+				has_idea = major_power
+				has_idea = great_power
+				has_idea = superpower
+			}
+		}
+
+		prerequisite = {
+			focus = POL_azure_poland
+		}
+
+		completion_reward = {
+			# productivity +0.15
+			# influence modifier +0.10
+			if = {
+				limit = { has_completed_focus = POL_go_all_in }
+				set_temp_variable = { treasury_change = -3.6 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -3 }
+				modify_treasury_effect = yes
+			}
+			USA = {
+				set_temp_variable = { percent_change = 5 }
+				set_temp_variable = { tag_index = THIS.id }
+				set_temp_variable = { influence_target = ROOT.id }
+				change_influence_percentage = yes
+			}
+			every_country = {
+				limit = {
+					has_idea = EU_member
+				}
+				add_idea = EU_azure_europe
+			}
+		}
+	}
+
+	focus = {
+		id = POL_bielik_ai
+
+		x = 1
+		y = 1
+		relative_position_id = POL_azure_poland
+		cost = 10
+
+		allowed = {
+			# has_tech = AI 2010
+		}
+
+		prerequisite = {
+			focus = POL_azure_poland
+			focus = POL_beyond_dc2
+		}
+
+		completion_reward = {
+			# monthly independence +0.05
+			# productivity +0.25
+			# research speed +10%
+			if = {
+				limit = { has_completed_focus = POL_go_all_in }
+				set_temp_variable = { treasury_change = -2.4 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -2 }
+				modify_treasury_effect = yes
+			}
+		}
+
+	}
+
+	focus = {
+		id = POL_euro_stack
+
+		x = -1
+		y = 1
+		relative_position_id = POL_bielik_ai
+		cost = 15
+
+		prerequisite = {
+			focus = POL_azure_europe
+		}
+		prerequisite = {
+			focus = POL_bielik_ai
+		}
+
+		completion_reward = {
+			# event: euro stack - independent (cost 25B) / USA helps (cost 5B) / China helps (no cost)
+		}
+	}
+
+	focus = {
+		id = POL_beyond_dc1
+		
+		x = 1
+		y = 1
+		relative_position_id = POL_focus_on_data_centers
+		cost = 10
+
+		mutually_exclusive = {
+			focus = POL_invite_microsoft
+		}
+
+		prerequisite = {
+			focus = POL_focus_on_data_centers
+		}
+
+		completion_reward = {
+			if = {
+				limit = { has_completed_focus = POL_go_all_in }
+				set_temp_variable = { treasury_change = -0.6 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -0.5 }
+				modify_treasury_effect = yes
+			}
+			# monthly independence +0.01
+			# productivity +0.05
+			# research speed +1%
+		}
+
+	}
+
+	focus = {
+		id = POL_beyond_dc2
+
+		x = 0
+		y = 1
+		relative_position_id = POL_beyond_dc1
+		cost = 10
+
+		prerequisite = {
+			focus = POL_beyond_dc1
+		}
+
+		completion_reward = {
+			if = {
+				limit = { has_completed_focus = POL_go_all_in }
+				set_temp_variable = { treasury_change = -11.4 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -9.5 }
+				modify_treasury_effect = yes
+			}
+			# Wielkopolska +1 office
+			# monthly independence +0.02
+			# productivity +0.20
+			# research speed +4%
+		}
+	}
+
+	focus = {
+		id = POL_beyond_ai_expansion
+
+		x = 1
+		y = 1
+		relative_position_id = POL_beyond_dc2
+		cost = 10
+
+		prerequisite = {
+			focus = POL_beyond_dc2
+		}
+
+		completion_reward = {
+			if = {
+				limit = { has_completed_focus = POL_go_all_in }
+				set_temp_variable = { treasury_change = -9 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -7.5 }
+				modify_treasury_effect = yes
+			}
+
+		}
+	}
+
+	focus = {
+		id = POL_ai_haven
+
+		x = 1
+		y = 1
+		relative_position_id = POL_bielik_ai
+		cost = 15
+
+		prerequisite = {
+			focus = POL_beyond_ai_expansion
+		}
+		prerequisite = {
+			focus = POL_bielik_ai
+		}
+
+		completion_reward = {
+			if = {
+				limit = { has_completed_focus = POL_go_all_in }
+				set_temp_variable = { treasury_change = -24 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -20 }
+				modify_treasury_effect = yes
+			}
+			# productivity +1
+			# foreign influence +10%
+			# monthly independence +0.08
+		}
+		
+	}
+	
+	focus = {
+		id = POL_invite_siemens
+		icon = align_to_germany
+		x = -1
+		y = 1
+		relative_position_id = POL_focus_on_semiconductors
+		cost = 5
+
+		mutually_exclusive = {
+			focus = POL_invite_intel
+			focus = POL_invite_samsung
+		}
+		
+		prerequisite = {
+			focus = POL_focus_on_semiconductors
+			focus = POL_go_all_in
+		}
+		
+		completion_reward = {
+			GER = {
+				set_temp_variable = { percent_change = 4 }
+				set_temp_variable = { tag_index = THIS.id }
+				set_temp_variable = { influence_target = ROOT.id }
+				change_influence_percentage = yes
+			}
+		}
+	}
+
+	focus = {
+		id = POL_invite_intel
+		icon = align_to_america
+		x = 1
+		y = 1
+		relative_position_id = POL_focus_on_semiconductors
+		cost = 5
+
+		mutually_exclusive = {
+			focus = POL_invite_siemens
+			focus = POL_invite_samsung
+		}
+		
+		prerequisite = {
+			focus = POL_focus_on_semiconductors
+			focus = POL_go_all_in
+		}
+		
+		completion_reward = {
+			USA = {
+				set_temp_variable = { percent_change = 4 }
+				set_temp_variable = { tag_index = THIS.id }
+				set_temp_variable = { influence_target = ROOT.id }
+				change_influence_percentage = yes
+			}
+		}
+	}
+
+	focus = {
+		id = POL_invite_samsung
+		icon = align_to_south_korea
+		x = 3
+		y = 1
+		relative_position_id = POL_focus_on_semiconductors
+		cost = 5
+
+		mutually_exclusive = {
+			focus = POL_invite_intel
+			focus = POL_invite_siemens
+		}
+		
+		prerequisite = {
+			focus = POL_focus_on_semiconductors
+			focus = POL_go_all_in
+		}
+		
+		completion_reward = {
+			KOR = {
+				set_temp_variable = { percent_change = 4 }
+				set_temp_variable = { tag_index = THIS.id }
+				set_temp_variable = { influence_target = ROOT.id }
+				change_influence_percentage = yes
+			}
+		}
+	}
+
+	focus = {
+		id = POL_start_microchip_production
+		
+		x = 2
+		y = 1
+		relative_position_id = POL_invite_siemens
+		cost = 10
+
+		prerequisite = {
+			focus = POL_invite_siemens
+			focus = POL_invite_intel
+			focus = POL_invite_samsung
+		}
+		
+		completion_reward = {
+			complete_special_project = sp_microchip_production
+			set_technology = {
+				microchip_production_one = 1
+				popup = no
+			}
+			if = {
+				limit = { has_completed_focus = POL_invite_siemens }
+				if = {
+					limit = { has_completed_focus = POL_go_all_in }
+					set_temp_variable = { treasury_change = -26.4 }
+					modify_treasury_effect = yes
+				}
+				else = {
+					set_temp_variable = { treasury_change = -22 }
+					modify_treasury_effect = yes
+				}
+				random_owned_state = {
+					add_building_construction = {
+						type = microchip_plant level = 1
+						instant_build = yes
+					}
+					add_extra_state_shared_building_slots = 1
+				}			
+			}
+			else_if = {
+				limit = { has_completed_focus = POL_invite_intel }
+				if = {
+					limit = { has_completed_focus = POL_go_all_in }
+					set_temp_variable = { treasury_change = -21.6 }
+					modify_treasury_effect = yes
+				}
+				else = {
+					set_temp_variable = { treasury_change = -18 }
+					modify_treasury_effect = yes
+				}
+				random_owned_state = {
+					add_building_construction = {
+						type = microchip_plant level = 1
+						instant_build = yes
+					}
+					add_extra_state_shared_building_slots = 1
+				}
+			}
+			else_if = {
+				limit = { has_completed_focus = POL_invite_samsung }
+				if = {
+					limit = { has_completed_focus = POL_go_all_in }
+					set_temp_variable = { treasury_change = -36 }
+					modify_treasury_effect = yes
+				}
+				else = {
+					set_temp_variable = { treasury_change = -30 }
+					modify_treasury_effect = yes
+				}
+				random_owned_state = {
+					add_building_construction = {
+						type = microchip_plant level = 1
+						instant_build = yes
+					}
+					add_extra_state_shared_building_slots = 1
+				}
+				random_owned_state = {
+					add_building_construction = {
+						type = microchip_plant level = 1
+						instant_build = yes
+					}
+					add_extra_state_shared_building_slots = 1
+				}
+			}
+		}
+	}
+	
+	
+	### infrastructure policy sub-branch
+	
+	focus = {
+		id = POL_infrastructure_policy
+		
+		x = 0
+		y = 1
+		relative_position_id = POL_economy_initial_idea
+		cost = 2
+		
+		prerequisite = {
+			focus = POL_economy_initial_idea
+		}
+		
+		completion_reward = {
+			add_political_power = 10
+		}
+	}
+
+	focus = {
+		id = POL_pkp_restructuring
+		
+		x = -3
+		y = 1
+		relative_position_id = POL_infrastructure_policy
+		cost = 5
+
+		
+		prerequisite = {
+			focus = POL_infrastructure_policy
+		}
+		
+		completion_reward = {
+			# restructure PKP
+		}
+	}
+
+	focus = {
+		id = POL_cpk_planning
+		
+		x = 0
+		y = 1
+		relative_position_id = POL_pkp_restructuring
+		cost = 5
+
+		
+		prerequisite = {
+			focus = POL_pkp_restructuring
+		}
+		
+		completion_reward = {
+			# CPK planning start
+		}
+	}
+
+	focus = {
+		id = POL_high_speed_rail_network
+
+		x = -2
+		y = 1
+		relative_position_id = POL_cpk_planning
+		cost = 10
+
+		prerequisite = {
+			focus = POL_cpk_planning
+		}
+
+		completion_reward = {
+			# event: HSR - level 4 (10B) / level 5 (16B) / level 6 (25B)
+		}
+	}
+
+	focus = {
+		id = POL_central_airport_construction
+
+		x = 0
+		y = 1
+		relative_position_id = POL_cpk_planning
+		cost = 10
+
+		prerequisite = {
+			focus = POL_cpk_planning
+		}
+
+		completion_reward = {
+			set_temp_variable = { treasury_change = 20 }
+			modify_treasury_effect = yes
+			# start decision: construction of CPK (+50B investment after 5 years)
+		}
+	}
+
+	focus = {
+		id = POL_military_logistics_hub
+
+		x = 2
+		y = 1
+		relative_position_id = POL_cpk_planning
+		cost = 10
+
+		prerequisite = {
+			focus = POL_cpk_planning
+		}
+
+		completion_reward = {
+			set_temp_variable = { treasury_change = 7.5 }
+			modify_treasury_effect = yes
+			# division speed +10%
+			# division organization +10%
+			# max planning +15%
+		}
+	}
+
+	focus = {
+		id = POL_complete_cpk
+
+		x = 0
+		y = 1
+		relative_position_id = POL_central_airport_construction
+		cost = 15
+
+		prerequisite = {
+			focus = POL_high_speed_network
+		}
+		prerequisite = {
+			focus = POL_central_airport_construction
+		}
+		prerequisite = {
+			focus = POL_military_logistics_hub
+		}
+
+		completion_reward = {
+			set_temp_variable = { treasury_change = 25 }
+			modify_treasury_effect = yes
+			# start decision: completion of CPK (+75B investment, +15% division speed, +15% division org, +25% max planning after 5 years)
+		}
+	}
+	
+	focus = {
+		id = POL_road_construction_policy
+		
+		x = 3
+		y = 1
+		relative_position_id = POL_infrastructure_policy
+		cost = 5
+
+		
+		prerequisite = {
+			focus = POL_infrastructure_policy
+		}
+		
+		completion_reward = {
+			one_random_infrastructure = yes
+		}
+	}
+
+	focus = {
+		id = POL_establish_gddkia
+		
+		x = -1
+		y = 1
+		relative_position_id = POL_road_construction_policy
+		cost = 5
+
+		mutually_exclusive = {
+			focus = POL_public_private_partnership
+		}
+		
+		prerequisite = {
+			focus = POL_road_construction_policy
+		}
+		
+		completion_reward = {
+			# add_ideas = { POL_gddkia }
+		}
+	}
+
+	focus = {
+		id = POL_public_private_partnership
+		
+		x = 1
+		y = 1
+		relative_position_id = POL_road_construction_policy
+		cost = 5
+
+		mutually_exclusive = {
+			focus = POL_establish_gddkia
+		}
+		
+		prerequisite = {
+			focus = POL_road_construction_policy
+		}
+		
+		completion_reward = {
+			# -25% infra build, corporations can build highways from their own money
+		}
+	}
+	
+	
+	### financial policy sub-branch
+	
+	focus = {
+		id = POL_financial_policy
+		
+		x = 11
+		y = 1
+		relative_position_id = POL_economy_initial_idea
+		cost = 2
+		
+		prerequisite = {
+			focus = POL_economy_initial_idea
+		}
+		
+		completion_reward = {
+			set_temp_variable = { treasury_change = -2.5 }
+			modify_treasury_effect = yes
+			set_temp_variable = { int_investment_change = 2.5 }
+			modify_international_investment_effect = yes
+		}
+	}
+	
+	focus = {
+		id = POL_social_radicalism
+		
+		x = -4
+		y = 1
+		relative_position_id = POL_financial_policy
+		cost = 5
+		
+		prerequisite = {
+			focus = POL_financial_policy
+		}
+		
+		mutually_exclusive = {
+			focus = POL_stable_economics
+			focus = POL_balcerowicz_plan
+		}
+		
+		completion_reward = {
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.03 }
+			set_temp_variable = { temp_outlook_increase = 0.03 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.02 }
+			set_temp_variable = { temp_outlook_increase = -0.02 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = -0.01 }
+			set_temp_variable = { temp_outlook_increase = -0.01 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = -0.1 }
+			add_to_variable = { economy_tax_gain_modifier = 0.02 }
+			add_to_variable = { economy_emerging_drift = 0.02 }
+			set_temp_variable = { temp_opinion = -5 }
+			change_international_bankers_opinion = yes
+			set_temp_variable = { temp_opinion = 10 }
+			change_farmers_opinion = yes
+		}
+	}
+	
+	focus = {
+		id = POL_reverse_privatization
+		
+		x = -1
+		y = 1
+		relative_position_id = POL_social_radicalism
+		cost = 10
+
+		available = {
+			NOT = { western_liberals_are_in_coalition = yes }
+		}
+		prerequisite = {
+			focus = POL_social_radicalism
+		}
+		
+		completion_reward = {
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.03 }
+			set_temp_variable = { temp_outlook_increase = -0.03 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = -0.02 }
+			set_temp_variable = { temp_outlook_increase = -0.02 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = -0.4 }
+			add_to_variable = { economy_tax_gain_modifier = 0.08 }
+			add_to_variable = { economy_emerging_drift = 0.04 }
+			set_temp_variable = { temp_opinion = -15 }
+			change_international_bankers_opinion = yes
+			set_temp_variable = { temp_opinion = 10 }
+			change_farmers_opinion = yes
+		}
+	}
+
+	focus = {
+		id = POL_ban_foreign_takeovers
+		
+		x = 0
+		y = 1
+		relative_position_id = POL_reverse_privatization
+		cost = 10
+
+		available = {
+			NOT = { western_liberals_are_in_coalition = yes }
+		}
+		prerequisite = {
+			focus = POL_reverse_privatization
+		}
+		
+		completion_reward = {
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.07 }
+			set_temp_variable = { temp_outlook_increase = 0.07 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.04 }
+			set_temp_variable = { temp_outlook_increase = -0.04 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = -0.03 }
+			set_temp_variable = { temp_outlook_increase = -0.03 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = -0.5 }
+			add_to_variable = { economy_tax_gain_modifier = 0.05 }
+			add_to_variable = { economy_emerging_drift = 0.05 }
+			set_temp_variable = { temp_opinion = -15 }
+			change_international_bankers_opinion = yes
+			set_temp_variable = { temp_opinion = 15 }
+			change_farmers_opinion = yes
+		}
+	}	
+
+	focus = {
+		id = POL_crack_down_on_the_rich
+		
+		x = 0
+		y = 1
+		relative_position_id = POL_ban_foreign_takeovers
+		cost = 10
+
+		available = {
+			NOT = { western_liberals_are_in_coalition = yes }
+		}
+		prerequisite = {
+			focus = POL_ban_foreign_takeovers
+		}
+		
+		completion_reward = {
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.10 }
+			set_temp_variable = { temp_outlook_increase = 0.10 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.05 }
+			set_temp_variable = { temp_outlook_increase = -0.05 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = -0.05 }
+			set_temp_variable = { temp_outlook_increase = -0.05 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = -0.75 }
+			add_to_variable = { economy_tax_gain_modifier = 0.1 }
+			add_to_variable = { economy_emerging_drift = 0.05 }
+			if = {
+				limit = { has_idea = international_bankers }
+				swap_ideas = {
+					add_idea = industrial_conglomerates
+					remove_idea = international_bankers
+				}
+			}
+			set_temp_variable = { temp_opinion = 15 }
+			change_farmers_opinion = yes
+		}
+	}	
+
+	focus = {
+		id = POL_ban_private_education
+		
+		x = -4
+		y = 1
+		relative_position_id = POL_crack_down_on_the_rich
+		cost = 5
+
+		available = {
+			NOT = { western_liberals_are_in_coalition = yes }
+		}
+		prerequisite = {
+			focus = POL_crack_down_on_the_rich
+		}
+		
+		completion_reward = {
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.04 }
+			set_temp_variable = { temp_outlook_increase = -0.04 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = -0.01 }
+			set_temp_variable = { temp_outlook_increase = -0.01 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = -0.25 }
+			add_to_variable = { economy_western_drift = -0.02 }
+			add_to_variable = { economy_education_spending_modifier = 1 }
+			set_temp_variable = { temp_opinion = 5 }
+			change_farmers_opinion = yes
+		}
+	}	
+
+	focus = {
+		id = POL_ban_private_healthcare
+		
+		x = -2
+		y = 1
+		relative_position_id = POL_crack_down_on_the_rich
+		cost = 5
+
+		available = {
+			NOT = { western_liberals_are_in_coalition = yes }
+		}
+		prerequisite = {
+			focus = POL_crack_down_on_the_rich
+		}
+		
+		completion_reward = {
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.04 }
+			set_temp_variable = { temp_outlook_increase = -0.04 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = -0.01 }
+			set_temp_variable = { temp_outlook_increase = -0.01 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_health_spending_modifier = 1 }
+			set_temp_variable = { temp_opinion = 5 }
+			change_farmers_opinion = yes
+		}
+	}	
+	
+	focus = {
+		id = POL_ban_private_retirement
+		
+		x = 0
+		y = 1
+		relative_position_id = POL_crack_down_on_the_rich
+		cost = 5
+
+		available = {
+			NOT = { western_liberals_are_in_coalition = yes }
+		}
+		prerequisite = {
+			focus = POL_crack_down_on_the_rich
+		}
+		
+		completion_reward = {
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.04 }
+			set_temp_variable = { temp_outlook_increase = -0.04 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = -0.01 }
+			set_temp_variable = { temp_outlook_increase = -0.01 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_social_spending_modifier = 1 }
+			set_temp_variable = { temp_opinion = 5 }
+			change_farmers_opinion = yes
+		}
+	}	
+	
+	focus = {
+		id = POL_stable_economics
+		
+		x = 0
+		y = 1
+		relative_position_id = POL_financial_policy
+		cost = 5
+		
+		prerequisite = {
+			focus = POL_financial_policy
+		}
+		
+		mutually_exclusive = {
+			focus = POL_social_radicalism
+			focus = POL_balcerowicz_plan
+		}
+		
+		completion_reward = {
+			set_temp_variable = { party_index = 1 }
+			set_temp_variable = { party_popularity_increase = 0.03 }
+			set_temp_variable = { temp_outlook_increase = 0.03 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = 0.05 }
+			set_temp_variable = { temp_opinion = 5 }
+			change_the_clergy_opinion = yes
+		}
+	}
+	
+	focus = {
+		id = POL_balcerowicz_plan
+		
+		x = 4
+		y = 1
+		relative_position_id = POL_financial_policy
+		cost = 5
+		
+		prerequisite = {
+			focus = POL_financial_policy
+		}
+		
+		mutually_exclusive = {
+			focus = POL_social_radicalism
+			focus = POL_stable_economics
+		}
+		
+		completion_reward = {
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.02 }
+			set_temp_variable = { temp_outlook_increase = 0.02 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 1 }
+			set_temp_variable = { party_popularity_increase = -0.01 }
+			set_temp_variable = { temp_outlook_increase = -0.01 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.04 }
+			set_temp_variable = { temp_outlook_increase = -0.04 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = 0.03 }
+			set_temp_variable = { temp_outlook_increase = 0.03 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = 0.25 }
+			add_to_variable = { economy_tax_gain_modifier = -0.02 }
+			add_to_variable = { economy_western_drift = 0.02 }
+			set_temp_variable = { temp_opinion = 10 }
+			change_international_bankers_opinion = yes
+			set_temp_variable = { temp_opinion = -10 }
+			change_farmers_opinion = yes
+			set_temp_variable = { temp_opinion = 5 }
+			change_small_medium_business_owners_opinion = yes
+		}
+	}
+
+	focus = {
+		id = POL_flat_income_tax
+		
+		x = 1
+		y = 1
+		relative_position_id = POL_balcerowicz_plan
+		cost = 5
+		
+		prerequisite = {
+			focus = POL_balcerowicz_plan
+		}
+		
+		completion_reward = {
+
+			set_temp_variable = { party_index = 1 }
+			set_temp_variable = { party_popularity_increase = -0.02 }
+			set_temp_variable = { temp_outlook_increase = -0.01 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.04 }
+			set_temp_variable = { temp_outlook_increase = -0.04 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = 0.06 }
+			set_temp_variable = { temp_outlook_increase = 0.03 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = 0.5 }
+			add_to_variable = { economy_tax_gain_modifier = -0.08 }
+			add_to_variable = { economy_western_drift = 0.04 }
+			set_temp_variable = { temp_opinion = 15 }
+			change_international_bankers_opinion = yes
+			set_temp_variable = { temp_opinion = -15 }
+			change_farmers_opinion = yes
+			set_temp_variable = { temp_opinion = 10 }
+			change_small_medium_business_owners_opinion = yes
+		}
+	}
+
+	focus = {
+		id = POL_elastic_labor_market
+		
+		x = 0
+		y = 1
+		relative_position_id = POL_flat_income_tax
+		cost = 5
+		
+		prerequisite = {
+			focus = POL_flat_income_tax
+		}
+		
+		completion_reward = {
+
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.01 }
+			set_temp_variable = { temp_outlook_increase = 0.01 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 1 }
+			set_temp_variable = { party_popularity_increase = -0.02 }
+			set_temp_variable = { temp_outlook_increase = -0.01 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.06 }
+			set_temp_variable = { temp_outlook_increase = -0.06 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = 0.07 }
+			set_temp_variable = { temp_outlook_increase = 0.07 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = 0.5 }
+			add_to_variable = { economy_tax_gain_modifier = -0.05 }
+			add_to_variable = { economy_western_drift = 0.04 }
+			add_to_variable = { economy_weekly_stability = 0.001 }
+			add_stability = -0.10
+			set_temp_variable = { temp_opinion = 15 }
+			change_international_bankers_opinion = yes
+			set_temp_variable = { temp_opinion = -15 }
+			change_farmers_opinion = yes
+			set_temp_variable = { temp_opinion = 10 }
+			change_small_medium_business_owners_opinion = yes
+		}
+	}
+
+	focus = {
+		id = POL_begin_privatization
+		
+		x = 0
+		y = 1
+		relative_position_id = POL_elastic_labor_market
+		cost = 5
+		
+		prerequisite = {
+			focus = POL_elastic_labor_market
+		}
+		
+		completion_reward = {
+
+
+			set_temp_variable = { party_index = 1 }
+			set_temp_variable = { party_popularity_increase = -0.03 }
+			set_temp_variable = { temp_outlook_increase = -0.01 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.07 }
+			set_temp_variable = { temp_outlook_increase = -0.06 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = 0.1 }
+			set_temp_variable = { temp_outlook_increase = 0.1 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = 0.5 }
+			add_to_variable = { economy_tax_gain_modifier = -0.05 }
+			add_to_variable = { economy_western_drift = 0.05 }
+			set_temp_variable = { temp_opinion = 15 }
+			change_international_bankers_opinion = yes
+			set_temp_variable = { temp_opinion = -15 }
+			change_farmers_opinion = yes
+			set_temp_variable = { temp_opinion = 10 }
+			change_small_medium_business_owners_opinion = yes
+		}
+	}
+
+	focus = {
+		id = POL_privatize_zus
+		
+		x = 0
+		y = 1
+		relative_position_id = POL_begin_privatization
+		cost = 10
+		
+		prerequisite = {
+			focus = POL_begin_privatization
+		}
+		
+		completion_reward = {
+
+
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = -0.03 }
+			set_temp_variable = { temp_outlook_increase = -0.03 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 1 }
+			set_temp_variable = { party_popularity_increase = -0.05 }
+			set_temp_variable = { temp_outlook_increase = -0.05 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.05 }
+			set_temp_variable = { temp_outlook_increase = -0.05 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = 0.13 }
+			set_temp_variable = { temp_outlook_increase = 0.13 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = 0.5 }
+			add_to_variable = { economy_tax_gain_modifier = -0.1 }
+			add_to_variable = { economy_western_drift = 0.05 }
+			add_to_variable = { economy_weekly_stability = 0.002 }
+			add_stability = -0.25
+			set_temp_variable = { temp_opinion = 20 }
+			change_international_bankers_opinion = yes
+			set_temp_variable = { temp_opinion = -30 }
+			change_farmers_opinion = yes
+			set_temp_variable = { temp_opinion = 20 }
+			change_small_medium_business_owners_opinion = yes
+			set_variable = { privatization_cost_zus = gdp_total }
+			multiply_variable = { privatization_cost_zus = 0.005 }
+		}
+	}
+
+	focus = {
+		id = POL_privatize_nfz
+		
+		x = 2
+		y = 1
+		relative_position_id = POL_begin_privatization
+		cost = 10
+		
+		prerequisite = {
+			focus = POL_begin_privatization
+		}
+		
+		completion_reward = {
+
+
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = -0.01 }
+			set_temp_variable = { temp_outlook_increase = -0.01 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 1 }
+			set_temp_variable = { party_popularity_increase = -0.02 }
+			set_temp_variable = { temp_outlook_increase = -0.02 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.03 }
+			set_temp_variable = { temp_outlook_increase = -0.03 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = 0.06 }
+			set_temp_variable = { temp_outlook_increase = 0.06 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = 0.25 }
+			add_to_variable = { economy_tax_gain_modifier = -0.05 }
+			add_to_variable = { economy_western_drift = 0.03 }
+			add_to_variable = { economy_weekly_stability = 0.001 }
+			add_stability = -0.10
+			set_temp_variable = { temp_opinion = 10 }
+			change_international_bankers_opinion = yes
+			set_temp_variable = { temp_opinion = -15 }
+			change_farmers_opinion = yes
+			set_temp_variable = { temp_opinion = 10 }
+			change_small_medium_business_owners_opinion = yes
+			set_variable = { privatization_cost_nfz = gdp_total }
+			multiply_variable = { privatization_cost_nfz = 0.002 }
+		}
+	}
+
+	focus = {
+		id = POL_privatize_schools
+		
+		x = 4
+		y = 1
+		relative_position_id = POL_begin_privatization
+		cost = 10
+		
+		prerequisite = {
+			focus = POL_begin_privatization
+		}
+		
+		completion_reward = {
+
+			set_temp_variable = { party_index = 1 }
+			set_temp_variable = { party_popularity_increase = -0.02 }
+			set_temp_variable = { temp_outlook_increase = -0.02 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 3 }
+			set_temp_variable = { party_popularity_increase = -0.02 }
+			set_temp_variable = { temp_outlook_increase = -0.02 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 6 }
+			set_temp_variable = { party_popularity_increase = 0.04 }
+			set_temp_variable = { temp_outlook_increase = 0.04 }
+			add_relative_party_popularity = yes
+			add_to_variable = { economy_productivity_modifier = 0.25 }
+			add_to_variable = { economy_tax_gain_modifier = -0.05 }
+			add_to_variable = { economy_western_drift = 0.03 }
+			add_to_variable = { economy_weekly_stability = 0.001 }
+			add_stability = -0.10
+			set_temp_variable = { temp_opinion = 7 }
+			change_international_bankers_opinion = yes
+			set_temp_variable = { temp_opinion = -10 }
+			change_farmers_opinion = yes
+			set_temp_variable = { temp_opinion = 7 }
+			change_small_medium_business_owners_opinion = yes
+			set_variable = { privatization_cost_edu = gdp_total }
+			multiply_variable = { privatization_cost_edu = 0.001 }
+		}
+	}
+
+	
+
+
+
+
 ################################################################ Military tree by XCezor (focus ideas by Black_176): ###########################################################################
 	focus = {
 		id = POL_sily_zbrojne_rzeczypospolitej_polskiej
 		icon = Sily_Zbrojne_Rzeczypospolitej_Polskiej
-		x = 95
+		x = 140
 		y = 0
 		cost = 5
 
