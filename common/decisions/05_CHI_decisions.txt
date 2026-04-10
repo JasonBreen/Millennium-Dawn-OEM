@@ -2499,4 +2499,204 @@ CHI_SAR_decisions_category = {
 		}
 	}
 
+	TAI_media_infiltration = {
+		icon = GFX_decision_generic_political_discourse
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_SAR_one_china_framework
+			country_exists = TAI
+		}
+
+		available = {
+			country_exists = TAI
+			NOT = { has_war_with = TAI }
+			check_variable = { CHI_TAI_trust >= 5 }
+			TAI = { NOT = { has_country_flag = TAI_foreign_interference } }
+		}
+
+		fire_only_once = no
+		cost = 50
+		days_re_enable = 120
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision TAI_media_infiltration"
+			TAI = {
+				add_to_variable = { party_pop_array^1 = 0.02 }
+				add_to_variable = { party_pop_array^2 = -0.01 }
+				recalculate_party = yes
+			}
+			random_list = {
+				75 = {}
+				25 = {
+					TAI = { country_event = { id = china_sar.27 days = 14 } }
+					add_to_variable = { CHI_TAI_trust = -15 }
+					if = {
+						limit = { check_variable = { CHI_TAI_trust < 0 } }
+						set_variable = { CHI_TAI_trust = 0 }
+					}
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				check_variable = { FROM.interest_rate > 8 }
+			}
+		}
+	}
+
+	TAI_business_council_funding = {
+		icon = GFX_decision_generic_economy
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_SAR_one_china_framework
+			country_exists = TAI
+		}
+
+		available = {
+			country_exists = TAI
+			NOT = { has_war_with = TAI }
+			check_variable = { CHI_TAI_trust >= 10 }
+		}
+
+		fire_only_once = no
+		cost = 80
+		days_re_enable = 90
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision TAI_business_council_funding"
+			TAI = { add_to_variable = { pan_blue_coalition_support = 0.02 } }
+			add_to_variable = { CHI_TAI_trust = 3 }
+			random_list = {
+				80 = {}
+				20 = {
+					TAI = { country_event = { id = china_sar.27 days = 14 } }
+					add_to_variable = { CHI_TAI_trust = -15 }
+					if = {
+						limit = { check_variable = { CHI_TAI_trust < 0 } }
+						set_variable = { CHI_TAI_trust = 0 }
+					}
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				check_variable = { FROM.interest_rate > 8 }
+			}
+		}
+	}
+
+	TAI_cultural_exchange_program = {
+		icon = GFX_decision_generic_political_discourse
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_SAR_one_china_framework
+			country_exists = TAI
+		}
+
+		available = {
+			country_exists = TAI
+			NOT = { has_war_with = TAI }
+		}
+
+		fire_only_once = no
+		cost = 30
+		days_re_enable = 60
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision TAI_cultural_exchange_program"
+			add_to_variable = { CHI_TAI_trust = 3 }
+			TAI = {
+				add_to_variable = { party_pop_array^14 = 0.01 }
+				recalculate_party = yes
+			}
+			random_list = {
+				90 = {}
+				10 = {
+					TAI = { country_event = { id = china_sar.27 days = 14 } }
+					add_to_variable = { CHI_TAI_trust = -15 }
+					if = {
+						limit = { check_variable = { CHI_TAI_trust < 0 } }
+						set_variable = { CHI_TAI_trust = 0 }
+					}
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				check_variable = { FROM.interest_rate > 8 }
+			}
+		}
+	}
+
+	TAI_cross_strait_infrastructure_investment = {
+		icon = GFX_decision_generic_economy
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_SAR_one_china_framework
+			country_exists = TAI
+			TAI = { has_country_flag = TAI_CSSTA_signed }
+		}
+
+		available = {
+			country_exists = TAI
+			NOT = { has_war_with = TAI }
+			TAI = { has_country_flag = TAI_CSSTA_signed }
+			check_variable = { CHI_TAI_trust >= 25 }
+		}
+
+		fire_only_once = no
+		cost = 100
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision TAI_cross_strait_infrastructure_investment"
+			add_to_variable = { CHI_TAI_trust = 6 }
+			TAI = {
+				random_owned_state = {
+					add_building_construction = {
+						type = industrial_complex
+						level = 1
+						instant_build = yes
+					}
+				}
+				add_ideas = TAI_cross_strait_economic_ties
+			}
+			random_list = {
+				85 = {}
+				15 = {
+					TAI = { country_event = { id = china_sar.27 days = 14 } }
+					add_to_variable = { CHI_TAI_trust = -15 }
+					if = {
+						limit = { check_variable = { CHI_TAI_trust < 0 } }
+						set_variable = { CHI_TAI_trust = 0 }
+					}
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				check_variable = { FROM.interest_rate > 8 }
+			}
+		}
+	}
 }

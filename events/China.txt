@@ -1,5 +1,6 @@
-#Rework Author(s): TheGeneral
+﻿#Rework Author(s): TheGeneral
 add_namespace = china_national_committee
+add_namespace = china_sar
 
 # National Congress Convened
 country_event = {
@@ -16,5 +17,199 @@ country_event = {
 		ai_chance = {
 			base = 1
 		}
+	}
+}
+
+#The Signing of the Cross-Strait Services Trade Agreement
+country_event = {
+	id = china_sar.23
+	title = china_sar.23.t
+	desc = china_sar.23.d
+
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = china_sar.23.a
+		log = "[GetDateText]: [This.GetName]: china_sar.23.a executed"
+		add_opinion_modifier = {
+			target = CHI
+			modifier = CSSTA
+		}
+		reverse_add_opinion_modifier = {
+			target = TAI
+			modifier = CSSTA
+		}
+		add_opinion_modifier = {
+			target = CHI
+			modifier = large_commercial_relations
+		}
+		reverse_add_opinion_modifier = {
+			target = TAI
+			modifier = large_commercial_relations
+		}
+		add_ideas = TAI_cross_strait_economic_ties
+		set_country_flag = TAI_CSSTA_signed
+		CHI = { add_to_variable = { CHI_TAI_trust = 10 } }
+	}
+	option = {
+		name = china_sar.23.b
+		log = "[GetDateText]: [This.GetName]: china_sar.23.b executed"
+		CHI = {
+			add_to_variable = { CHI_TAI_trust = -5 }
+			if = {
+				limit = { check_variable = { CHI_TAI_trust < 0 } }
+				set_variable = { CHI_TAI_trust = 0 }
+			}
+		}
+	}
+}
+
+#Cross-Strait Business Networks
+country_event = {
+	id = china_sar.24
+	title = china_sar.24.t
+	desc = china_sar.24.d
+
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = china_sar.24.a
+		log = "[GetDateText]: [This.GetName]: china_sar.24.a executed"
+		add_to_variable = { party_pop_array^1 = 0.02 }
+		add_to_variable = { party_pop_array^2 = -0.01 }
+		recalculate_party = yes
+		CHI = { add_to_variable = { CHI_TAI_trust = 8 } }
+	}
+	option = {
+		name = china_sar.24.b
+		log = "[GetDateText]: [This.GetName]: china_sar.24.b executed"
+		CHI = { add_to_variable = { CHI_TAI_trust = 3 } }
+	}
+	option = {
+		name = china_sar.24.c
+		log = "[GetDateText]: [This.GetName]: china_sar.24.c executed"
+		add_to_variable = { party_pop_array^2 = 0.01 }
+		recalculate_party = yes
+		add_war_support = 0.03
+		CHI = {
+			add_to_variable = { CHI_TAI_trust = -8 }
+			if = {
+				limit = { check_variable = { CHI_TAI_trust < 0 } }
+				set_variable = { CHI_TAI_trust = 0 }
+			}
+		}
+	}
+}
+
+#The 92 Consensus Question
+country_event = {
+	id = china_sar.25
+	title = china_sar.25.t
+	desc = china_sar.25.d
+
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = china_sar.25.a
+		log = "[GetDateText]: [This.GetName]: china_sar.25.a executed"
+		set_country_flag = TAI_92_consensus_accepted
+		add_to_variable = { party_pop_array^1 = 0.02 }
+		recalculate_party = yes
+		add_stability = 0.03
+		CHI = { add_to_variable = { CHI_TAI_trust = 8 } }
+	}
+	option = {
+		name = china_sar.25.b
+		log = "[GetDateText]: [This.GetName]: china_sar.25.b executed"
+		set_country_flag = TAI_92_consensus_vague
+		add_stability = 0.01
+		CHI = { add_to_variable = { CHI_TAI_trust = 2 } }
+	}
+	option = {
+		name = china_sar.25.c
+		log = "[GetDateText]: [This.GetName]: china_sar.25.c executed"
+		add_to_variable = { party_pop_array^2 = 0.02 }
+		recalculate_party = yes
+		add_war_support = 0.05
+		CHI = {
+			add_to_variable = { CHI_TAI_trust = -10 }
+			if = {
+				limit = { check_variable = { CHI_TAI_trust < 0 } }
+				set_variable = { CHI_TAI_trust = 0 }
+			}
+		}
+	}
+}
+
+#Pro-Independence Forces Win Taiwan Election
+country_event = {
+	id = china_sar.26
+	title = china_sar.26.t
+	desc = china_sar.26.d
+
+	picture = GFX_politics_election
+
+	is_triggered_only = yes
+
+	option = {
+		name = china_sar.26.a
+		log = "[GetDateText]: [This.GetName]: china_sar.26.a executed"
+	}
+}
+
+#Beijing's Interference Operations Exposed
+country_event = {
+	id = china_sar.27
+	title = china_sar.27.t
+	desc = china_sar.27.d
+
+	picture = GFX_news_event_generic_sign_treaty1
+
+	is_triggered_only = yes
+
+	option = {
+		name = china_sar.27.a
+		log = "[GetDateText]: [This.GetName]: china_sar.27.a executed"
+		set_country_flag = { flag = TAI_foreign_interference days = 180 }
+		add_stability = -0.05
+		add_opinion_modifier = {
+			target = USA
+			modifier = political_outreach
+		}
+		add_opinion_modifier = {
+			target = JAP
+			modifier = political_outreach
+		}
+		CHI = {
+			add_to_variable = { CHI_TAI_trust = -15 }
+			if = {
+				limit = { check_variable = { CHI_TAI_trust < 0 } }
+				set_variable = { CHI_TAI_trust = 0 }
+			}
+			country_event = { id = china_sar.28 days = 3 }
+		}
+	}
+}
+
+#Taiwan Expels Chinese Officials
+country_event = {
+	id = china_sar.28
+	title = china_sar.28.t
+	desc = china_sar.28.d
+
+	picture = GFX_news_event_generic_sign_treaty1
+
+	is_triggered_only = yes
+
+	option = {
+		name = china_sar.28.a
+		log = "[GetDateText]: [This.GetName]: china_sar.28.a executed"
+		add_stability = -0.01
 	}
 }

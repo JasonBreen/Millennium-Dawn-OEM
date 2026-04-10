@@ -1,5 +1,42 @@
 
 on_actions = {
+	# Taiwan election result — affects CHI_TAI_trust
+	on_ruling_party_change = {
+		effect = {
+			# Pan-Green (DPP, liberalism index 2) wins → trust penalty
+			if = {
+				limit = {
+					original_tag = TAI
+					is_in_array = { ruling_party = 2 }
+					CHI = {
+						exists = yes
+						check_variable = { CHI_TAI_trust > 0 }
+					}
+				}
+				CHI = {
+					add_to_variable = { CHI_TAI_trust = -22 }
+					if = {
+						limit = { check_variable = { CHI_TAI_trust < 0 } }
+						set_variable = { CHI_TAI_trust = 0 }
+					}
+					country_event = { id = china_sar.26 days = 7 }
+				}
+			}
+			# Pan-Blue (KMT conservatism index 1 or Neutral_conservatism index 14) wins → trust bonus
+			else_if = {
+				limit = {
+					original_tag = TAI
+					OR = {
+						is_in_array = { ruling_party = 1 }
+						is_in_array = { ruling_party = 14 }
+					}
+					CHI = { exists = yes }
+				}
+				CHI = { add_to_variable = { CHI_TAI_trust = 5 } }
+			}
+		}
+	}
+
 	on_army_leader_won_combat = {
 		effect = {
 			if = {
