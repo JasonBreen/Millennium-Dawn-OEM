@@ -2512,7 +2512,7 @@ CHI_SAR_decisions_category = {
 		available = {
 			country_exists = TAI
 			NOT = { has_war_with = TAI }
-			check_variable = { CHI_TAI_trust >= 5 }
+			check_variable = { CHI_TAI_trust > 4 }
 			TAI = { NOT = { has_country_flag = TAI_foreign_interference } }
 		}
 
@@ -2562,7 +2562,7 @@ CHI_SAR_decisions_category = {
 		available = {
 			country_exists = TAI
 			NOT = { has_war_with = TAI }
-			check_variable = { CHI_TAI_trust >= 10 }
+			check_variable = { CHI_TAI_trust > 9 }
 		}
 
 		fire_only_once = no
@@ -2658,7 +2658,7 @@ CHI_SAR_decisions_category = {
 			country_exists = TAI
 			NOT = { has_war_with = TAI }
 			TAI = { has_country_flag = TAI_CSSTA_signed }
-			check_variable = { CHI_TAI_trust >= 25 }
+			check_variable = { CHI_TAI_trust > 24 }
 		}
 
 		fire_only_once = no
@@ -2697,6 +2697,51 @@ CHI_SAR_decisions_category = {
 				factor = 0
 				check_variable = { FROM.interest_rate > 8 }
 			}
+		}
+	}
+
+	CHI_TAI_pro_china_party_networks_mission = {
+		allowed = { original_tag = CHI }
+
+		icon = peoples_republic_of_china
+
+		is_good = yes
+		days_mission_timeout = 30
+
+		activation = {
+			has_country_flag = CHI_TAI_pro_china_networks_active
+		}
+
+		visible = {
+			has_country_flag = CHI_TAI_pro_china_networks_active
+			country_exists = TAI
+			NOT = { has_war_with = TAI }
+		}
+
+		available = {
+			hidden_trigger = { always = no }
+		}
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: CHI_TAI_pro_china_party_networks_mission timeout"
+			if = {
+				limit = {
+					check_variable = { CHI_TAI_trust > 50 }
+					country_exists = TAI
+					NOT = { has_war_with = TAI }
+				}
+				TAI = {
+					add_to_variable = { party_pop_array^1 = 0.02 }
+					add_to_variable = { party_pop_array^14 = 0.01 }
+					add_to_variable = { party_pop_array^2 = -0.02 }
+					recalculate_party = yes
+				}
+			}
+			activate_mission = CHI_TAI_pro_china_party_networks_mission
+		}
+
+		ai_will_do = {
+			base = 1
 		}
 	}
 }
