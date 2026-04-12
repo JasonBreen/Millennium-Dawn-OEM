@@ -3561,18 +3561,24 @@ joint_focus = {
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_cross_strait_policy"
-		TAI = {
-			add_opinion_modifier = {
-				target = CHI
-				modifier = political_outreach
-			}
-		}
 		CHI = {
+			add_to_variable = { CHI_TAI_trust = 4 tooltip = CHI_TAI_trust_tt }
 			add_opinion_modifier = {
 				target = TAI
 				modifier = political_outreach
 			}
 		}
+	}
+
+	completion_reward_joint_member = {
+		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_cross_strait_policy (TAI)"
+		hidden_effect = {
+			add_dynamic_modifier = { modifier = CHI_TAI_shared_modifier }
+		}
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_TAI_shared_modifier }
+		add_to_variable = { CHI_TAI_stability_factor = -0.03 tooltip = stability_factor_tt }
+		add_to_variable = { CHI_TAI_democratic_drift = -0.02 tooltip = democratic_drift_tt }
+		add_opinion_modifier = { target = CHI modifier = political_outreach }
 	}
 
 	ai_will_do = {
@@ -3638,6 +3644,8 @@ joint_focus = {
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_political_track (TAI)"
 		add_opinion_modifier = { target = CHI modifier = political_outreach }
+		add_to_variable = { party_pop_array^1 = 0.01 }
+		recalculate_party = yes
 	}
 
 	ai_will_do = {
@@ -3679,7 +3687,9 @@ joint_focus = {
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_expand_cross_strait_trade (TAI)"
 		add_opinion_modifier = { target = CHI modifier = mutual_trade_agreement }
-		add_ideas = TAI_cross_strait_economic_ties
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_TAI_shared_modifier }
+		add_to_variable = { CHI_TAI_consumer_goods_factor = -0.03 tooltip = consumer_goods_factor_tt }
+		add_to_variable = { CHI_TAI_trade_opinion_factor = 0.05 tooltip = trade_opinion_factor_tt }
 	}
 
 	ai_will_do = {
@@ -3713,6 +3723,8 @@ joint_focus = {
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_mainland_market_access"
 		add_to_variable = { CHI_TAI_trust = 6 tooltip = CHI_TAI_trust_tt }
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_SAR_network_modifier }
+		add_to_variable = { CHI_network_trade_opinion_factor = 0.02 tooltip = trade_opinion_factor_tt }
 		add_opinion_modifier = { target = TAI modifier = large_commercial_relations }
 		add_opinion_modifier = { target = TAI modifier = CSSTA }
 	}
@@ -3720,10 +3732,10 @@ joint_focus = {
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_mainland_market_access (TAI)"
 		add_opinion_modifier = { target = CHI modifier = large_commercial_relations }
-		add_stability = 0.03
 		random_owned_state = {
+			add_extra_state_shared_building_slots = 1
 			add_building_construction = {
-				type = industrial_complex
+				type = offices
 				level = 1
 				instant_build = yes
 			}
@@ -3738,7 +3750,7 @@ joint_focus = {
 joint_focus = {
 	id = CHI_TAI_business_delegations
 	icon = peoples_republic_of_china
-	text_icon = JOINT_CHI_focus_style
+	text_icon = JOINT_TAI_CHI_historic_focus_style
 
 	x = -2
 	y = 2
@@ -3750,24 +3762,42 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = { original_tag = CHI }
+	joint_trigger = { CHI_TAI_joint_trigger = yes }
 
 	available = {
-		country_exists = TAI
-		NOT = { has_war_with = TAI }
+		CHI_TAI_both_at_peace = yes
 		check_variable = { CHI_TAI_trust > 7 }
 	}
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_business_delegations"
-		add_to_variable = { CHI_TAI_trust = 6 tooltip = CHI_TAI_trust_tt }
-		add_opinion_modifier = { target = TAI modifier = large_commercial_relations }
+		CHI = { add_to_variable = { CHI_TAI_trust = 6 tooltip = CHI_TAI_trust_tt } }
+		if = {
+			limit = { original_tag = CHI }
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_SAR_network_modifier }
+			add_to_variable = { CHI_network_production_speed_industrial_complex_factor = 0.02 tooltip = production_speed_industrial_complex_factor_tt }
+			add_opinion_modifier = { target = TAI modifier = large_commercial_relations }
+		}
+		else = {
+			add_opinion_modifier = { target = CHI modifier = large_commercial_relations }
+			add_to_variable = { party_pop_array^1 = 0.01 }
+			recalculate_party = yes
+		}
 	}
 
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_business_delegations (TAI)"
-		add_opinion_modifier = { target = CHI modifier = large_commercial_relations }
-		add_political_power = 35
+		if = {
+			limit = { original_tag = CHI }
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_SAR_network_modifier }
+			add_to_variable = { CHI_network_production_speed_industrial_complex_factor = 0.02 tooltip = production_speed_industrial_complex_factor_tt }
+			add_opinion_modifier = { target = TAI modifier = large_commercial_relations }
+		}
+		else = {
+			add_opinion_modifier = { target = CHI modifier = large_commercial_relations }
+			add_to_variable = { party_pop_array^1 = 0.01 }
+			recalculate_party = yes
+		}
 	}
 
 	ai_will_do = {
@@ -3778,7 +3808,7 @@ joint_focus = {
 joint_focus = {
 	id = CHI_TAI_transport_links
 	icon = peoples_republic_of_china
-	text_icon = JOINT_CHI_focus_style
+	text_icon = JOINT_TAI_CHI_historic_focus_style
 
 	x = 0
 	y = 2
@@ -3789,26 +3819,51 @@ joint_focus = {
 	prerequisite = { focus = CHI_TAI_expand_cross_strait_trade }
 	prerequisite = { focus = CHI_TAI_mainland_market_access }
 
-	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_STABILITY }
+	search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = { original_tag = CHI }
+	joint_trigger = { CHI_TAI_joint_trigger = yes }
+
+	available = { CHI_TAI_both_at_peace = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_transport_links"
-		add_to_variable = { CHI_TAI_trust = 7 tooltip = CHI_TAI_trust_tt }
-		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_SAR_network_modifier }
-		add_to_variable = { CHI_network_trade_opinion_factor = 0.03  tooltip = trade_opinion_factor_tt }
-		add_opinion_modifier = { target = TAI modifier = reduced_tensions }
+		CHI = { add_to_variable = { CHI_TAI_trust = 7 tooltip = CHI_TAI_trust_tt } }
+		if = {
+			limit = { original_tag = CHI }
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_SAR_network_modifier }
+			add_to_variable = { CHI_network_trade_opinion_factor = 0.03 tooltip = trade_opinion_factor_tt }
+			add_to_variable = { CHI_network_production_speed_infrastructure_factor = 0.02 tooltip = production_speed_infrastructure_factor_tt }
+			add_opinion_modifier = { target = TAI modifier = reduced_tensions }
+		}
+		else = {
+			add_opinion_modifier = { target = CHI modifier = reduced_tensions }
+			random_owned_state = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = yes
+				}
+			}
+		}
 	}
 
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_transport_links (TAI)"
-		add_opinion_modifier = { target = CHI modifier = reduced_tensions }
-		random_owned_state = {
-			add_building_construction = {
-				type = industrial_complex
-				level = 1
-				instant_build = yes
+		if = {
+			limit = { original_tag = CHI }
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_SAR_network_modifier }
+			add_to_variable = { CHI_network_trade_opinion_factor = 0.03 tooltip = trade_opinion_factor_tt }
+			add_to_variable = { CHI_network_production_speed_infrastructure_factor = 0.02 tooltip = production_speed_infrastructure_factor_tt }
+			add_opinion_modifier = { target = TAI modifier = reduced_tensions }
+		}
+		else = {
+			add_opinion_modifier = { target = CHI modifier = reduced_tensions }
+			random_owned_state = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = yes
+				}
 			}
 		}
 	}
@@ -3821,7 +3876,7 @@ joint_focus = {
 joint_focus = {
 	id = CHI_TAI_semiconductor_coordination
 	icon = peoples_republic_of_china
-	text_icon = JOINT_TAI_focus_style
+	text_icon = JOINT_TAI_historical_focus_style
 
 	x = 2
 	y = 1
@@ -3844,11 +3899,13 @@ joint_focus = {
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_semiconductor_coordination (TAI)"
 		set_country_flag = TAI_economic_track_committed
-		add_ideas = TAI_cross_strait_economic_ties
-		add_stability = 0.03
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_TAI_shared_modifier }
+		add_to_variable = { CHI_TAI_production_factory_efficiency_gain_factor = 0.03 tooltip = production_factory_efficiency_gain_factor_tt }
+		add_to_variable = { CHI_TAI_research_speed_factor = 0.02 tooltip = research_speed_factor_tt }
 		random_owned_state = {
+			add_extra_state_shared_building_slots = 1
 			add_building_construction = {
-				type = industrial_complex
+				type = offices
 				level = 1
 				instant_build = yes
 			}
@@ -3858,6 +3915,8 @@ joint_focus = {
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_semiconductor_coordination (CHI)"
 		add_to_variable = { CHI_TAI_trust = 5 tooltip = CHI_TAI_trust_tt }
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_SAR_network_modifier }
+		add_to_variable = { CHI_network_production_factory_efficiency_gain_factor = 0.03 tooltip = production_factory_efficiency_gain_factor_tt }
 		add_opinion_modifier = { target = TAI modifier = large_commercial_relations }
 	}
 
@@ -3869,7 +3928,7 @@ joint_focus = {
 joint_focus = {
 	id = CHI_TAI_investment_safeguards
 	icon = peoples_republic_of_china
-	text_icon = JOINT_TAI_focus_style
+	text_icon = JOINT_TAI_historical_focus_style
 
 	x = 2
 	y = 2
@@ -3892,14 +3951,22 @@ joint_focus = {
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_investment_safeguards (TAI)"
 		set_country_flag = TAI_economic_track_committed
-		add_stability = 0.04
-		add_political_power = 50
+		add_to_variable = { party_pop_array^1 = 0.01 }
+		recalculate_party = yes
+		random_owned_state = {
+			add_extra_state_shared_building_slots = 1
+			add_building_construction = {
+				type = offices
+				level = 1
+				instant_build = yes
+			}
+		}
 	}
 
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_investment_safeguards (CHI)"
 		add_to_variable = { CHI_TAI_trust = 4 tooltip = CHI_TAI_trust_tt }
-		add_opinion_modifier = { target = TAI modifier = reduced_tensions }
+		add_opinion_modifier = { target = TAI modifier = mutual_trade_agreement }
 	}
 
 	ai_will_do = {
@@ -3937,12 +4004,14 @@ joint_focus = {
 		add_to_variable = { CHI_TAI_trust = 10 tooltip = CHI_TAI_trust_tt }
 		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_SAR_network_modifier }
 		add_to_variable = { CHI_network_trade_opinion_factor = 0.04 tooltip = trade_opinion_factor_tt }
+		add_to_variable = { CHI_network_production_speed_industrial_complex_factor = 0.03 tooltip = production_speed_industrial_complex_factor_tt }
 		add_opinion_modifier = { target = TAI modifier = large_commercial_relations }
 	}
 
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_joint_industrial_planning (TAI)"
-		add_political_power = 35
+		add_to_variable = { party_pop_array^1 = 0.01 }
+		recalculate_party = yes
 		random_owned_state = {
 			add_building_construction = {
 				type = industrial_complex
@@ -3985,17 +4054,22 @@ joint_focus = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_deep_economic_integration"
 		set_country_flag = CHI_TAI_economic_track_complete
 		add_to_variable = { CHI_TAI_trust = 12 tooltip = CHI_TAI_trust_tt }
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_SAR_network_modifier }
+		add_to_variable = { CHI_network_consumer_goods_factor = -0.02 tooltip = consumer_goods_factor_tt }
+		add_to_variable = { CHI_network_trade_opinion_factor = 0.02 tooltip = trade_opinion_factor_tt }
 		add_opinion_modifier = { target = TAI modifier = CSSTA }
 	}
 
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_deep_economic_integration (TAI)"
-		add_ideas = TAI_economic_dependency
-		add_stability = 0.04
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_TAI_shared_modifier }
+		add_to_variable = { CHI_TAI_consumer_goods_factor = -0.05 tooltip = consumer_goods_factor_tt }
+		add_to_variable = { CHI_TAI_production_speed_buildings_factor = 0.05 tooltip = production_speed_buildings_factor_tt }
+		add_to_variable = { CHI_TAI_trade_opinion_factor = 0.10 tooltip = trade_opinion_factor_tt }
 		random_owned_state = {
 			add_extra_state_shared_building_slots = 1
 			add_building_construction = {
-				type = industrial_complex
+				type = offices
 				level = 1
 				instant_build = yes
 			}
@@ -4035,11 +4109,13 @@ joint_focus = {
 		set_country_flag = CHI_TAI_pro_china_networks_active
 		activate_mission = CHI_TAI_pro_china_party_networks_mission
 		add_to_variable = { CHI_TAI_trust = 6 tooltip = CHI_TAI_trust_tt }
+		add_opinion_modifier = { target = TAI modifier = political_outreach }
 	}
 
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_resume_party_contacts (TAI)"
 		add_to_variable = { party_pop_array^1 = 0.01 }
+		add_to_variable = { party_pop_array^2 = -0.01 }
 		recalculate_party = yes
 	}
 
@@ -4051,7 +4127,7 @@ joint_focus = {
 joint_focus = {
 	id = CHI_TAI_offer_confidence_measures
 	icon = peoples_republic_of_china
-	text_icon = JOINT_CHI_focus_style
+	text_icon = JOINT_TAI_CHI_historic_focus_style
 
 	x = 0
 	y = 1
@@ -4063,24 +4139,35 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = { original_tag = CHI }
+	joint_trigger = { CHI_TAI_joint_trigger = yes }
 
-	available = {
-		original_tag = CHI
-		country_exists = TAI
-		NOT = { has_war_with = TAI }
-	}
+	available = { CHI_TAI_both_at_peace = yes }
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_offer_confidence_measures"
-		add_to_variable = { CHI_TAI_trust = 6 tooltip = CHI_TAI_trust_tt }
-		add_opinion_modifier = { target = TAI modifier = reduced_tensions }
+		CHI = { add_to_variable = { CHI_TAI_trust = 6 tooltip = CHI_TAI_trust_tt } }
+		if = {
+			limit = { original_tag = CHI }
+			add_opinion_modifier = { target = TAI modifier = reduced_tensions }
+		}
+		else = {
+			add_to_variable = { party_pop_array^1 = 0.01 }
+			recalculate_party = yes
+			add_opinion_modifier = { target = CHI modifier = reduced_tensions }
+		}
 	}
 
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_offer_confidence_measures (TAI)"
-		add_opinion_modifier = { target = CHI modifier = reduced_tensions }
-		add_stability = 0.02
+		if = {
+			limit = { original_tag = CHI }
+			add_opinion_modifier = { target = TAI modifier = reduced_tensions }
+		}
+		else = {
+			add_to_variable = { party_pop_array^1 = 0.01 }
+			recalculate_party = yes
+			add_opinion_modifier = { target = CHI modifier = reduced_tensions }
+		}
 	}
 
 	ai_will_do = {
@@ -4091,7 +4178,7 @@ joint_focus = {
 joint_focus = {
 	id = CHI_TAI_legislative_exchange_forum
 	icon = peoples_republic_of_china
-	text_icon = JOINT_CHI_focus_style
+	text_icon = JOINT_TAI_CHI_historic_focus_style
 
 	x = -2
 	y = 2
@@ -4103,24 +4190,50 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL }
 
-	joint_trigger = { original_tag = CHI }
+	joint_trigger = { CHI_TAI_joint_trigger = yes }
 
 	available = {
-		country_exists = TAI
-		NOT = { has_war_with = TAI }
+		CHI_TAI_both_at_peace = yes
 		check_variable = { CHI_TAI_trust > 9 }
 	}
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_legislative_exchange_forum"
-		add_to_variable = { CHI_TAI_trust = 6 tooltip = CHI_TAI_trust_tt }
-		add_opinion_modifier = { target = TAI modifier = political_outreach }
+		CHI = { add_to_variable = { CHI_TAI_trust = 6 tooltip = CHI_TAI_trust_tt } }
+		if = {
+			limit = { original_tag = CHI }
+			add_opinion_modifier = { target = TAI modifier = large_commercial_relations }
+		}
+		else = {
+			add_to_variable = { party_pop_array^1 = 0.01 }
+			recalculate_party = yes
+			random_owned_state = {
+				add_building_construction = {
+					type = offices
+					level = 1
+					instant_build = yes
+				}
+			}
+		}
 	}
 
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_legislative_exchange_forum (TAI)"
-		add_political_power = 40
-		add_stability = 0.02
+		if = {
+			limit = { original_tag = CHI }
+			add_opinion_modifier = { target = TAI modifier = large_commercial_relations }
+		}
+		else = {
+			add_to_variable = { party_pop_array^1 = 0.01 }
+			recalculate_party = yes
+			random_owned_state = {
+				add_building_construction = {
+					type = offices
+					level = 1
+					instant_build = yes
+				}
+			}
+		}
 	}
 
 	ai_will_do = {
@@ -4131,7 +4244,7 @@ joint_focus = {
 joint_focus = {
 	id = CHI_TAI_local_government_dialogue
 	icon = peoples_republic_of_china
-	text_icon = JOINT_CHI_focus_style
+	text_icon = JOINT_TAI_CHI_historic_focus_style
 
 	x = 0
 	y = 3
@@ -4144,28 +4257,50 @@ joint_focus = {
 
 	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
-	joint_trigger = { original_tag = CHI }
+	joint_trigger = { CHI_TAI_joint_trigger = yes }
 
 	available = {
-		country_exists = TAI
-		NOT = { has_war_with = TAI }
+		CHI_TAI_both_at_peace = yes
 		check_variable = { CHI_TAI_trust > 19 }
 	}
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_local_government_dialogue"
-		add_to_variable = { CHI_TAI_trust = 8 tooltip = CHI_TAI_trust_tt }
-		add_opinion_modifier = { target = TAI modifier = reduced_tensions }
+		CHI = { add_to_variable = { CHI_TAI_trust = 8 tooltip = CHI_TAI_trust_tt } }
+		if = {
+			limit = { original_tag = CHI }
+			add_opinion_modifier = { target = TAI modifier = reduced_tensions }
+		}
+		else = {
+			add_to_variable = { party_pop_array^1 = 0.01 }
+			recalculate_party = yes
+			add_opinion_modifier = { target = CHI modifier = reduced_tensions }
+			random_owned_state = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = yes
+				}
+			}
+		}
 	}
 
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_local_government_dialogue (TAI)"
-		add_opinion_modifier = { target = CHI modifier = reduced_tensions }
-		random_owned_state = {
-			add_building_construction = {
-				type = industrial_complex
-				level = 1
-				instant_build = yes
+		if = {
+			limit = { original_tag = CHI }
+			add_opinion_modifier = { target = TAI modifier = reduced_tensions }
+		}
+		else = {
+			add_to_variable = { party_pop_array^1 = 0.01 }
+			recalculate_party = yes
+			add_opinion_modifier = { target = CHI modifier = reduced_tensions }
+			random_owned_state = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = yes
+				}
 			}
 		}
 	}
@@ -4178,7 +4313,7 @@ joint_focus = {
 joint_focus = {
 	id = CHI_TAI_reaffirm_the_1992_consensus
 	icon = peoples_republic_of_china
-	text_icon = JOINT_TAI_focus_style
+	text_icon = JOINT_TAI_historical_focus_style
 
 	x = 2
 	y = 1
@@ -4205,7 +4340,6 @@ joint_focus = {
 		add_to_variable = { party_pop_array^1 = 0.02 }
 		add_to_variable = { party_pop_array^2 = -0.01 }
 		recalculate_party = yes
-		add_stability = 0.03
 	}
 
 	completion_reward_joint_member = {
@@ -4223,7 +4357,7 @@ joint_focus = {
 joint_focus = {
 	id = CHI_TAI_suspend_independence_initiatives
 	icon = peoples_republic_of_china
-	text_icon = JOINT_TAI_focus_style
+	text_icon = JOINT_TAI_historical_focus_style
 
 	x = 2
 	y = 3
@@ -4250,13 +4384,12 @@ joint_focus = {
 		add_to_variable = { party_pop_array^1 = 0.01 }
 		add_to_variable = { party_pop_array^2 = -0.02 }
 		recalculate_party = yes
-		add_stability = 0.04
 	}
 
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_suspend_independence_initiatives (CHI)"
 		add_to_variable = { CHI_TAI_trust = 8 tooltip = CHI_TAI_trust_tt }
-		add_opinion_modifier = { target = TAI modifier = reduced_tensions }
+		add_opinion_modifier = { target = TAI modifier = large_commercial_relations }
 	}
 
 	ai_will_do = {
@@ -4295,15 +4428,21 @@ joint_focus = {
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_back_channel_settlement"
 		add_to_variable = { CHI_TAI_trust = 15 tooltip = CHI_TAI_trust_tt }
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_SAR_network_modifier }
+		add_to_variable = { CHI_network_trade_opinion_factor = 0.03 tooltip = trade_opinion_factor_tt }
 		add_opinion_modifier = { target = TAI modifier = reduced_tensions }
 		add_opinion_modifier = { target = TAI modifier = CSSTA }
 	}
 
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_back_channel_settlement (TAI)"
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_TAI_shared_modifier }
+		add_to_variable = { CHI_TAI_communism_drift = 0.02 tooltip = communism_drift_tt }
+		add_to_variable = { CHI_TAI_communism_acceptance = 10 tooltip = communism_acceptance_tt }
 		add_opinion_modifier = { target = CHI modifier = reduced_tensions }
-		add_political_power = 50
-		add_stability = 0.03
+		add_to_variable = { party_pop_array^1 = 0.02 }
+		add_to_variable = { party_pop_array^2 = -0.01 }
+		recalculate_party = yes
 	}
 
 	ai_will_do = {
@@ -4359,14 +4498,12 @@ joint_focus = {
 
 	completion_reward_joint_member = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_peaceful_reunification_accord (TAI)"
-		random_owned_state = {
-			add_extra_state_shared_building_slots = 2
-			add_building_construction = {
-				type = industrial_complex
-				level = 2
-				instant_build = yes
-			}
-		}
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_TAI_shared_modifier }
+		add_to_variable = { CHI_TAI_stability_factor = 0.05 tooltip = stability_factor_tt }
+		add_to_variable = { CHI_TAI_political_power_factor = 0.1 tooltip = political_power_factor_tt }
+		add_to_variable = { party_pop_array^1 = 0.03 }
+		add_to_variable = { party_pop_array^2 = -0.02 }
+		recalculate_party = yes
 	}
 
 	ai_will_do = {
@@ -4394,6 +4531,7 @@ joint_focus = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_economic_miracle"
 		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_SAR_network_modifier }
 		add_to_variable = { CHI_network_trade_opinion_factor = 0.03  tooltip = trade_opinion_factor_tt }
+		add_to_variable = { CHI_network_production_factory_efficiency_gain_factor = 0.02  tooltip = production_factory_efficiency_gain_factor_tt }
 	}
 
 	completion_reward_joint_member = {
@@ -4406,12 +4544,15 @@ joint_focus = {
 				instant_build = yes
 			}
 		}
+		add_to_variable = { CHI_network_consumer_goods_factor = -0.02  tooltip = consumer_goods_factor_tt }
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_SAR_network_modifier }
 	}
 
 	ai_will_do = {
 		base = 5
 	}
 }
+### Taiwan Agression
 joint_focus = {
 	id = CHI_TAI_combat_the_traitors
 	icon = chinese_nationalism
