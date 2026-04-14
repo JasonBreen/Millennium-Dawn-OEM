@@ -2209,7 +2209,7 @@ CHI_SAR_decisions_category = {
 		targets_dynamic = yes
 
 		target_root_trigger = {
-			has_completed_focus = CHI_TAI_recognition_blockades
+			has_completed_focus = CHI_TAI_one_china_enforcement
 		}
 
 		target_trigger = {
@@ -2223,12 +2223,12 @@ CHI_SAR_decisions_category = {
 		}
 
 		visible = {
-			has_completed_focus = CHI_TAI_recognition_blockades
+			has_completed_focus = CHI_TAI_one_china_enforcement
 			TAI = { exists = yes }
 		}
 
 		available = {
-			has_completed_focus = CHI_TAI_recognition_blockades
+			has_completed_focus = CHI_TAI_one_china_enforcement
 		}
 
 		cost = 50
@@ -3081,21 +3081,19 @@ CHI_SAR_decisions_category = {
 		}
 	}
 
-	## Chinese blockade decisions (3 phases)
 	CHI_TAI_maritime_zone = {
 		allowed = { original_tag = CHI }
 		icon = GFX_decision_generic_naval
 
 		visible = {
-			has_country_flag = CHI_TAI_blockade_unlocked
+			has_completed_focus = CHI_TAI_blockade_capability
 			country_exists = TAI
 			NOT = { has_war_with = TAI }
 			NOT = { has_country_flag = CHI_TAI_maritime_zone_active }
 		}
 
 		available = {
-			has_country_flag = CHI_TAI_blockade_unlocked
-			NOT = { has_active_mission = bankruptcy_incoming_collapse }
+			has_completed_focus = CHI_TAI_blockade_capability
 		}
 
 		fire_only_once = yes
@@ -3213,6 +3211,54 @@ CHI_SAR_decisions_category = {
 		}
 	}
 
+	## Naval exercise decision
+	CHI_TAI_strait_naval_exercise = {
+		allowed = { original_tag = CHI }
+		icon = GFX_decision_generic_naval
+
+		visible = {
+			has_completed_focus = CHI_TAI_amphibious_doctrine
+			country_exists = TAI
+			NOT = { has_war_with = TAI }
+		}
+
+		available = {
+			has_completed_focus = CHI_TAI_amphibious_doctrine
+			NOT = { has_active_mission = bankruptcy_incoming_collapse }
+		}
+
+		cost = 50
+		days_remove = 120
+		days_re_enable = 120
+
+		modifier = {
+			naval_doctrine_cost_factor = -0.10
+			amphibious_invasion_speed = 0.15
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_TAI_strait_naval_exercise"
+			set_country_flag = { flag = CHI_amphibious_exercise_active days = 120 value = 1 }
+		}
+
+		remove_effect = {
+			add_to_variable = { CHI_taiwan_strait_tension = 5 tooltip = CHI_taiwan_strait_tension_tt }
+			clamp_variable = { var = CHI_taiwan_strait_tension min = 0 max = 100 }
+			add_to_variable = { CHI_taiwan_us_support = -2 tooltip = CHI_taiwan_us_support_tt }
+			clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
+			navy_experience = 15
+			set_country_flag = CHI_recent_provocation
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				check_variable = { CHI_taiwan_strait_tension > 80 }
+			}
+		}
+	}
+
 	## Chinese diplomatic decisions
 	CHI_TAI_influence_us_election = {
 		allowed = { original_tag = CHI }
@@ -3300,6 +3346,97 @@ CHI_SAR_decisions_category = {
 
 		ai_will_do = {
 			base = 2
+		}
+	}
+
+	CHI_TAI_scs_provocations = {
+		allowed = { original_tag = CHI }
+		icon = GFX_decision_generic_military
+
+		visible = {
+			has_completed_focus = CHI_TAI_proxy_strategy
+			country_exists = TAI
+			NOT = { has_war_with = TAI }
+		}
+
+		available = {
+			has_completed_focus = CHI_TAI_proxy_strategy
+		}
+
+		cost = 75
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_TAI_scs_provocations"
+			add_to_variable = { CHI_taiwan_us_support = -3 tooltip = CHI_taiwan_us_support_tt }
+			clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
+			add_to_variable = { CHI_taiwan_strait_tension = 2 tooltip = CHI_taiwan_strait_tension_tt }
+			clamp_variable = { var = CHI_taiwan_strait_tension min = 0 max = 100 }
+			if = {
+				limit = { country_exists = PHI }
+				PHI = { add_opinion_modifier = { target = CHI modifier = nine_dash_line } }
+			}
+			if = {
+				limit = { country_exists = VIE }
+				VIE = { add_opinion_modifier = { target = CHI modifier = nine_dash_line } }
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+		}
+	}
+
+	CHI_TAI_middleeast_diversion = {
+		allowed = { original_tag = CHI }
+		icon = GFX_decision_generic_political_discourse
+
+		visible = {
+			has_completed_focus = CHI_TAI_proxy_strategy
+			country_exists = TAI
+			NOT = { has_war_with = TAI }
+		}
+
+		available = {
+			has_completed_focus = CHI_TAI_proxy_strategy
+		}
+
+		cost = 100
+		days_re_enable = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_TAI_middleeast_diversion"
+			if = {
+				limit = {
+					OR = {
+						PER = { has_war = yes }
+						IRQ = { has_war = yes }
+						SYR = { has_war = yes }
+						SAU = { has_war = yes }
+						YEM = { has_war = yes }
+					}
+				}
+				add_to_variable = { CHI_taiwan_us_support = -5 tooltip = CHI_taiwan_us_support_tt }
+				clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
+			}
+			else = {
+				add_to_variable = { CHI_taiwan_us_support = -2 tooltip = CHI_taiwan_us_support_tt }
+				clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
+			}
+		}
+
+		ai_will_do = {
+			base = 2
+			modifier = {
+				add = 5
+				OR = {
+					PER = { has_war = yes }
+					IRQ = { has_war = yes }
+					SYR = { has_war = yes }
+					SAU = { has_war = yes }
+					YEM = { has_war = yes }
+				}
+			}
 		}
 	}
 
@@ -3416,6 +3553,86 @@ CHI_SAR_decisions_category = {
 
 		ai_will_do = {
 			base = 3
+		}
+	}
+
+	## Distract America decisions
+	CHI_TAI_fund_us_opposition = {
+		allowed = { original_tag = CHI }
+		icon = GFX_decision_generic_political_discourse
+
+		visible = {
+			has_completed_focus = CHI_TAI_distract_america
+			country_exists = TAI
+			country_exists = USA
+			NOT = { has_war_with = TAI }
+		}
+
+		available = {
+			has_completed_focus = CHI_TAI_distract_america
+			NOT = { has_active_mission = bankruptcy_incoming_collapse }
+		}
+
+		cost = 75
+		days_re_enable = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_TAI_fund_us_opposition"
+			add_to_variable = { CHI_taiwan_us_support = -3 tooltip = CHI_taiwan_us_support_tt }
+			clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
+			USA = {
+				add_stability = -0.02
+			}
+			# High risk — if USA discovers, backlash
+			random_list = {
+				60 = {}
+				40 = {
+					add_to_variable = { CHI_taiwan_us_support = 8 tooltip = CHI_taiwan_us_support_tt }
+					clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
+					USA = { add_opinion_modifier = { target = CHI modifier = chi_usa_sanctions_response } }
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 2
+			modifier = {
+				add = 5
+				USA = { has_war = yes }
+			}
+		}
+	}
+
+	CHI_TAI_exploit_us_commitments = {
+		allowed = { original_tag = CHI }
+		icon = GFX_decision_generic_military
+
+		visible = {
+			has_completed_focus = CHI_TAI_distract_america
+			country_exists = TAI
+			country_exists = USA
+			NOT = { has_war_with = TAI }
+			USA = { has_war = yes }
+		}
+
+		available = {
+			has_completed_focus = CHI_TAI_distract_america
+			USA = { has_war = yes }
+		}
+
+		cost = 50
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_TAI_exploit_us_commitments"
+			add_to_variable = { CHI_taiwan_us_support = -6 tooltip = CHI_taiwan_us_support_tt }
+			clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
+			add_to_variable = { CHI_taiwan_strait_tension = 3 tooltip = CHI_taiwan_strait_tension_tt }
+			clamp_variable = { var = CHI_taiwan_strait_tension min = 0 max = 100 }
+		}
+
+		ai_will_do = {
+			base = 8
 		}
 	}
 }
