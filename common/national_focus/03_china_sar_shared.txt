@@ -4496,7 +4496,11 @@ joint_focus = {
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_fleet_modernization"
-		add_ideas = CHI_TAI_naval_modernization_idea
+		custom_effect_tooltip = {
+			localization_key = modifies_dynamic_modifier_tt
+			MODIFIER = CHI_TAI_shared_modifier
+		}
+		add_to_variable = { CHI_TAI_industrial_capacity_dockyard = 0.05 tooltip = industrial_capacity_dockyard_tt }
 		# Build dockyards in coastal provinces facing Taiwan
 		593 = {
 			add_extra_state_shared_building_slots = 1
@@ -4547,9 +4551,7 @@ joint_focus = {
 			idea = CHI_TAI_amphibious_mastery
 			days = 730
 		}
-		add_ideas = CHI_crossstrait_operations
-		# Trigger exercise event
-		country_event = { id = chi_tai_aggression.30 days = 7 }
+		unlock_decision_tooltip = CHI_TAI_strait_naval_exercise
 	}
 
 	ai_will_do = {
@@ -4579,8 +4581,13 @@ joint_focus = {
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_dongfeng_program"
-		add_ideas = CHI_TAI_military_buildup_idea
 		add_war_support = 0.03
+		add_tech_bonus = {
+			name = CAT_missile
+			bonus = 0.50
+			uses = 1
+			category = CAT_missile
+		}
 	}
 
 	ai_will_do = {
@@ -4637,6 +4644,11 @@ joint_focus = {
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_cyber_warfare"
 		add_war_support = 0.03
+		add_to_variable = { cyber_offense_investment = 5 }
+		if = {
+			limit = { has_dlc = "La Resistance" }
+			gain_random_agency_upgrade = yes
+		}
 	}
 
 	ai_will_do = {
@@ -4663,8 +4675,13 @@ joint_focus = {
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_blockade_capability"
-		set_country_flag = CHI_TAI_blockade_unlocked
 		add_war_support = 0.05
+		custom_effect_tooltip = {
+			localization_key = modifies_dynamic_modifier_tt
+			MODIFIER = CHI_TAI_shared_modifier
+		}
+		add_to_variable = { CHI_TAI_convoy_raiding_efficiency_factor = 0.10 tooltip = convoy_raiding_efficiency_factor_tt }
+		unlock_decision_tooltip = CHI_TAI_maritime_zone
 	}
 
 	ai_will_do = {
@@ -4696,8 +4713,18 @@ joint_focus = {
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_one_china_enforcement"
-		set_temp_variable = { CHI_taiwan_us_support_change = -3 }
-		CHI_modify_taiwan_us_support = yes
+		add_to_variable = { CHI_taiwan_us_support = -3 tooltip = CHI_taiwan_us_support_tt }
+		clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
+		every_country = {
+			limit = {
+				has_country_flag = Recognised_@TAI
+				NOT = { original_tag = CHI }
+				NOT = { original_tag = TAI }
+				exists = yes
+			}
+			country_event = { id = chi_tai_aggression.40 days = 7 }
+		}
+		unlock_decision_tooltip = CHI_pressure_derecognize_TAI
 	}
 
 	ai_will_do = {
@@ -4723,13 +4750,22 @@ joint_focus = {
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_intl_org_blockade"
-		set_temp_variable = { CHI_taiwan_us_support_change = -3 }
-		CHI_modify_taiwan_us_support = yes
+		add_to_variable = { CHI_taiwan_us_support = -3 tooltip = CHI_taiwan_us_support_tt }
+		clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
 		TAI = {
 			add_timed_idea = {
 				idea = CHI_TAI_intl_isolation
 				days = 1095
 			}
+		}
+		every_country = {
+			limit = {
+				has_country_flag = Recognised_@TAI
+				NOT = { original_tag = CHI }
+				NOT = { original_tag = TAI }
+				exists = yes
+			}
+			ROOT = { send_embargo = PREV }
 		}
 	}
 
@@ -4756,8 +4792,18 @@ joint_focus = {
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_reward_defectors"
-		set_temp_variable = { CHI_taiwan_us_support_change = -2 }
-		CHI_modify_taiwan_us_support = yes
+		add_to_variable = { CHI_taiwan_us_support = -2 tooltip = CHI_taiwan_us_support_tt }
+		clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
+		every_country = {
+			limit = {
+				NOT = { has_country_flag = Recognised_@TAI }
+				NOT = { original_tag = CHI }
+				NOT = { original_tag = TAI }
+				exists = yes
+				is_subject = no
+			}
+			add_opinion_modifier = { target = ROOT modifier = chi_tai_diplomatic_incentive }
+		}
 	}
 
 	ai_will_do = {
@@ -4785,9 +4831,8 @@ joint_focus = {
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_economic_leverage"
-		set_country_flag = CHI_economic_leverage_active
-		set_temp_variable = { CHI_taiwan_us_support_change = -3 }
-		CHI_modify_taiwan_us_support = yes
+		add_to_variable = { CHI_taiwan_us_support = -3 tooltip = CHI_taiwan_us_support_tt }
+		clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
 		custom_effect_tooltip = {
 			localization_key = modifies_dynamic_modifier_tt
 			MODIFIER = CHI_SAR_network_modifier
@@ -4818,8 +4863,8 @@ joint_focus = {
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_lobby_network"
-		set_temp_variable = { CHI_taiwan_us_support_change = -2 }
-		CHI_modify_taiwan_us_support = yes
+		add_to_variable = { CHI_taiwan_us_support = -2 tooltip = CHI_taiwan_us_support_tt }
+		clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
 		country_event = { id = chi_tai_pressure.1 days = 7 }
 	}
 
@@ -4846,8 +4891,12 @@ joint_focus = {
 
 	completion_reward_joint_originator = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_proxy_strategy"
-		set_country_flag = CHI_TAI_proxy_unlocked
 		add_war_support = 0.03
+		add_to_variable = { CHI_taiwan_us_support = -3 tooltip = CHI_taiwan_us_support_tt }
+		clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
+		unlock_decision_tooltip = CHI_TAI_scs_provocations
+		unlock_decision_tooltip = CHI_TAI_nko_provocations
+		unlock_decision_tooltip = CHI_TAI_middleeast_diversion
 	}
 
 	ai_will_do = {
@@ -4875,13 +4924,13 @@ joint_focus = {
 		log = "[GetDateText]: [Root.GetName]: Focus CHI_TAI_distract_america"
 		if = {
 			limit = { USA = { has_war = yes } }
-			set_temp_variable = { CHI_taiwan_us_support_change = -5 }
-			CHI_modify_taiwan_us_support = yes
+			add_to_variable = { CHI_taiwan_us_support = -5 tooltip = CHI_taiwan_us_support_tt }
 		}
 		else = {
-			set_temp_variable = { CHI_taiwan_us_support_change = -2 }
-			CHI_modify_taiwan_us_support = yes
+			add_to_variable = { CHI_taiwan_us_support = -2 tooltip = CHI_taiwan_us_support_tt }
 		}
+		clamp_variable = { var = CHI_taiwan_us_support min = 0 max = 100 }
+		unlock_decision_tooltip = CHI_TAI_exploit_us_commitments
 	}
 
 	ai_will_do = {
