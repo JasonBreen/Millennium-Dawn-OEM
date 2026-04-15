@@ -580,3 +580,104 @@ CHI_update_sinicization = {
 	multiply_temp_variable = { sinicization_extra_change = sinicization_compliance }
 	add_to_temp_variable = { sinicization_base_change = sinicization_extra_change }
 }
+
+# SCO membership scripted effects
+# Scope: country being admitted/demoted/removed
+
+CHI_sco_add_dialogue_partner = {
+	add_ideas = CHI_sco_dialogue_partner
+	add_to_array = { global.CHI_sco_dialogue_partners = THIS }
+	SCO_dirty_update = yes
+}
+
+CHI_sco_promote_to_observer = {
+	if = {
+		limit = { has_idea = CHI_sco_dialogue_partner }
+		remove_ideas = CHI_sco_dialogue_partner
+		remove_from_array = { global.CHI_sco_dialogue_partners = THIS }
+	}
+	add_ideas = CHI_sco_observer
+	add_to_array = { global.CHI_sco_observers = THIS }
+	SCO_dirty_update = yes
+}
+
+CHI_sco_promote_to_member = {
+	if = {
+		limit = { has_idea = CHI_sco_observer }
+		remove_ideas = CHI_sco_observer
+		remove_from_array = { global.CHI_sco_observers = THIS }
+	}
+	if = {
+		limit = { has_idea = CHI_sco_dialogue_partner }
+		remove_ideas = CHI_sco_dialogue_partner
+		remove_from_array = { global.CHI_sco_dialogue_partners = THIS }
+	}
+	add_ideas = CHI_sco_member
+	add_to_array = { global.sco_members = THIS }
+	SCO_dirty_update = yes
+}
+
+CHI_sco_remove = {
+	if = {
+		limit = { has_idea = CHI_sco_member }
+		remove_ideas = CHI_sco_member
+		remove_from_array = { global.sco_members = THIS }
+	}
+	if = {
+		limit = { has_idea = CHI_sco_member_econ }
+		remove_ideas = CHI_sco_member_econ
+		remove_from_array = { global.sco_members = THIS }
+	}
+	if = {
+		limit = { has_idea = CHI_sco_member_pol }
+		remove_ideas = CHI_sco_member_pol
+		remove_from_array = { global.sco_members = THIS }
+	}
+	if = {
+		limit = { has_idea = CHI_sco_member_mil }
+		remove_ideas = CHI_sco_member_mil
+		remove_from_array = { global.sco_members = THIS }
+	}
+	if = {
+		limit = { has_idea = CHI_sco_observer }
+		remove_ideas = CHI_sco_observer
+		remove_from_array = { global.CHI_sco_observers = THIS }
+	}
+	if = {
+		limit = { has_idea = CHI_sco_dialogue_partner }
+		remove_ideas = CHI_sco_dialogue_partner
+		remove_from_array = { global.CHI_sco_dialogue_partners = THIS }
+	}
+	SCO_dirty_update = yes
+}
+
+CHI_sco_demote_member = {
+	if = {
+		limit = { has_idea = CHI_sco_member }
+		remove_ideas = CHI_sco_member
+	}
+	if = {
+		limit = { has_idea = CHI_sco_member_econ }
+		remove_ideas = CHI_sco_member_econ
+	}
+	if = {
+		limit = { has_idea = CHI_sco_member_pol }
+		remove_ideas = CHI_sco_member_pol
+	}
+	if = {
+		limit = { has_idea = CHI_sco_member_mil }
+		remove_ideas = CHI_sco_member_mil
+	}
+	remove_from_array = { global.sco_members = THIS }
+	add_ideas = CHI_sco_observer
+	add_to_array = { global.CHI_sco_observers = THIS }
+	SCO_dirty_update = yes
+}
+
+CHI_sco_demote_observer = {
+	remove_ideas = CHI_sco_observer
+	remove_from_array = { global.CHI_sco_observers = THIS }
+	add_ideas = CHI_sco_dialogue_partner
+	add_to_array = { global.CHI_sco_dialogue_partners = THIS }
+	SCO_dirty_update = yes
+}
