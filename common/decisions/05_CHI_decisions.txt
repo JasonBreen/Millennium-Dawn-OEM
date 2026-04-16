@@ -4626,44 +4626,171 @@ CHI_korean_peninsula_category = {
 		}
 	}
 
-	CHI_jang_exile_network = {
+	CHI_locate_jang_loyalists = {
 		allowed = { original_tag = CHI }
 		icon = GFX_decision_generic_intelligence
 
 		visible = {
-			CHI = { has_completed_focus = CHI_The_Jang_Faction_Rehabilitation }
+			has_completed_focus = CHI_The_Jang_Faction_Rehabilitation
 			country_exists = NKO
+			NOT = { has_country_flag = CHI_jang_network_located }
 		}
 
 		available = {
 			NOT = { has_war_with = NKO }
-			NOT = { has_completed_focus = CHI_Operation_New_Dawn }
 		}
 
-		cost = 50
-		days_re_enable = 180
+		fire_only_once = yes
+		cost = 75
 
 		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision CHI_jang_exile_network executed"
-			random_list = {
-				60 = {
-					add_political_power = 15
-					custom_effect_tooltip = CHI_jang_network_growth_tt
-				}
-				30 = {
-					add_political_power = -10
-					custom_effect_tooltip = CHI_jang_mss_exposure_tt
-				}
-				10 = {
-					NKO = { country_event = { id = CHI_foreign.039 days = 1 } }
-					custom_effect_tooltip = CHI_jang_defector_tt
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_locate_jang_loyalists"
+			set_country_flag = CHI_jang_network_located
+			add_to_variable = { CHI_kp_foreign_subversive_activites = 0.05 tooltip = CHI_kp_foreign_subversive_activites_tt }
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	CHI_establish_dandong_safe_houses = {
+		allowed = { original_tag = CHI }
+		icon = GFX_decision_generic_intelligence
+
+		visible = {
+			has_completed_focus = CHI_The_Jang_Faction_Rehabilitation
+			has_country_flag = CHI_jang_network_located
+			NOT = { has_country_flag = CHI_jang_safe_houses }
+		}
+
+		available = {
+			NOT = { has_war_with = NKO }
+		}
+
+		fire_only_once = yes
+		cost = 100
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_establish_dandong_safe_houses"
+			set_country_flag = CHI_jang_safe_houses
+			add_to_variable = { CHI_kp_foreign_subversive_activites = 0.05 tooltip = CHI_kp_foreign_subversive_activites_tt }
+			NKO = { add_stability = -0.02 }
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	CHI_insert_jang_assets = {
+		allowed = { original_tag = CHI }
+		icon = GFX_decision_generic_intelligence
+
+		visible = {
+			has_completed_focus = CHI_The_Jang_Faction_Rehabilitation
+			has_country_flag = CHI_jang_safe_houses
+			NOT = { has_country_flag = CHI_jang_assets_inserted }
+		}
+
+		available = {
+			NOT = { has_war_with = NKO }
+		}
+
+		fire_only_once = yes
+		cost = 150
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_insert_jang_assets"
+			set_country_flag = CHI_jang_assets_inserted
+			add_to_variable = { CHI_kp_intel_network_gain_factor = 0.05 tooltip = CHI_kp_intel_network_gain_factor_tt }
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	CHI_identify_beida_alumni = {
+		allowed = { original_tag = CHI }
+		icon = GFX_decision_generic_intelligence
+
+		visible = {
+			has_completed_focus = CHI_The_Princeling_Network
+			country_exists = NKO
+			NOT = { has_country_flag = CHI_princeling_contacts }
+		}
+
+		available = {
+			NOT = { has_war_with = NKO }
+		}
+
+		fire_only_once = yes
+		cost = 75
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_identify_beida_alumni"
+			set_country_flag = CHI_princeling_contacts
+			add_to_variable = { CHI_korea_peninsula_tension = 3 tooltip = CHI_korea_peninsula_tension_tt }
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	CHI_fund_princeling_ventures = {
+		allowed = { original_tag = CHI }
+		icon = GFX_decision_generic_industry
+
+		visible = {
+			has_completed_focus = CHI_The_Princeling_Network
+			has_country_flag = CHI_princeling_contacts
+			NOT = { has_country_flag = CHI_princeling_funded }
+		}
+
+		available = {
+			NOT = { has_war_with = NKO }
+		}
+
+		fire_only_once = yes
+		cost = 100
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_fund_princeling_ventures"
+			set_country_flag = CHI_princeling_funded
+			add_to_variable = { CHI_kp_political_power_gain = 0.02 tooltip = CHI_kp_political_power_gain_tt }
+			NKO = { add_timed_idea = { idea = CHI_princeling_economic_leverage days = 1825 } }
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	CHI_secure_kpa_general_staff = {
+		allowed = { original_tag = CHI }
+		icon = GFX_decision_generic_army_support_new
+
+		visible = {
+			has_completed_focus = CHI_The_Princeling_Network
+			has_country_flag = CHI_princeling_funded
+			NOT = { has_country_flag = CHI_kpa_loyalty_secured }
+		}
+
+		available = {
+			NOT = { has_war_with = NKO }
+			NKO = { check_variable = { influence_array^0 = CHI.id } }
+		}
+
+		fire_only_once = yes
+		cost = 150
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_secure_kpa_general_staff"
+			set_country_flag = CHI_kpa_loyalty_secured
+			NKO = {
+				random_unit_leader = {
+					limit = {
+						is_field_marshal = no
+						NOT = { has_trait = chinese_aligned }
+					}
+					add_unit_leader_trait = chinese_aligned
 				}
 			}
 		}
 
-		ai_will_do = {
-			base = 8
-		}
+		ai_will_do = { base = 10 }
 	}
 
 	CHI_rcep_deepening = {
@@ -4765,7 +4892,7 @@ CHI_korean_peninsula_category = {
 			base = 5
 			modifier = {
 				factor = 0
-				stability < 0.4
+				has_stability < 0.4
 			}
 		}
 	}
@@ -4797,7 +4924,7 @@ CHI_korean_peninsula_category = {
 			}
 			add_to_variable = { CHI_dandong_district_count = 1 }
 			if = {
-				limit = { check_variable = { var = CHI_dandong_district_count value >= 3 } }
+				limit = { check_variable = { CHI_dandong_district_count > 2 } }
 				set_country_flag = CHI_dandong_max_reached
 			}
 		}
@@ -4830,7 +4957,7 @@ CHI_korean_peninsula_category = {
 			add_opinion_modifier = { target = USA modifier = CHI_anti_jap_wedge_driver }
 			add_to_variable = { CHI_thaad_escalate_count = 1 }
 			if = {
-				limit = { check_variable = { var = CHI_thaad_escalate_count value >= 3 } }
+				limit = { check_variable = { CHI_thaad_escalate_count > 2 } }
 				set_country_flag = CHI_thaad_escalate_used_3
 			}
 		}

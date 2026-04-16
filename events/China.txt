@@ -2702,23 +2702,6 @@ country_event = {
 	}
 }
 
-# CHI_foreign.039 — NKO: MSS Contact Exposed (decision failure roll)
-country_event = {
-	id = CHI_foreign.039
-	title = CHI_foreign.039.t
-	desc = CHI_foreign.039.d
-	picture = GFX_report_event_generic
-
-	is_triggered_only = yes
-
-	option = {
-		name = CHI_foreign.039.a
-		log = "[GetDateText]: [This.GetName]: CHI_foreign.039.a executed"
-		add_stability = 0.02
-		add_opinion_modifier = { target = CHI modifier = CHI_elite_network_discovered }
-	}
-}
-
 # CHI_foreign.040 — USA: Seoul Drifts (Pivot Reversed)
 country_event = {
 	id = CHI_foreign.040
@@ -2973,6 +2956,196 @@ country_event = {
 			add_opinion_modifier = { target = CHI modifier = CHI_peace_in_korea_delivered }
 		}
 		add_stability = 0.05
+	}
+}
+
+# CHI_foreign.55 — Beijing Summit Convenes
+# Fired by decision CHI_beijing_hosted_talks to CHI itself
+country_event = {
+	id = CHI_foreign.55
+	title = CHI_foreign.55.t
+	desc = CHI_foreign.55.d
+	picture = GFX_report_event_generic_sign_treaty1
+
+	is_triggered_only = yes
+
+	immediate = {
+		log = "[GetDateText]: [Root.GetName]: Event CHI_foreign.55"
+		KOR = { clr_country_flag = KOR_peace_talks_failed }
+		NKO = { clr_country_flag = NKO_peace_talks_failed }
+	}
+
+	option = {
+		name = CHI_foreign.55.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.55.a executed"
+		KOR = {
+			add_to_variable = { SFR = 5 }
+			clamp_variable = {
+				var = SFR
+				min = 0
+				max = 100
+			}
+			add_opinion_modifier = { target = NKO modifier = KOR_beijing_mediated }
+		}
+		NKO = {
+			add_opinion_modifier = { target = KOR modifier = KOR_beijing_mediated }
+		}
+	}
+}
+
+# CHI_foreign.66 — Operation New Dawn Exposed (raid failure — worst outcome)
+# Fires to both actor (CHI) and victim (NKO) — behavior branches on original_tag
+country_event = {
+	id = CHI_foreign.66
+	title = CHI_foreign.66.t
+	desc = CHI_foreign.66.d
+	picture = GFX_report_event_generic_military_equipment
+
+	is_triggered_only = yes
+
+	immediate = {
+		log = "[GetDateText]: [Root.GetName]: Event CHI_foreign.66"
+	}
+
+	option = {
+		name = CHI_foreign.66.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.66.a executed"
+		if = {
+			limit = { original_tag = CHI }
+			set_country_flag = NKO_exposed_chinese_coup
+			add_political_power = -200
+			add_stability = -0.05
+			add_to_variable = { CHI_korea_peninsula_tension = 50 tooltip = CHI_korea_peninsula_tension_tt }
+		}
+		else = {
+			# NKO scope
+			create_wargoal = { type = annex_everything target = CHI }
+			declare_war_on = { target = CHI type = annex_everything }
+			add_opinion_modifier = { target = CHI modifier = CHI_attempted_coup }
+		}
+	}
+}
+
+# CHI_foreign.67 — Raid Fails, Passed Off as Internal Uprising (limited success)
+# Fires to both actor (CHI) and victim (NKO)
+country_event = {
+	id = CHI_foreign.67
+	title = CHI_foreign.67.t
+	desc = CHI_foreign.67.d
+	picture = GFX_report_event_generic_military_equipment
+
+	is_triggered_only = yes
+
+	immediate = {
+		log = "[GetDateText]: [Root.GetName]: Event CHI_foreign.67"
+	}
+
+	option = {
+		name = CHI_foreign.67.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.67.a executed"
+		if = {
+			limit = { original_tag = CHI }
+			add_political_power = -100
+			add_command_power = -20
+			add_to_variable = { CHI_korea_peninsula_tension = 20 tooltip = CHI_korea_peninsula_tension_tt }
+		}
+		else = {
+			# NKO scope
+			add_stability = -0.05
+		}
+	}
+}
+
+# CHI_foreign.68 — Pyongyang in Flames: Civil War (success)
+# Fires to both actor (CHI) and victim (NKO)
+country_event = {
+	id = CHI_foreign.68
+	title = CHI_foreign.68.t
+	desc = CHI_foreign.68.d
+	picture = GFX_report_event_generic_military_equipment
+
+	is_triggered_only = yes
+
+	immediate = {
+		log = "[GetDateText]: [Root.GetName]: Event CHI_foreign.68"
+	}
+
+	option = {
+		name = CHI_foreign.68.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.68.a executed"
+		if = {
+			limit = { original_tag = CHI }
+			add_political_power = -50
+			add_to_variable = { CHI_korea_peninsula_tension = 30 tooltip = CHI_korea_peninsula_tension_tt }
+			set_country_flag = CHI_nko_civil_war_sponsor
+		}
+		else = {
+			# NKO scope — check CHI flag to determine civil war size
+			if = {
+				limit = { CHI = { has_country_flag = CHI_kpa_loyalty_secured } }
+				start_civil_war = {
+					ideology = communism
+					size = 0.55
+				}
+			}
+			else = {
+				start_civil_war = {
+					ideology = communism
+					size = 0.4
+				}
+			}
+		}
+	}
+}
+
+# CHI_foreign.69 — A New Dawn in Pyongyang (critical success — clean coup → puppet)
+# Fires to both actor (CHI) and victim (NKO)
+country_event = {
+	id = CHI_foreign.69
+	title = CHI_foreign.69.t
+	desc = CHI_foreign.69.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+
+	immediate = {
+		log = "[GetDateText]: [Root.GetName]: Event CHI_foreign.69"
+	}
+
+	option = {
+		name = CHI_foreign.69.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.69.a executed"
+		if = {
+			limit = { original_tag = CHI }
+			add_political_power = 100
+			add_stability = 0.05
+			add_to_variable = { CHI_korea_peninsula_tension = -20 tooltip = CHI_korea_peninsula_tension_tt }
+			set_country_flag = CHI_coup_succeeded
+			set_autonomy = {
+				target = NKO
+				autonomy_state = autonomy_puppet_state
+				end_wars = no
+			}
+		}
+		else = {
+			# NKO scope
+			add_ideas = NKO_pro_beijing_regime
+			if = {
+				limit = { country_exists = USA }
+				USA = { add_opinion_modifier = { target = NKO modifier = CHI_nko_regime_change_opinion } }
+				NKO = { add_opinion_modifier = { target = USA modifier = CHI_nko_regime_change_opinion } }
+			}
+			if = {
+				limit = { country_exists = KOR }
+				KOR = { add_opinion_modifier = { target = NKO modifier = CHI_nko_regime_change_opinion } }
+				NKO = { add_opinion_modifier = { target = KOR modifier = CHI_nko_regime_change_opinion } }
+			}
+			if = {
+				limit = { country_exists = JAP }
+				JAP = { add_opinion_modifier = { target = NKO modifier = CHI_nko_regime_change_opinion } }
+				NKO = { add_opinion_modifier = { target = JAP modifier = CHI_nko_regime_change_opinion } }
+			}
+		}
 	}
 }
 

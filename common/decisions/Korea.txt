@@ -62,6 +62,10 @@ KOR_38th_parallel = {
 				has_idea = KOR_kaesong_industrial_park
 				has_idea = NKO_kaesong_industrial_park
 			}
+			AND = {
+				original_tag = CHI
+				CHI = { has_completed_focus = CHI_Peninsula_Strategy }
+			}
 		}
 
 		highlight_states = {
@@ -601,6 +605,188 @@ KOR_38th_parallel = {
 		}
 
 		ai_will_do = { base = 0 }
+	}
+
+	CHI_track_ii_academic_forum = {
+		icon = GFX_decision_generic_political_actions
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_Strengthen_Relations_with_the_South
+			country_exists = KOR
+		}
+
+		days_re_enable = 180
+
+		cost = 50
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_track_ii_academic_forum"
+			KOR = {
+				add_to_variable = { SFR = 2 }
+				clamp_variable = { var = SFR min = 0 max = 100 }
+				add_opinion_modifier = { target = CHI modifier = CHI_track_ii_participant }
+			}
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	CHI_pressure_iaea_access = {
+		icon = GFX_decision_generic_nuclear
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_Maintain_Commitment_to_Denuclearization
+			country_exists = NKO
+		}
+
+		days_re_enable = 365
+
+		cost = 75
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_pressure_iaea_access"
+			subtract_from_variable = { CHI_korea_peninsula_tension = 5 tooltip = CHI_korea_peninsula_tension_tt }
+			random_list = {
+				50 = {
+					NKO = { add_opinion_modifier = { target = CHI modifier = CHI_iaea_pressure } }
+				}
+				50 = { }
+			}
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	CHI_trilateral_trade_forum = {
+		icon = GFX_decision_generic_industry
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_FTA_2015
+			country_exists = KOR
+			country_exists = NKO
+		}
+
+		available = {
+			NOT = { KOR = { has_country_flag = closed_kaesong } }
+		}
+
+		days_re_enable = 365
+
+		cost = 100
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_trilateral_trade_forum"
+			KOR = {
+				add_to_variable = { SFR = 3 }
+				clamp_variable = { var = SFR min = 0 max = 100 }
+				add_opinion_modifier = { target = CHI modifier = CHI_trilateral_trade }
+			}
+			NKO = {
+				add_opinion_modifier = { target = CHI modifier = CHI_trilateral_trade }
+			}
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	CHI_facilitate_family_reunions = {
+		icon = GFX_decision_generic_political_discourse
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_The_Roh_Moohyun_Framework
+			country_exists = KOR
+			country_exists = NKO
+		}
+
+		days_re_enable = 180
+
+		cost = 75
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_facilitate_family_reunions"
+			KOR = {
+				add_to_variable = { SFR = 3 }
+				clamp_variable = { var = SFR min = 0 max = 100 }
+				add_opinion_modifier = { target = CHI modifier = CHI_family_reunion_facilitator }
+			}
+			NKO = {
+				add_opinion_modifier = { target = CHI modifier = CHI_family_reunion_facilitator }
+			}
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	CHI_beijing_hosted_talks = {
+		icon = GFX_decision_generic_form_nation
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_Sunshine_Policy_Revival
+		}
+
+		available = {
+			OR = {
+				KOR = { has_country_flag = KOR_peace_talks_failed }
+				NKO = { has_country_flag = NKO_peace_talks_failed }
+			}
+		}
+
+		fire_only_once = yes
+
+		cost = 150
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_beijing_hosted_talks"
+			KOR = { clr_country_flag = KOR_peace_talks_failed }
+			NKO = { clr_country_flag = NKO_peace_talks_failed }
+			country_event = { id = CHI_foreign.55 days = 1 }
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	CHI_propose_unity_government = {
+		icon = GFX_decision_generic_form_nation
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_The_Panmunjom_Architecture
+		}
+
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = support_for_reunification_more_50_tt
+				KOR = { check_variable = { SFR > 50 } }
+			}
+			NOT = { KOR = { has_war_with = NKO } }
+			NOT = { KOR = { has_country_flag = KOR_proposed_unity_reunification } }
+		}
+
+		fire_only_once = yes
+
+		cost = 200
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_propose_unity_government"
+			KOR = {
+				set_country_flag = KOR_proposed_unity_reunification
+				country_event = { id = korea.26 days = 3 }
+				add_opinion_modifier = { target = CHI modifier = CHI_unity_broker }
+			}
+		}
+
+		ai_will_do = { base = 10 }
 	}
 }
 

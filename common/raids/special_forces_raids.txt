@@ -5420,4 +5420,191 @@ types = {
 			}
 		}
 	}
+
+	# [CHI] Operation New Dawn — Pyongyang regime-change raid
+	CHI_operation_new_dawn = {
+		allowed = { original_tag = CHI }
+		days_to_prepare = 60
+		days_re_enable = 0
+		fire_only_once = yes
+
+		category = special_forces_raids
+
+		command_power = 50
+
+		arrow = {
+			type = line
+		}
+
+		visible = {
+			has_completed_focus = CHI_Operation_New_Dawn
+		}
+
+		show_target = {
+			FROM = { original_tag = NKO }
+		}
+
+		available = {
+			raid_target_eligible = yes
+			NOT = { has_war_with = NKO }
+			FROM = {
+				original_tag = NKO
+				has_stability < 0.40
+			}
+			OR = {
+				has_country_flag = CHI_jang_assets_inserted
+				has_country_flag = CHI_kpa_loyalty_secured
+			}
+		}
+
+		unit_requirements = {
+			battalion_types = {
+				Special_Forces = { min = 3 max = 10 }
+			}
+		}
+
+		target_icon = GFX_other_target_icon
+		launch_sound = raid_launch_marine
+
+		target_type = {
+			state = {
+				is_capital = yes
+				is_owned_by = NKO
+			}
+		}
+
+		starting_point = {
+			types = { air_base naval_base }
+		}
+
+		success_factors = {
+			success = {
+				base = 0.20
+
+				experience = {
+					weight = 0.20
+					start_weight = -0.10
+					reference = 0.6
+				}
+				organisation = {
+					weight = 0.15
+					reference = 60
+				}
+				intel = {
+					weight = 0.25
+					reference = 100
+				}
+				recon = {
+					weight = 0.10
+					reference = 10
+				}
+			}
+			critical = {
+				base = 0.05
+
+				experience = {
+					weight = 0.20
+					reference = 0.8
+				}
+				intel = {
+					weight = 0.25
+					reference = 100
+				}
+			}
+			disaster = {
+				base = 0.20
+
+				intel = {
+					start_weight = 0.20
+					weight = 0
+					reference = 100
+				}
+			}
+		}
+
+		success_levels = {
+			failure = {
+				actor_effects = {
+					var:actor_country = {
+						country_event = CHI_foreign.66
+					}
+					raid_damage_units = {
+						org_damage = 0.50
+						str_damage = 0.40
+						ratio = yes
+					}
+				}
+				victim_effects = {
+					var:victim_country = {
+						country_event = CHI_foreign.66
+					}
+				}
+			}
+			limited_success = {
+				actor_effects = {
+					var:actor_country = {
+						country_event = CHI_foreign.67
+					}
+					raid_damage_units = {
+						org_damage = 0.30
+						str_damage = 0.20
+						ratio = yes
+					}
+				}
+				victim_effects = {
+					var:victim_country = {
+						country_event = CHI_foreign.67
+					}
+				}
+			}
+			success = {
+				actor_effects = {
+					var:actor_country = {
+						country_event = CHI_foreign.68
+					}
+					raid_damage_units = {
+						org_damage = 0.20
+						str_damage = 0.10
+						ratio = yes
+					}
+					raid_add_unit_experience = 0.25
+				}
+				victim_effects = {
+					var:victim_country = {
+						country_event = CHI_foreign.68
+					}
+				}
+			}
+			critical_success = {
+				actor_effects = {
+					var:actor_country = {
+						country_event = CHI_foreign.69
+					}
+					raid_add_unit_experience = 0.5
+				}
+				victim_effects = {
+					var:victim_country = {
+						country_event = CHI_foreign.69
+					}
+				}
+				division_effects = {
+					add_divisional_commander_xp = 250
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 1
+			modifier = {
+				factor = 0
+				NOT = { has_country_flag = CHI_jang_assets_inserted }
+				NOT = { has_country_flag = CHI_kpa_loyalty_secured }
+			}
+			modifier = {
+				factor = 2
+				has_country_flag = CHI_jang_assets_inserted
+				has_country_flag = CHI_kpa_loyalty_secured
+			}
+		}
+	}
 }
