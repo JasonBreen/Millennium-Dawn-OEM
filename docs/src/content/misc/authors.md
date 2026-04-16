@@ -1,6 +1,6 @@
 ---
 title: Authors
-description: 'Authors & Credits for Millennium Dawn: A Modern Day Mod'
+description: "Authors & Credits for Millennium Dawn: A Modern Day Mod"
 ---
 
 The following page is a non-exhaustive list of contributors from over the years who have worked on the mod in some capacity.
@@ -179,6 +179,10 @@ The following page is a non-exhaustive list of contributors from over the years 
 | 81_evan              | -                               | @81_evan       | -             | -                             |
 | arakan94             | @arakan94                       | arakan94       | arakan94      | arakan94@proton.me            |
 | BigRobbo             | @BigRobbo                       | @BigRobbo919   | -             | -                             |
+| pastandrey           | @pastandrey                     | @pastandrey    | -             | -                             |
+| altair6407           | @altair6407                     | @altair6407    | -             | -                             |
+| polski_oski          | @polski_oski                    |                | -             | -                             |
+| Ebby                 | -                               | -              | -             | -                             |
 
 # Fellow Modders/Teams
 
@@ -202,6 +206,8 @@ The following page is a non-exhaustive list of contributors from over the years 
   \*Source: [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2698816291)
 - **AI Rework: Attaché's**
   \*Source: [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3164040395)
+- **Ebby** - AI behavior, naval, performance, and warfare overhaul submods
+  _Source: [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2877723086), [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3698291549), [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3698288121)_
 
 # Voice Lines
 

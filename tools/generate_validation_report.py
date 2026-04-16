@@ -8,6 +8,7 @@ markdown report for easy review and optionally posts it as a PR comment.
 import argparse
 import json
 import os
+import re
 import sys
 import urllib.request
 from datetime import datetime
@@ -30,38 +31,65 @@ def determine_status(content):
     if content is None:
         return "⚠️  **Status:** No output file found"
 
-    content_lower = content.lower()
+    if "✓ VALIDATION COMPLETE" in content:
+        return "✅ **Status:** Passed"
 
-    # Check for failures/errors
-    if any(marker in content_lower for marker in ["error", "failed", "✗"]):
+    if "✗ VALIDATION COMPLETE" in content:
         return "❌ **Status:** Failed"
 
-    # Check for warnings
-    if any(marker in content_lower for marker in ["warning", "⚠"]):
-        return "⚠️  **Status:** Passed with warnings"
-
-    # Assume passed
-    return "✅ **Status:** Passed"
+    # Fallback for unexpected output
+    return "⚠️  **Status:** Unknown"
 
 
 def count_issues(content):
-    """Count the number of issues in the log content."""
+    """Count the number of issues reported in the log summary line.
+
+    Supports both output formats produced by the validators:
+      - BaseValidator: "✗ VALIDATION COMPLETE - N ERROR(S) - M WARNING(S)"
+        (either or both segments may be present)
+      - validate_set_variables legacy: "✗ VALIDATION COMPLETE - N TOTAL ISSUES FOUND"
+    """
     if content is None:
         return 0
 
-    count = 0
-    for line in content.split("\n"):
-        if any(
-            marker in line for marker in ["ERROR", "FAILED", "✗", "error:", "failed:"]
-        ):
-            count += 1
+    legacy = re.search(r"✗ VALIDATION COMPLETE - (\d+) TOTAL ISSUES FOUND", content)
+    if legacy:
+        return int(legacy.group(1))
 
-    return count
+    total = 0
+    matched = False
+    err_m = re.search(r"✗ VALIDATION COMPLETE[^\n]*?(\d+) ERROR\(S\)", content)
+    if err_m:
+        total += int(err_m.group(1))
+        matched = True
+    warn_m = re.search(r"✗ VALIDATION COMPLETE[^\n]*?(\d+) WARNING\(S\)", content)
+    if warn_m:
+        total += int(warn_m.group(1))
+        matched = True
+    return total if matched else 0
 
 
-def add_section(title, file_path):
-    """Generate a markdown section for a validation result."""
-    content = read_log_file(file_path)
+def discover_validations(results_dir):
+    """Auto-discover validation results from subdirectories."""
+    base = Path(results_dir)
+    if not base.is_dir():
+        print(f"Warning: results directory not found: {results_dir}", file=sys.stderr)
+        return []
+    found = []
+    for subdir in sorted(base.glob("validation-*-results")):
+        if not subdir.is_dir():
+            continue
+        log_files = list(subdir.glob("*.log"))
+        if not log_files:
+            continue
+        name = subdir.name.replace("validation-", "").replace("-results", "")
+        title = name.replace("-", " ").title() + " Validation"
+        found.append((title, log_files[0]))
+    return found
+
+
+def build_section(title, content):
+    """Generate a markdown section for a validation result from pre-read content."""
     status = determine_status(content)
 
     section = [
@@ -111,42 +139,14 @@ def generate_report(results_dir, pr_number=None, commit_sha=None):
         ]
     )
 
-    # Define validation sections
-    validations = [
-        (
-            "Flags and Event Targets Validation",
-            "validation-variables-results/validation-variables.log",
-        ),
-        (
-            "Scripted Localisation Validation",
-            "validation-scripted-localisation-results/validation-scripted-localisation.log",
-        ),
-        (
-            "Cosmetic Tag Validation",
-            "validation-cosmetic-tags-results/validation-cosmetic-tags.log",
-        ),
-        (
-            "Decision Validation",
-            "validation-decisions-results/validation-decisions.log",
-        ),
-        (
-            "Localisation Validation",
-            "validation-localisation-results/validation-localisation.log",
-        ),
-        (
-            "Event Validation",
-            "validation-events-results/validation-events.log",
-        ),
-    ]
+    # Auto-discover validation results from downloaded artifact directories
+    validations = discover_validations(results_dir)
 
-    # Add each validation section
+    # Add each validation section — read each log file once
     total_issues = 0
-    for title, log_file in validations:
-        file_path = Path(results_dir) / log_file
-        report_lines.append(add_section(title, file_path))
-
-        # Count issues
+    for title, file_path in validations:
         content = read_log_file(file_path)
+        report_lines.append(build_section(title, content))
         total_issues += count_issues(content)
 
     # Add summary
@@ -264,7 +264,8 @@ def main():
     )
     parser.add_argument(
         "--github-token",
-        help="GitHub token for posting PR comments (required if --post-comment is used)",
+        default=os.environ.get("GITHUB_TOKEN"),
+        help="GitHub token for posting PR comments (required if --post-comment is used, defaults to GITHUB_TOKEN env var)",
     )
     parser.add_argument(
         "--github-repository",
