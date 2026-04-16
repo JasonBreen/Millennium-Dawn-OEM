@@ -2,6 +2,7 @@
 add_namespace = china_national_committee
 add_namespace = china_sar
 add_namespace = CHI_sco
+add_namespace = CHI_foreign
 
 
 # National Congress Convened
@@ -1853,5 +1854,1392 @@ country_event = {
 		add_stability = -0.03
 		add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
 		clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+	}
+}
+
+# ============================
+# CHI_foreign — Korea rework events
+# ============================
+
+# CHI_foreign.001 — USA notified of Lips and Teeth doctrine
+country_event = {
+	id = CHI_foreign.001
+	title = CHI_foreign.001.t
+	desc = CHI_foreign.001.d
+	picture = GFX_news_event_generic_military
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.001.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.001.a executed"
+		add_opinion_modifier = { target = CHI modifier = anti_american_provocateur }
+		add_war_support = 0.03
+	}
+}
+
+# CHI_foreign.002 — NKO event: Mount Paektu Understanding signed
+country_event = {
+	id = CHI_foreign.002
+	title = CHI_foreign.002.t
+	desc = CHI_foreign.002.d
+	picture = GFX_news_event_generic_military
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.002.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.002.a executed"
+		add_opinion_modifier = { target = CHI modifier = paektu_doctrine }
+	}
+}
+
+# CHI_foreign.003 — NKO event: Fortress Doctrine announced
+country_event = {
+	id = CHI_foreign.003
+	title = CHI_foreign.003.t
+	desc = CHI_foreign.003.d
+	picture = GFX_news_event_generic_military
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.003.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.003.a executed"
+		add_ideas = CHI_fortress_doctrine
+	}
+}
+
+# CHI_foreign.004 — KOR event: China fortifies the North
+country_event = {
+	id = CHI_foreign.004
+	title = CHI_foreign.004.t
+	desc = CHI_foreign.004.d
+	picture = GFX_news_event_generic_military
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.004.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.004.a executed"
+		add_war_support = 0.05
+		add_opinion_modifier = { target = NKO modifier = armed_to_the_teeth }
+	}
+}
+
+# CHI_foreign.005 — NKO event: A Visit to Shenzhen
+country_event = {
+	id = CHI_foreign.005
+	title = CHI_foreign.005.t
+	desc = CHI_foreign.005.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.005.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.005.a executed"
+		swap_ideas = {
+			remove_idea = NKO_Planned_Economy
+			add_idea = Socialist_Market_Economy_planned_2
+		}
+		add_timed_idea = { idea = CHI_reform_pressure days = 1825 }
+		add_popularity = { ideology = democratic popularity = 0.10 }
+		add_opinion_modifier = { target = KOR modifier = cautious_opening }
+		KOR = {
+			add_to_variable = { SFR = 8 }
+		}
+		ROOT = {
+			add_political_power = 100
+			add_to_variable = { CHI_korea_alignment = 5 }
+			clamp_variable = { var = CHI_korea_alignment min = -100 max = 100 }
+			set_country_flag = CHI_nko_reform_path
+		}
+
+		ai_chance = {
+			base = 1
+			modifier = {
+				add = 5
+				ROOT = { has_opinion = { target = CHI value > 80 } }
+			}
+			modifier = {
+				factor = 2
+				has_stability < 0.4
+			}
+		}
+	}
+
+	option = {
+		name = CHI_foreign.005.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.005.b executed"
+		add_opinion_modifier = { target = CHI modifier = defied_beijing }
+		ROOT = {
+			add_opinion_modifier = { target = PREV modifier = defied_beijing }
+			add_political_power = -100
+		}
+
+		ai_chance = {
+			base = 1
+			modifier = {
+				factor = 0
+				has_opinion = { target = CHI value > 80 }
+			}
+		}
+	}
+}
+
+# CHI_foreign.006 — NKO event: Yalu Defense Pact
+country_event = {
+	id = CHI_foreign.006
+	title = CHI_foreign.006.t
+	desc = CHI_foreign.006.d
+	picture = GFX_news_event_generic_military
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.006.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.006.a executed"
+		add_ideas = CHI_mutual_defense_pact
+		give_military_access = CHI
+	}
+}
+
+# CHI_foreign.007 — USA event: Yalu Defense Pact alarms Washington
+country_event = {
+	id = CHI_foreign.007
+	title = CHI_foreign.007.t
+	desc = CHI_foreign.007.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.007.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.007.a executed"
+		add_opinion_modifier = { target = CHI modifier = anti_american_provocateur }
+		add_war_support = 0.05
+	}
+}
+
+# CHI_foreign.008 — USA event: China acknowledges NKO nuclear status
+country_event = {
+	id = CHI_foreign.008
+	title = CHI_foreign.008.t
+	desc = CHI_foreign.008.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.008.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.008.a executed"
+		add_opinion_modifier = { target = CHI modifier = nuclear_proliferation_enabler }
+		add_war_support = 0.05
+	}
+}
+
+# CHI_foreign.009 — KOR event: China acknowledges NKO nuclear status
+country_event = {
+	id = CHI_foreign.009
+	title = CHI_foreign.009.t
+	desc = CHI_foreign.009.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.009.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.009.a executed"
+		add_opinion_modifier = { target = CHI modifier = nuclear_proliferation_enabler }
+		subtract_from_variable = { SFR = 10 }
+		add_war_support = 0.08
+	}
+}
+
+# CHI_foreign.010 — NKO event: SCO Observer Seat
+country_event = {
+	id = CHI_foreign.010
+	title = CHI_foreign.010.t
+	desc = CHI_foreign.010.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.010.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.010.a executed"
+		add_ideas = NKO_normalised_state
+		add_popularity = { ideology = democratic popularity = 0.15 }
+		add_popularity = { ideology = neutrality popularity = 0.05 }
+	}
+}
+
+# CHI_foreign.011 — JAP event: North Korea normalises
+country_event = {
+	id = CHI_foreign.011
+	title = CHI_foreign.011.t
+	desc = CHI_foreign.011.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.011.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.011.a executed"
+		add_timed_idea = { idea = JAP_unification_partnership days = 3650 }
+		add_opinion_modifier = { target = NKO modifier = cautious_opening }
+
+		ai_chance = { base = 3 }
+	}
+
+	option = {
+		name = CHI_foreign.011.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.011.b executed"
+		add_stability = -0.02
+
+		ai_chance = { base = 1 }
+	}
+}
+
+# CHI_foreign.012 — USA event: Beijing Signal
+country_event = {
+	id = CHI_foreign.012
+	title = CHI_foreign.012.t
+	desc = CHI_foreign.012.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.012.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.012.a executed"
+		add_opinion_modifier = { target = CHI modifier = diplomatic_opening }
+		KOR = {
+			add_to_variable = { SFR = 3 }
+		}
+
+		ai_chance = {
+			base = 3
+			modifier = {
+				factor = 0
+				has_country_leader = { ruling_only = yes traits = { hawk } }
+			}
+		}
+	}
+}
+
+# CHI_foreign.013 — USA event: The Chinese Approach
+country_event = {
+	id = CHI_foreign.013
+	title = CHI_foreign.013.t
+	desc = CHI_foreign.013.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.013.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.013.a executed"
+		add_opinion_modifier = { target = CHI modifier = back_channel_open }
+		CHI = {
+			add_opinion_modifier = { target = USA modifier = back_channel_open }
+			add_political_power = 50
+		}
+		set_country_flag = USA_accepted_back_channel
+		ROOT = {
+			add_timed_idea = { idea = CHI_diplomatic_engagement days = 1825 }
+		}
+
+		ai_chance = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_war_with = CHI
+			}
+			modifier = {
+				add = 3
+				stability < 0.5
+			}
+		}
+	}
+
+	option = {
+		name = CHI_foreign.013.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.013.b executed"
+		ROOT = {
+			set_country_flag = USA_refused_diplomacy
+			add_political_power = -50
+		}
+		add_opinion_modifier = { target = CHI modifier = rebuffed_diplomacy }
+
+		ai_chance = {
+			base = 1
+			modifier = {
+				factor = 3
+				has_country_leader = { ruling_only = yes traits = { hawk } }
+			}
+		}
+	}
+}
+
+# CHI_foreign.014 — CHI event: Track II unlocks Joint Statement
+country_event = {
+	id = CHI_foreign.014
+	title = CHI_foreign.014.t
+	desc = CHI_foreign.014.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.014.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.014.a executed"
+		add_political_power = 50
+		KOR = {
+			add_to_variable = { SFR = 5 }
+		}
+	}
+}
+
+# CHI_foreign.015 — CHI event: Beijing Convenes the Six Parties
+country_event = {
+	id = CHI_foreign.015
+	title = CHI_foreign.015.t
+	desc = CHI_foreign.015.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.015.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.015.a executed"
+		add_political_power = 50
+	}
+}
+
+# CHI_foreign.016 — USA notified of Six-Party revival
+country_event = {
+	id = CHI_foreign.016
+	title = CHI_foreign.016.t
+	desc = CHI_foreign.016.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.016.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.016.a executed"
+		add_opinion_modifier = { target = CHI modifier = honest_broker }
+	}
+}
+
+# CHI_foreign.017 — NKO notified of Six-Party revival
+country_event = {
+	id = CHI_foreign.017
+	title = CHI_foreign.017.t
+	desc = CHI_foreign.017.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.017.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.017.a executed"
+		add_opinion_modifier = { target = CHI modifier = host_and_guarantor }
+	}
+}
+
+# CHI_foreign.018 — KOR notified of Six-Party revival
+country_event = {
+	id = CHI_foreign.018
+	title = CHI_foreign.018.t
+	desc = CHI_foreign.018.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.018.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.018.a executed"
+		add_opinion_modifier = { target = CHI modifier = honest_broker }
+		add_to_variable = { SFR = 5 }
+	}
+}
+
+# CHI_foreign.019 — JAP notified of Six-Party revival
+country_event = {
+	id = CHI_foreign.019
+	title = CHI_foreign.019.t
+	desc = CHI_foreign.019.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.019.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.019.a executed"
+		add_opinion_modifier = { target = CHI modifier = peace_contributor }
+	}
+}
+
+# CHI_foreign.020 — RUS notified of Six-Party revival
+country_event = {
+	id = CHI_foreign.020
+	title = CHI_foreign.020.t
+	desc = CHI_foreign.020.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.020.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.020.a executed"
+		add_opinion_modifier = { target = CHI modifier = peace_contributor }
+	}
+}
+
+# CHI_foreign.021 — USA event: Full withdrawal option
+country_event = {
+	id = CHI_foreign.021
+	title = CHI_foreign.021.t
+	desc = CHI_foreign.021.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.021.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.021.a executed"
+		add_stability = -0.05
+		CHI = {
+			add_political_power = 100
+			set_country_flag = CHI_us_troops_home
+			add_to_variable = { CHI_korea_alignment = 15 }
+			clamp_variable = { var = CHI_korea_alignment min = -100 max = 100 }
+		}
+		KOR = {
+			add_to_variable = { SFR = 10 }
+		}
+
+		ai_chance = {
+			base = 2
+			modifier = {
+				factor = 0
+				has_country_leader = { ruling_only = yes traits = { hawk } }
+			}
+		}
+	}
+
+	option = {
+		name = CHI_foreign.021.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.021.b executed"
+		CHI = {
+			add_to_variable = { CHI_korea_alignment = -5 }
+			clamp_variable = { var = CHI_korea_alignment min = -100 max = 100 }
+			set_country_flag = CHI_us_troops_reduced
+		}
+		KOR = {
+			add_to_variable = { SFR = 5 }
+		}
+
+		ai_chance = { base = 5 }
+	}
+}
+
+# CHI_foreign.022 — CHI event: Three Security Questions
+country_event = {
+	id = CHI_foreign.022
+	title = CHI_foreign.022.t
+	desc = CHI_foreign.022.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.022.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.022.a executed"
+		USA = { country_event = { id = CHI_foreign.021 days = 1 } }
+		KOR = {
+			add_to_variable = { SFR = 5 }
+		}
+
+		ai_chance = {
+			base = 1
+			modifier = {
+				add = 2
+				check_variable = { CHI_chinese_aggression < 0 }
+			}
+		}
+	}
+
+	option = {
+		name = CHI_foreign.022.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.022.b executed"
+		set_country_flag = CHI_us_troops_reduced
+		add_to_variable = { CHI_korea_alignment = 5 }
+		clamp_variable = { var = CHI_korea_alignment min = -100 max = 100 }
+		KOR = {
+			add_to_variable = { SFR = 5 }
+		}
+
+		ai_chance = { base = 3 }
+	}
+
+	option = {
+		name = CHI_foreign.022.c
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.022.c executed"
+		set_country_flag = CHI_us_troops_japan_only
+		add_to_variable = { CHI_korea_alignment = 10 }
+		clamp_variable = { var = CHI_korea_alignment min = -100 max = 100 }
+		JAP = { country_event = { id = CHI_foreign.019 days = 1 } }
+
+		ai_chance = {
+			base = 1
+			modifier = {
+				add = 2
+				check_variable = { CHI_chinese_aggression < -5 }
+			}
+		}
+	}
+}
+
+# CHI_foreign.023 — USA event: G2 Declaration response
+country_event = {
+	id = CHI_foreign.023
+	title = CHI_foreign.023.t
+	desc = CHI_foreign.023.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.023.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.023.a executed"
+		add_opinion_modifier = { target = CHI modifier = g2_partners }
+		CHI = {
+			add_opinion_modifier = { target = USA modifier = g2_partners }
+		}
+	}
+}
+
+# CHI_foreign.024 — NKO event: The Writing on the Wall
+country_event = {
+	id = CHI_foreign.024
+	title = CHI_foreign.024.t
+	desc = CHI_foreign.024.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.024.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.024.a executed"
+		add_popularity = { ideology = democratic amount = 0.05 }
+		add_stability = -0.03
+	}
+}
+
+# CHI_foreign.025 — KOR event: Seoul Leads (TAK 2 terminal)
+country_event = {
+	id = CHI_foreign.025
+	title = CHI_foreign.025.t
+	desc = CHI_foreign.025.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.025.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.025.a executed"
+		add_to_variable = { SFR = 15 }
+		add_political_power = 100
+		add_stability = 0.05
+		add_opinion_modifier = { target = CHI modifier = g2_triumph }
+	}
+}
+
+# CHI_foreign.026 — NKO event: Kim Acquiesces
+country_event = {
+	id = CHI_foreign.026
+	title = CHI_foreign.026.t
+	desc = CHI_foreign.026.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.026.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.026.a executed"
+		add_opinion_modifier = { target = KOR modifier = accepted_unity }
+		add_popularity = { ideology = democratic amount = 0.10 }
+	}
+}
+
+# CHI_foreign.027 — USA event: Washington celebrates (TAK 2 terminal)
+country_event = {
+	id = CHI_foreign.027
+	title = CHI_foreign.027.t
+	desc = CHI_foreign.027.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.027.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.027.a executed"
+		add_opinion_modifier = { target = CHI modifier = g2_triumph }
+		add_stability = 0.03
+	}
+}
+
+# CHI_foreign.028 — USA event: Buildup at the Yalu (TAK 4)
+country_event = {
+	id = CHI_foreign.028
+	title = CHI_foreign.028.t
+	desc = CHI_foreign.028.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.028.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.028.a executed"
+		add_war_support = 0.05
+		add_opinion_modifier = { target = CHI modifier = anti_american_provocateur }
+	}
+}
+
+# CHI_foreign.029 — CHI event: The Tsinghua Faction Memo
+country_event = {
+	id = CHI_foreign.029
+	title = CHI_foreign.029.t
+	desc = CHI_foreign.029.d
+	picture = GFX_politics_talks
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.029.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.029.a executed"
+		add_political_power = 25
+		add_stability = -0.02
+
+		ai_chance = {
+			base = 3
+			modifier = {
+				factor = 0
+				check_variable = { CHI_chinese_aggression > 20 }
+			}
+		}
+	}
+
+	option = {
+		name = CHI_foreign.029.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.029.b executed"
+		add_political_power = -50
+		add_stability = 0.02
+		clr_country_flag = CHI_northeast_reconsideration
+
+		ai_chance = {
+			base = 1
+			modifier = {
+				add = 3
+				check_variable = { CHI_chinese_aggression > 20 }
+			}
+		}
+	}
+}
+
+##############################################
+### CHI_foreign Phase II — Korean Peninsula ###
+##############################################
+
+# CHI_foreign.030 — USA: The THAAD Economic Response
+country_event = {
+	id = CHI_foreign.030
+	title = CHI_foreign.030.t
+	desc = CHI_foreign.030.d
+	picture = GFX_report_event_usa_crisis
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.030.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.030.a executed"
+		add_opinion_modifier = { target = CHI modifier = CHI_thaad_retaliation }
+	}
+}
+
+# CHI_foreign.031 — USA: Beijing Steps Back (de-escalation signal)
+country_event = {
+	id = CHI_foreign.031
+	title = CHI_foreign.031.t
+	desc = CHI_foreign.031.d
+	picture = GFX_report_event_china_diplomacy
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.031.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.031.a executed"
+		add_opinion_modifier = { target = CHI modifier = diplomatic_opening }
+	}
+}
+
+# CHI_foreign.032 — USA: Buildup at the Yalu
+country_event = {
+	id = CHI_foreign.032
+	title = CHI_foreign.032.t
+	desc = CHI_foreign.032.d
+	picture = GFX_report_event_usa_crisis
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.032.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.032.a executed"
+		add_war_support = 0.05
+		add_opinion_modifier = { target = CHI modifier = CHI_opposes_strategic_flexibility }
+	}
+}
+
+# CHI_foreign.033 — JAP: Article 9 Under Debate
+country_event = {
+	id = CHI_foreign.033
+	title = CHI_foreign.033.t
+	desc = CHI_foreign.033.d
+	picture = GFX_report_event_japan_politics
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.033.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.033.a executed"
+		add_war_support = 0.05
+	}
+}
+
+# CHI_foreign.034 — USA: Blue Sky Opens (war declaration)
+country_event = {
+	id = CHI_foreign.034
+	title = CHI_foreign.034.t
+	desc = CHI_foreign.034.d
+	picture = GFX_report_event_usa_crisis
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.034.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.034.a executed"
+		add_war_support = 0.10
+		add_opinion_modifier = { target = CHI modifier = CHI_war_criminal_state }
+	}
+}
+
+# CHI_foreign.035 — KOR: Chaos in Pyongyang
+country_event = {
+	id = CHI_foreign.035
+	title = CHI_foreign.035.t
+	desc = CHI_foreign.035.d
+	picture = GFX_report_event_korea_crisis
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.035.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.035.a executed"
+		add_war_support = 0.10
+		add_stability = -0.03
+	}
+}
+
+# CHI_foreign.036 — USA: Washington Assesses (NKO coup)
+country_event = {
+	id = CHI_foreign.036
+	title = CHI_foreign.036.t
+	desc = CHI_foreign.036.d
+	picture = GFX_report_event_usa_crisis
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.036.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.036.a executed"
+		add_opinion_modifier = { target = CHI modifier = CHI_regional_hegemon }
+	}
+}
+
+# CHI_foreign.037 — JAP: Tokyo Scrambles (NKO coup)
+country_event = {
+	id = CHI_foreign.037
+	title = CHI_foreign.037.t
+	desc = CHI_foreign.037.d
+	picture = GFX_report_event_japan_politics
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.037.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.037.a executed"
+		add_opinion_modifier = { target = CHI modifier = CHI_regional_hegemon }
+	}
+}
+
+# CHI_foreign.038 — USA: A Chinese North Korea (Beijing Settlement)
+country_event = {
+	id = CHI_foreign.038
+	title = CHI_foreign.038.t
+	desc = CHI_foreign.038.d
+	picture = GFX_report_event_usa_crisis
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.038.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.038.a executed"
+		add_opinion_modifier = { target = CHI modifier = CHI_regional_hegemon }
+	}
+}
+
+# CHI_foreign.039 — NKO: MSS Contact Exposed (decision failure roll)
+country_event = {
+	id = CHI_foreign.039
+	title = CHI_foreign.039.t
+	desc = CHI_foreign.039.d
+	picture = GFX_report_event_generic
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.039.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.039.a executed"
+		add_stability = 0.02
+		add_opinion_modifier = { target = CHI modifier = CHI_elite_network_discovered }
+	}
+}
+
+# CHI_foreign.040 — USA: Seoul Drifts (Pivot Reversed)
+country_event = {
+	id = CHI_foreign.040
+	title = CHI_foreign.040.t
+	desc = CHI_foreign.040.d
+	picture = GFX_report_event_usa_crisis
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.040.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.040.a executed"
+		add_opinion_modifier = { target = CHI modifier = CHI_displaced_partner }
+	}
+}
+
+# CHI_foreign.041 — NKO: Which China? (Pivot Reversed)
+country_event = {
+	id = CHI_foreign.041
+	title = CHI_foreign.041.t
+	desc = CHI_foreign.041.d
+	picture = GFX_report_event_generic
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.041.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.041.a executed"
+	}
+}
+
+# CHI_foreign.042 — JAP: Tokyo Alone (Indo-Pacific Collapsed)
+country_event = {
+	id = CHI_foreign.042
+	title = CHI_foreign.042.t
+	desc = CHI_foreign.042.d
+	picture = GFX_report_event_japan_politics
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.042.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.042.a executed"
+		add_stability = -0.03
+		add_war_support = 0.05
+	}
+}
+
+# CHI_foreign.043 — PHI: Manila's Choice (Indo-Pacific Collapsed, conditional)
+country_event = {
+	id = CHI_foreign.043
+	title = CHI_foreign.043.t
+	desc = CHI_foreign.043.d
+	picture = GFX_report_event_generic
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.043.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.043.a executed"
+	}
+}
+
+# CHI_foreign.044 — USA: The Pivot Ends (Indo-Pacific Collapsed)
+country_event = {
+	id = CHI_foreign.044
+	title = CHI_foreign.044.t
+	desc = CHI_foreign.044.d
+	picture = GFX_report_event_usa_crisis
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.044.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.044.a executed"
+		add_opinion_modifier = { target = CHI modifier = CHI_displaced_partner }
+	}
+}
+
+# CHI_foreign.045 — USA: Troops Come Home (Seoul Under Our Umbrella)
+country_event = {
+	id = CHI_foreign.045
+	title = CHI_foreign.045.t
+	desc = CHI_foreign.045.d
+	picture = GFX_report_event_usa_crisis
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.045.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.045.a executed"
+		add_opinion_modifier = { target = CHI modifier = CHI_eclipsed_in_asia }
+	}
+}
+
+# CHI_foreign.046 — JAP: Japan Reconsiders Everything (Seoul Under Our Umbrella)
+country_event = {
+	id = CHI_foreign.046
+	title = CHI_foreign.046.t
+	desc = CHI_foreign.046.d
+	picture = GFX_report_event_japan_politics
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.046.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.046.a executed"
+		add_war_support = 0.05
+	}
+}
+
+# CHI_foreign.047 — KOR: Unification Under Beijing's Guarantee
+country_event = {
+	id = CHI_foreign.047
+	title = CHI_foreign.047.t
+	desc = CHI_foreign.047.d
+	picture = GFX_report_event_korea_crisis
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.047.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.047.a executed"
+		set_country_flag = CHI_chinese_guaranteed_unification
+		add_to_variable = { SFR = 20 }
+		add_stability = 0.05
+	}
+}
+
+# CHI_foreign.048 — NKO: Kim Acquiesces on Chinese Terms
+country_event = {
+	id = CHI_foreign.048
+	title = CHI_foreign.048.t
+	desc = CHI_foreign.048.d
+	picture = GFX_report_event_generic
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.048.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.048.a executed"
+		add_opinion_modifier = { target = KOR modifier = accepted_unity }
+	}
+}
+
+# CHI_foreign.049 — USA: A Unification We Did Not Make
+country_event = {
+	id = CHI_foreign.049
+	title = CHI_foreign.049.t
+	desc = CHI_foreign.049.d
+	picture = GFX_report_event_usa_crisis
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_foreign.049.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.049.a executed"
+		add_opinion_modifier = { target = CHI modifier = CHI_eclipsed_in_asia }
+	}
+}
+
+# CHI_foreign.050 — Carriers Move Toward Korea Strait (tension threshold 40)
+news_event = {
+	id = CHI_foreign.050
+	title = CHI_foreign.050.t
+	desc = CHI_foreign.050.d
+	picture = GFX_report_event_generic_military_equipment
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = CHI_foreign.050.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.050.a executed"
+	}
+}
+
+# CHI_foreign.051 — Regional Crisis Alert (tension threshold 60)
+country_event = {
+	id = CHI_foreign.051
+	title = CHI_foreign.051.t
+	desc = CHI_foreign.051.d
+	picture = GFX_report_event_generic_military_equipment
+
+	is_triggered_only = yes
+
+	immediate = {
+		log = "[GetDateText]: [Root.GetName]: Event CHI_foreign.051"
+	}
+
+	option = {
+		name = CHI_foreign.051.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.051.a executed"
+		if = { limit = { country_exists = USA } USA = { add_timed_idea = { idea = CHI_regional_crisis_alert days = 1095 } } }
+		if = { limit = { country_exists = JAP } JAP = { add_timed_idea = { idea = CHI_regional_crisis_alert days = 1095 } } }
+		if = { limit = { country_exists = KOR } KOR = { add_timed_idea = { idea = CHI_regional_crisis_alert days = 1095 } } }
+	}
+}
+
+# CHI_foreign.052 — The Peninsula at the Brink (tension threshold 80)
+country_event = {
+	id = CHI_foreign.052
+	title = CHI_foreign.052.t
+	desc = CHI_foreign.052.d
+	picture = GFX_report_event_generic_military_equipment
+
+	is_triggered_only = yes
+
+	immediate = {
+		log = "[GetDateText]: [Root.GetName]: Event CHI_foreign.052"
+	}
+
+	# Option A: De-escalate
+	option = {
+		name = CHI_foreign.052.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.052.a executed"
+		add_to_variable = { CHI_korea_peninsula_tension = -30 tooltip = CHI_korea_peninsula_tension_tt }
+		add_political_power = -50
+		add_stability = -0.05
+	}
+
+	# Option B: Continue the pressure
+	option = {
+		name = CHI_foreign.052.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.052.b executed"
+		add_war_support = 0.05
+		add_timed_idea = { idea = CHI_south_china_sea_dominance_window days = 180 }
+	}
+}
+
+# CHI_foreign.053 — Regional Détente (fired when tension drops below 10)
+country_event = {
+	id = CHI_foreign.053
+	title = CHI_foreign.053.t
+	desc = CHI_foreign.053.d
+	picture = GFX_report_event_generic_sign_treaty1
+
+	is_triggered_only = yes
+
+	immediate = {
+		log = "[GetDateText]: [Root.GetName]: Event CHI_foreign.053"
+	}
+
+	option = {
+		name = CHI_foreign.053.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.053.a executed"
+		if = { limit = { country_exists = USA } USA = { if = { limit = { has_idea = CHI_regional_crisis_alert } remove_ideas = CHI_regional_crisis_alert } } }
+		if = { limit = { country_exists = JAP } JAP = { if = { limit = { has_idea = CHI_regional_crisis_alert } remove_ideas = CHI_regional_crisis_alert } } }
+		if = { limit = { country_exists = KOR } KOR = { if = { limit = { has_idea = CHI_regional_crisis_alert } remove_ideas = CHI_regional_crisis_alert } } }
+		every_country = {
+			limit = { is_major = yes }
+			add_opinion_modifier = { target = CHI modifier = CHI_peace_in_korea_delivered }
+		}
+		add_stability = 0.05
+	}
+}
+
+##############################################
+### china_news — Focus news events          ###
+##############################################
+
+add_namespace = china_news
+
+# china_news.40 — existing reference (kept as stub)
+news_event = {
+	id = china_news.40
+	title = china_news.40.t
+	desc = china_news.40.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.40.a
+		log = "[GetDateText]: [This.GetName]: china_news.40.a executed"
+	}
+}
+
+# china_news.41 — existing reference (kept as stub)
+news_event = {
+	id = china_news.41
+	title = china_news.41.t
+	desc = china_news.41.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.41.a
+		log = "[GetDateText]: [This.GetName]: china_news.41.a executed"
+	}
+}
+
+# china_news.42 — existing reference (kept as stub)
+news_event = {
+	id = china_news.42
+	title = china_news.42.t
+	desc = china_news.42.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.42.a
+		log = "[GetDateText]: [This.GetName]: china_news.42.a executed"
+	}
+}
+
+# china_news.43 — Peninsula Strategy announced
+news_event = {
+	id = china_news.43
+	title = china_news.43.t
+	desc = china_news.43.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.43.a
+		log = "[GetDateText]: [This.GetName]: china_news.43.a executed"
+	}
+}
+
+# Path A news events (china_news.140-144)
+news_event = {
+	id = china_news.140
+	title = china_news.140.t
+	desc = china_news.140.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.140.a
+		log = "[GetDateText]: [This.GetName]: china_news.140.a executed"
+	}
+}
+
+news_event = {
+	id = china_news.141
+	title = china_news.141.t
+	desc = china_news.141.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.141.a
+		log = "[GetDateText]: [This.GetName]: china_news.141.a executed"
+	}
+}
+
+news_event = {
+	id = china_news.142
+	title = china_news.142.t
+	desc = china_news.142.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.142.a
+		log = "[GetDateText]: [This.GetName]: china_news.142.a executed"
+	}
+}
+
+news_event = {
+	id = china_news.143
+	title = china_news.143.t
+	desc = china_news.143.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.143.a
+		log = "[GetDateText]: [This.GetName]: china_news.143.a executed"
+	}
+}
+
+news_event = {
+	id = china_news.144
+	title = china_news.144.t
+	desc = china_news.144.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.144.a
+		log = "[GetDateText]: [This.GetName]: china_news.144.a executed"
+	}
+}
+
+# Path B news events (china_news.150-154)
+news_event = {
+	id = china_news.150
+	title = china_news.150.t
+	desc = china_news.150.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.150.a
+		log = "[GetDateText]: [This.GetName]: china_news.150.a executed"
+	}
+}
+
+news_event = {
+	id = china_news.151
+	title = china_news.151.t
+	desc = china_news.151.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.151.a
+		log = "[GetDateText]: [This.GetName]: china_news.151.a executed"
+	}
+}
+
+news_event = {
+	id = china_news.152
+	title = china_news.152.t
+	desc = china_news.152.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.152.a
+		log = "[GetDateText]: [This.GetName]: china_news.152.a executed"
+	}
+}
+
+news_event = {
+	id = china_news.153
+	title = china_news.153.t
+	desc = china_news.153.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.153.a
+		log = "[GetDateText]: [This.GetName]: china_news.153.a executed"
+	}
+}
+
+news_event = {
+	id = china_news.154
+	title = china_news.154.t
+	desc = china_news.154.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.154.a
+		log = "[GetDateText]: [This.GetName]: china_news.154.a executed"
+	}
+}
+
+# Path C2 news events (china_news.160-162)
+news_event = {
+	id = china_news.160
+	title = china_news.160.t
+	desc = china_news.160.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.160.a
+		log = "[GetDateText]: [This.GetName]: china_news.160.a executed"
+	}
+}
+
+news_event = {
+	id = china_news.161
+	title = china_news.161.t
+	desc = china_news.161.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.161.a
+		log = "[GetDateText]: [This.GetName]: china_news.161.a executed"
+	}
+}
+
+news_event = {
+	id = china_news.162
+	title = china_news.162.t
+	desc = china_news.162.d
+	picture = GFX_report_event_china_politics
+
+	is_triggered_only = yes
+	major = yes
+
+	option = {
+		name = china_news.162.a
+		log = "[GetDateText]: [This.GetName]: china_news.162.a executed"
 	}
 }
