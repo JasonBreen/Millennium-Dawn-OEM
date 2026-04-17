@@ -568,10 +568,6 @@
 	NDefines.NNavy.ANTI_AIR_POW_ON_INCOMING_AIR_DAMAGE = 0.2 -- 0.2
 	NDefines.NNavy.ANTI_AIR_MULT_ON_INCOMING_AIR_DAMAGE = 0.35 -- 0.15
 	NDefines.NNavy.MAX_ANTI_AIR_REDUCTION_EFFECT_ON_INCOMING_AIR_DAMAGE = 0.9 -- 0.75
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
 	NDefines.NNavy.MISSION_FUEL_COSTS = {
 		0.1, -- HOLD (consumes fuel HOLD_MISSION_MOVEMENT_COST fuel while moving)
 		0.8, -- PATROL
