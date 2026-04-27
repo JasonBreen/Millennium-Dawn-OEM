@@ -40,6 +40,24 @@ For the full reference (variables, arrays, loops, collections, formatted loc), r
 
 For more comprehensive HOI4 scripting docs (effects, triggers, modifiers, wiki links), read `.claude/docs/documentation-references.md`.
 
+# Comments
+
+Default to writing **no comments**. Only add one when the WHY is non-obvious:
+
+- A hidden constraint that isn't visible from the surrounding code (e.g., "must run before X or Y fires twice")
+- A subtle invariant the reader would need to know to safely edit this block
+- A deliberate workaround for a specific engine bug or parser quirk
+- Behaviour that would genuinely surprise a competent reader
+
+**Never** add comments that:
+
+- Explain WHAT the code does — well-named effects, triggers, and variables already communicate that
+- Narrate the change ("Added for the X fix", "Handles case from issue #123") — those belong in the commit message, not the script
+- Reference callers or downstream consumers ("used by Y", "called from Z") — these rot as the codebase evolves
+- Restate the effect name in prose (`# add stability` above `add_stability = 0.05`)
+
+When in doubt, delete the comment. If the code is unclear without it, rename or restructure the code first.
+
 # Scripting Patterns
 
 ## NOT block scope
@@ -54,6 +72,20 @@ NOT = { has_idea = foo has_idea = bar }
 NOT = { has_idea = foo }
 NOT = { has_idea = bar }
 ```
+
+## Implicit AND in triggers
+
+Multiple conditions in a trigger block are implicitly AND-ed together. Never wrap conditions in redundant `AND = { }` blocks:
+
+```
+# Wrong — redundant AND wrapper
+trigger = { AND = { A B C } }
+
+# Correct — implicit AND
+trigger = { A B C }
+```
+
+This applies to `trigger`, `limit`, `visible`, `available`, `activation`, `cancel_trigger`, and all other trigger contexts.
 
 ## threat scale
 
