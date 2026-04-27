@@ -7290,4 +7290,365 @@ focus_tree = {
 			base = 1
 		}
 	}
+	#New Shit Nigga#
+	#Anchor Focus#
+	focus = {
+		id = CHE_Bloodied_But_Unbroken
+		icon = chechendivide
+
+		x = -50
+		y = 0
+
+		cost = 1.5
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHE_Rally_around_the_Fighters"
+
+			custom_effect_tooltip = CHE_Unlocks_operation_List_tooltip
+			newline = yes
+			add_war_support = 0.05
+			newline = yes
+
+			672 = {
+				add_dynamic_modifier = {
+					modifier = Chechnya_Breaking_the_siege_dynamic_modifier
+					scope = CHE
+					days = 20
+				}
+			}
+
+			newline = yes
+			add_doctrine_cost_reduction = {
+				name = AFG_civil_war
+				category = CAT_land_doctrine
+				uses = 2
+				cost_reduction = 0.2
+			}
+
+		}
+
+		ai_will_do = {
+			base = 1
+		}
+	}
+
+	focus = {
+		id = CHE_Muster_the_Grey_Wolves
+		icon = bahrein_allied
+
+		x = -3
+		y = 1
+		relative_position_id = CHE_Bloodied_But_Unbroken
+
+		cost = 5
+
+		prerequisite = { focus = CHE_Bloodied_But_Unbroken }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHE_Muster_the_Grey_Wolves"
+		}
+
+		ai_will_do = {
+			base = 1
+		}
+	}
+
+	focus = {
+		id = CHE_Rally_around_the_Fighters
+		icon = bahrein_allied
+
+		x = -1
+		y = 1
+		relative_position_id = CHE_Bloodied_But_Unbroken
+
+		cost = 5
+
+		prerequisite = { focus = CHE_Bloodied_But_Unbroken }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		mutually_exclusive = {
+			focus = CHE_The_London_Government
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHE_Rally_around_the_Fighters"
+			custom_effect_tooltip = add_custom_tech
+			
+		}
+
+		ai_will_do = {
+			base = 1
+		}
+	}
+	focus = {
+		id = CHE_The_London_Government
+		icon = bahrein_allied
+
+		x = 1
+		y = 1
+		relative_position_id = CHE_Bloodied_But_Unbroken
+
+		cost = 5
+
+		prerequisite = { focus = CHE_Bloodied_But_Unbroken }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		mutually_exclusive = {
+			focus = CHE_Rally_around_the_Fighters
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHE_The_London_Government"
+			custom_effect_tooltip = CHE_exile_tooltip
+			
+			newline = yes
+			custom_effect_tooltip = CHE_exile3_tooltip
+			add_country_leader_trait = CHE_government_from_afar
+			
+			custom_effect_tooltip = CHE_available_military_high_command
+			show_ideas_tooltip = akhmed_zakayev
+			newline = yes
+			CHE_akhmed_zakayev = {
+				add_corps_commander_role = {
+					traits = { commando trait_reckless trickster }
+					skill = 2
+					attack_skill = 2
+					defense_skill = 1
+					planning_skill = 4
+					logistics_skill = 2
+				}
+			}
+			
+			newline = yes
+			custom_effect_tooltip = CHE_exile2_tooltip
+
+			#ADD TO ON ACTION
+			#ENG = { add_to_faction = BOS }
+			#become_exiled_in = { 
+			#	target = ENG
+			#	legitimacy = 100
+			#}
+			#every_controlled_state = {
+			#	set_state_controller_to = SOV
+			#}
+			#ENG = { remove_from_faction = CHE }
+		}
+
+		ai_will_do = {
+			base = 1
+		}
+	}
+
+	focus = {
+		id = CHE_The_Gulf_Networks
+		icon = bahrein_allied
+
+		x = 1
+		y = 1
+		relative_position_id = CHE_Muster_the_Grey_Wolves
+
+		cost = 5
+
+		prerequisite = { focus = CHE_Rally_around_the_Fighters }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHE_The_Gulf_Networks"
+		}
+
+		ai_will_do = {
+			base = 1
+		}
+	}
+
+	focus = {
+		id = CHE_Fire_Vakha_Arsanov
+		icon = bahrein_allied
+
+		x = 0
+		y = 2
+		relative_position_id = CHE_Bloodied_But_Unbroken
+
+		cost = 5
+
+		prerequisite = { focus = CHE_Rally_around_the_Fighters focus = CHE_The_London_Government }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHE_Fire_Vakha_Arsanov"
+		}
+
+		ai_will_do = {
+			base = 1
+		}
+	}
+
+	focus = {
+		id = CHE_Mission_to_UNSO
+		icon = UKR_Ukrainian_Officers
+
+		x = 0
+		y = 2
+		relative_position_id = CHE_The_London_Government
+
+		cost = 5
+
+		available = {
+			country_exists = UKR
+			NOT = {
+				has_war_with = UKR
+				any_allied_country = {
+					has_war_with = UKR
+				}
+			}
+			if = {
+				limit = { has_dlc = "By Blood Alone" }
+				NOT = { is_embargoed_by = UKR }
+			}
+			UKR = {
+				has_opinion = {
+					target = CHE
+					value > 14
+				}
+			}
+		}
+
+		prerequisite = { focus = CHE_The_London_Government }
+		prerequisite = { focus = CHE_Fire_Vakha_Arsanov }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHE_Mission_to_UNSO"
+
+			custom_effect_tooltip = CHE_UNSO_units_tooltip
+
+			division_template = {
+				name = "Ukrainska Narodna Samooborona - volontery"
+				regiments = {
+					Mot_Inf_Bat = { x = 0 y = 0 }
+					Mot_Inf_Bat = { x = 0 y = 1 }
+					Mot_Inf_Bat = { x = 0 y = 2 }
+					
+					Mot_Inf_Bat = { x = 1 y = 0 }
+					Mot_Inf_Bat = { x = 1 y = 1 }
+					Mot_Inf_Bat = { x = 1 y = 2 }
+					
+					L_Inf_Bat = { x = 2 y = 0 }
+					L_Inf_Bat = { x = 2 y = 1 }
+					L_Inf_Bat = { x = 2 y = 2 }
+
+					SP_Arty_Bat = { x = 3 y = 0 }
+				}
+				support = {
+					L_Engi_Comp = { x = 0 y = 0 }
+					armor_Comp = { x = 0 y = 1 }
+				}
+				priority = 1
+			}
+			
+			hidden_effect = {
+				672 = {
+					create_unit = {
+						division = "name = \"Bryhada Vikinhiv\" division_template = \"Ukrainska Narodna Samooborona - volontery\"start_experience_factor = 0.8 start_equipment_factor = 1.0"
+						count = 2
+						owner = CHE
+					}	
+				}
+			}
+			
+			newline = yes
+			UKR = {
+				UKR_Oleksandr_Muzychko_chechnya = {
+					set_nationality = CHE
+				}
+				UKR_mykola_karpiuk_chechnya = {
+					set_nationality = CHE
+				}
+			}
+			UKR_Oleksandr_Muzychko_chechnya = {
+				set_nationality = CHE
+				add_corps_commander_role = {
+					traits = { commando trait_reckless trickster }
+					skill = 2
+					attack_skill = 2
+					defense_skill = 1
+					planning_skill = 4
+					logistics_skill = 2
+				}
+			}
+			UKR_mykola_karpiuk_chechnya = {
+				set_nationality = CHE
+				add_corps_commander_role = {
+					traits = { trait_engineer artillery_leader }
+					skill = 2
+					attack_skill = 1
+					defense_skill = 1
+					planning_skill = 2
+					logistics_skill = 2
+				}
+			}
+			newline = yes
+
+			UKR = { country_event = chechnya_events.0 }
+			
+		}
+
+		ai_will_do = {
+			base = 1
+		}
+	}
+
+	focus = {
+		id = CHE_Compromise_with_the_Islamists
+		icon = bahrein_allied
+
+		x = 0
+		y = 2
+		relative_position_id = CHE_Rally_around_the_Fighters
+
+		cost = 5
+
+		prerequisite = { focus = CHE_Rally_around_the_Fighters focus = CHE_The_London_Government }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHE_Compromise_with_the_Islamists"
+		}
+
+		ai_will_do = {
+			base = 1
+		}
+	}
+	focus = {
+		id = CHE_Suppression_of_Rouge_Warlords
+		icon = bahrein_allied
+
+		x = 0
+		y = 2
+		relative_position_id = CHE_Fire_Vakha_Arsanov
+
+		cost = 5
+
+		prerequisite = { focus = CHE_Compromise_with_the_Islamists focus = CHE_Mission_to_UNSO }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHE_Suppression_of_Rouge_Warlords"
+		}
+
+		ai_will_do = {
+			base = 1
+		}
+	}
 }
