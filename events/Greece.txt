@@ -4254,3 +4254,343 @@ country_event = {
 		ai_chance = { base = 1 }
 	}
 }
+
+###############################
+# Eastern Brotherhood — Aegean Tension / Cyprus Momentum events
+###############################
+
+# greece.700 — Aegean Dialogue cycle (fired by GRE_aegean_dialogue_mission timeout)
+country_event = {
+	id = greece.700
+	title = greece.700.t
+	desc = greece.700.d
+	picture = GFX_political_deal
+	is_triggered_only = yes
+
+	option = {
+		name = greece.700.a
+		log = "[GetDateText]: [This.GetName]: greece.700.a executed"
+		set_temp_variable = { tension_change = -5 }
+		GRE_change_aegean_tension = yes
+		set_country_flag = GRE_lost_continental_shelf_claims
+		hidden_effect = {
+			activate_mission = GRE_aegean_dialogue_mission
+		}
+		ai_chance = { base = 30 }
+	}
+
+	option = {
+		name = greece.700.b
+		log = "[GetDateText]: [This.GetName]: greece.700.b executed"
+		add_political_power = -10
+		hidden_effect = {
+			activate_mission = GRE_aegean_dialogue_mission
+		}
+		ai_chance = { base = 70 }
+	}
+}
+
+# greece.701 — Turkey cancels migration cooperation (high tension)
+country_event = {
+	id = greece.701
+	title = greece.701.t
+	desc = greece.701.d
+	picture = GFX_riots_austerity
+
+	trigger = {
+		original_tag = GRE
+		has_country_flag = GRE_migration_deal_active
+		check_variable = { GRE_aegean_tension > 70 }
+	}
+
+	mean_time_to_happen = {
+		days = 90
+		modifier = {
+			factor = 0.5
+			check_variable = { GRE_aegean_tension > 85 }
+		}
+	}
+
+	fire_only_once = yes
+
+	option = {
+		name = greece.701.a
+		log = "[GetDateText]: [This.GetName]: greece.701.a executed"
+		remove_ideas = GRE_migration_cooperation_idea
+		add_timed_idea = {
+			idea = GRE_migration_crisis_idea
+			days = 180
+		}
+		clr_country_flag = GRE_migration_deal_active
+		ai_chance = { base = 1 }
+	}
+}
+
+# greece.702 — Aegean incident (airspace violation, fired by assertiveness focus, self-recurs)
+country_event = {
+	id = greece.702
+	title = greece.702.t
+	desc = greece.702.d
+	picture = GFX_weapons_arms1
+
+	is_triggered_only = yes
+
+	option = {
+		name = greece.702.a
+		log = "[GetDateText]: [This.GetName]: greece.702.a executed"
+		set_temp_variable = { tension_change = -5 }
+		GRE_change_aegean_tension = yes
+		hidden_effect = {
+			if = {
+				limit = { has_country_flag = GRE_assertive_patrols }
+				country_event = { id = greece.702 days = 90 }
+			}
+		}
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = greece.702.b
+		log = "[GetDateText]: [This.GetName]: greece.702.b executed"
+		set_temp_variable = { tension_change = 5 }
+		GRE_change_aegean_tension = yes
+		random_list = {
+			75 = { }
+			25 = { country_event = { id = greece.705 days = 5 } }
+		}
+		hidden_effect = {
+			if = {
+				limit = { has_country_flag = GRE_assertive_patrols }
+				country_event = { id = greece.702 days = 90 }
+			}
+		}
+		ai_chance = { base = 50 }
+	}
+}
+
+# greece.703 — Turkey responds at moderate tension (news event, no player choice)
+news_event = {
+	id = greece.703
+	title = greece.703.t
+	desc = greece.703.d
+	picture = GFX_political_deal
+
+	trigger = {
+		original_tag = GRE
+		check_variable = { GRE_aegean_tension > 50 }
+		check_variable = { GRE_aegean_tension < 70 }
+		country_exists = NCY
+	}
+
+	mean_time_to_happen = {
+		days = 120
+		modifier = {
+			factor = 0.5
+			has_completed_focus = GRE_enosis_campaign
+		}
+	}
+
+	option = {
+		name = greece.703.a
+		log = "[GetDateText]: [This.GetName]: greece.703.a executed"
+		hidden_effect = {
+			if = {
+				limit = { country_exists = NCY }
+				set_temp_variable = { percent_change = 3 }
+				set_temp_variable = { tag_index = TUR.id }
+				set_temp_variable = { influence_target = NCY.id }
+				change_influence_percentage = yes
+			}
+		}
+	}
+}
+
+# greece.704 — Cyprus gas crisis (fired by gas focus when tension > 70)
+country_event = {
+	id = greece.704
+	title = greece.704.t
+	desc = greece.704.d
+	picture = GFX_political_deal
+
+	is_triggered_only = yes
+
+	option = {
+		name = greece.704.a
+		log = "[GetDateText]: [This.GetName]: greece.704.a executed"
+		set_temp_variable = { momentum_change = -10 }
+		GRE_change_cyprus_momentum = yes
+		add_opinion_modifier = { target = TUR modifier = eased_border_tensions }
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = greece.704.b
+		log = "[GetDateText]: [This.GetName]: greece.704.b executed"
+		set_temp_variable = { tension_change = 5 }
+		GRE_change_aegean_tension = yes
+		random_list = {
+			85 = { }
+			15 = { add_threat = 2 }
+		}
+		ai_chance = { base = 50 }
+	}
+}
+
+# greece.705 — Turkish ultimatum (very high tension + enosis completed)
+country_event = {
+	id = greece.705
+	title = greece.705.t
+	desc = greece.705.d
+	picture = GFX_weapons_arms1
+
+	trigger = {
+		original_tag = GRE
+		check_variable = { GRE_aegean_tension > 80 }
+		has_completed_focus = GRE_enosis_campaign
+		country_exists = TUR
+		NOT = { has_war_with = TUR }
+	}
+
+	mean_time_to_happen = {
+		days = 90
+	}
+
+	fire_only_once = yes
+
+	option = {
+		name = greece.705.a
+		log = "[GetDateText]: [This.GetName]: greece.705.a executed"
+		set_temp_variable = { momentum_change = -30 }
+		GRE_change_cyprus_momentum = yes
+		add_stability = 0.05
+		set_country_flag = GRE_aegean_de_escalation
+		ai_chance = { base = 70 }
+	}
+
+	option = {
+		name = greece.705.b
+		log = "[GetDateText]: [This.GetName]: greece.705.b executed"
+		set_temp_variable = { tension_change = 10 }
+		GRE_change_aegean_tension = yes
+		add_war_support = 0.05
+		add_threat = 3
+		ai_chance = { base = 30 }
+	}
+}
+
+# greece.706 — Minor airspace violation flavor event (low/moderate tension)
+news_event = {
+	id = greece.706
+	title = greece.706.t
+	desc = greece.706.d
+	picture = GFX_weapons_arms1
+
+	trigger = {
+		original_tag = GRE
+		check_variable = { GRE_aegean_tension > 30 }
+		check_variable = { GRE_aegean_tension < 50 }
+	}
+
+	mean_time_to_happen = {
+		days = 365
+	}
+
+	option = {
+		name = greece.706.a
+		log = "[GetDateText]: [This.GetName]: greece.706.a executed"
+		add_threat = 1
+	}
+}
+
+# greece.710 — Confederation: autonomy choice
+country_event = {
+	id = greece.710
+	title = greece.710.t
+	desc = greece.710.d
+	picture = GFX_political_deal
+	is_triggered_only = yes
+
+	option = {
+		name = greece.710.a
+		log = "[GetDateText]: [This.GetName]: greece.710.a executed"
+		add_stability = 0.05
+		set_temp_variable = { momentum_change = 5 }
+		GRE_change_cyprus_momentum = yes
+		set_country_flag = GRE_confederation_autonomy_done
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = greece.710.b
+		log = "[GetDateText]: [This.GetName]: greece.710.b executed"
+		add_political_power = 50
+		set_temp_variable = { momentum_change = 10 }
+		GRE_change_cyprus_momentum = yes
+		set_country_flag = GRE_confederation_autonomy_done
+		ai_chance = { base = 50 }
+	}
+}
+
+# greece.711 — Confederation: economic distribution choice
+country_event = {
+	id = greece.711
+	title = greece.711.t
+	desc = greece.711.d
+	picture = GFX_political_deal
+	is_triggered_only = yes
+
+	option = {
+		name = greece.711.a
+		log = "[GetDateText]: [This.GetName]: greece.711.a executed"
+		if = {
+			limit = { country_exists = CYP }
+			add_opinion_modifier = { target = CYP modifier = free_trade_agreement }
+			reverse_add_opinion_modifier = { target = CYP modifier = free_trade_agreement }
+		}
+		if = {
+			limit = { country_exists = NCY }
+			add_opinion_modifier = { target = NCY modifier = free_trade_agreement }
+			reverse_add_opinion_modifier = { target = NCY modifier = free_trade_agreement }
+		}
+		set_country_flag = GRE_confederation_economy_done
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = greece.711.b
+		log = "[GetDateText]: [This.GetName]: greece.711.b executed"
+		set_temp_variable = { momentum_change = 5 }
+		GRE_change_cyprus_momentum = yes
+		if = {
+			limit = { country_exists = NCY }
+			add_opinion_modifier = { target = NCY modifier = small_decrease }
+		}
+		set_country_flag = GRE_confederation_economy_done
+		ai_chance = { base = 50 }
+	}
+}
+
+# greece.712 — Confederation: security guarantee choice
+country_event = {
+	id = greece.712
+	title = greece.712.t
+	desc = greece.712.d
+	picture = GFX_political_deal
+	is_triggered_only = yes
+
+	option = {
+		name = greece.712.a
+		log = "[GetDateText]: [This.GetName]: greece.712.a executed"
+		add_ideas = GRE_aegean_defense_posture
+		set_country_flag = GRE_confederation_security_done
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = greece.712.b
+		log = "[GetDateText]: [This.GetName]: greece.712.b executed"
+		add_stability = 0.05
+		set_country_flag = GRE_confederation_security_done
+		ai_chance = { base = 50 }
+	}
+}

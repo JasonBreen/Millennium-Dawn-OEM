@@ -10103,6 +10103,8 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: GRE_eastern_neighborhood"
+			GRE_init_eastern_variables = yes
+			custom_effect_tooltip = GRE_eastern_neighborhood_baseline_TT
 			add_political_power = 75
 		}
 
@@ -10129,9 +10131,11 @@ focus_tree = {
 			add_opinion_modifier = { target = TUR modifier = eased_border_tensions }
 			reverse_add_opinion_modifier = { target = TUR modifier = eased_border_tensions }
 			set_temp_variable = { percent_change = 2 }
-			set_temp_variable = { tag_index = GRE }
-			set_temp_variable = { influence_target = TUR }
+			set_temp_variable = { tag_index = GRE.id }
+			set_temp_variable = { influence_target = TUR.id }
 			change_influence_percentage = yes
+			set_temp_variable = { tension_change = -10 }
+			GRE_change_aegean_tension = yes
 		}
 
 		ai_will_do = { base = 5 }
@@ -10157,11 +10161,13 @@ focus_tree = {
 			add_opinion_modifier = { target = TUR modifier = no_diplomatic_ties }
 			reverse_add_opinion_modifier = { target = TUR modifier = no_diplomatic_ties }
 			add_threat = 2
+			add_ideas = GRE_defending_sovereignty
+			set_temp_variable = { tension_change = 15 }
+			GRE_change_aegean_tension = yes
 		}
 
 		ai_will_do = {
 			base = 3
-			
 		}
 	}
 
@@ -10184,6 +10190,9 @@ focus_tree = {
 			add_opinion_modifier = { target = TUR modifier = eased_border_tensions }
 			reverse_add_opinion_modifier = { target = TUR modifier = eased_border_tensions }
 			add_political_power = 50
+			set_temp_variable = { tension_change = -10 }
+			GRE_change_aegean_tension = yes
+			activate_mission = GRE_aegean_dialogue_mission
 		}
 
 		ai_will_do = { base = 10 }
@@ -10208,6 +10217,10 @@ focus_tree = {
 			add_opinion_modifier = { target = TUR modifier = declaration_of_friendship }
 			reverse_add_opinion_modifier = { target = TUR modifier = declaration_of_friendship }
 			add_political_power = 25
+			add_ideas = GRE_migration_cooperation_idea
+			set_country_flag = GRE_migration_deal_active
+			set_temp_variable = { tension_change = -5 }
+			GRE_change_aegean_tension = yes
 		}
 
 		ai_will_do = { base = 10 }
@@ -10234,6 +10247,9 @@ focus_tree = {
 			set_temp_variable = { receiver_nation = TUR }
 			set_temp_variable = { sender_nation = GRE }
 			set_improved_trade_agreement = yes
+			set_country_flag = GRE_grc_tur_trade_active
+			set_temp_variable = { tension_change = -5 }
+			GRE_change_aegean_tension = yes
 		}
 
 		ai_will_do = { base = 10 }
@@ -10264,6 +10280,18 @@ focus_tree = {
 				reverse_add_opinion_modifier = { target = ROOT modifier = declaration_of_friendship }
 			}
 			add_war_support = 0.03
+			if = {
+				limit = { has_opinion = { target = USA value > 50 } }
+				set_temp_variable = { percent_change = -5 }
+			}
+			else = {
+				set_temp_variable = { percent_change = -2 }
+			}
+			set_temp_variable = { tag_index = GRE.id }
+			set_temp_variable = { influence_target = TUR.id }
+			change_influence_percentage = yes
+			set_temp_variable = { tension_change = 5 }
+			GRE_change_aegean_tension = yes
 		}
 
 		ai_will_do = { base = 10 }
@@ -10286,6 +10314,14 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: GRE_aegean_assertiveness"
 			navy_experience = 50
+			add_timed_idea = {
+				idea = GRE_aegean_naval_supremacy
+				days = 180
+			}
+			set_country_flag = GRE_assertive_patrols
+			country_event = { id = greece.702 days = 90 }
+			set_temp_variable = { tension_change = 10 }
+			GRE_change_aegean_tension = yes
 		}
 
 		ai_will_do = { base = 10 }
@@ -10312,6 +10348,8 @@ focus_tree = {
 				idea = GRE_aegean_defense_posture
 				days = 180
 			}
+			set_temp_variable = { tension_change = 5 }
+			GRE_change_aegean_tension = yes
 		}
 
 		ai_will_do = { base = 10 }
@@ -10334,14 +10372,25 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: GRE_enosis_campaign"
-			set_temp_variable = { percent_change = 8 }
-			set_temp_variable = { tag_index = GRE }
-			set_temp_variable = { influence_target = CYP }
+			set_temp_variable = { percent_change = 15 }
+			set_temp_variable = { tag_index = GRE.id }
+			set_temp_variable = { influence_target = CYP.id }
 			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 3 }
-			set_temp_variable = { influence_target = NCY }
-			change_influence_percentage = yes
+			set_temp_variable = { momentum_change = 10 }
+			GRE_change_cyprus_momentum = yes
 			add_political_power = -50
+			if = {
+				limit = { check_variable = { GRE_aegean_tension > 60 } }
+				set_temp_variable = { tension_change = 10 }
+				GRE_change_aegean_tension = yes
+				if = {
+					limit = { country_exists = NCY }
+					set_temp_variable = { percent_change = 5 }
+					set_temp_variable = { tag_index = TUR.id }
+					set_temp_variable = { influence_target = NCY.id }
+					change_influence_percentage = yes
+				}
+			}
 		}
 
 		ai_will_do = { base = 10 }
@@ -10364,9 +10413,11 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: GRE_cypriot_economic_integration"
 			set_temp_variable = { percent_change = 10 }
-			set_temp_variable = { tag_index = GRE }
-			set_temp_variable = { influence_target = CYP }
+			set_temp_variable = { tag_index = GRE.id }
+			set_temp_variable = { influence_target = CYP.id }
 			change_influence_percentage = yes
+			set_temp_variable = { momentum_change = 10 }
+			GRE_change_cyprus_momentum = yes
 			add_timed_idea = {
 				idea = GRE_cypriot_aid
 				days = 90
@@ -10392,10 +10443,19 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: GRE_northern_outreach"
-			set_temp_variable = { percent_change = 8 }
-			set_temp_variable = { tag_index = GRE }
-			set_temp_variable = { influence_target = NCY }
+			if = {
+				limit = { check_variable = { GRE_aegean_tension < 50 } }
+				set_temp_variable = { percent_change = 10 }
+				set_temp_variable = { momentum_change = 15 }
+			}
+			else = {
+				set_temp_variable = { percent_change = 3 }
+				set_temp_variable = { momentum_change = 5 }
+			}
+			set_temp_variable = { tag_index = GRE.id }
+			set_temp_variable = { influence_target = NCY.id }
 			change_influence_percentage = yes
+			GRE_change_cyprus_momentum = yes
 			if = {
 				limit = { country_exists = NCY }
 				NCY = {
@@ -10421,16 +10481,20 @@ focus_tree = {
 		prerequisite = { focus = GRE_cypriot_economic_integration }
 		prerequisite = { focus = GRE_northern_outreach }
 
+		available = {
+			has_opinion = { target = ENG value > 25 }
+		}
+
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: GRE_british_bases_accord"
-			set_temp_variable = { percent_change = 5 }
-			set_temp_variable = { tag_index = GRE }
-			set_temp_variable = { influence_target = CYP }
+			set_temp_variable = { percent_change = 20 }
+			set_temp_variable = { tag_index = GRE.id }
+			set_temp_variable = { influence_target = ENG.id }
 			change_influence_percentage = yes
-			set_temp_variable = { influence_target = NCY }
-			change_influence_percentage = yes
+			set_temp_variable = { momentum_change = 10 }
+			GRE_change_cyprus_momentum = yes
 			add_opinion_modifier = { target = ENG modifier = declaration_of_friendship }
 			reverse_add_opinion_modifier = { target = ENG modifier = declaration_of_friendship }
 			add_opinion_modifier = { target = ENG modifier = free_trade_agreement }
@@ -10456,13 +10520,17 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: GRE_cyprus_gas_exploitation"
-			set_temp_variable = { percent_change = 5 }
-			set_temp_variable = { tag_index = GRE }
-			set_temp_variable = { influence_target = CYP }
-			change_influence_percentage = yes
-			add_timed_idea = {
-				idea = GRE_gas_idea
-				days = 180
+			set_temp_variable = { momentum_change = 15 }
+			GRE_change_cyprus_momentum = yes
+			if = {
+				limit = { check_variable = { GRE_aegean_tension > 70 } }
+				country_event = { id = greece.704 days = 5 }
+			}
+			else = {
+				add_timed_idea = {
+					idea = GRE_gas_idea
+					days = 180
+				}
 			}
 		}
 
@@ -10482,16 +10550,20 @@ focus_tree = {
 		prerequisite = { focus = GRE_british_bases_accord }
 		prerequisite = { focus = GRE_cyprus_gas_exploitation }
 
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = GRE_cyprus_momentum_mid_TT
+				check_variable = { GRE_cyprus_momentum > 40 }
+			}
+		}
+
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: GRE_confederation_framework"
-			set_temp_variable = { percent_change = 5 }
-			set_temp_variable = { tag_index = GRE }
-			set_temp_variable = { influence_target = CYP }
-			change_influence_percentage = yes
-			set_temp_variable = { influence_target = NCY }
-			change_influence_percentage = yes
+			set_temp_variable = { momentum_change = 20 }
+			GRE_change_cyprus_momentum = yes
+			set_country_flag = GRE_confederation_active
 			add_political_power = 100
 			custom_effect_tooltip = GRE_confederation_framework_TT
 		}
@@ -10514,8 +10586,21 @@ focus_tree = {
 		available = {
 			country_exists = CYP
 			country_exists = NCY
-			CYP = { influence_higher_60 = yes }
-			NCY = { influence_higher_50 = yes }
+			has_completed_focus = GRE_british_bases_accord
+			custom_trigger_tooltip = {
+				tooltip = GRE_confederation_all_done_TT
+				has_country_flag = GRE_confederation_autonomy_done
+				has_country_flag = GRE_confederation_economy_done
+				has_country_flag = GRE_confederation_security_done
+			}
+			custom_trigger_tooltip = {
+				tooltip = GRE_cyprus_momentum_high_TT
+				check_variable = { GRE_cyprus_momentum > 70 }
+			}
+			custom_trigger_tooltip = {
+				tooltip = GRE_aegean_tension_low_TT
+				check_variable = { GRE_aegean_tension < 40 }
+			}
 			NOT = { has_active_mission = bankruptcy_incoming_collapse }
 		}
 
