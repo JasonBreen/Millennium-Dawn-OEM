@@ -40,6 +40,24 @@ For the full reference (variables, arrays, loops, collections, formatted loc), r
 
 For more comprehensive HOI4 scripting docs (effects, triggers, modifiers, wiki links), read `.claude/docs/documentation-references.md`.
 
+# Comments
+
+Default to writing **no comments**. Only add one when the WHY is non-obvious:
+
+- A hidden constraint that isn't visible from the surrounding code (e.g., "must run before X or Y fires twice")
+- A subtle invariant the reader would need to know to safely edit this block
+- A deliberate workaround for a specific engine bug or parser quirk
+- Behaviour that would genuinely surprise a competent reader
+
+**Never** add comments that:
+
+- Explain WHAT the code does — well-named effects, triggers, and variables already communicate that
+- Narrate the change ("Added for the X fix", "Handles case from issue #123") — those belong in the commit message, not the script
+- Reference callers or downstream consumers ("used by Y", "called from Z") — these rot as the codebase evolves
+- Restate the effect name in prose (`# add stability` above `add_stability = 0.05`)
+
+When in doubt, delete the comment. If the code is unclear without it, rename or restructure the code first.
+
 # Scripting Patterns
 
 ## NOT block scope
@@ -54,6 +72,20 @@ NOT = { has_idea = foo has_idea = bar }
 NOT = { has_idea = foo }
 NOT = { has_idea = bar }
 ```
+
+## Implicit AND in triggers
+
+Multiple conditions in a trigger block are implicitly AND-ed together. Never wrap conditions in redundant `AND = { }` blocks:
+
+```
+# Wrong — redundant AND wrapper
+trigger = { AND = { A B C } }
+
+# Correct — implicit AND
+trigger = { A B C }
+```
+
+This applies to `trigger`, `limit`, `visible`, `available`, `activation`, `cancel_trigger`, and all other trigger contexts.
 
 ## threat scale
 
@@ -90,6 +122,66 @@ if = { limit = { check_variable = { X < 7 } } ... }
 if = { limit = { check_variable = { X > 7 } } ... }
 else = { ... }
 ```
+
+# Array Index Semantics
+
+When a function uses `^index` array subscripts, the **meaning of the index variable** must be obvious and consistent. Common bugs arise when two different index types are stored in similarly-named variables.
+
+| Variable name              | Should hold                  | Must NOT hold                                   |
+| -------------------------- | ---------------------------- | ----------------------------------------------- |
+| `project`, `slot`, `idx`   | Slot / array position (0..N) | Building type, category ID, or other lookup key |
+| `type`, `kind`, `category` | Lookup key / type ID (1..N)  | Slot index                                      |
+
+**Rule:** When a function parameter is an array index, document it in the function comment. Verify every caller passes the right kind of index. See `.claude/docs/refactor-checklist.md` for the full verification steps.
+
+---
+
+## Simplification Patterns
+
+- **Consolidate identical-body `else_if` chains:** When N consecutive `else_if` branches have the same body, collapse into one `OR` limit (or plain `else` if the preceding chain guarantees one condition is true). See `.claude/docs/simplification-patterns.md`.
+
+Replace N parallel `if/else_if` lookup chains with array indexing:
+
+```
+# Before: 14 branches
+if = { limit = { check_variable = { type = 1 } } set_variable = { cost = global.BUILD_COST_CIVILIAN_FACTORY } }
+else_if = { limit = { check_variable = { type = 2 } } set_variable = { cost = global.BUILD_COST_MILITARY_FACTORY } }
+# ... etc ...
+
+# After: one array + one lookup
+set_temp_variable = { idx = type }
+set_variable = { cost = global.build_cost_array^idx }
+```
+
+See `.claude/docs/simplification-patterns.md` for the full set of patterns.
+
+---
+
+## Performance Patterns
+
+### Hoist invariant lookups out of loops
+
+Cache country-scope values (`num_of_factories`, `has_war`, flags, ideas) before iterating states. Each `CONTROLLER = { ... }` scope switch inside a per-state loop is expensive.
+
+### GUI `dirty` counters
+
+Never bind `dirty = global.date`. Use a dedicated counter incremented only on relevant state changes. See `.claude/docs/performance-patterns.md`.
+
+---
+
+## Refactor Breaking-Change Checklist
+
+When renaming prefixes, migrating globals to arrays, or changing function signatures:
+
+1. Grep the **entire repo** for old names (flags, variables, events, decisions, GUI, GFX).
+2. Verify array-index semantics: trace every caller to confirm the index variable holds the expected value.
+3. Check localisation for `[?global.old_name]` references — these fail silently to 0.
+4. Verify event `log =` strings match option `name =` keys after any copy/rename.
+5. Confirm GUI `window_name`, button names, and GFX sprite names are cross-referenced.
+
+See `.claude/docs/refactor-checklist.md` for the full checklist.
+
+---
 
 # Event Patterns
 
