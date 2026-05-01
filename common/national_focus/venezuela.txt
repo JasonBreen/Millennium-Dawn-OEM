@@ -12,6 +12,8 @@ focus_tree = {
 	# Continuous Focus Position
 	continuous_focus_position = { x = 2600 y = 2200 }
 
+	shared_focus = BRA_americas_unity
+
 	shortcut = {
 		name = VEN_cartel_question
 		target = VEN_cartel_question
@@ -63,7 +65,7 @@ focus_tree = {
 			add_political_power = 150
 		}
 		ai_will_do = {
-			factor = 25
+			base = 25
 		}
 	}
 
@@ -1865,7 +1867,7 @@ focus_tree = {
 		}
 
 		ai_will_do = {
-			factor = 25
+			base = 25
 		}
 	}
 
@@ -2220,7 +2222,7 @@ focus_tree = {
 		}
 
 		ai_will_do = {
-			factor = 2
+			base = 2
 		}
 	}
 
@@ -2363,7 +2365,7 @@ focus_tree = {
 		}
 
 		ai_will_do = {
-			factor = 2
+			base = 2
 		}
 	}
 
@@ -2600,7 +2602,7 @@ focus_tree = {
 		}
 
 		ai_will_do = {
-			factor = 3
+			base = 3
 		}
 	}
 
@@ -3028,7 +3030,7 @@ focus_tree = {
 			}
 		}
 		ai_will_do = {
-			factor = 2
+			base = 2
 		}
 	}
 
@@ -5709,7 +5711,7 @@ focus_tree = {
 		}
 
 		ai_will_do = {
-			factor = 20
+			base = 20
 		}
 	}
 	focus = {
@@ -6711,15 +6713,14 @@ focus_tree = {
 			add_ideas = Major_Non_NATO_Ally
 			add_to_tech_sharing_group = Major_Non_NATO_Ally_Share
 			set_country_flag = Major_Non_NATO_Ally
-			custom_effect_tooltip = TT_ALL_NATO_MEMBER_NATIONS_GAIN
-			effect_tooltip = {
-				add_opinion_modifier = { target = ROOT modifier = NATO_commitment }
-				reverse_add_opinion_modifier = { target = ROOT modifier = NATO_commitment }
-			}
 			for_each_scope_loop = {
 				array = global.nato_members
-				add_opinion_modifier = { target = ROOT modifier = NATO_commitment }
-				reverse_add_opinion_modifier = { target = ROOT modifier = NATO_commitment }
+				tooltip = TT_ALL_NATO_MEMBER_NATIONS_GAIN
+				if = {
+					limit = { NOT = { tag = ROOT } }
+					add_opinion_modifier = { target = ROOT modifier = NATO_commitment }
+					reverse_add_opinion_modifier = { target = ROOT modifier = NATO_commitment }
+				}
 			}
 			VEN = {
 				set_temp_variable = { percent_change = 2 }
@@ -6986,6 +6987,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus VEN_pdvsa_takeover"
+			custom_effect_tooltip = MER_democratic_clause_warning_tt
 			set_temp_variable = { rul_party_temp = 14 }
 			set_temp_variable = { disable_elections = 1 }
 			change_ruling_party_effect = yes
@@ -6998,6 +7000,7 @@ focus_tree = {
 					economic_managers
 				}
 			}
+			MER_trigger_democratic_clause_reviews = yes
 		}
 
 		ai_will_do = {
@@ -7484,14 +7487,11 @@ focus_tree = {
 			}
 			if = {
 				limit = { NOT = { has_global_flag = GAME_RULE_eu_disabled } }
-				custom_effect_tooltip = TT_ALL_EU_MEMBER_NATIONS_GAIN
-				effect_tooltip = {
-					add_opinion_modifier = { target = VEN modifier = supports_us }
-					reverse_add_opinion_modifier = { target = VEN modifier = supports_us }
-				}
-				hidden_effect = {
-					for_each_scope_loop = {
-						array = global.EU_member
+				for_each_scope_loop = {
+					array = global.EU_member
+					tooltip = TT_ALL_EU_MEMBER_NATIONS_GAIN
+					if = {
+						limit = { NOT = { tag = ROOT } }
 						add_opinion_modifier = { target = VEN modifier = supports_us }
 						reverse_add_opinion_modifier = { target = VEN modifier = supports_us }
 					}
