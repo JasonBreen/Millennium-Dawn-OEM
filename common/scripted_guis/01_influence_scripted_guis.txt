@@ -113,9 +113,6 @@ scripted_gui = {
 					OR = {
 						has_civil_war = yes
 						has_war = yes
-						hidden_trigger = {
-							has_country_flag = ai_yes_unit_build
-						}
 						has_country_flag = AI_is_threatened
 						threat > 0.50
 					}
@@ -129,6 +126,17 @@ scripted_gui = {
 				custom_trigger_tooltip = {
 					tooltip = influence_military_aid_TT
 					ROOT = { NOT = { has_country_flag = recently_sent_military_aid@PREV } }
+				}
+				#Target has not received aid from us in the past 90 days, OR is losing a war badly
+				custom_trigger_tooltip = {
+					tooltip = influence_recently_received_aid_TT
+					OR = {
+						NOT = { has_country_flag = received_military_aid_recently@ROOT }
+						AND = {
+							has_war = yes
+							surrender_progress > 0.30
+						}
+					}
 				}
 				ERI_is_not_transitional_government = yes
 			}
@@ -186,7 +194,7 @@ scripted_gui = {
 					NOT = { is_subject_of = ROOT }
 				}
 				ROOT = { has_political_power > 200 }
-				is_top3_thirty_influencer = yes
+				is_top_fifty_influencer = yes
 				ERI_is_not_transitional_government = yes
 				if = {
 					limit = {
@@ -269,14 +277,14 @@ scripted_gui = {
 						create_new_auto_influencer_request = yes
 						# Set spread_influence cooldown on activation to prevent monthly exploit
 						# (activating late in month to get free influence when month ticks)
-						if = { limit = { has_global_flag = GAME_RULE_spread_influence_14_days }
+						if = { limit = { has_game_rule = { rule = rule_spread_influence_cooldown_limits option = spread_influence_14_days } }
 							set_country_flag = { flag = spread_influence@PREV value = 1 days = 14 }
 						}
-						else_if = { limit = { has_global_flag = GAME_RULE_spread_influence_60_days }
-							set_country_flag = { flag = spread_influence@PREV value = 1 days = 60 }
-						}
-						else = {
+						else_if = { limit = { has_game_rule = { rule = rule_spread_influence_cooldown_limits option = spread_influence_30_days } }
 							set_country_flag = { flag = spread_influence@PREV value = 1 days = 30 }
+						}
+						else_if = { limit = { has_game_rule = { rule = rule_spread_influence_cooldown_limits option = spread_influence_60_days } }
+							set_country_flag = { flag = spread_influence@PREV value = 1 days = 60 }
 						}
 					}
 					else = {
@@ -286,6 +294,7 @@ scripted_gui = {
 
 					set_country_flag = { flag = recently_set_autoinfluence@PREV days = 30 value = 1 }
 				}
+				update_dirty_influence_var = yes
 			}
 
 			opt_influence_action_button_shift_click = {
@@ -307,14 +316,14 @@ scripted_gui = {
 					set_temp_variable = { tag_index = THIS.id }
 					set_temp_variable = { influence_target = PREV.id }
 					change_influence_percentage = yes
-					if = { limit = { has_global_flag = GAME_RULE_spread_influence_14_days }
+					if = { limit = { has_game_rule = { rule = rule_spread_influence_cooldown_limits option = spread_influence_14_days } }
 						set_country_flag = { flag = spread_influence@PREV value = 1 days = 14 }
 					}
-					else_if = { limit = { has_global_flag = GAME_RULE_spread_influence_60_days }
-						set_country_flag = { flag = spread_influence@PREV value = 1 days = 60 }
+					else_if = { limit = { has_game_rule = { rule = rule_spread_influence_cooldown_limits option = spread_influence_30_days } }
+						set_country_flag = { flag = spread_influence@PREV value = 1 days = 30 }
 					}
-					else_if = { limit = { has_global_flag = GAME_RULE_spread_influence_30_days }
-						set_country_flag = { flag = spread_influence@PREV value = 1 days = 27 }
+					else_if = { limit = { has_game_rule = { rule = rule_spread_influence_cooldown_limits option = spread_influence_60_days } }
+						set_country_flag = { flag = spread_influence@PREV value = 1 days = 60 }
 					}
 				}
 			}
@@ -325,12 +334,14 @@ scripted_gui = {
 				ROOT = { # Player Nation
 					save_event_target_as = influence_sender
 					PREV = { # THIS Nation
-						country_event = { id = influence.0 }
+						country_event = influence.0
 						ROOT = {
 							set_country_flag = { flag = recently_sent_aid@PREV value = 1 days = 30 }
 						}
 					}
 				}
+				update_dirty_influence_var = yes
+				update_money_dirty_variable = yes
 			}
 
 			# Send Military Equipment
@@ -338,12 +349,13 @@ scripted_gui = {
 			opt_aid_military_button_click = {
 				ROOT = { #Uses the same as Economic AID to ensure the root is correct
 					PREV = {
-						country_event = { id = influence.50 }
+						country_event = influence.50
 						ROOT = {
 							set_country_flag = { flag = recently_sent_military_aid@PREV value = 1 days = 60 }
 						}
 					}
 				}
+				update_dirty_influence_var = yes
 			}
 
 			# Send Military Supply
@@ -351,12 +363,13 @@ scripted_gui = {
 			opt_military_supply_button_click = {
 				ROOT = { # Player Nation
 					PREV = {
-						country_event = { id = influence.55 }
+						country_event = influence.55
 						ROOT = {
 							set_country_flag = { flag = recently_sent_military_aid@PREV value = 1 days = 60 }
 						}
 					}
 				}
+				update_dirty_influence_var = yes
 			}
 
 			# Target Selected Nation's Influencers:
@@ -365,9 +378,10 @@ scripted_gui = {
 				ROOT = {
 					save_event_target_as = influence_sender
 					PREV = {
-						country_event = { id = influence.22 }
+						country_event = influence.22
 					}
 				}
+				update_dirty_influence_var = yes
 			}
 
 			opt_manipulate_politics_button_click = {
@@ -500,14 +514,16 @@ scripted_gui = {
 					set_country_flag = { flag = recently_manipulated_politics@PREV days = 28 value = 1 }
 					add_political_power = manipulate_politics_pp_cost
 				}
+				update_dirty_influence_var = yes
 			}
 			opt_coup_button_click = {
 				ROOT = {
 					save_event_target_as = influence_sender
 					PREV = {
-						country_event = { id = influence.44 }
+						country_event = influence.44
 					}
 				}
+				update_dirty_influence_var = yes
 			}
 
 			opt_make_puppet_button_click = {
@@ -555,6 +571,7 @@ scripted_gui = {
 						modifier = puppeted_neighbor
 					}
 				}
+				update_dirty_influence_var = yes
 			}
 
 			opt_economic_exploitation_button_click = {
@@ -586,6 +603,13 @@ scripted_gui = {
 						modifier = exploited_neighbor
 					}
 				}
+				every_allied_country = {
+					add_opinion_modifier = {
+						target = ROOT
+						modifier = exploited_ally
+					}
+				}
+				update_dirty_influence_var = yes
 			}
 		}
 	}
@@ -597,28 +621,24 @@ scripted_gui = {
 		parent_window_token = selected_country_view_diplomacy
 
 		window_name = "domestic_influence_diplo"
-		dirty = global.update_influence_ui
 	}
 	position_1_diplo = {
 		context_type = selected_country_context
 		parent_window_token = selected_country_view_diplomacy
 
 		window_name = "position_1_diplo"
-		dirty = global.update_influence_ui
 	}
 	position_2_diplo = {
 		context_type = selected_country_context
 		parent_window_token = selected_country_view_diplomacy
 
 		window_name = "position_2_diplo"
-		dirty = global.update_influence_ui
 	}
 	position_3_diplo = {
 		context_type = selected_country_context
 		parent_window_token = selected_country_view_diplomacy
 
 		window_name = "position_3_diplo"
-		dirty = global.update_influence_ui
 	}
 
 	position_4_diplo = {
@@ -626,27 +646,23 @@ scripted_gui = {
 		parent_window_token = selected_country_view_diplomacy
 
 		window_name = "position_4_diplo"
-		dirty = global.update_influence_ui
 	}
 	position_5_diplo = {
 		context_type = selected_country_context
 		parent_window_token = selected_country_view_diplomacy
 
 		window_name = "position_5_diplo"
-		dirty = global.update_influence_ui
 	}
 	position_6_diplo = {
 		context_type = selected_country_context
 		parent_window_token = selected_country_view_diplomacy
 
 		window_name = "position_6_diplo"
-		dirty = global.update_influence_ui
 	}
 	position_7_diplo = {
 		context_type = selected_country_context
 		parent_window_token = selected_country_view_diplomacy
 
 		window_name = "position_7_diplo"
-		dirty = global.update_influence_ui
 	}
 }

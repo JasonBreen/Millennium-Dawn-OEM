@@ -20,7 +20,7 @@ ideas = {
 							}
 						}
 					}
-					SOV = {	add_ideas = SUB_confederation }
+					SOV = { add_ideas = SUB_confederation }
 				}
 				if = {
 					limit = {
@@ -34,19 +34,13 @@ ideas = {
 							}
 						}
 					}
-					SOV = {	add_ideas = SUB_super_confederation }
+					SOV = { add_ideas = SUB_super_confederation }
 				}
 			}
 			picture = sov_republic_rf
 			cancel = {
 				NOT = {
-					OR = {
-						has_autonomy_state = autonomy_state_rf
-						has_autonomy_state = autonomy_republic_rf
-						has_autonomy_state = autonomy_kray_rf
-						has_autonomy_state = autonomy_oblast_rf
-						has_autonomy_state = autonomy_okrug_rf
-					}
+					SUB_is_rf_subject = yes
 				}
 			}
 			allowed_civil_war = { always = yes }
@@ -67,7 +61,12 @@ ideas = {
 				custom_modifier_tooltip = SOV_subject_unfluency_TT
 			}
 			on_remove = {
-				clr_country_flag = SOV_subject_agree
+				clr_country_flag = SOV_subject_state
+				clr_country_flag = SOV_subject_republic
+				clr_country_flag = SOV_subject_kray
+				clr_country_flag = SOV_subject_oblast
+				clr_country_flag = SOV_subject_okrug
+				clr_country_flag = SOV_subject_governorate
 				SOV = {
 					set_temp_variable = { modify_subjectnalogs = -3 }
 					modify_subjectnalogs_support = yes
@@ -353,12 +352,7 @@ ideas = {
 
 			cancel = {
 				NOT = {
-					OR = {
-						has_autonomy_state = autonomy_republic_rf
-						has_autonomy_state = autonomy_kray_rf
-						has_autonomy_state = autonomy_oblast_rf
-						has_autonomy_state = autonomy_okrug_rf
-					}
+					SUB_is_rf_lesser_subject = yes
 				}
 			}
 
@@ -378,13 +372,7 @@ ideas = {
 			picture = wagner_armies
 			cancel = {
 				NOT = {
-					OR = {
-						has_autonomy_state = autonomy_republic_rf
-						has_autonomy_state = autonomy_kray_rf
-						has_autonomy_state = autonomy_oblast_rf
-						has_autonomy_state = autonomy_okrug_rf
-					}
-					SOV = { has_country_flag = SOV_wagner_rebeliion_flag }
+					SUB_is_rf_lesser_subject = yes
 				}
 			}
 			on_remove = {
@@ -500,7 +488,7 @@ ideas = {
 		TAT_industry = {
 
 			picture = tat_promka
-			allowed = {	original_tag = TAT }
+			allowed = { original_tag = TAT }
 			allowed_civil_war = {
 				always = yes
 			}
@@ -513,7 +501,7 @@ ideas = {
 		TAT_agro = {
 
 			picture = tat_agro
-			allowed = {	original_tag = TAT }
+			allowed = { original_tag = TAT }
 
 			modifier = {
 				MONTHLY_POPULATION = 0.15
@@ -543,7 +531,7 @@ ideas = {
 		TAT_five_year_plans = {
 			picture = blr_communist_economy_org
 
-			allowed = {	original_tag = TAT }
+			allowed = { original_tag = TAT }
 			cancel = {
 				NOT = {
 					emerging_communist_state_are_in_power = yes
@@ -620,10 +608,10 @@ ideas = {
 		}
 		TAT_bashkiria_indep = {
 
-			allowed = {	original_tag = TAT }
+			allowed = { original_tag = TAT }
 
 			cancel = {
-				NOT = { TAT = {	is_subject_of = SOV	} }
+				NOT = { TAT = { is_subject_of = SOV	} }
 			}
 			picture = tat_independent
 			modifier = {
@@ -750,7 +738,7 @@ ideas = {
 
 			picture = tat_vpk
 			cancel = {
-				NOT = { TAT = {	is_subject_of = SOV	} }
+				NOT = { TAT = { is_subject_of = SOV	} }
 			}
 			modifier = {
 				gnss_production_speed_modifier = 0.05
@@ -860,12 +848,10 @@ ideas = {
 
 			picture = tat_vpk
 			cancel = {
-				AND = {
-					NOT = {	ROOT = { has_autonomy_state = autonomy_union_state } }
-					OR = {
-						NOT = { SOV = { owns_state = 661 } }
-						NOT = { TAT = {	is_subject_of = SOV	} }
-					}
+				NOT = { ROOT = { has_autonomy_state = autonomy_union_state } }
+				OR = {
+					NOT = { SOV = { owns_state = 661 } }
+					NOT = { TAT = { is_subject_of = SOV	} }
 				}
 			}
 			modifier = {
@@ -1490,7 +1476,7 @@ ideas = {
 			picture = crm_shipment_idea
 			name = CRM_naval
 			cancel = {
-				NOT = { CRM = {	is_subject_of = SOV	} }
+				NOT = { CRM = { is_subject_of = SOV	} }
 			}
 			equipment_bonus = {
 				convoy = {
@@ -3150,7 +3136,6 @@ local_resources_chromium_factor = 0.15
 	}
 	CHE_religion_turism = {
 		picture = muslim3
-		allowed_civil_war = { always = no }
 
 		modifier = {
 			production_speed_buildings_factor = 0.06
@@ -3212,7 +3197,7 @@ local_resources_chromium_factor = 0.15
 		name = CHE_gudermes3_idea
 		picture = che_gudermes
 		cancel = {
-			NOT = { CHE = {	is_subject_of = SOV	} }
+			NOT = { CHE = { is_subject_of = SOV	} }
 		}
 		modifier = {
 			experience_gain_army_factor = 0.10
@@ -3262,12 +3247,10 @@ local_resources_chromium_factor = 0.15
 
 		picture = che_gudermes
 		cancel = {
-			AND = {
-				NOT = {	ROOT = { has_autonomy_state = autonomy_union_state } }
-				OR = {
-					NOT = { SOV = { owns_state = 672 } }
-					NOT = { CHE = {	is_subject_of = SOV	} }
-				}
+			NOT = { ROOT = { has_autonomy_state = autonomy_union_state } }
+			OR = {
+				NOT = { SOV = { owns_state = 672 } }
+				NOT = { CHE = { is_subject_of = SOV	} }
 			}
 		}
 		modifier = {
@@ -3962,7 +3945,7 @@ local_resources_chromium_factor = 0.15
 	}
 	BSH_bashneft1_our = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		name = BSH_bashneft1
 		allowed_civil_war = { always = yes }
 		picture = bsh_bashneft_idea
@@ -3980,7 +3963,7 @@ local_resources_chromium_factor = 0.15
 	}
 	BSH_bashneft2_our = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		name = BSH_bashneft1
 		allowed_civil_war = { always = yes }
 		picture = bsh_bashneft_idea
@@ -3998,7 +3981,7 @@ local_resources_chromium_factor = 0.15
 	}
 	BSH_bashneft3_our = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		name = BSH_bashneft1
 		allowed_civil_war = { always = yes }
 		picture = bsh_bashneft_idea
@@ -4016,7 +3999,7 @@ local_resources_chromium_factor = 0.15
 	}
 	BSH_bashneft4_our = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		name = BSH_bashneft1
 		allowed_civil_war = { always = yes }
 		picture = bsh_bashneft_idea
@@ -4034,7 +4017,7 @@ local_resources_chromium_factor = 0.15
 	}
 	BSH_bashneft1_selled = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		name = BSH_bashneft1
 		allowed_civil_war = { always = yes }
 		picture = bsh_bashneft_idea
@@ -4084,7 +4067,7 @@ local_resources_chromium_factor = 0.15
 	}
 	BSH_bashneft4_selled = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		name = BSH_bashneft1
 		allowed_civil_war = { always = yes }
 		picture = bsh_bashneft_idea
@@ -4113,7 +4096,7 @@ local_resources_chromium_factor = 0.28
 	#Min Obrazovania
 	BSH_min_obr = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		picture = bsh_minobr_idea
 		allowed_civil_war = { always = yes }
 		modifier = {
@@ -4124,7 +4107,7 @@ local_resources_chromium_factor = 0.28
 	#Min Obrazovania
 	BSH_min_obr1 = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		picture = bsh_minobr_idea
 		allowed_civil_war = { always = yes }
 		modifier = {
@@ -4145,7 +4128,7 @@ local_resources_chromium_factor = 0.28
 	BSH_industry2 = {
 
 		picture = central_management
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		allowed_civil_war = {
 			always = yes
 		}
@@ -4174,7 +4157,7 @@ local_resources_chromium_factor = 0.28
 		name = BSH_transport_idea
 
 		picture = bsh_transport_idea
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		allowed_civil_war = {
 			always = yes
 		}
@@ -4186,7 +4169,7 @@ local_resources_chromium_factor = 0.28
 		name = BSH_transport_idea
 
 		picture = bsh_transport_idea
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		allowed_civil_war = {
 			always = yes
 		}
@@ -4198,7 +4181,7 @@ local_resources_chromium_factor = 0.28
 	BSH_stone_age_public_transport = {
 
 		picture = bsh_old_bus_idea
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 
 
 		allowed_civil_war = {
@@ -4215,7 +4198,7 @@ local_resources_chromium_factor = 0.28
 	BSH_stone_age_public_transport1 = {
 
 		picture = bsh_old_bus_idea
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		allowed_civil_war = {
 			always = yes
 		}
@@ -4229,7 +4212,7 @@ local_resources_chromium_factor = 0.28
 	BSH_stone_age_public_transport2 = {
 
 		picture = bsh_old_bus_idea
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		allowed_civil_war = {
 			always = yes
 		}
@@ -4269,7 +4252,7 @@ local_resources_chromium_factor = 0.28
 				build_cost_ic = -0.10
 				instant = yes
 			}
-			util_vehicle_equipment = {
+			util_vehicle_type = {
 				instant = yes
 				reliability = 0.1
 				build_cost_ic = -0.07
@@ -4348,7 +4331,7 @@ local_resources_chromium_factor = 0.28
 				build_cost_ic = -0.05
 				instant = yes
 			}
-			util_vehicle_equipment = {
+			util_vehicle_type = {
 				instant = yes
 				reliability = 0.1
 				build_cost_ic = -0.07
@@ -4392,7 +4375,7 @@ local_resources_chromium_factor = 0.28
 				build_cost_ic = -0.05
 				instant = yes
 			}
-			util_vehicle_equipment = {
+			util_vehicle_type = {
 				instant = yes
 				reliability = 0.1
 				build_cost_ic = -0.07
@@ -4402,7 +4385,7 @@ local_resources_chromium_factor = 0.28
 	BSH_vpk5 = {
 		picture = bsh_vpk_idea
 		cancel = {
-			NOT = { BSH = {	is_subject_of = SOV	} }
+			NOT = { BSH = { is_subject_of = SOV	} }
 		}
 
 		equipment_bonus = {
@@ -4435,7 +4418,7 @@ local_resources_chromium_factor = 0.28
 				build_cost_ic = -0.02
 				instant = yes
 			}
-			util_vehicle_equipment = {
+			util_vehicle_type = {
 				instant = yes
 				reliability = 0.05
 				build_cost_ic = -0.04
@@ -4479,7 +4462,7 @@ local_resources_chromium_factor = 0.28
 				build_cost_ic = -0.02
 				instant = yes
 			}
-			util_vehicle_equipment = {
+			util_vehicle_type = {
 				instant = yes
 				reliability = 0.05
 				build_cost_ic = -0.04
@@ -4523,7 +4506,7 @@ local_resources_chromium_factor = 0.28
 				build_cost_ic = -0.02
 				instant = yes
 			}
-			util_vehicle_equipment = {
+			util_vehicle_type = {
 				instant = yes
 				reliability = 0.05
 				build_cost_ic = -0.04
@@ -4533,12 +4516,10 @@ local_resources_chromium_factor = 0.28
 	BSH_vpk_ser = {
 		picture = bsh_vpk_idea
 		cancel = {
-			AND = {
-				NOT = {	ROOT = { has_autonomy_state = autonomy_union_state } }
-				OR = {
-					NOT = { SOV = { owns_state = 664 } }
-					NOT = { BSH = {	is_subject_of = SOV	} }
-				}
+			NOT = { ROOT = { has_autonomy_state = autonomy_union_state } }
+			OR = {
+				NOT = { SOV = { owns_state = 664 } }
+				NOT = { BSH = { is_subject_of = SOV	} }
 			}
 		}
 
@@ -4571,7 +4552,7 @@ local_resources_chromium_factor = 0.28
 				build_cost_ic = -0.01
 				instant = yes
 			}
-			util_vehicle_equipment = {
+			util_vehicle_type = {
 				instant = yes
 				reliability = 0.02
 				build_cost_ic = -0.02
@@ -4645,7 +4626,6 @@ local_resources_chromium_factor = 0.28
 	#Belarusian agriculture
 	BSH_agrodom = {
 		picture = blr_agro
-		allowed_civil_war = { always = no }
 		cancel = {
 			NOT = { country_exists = BLR }
 		}
@@ -4657,7 +4637,6 @@ local_resources_chromium_factor = 0.28
 		}
 	}
 	BSH_develop_turism = {
-		allowed_civil_war = { always = no }
 
 		picture = bsh_tourism_idea
 		modifier = {
@@ -4666,7 +4645,6 @@ local_resources_chromium_factor = 0.28
 
 	}
 	BSH_develop_turism1 = {
-		allowed_civil_war = { always = no }
 
 		picture = bsh_tourism_idea
 		modifier = {
@@ -4675,7 +4653,6 @@ local_resources_chromium_factor = 0.28
 
 	}
 	BSH_develop_turism2 = {
-		allowed_civil_war = { always = no }
 
 		picture = bsh_tourism_idea
 		modifier = {
@@ -4685,7 +4662,7 @@ local_resources_chromium_factor = 0.28
 	}
 	BSH_bashkiria_indep = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 
 		picture = bsh_indep
 		modifier = {
@@ -4695,7 +4672,7 @@ local_resources_chromium_factor = 0.28
 	}
 	BSH_bashkiria_indep1 = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 
 		picture = bsh_indep
 		modifier = {
@@ -4706,7 +4683,7 @@ local_resources_chromium_factor = 0.28
 	####COMMUNIST IDEAS
 	BSH_civilian_focus = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		picture = production_bonus
 		modifier = {
 			production_speed_buildings_factor = 0.15
@@ -4714,7 +4691,7 @@ local_resources_chromium_factor = 0.28
 	}
 	BSH_military_focus = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		picture = armor
 		modifier = {
 			production_factory_efficiency_gain_factor = 0.15
@@ -4724,7 +4701,7 @@ local_resources_chromium_factor = 0.28
 	}
 	BSH_the_rights_of_the_worker_idea = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		picture = class_war
 		cancel = {
 			NOT = {
@@ -4739,7 +4716,7 @@ local_resources_chromium_factor = 0.28
 	}
 	BSH_marxist_reeducation_idea = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		picture = shared_research
 		cancel = {
 			NOT = {
@@ -4756,7 +4733,7 @@ local_resources_chromium_factor = 0.28
 	}
 	BSH_end_the_loophole_idea = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		picture = social_democracy
 		cancel = {
 			NOT = {
@@ -4771,7 +4748,7 @@ local_resources_chromium_factor = 0.28
 	}
 	BSH_new_economy_idea = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		picture = social_democracy
 		cancel = {
 			NOT = {
@@ -4790,7 +4767,7 @@ local_resources_chromium_factor = 0.28
 	#####NATIONALISTS
 	BSH_bashkirya_first_idea = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		picture = bsh_first_bashkiria_idea
 		cancel = {
 			NOT = {
@@ -4804,7 +4781,7 @@ local_resources_chromium_factor = 0.28
 	}
 	BSH_youth_front_idea = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		picture = bsh_youth_idea
 		cancel = {
 			NOT = {
@@ -4820,7 +4797,7 @@ local_resources_chromium_factor = 0.28
 	}
 	BSH_funding_for_police_idea = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		picture = fascism
 		cancel = {
 			NOT = {
@@ -4836,7 +4813,7 @@ local_resources_chromium_factor = 0.28
 	}
 	BSH_glory_to_bashkirya_idea = {
 
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		picture = bsh_glory_bashkirya_idea
 		cancel = {
 			NOT = {
@@ -4856,7 +4833,7 @@ local_resources_chromium_factor = 0.28
 	BSH_separate_rel = {
 
 		picture = muslim3
-		allowed = {	original_tag = BSH }
+		allowed = { original_tag = BSH }
 		cancel = {
 			NOT = {
 				has_government = nationalist
@@ -5012,7 +4989,6 @@ local_resources_chromium_factor = 0.28
 		}
 		BSH_ter_orobona = {
 
-			allowed = {	always = no	}
 			allowed_civil_war = { always = yes }
 
 			picture = idea_intervention_local_security_idea
@@ -5026,7 +5002,7 @@ local_resources_chromium_factor = 0.28
 		BSH_five_year_plans = {
 			picture = blr_communist_economy_org
 
-			allowed = {	original_tag = BSH }
+			allowed = { original_tag = BSH }
 			cancel = {
 				NOT = {
 					emerging_communist_state_are_in_power = yes
@@ -5205,7 +5181,7 @@ local_resources_chromium_factor = 0.28
 						has_government = democratic
 					}
 				}
-				BSH = {	is_subject_of = SOV	}
+				BSH = { is_subject_of = SOV	}
 			}
 			picture = political_freedom
 			modifier = {
@@ -5223,7 +5199,7 @@ local_resources_chromium_factor = 0.28
 						has_government = democratic
 					}
 				}
-				BSH = {	is_subject_of = SOV	}
+				BSH = { is_subject_of = SOV	}
 			}
 			picture = consumer_goods
 			modifier = {
@@ -5242,7 +5218,7 @@ local_resources_chromium_factor = 0.28
 		}
 		BST_bashkir_national_army = {
 
-			allowed = {	original_tag = BSH }
+			allowed = { original_tag = BSH }
 			picture = national_mobilization
 			modifier = {
 				personnel_cost_multiplier_modifier = 0.10
@@ -5255,7 +5231,7 @@ local_resources_chromium_factor = 0.28
 		}
 		BST_bashkir_national_army1 = {
 
-			allowed = {	original_tag = BSH }
+			allowed = { original_tag = BSH }
 			picture = national_mobilization
 			modifier = {
 				personnel_cost_multiplier_modifier = 0.20
@@ -5269,7 +5245,7 @@ local_resources_chromium_factor = 0.28
 		}
 		BST_bashkir_national_army2 = {
 
-			allowed = {	original_tag = BSH }
+			allowed = { original_tag = BSH }
 			picture = national_mobilization
 			modifier = {
 				personnel_cost_multiplier_modifier = 0.25
@@ -5284,7 +5260,7 @@ local_resources_chromium_factor = 0.28
 		}
 		BST_bashkir_national_army3 = {
 
-			allowed = {	original_tag = BSH }
+			allowed = { original_tag = BSH }
 			picture = national_mobilization
 			modifier = {
 				personnel_cost_multiplier_modifier = 0.30
@@ -5300,7 +5276,7 @@ local_resources_chromium_factor = 0.28
 		BST_bashkir_great_people = {
 
 			picture = communism5
-			allowed = {	original_tag = BSH }
+			allowed = { original_tag = BSH }
 
 			modifier = {
 				army_morale_factor = 0.05
@@ -5725,7 +5701,7 @@ local_resources_chromium_factor = 0.28
 				medium_tank_flame_chassis = {
 					build_cost_ic = -0.06 instant = yes
 				}
-				util_vehicle_equipment = {
+				util_vehicle_type = {
 					instant = yes
 					build_cost_ic = -0.06
 				}
@@ -5750,7 +5726,7 @@ local_resources_chromium_factor = 0.28
 				NOT = { owns_state = 675 }
 			}
 			equipment_bonus = {
-				util_vehicle_equipment = {
+				util_vehicle_type = {
 					instant = yes
 					build_cost_ic = -0.04
 				}
@@ -5772,7 +5748,7 @@ local_resources_chromium_factor = 0.28
 				corporate_tax_income_multiplier_modifier = 0.05
 			}
 			equipment_bonus = {
-				util_vehicle_equipment = {
+				util_vehicle_type = {
 					instant = yes
 					build_cost_ic = -0.08
 				}
@@ -5812,7 +5788,6 @@ local_resources_chromium_factor = 0.28
 		}
 		URA_ter_orobona = {
 
-			allowed = {	always = no	}
 			allowed_civil_war = { always = yes }
 
 			picture = ura_teroborona_idea
@@ -6400,9 +6375,6 @@ local_resources_chromium_factor = 0.28
 		}
 		URA_intertanional_brigade_idea = {
 
-			allowed = {
-				always = no
-			}
 			cancel = {
 				NOT = {
 					emerging_communist_state_are_in_power = yes
@@ -6426,9 +6398,6 @@ local_resources_chromium_factor = 0.28
 		}
 		URA_red_army_idea = {
 
-			allowed = {
-				always = no
-			}
 			cancel = {
 				NOT = {
 					emerging_communist_state_are_in_power = yes
