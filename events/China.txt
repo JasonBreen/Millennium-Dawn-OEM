@@ -3,6 +3,7 @@ add_namespace = china_national_committee
 add_namespace = china_sar
 add_namespace = CHI_sco
 add_namespace = CHI_foreign
+add_namespace = china_scs
 
 
 # National Congress Convened
@@ -1735,6 +1736,23 @@ country_event = {
 		FROM = { clr_country_flag = sco_megaproject_air_defense_initiator }
 		add_political_power = 25
 		ai_chance = { base = 1 }
+	}
+}
+
+# China invites us to join the SCO
+country_event = {
+	id = CHI_sco.34
+	title = CHI_sco.34.t
+	desc = CHI_sco.34.d
+
+	picture = GFX_politics_negotiations
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_sco.34.a
+		log = "[GetDateText]: [This.GetName]: CHI_sco.34.a executed"
+		add_ideas = CHI_sco_member
 	}
 }
 
@@ -3797,5 +3815,1008 @@ news_event = {
 	option = {
 		name = china_news.162.a
 		log = "[GetDateText]: [This.GetName]: china_news.162.a executed"
+	}
+}
+
+#### South China Sea Events (china_scs namespace)
+
+# china_scs.1 — Blue National Soil (entry news, fired by CHI_The_South_China_Sea)
+news_event = {
+	id = china_scs.1
+	title = china_scs.1.t
+	desc = china_scs.1.d
+	picture = GFX_china_90th_pla_anniversary
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.1.a
+		log = "[GetDateText]: [This.GetName]: china_scs.1.a executed"
+		trigger = { original_tag = CHI }
+	}
+
+	option = {
+		name = china_scs.1.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			capital_scope = { is_on_continent = asia }
+		}
+	}
+
+	option = {
+		name = china_scs.1.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			NOT = { capital_scope = { is_on_continent = asia } }
+		}
+	}
+}
+
+# china_scs.10 — The Cabbage Is Growing (news, fired by CHI_The_Cabbage_Strategy)
+news_event = {
+	id = china_scs.10
+	title = china_scs.10.t
+	desc = china_scs.10.d
+	picture = GFX_china_90th_pla_anniversary
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.10.a
+		log = "[GetDateText]: [This.GetName]: china_scs.10.a executed"
+		trigger = { original_tag = CHI }
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = china_scs.10.b
+		log = "[GetDateText]: [This.GetName]: china_scs.10.b executed"
+		trigger = { original_tag = CHI }
+		ai_chance = { base = 25 }
+	}
+
+	option = {
+		name = china_scs.10.c
+		log = "[GetDateText]: [This.GetName]: china_scs.10.c executed"
+		trigger = { original_tag = CHI }
+		ai_chance = { base = 25 }
+	}
+
+	option = {
+		name = china_scs.10.a
+		trigger = { NOT = { original_tag = CHI } }
+	}
+}
+
+# china_scs.11 — Sansha Prefecture Expanded (news, fired by CHI_The_Sansha_Administrative_Upgrade)
+news_event = {
+	id = china_scs.11
+	title = china_scs.11.t
+	desc = china_scs.11.d
+	picture = GFX_china_19th_national_congress
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.11.a
+		log = "[GetDateText]: [This.GetName]: china_scs.11.a executed"
+		trigger = { original_tag = CHI }
+		ai_chance = { base = 60 }
+	}
+
+	option = {
+		name = china_scs.11.b
+		log = "[GetDateText]: [This.GetName]: china_scs.11.b executed"
+		trigger = { original_tag = CHI }
+		ai_chance = { base = 40 }
+	}
+
+	option = {
+		name = china_scs.11.a
+		trigger = { NOT = { original_tag = CHI } }
+	}
+}
+
+# china_scs.12 — Standoff Concluded (country event to CHI, fired by standoff decisions on completion)
+country_event = {
+	id = china_scs.12
+	title = china_scs.12.t
+	desc = china_scs.12.d
+	picture = GFX_news_event_generic_naval
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.12.a
+		log = "[GetDateText]: [This.GetName]: china_scs.12.a executed"
+		if = {
+			limit = { has_country_flag = CHI_scarborough_won }
+			add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			add_to_variable = { CHI_scs_framework = -2 tooltip = CHI_scs_framework_tt }
+			clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
+			add_stability = 0.02
+		}
+		else_if = {
+			limit = { has_country_flag = CHI_scarborough_contested }
+			add_to_variable = { CHI_scs_framework = -1 tooltip = CHI_scs_framework_tt }
+			clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
+			add_ideas = CHI_scs_setback
+		}
+		else = {
+			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			add_to_variable = { CHI_scs_framework = -3 tooltip = CHI_scs_framework_tt }
+			clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
+			add_ideas = CHI_scs_setback
+			add_stability = -0.02
+		}
+		ai_chance = { base = 1 }
+	}
+}
+
+# china_scs.13 — Washington Responds to Chinese Encroachment (country event to USA)
+# Fired when CHI_chinese_aggression > 20 or when a standoff completes
+country_event = {
+	id = china_scs.13
+	title = china_scs.13.t
+	desc = china_scs.13.d
+	picture = GFX_report_event_usa_military
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.13.a
+		log = "[GetDateText]: [This.GetName]: china_scs.13.a executed"
+		hidden_effect = {
+			CHI = { country_event = { id = china_scs.14 days = 30 } }
+		}
+		ai_chance = {
+			base = 60
+			modifier = {
+				add = 20
+				has_idea = super_power
+			}
+			modifier = {
+				add = -20
+				check_variable = { interest_rate > 6 }
+			}
+		}
+	}
+
+	option = {
+		name = china_scs.13.b
+		log = "[GetDateText]: [This.GetName]: china_scs.13.b executed"
+		add_political_power = 10
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = -20
+				has_idea = super_power
+			}
+			modifier = {
+				add = 20
+				check_variable = { interest_rate > 6 }
+			}
+		}
+	}
+}
+
+# china_scs.14 — PLAN Response to FONOP (country event to CHI, recurring)
+country_event = {
+	id = china_scs.14
+	title = china_scs.14.t
+	desc = china_scs.14.d
+	picture = GFX_news_event_generic_naval
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.14.a
+		log = "[GetDateText]: [This.GetName]: china_scs.14.a executed"
+		add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+		clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		add_to_variable = { CHI_scs_framework = 1 tooltip = CHI_scs_framework_tt }
+		clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = {
+						var = CHI_chinese_aggression
+						value = 15
+						compare = greater_than
+					}
+				}
+				country_event = { id = china_scs.14 days = 180 }
+			}
+		}
+		ai_chance = {
+			base = 25
+			modifier = {
+				add = 20
+				has_government = democratic
+			}
+			modifier = {
+				add = -10
+				check_variable = { CHI_chinese_aggression > 30 }
+			}
+		}
+	}
+
+	option = {
+		name = china_scs.14.b
+		log = "[GetDateText]: [This.GetName]: china_scs.14.b executed"
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = {
+						var = CHI_chinese_aggression
+						value = 15
+						compare = greater_than
+					}
+				}
+				country_event = { id = china_scs.14 days = 180 }
+			}
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				add = 10
+				has_idea = super_power
+			}
+		}
+	}
+
+	option = {
+		name = china_scs.14.c
+		log = "[GetDateText]: [This.GetName]: china_scs.14.c executed"
+		add_to_variable = { CHI_chinese_aggression = 3 tooltip = CHI_chinese_aggression_tt }
+		clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		add_to_variable = { CHI_scs_framework = -3 tooltip = CHI_scs_framework_tt }
+		clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
+		hidden_effect = {
+			random_list = {
+				85 = {}
+				15 = { country_event = { id = china_scs.15 days = 7 } }
+			}
+			if = {
+				limit = {
+					check_variable = {
+						var = CHI_chinese_aggression
+						value = 15
+						compare = greater_than
+					}
+				}
+				country_event = { id = china_scs.14 days = 180 }
+			}
+		}
+		ai_chance = {
+			base = 25
+			modifier = {
+				add = 15
+				check_variable = { CHI_chinese_aggression > 30 }
+			}
+			modifier = {
+				add = -15
+				has_government = democratic
+			}
+		}
+	}
+}
+
+# china_scs.15 — South Sea Incident (country event, fires to both CHI and USA)
+# When CHI receives it: applies variable and idea effects. When USA receives it: diplomatic response only.
+country_event = {
+	id = china_scs.15
+	title = china_scs.15.t
+	desc = china_scs.15.d
+	picture = GFX_news_event_generic_naval
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.15.a
+		log = "[GetDateText]: [This.GetName]: china_scs.15.a executed"
+		if = {
+			limit = { original_tag = CHI }
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			add_ideas = CHI_regional_crisis_alert
+		}
+		if = {
+			limit = { original_tag = USA }
+			add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation }
+		}
+		hidden_effect = {
+			if = {
+				limit = { original_tag = CHI }
+				USA = { country_event = { id = china_scs.15 days = 3 } }
+			}
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				add = 10
+				has_government = fascism
+			}
+		}
+	}
+
+	option = {
+		name = china_scs.15.b
+		log = "[GetDateText]: [This.GetName]: china_scs.15.b executed"
+		if = {
+			limit = { original_tag = CHI }
+			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			add_ideas = CHI_regional_crisis_alert
+		}
+		if = {
+			limit = { original_tag = USA }
+			add_political_power = -20
+		}
+		hidden_effect = {
+			if = {
+				limit = { original_tag = CHI }
+				USA = { country_event = { id = china_scs.15 days = 3 } }
+			}
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				add = 10
+				has_government = democratic
+			}
+		}
+	}
+}
+
+# china_scs.20 — South China Sea ADIZ Declared (news, major, fired by CHI_Declare_The_ADIZ)
+news_event = {
+	id = china_scs.20
+	title = china_scs.20.t
+	desc = china_scs.20.d
+	picture = GFX_china_90th_pla_anniversary
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.20.a
+		log = "[GetDateText]: [This.GetName]: china_scs.20.a executed"
+		trigger = { original_tag = CHI }
+	}
+
+	option = {
+		name = china_scs.20.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			NOT = { is_in_faction_with = CHI }
+			OR = {
+				has_government = democratic
+				is_in_faction_with = USA
+			}
+		}
+		add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation }
+	}
+
+	option = {
+		name = china_scs.20.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			NOT = { is_in_faction_with = CHI }
+			NOT = { has_government = democratic }
+			NOT = { is_in_faction_with = USA }
+		}
+	}
+
+	option = {
+		name = china_scs.20.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			is_in_faction_with = CHI
+		}
+	}
+}
+
+# china_scs.30 — The Spirit of Zheng He (news, fired by CHI_The_Spirit_Of_Zheng_He)
+news_event = {
+	id = china_scs.30
+	title = china_scs.30.t
+	desc = china_scs.30.d
+	picture = GFX_news_event_generic_sign_treaty1
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.30.a
+		log = "[GetDateText]: [This.GetName]: china_scs.30.a executed"
+		trigger = { original_tag = CHI }
+	}
+
+	option = {
+		name = china_scs.30.a
+		trigger = { NOT = { original_tag = CHI } }
+	}
+}
+
+# china_scs.31 — 2002 Declaration Reaffirmed (news, fired by CHI_Bilateral_Not_Multilateral)
+news_event = {
+	id = china_scs.31
+	title = china_scs.31.t
+	desc = china_scs.31.d
+	picture = GFX_news_event_generic_sign_treaty1
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.31.a
+		log = "[GetDateText]: [This.GetName]: china_scs.31.a executed"
+		trigger = { original_tag = CHI }
+	}
+
+	option = {
+		name = china_scs.31.a
+		trigger = { NOT = { original_tag = CHI } }
+	}
+}
+
+# china_scs.32 — Manila at a Crossroads (country event to PHI, fired by CHI_The_Duterte_Pivot)
+country_event = {
+	id = china_scs.32
+	title = china_scs.32.t
+	desc = china_scs.32.d
+	picture = GFX_politics_negotiations
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.32.a
+		log = "[GetDateText]: [This.GetName]: china_scs.32.a executed"
+		add_opinion_modifier = { target = CHI modifier = large_commercial_relations }
+		reverse_add_opinion_modifier = { target = CHI modifier = large_commercial_relations }
+		USA = { add_opinion_modifier = { target = PHI modifier = territorial_integrity_violation } }
+		add_ideas = CHI_scs_chinese_debt
+		set_country_flag = PHI_duterte_pivot
+		ai_chance = {
+			base = 20
+			modifier = {
+				add = 15
+				NOT = { is_in_faction_with = USA }
+			}
+			modifier = {
+				add = 10
+				has_opinion = { target = CHI value > 20 }
+			}
+			modifier = {
+				add = -20
+				is_in_faction_with = USA
+			}
+			modifier = {
+				add = -10
+				has_opinion = { target = CHI value < 0 }
+			}
+		}
+	}
+
+	option = {
+		name = china_scs.32.b
+		log = "[GetDateText]: [This.GetName]: china_scs.32.b executed"
+		CHI = {
+			add_opinion_modifier = { target = PHI modifier = territorial_integrity_violation }
+		}
+		ai_chance = {
+			base = 30
+			modifier = {
+				add = 20
+				is_in_faction_with = USA
+			}
+			modifier = {
+				add = 10
+				has_opinion = { target = CHI value < 0 }
+			}
+			modifier = {
+				add = -15
+				NOT = { is_in_faction_with = USA }
+				has_opinion = { target = CHI value > 20 }
+			}
+		}
+	}
+}
+
+# china_scs.33 — Joint Maritime Development Agreement Signed (news, 1 option)
+news_event = {
+	id = china_scs.33
+	title = china_scs.33.t
+	desc = china_scs.33.d
+	picture = GFX_news_event_generic_sign_treaty1
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.33.a
+		log = "[GetDateText]: [This.GetName]: china_scs.33.a executed"
+		trigger = { original_tag = CHI }
+	}
+
+	option = {
+		name = china_scs.33.a
+		trigger = { NOT = { original_tag = CHI } }
+	}
+}
+
+# china_scs.34 — Debt Renegotiation Demanded (country event to claimant, fired by decisions)
+country_event = {
+	id = china_scs.34
+	title = china_scs.34.t
+	desc = china_scs.34.d
+	picture = GFX_politics_negotiations
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.34.a
+		log = "[GetDateText]: [This.GetName]: china_scs.34.a executed"
+		add_opinion_modifier = { target = CHI modifier = military_cooperation }
+		remove_ideas = CHI_scs_chinese_debt
+		CHI = {
+			add_to_variable = { CHI_scs_framework = 1 tooltip = CHI_scs_framework_tt }
+			clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				has_opinion = { target = CHI value > 0 }
+			}
+			modifier = {
+				add = -15
+				is_in_faction_with = USA
+			}
+		}
+	}
+
+	option = {
+		name = china_scs.34.b
+		log = "[GetDateText]: [This.GetName]: china_scs.34.b executed"
+		add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation }
+		CHI = {
+			add_to_variable = { CHI_scs_framework = -5 tooltip = CHI_scs_framework_tt }
+			clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
+		}
+		ai_chance = {
+			base = 30
+			modifier = {
+				add = 15
+				is_in_faction_with = USA
+			}
+			modifier = {
+				add = -10
+				has_opinion = { target = CHI value > 0 }
+			}
+		}
+	}
+
+	option = {
+		name = china_scs.34.c
+		log = "[GetDateText]: [This.GetName]: china_scs.34.c executed"
+		add_opinion_modifier = { target = CHI modifier = military_cooperation }
+		remove_ideas = CHI_scs_chinese_debt
+		CHI = {
+			add_to_variable = { CHI_scs_framework = -3 tooltip = CHI_scs_framework_tt }
+			clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
+			if = {
+				limit = { PREV = { original_tag = VIE } }
+				set_country_flag = CHI_loan_withdrawn_VIE
+			}
+			if = {
+				limit = { PREV = { original_tag = PHI } }
+				set_country_flag = CHI_loan_withdrawn_PHI
+			}
+			if = {
+				limit = { PREV = { original_tag = MAY } }
+				set_country_flag = CHI_loan_withdrawn_MAY
+			}
+		}
+		ai_chance = {
+			base = 30
+			modifier = {
+				add = 10
+				NOT = { has_opinion = { target = CHI value > 10 } }
+			}
+		}
+	}
+}
+
+# china_scs.35 — ASEAN Summit Endorses Chinese Position (news, fired by decisions)
+news_event = {
+	id = china_scs.35
+	title = china_scs.35.t
+	desc = china_scs.35.d
+	picture = GFX_news_event_generic_parliament
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.35.a
+		log = "[GetDateText]: [This.GetName]: china_scs.35.a executed"
+		trigger = { original_tag = CHI }
+		add_to_variable = { CHI_scs_framework = 5 tooltip = CHI_scs_framework_tt }
+		clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
+		PHI = { add_opinion_modifier = { target = CHI modifier = military_cooperation } }
+		VIE = { add_opinion_modifier = { target = CHI modifier = military_cooperation } }
+		MAY = { add_opinion_modifier = { target = CHI modifier = military_cooperation } }
+		INS = { add_opinion_modifier = { target = CHI modifier = military_cooperation } }
+		THA = { add_opinion_modifier = { target = CHI modifier = military_cooperation } }
+		USA = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+	}
+
+	option = {
+		name = china_scs.35.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			OR = {
+				original_tag = PHI
+				original_tag = VIE
+				original_tag = MAY
+				original_tag = INS
+				original_tag = THA
+			}
+		}
+	}
+
+	option = {
+		name = china_scs.35.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			NOT = { original_tag = PHI }
+			NOT = { original_tag = VIE }
+			NOT = { original_tag = MAY }
+			NOT = { original_tag = INS }
+			NOT = { original_tag = THA }
+		}
+	}
+}
+
+# china_scs.40 — Code of Conduct Negotiations: Final Round (country event to CHI, fired by CHI_The_Code_Of_Conduct)
+country_event = {
+	id = china_scs.40
+	title = china_scs.40.t
+	desc = china_scs.40.d
+	picture = GFX_news_event_generic_sign_treaty1
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.40.a
+		log = "[GetDateText]: [This.GetName]: china_scs.40.a executed"
+		add_to_variable = { CHI_scs_framework = -5 tooltip = CHI_scs_framework_tt }
+		clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
+		add_to_variable = { CHI_chinese_aggression = 5 tooltip = CHI_chinese_aggression_tt }
+		clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		PHI = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		VIE = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		MAY = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		hidden_effect = {
+			USA = { country_event = { id = china_scs.41 days = 14 } }
+		}
+		ai_chance = {
+			base = 30
+			modifier = {
+				add = 20
+				has_idea = super_power
+			}
+			modifier = {
+				add = 10
+				check_variable = { CHI_chinese_aggression > 20 }
+			}
+		}
+	}
+
+	option = {
+		name = china_scs.40.b
+		log = "[GetDateText]: [This.GetName]: china_scs.40.b executed"
+		add_to_variable = { CHI_scs_framework = 3 tooltip = CHI_scs_framework_tt }
+		clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
+		PHI = { add_opinion_modifier = { target = CHI modifier = military_cooperation } }
+		VIE = { add_opinion_modifier = { target = CHI modifier = military_cooperation } }
+		MAY = { add_opinion_modifier = { target = CHI modifier = military_cooperation } }
+		hidden_effect = {
+			USA = { country_event = { id = china_scs.41 days = 14 } }
+		}
+		ai_chance = {
+			base = 70
+			modifier = {
+				add = -20
+				has_idea = super_power
+			}
+			modifier = {
+				add = -10
+				check_variable = { CHI_chinese_aggression > 20 }
+			}
+		}
+	}
+}
+
+# china_scs.41 — Washington Acknowledges the Code of Conduct (country event to USA)
+country_event = {
+	id = china_scs.41
+	title = china_scs.41.t
+	desc = china_scs.41.d
+	picture = GFX_report_event_usa_diplomacy
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.41.a
+		log = "[GetDateText]: [This.GetName]: china_scs.41.a executed"
+		add_political_power = -15
+		ai_chance = { base = 1 }
+	}
+}
+
+# china_scs.50 — The Mandate of the Seas (news, fired by CHI_The_Mandate_Of_The_Seas)
+news_event = {
+	id = china_scs.50
+	title = china_scs.50.t
+	desc = china_scs.50.d
+	picture = GFX_china_90th_pla_anniversary
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.50.a
+		log = "[GetDateText]: [This.GetName]: china_scs.50.a executed"
+		trigger = { original_tag = CHI }
+	}
+
+	option = {
+		name = china_scs.50.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			capital_scope = { is_on_continent = asia }
+		}
+	}
+
+	option = {
+		name = china_scs.50.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			NOT = { capital_scope = { is_on_continent = asia } }
+		}
+	}
+}
+
+# china_scs.51 — World Reacts to Tributary Rhetoric (news, fired by CHI_Invoke_The_Tributary_System)
+news_event = {
+	id = china_scs.51
+	title = china_scs.51.t
+	desc = china_scs.51.d
+	picture = GFX_news_event_generic_parliament
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.51.a
+		log = "[GetDateText]: [This.GetName]: china_scs.51.a executed"
+		trigger = { original_tag = CHI }
+		PHI = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		VIE = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		MAY = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		INS = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		USA = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		JAP = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		ai_chance = { base = 70 }
+	}
+
+	option = {
+		name = china_scs.51.b
+		log = "[GetDateText]: [This.GetName]: china_scs.51.b executed"
+		trigger = { original_tag = CHI }
+		add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+		clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		PHI = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		VIE = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		MAY = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		INS = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
+		ai_chance = { base = 30 }
+	}
+
+	option = {
+		name = china_scs.51.a
+		trigger = { NOT = { original_tag = CHI } }
+	}
+}
+
+# china_scs.52 — Ultimatum Delivered (country event to claimant, fired by decisions)
+country_event = {
+	id = china_scs.52
+	title = china_scs.52.t
+	desc = china_scs.52.d
+	picture = GFX_politics_negotiations
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.52.a
+		log = "[GetDateText]: [This.GetName]: china_scs.52.a executed"
+		add_ideas = CHI_national_humiliation
+		CHI = {
+			add_opinion_modifier = { target = PREV modifier = military_cooperation }
+			add_to_variable = { CHI_scs_framework = 3 tooltip = CHI_scs_framework_tt }
+			clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
+		}
+		if = {
+			limit = { original_tag = VIE }
+			CHI = { transfer_state = 813 }
+		}
+		if = {
+			limit = { original_tag = PHI }
+			CHI = { transfer_state = 943 }
+		}
+		if = {
+			limit = { original_tag = MAY }
+			CHI = { transfer_state = 526 }
+		}
+		ai_chance = {
+			base = 5
+			modifier = {
+				add = 10
+				NOT = { is_in_faction_with = USA }
+			}
+			modifier = {
+				add = 5
+				has_opinion = { target = CHI value > 0 }
+			}
+			modifier = {
+				add = -10
+				is_in_faction_with = USA
+			}
+			modifier = {
+				add = -5
+				has_opinion = { target = CHI value < 0 }
+			}
+			modifier = {
+				add = 10
+				num_of_naval_factories < 4
+			}
+		}
+	}
+
+	option = {
+		name = china_scs.52.b
+		log = "[GetDateText]: [This.GetName]: china_scs.52.b executed"
+		add_ideas = CHI_defiance_of_china
+		CHI = {
+			add_opinion_modifier = { target = PREV modifier = territorial_integrity_violation }
+			if = {
+				limit = { PREV = { original_tag = VIE } }
+				set_country_flag = CHI_scs_ultimatum_issued_VIE
+			}
+			if = {
+				limit = { PREV = { original_tag = PHI } }
+				set_country_flag = CHI_scs_ultimatum_issued_PHI
+			}
+			if = {
+				limit = { PREV = { original_tag = MAY } }
+				set_country_flag = CHI_scs_ultimatum_issued_MAY
+			}
+			set_country_flag = CHI_scs_ultimatum_issued_any
+		}
+		hidden_effect = {
+			USA = { country_event = { id = china_scs.53 days = 7 } }
+			JAP = { country_event = { id = china_scs.53 days = 7 } }
+		}
+		ai_chance = {
+			base = 30
+			modifier = {
+				add = 20
+				is_in_faction_with = USA
+			}
+			modifier = {
+				add = 10
+				has_opinion = { target = CHI value < 0 }
+			}
+			modifier = {
+				add = -10
+				NOT = { is_in_faction_with = USA }
+				has_opinion = { target = CHI value > 0 }
+			}
+			modifier = {
+				add = -10
+				num_of_naval_factories < 4
+			}
+		}
+	}
+}
+
+# china_scs.53 — Quad Forces Activated (country event to USA + allies, fired by .52 refusal)
+country_event = {
+	id = china_scs.53
+	title = china_scs.53.t
+	desc = china_scs.53.d
+	picture = GFX_news_event_generic_military
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.53.a
+		log = "[GetDateText]: [This.GetName]: china_scs.53.a executed"
+		add_ideas = CHI_regional_crisis_alert
+		ai_chance = { base = 1 }
+	}
+}
+
+# china_scs.54 — War in the South China Sea (news, fired by CHI_Secure_The_Heavenly_Waters)
+news_event = {
+	id = china_scs.54
+	title = china_scs.54.t
+	desc = china_scs.54.d
+	picture = GFX_china_90th_pla_anniversary
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.54.a
+		log = "[GetDateText]: [This.GetName]: china_scs.54.a executed"
+		trigger = { original_tag = CHI }
+	}
+
+	option = {
+		name = china_scs.54.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			capital_scope = { is_on_continent = asia }
+		}
+	}
+
+	option = {
+		name = china_scs.54.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			NOT = { capital_scope = { is_on_continent = asia } }
+		}
+	}
+}
+
+# china_scs.55 — Voices from the South Sea Fleet (cosmetic flavour, 1 option)
+country_event = {
+	id = china_scs.55
+	title = china_scs.55.t
+	desc = china_scs.55.d
+	picture = GFX_news_event_generic_naval
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.55.a
+		log = "[GetDateText]: [This.GetName]: china_scs.55.a executed"
+		ai_chance = { base = 1 }
+	}
+}
+
+# china_scs.60 — 四海来朝 — The Four Seas Come to Court (news, fired by CHI_Restore_The_Tributary_Order)
+news_event = {
+	id = china_scs.60
+	title = china_scs.60.t
+	desc = china_scs.60.d
+	picture = GFX_china_19th_national_congress
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = china_scs.60.a
+		log = "[GetDateText]: [This.GetName]: china_scs.60.a executed"
+		trigger = { original_tag = CHI }
+	}
+
+	option = {
+		name = china_scs.60.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			OR = {
+				original_tag = PHI
+				original_tag = VIE
+				original_tag = MAY
+			}
+		}
+	}
+
+	option = {
+		name = china_scs.60.a
+		trigger = {
+			NOT = { original_tag = CHI }
+			NOT = { original_tag = PHI }
+			NOT = { original_tag = VIE }
+			NOT = { original_tag = MAY }
+		}
 	}
 }
