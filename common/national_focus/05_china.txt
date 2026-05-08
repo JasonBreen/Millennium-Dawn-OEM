@@ -2153,6 +2153,8 @@ focus_tree = {
 			set_temp_variable = { temp_opinion = 5 }
 			change_communist_cadres_opinion = yes
 			newline = yes
+			set_country_flag = CHI_aggressive_path_chosen
+			set_variable = { senkaku_pressure = 0 }
 			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
 			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_the_historical_reckoning executed"
@@ -2203,6 +2205,7 @@ focus_tree = {
 		completion_reward = {
 			JAP = { country_event = { id = CHI_foreign.204 days = 1 } }
 			add_ideas = CHI_diaoyu_patrol_regime
+			set_country_flag = CHI_diaoyu_declared
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
@@ -2255,7 +2258,10 @@ focus_tree = {
 
 		completion_reward = {
 			news_event = { id = china_news.yasukuni_recall }
-			JAP = { add_opinion_modifier = { target = CHI modifier = CHI_yasukuni_diplomatic_freeze } }
+			JAP = {
+				add_opinion_modifier = { target = CHI modifier = CHI_yasukuni_diplomatic_freeze }
+				country_event = { id = CHI_foreign.211 days = 1 }
+			}
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
@@ -2282,6 +2288,7 @@ focus_tree = {
 
 		completion_reward = {
 			add_ideas = CHI_paf_maritime_militia
+			set_country_flag = CHI_maritime_militia_unlocked
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
@@ -2308,11 +2315,16 @@ focus_tree = {
 
 		completion_reward = {
 			add_timed_idea = { idea = CHI_state_tolerated_boycott days = 730 }
-			JAP = { add_opinion_modifier = { target = CHI modifier = xenophobic_agenda } }
+			JAP = {
+				add_opinion_modifier = { target = CHI modifier = xenophobic_agenda }
+				country_event = { id = CHI_foreign.213 days = 1 }
+			}
 			news_event = { id = china_news.boycott_streets }
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+				add_to_variable = { var = senkaku_pressure value = 10 tooltip = senkaku_pressure_tt }
+				clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
 			}
 			log = "[GetDateText]: [This.GetName]: focus CHI_anti_japanese_boycott_campaign executed"
 		}
@@ -2339,13 +2351,19 @@ focus_tree = {
 		available = {
 			JAP = { controls_state = 939 }
 			has_war = no
-			custom_trigger_tooltip = {
-				tooltip = CHI_two_of_three_confrontation_axes_tt
-				count_triggers = {
-					amount = 2
-					has_completed_focus = CHI_the_yasukuni_protest_doctrine
-					has_completed_focus = CHI_the_maritime_militia_initiative
-					has_completed_focus = CHI_anti_japanese_boycott_campaign
+			OR = {
+				custom_trigger_tooltip = {
+					tooltip = CHI_two_of_three_confrontation_axes_tt
+					count_triggers = {
+						amount = 2
+						has_completed_focus = CHI_the_yasukuni_protest_doctrine
+						has_completed_focus = CHI_the_maritime_militia_initiative
+						has_completed_focus = CHI_anti_japanese_boycott_campaign
+					}
+				}
+				custom_trigger_tooltip = {
+					tooltip = senkaku_pressure_60_tt
+					check_variable = { senkaku_pressure > 59 }
 				}
 			}
 		}
@@ -2408,6 +2426,10 @@ focus_tree = {
 			change_communist_cadres_opinion = yes
 			remove_opinion_modifier = { target = JAP modifier = refuse_to_apologize_for_warcrimes }
 			set_country_flag = CHI_pragmatic_path_chosen
+			JAP = {
+				set_variable = { JAP_china_dependency = 0 }
+				country_event = { id = CHI_foreign.220 days = 1 }
+			}
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
@@ -2449,7 +2471,12 @@ focus_tree = {
 
 		completion_reward = {
 			add_opinion_modifier = { target = JAP modifier = improve_trade }
-			JAP = { add_opinion_modifier = { target = CHI modifier = improve_trade } }
+			JAP = {
+				add_opinion_modifier = { target = CHI modifier = improve_trade }
+				country_event = { id = CHI_foreign.221 days = 1 }
+				add_to_variable = { var = JAP_china_dependency value = 10 tooltip = JAP_china_dependency_tt }
+				clamp_variable = { var = JAP_china_dependency min = 0 max = 100 }
+			}
 			add_ideas = CHI_japan_soft_power
 			news_event = { id = china_news.panda_arrives_tokyo }
 			CHI = {
@@ -2480,6 +2507,10 @@ focus_tree = {
 			set_country_flag = trade_agreement@JAP
 			set_country_flag = trade_agreement@KOR
 			set_country_flag = CHI_rcep_unlocked
+			JAP = {
+				add_to_variable = { var = JAP_china_dependency value = 20 tooltip = JAP_china_dependency_tt }
+				clamp_variable = { var = JAP_china_dependency min = 0 max = 100 }
+			}
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
@@ -2522,6 +2553,9 @@ focus_tree = {
 			}
 			JAP = {
 				remove_opinion_modifier = { target = CHI modifier = historic_enemies }
+				country_event = { id = CHI_foreign.222 days = 1 }
+				add_to_variable = { var = JAP_china_dependency value = 15 tooltip = JAP_china_dependency_tt }
+				clamp_variable = { var = JAP_china_dependency min = 0 max = 100 }
 			}
 			set_country_flag = CHI_self_restraint_signaling_unlocked
 			CHI = {
@@ -2550,6 +2584,10 @@ focus_tree = {
 
 		completion_reward = {
 			add_ideas = CHI_japanese_cultural_imports
+			JAP = {
+				add_to_variable = { var = JAP_china_dependency value = 10 tooltip = JAP_china_dependency_tt }
+				clamp_variable = { var = JAP_china_dependency min = 0 max = 100 }
+			}
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
@@ -2583,6 +2621,10 @@ focus_tree = {
 
 		completion_reward = {
 			add_ideas = CHI_sez_japanese_investors
+			JAP = {
+				add_to_variable = { var = JAP_china_dependency value = 20 tooltip = JAP_china_dependency_tt }
+				clamp_variable = { var = JAP_china_dependency min = 0 max = 100 }
+			}
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
@@ -2613,6 +2655,10 @@ focus_tree = {
 				tooltip = CHI_aggression_less_0_tt
 				check_variable = { CHI_chinese_aggression < 0 }
 			}
+			custom_trigger_tooltip = {
+				tooltip = JAP_dependency_40_tt
+				JAP = { check_variable = { JAP_china_dependency > 39 } }
+			}
 			has_war = no
 			NOT = { has_completed_focus = CHI_Wolf_Warrior_Diplomacy }
 		}
@@ -2620,6 +2666,7 @@ focus_tree = {
 		completion_reward = {
 			JAP = { add_opinion_modifier = { target = USA modifier = CHI_quad_wedge_doubt } }
 			set_country_flag = CHI_bilateral_channel_unlocked
+			USA = { country_event = { id = CHI_foreign.223 days = 1 } }
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
@@ -2662,6 +2709,10 @@ focus_tree = {
 				check_variable = { CHI_chinese_aggression < -19 }
 			}
 			custom_trigger_tooltip = {
+				tooltip = JAP_dependency_70_tt
+				JAP = { check_variable = { JAP_china_dependency > 69 } }
+			}
+			custom_trigger_tooltip = {
 				tooltip = CHI_two_of_three_pragmatic_axes_tt
 				count_triggers = {
 					amount = 2
@@ -2673,9 +2724,8 @@ focus_tree = {
 		}
 
 		completion_reward = {
-			diplomatic_relation = { country = JAP relation = non_aggression_pact active = yes }
-			add_ideas = CHI_sino_japanese_understanding
-			country_event = { id = CHI_foreign.206 days = 1 }
+			JAP = { country_event = { id = CHI_foreign.224 days = 1 } }
+			country_event = { id = CHI_foreign.206 days = 3 }
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = -3 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
@@ -2711,39 +2761,73 @@ focus_tree = {
 
 		available = {
 			OR = {
-				has_completed_focus = CHI_the_tokyo_communique
-				JAP = { is_subject_of = CHI }
+				custom_trigger_tooltip = {
+					tooltip = CHI_coercive_breakthrough_path_tt
+					AND = {
+						has_country_flag = CHI_aggressive_path_chosen
+						has_completed_focus = CHI_the_senkaku_crisis
+						OR = {
+							NOT = { has_country_flag = USA_intervened_senkaku }
+							JAP = { is_subject_of = CHI }
+						}
+					}
+				}
+				custom_trigger_tooltip = {
+					tooltip = CHI_pragmatic_erosion_path_tt
+					AND = {
+						has_country_flag = CHI_pragmatic_path_chosen
+						OR = {
+							has_country_flag = tokyo_communique_signed
+							has_country_flag = tokyo_communique_partial
+						}
+					}
+				}
 			}
 			JAP = { NOT = { has_government = nationalist } }
-			JAP = { NOT = { has_government = democratic } }
 			JAP = { influence_higher_30 = yes }
 		}
 
 		completion_reward = {
-			if = {
-				limit = { has_completed_focus = CHI_the_historical_reckoning }
-				JAP = { add_ideas = CHI_jap_forced_neutrality }
-			}
-			else_if = {
-				limit = { has_country_flag = CHI_pragmatic_path_chosen }
-				JAP = { add_ideas = CHI_jap_finlandized_sovereignty }
-			}
 			JAP = {
 				set_temp_variable = { percent_change = 2 }
 				change_domestic_influence_percentage = yes
 			}
-			hidden_effect = {
-				827 = {
-					add_core_of = JAP
-					remove_core_of = USA
+			# Coercive breakthrough — state transfer + USA access revoked
+			if = {
+				limit = { has_country_flag = CHI_aggressive_path_chosen }
+				hidden_effect = {
+					827 = {
+						add_core_of = JAP
+						remove_core_of = USA
+					}
+				}
+				JAP = {
+					transfer_state = 827
+					add_ideas = CHI_jap_forced_neutrality
+				}
+				USA = {
+					diplomatic_relation = {
+						country = JAP
+						relation = military_access
+						active = no
+					}
 				}
 			}
-			JAP = { transfer_state = 827 }
-			USA = {
-				diplomatic_relation = {
-					country = JAP
-					relation = military_access
-					active = no
+			# Pragmatic erosion — basing rights demilitarized, no transfer
+			else_if = {
+				limit = { has_country_flag = CHI_pragmatic_path_chosen }
+				827 = {
+					add_dynamic_modifier = { modifier = CHI_okinawa_base_demilitarized }
+				}
+				JAP = { add_ideas = CHI_jap_finlandized_sovereignty }
+				if = {
+					limit = { has_country_flag = quad_weakened }
+					JAP = { add_timed_idea = { idea = JAP_strategic_autonomy_drift days = 3650 } }
+				}
+				if = {
+					limit = { has_country_flag = USA_quad_reaffirmed }
+					JAP = { remove_ideas = CHI_jap_finlandized_sovereignty }
+					JAP = { add_timed_idea = { idea = CHI_jap_finlandized_sovereignty days = 730 } }
 				}
 			}
 			log = "[GetDateText]: [This.GetName]: focus CHI_break_the_first_island_chain executed"

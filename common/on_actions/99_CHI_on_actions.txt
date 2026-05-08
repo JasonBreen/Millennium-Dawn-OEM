@@ -515,6 +515,50 @@ on_actions = {
 		}
 	}
 
+	### Japan branch rework — Senkaku Pressure tick & threshold incidents ###
+	on_monthly = {
+		effect = {
+			if = {
+				limit = {
+					original_tag = CHI
+					has_country_flag = CHI_paf_militia_toggle_active
+					country_exists = JAP
+					NOT = { has_war_with = JAP }
+				}
+				add_to_variable = { senkaku_pressure = 2 tooltip = senkaku_pressure_tt }
+				clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+
+				# Threshold 30 — first incident
+				if = {
+					limit = {
+						check_variable = { senkaku_pressure > 29 }
+						NOT = { has_country_flag = senkaku_incident_30_fired }
+					}
+					set_country_flag = senkaku_incident_30_fired
+					JAP = { country_event = { id = CHI_foreign.212 days = 3 } }
+				}
+				# Threshold 60 — second incident
+				if = {
+					limit = {
+						check_variable = { senkaku_pressure > 59 }
+						NOT = { has_country_flag = senkaku_incident_60_fired }
+					}
+					set_country_flag = senkaku_incident_60_fired
+					JAP = { country_event = { id = CHI_foreign.212 days = 3 } }
+				}
+				# Threshold 90 — third and final pre-crisis incident
+				if = {
+					limit = {
+						check_variable = { senkaku_pressure > 89 }
+						NOT = { has_country_flag = senkaku_incident_90_fired }
+					}
+					set_country_flag = senkaku_incident_90_fired
+					JAP = { country_event = { id = CHI_foreign.212 days = 3 } }
+				}
+			}
+		}
+	}
+
 	### SCO Save Compatibility ###
 	on_startup = {
 		effect = {
@@ -527,6 +571,24 @@ on_actions = {
 					set_variable = { global.sco_megaproject_dev_bank_active = 0 }
 					set_variable = { global.sco_megaproject_air_defense_active = 0 }
 					set_variable = { global.sco_cohesion_yearly_contribution = 0 }
+				}
+			}
+		}
+	}
+
+	### Japan branch rework — variable init ###
+	on_startup = {
+		effect = {
+			CHI = {
+				if = {
+					limit = { NOT = { has_variable = senkaku_pressure } }
+					set_variable = { senkaku_pressure = 0 }
+				}
+			}
+			JAP = {
+				if = {
+					limit = { NOT = { has_variable = JAP_china_dependency } }
+					set_variable = { JAP_china_dependency = 0 }
 				}
 			}
 		}

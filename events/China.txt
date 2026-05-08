@@ -6748,7 +6748,7 @@ country_event = {
 		}
 		if = {
 			limit = { any_country = { has_guaranteed = JAP } }
-			USA = { country_event = { id = CHI_foreign.202 days = 2 } }
+			USA = { country_event = { id = CHI_foreign.215 days = 2 } }
 		}
 		ai_chance = {
 			base = 5
@@ -7019,7 +7019,7 @@ news_event = {
 }
 
 # CHI_foreign.204 — Diaoyu Sovereignty Protest (JAP receiver)
-# Fired by CHI_the_diaoyu_sovereignty_declaration focus. Replaces the non-existent Japan.8 call.
+# Fired by CHI_the_diaoyu_sovereignty_declaration focus.
 country_event = {
 	id = CHI_foreign.204
 	title = CHI_foreign.204.t
@@ -7032,11 +7032,17 @@ country_event = {
 		original_tag = JAP
 	}
 
-	# Option A — Reject the declaration: firm diplomatic rebuff.
+	# Option A — Firm rebuff: pump pressure and aggression.
 	option = {
 		name = CHI_foreign.204.a
 		log = "[GetDateText]: [This.GetName]: CHI_foreign.204.a executed"
 		add_opinion_modifier = { target = CHI modifier = border_tensions }
+		CHI = {
+			add_to_variable = { var = senkaku_pressure value = 5 tooltip = senkaku_pressure_tt }
+			clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		}
 		ai_chance = {
 			base = 70
 			modifier = {
@@ -7046,15 +7052,523 @@ country_event = {
 		}
 	}
 
-	# Option B — Note the claim and move on: quieter response, same mechanical effect.
+	# Option B — Acknowledge the dispute: open a back-channel, lower aggression.
 	option = {
 		name = CHI_foreign.204.b
 		log = "[GetDateText]: [This.GetName]: CHI_foreign.204.b executed"
-		add_opinion_modifier = { target = CHI modifier = border_tensions }
+		add_opinion_modifier = { target = CHI modifier = senkaku_back_channel }
+		CHI = {
+			add_opinion_modifier = { target = JAP modifier = senkaku_back_channel }
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		}
 		ai_chance = {
 			base = 30
 			modifier = {
 				factor = 0
+				has_government = nationalist
+			}
+		}
+	}
+}
+
+##############################################
+### CHI Japan branch — Phase II response chain
+### CHI_foreign.211 – CHI_foreign.215  (aggressive)
+### CHI_foreign.220 – CHI_foreign.224  (pragmatic)
+##############################################
+
+# CHI_foreign.211 — Tokyo's Choice on Yasukuni Visits (JAP receiver)
+# Fired by CHI_the_yasukuni_protest_doctrine focus.
+country_event = {
+	id = CHI_foreign.211
+	title = CHI_foreign.211.t
+	desc = CHI_foreign.211.d
+	picture = GFX_report_event_protest
+
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = JAP
+	}
+
+	# Option A — Cancel the visits: defuse the row at a domestic political cost.
+	option = {
+		name = CHI_foreign.211.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.211.a executed"
+		add_stability = -0.02
+		remove_opinion_modifier = { target = CHI modifier = CHI_yasukuni_diplomatic_freeze }
+		CHI = {
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			add_to_variable = { var = senkaku_pressure value = -10 tooltip = senkaku_pressure_tt }
+			clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+		}
+		ai_chance = {
+			base = 30
+			modifier = {
+				factor = 0
+				has_government = nationalist
+			}
+			modifier = {
+				add = 30
+				NOT = { has_government = nationalist }
+			}
+		}
+	}
+
+	# Option B — The state visit proceeds: harden national pride, raise pressure.
+	option = {
+		name = CHI_foreign.211.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.211.b executed"
+		add_timed_idea = { idea = JAP_revisionist_pride days = 365 }
+		CHI = {
+			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			add_to_variable = { var = senkaku_pressure value = 10 tooltip = senkaku_pressure_tt }
+			clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+		}
+		ai_chance = {
+			base = 70
+			modifier = {
+				add = 20
+				has_government = nationalist
+			}
+		}
+	}
+}
+
+# CHI_foreign.212 — Senkaku Standoff Incident (JAP receiver)
+# Fired by on_monthly when senkaku_pressure crosses 30/60/90 thresholds.
+country_event = {
+	id = CHI_foreign.212
+	title = CHI_foreign.212.t
+	desc = CHI_foreign.212.d
+	picture = GFX_news_event_generic_naval
+
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = JAP
+	}
+
+	# Option A — Escalate coast guard response.
+	option = {
+		name = CHI_foreign.212.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.212.a executed"
+		add_timed_idea = { idea = JAP_jcg_emergency_deployment days = 180 }
+		CHI = {
+			add_to_variable = { var = senkaku_pressure value = 5 tooltip = senkaku_pressure_tt }
+			clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+		}
+		ai_chance = {
+			base = 60
+			modifier = {
+				add = 30
+				has_government = nationalist
+			}
+		}
+	}
+
+	# Option B — Open a back-channel to de-escalate.
+	option = {
+		name = CHI_foreign.212.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.212.b executed"
+		add_opinion_modifier = { target = CHI modifier = senkaku_back_channel }
+		CHI = {
+			set_country_flag = senkaku_back_channel_open
+			add_opinion_modifier = { target = JAP modifier = senkaku_back_channel }
+			add_to_variable = { var = senkaku_pressure value = -10 tooltip = senkaku_pressure_tt }
+			clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				factor = 0
+				has_government = nationalist
+			}
+			modifier = {
+				add = 30
+				NOT = { has_government = nationalist }
+			}
+		}
+	}
+}
+
+# CHI_foreign.213 — Anti-Japanese Boycott Pressure (JAP receiver)
+# Fired by CHI_anti_japanese_boycott_campaign focus.
+country_event = {
+	id = CHI_foreign.213
+	title = CHI_foreign.213.t
+	desc = CHI_foreign.213.d
+	picture = GFX_report_event_protest
+
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = JAP
+	}
+
+	# Option A — Pay off the lobby and end the boycott.
+	option = {
+		name = CHI_foreign.213.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.213.a executed"
+		add_political_power = -100
+		set_country_flag = JAP_paid_off_boycott
+		CHI = {
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				has_political_power > 200
+			}
+		}
+	}
+
+	# Option B — Weather the storm.
+	option = {
+		name = CHI_foreign.213.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.213.b executed"
+		add_timed_idea = { idea = JAP_export_pain days = 365 }
+		CHI = {
+			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		}
+		ai_chance = {
+			base = 60
+			modifier = {
+				add = 20
+				has_government = nationalist
+			}
+		}
+	}
+}
+
+# CHI_foreign.215 — Washington's Senkaku Decision (USA receiver)
+# Fired from CHI_foreign.200.c (Senkaku-crisis escalation option).
+country_event = {
+	id = CHI_foreign.215
+	title = CHI_foreign.215.t
+	desc = CHI_foreign.215.d
+	picture = GFX_report_event_usa_diplomacy
+
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = USA
+	}
+
+	# Option A — Enforce the security treaty: side openly with Japan.
+	option = {
+		name = CHI_foreign.215.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.215.a executed"
+		CHI = {
+			set_country_flag = USA_intervened_senkaku
+			add_war_support = -0.05
+		}
+		939 = {
+			add_dynamic_modifier = { modifier = CHI_disputed_waters_zone }
+		}
+		ai_chance = {
+			base = 60
+		}
+	}
+
+	# Option B — Back-channel pressure: broker an armistice.
+	option = {
+		name = CHI_foreign.215.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.215.b executed"
+		CHI = {
+			set_country_flag = USA_brokered_senkaku_armistice
+			add_opinion_modifier = { target = JAP modifier = east_china_sea_armistice }
+		}
+		JAP = {
+			add_opinion_modifier = { target = CHI modifier = east_china_sea_armistice }
+		}
+		ai_chance = {
+			base = 40
+		}
+	}
+}
+
+# CHI_foreign.220 — A Fukuda Doctrine for the New Century (JAP receiver)
+# Fired by CHI_the_fukuda_doctrine_revisited focus.
+country_event = {
+	id = CHI_foreign.220
+	title = CHI_foreign.220.t
+	desc = CHI_foreign.220.d
+	picture = GFX_news_event_generic_diplomacy
+
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = JAP
+	}
+
+	# Option A — Welcome the overture: open political engagement.
+	option = {
+		name = CHI_foreign.220.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.220.a executed"
+		set_country_flag = JAP_engaged_with_chi
+		add_ideas = JAP_china_engagement
+		add_opinion_modifier = { target = CHI modifier = peaceful_rise }
+		CHI = { add_opinion_modifier = { target = JAP modifier = peaceful_rise } }
+		add_to_variable = { var = JAP_china_dependency value = 5 tooltip = JAP_china_dependency_tt }
+		clamp_variable = { var = JAP_china_dependency min = 0 max = 100 }
+		ai_chance = {
+			base = 50
+			modifier = {
+				factor = 0
+				has_government = nationalist
+			}
+			modifier = {
+				add = 30
+				NOT = { has_government = nationalist }
+			}
+		}
+	}
+
+	# Option B — Polite skepticism: hear them out, commit to nothing.
+	option = {
+		name = CHI_foreign.220.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.220.b executed"
+		ai_chance = {
+			base = 50
+			modifier = {
+				add = 30
+				has_government = nationalist
+			}
+		}
+	}
+}
+
+# CHI_foreign.221 — Panda State Visit (JAP receiver)
+# Fired by CHI_the_panda_diplomacy_renewal focus.
+country_event = {
+	id = CHI_foreign.221
+	title = CHI_foreign.221.t
+	desc = CHI_foreign.221.d
+	picture = GFX_news_event_generic_diplomacy
+
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = JAP
+	}
+
+	# Option A — Host a full state visit.
+	option = {
+		name = CHI_foreign.221.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.221.a executed"
+		add_opinion_modifier = { target = CHI modifier = cultural_thaw }
+		CHI = {
+			add_opinion_modifier = { target = JAP modifier = cultural_thaw }
+			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		}
+		add_to_variable = { var = JAP_china_dependency value = 5 tooltip = JAP_china_dependency_tt }
+		clamp_variable = { var = JAP_china_dependency min = 0 max = 100 }
+		ai_chance = {
+			base = 60
+			modifier = {
+				factor = 0
+				has_government = nationalist
+			}
+			modifier = {
+				add = 30
+				NOT = { has_government = nationalist }
+			}
+		}
+	}
+
+	# Option B — Low-profile reception.
+	option = {
+		name = CHI_foreign.221.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.221.b executed"
+		CHI = {
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 30
+				has_government = nationalist
+			}
+		}
+	}
+}
+
+# CHI_foreign.222 — Mutual Threat Reduction Pact (JAP receiver)
+# Fired by CHI_assuage_japanese_concerns focus.
+country_event = {
+	id = CHI_foreign.222
+	title = CHI_foreign.222.t
+	desc = CHI_foreign.222.d
+	picture = GFX_news_event_generic_sign_treaty1
+
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = JAP
+	}
+
+	# Option A — Sign the pact: bilateral threat reduction.
+	option = {
+		name = CHI_foreign.222.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.222.a executed"
+		remove_opinion_modifier = { target = CHI modifier = historic_enemies }
+		CHI = {
+			set_country_flag = CHI_JAP_threat_reduction
+			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		}
+		add_to_variable = { var = JAP_china_dependency value = 5 tooltip = JAP_china_dependency_tt }
+		clamp_variable = { var = JAP_china_dependency min = 0 max = 100 }
+		ai_chance = {
+			base = 50
+			modifier = {
+				factor = 0
+				has_government = nationalist
+			}
+		}
+	}
+
+	# Option B — Wait for more proof.
+	option = {
+		name = CHI_foreign.222.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.222.b executed"
+		ai_chance = {
+			base = 50
+			modifier = {
+				add = 30
+				has_government = nationalist
+			}
+		}
+	}
+}
+
+# CHI_foreign.223 — The Quad's Reply (USA receiver)
+# Fired by CHI_the_quad_wedge_strategy focus.
+country_event = {
+	id = CHI_foreign.223
+	title = CHI_foreign.223.t
+	desc = CHI_foreign.223.d
+	picture = GFX_report_event_usa_diplomacy
+
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = USA
+	}
+
+	# Option A — Pressure Japan to recommit.
+	option = {
+		name = CHI_foreign.223.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.223.a executed"
+		set_country_flag = USA_quad_reaffirmed
+		if = {
+			limit = { country_exists = JAP }
+			JAP = {
+				add_opinion_modifier = { target = CHI modifier = JAP_quad_pressure }
+			}
+		}
+		ai_chance = {
+			base = 60
+		}
+	}
+
+	# Option B — Downgrade the Quad to a dialogue.
+	option = {
+		name = CHI_foreign.223.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.223.b executed"
+		set_country_flag = quad_weakened
+		if = {
+			limit = { country_exists = JAP }
+			JAP = {
+				add_timed_idea = { idea = JAP_strategic_autonomy_drift days = 1825 }
+			}
+		}
+		ai_chance = {
+			base = 40
+		}
+	}
+}
+
+# CHI_foreign.224 — The Tokyo Communique (JAP receiver)
+# Fired by CHI_the_tokyo_communique focus completion. Replaces the older auto-completion.
+country_event = {
+	id = CHI_foreign.224
+	title = CHI_foreign.224.t
+	desc = CHI_foreign.224.d
+	picture = GFX_news_event_generic_sign_treaty1
+
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = JAP
+	}
+
+	# Option A — Sign the full Communique.
+	option = {
+		name = CHI_foreign.224.a
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.224.a executed"
+		add_ideas = JAP_sino_japanese_understanding
+		diplomatic_relation = { country = CHI relation = non_aggression_pact active = yes }
+		CHI = {
+			add_ideas = CHI_sino_japanese_understanding
+			set_country_flag = tokyo_communique_signed
+		}
+		if = {
+			limit = { is_in_faction_with = USA }
+			USA = { add_opinion_modifier = { target = JAP modifier = tokyo_communique_strain } }
+		}
+		ai_chance = {
+			base = 60
+			modifier = {
+				factor = 0
+				CHI = { check_variable = { JAP_china_dependency < 70 } }
+			}
+			modifier = {
+				add = 30
+				CHI = { check_variable = { JAP_china_dependency > 89 } }
+			}
+		}
+	}
+
+	# Option B — Sign with reservations.
+	option = {
+		name = CHI_foreign.224.b
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.224.b executed"
+		diplomatic_relation = { country = CHI relation = non_aggression_pact active = yes }
+		CHI = { set_country_flag = tokyo_communique_partial }
+		ai_chance = {
+			base = 30
+			modifier = {
+				add = 20
+				CHI = { check_variable = { JAP_china_dependency > 69 } }
+			}
+		}
+	}
+
+	# Option C — Walk out.
+	option = {
+		name = CHI_foreign.224.c
+		log = "[GetDateText]: [This.GetName]: CHI_foreign.224.c executed"
+		CHI = {
+			set_country_flag = tokyo_communique_failed
+			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		}
+		ai_chance = {
+			base = 10
+			modifier = {
+				add = 30
 				has_government = nationalist
 			}
 		}

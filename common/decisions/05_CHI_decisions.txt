@@ -5690,7 +5690,7 @@ CHI_subcontinent_diplomacy = {
 		icon = GFX_decision_generic_political_actions
 
 		visible = {
-			has_country_flag = CHI_border_personnel_meetings_active
+			has_completed_focus = CHI_The_Border_Personnel_Meetings
 			custom_trigger_tooltip = {
 				tooltip = CHI_lac_deescalation_uses_remaining_tt
 				check_variable = {
@@ -5970,7 +5970,7 @@ CHI_subcontinent_diplomacy = {
 		allowed = { original_tag = CHI }
 
 		visible = {
-			has_country_flag = CHI_pak_joint_exercises_ended
+			has_completed_focus = CHI_End_Joint_Military_Exercises
 			country_exists = RAJ
 		}
 
@@ -6007,13 +6007,104 @@ CHI_subcontinent_diplomacy = {
 # Japan branch rework
 CHI_rare_earth_coercion = {
 
-	CHI_cut_rare_earth_exports_to_japan = {
+	CHI_activate_rare_earth_embargo = {
 		icon = GFX_decision_generic_industry
 
 		allowed = { original_tag = CHI }
 
-		available = {
+		visible = {
 			has_country_flag = CHI_rare_earth_lever_unlocked
+			NOT = { has_country_flag = CHI_rare_earth_embargo_active }
+		}
+
+		available = {
+			country_exists = JAP
+			NOT = { has_war_with = JAP }
+			NOT = { JAP = { has_country_flag = JAP_rare_earth_resilient } }
+		}
+
+		cost = 100
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_activate_rare_earth_embargo executed"
+			set_country_flag = CHI_rare_earth_embargo_active
+			JAP = {
+				capital_scope = {
+					add_dynamic_modifier = { modifier = CHI_rare_earth_embargoed }
+				}
+				add_opinion_modifier = { target = CHI modifier = threatened_measures }
+			}
+			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		}
+
+		ai_will_do = {
+			base = 2
+			modifier = {
+				factor = 0
+				has_war_with = JAP
+			}
+			modifier = {
+				factor = 0
+				JAP = { has_country_flag = JAP_rare_earth_resilient }
+			}
+		}
+	}
+
+	CHI_lift_rare_earth_embargo = {
+		icon = GFX_decision_generic_political_actions
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_country_flag = CHI_rare_earth_embargo_active
+		}
+
+		available = { always = yes }
+
+		cost = 0
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_lift_rare_earth_embargo executed"
+			clr_country_flag = CHI_rare_earth_embargo_active
+			JAP = {
+				capital_scope = {
+					remove_dynamic_modifier = { modifier = CHI_rare_earth_embargoed }
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 0
+			modifier = {
+				add = 5
+				has_war_with = JAP
+			}
+			modifier = {
+				add = 3
+				JAP = { has_country_flag = JAP_rare_earth_resilient }
+			}
+			modifier = {
+				add = 3
+				JAP = { has_country_flag = JAP_rare_earth_capitulated }
+			}
+		}
+	}
+}
+
+CHI_maritime_pressure = {
+
+	CHI_patrol_diaoyu_fishing_grounds = {
+		icon = GFX_decision_generic_naval
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_country_flag = CHI_diaoyu_declared
+		}
+
+		available = {
+			country_exists = JAP
 			NOT = { has_war_with = JAP }
 		}
 
@@ -6021,11 +6112,9 @@ CHI_rare_earth_coercion = {
 		days_re_enable = 90
 
 		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision CHI_cut_rare_earth_exports_to_japan executed"
-			JAP = {
-				add_opinion_modifier = { target = CHI modifier = threatened_measures }
-				add_timed_idea = { idea = JAP_abandoned_by_ally days = 365 }
-			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_patrol_diaoyu_fishing_grounds executed"
+			add_to_variable = { var = senkaku_pressure value = 3 tooltip = senkaku_pressure_tt }
+			clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
 			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
 			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 		}
@@ -6035,6 +6124,245 @@ CHI_rare_earth_coercion = {
 			modifier = {
 				factor = 0
 				has_war_with = JAP
+			}
+		}
+	}
+
+	CHI_deploy_paf_maritime_militia = {
+		icon = GFX_decision_generic_naval
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_country_flag = CHI_maritime_militia_unlocked
+			NOT = { has_country_flag = CHI_paf_militia_toggle_active }
+		}
+
+		available = {
+			country_exists = JAP
+			NOT = { has_war_with = JAP }
+		}
+
+		cost = 75
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_deploy_paf_maritime_militia executed"
+			set_country_flag = CHI_paf_militia_toggle_active
+			939 = {
+				add_dynamic_modifier = { modifier = CHI_coast_guard_standoff }
+			}
+			add_to_variable = { senkaku_pressure = 5 tooltip = senkaku_pressure_tt }
+			clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+		}
+
+		ai_will_do = {
+			base = 2
+			modifier = {
+				factor = 0
+				has_war_with = JAP
+			}
+		}
+	}
+
+	CHI_recall_paf_maritime_militia = {
+		icon = GFX_decision_generic_political_actions
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_country_flag = CHI_paf_militia_toggle_active
+		}
+
+		available = { always = yes }
+
+		cost = 0
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_recall_paf_maritime_militia executed"
+			clr_country_flag = CHI_paf_militia_toggle_active
+			939 = {
+				remove_dynamic_modifier = { modifier = CHI_coast_guard_standoff }
+			}
+		}
+
+		ai_will_do = {
+			base = 0
+			modifier = {
+				add = 5
+				has_war_with = JAP
+			}
+			modifier = {
+				add = 3
+				check_variable = { senkaku_pressure > 95 }
+			}
+		}
+	}
+}
+
+JAP_rare_earth_response = {
+
+	JAP_capitulate_to_chinese_demands = {
+		icon = GFX_decision_generic_political_actions
+
+		allowed = { original_tag = JAP }
+
+		visible = {
+			CHI = { has_country_flag = CHI_rare_earth_embargo_active }
+			NOT = { has_country_flag = JAP_rare_earth_resilient }
+		}
+
+		available = {
+			NOT = { has_war_with = CHI }
+		}
+
+		cost = 200
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision JAP_capitulate_to_chinese_demands executed"
+			set_country_flag = JAP_rare_earth_capitulated
+			capital_scope = {
+				remove_dynamic_modifier = { modifier = CHI_rare_earth_embargoed }
+			}
+			CHI = {
+				clr_country_flag = CHI_rare_earth_embargo_active
+				add_political_power = 100
+				add_opinion_modifier = { target = JAP modifier = threatened_measures }
+			}
+			add_stability = -0.05
+		}
+
+		ai_will_do = {
+			base = 1
+			modifier = {
+				factor = 0
+				has_country_flag = JAP_rare_earth_resilient
+			}
+			modifier = {
+				factor = 2
+				has_war_with = CHI
+			}
+		}
+	}
+
+	JAP_diversify_rare_earth_supply = {
+		icon = GFX_decision_generic_industry
+
+		allowed = { original_tag = JAP }
+
+		visible = {
+			CHI = { has_country_flag = CHI_rare_earth_embargo_active }
+			NOT = { has_country_flag = JAP_rare_earth_resilient }
+		}
+
+		available = {
+			NOT = { has_war_with = CHI }
+			has_political_power > 99
+		}
+
+		cost = 100
+		days_remove = 365
+
+		fire_only_once = yes
+
+		modifier = {
+			civilian_factory_use = 2
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision JAP_diversify_rare_earth_supply started"
+			add_timed_idea = { idea = JAP_rare_earth_diversification days = 365 }
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision JAP_diversify_rare_earth_supply completed"
+			set_country_flag = JAP_rare_earth_resilient
+			capital_scope = {
+				remove_dynamic_modifier = { modifier = CHI_rare_earth_embargoed }
+			}
+			CHI = { clr_country_flag = CHI_rare_earth_embargo_active }
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_political_power < 100
+			}
+		}
+	}
+}
+
+JAP_senkaku_response = {
+
+	JAP_reinforce_coast_guard = {
+		icon = GFX_decision_generic_naval
+
+		allowed = { original_tag = JAP }
+
+		visible = {
+			CHI = { has_country_flag = CHI_paf_militia_toggle_active }
+		}
+
+		available = {
+			NOT = { has_war_with = CHI }
+		}
+
+		cost = 50
+		days_re_enable = 90
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision JAP_reinforce_coast_guard executed"
+			navy_experience = 5
+			CHI = {
+				add_to_variable = { senkaku_pressure = 1 tooltip = senkaku_pressure_tt }
+				clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+			}
+		}
+
+		ai_will_do = {
+			base = 2
+			modifier = {
+				factor = 0
+				has_war_with = CHI
+			}
+		}
+	}
+
+	JAP_open_back_channel_talks = {
+		icon = GFX_decision_generic_political_actions
+
+		allowed = { original_tag = JAP }
+
+		visible = {
+			CHI = { has_country_flag = senkaku_back_channel_open }
+		}
+
+		available = {
+			NOT = { has_war_with = CHI }
+		}
+
+		cost = 75
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision JAP_open_back_channel_talks executed"
+			CHI = {
+				add_to_variable = { senkaku_pressure = -15 tooltip = senkaku_pressure_tt }
+				clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+				add_opinion_modifier = { target = JAP modifier = senkaku_back_channel }
+			}
+			add_opinion_modifier = { target = CHI modifier = senkaku_back_channel }
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				has_war_with = CHI
+			}
+			modifier = {
+				add = 3
+				CHI = { check_variable = { senkaku_pressure > 60 } }
 			}
 		}
 	}
