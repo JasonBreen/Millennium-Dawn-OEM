@@ -5682,212 +5682,6 @@ CHI_south_china_sea_category = {
 	}
 }
 
-### Murree Track Two Diplomacy ###
-
-CHI_murree_track_two_diplomacy = {
-
-	CHI_mediate_taliban_factions = {
-		icon = GFX_decision_generic_political_actions
-
-		visible = {
-			has_country_flag = CHI_murree_process_active
-		}
-
-		available = {
-			country_exists = AFG
-			NOT = { has_war_with = AFG }
-		}
-
-		cost = 50
-		days_remove = 90
-		days_re_enable = 180
-
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision CHI_mediate_taliban_factions executed"
-			if = {
-				limit = { country_exists = AFG }
-				AFG = { add_stability = 0.03 }
-			}
-			random_list = {
-				25 = {
-					news_event = { id = sino_indian.30 days = 3 }
-				}
-				75 = {}
-			}
-			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-		}
-
-		ai_will_do = {
-			base = 5
-			modifier = {
-				factor = 0
-				has_war_with = AFG
-			}
-			modifier = {
-				add = 3
-				check_variable = { CHI_chinese_aggression > 9 }
-			}
-			modifier = {
-				factor = 0
-				NOT = { country_exists = AFG }
-			}
-		}
-	}
-
-	CHI_facilitate_prisoner_exchange = {
-		icon = GFX_decision_generic_political_actions
-
-		visible = {
-			has_country_flag = CHI_murree_process_active
-		}
-
-		available = {
-			country_exists = PAK
-		}
-
-		cost = 30
-		days_remove = 60
-		days_re_enable = 120
-
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision CHI_facilitate_prisoner_exchange executed"
-			add_to_variable = { var = uighur_threat value = -3 }
-			clamp_variable = { var = uighur_threat min = 0 max = 100 }
-			if = {
-				limit = { country_exists = PAK }
-				PAK = {
-					add_opinion_modifier = {
-						target = CHI
-						modifier = CHI_prisoner_exchange_goodwill
-					}
-				}
-			}
-		}
-
-		ai_will_do = {
-			base = 7
-			modifier = {
-				factor = 0
-				NOT = { country_exists = PAK }
-			}
-			modifier = {
-				add = 3
-				PAK = { has_opinion = { target = CHI value < 0 } }
-			}
-		}
-	}
-
-	CHI_host_intra_afghan_summit_beijing = {
-		icon = GFX_decision_generic_political_actions
-
-		visible = {
-			has_country_flag = CHI_murree_process_active
-		}
-
-		available = {
-			country_exists = AFG
-			NOT = { has_war_with = AFG }
-			AFG = { has_stability < 0.4 }
-		}
-
-		cost = 100
-		days_remove = 180
-		days_re_enable = 360
-
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision CHI_host_intra_afghan_summit_beijing executed"
-			if = {
-				limit = { country_exists = AFG }
-				AFG = { add_stability = 0.08 }
-			}
-			every_country = {
-				limit = {
-					OR = {
-						original_tag = AFG
-						original_tag = PAK
-						original_tag = TAJ
-					}
-					country_exists = yes
-				}
-				add_opinion_modifier = {
-					target = CHI
-					modifier = CHI_subcontinent_summit_goodwill
-				}
-			}
-			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
-			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-		}
-
-		ai_will_do = {
-			base = 3
-			modifier = {
-				factor = 0
-				NOT = { country_exists = AFG }
-			}
-			modifier = {
-				factor = 0
-				has_war_with = AFG
-			}
-			modifier = {
-				add = 5
-				check_variable = { CHI_chinese_aggression > 14 }
-			}
-		}
-	}
-
-	CHI_pressure_pakistan_on_haqqani_network = {
-		icon = GFX_decision_generic_political_actions
-
-		visible = {
-			has_country_flag = CHI_murree_process_active
-		}
-
-		available = {
-			country_exists = PAK
-			PAK = { influence_higher_40 = yes }
-			NOT = { has_war_with = PAK }
-		}
-
-		cost = 75
-		days_remove = 30
-		days_re_enable = 360
-
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision CHI_pressure_pakistan_on_haqqani_network executed"
-			if = {
-				limit = { country_exists = PAK }
-				PAK = {
-					add_opinion_modifier = {
-						target = CHI
-						modifier = CHI_haqqani_pressure_penalty
-					}
-				}
-			}
-			if = {
-				limit = { country_exists = AFG }
-				AFG = { add_stability = 0.05 }
-			}
-		}
-
-		ai_will_do = {
-			base = 4
-			modifier = {
-				factor = 0
-				NOT = { country_exists = PAK }
-			}
-			modifier = {
-				factor = 0
-				has_war_with = PAK
-			}
-			modifier = {
-				add = 4
-				check_variable = { CHI_chinese_aggression < 0 }
-			}
-		}
-	}
-}
-
 ### LAC De-escalation ###
 
 CHI_subcontinent_diplomacy = {
@@ -5948,6 +5742,403 @@ CHI_subcontinent_diplomacy = {
 					value = 5
 					compare = greater_than_or_equals
 				}
+			}
+		}
+	}
+}
+
+### Indian Subcontinent rework - String of Pearls, Iron Brothers, Nepal backing, RAJ exercises ###
+
+CHI_subcontinent_diplomacy = {
+
+	CHI_seek_basing_BAN = {
+		icon = GFX_decision_generic_naval
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_String_of_Pearls
+			country_exists = BAN
+			NOT = { has_country_flag = CHI_pearls_BAN_offered }
+		}
+
+		available = {
+			NOT = { has_war_with = BAN }
+			BAN = { influence_higher_30 = yes }
+		}
+
+		cost = 50
+		days_remove = 90
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_seek_basing_BAN executed"
+			set_country_flag = CHI_pearls_BAN_offered
+			set_country_flag = CHI_pearls_target_BAN
+			BAN = { country_event = { id = sino_indian.52 days = 1 } }
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_seek_basing_BRM = {
+		icon = GFX_decision_generic_naval
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_String_of_Pearls
+			country_exists = BRM
+			NOT = { has_country_flag = CHI_pearls_BRM_offered }
+		}
+
+		available = {
+			NOT = { has_war_with = BRM }
+			BRM = { influence_higher_30 = yes }
+		}
+
+		cost = 50
+		days_remove = 90
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_seek_basing_BRM executed"
+			set_country_flag = CHI_pearls_BRM_offered
+			set_country_flag = CHI_pearls_target_BRM
+			BRM = { country_event = { id = sino_indian.52 days = 1 } }
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_seek_basing_CBD = {
+		icon = GFX_decision_generic_naval
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_String_of_Pearls
+			country_exists = CBD
+			NOT = { has_country_flag = CHI_pearls_CBD_offered }
+		}
+
+		available = {
+			NOT = { has_war_with = CBD }
+			CBD = { influence_higher_30 = yes }
+		}
+
+		cost = 50
+		days_remove = 90
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_seek_basing_CBD executed"
+			set_country_flag = CHI_pearls_CBD_offered
+			set_country_flag = CHI_pearls_target_CBD
+			CBD = { country_event = { id = sino_indian.52 days = 1 } }
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_seek_basing_PAK = {
+		icon = GFX_decision_generic_naval
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_String_of_Pearls
+			country_exists = PAK
+			NOT = { has_country_flag = CHI_pearls_PAK_offered }
+		}
+
+		available = {
+			NOT = { has_war_with = PAK }
+		}
+
+		cost = 50
+		days_remove = 90
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_seek_basing_PAK executed"
+			set_country_flag = CHI_pearls_PAK_offered
+			set_country_flag = CHI_pearls_target_PAK
+			PAK = { country_event = { id = sino_indian.52 days = 1 } }
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_seek_basing_SRI = {
+		icon = GFX_decision_generic_naval
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_String_of_Pearls
+			country_exists = SRI
+			NOT = { has_country_flag = CHI_pearls_SRI_offered }
+		}
+
+		available = {
+			NOT = { has_war_with = SRI }
+			SRI = { influence_higher_30 = yes }
+		}
+
+		cost = 50
+		days_remove = 90
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_seek_basing_SRI executed"
+			set_country_flag = CHI_pearls_SRI_offered
+			set_country_flag = CHI_pearls_target_SRI
+			SRI = { country_event = { id = sino_indian.52 days = 1 } }
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_initiate_joint_military_training = {
+		icon = GFX_decision_generic_army
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_Iron_Brothers
+			country_exists = PAK
+		}
+
+		available = {
+			NOT = { has_war_with = PAK }
+			has_political_power > 25
+		}
+
+		cost = 25
+		days_remove = 60
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_initiate_joint_military_training executed"
+			add_timed_idea = { idea = CHI_iron_brothers_joint_training days = 180 }
+			PAK = { add_timed_idea = { idea = CHI_iron_brothers_joint_training days = 180 } }
+		}
+
+		ai_will_do = {
+			base = 4
+			modifier = {
+				factor = 0
+				has_war_with = PAK
+			}
+		}
+	}
+
+	CHI_back_nepalese_communists = {
+		icon = GFX_decision_generic_political_actions
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_completed_focus = CHI_Support_Nepals_Maoists
+			NOT = { country_exists = NPM }
+			country_exists = NEP
+			has_country_flag = CHI_nepal_communist_support_needed
+		}
+
+		available = {
+			NEP = {
+				NOT = { has_war_with = CHI }
+				influence_higher_30 = yes
+			}
+			has_political_power > 30
+		}
+
+		cost = 30
+		days_remove = 60
+		days_re_enable = 120
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_back_nepalese_communists executed"
+			NEP = {
+				add_popularity = { ideology = communism popularity = 0.05 }
+				recalculate_party = yes
+			}
+		}
+
+		ai_will_do = { base = 3 }
+	}
+
+	CHI_initiate_joint_exercises_with_RAJ = {
+		icon = GFX_decision_generic_army
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_country_flag = CHI_pak_joint_exercises_ended
+			country_exists = RAJ
+		}
+
+		available = {
+			NOT = { has_war_with = RAJ }
+			has_political_power > 30
+			RAJ = {
+				has_opinion = { target = CHI value > 24 }
+			}
+		}
+
+		cost = 30
+		days_remove = 60
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_initiate_joint_exercises_with_RAJ executed"
+			army_experience = 15
+			RAJ = { army_experience = 15 }
+			add_opinion_modifier = { target = RAJ modifier = border_personnel_meetings }
+			RAJ = { add_opinion_modifier = { target = CHI modifier = border_personnel_meetings } }
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				has_war_with = RAJ
+			}
+		}
+	}
+}
+
+# Japan branch rework
+CHI_rare_earth_coercion = {
+
+	CHI_cut_rare_earth_exports_to_japan = {
+		icon = GFX_decision_generic_industry
+
+		allowed = { original_tag = CHI }
+
+		available = {
+			has_country_flag = CHI_rare_earth_lever_unlocked
+			NOT = { has_war_with = JAP }
+		}
+
+		cost = 50
+		days_re_enable = 90
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_cut_rare_earth_exports_to_japan executed"
+			JAP = {
+				add_opinion_modifier = { target = CHI modifier = threatened_measures }
+				add_timed_idea = { idea = JAP_abandoned_by_ally days = 365 }
+			}
+			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		}
+
+		ai_will_do = {
+			base = 1
+			modifier = {
+				factor = 0
+				has_war_with = JAP
+			}
+		}
+	}
+}
+
+CHI_rcep_negotiation_push = {
+
+	CHI_push_rcep_signing = {
+		icon = GFX_decision_generic_political_actions
+
+		allowed = { original_tag = CHI }
+
+		available = {
+			has_country_flag = CHI_rcep_unlocked
+			check_variable = { CHI_chinese_aggression < 0 }
+			NOT = { has_war_with = JAP }
+		}
+
+		cost = 75
+		days_remove = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_push_rcep_signing started"
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_push_rcep_signing completed"
+			add_ideas = CHI_rcep_member
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+		}
+
+		ai_will_do = {
+			base = 5
+		}
+	}
+}
+
+CHI_self_restraint_signaling = {
+
+	CHI_cancel_east_china_sea_exercise = {
+		icon = GFX_decision_generic_political_actions
+
+		allowed = { original_tag = CHI }
+
+		available = {
+			has_country_flag = CHI_self_restraint_signaling_unlocked
+			NOT = { has_war_with = JAP }
+		}
+
+		cost = 30
+		days_re_enable = 60
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_cancel_east_china_sea_exercise executed"
+			army_experience = -5
+			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			JAP = { add_opinion_modifier = { target = CHI modifier = peaceful_rise } }
+		}
+
+		ai_will_do = {
+			base = 1
+			modifier = {
+				factor = 0
+				has_war_with = JAP
+			}
+			modifier = {
+				add = 2
+				check_variable = { CHI_chinese_aggression > -10 }
+			}
+		}
+	}
+}
+
+CHI_bilateral_channel_tokyo = {
+
+	CHI_convene_bilateral_channel = {
+		icon = GFX_decision_generic_political_actions
+
+		allowed = { original_tag = CHI }
+
+		available = {
+			has_country_flag = CHI_bilateral_channel_unlocked
+			NOT = { has_war_with = JAP }
+			NOT = { has_war_with = USA }
+		}
+
+		cost = 50
+		days_re_enable = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_convene_bilateral_channel executed"
+			JAP = {
+				add_opinion_modifier = { target = USA modifier = CHI_quad_wedge_doubt }
+				add_opinion_modifier = { target = CHI modifier = peaceful_rise }
+			}
+		}
+
+		ai_will_do = {
+			base = 2
+			modifier = {
+				factor = 0
+				has_war_with = JAP
 			}
 		}
 	}

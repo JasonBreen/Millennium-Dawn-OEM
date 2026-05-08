@@ -60,6 +60,7 @@ focus_tree = {
 					remove_idea = chastity_paifang
 					add_idea = state_system
 			}
+			add_dynamic_modifier = { modifier = CHI_diplomacy_modifier }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Chinese_Diplomacy executed"
 		}
 
@@ -78,7 +79,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_The_South_China_Sea
-		icon = x
+		icon = CHI_south_chinese_sea
 
 		x = -8
 		y = 1
@@ -95,9 +96,7 @@ focus_tree = {
 			add_ideas = CHI_blue_national_soil
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 	focus = {
 		id = CHI_The_Cabbage_Strategy
@@ -900,7 +899,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_The_Indian_Subcontinent
-		icon = india
+		icon = focus_RAJ_akhand_bharat
 
 		x = 8
 		y = 1
@@ -910,21 +909,24 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_Chinese_Diplomacy }
 
+		available = { country_exists = RAJ }
+
+		bypass = { RAJ = { exists = no } }
+
 		search_filters = { FOCUS_FILTER_POLITICAL }
 		completion_reward = {
-			add_political_power = 50
-			news_event = china_news.41
-			log = "[GetDateText]: [This.GetName]: focus CHI_The_Indian_Subcontinent executed"
+			RAJ = { country_event = { id = sino_indian.33 days = 1 } }
+			effect_tooltip = {
+				RAJ = { add_ideas = CHI_raj_foreign_defense_pressure }
+			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_Support_Nepals_Maoists
-		icon = pressure_nepal
+		icon = NEP_pro_nepal_communist
 
 		x = -3
 		y = 1
@@ -937,18 +939,23 @@ focus_tree = {
 
 		search_filters = { FOCUS_FILTER_INFLUENCE }
 
-		available = {
-			NEP = { has_war = no }
-			NEP = { influence_higher_20 = yes }
-		}
-
 		completion_reward = {
-			NEP = {
-				add_popularity = {
-					ideology = communism
-					popularity = 0.1
+			if = {
+				limit = { country_exists = NPM }
+				NPM = { country_event = { id = sino_indian.34 days = 2 } }
+				custom_effect_tooltip = TT_IF_THEY_ACCEPT
+				effect_tooltip = {
+					NPM = { add_ideas = CHI_npm_red_banner_insurgency }
+					set_country_flag = CHI_backing_npm_insurgency
 				}
-				recalculate_party = yes
+			}
+			else = {
+				NEP = {
+					add_popularity = { ideology = communism popularity = 0.05 }
+					recalculate_party = yes
+				}
+				set_country_flag = CHI_nepal_communist_support_needed
+				unlock_decision_tooltip = CHI_back_nepalese_communists
 			}
 			set_temp_variable = { percent_change = 1 }
 			set_temp_variable = { tag_index = CHI }
@@ -961,14 +968,12 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Support_Nepals_Maoists executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_Respect_Nepalese_Neutrality
-		icon = align_to_nepal
+		icon = NEP_pro_nepal_non_communist
 
 		x = -1
 		y = 1
@@ -984,17 +989,29 @@ focus_tree = {
 		available = { NEP = { has_war = no } }
 
 		completion_reward = {
-			NEP = { add_stability = 0.02 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			NEP = { country_event = { id = sino_indian.35 days = 2 } }
+			newline = yes
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				NEP = { add_ideas = CHI_nepal_himalayan_friendship }
+				newline = yes
+				CHI = {
+					custom_effect_tooltip = {
+						localization_key = modifies_dynamic_modifier_tt
+						MODIFIER = CHI_diplomacy_modifier
+					}
+					add_to_variable = { CHI_opinion_gain_monthly_factor_diplomacy = 0.02 tooltip = opinion_gain_monthly_factor_tt }
+					add_to_variable = { CHI_trade_opinion_factor_diplomacy = 0.02 tooltip = trade_opinion_factor_neutral_tt }
+					add_to_variable = { CHI_foreign_subversive_activites_diplomacy = -0.02 tooltip = foreign_subversive_activites_tt }
+				}
 			}
+			newline = yes
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Respect_Nepalese_Neutrality executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -1018,25 +1035,30 @@ focus_tree = {
 		}
 
 		completion_reward = {
-			diplomatic_relation = {
-				country = BAN
-				relation = guarantee
-				active = yes
+			BAN = { country_event = { id = sino_indian.36 days = 2 } }
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				diplomatic_relation = { country = BAN relation = guarantee active = yes }
+				newline = yes
+				BAN = {
+					add_ideas = CHI_ban_strategic_partnership
+					add_opinion_modifier = { target = CHI modifier = dhaka_strategic_partnership }
+				}
+				newline = yes
+				add_opinion_modifier = { target = BAN modifier = dhaka_strategic_partnership }
+				newline = yes
+				set_temp_variable = { percent_change = 2 }
+				set_temp_variable = { tag_index = CHI }
+				set_temp_variable = { influence_target = BAN }
+				change_influence_percentage = yes
 			}
-			BAN = { add_opinion_modifier = { target = CHI modifier = dhaka_detente } }
-			BAN = { add_idea = CHI_ban_strategic_partnership }
-			set_temp_variable = { percent_change = 2 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = BAN }
-			change_influence_percentage = yes
+			newline = yes
 			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
 			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Guarantee_Bangladesh executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -1062,28 +1084,18 @@ focus_tree = {
 		completion_reward = {
 			set_temp_variable = { temp_opinion = -5 }
 			change_communist_cadres_opinion = yes
-			add_opinion_modifier = {
-				target = BHU
-				modifier = eased_border_tensions
+			BHU = { country_event = { id = sino_indian.37 days = 2 } }
+			add_opinion_modifier = { target = BHU modifier = eased_border_tensions }
+			remove_opinion_modifier = { target = BHU modifier = minor_border_dispute }
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = CHI_diplomacy_modifier
 			}
-			remove_opinion_modifier = {
-				target = BHU
-				modifier = minor_border_dispute
-			}
-			BHU = {
-				add_opinion_modifier = {
-					target = CHI
-					modifier = eased_border_tensions
-				}
-				remove_opinion_modifier = {
-					target = CHI
-					modifier = minor_border_dispute
-				}
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_opinion_gain_monthly_factor_diplomacy = 0.02 tooltip = opinion_gain_monthly_factor_tt }
+			newline = yes
+			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Drop_Claims_on_Bhutan executed"
 		}
 
@@ -1098,7 +1110,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Doklam_Road_Standoff
-		icon = paramilitary_group
+		icon = bhutan_communist
 
 		x = -1
 		y = 3
@@ -1117,32 +1129,25 @@ focus_tree = {
 		}
 
 		completion_reward = {
+			add_to_variable = { arunachal_tension = 5 tooltip = arunachal_tension_change_tt }
+			add_to_variable = { arunachal_readiness = 15 tooltip = arunachal_readiness_change_tt }
+			newline = yes
 			BHU = { add_opinion_modifier = { target = CHI modifier = territorial_integrity_violation } }
-			if = {
-				limit = { RAJ = { has_guaranteed = BHU } }
-				every_other_country = {
-					limit = {
-						OR = { original_tag = BHU original_tag = RAJ }
+			every_other_country = {
+				limit = {
+					OR = {
+						has_guaranteed = BHU
+						original_tag = BHU
 					}
-					country_event = { id = sino_indian.1 }
 				}
+				country_event = { id = sino_indian.1 }
 			}
-			else = {
-				every_other_country = {
-					limit = { original_tag = BHU }
-					country_event = { id = sino_indian.1 }
-				}
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Doklam_Road_Standoff executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -1164,24 +1169,33 @@ focus_tree = {
 
 		completion_reward = {
 			add_opinion_modifier = { target = PAK modifier = all_weather_strategic_partnership }
-			PAK = { add_opinion_modifier = { target = CHI modifier = all_weather_strategic_partnership } }
+			reverse_add_opinion_modifier = { target = CHI modifier = all_weather_strategic_partnership }
+			newline = yes
+			PAK = { country_event = { id = sino_indian.38 days = 2 } }
+			newline = yes
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				PAK = { add_opinion_modifier = { target = CHI modifier = iron_brothers_partnership } }
+			}
+			newline = yes
+			unlock_decision_tooltip = CHI_initiate_joint_military_training
+			newline = yes
 			set_temp_variable = { percent_change = 2 }
 			set_temp_variable = { tag_index = CHI }
 			set_temp_variable = { influence_target = PAK }
 			change_influence_percentage = yes
+			newline = yes
 			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
 			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Iron_Brothers executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
-		id = CHI_Joint_Military_Projects
-		icon = blr_china_chengduJ7
+		id = CHI_Joint_Military_Projects #The sino_indian.39 event should result in an event for China if Pakistan receives its choice. The player needs to be informed what it gets
+		icon = MEX_Scientific_investment
 
 		x = -1
 		y = 2
@@ -1196,21 +1210,25 @@ focus_tree = {
 		available = { NOT = { has_war_with = PAK } }
 
 		completion_reward = {
-			add_to_tech_sharing_group = Iron_Brothers_Tech_Share
-			PAK = { add_to_tech_sharing_group = Iron_Brothers_Tech_Share }
-			PAK = { add_timed_idea = { idea = CHI_jf17_production_line days = 1825 } }
-			army_experience = 15
+			PAK = { country_event = { id = sino_indian.39 days = 2 } }
+			custom_effect_tooltip = if_they_accept_newline_tt
+			effect_tooltip = {
+				random_list = {
+					25 = { add_breakthrough_points = { specialization = specialization_land value = 1 } }
+					25 = { add_breakthrough_points = { specialization = specialization_air value = 1 } }
+					25 = { add_breakthrough_points = { specialization = specialization_naval value = 1 } }
+					25 = { add_breakthrough_points = { specialization = specialization_nuclear value = 1 } }
+				}
+			}
 			log = "[GetDateText]: [This.GetName]: focus CHI_Joint_Military_Projects executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_Cooperate_on_Counterterrorism
-		icon = terrorist_bandit
+		icon = intelligence_exchange
 
 		x = 1
 		y = 2
@@ -1225,23 +1243,25 @@ focus_tree = {
 		available = { NOT = { has_war_with = PAK } }
 
 		completion_reward = {
-			PAK = { army_experience = 25 }
-			army_experience = 25
 			set_temp_variable = { modify_uighur_threat = -10 }
 			CHI_modify_uighur_threat = yes
-			PAK = { add_idea = CHI_etim_designation }
-			add_opinion_modifier = { target = PAK modifier = etim_cooperation }
+			newline = yes
+			PAK = { country_event = { id = sino_indian.40 days = 2 } }
+			newline = yes
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				PAK = { add_ideas = CHI_etim_designation }
+				add_opinion_modifier = { target = PAK modifier = etim_cooperation }
+			}
 			log = "[GetDateText]: [This.GetName]: focus CHI_Cooperate_on_Counterterrorism executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_The_China_Pakistan_Economic_Corridor
-		icon = align_to_pakistan
+		icon = focus_RAJ_tryst_with_destiny_PAK
 
 		x = 0
 		y = 1
@@ -1256,24 +1276,32 @@ focus_tree = {
 		available = { NOT = { has_war_with = PAK } }
 
 		completion_reward = {
-			421 = {
-				add_state_modifier = {
-					modifier = { production_speed_infrastructure_factor = 0.15 }
+			421 = { add_state_modifier = { modifier = { state_production_speed_infrastructure_factor = 0.15 } } }
+			newline = yes
+			592 = { add_state_modifier = { modifier = { state_production_speed_infrastructure_factor = 0.15 } } }
+			newline = yes
+			PAK = { country_event = { id = sino_indian.41 days = 2 } }
+			effect_tooltip = {
+				add_timed_idea = {
+					idea = CHI_cpec_partner
+					days = 1825
 				}
 			}
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = CHI_diplomacy_modifier
+			}
+			add_to_variable = { CHI_trade_opinion_factor_diplomacy = 0.02 tooltip = trade_opinion_factor_neutral_tt }
+			newline = yes
 			set_temp_variable = { percent_change = 2 }
 			set_temp_variable = { tag_index = CHI }
 			set_temp_variable = { influence_target = PAK }
 			change_influence_percentage = yes
-			army_experience = 10
-			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
-			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_The_China_Pakistan_Economic_Corridor executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -1299,12 +1327,18 @@ focus_tree = {
 		completion_reward = {
 			set_temp_variable = { temp_opinion = 5 }
 			change_the_military_opinion = yes
-			CHI = {
+			newline = yes
+			PAK = { country_event = { id = sino_indian.42 days = 2 } }
+			custom_effect_tooltip = if_they_accept_newline_tt
+			effect_tooltip = {
+				add_ideas = CHI_gwadar_basing_rights
+				add_opinion_modifier = { target = PAK modifier = gwadar_naval_partnership }
 				diplomatic_relation = {
 					country = PAK
 					relation = military_access
 				}
 			}
+			newline = yes
 			set_temp_variable = { percent_change = 1 }
 			set_temp_variable = { tag_index = CHI }
 			set_temp_variable = { influence_target = PAK }
@@ -1316,14 +1350,12 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Militarize_Gwadar_Port executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_The_Quadrilateral_Cooperation_and_Coordination_Mechanism
-		icon = Pakistani_Army
+		icon = investigation
 
 		x = 0
 		y = 3
@@ -1349,36 +1381,15 @@ focus_tree = {
 		}
 
 		completion_reward = {
-			set_country_flag = CHI_qccm_active
 			add_timed_idea = { idea = CHI_qccm_coordination_cell days = 1825 }
-			add_tech_bonus = { name = qccm_doctrine_bonus bonus = 0.25 uses = 1 category = CAT_land_doctrine }
-			every_country = {
-				limit = {
-					OR = {
-						original_tag = CHI
-						original_tag = PAK
-						original_tag = AFG
-						original_tag = TAJ
-					}
-				}
-				every_other_country = {
-					limit = {
-						OR = {
-							original_tag = CHI
-							original_tag = PAK
-							original_tag = AFG
-							original_tag = TAJ
-						}
-					}
-					add_opinion_modifier = { target = PREV modifier = qccm_partner }
-				}
-			}
+			newline = yes
+			PAK = { country_event = { id = sino_indian.43 days = 2 } }
+			AFG = { country_event = { id = sino_indian.44 days = 2 } }
+			TAJ = { country_event = { id = sino_indian.45 days = 2 } }
 			log = "[GetDateText]: [This.GetName]: focus CHI_The_Quadrilateral_Cooperation_and_Coordination_Mechanism executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -1427,25 +1438,17 @@ focus_tree = {
 		}
 
 		completion_reward = {
-			every_country = {
-				limit = { OR = { original_tag = PAK original_tag = AFG original_tag = TAJ original_tag = TAL original_tag = TTP } }
-				add_stability = 0.03
-			}
-			add_political_power = 50
-			set_country_flag = CHI_murree_process_active
 			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
 			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Support_Negotiations executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
-		id = CHI_Joint_Operations
-		icon = coalition_army
+		id = CHI_Joint_Operations #Inform the player what this can do. Also it says will lead to war but no wargoal is gained or whatever?
+		icon = position_armies
 
 		x = 1
 		y = 4
@@ -1481,24 +1484,26 @@ focus_tree = {
 					NOT = { has_cosmetic_tag = AFG_NOR }
 				}
 			}
+			OR = {
+				country_exists = TAL
+				country_exists = TTP
+			}
 		}
 
 		completion_reward = {
-			set_country_flag = CHI_mountain_tiger_active
+			custom_effect_tooltip = CHI_Joint_Operations_choice_tt
 			country_event = { id = sino_indian.20 days = 1 }
 			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
 			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Joint_Operations executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_Tackle_the_Root_Causes_of_Radicalization
-		icon = terrorism
+		icon = islamophobia
 
 		x = 0
 		y = 5
@@ -1546,20 +1551,26 @@ focus_tree = {
 		completion_reward = {
 			set_temp_variable = { modify_uighur_threat = -40 }
 			CHI_modify_uighur_threat = yes
-			add_dynamic_modifier = { modifier = CHI_wakhan_buffer }
-			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
-			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			newline	= yes
+			add_ideas = CHI_wakhan_buffer_idea #Change this to the dynamic modifier
+			newline = yes
+			PAK = { country_event = { id = sino_indian.47 days = 2 } }
+			AFG = { country_event = { id = sino_indian.47 days = 2 } }
+			TAJ = { country_event = { id = sino_indian.47 days = 2 } }
+			newline = yes
+			every_other_country = {
+				limit = { has_government = fascism }
+				CHI = { create_wargoal = { type = topple_government target = PREV } }
+			}
 			log = "[GetDateText]: [This.GetName]: focus CHI_Tackle_the_Root_Causes_of_Radicalization executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_Disengage_from_Pakistan
-		icon = attack_pakistan
+		icon = ahmadi_cancel
 
 		x = 1
 		y = 1
@@ -1567,14 +1578,21 @@ focus_tree = {
 
 		cost = 10
 
+		available = {
+			country_exists = RAJ
+		}
+
 		prerequisite = { focus = CHI_The_Indian_Subcontinent }
 		mutually_exclusive = { focus = CHI_Iron_Brothers }
 		completion_reward = {
-			diplomatic_relation = {
-				country = PAK
-				relation = guarantee
-				active = no
-			}
+			diplomatic_relation = { country = PAK relation = guarantee active = no }
+			RAJ = { country_event = { id = sino_indian.48 days = 2 } }
+			add_opinion_modifier = { target = RAJ modifier = beijing_distances_from_islamabad }
+			newline = yes
+			set_temp_variable = { percent_change = 1 }
+			set_temp_variable = { tag_index = CHI }
+			set_temp_variable = { influence_target = RAJ }
+			change_influence_percentage = yes
 			log = "[GetDateText]: [This.GetName]: focus CHI_Disengage_from_Pakistan executed"
 		}
 
@@ -1588,8 +1606,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_End_Joint_Military_Exercises
-		icon = restrictive_gun_laws
+		id = CHI_End_Joint_Military_Exercises #This decision should fire an event towards RAJ to do a joint exercise which then give a timed idea like pakistan
+		icon = focus_RAJ_seek_allies_with_the_muslim_league
 
 		x = 1
 		y = 2
@@ -1600,20 +1618,18 @@ focus_tree = {
 		prerequisite = { focus = CHI_Disengage_from_Pakistan }
 
 		completion_reward = {
+			set_country_flag = CHI_pak_joint_exercises_ended
+			CHI = { diplomatic_relation = { country = PAK relation = military_access active = no } }
+			unlock_decision_tooltip = CHI_initiate_joint_exercises_with_RAJ
 			log = "[GetDateText]: [This.GetName]: focus CHI_End_Joint_Military_Exercises executed"
-			PAK = { add_war_support = -0.05 }
-			set_temp_variable = { temp_opinion = -5 }
-			change_the_military_opinion = yes
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_Strategic_Realignment
-		icon = attack_pakistan2
+		icon = focus_RAJ_two_nation_theory
 
 		x = 1
 		y = 3
@@ -1626,30 +1642,29 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY }
 
 		completion_reward = {
-			add_political_power = -100
 			remove_opinion_modifier = { target = PAK modifier = sino_pakistani_friendship }
 			PAK = { remove_opinion_modifier = { target = CHI modifier = sino_pakistani_friendship } }
 			RAJ = { remove_opinion_modifier = { target = CHI modifier = raj_sino_pakistani_friendship } }
 			add_opinion_modifier = { target = RAJ modifier = beijing_extends_a_hand }
+			newline = yes
 			RAJ = { country_event = { id = sino_indian.21 days = 2 } }
 			custom_effect_tooltip = TT_IF_THEY_ACCEPT
 			effect_tooltip = {
 				RAJ = { add_opinion_modifier = { target = CHI modifier = beijing_extends_a_hand } }
 			}
 			news_event = { id = sino_indian.13 hours = 6 }
+			newline = yes
 			add_to_variable = { CHI_chinese_aggression = -3 tooltip = CHI_chinese_aggression_tt }
 			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Strategic_Realignment executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_The_Border_Personnel_Meetings
-		icon = territor_disputes_neg
+		icon = NKO_border_iniatives
 
 		x = 1
 		y = 4
@@ -1666,9 +1681,16 @@ focus_tree = {
 		completion_reward = {
 			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
 			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			newline = yes
 			add_opinion_modifier = { target = RAJ modifier = border_personnel_meetings }
-			RAJ = { add_opinion_modifier = { target = CHI modifier = border_personnel_meetings } }
-			set_country_flag = CHI_border_personnel_meetings_active
+			reverse_add_opinion_modifier = { target = CHI modifier = border_personnel_meetings }
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = CHI_diplomacy_modifier
+			}
+			add_to_variable = { CHI_opinion_gain_monthly_factor_diplomacy = 0.03 tooltip = opinion_gain_monthly_factor_tt }
+			add_to_variable = { CHI_intelligence_agency_defense_diplomacy = 0.02 tooltip = intelligence_agency_defense_tt }
 			log = "[GetDateText]: [This.GetName]: focus CHI_The_Border_Personnel_Meetings executed"
 		}
 
@@ -1714,8 +1736,15 @@ focus_tree = {
 
 		completion_reward = {
 			RAJ = { country_event = { id = sino_indian.11 days = 1 } }
-			add_dynamic_modifier = { modifier = CHI_asian_century_concord }
-			RAJ = { add_dynamic_modifier = { modifier = CHI_asian_century_concord } }
+			newline = yes
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				add_ideas = CHI_asian_century_concord_idea
+				RAJ = { add_ideas = CHI_asian_century_concord_idea }
+			}
+			newline = yes
+			USA = { country_event = { id = sino_indian.49 days = 2 } }
+			newline = yes
 			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
 			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Sino_Indian_Treaty_of_Friendship executed"
@@ -1736,7 +1765,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_A_New_Alliance
-		icon = alliance_purple
+		icon = focus_RAJ_a_tiger_unchained
 
 		x = -2
 		y = 6
@@ -1787,14 +1816,12 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_A_New_Alliance executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_Strike_Across_the_Himalayas
-		icon = attack_india
+		icon = focus_generic_mountain_troops
 
 		x = 0
 		y = 5
@@ -1810,13 +1837,22 @@ focus_tree = {
 
 		available = { 589 = { controls_or_subject_of = yes } }
 
+		bypass = {
+			owns_state = 982
+			owns_state = 475
+			owns_state = 993
+		}
+
+		bypass_effect = {
+			982 = { add_core_of = CHI }
+			475 = { add_core_of = CHI }
+			993 = { add_core_of = CHI }
+		}
+
 		completion_reward = {
-			RAJ = { add_opinion_modifier = { target = CHI modifier = expansionist_agenda } }
-			custom_effect_tooltip = CHI_arunachal_border_conflict_TT
-			country_event = { id = sino_indian.22 days = 1 }
-			add_to_variable = { CHI_chinese_aggression = 3 tooltip = CHI_chinese_aggression_tt }
-			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			log = "[GetDateText]: [This.GetName]: focus CHI_Strike_Across_the_Himalayas executed"
+			activate_decision = attack_982_from_589
+			activate_decision = attack_475_from_589
+			activate_decision = attack_993_from_589
 		}
 
 		ai_will_do = {
@@ -1836,7 +1872,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_String_of_Pearls
-		icon = naval_doctrine
+		icon = focus_PHI_thats_not_an_island
 
 		x = 2
 		y = 5
@@ -1876,32 +1912,18 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_String_of_Pearls executed"
-			add_ideas = CHI_string_of_pearls
-			if = {
-				limit = { PAK = { is_same_government = yes } }
-				if = {
-					limit = { is_faction_leader = no }
-					create_faction_from_template = faction_template_sco
-				}
-				add_to_faction = PAK
-			}
-			if = {
-				limit = { SRI = { is_same_government = yes } }
-				if = {
-					limit = { is_faction_leader = no }
-					create_faction_from_template = faction_template_sco
-				}
-				add_to_faction = SRI
-			}
+			activate_decision = CHI_seek_basing_BAN
+			activate_decision = CHI_seek_basing_BRM
+			activate_decision = CHI_seek_basing_CBD
+			activate_decision = CHI_seek_basing_PAK
+			activate_decision = CHI_seek_basing_SRI
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = 5 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -1919,41 +1941,27 @@ focus_tree = {
 
 		search_filters = { FOCUS_FILTER_ANNEXATION }
 
-		available = { country_exists = BHU
-					  475 = { is_controlled_by = CHI }
-					}
+		available = {
+			country_exists = BHU
+		}
 		bypass = { NOT = { country_exists = BHU } }
 
 		will_lead_to_war_with = BHU
 
 		completion_reward = {
-			custom_effect_tooltip = CHI_bhutan_cores_TT
-			hidden_effect = {
-				add_state_core = 475
-				add_state_core = 982
-				add_state_core = 983
-				add_state_core = 484
-			}
-			if = {
-				limit = { BHU = { influence_higher_70 = yes } }
-				annex_country = { target = BHU transfer_troops = yes }
-			}
-			else = {
-				create_wargoal = {
-					type = annex_everything
-					target = BHU
-				}
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 5 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_state_claim = 475
+			add_state_claim = 982
+			add_state_claim = 983
+			add_state_claim = 484
+			newline = yes
+			BHU = { country_event = { id = sino_indian.50 days = 2 } }
+			newline = yes
+			add_to_variable = { CHI_chinese_aggression = 5 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Annex_Bhutan executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -1969,10 +1977,9 @@ focus_tree = {
 		prerequisite = { focus = CHI_Strike_Across_the_Himalayas }
 		prerequisite = { focus = CHI_String_of_Pearls }
 
-		available = { AND = { country_exists = NEP
-							   NOT = { NEP = { is_subject_of = CHI } }
-							 }
-					}
+		available = {
+			country_exists = NEP
+		}
 
 		bypass = { NOT = { country_exists = NEP } }
 
@@ -1981,68 +1988,19 @@ focus_tree = {
 		will_lead_to_war_with = NEP
 
 		completion_reward = {
-			if = {
-				limit = {
-					NEP = {
-						has_government = communism
-						influence_higher_60 = yes
-					}
-				}
-				if = {
-					limit = {
-						has_global_flag = GAME_RULE_allow_colored_puppets
-					}
-					set_autonomy = {
-						target = NEP
-						autonomy_state = autonomy_associated_state_colored
-						end_wars = no
-						end_civil_wars = no
-					}
-				}
-				else = {
-					set_autonomy = {
-						target = NEP
-						autonomy_state = autonomy_associated_state
-						end_wars = no
-						end_civil_wars = no
-					}
-				}
-			}
-			else_if = {
-				limit = { NEP = { has_government = communism } }
-				RAJ = {
-					diplomatic_relation = {
-						country = NEP
-						relation = guarantee
-						active = no
-					}
-				}
-				create_wargoal = {
-					type = puppet_wargoal_focus
-					target = NEP
-				}
-			}
-			else = {
-				create_wargoal = {
-					type = puppet_wargoal_focus
-					target = NEP
-				}
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 5 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			NEP = { country_event = { id = sino_indian.51 days = 2 } }
+			newline = yes
+			add_to_variable = { CHI_chinese_aggression = 5 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Puppet_Nepal executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_Bring_the_Tiger_to_Heel
-		icon = south_asian_tiger
+		icon = india
 
 		x = 1
 		y = 7
@@ -2064,21 +2022,18 @@ focus_tree = {
 				type = puppet_wargoal_focus
 				target = RAJ
 			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 10 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			newline = yes
+			add_to_variable = { CHI_chinese_aggression = 10 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_Bring_the_Tiger_to_Heel executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_The_Five_Fingers_Doctrine
-		icon = paramilitary_group
+		icon = focus_CHI_the_greater_game
 
 		x = 3
 		y = 7
@@ -2106,19 +2061,36 @@ focus_tree = {
 		will_lead_to_war_with = RAJ
 
 		completion_reward = {
-			custom_effect_tooltip = CHI_five_fingers_cores_TT
-			hidden_effect = {
+			custom_effect_tooltip = CHI_five_fingers_branch_tt
+			newline = yes
+			if = {
+				limit = {
+					controls_state = 421
+					controls_state = 993
+					controls_state = 589
+					controls_state = 475
+					OR = { owns_state = 638 BHU = { is_subject_of = CHI } NOT = { country_exists = BHU } }
+					OR = { owns_state = 286 NEP = { is_subject_of = CHI } NOT = { country_exists = NEP } }
+				}
+				custom_effect_tooltip = {
+					localization_key = modifies_dynamic_modifier_tt
+					MODIFIER = CHI_diplomacy_modifier
+				}
+				add_to_variable = { CHI_political_power_gain_dipomacy = 0.05 tooltip = political_power_gain_tt }
+				add_to_variable = { CHI_war_support_factor_diplomacy = 0.05 tooltip = war_support_factor_tt }
+				add_to_variable = { CHI_annex_cost_factor_diplomacy = -0.075 tooltip = annex_cost_factor_tt }
+				add_to_variable = { trait_mountaineer_xp_gain_factor = 0.15 tooltip = trait_mountaineer_xp_gain_factor_tt }
+			}
+			else = {
 				add_state_core = 475
 				add_state_core = 982
+				newline = yes
+				create_wargoal = {
+					type = take_state_focus
+					target = RAJ
+					generator = { 475 982 }
+				}
 			}
-			create_wargoal = {
-				type = take_state_focus
-				target = RAJ
-				generator = { 475 982 }
-			}
-			add_ideas = CHI_palm_and_fingers_doctrine
-			add_to_variable = { CHI_chinese_aggression = 10 tooltip = CHI_chinese_aggression_tt }
-			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			log = "[GetDateText]: [This.GetName]: focus CHI_The_Five_Fingers_Doctrine executed"
 		}
 
@@ -2132,10 +2104,10 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_The_Land_of_the_Rising_Sun
+		id = CHI_the_japan_question
 		icon = goal_JAP_japan_militarism
 
-		x = 19
+		x = 22
 		y = 1
 		relative_position_id = CHI_Chinese_Diplomacy
 
@@ -2144,142 +2116,256 @@ focus_tree = {
 		prerequisite = { focus = CHI_Chinese_Diplomacy }
 
 		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = { country_exists = JAP }
+
+		bypass = { JAP = { exists = no } }
+
 		completion_reward = {
-			add_political_power = 50
-			news_event = china_news.42
-			log = "[GetDateText]: [This.GetName]: focus CHI_The_Land_of_the_Rising_Sun executed"
+			JAP = { country_event = { id = sino_indian.33 days = 1 } }
+			effect_tooltip = {
+				JAP = { add_ideas = CHI_raj_foreign_defense_pressure }
+			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
-		id = CHI_Maintain_Historical_Enmity
-		icon = attack_japan
+		id = CHI_the_historical_reckoning
+		icon = senkaku_icon
 
-		x = -2
+		x = -3
 		y = 1
-		relative_position_id = CHI_The_Land_of_the_Rising_Sun
+		relative_position_id = CHI_the_japan_question
 
 		cost = 10
 
-		prerequisite = { focus = CHI_The_Land_of_the_Rising_Sun }
-		mutually_exclusive = { focus = CHI_A_Pragmatic_Approach }
+		prerequisite = { focus = CHI_the_japan_question }
+		mutually_exclusive = { focus = CHI_the_fukuda_doctrine_revisited }
 
 		search_filters = { FOCUS_FILTER_INTERNAL_FACTION FOCUS_FILTER_WAR_SUPPORT }
+
 		completion_reward = {
 			add_war_support = 0.02
 			939 = { add_core_of = CHI }
+			newline = yes
 			set_temp_variable = { temp_opinion = 5 }
 			change_communist_cadres_opinion = yes
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: focus CHI_Maintain_Historical_Enmity executed"
+			newline = yes
+			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_historical_reckoning executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
-		id = CHI_Demand_the_Senkaku_Islands # Demand the Diaoyu Islands
-		icon = goal_JAP_chinese_island_chain
-
-		x = -3
-		y = 2
-		relative_position_id = CHI_The_Land_of_the_Rising_Sun
-
-		cost = 5
-
-		prerequisite = { focus = CHI_Maintain_Historical_Enmity }
-
-		search_filters = { FOCUS_FILTER_INFLUENCE }
-		completion_reward = {
-			set_temp_variable = { arg_popularity = 0.02 }
-			add_ruling_outlook_popularity = yes
-			JAP = { country_event = { id = Japan.8 } }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: focus CHI_Demand_the_Senkaku_Islands executed"
-		}
-
-		ai_will_do = {
-			base = 1
-		}
-	}
-
-	focus = {
-		id = CHI_Incite_Anti_Japanese_Sentiment
-		icon = blr_china_cooperation
-
-		x = -1
-		y = 2
-		relative_position_id = CHI_The_Land_of_the_Rising_Sun
-
-		cost = 5
-
-		prerequisite = { focus = CHI_Maintain_Historical_Enmity }
-
-		search_filters = { FOCUS_FILTER_WAR_SUPPORT }
-		completion_reward = {
-			JAP = { add_opinion_modifier = { target = CHI modifier = xenophobic_agenda } }
-			add_war_support = 0.02
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: focus CHI_Incite_Anti_Japanese_Sentiment executed"
-		}
-
-		ai_will_do = {
-			base = 1
-		}
-	}
-
-	focus = {
-		id = CHI_Clash_Over_the_East_China_Sea
-		icon = goal_JAP_JMSDF_school
+		id = CHI_the_nanjing_memorial_mandate
+		icon = focus_PRC_hundred_regiments_offensive
 
 		x = -2
+		y = 1
+		relative_position_id = CHI_the_historical_reckoning
+
+		cost = 5
+
+		prerequisite = { focus = CHI_the_historical_reckoning }
+
+		search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
+
+		completion_reward = {
+			add_ideas = CHI_patriotic_education_mandate
+			newline = yes
+			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_nanjing_memorial_mandate executed"
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = CHI_the_diaoyu_sovereignty_declaration
+		icon = x
+
+		x = 0
+		y = 1
+		relative_position_id = CHI_the_historical_reckoning
+
+		cost = 5
+
+		prerequisite = { focus = CHI_the_historical_reckoning }
+
+		search_filters = { FOCUS_FILTER_INFLUENCE FOCUS_FILTER_NAVY }
+
+		completion_reward = {
+			JAP = { country_event = { id = CHI_foreign.204 days = 1 } }
+			add_ideas = CHI_diaoyu_patrol_regime
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_diaoyu_sovereignty_declaration executed"
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = CHI_the_rare_earth_lever
+		icon = generic_industry
+
+		x = 2
+		y = 1
+		relative_position_id = CHI_the_historical_reckoning
+
+		cost = 5
+
+		prerequisite = { focus = CHI_the_historical_reckoning }
+
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_CHI_AGGRESSION }
+
+		completion_reward = {
+			set_country_flag = CHI_rare_earth_lever_unlocked
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_rare_earth_lever executed"
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = CHI_the_yasukuni_protest_doctrine
+		icon = generic_political_actions
+
+		x = -2
+		y = 2
+		relative_position_id = CHI_the_historical_reckoning
+
+		cost = 5
+
+		prerequisite = { focus = CHI_the_nanjing_memorial_mandate }
+
+		search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_CHI_AGGRESSION }
+
+		completion_reward = {
+			news_event = { id = china_news.yasukuni_recall }
+			JAP = { add_opinion_modifier = { target = CHI modifier = CHI_yasukuni_diplomatic_freeze } }
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_yasukuni_protest_doctrine executed"
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = CHI_the_maritime_militia_initiative
+		icon = generic_navy
+
+		x = 0
+		y = 2
+		relative_position_id = CHI_the_historical_reckoning
+
+		cost = 5
+
+		prerequisite = { focus = CHI_the_diaoyu_sovereignty_declaration }
+
+		search_filters = { FOCUS_FILTER_NAVY FOCUS_FILTER_CHI_AGGRESSION }
+
+		completion_reward = {
+			add_ideas = CHI_paf_maritime_militia
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_maritime_militia_initiative executed"
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = CHI_anti_japanese_boycott_campaign
+		icon = generic_propaganda
+
+		x = 2
+		y = 2
+		relative_position_id = CHI_the_historical_reckoning
+
+		cost = 5
+
+		prerequisite = { focus = CHI_the_rare_earth_lever }
+
+		search_filters = { FOCUS_FILTER_WAR_SUPPORT FOCUS_FILTER_CHI_AGGRESSION }
+
+		completion_reward = {
+			add_timed_idea = { idea = CHI_state_tolerated_boycott days = 730 }
+			JAP = { add_opinion_modifier = { target = CHI modifier = xenophobic_agenda } }
+			news_event = { id = china_news.boycott_streets }
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			log = "[GetDateText]: [This.GetName]: focus CHI_anti_japanese_boycott_campaign executed"
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = CHI_the_senkaku_crisis
+		icon = x
+
+		x = 0
 		y = 3
-		relative_position_id = CHI_The_Land_of_the_Rising_Sun
+		relative_position_id = CHI_the_historical_reckoning
 
 		cost = 10
 
-		prerequisite = { focus = CHI_Incite_Anti_Japanese_Sentiment }
-		prerequisite = { focus = CHI_Demand_the_Senkaku_Islands }
+		prerequisite = { focus = CHI_the_yasukuni_protest_doctrine }
+		prerequisite = { focus = CHI_the_maritime_militia_initiative }
+		prerequisite = { focus = CHI_anti_japanese_boycott_campaign }
 
-		search_filters = { FOCUS_FILTER_ANNEXATION }
+		search_filters = { FOCUS_FILTER_ANNEXATION FOCUS_FILTER_CHI_AGGRESSION }
 
 		available = {
 			JAP = { controls_state = 939 }
+			has_war = no
+			custom_trigger_tooltip = {
+				tooltip = CHI_two_of_three_confrontation_axes_tt
+				count_triggers = {
+					amount = 2
+					has_completed_focus = CHI_the_yasukuni_protest_doctrine
+					has_completed_focus = CHI_the_maritime_militia_initiative
+					has_completed_focus = CHI_anti_japanese_boycott_campaign
+				}
+			}
 		}
-		bypass = {
-			CHI = { owns_state = 939 }
-		}
+		bypass = { CHI = { owns_state = 939 } }
 
 		completion_reward = {
-			JAP = { country_event = { id = Japan.6 } }
+			country_event = { id = CHI_foreign.200 days = 1 }
 			every_country = {
 				limit = { NOT = { original_tag = JAP } }
-				news_event = { id = Japan.7 }
+				news_event = { id = CHI_foreign.203 }
 			}
 			if = {
 				limit = { any_country = { has_guaranteed = JAP } }
 				custom_effect_tooltip = JAP_USA_call_tt
 			}
 			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
+				add_to_variable = { CHI_chinese_aggression = 3 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			}
-			log = "[GetDateText]: [This.GetName]: focus CHI_Clash_Over_the_East_China_Sea executed"
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_senkaku_crisis executed"
 		}
 
 		ai_will_do = {
@@ -2298,46 +2384,40 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_A_Pragmatic_Approach
-		icon = align_to_japan
+		id = CHI_the_fukuda_doctrine_revisited
+		icon = x
 
-		x = 2
+		x = 3
 		y = 1
-		relative_position_id = CHI_The_Land_of_the_Rising_Sun
+		relative_position_id = CHI_the_japan_question
 
 		cost = 10
 
-		prerequisite = { focus = CHI_The_Land_of_the_Rising_Sun }
-		mutually_exclusive = { focus = CHI_Maintain_Historical_Enmity }
+		prerequisite = { focus = CHI_the_japan_question }
+		mutually_exclusive = { focus = CHI_the_historical_reckoning }
 
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE }
 
 		available = {
-			JAP = {
-				NOT = { has_government = nationalist }
-			}
+			JAP = { NOT = { has_government = nationalist } }
+			NOT = { has_war_with = JAP }
 		}
 
 		completion_reward = {
 			set_temp_variable = { temp_opinion = -5 }
 			change_communist_cadres_opinion = yes
-			remove_opinion_modifier = {
-				target = JAP
-				modifier = refuse_to_apologize_for_warcrimes
-			}
+			remove_opinion_modifier = { target = JAP modifier = refuse_to_apologize_for_warcrimes }
+			set_country_flag = CHI_pragmatic_path_chosen
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			}
-			log = "[GetDateText]: [This.GetName]: focus CHI_A_Pragmatic_Approach executed"
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_fukuda_doctrine_revisited executed"
 		}
 
 		ai_will_do = {
 			base = 0
-			modifier = {
-				add = 1
-				is_historical_focus_on = no
-			}
+			modifier = { add = 1 is_historical_focus_on = no }
 			modifier = {
 				add = 2
 				OR = {
@@ -2345,190 +2425,309 @@ focus_tree = {
 					has_government = democratic
 				}
 			}
-			modifier = {
-				add = 10
-			}
 		}
 	}
 
 	focus = {
-		id = CHI_Assuage_Japanese_Concerns
-		icon = japan_authoritarinism
+		id = CHI_the_panda_diplomacy_renewal
+		icon = generic_diplomatic_pressure
 
-		x = 1
-		y = 2
-		relative_position_id = CHI_The_Land_of_the_Rising_Sun
-
-		cost = 5
-
-		prerequisite = { focus = CHI_A_Pragmatic_Approach }
-
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION }
-
-		available = {
-			has_war = no
-			custom_trigger_tooltip = {
-				tooltip = CHI_aggression_less_0_tt
-				check_variable = { CHI_chinese_aggression < 1 }
-			}
-			JAP = { has_war = no }
-			JAP = {
-				NOT = { has_government = nationalist }
-			}
-			NOT = {
-				has_completed_focus = CHI_Wolf_Warrior_Diplomacy
-				has_completed_focus = CHI_Ramp_Up_Tensions
-			}
-		}
-
-		completion_reward = {
-			CHI = {
-				remove_opinion_modifier = {
-					target = JAP
-					modifier = historic_enemies
-				}
-			}
-			JAP = {
-				remove_opinion_modifier = {
-					target = CHI
-					modifier = historic_enemies
-				}
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: focus CHI_Assuage_Japanese_Concerns executed"
-		}
-
-		ai_will_do = {
-			base = 1
-		}
-	}
-
-	focus = {
-		id = CHI_Encourage_Appreciation_of_Japanese_Culture
-		icon = trade_with_japan
-
-		x = 3
-		y = 2
-		relative_position_id = CHI_The_Land_of_the_Rising_Sun
+		x = 0
+		y = 1
+		relative_position_id = CHI_the_fukuda_doctrine_revisited
 
 		cost = 5
 
-		prerequisite = { focus = CHI_A_Pragmatic_Approach }
+		prerequisite = { focus = CHI_the_fukuda_doctrine_revisited }
 
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE }
+		search_filters = { FOCUS_FILTER_INFLUENCE FOCUS_FILTER_CHI_AGGRESSION }
 
 		available = {
-			JAP = {
-				NOT = { has_government = nationalist }
-			}
+			JAP = { NOT = { has_government = nationalist } }
+			NOT = { has_war_with = JAP }
 		}
 
 		completion_reward = {
-			add_opinion_modifier = {
-				target = JAP
-				modifier = improve_trade
-			}
-			set_temp_variable = { percent_change = 2 }
-			set_temp_variable = { tag_index = JAP }
-			set_temp_variable = { influence_target = CHI }
-			change_influence_percentage = yes
-			JAP = {
-				add_opinion_modifier = {
-					target = ROOT
-					modifier = improve_trade
-				}
-			}
+			add_opinion_modifier = { target = JAP modifier = improve_trade }
+			JAP = { add_opinion_modifier = { target = CHI modifier = improve_trade } }
+			add_ideas = CHI_japan_soft_power
+			news_event = { id = china_news.panda_arrives_tokyo }
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			}
-			log = "[GetDateText]: [This.GetName]: focus CHI_Encourage_Appreciation_of_Japanese_Culture executed"
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_panda_diplomacy_renewal executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
-		id = CHI_Sign_Strategic_Partnership_Agreement
-		icon = goal_JAP_golden_shield
+		id = CHI_the_rcep_acceleration
+		icon = generic_industry
+
+		x = -2
+		y = 1
+		relative_position_id = CHI_the_fukuda_doctrine_revisited
+
+		cost = 5
+
+		prerequisite = { focus = CHI_the_fukuda_doctrine_revisited }
+
+		search_filters = { FOCUS_FILTER_INFLUENCE FOCUS_FILTER_INDUSTRY }
+
+		completion_reward = {
+			set_country_flag = trade_agreement@JAP
+			set_country_flag = trade_agreement@KOR
+			set_country_flag = CHI_rcep_unlocked
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_rcep_acceleration executed"
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = CHI_assuage_japanese_concerns
+		icon = x
 
 		x = 2
-		y = 3
-		relative_position_id = CHI_The_Land_of_the_Rising_Sun
+		y = 1
+		relative_position_id = CHI_the_fukuda_doctrine_revisited
 
-		cost = 10
+		cost = 5
 
-		prerequisite = { focus = CHI_Encourage_Appreciation_of_Japanese_Culture }
-		prerequisite = { focus = CHI_Assuage_Japanese_Concerns }
+		prerequisite = { focus = CHI_the_fukuda_doctrine_revisited }
 
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION }
 
 		available = {
 			has_war = no
-			JAP = { has_war = no }
-			JAP = {
-				NOT = { has_government = nationalist }
-			}
+			NOT = { has_war_with = JAP }
 			custom_trigger_tooltip = {
-				tooltip = CHI_aggression_less_-20_tt
-				check_variable = { CHI_chinese_aggression < -19 }
+				tooltip = CHI_aggression_less_0_tt
+				check_variable = { CHI_chinese_aggression < 1 }
 			}
+			JAP = { NOT = { has_government = nationalist } }
+			NOT = { has_completed_focus = CHI_Wolf_Warrior_Diplomacy }
+			NOT = { has_completed_focus = CHI_Ramp_Up_Tensions }
 		}
 
 		completion_reward = {
-			diplomatic_relation = {
-				country = JAP
-				relation = non_aggression_pact
-				active = yes
+			CHI = {
+				remove_opinion_modifier = { target = JAP modifier = historic_enemies }
 			}
+			JAP = {
+				remove_opinion_modifier = { target = CHI modifier = historic_enemies }
+			}
+			set_country_flag = CHI_self_restraint_signaling_unlocked
 			CHI = {
 				add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
 				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			}
-			log = "[GetDateText]: [This.GetName]: focus CHI_Sign_Strategic_Partnership_Agreement executed"
+			log = "[GetDateText]: [This.GetName]: focus CHI_assuage_japanese_concerns executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
-		id = CHI_Decouple_Japan
-		icon = remove_america
+		id = CHI_the_anime_generation_gambit
+		icon = generic_propaganda
 
 		x = 0
-		y = 4
-		relative_position_id = CHI_The_Land_of_the_Rising_Sun
+		y = 2
+		relative_position_id = CHI_the_fukuda_doctrine_revisited
 
-		cost = 10
+		cost = 5
 
-		prerequisite = { focus = CHI_Sign_Strategic_Partnership_Agreement focus = CHI_Clash_Over_the_East_China_Sea }
+		prerequisite = { focus = CHI_the_panda_diplomacy_renewal }
 
-		search_filters = { FOCUS_FILTER_INFLUENCE }
+		search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_CHI_AGGRESSION }
+
+		completion_reward = {
+			add_ideas = CHI_japanese_cultural_imports
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_anime_generation_gambit executed"
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = CHI_the_china_plus_one_counteroffensive
+		icon = generic_industry
+
+		x = -2
+		y = 2
+		relative_position_id = CHI_the_fukuda_doctrine_revisited
+
+		cost = 5
+
+		prerequisite = { focus = CHI_the_rcep_acceleration }
+
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_CHI_AGGRESSION }
 
 		available = {
-			OR = {
-				has_completed_focus = CHI_Sign_Strategic_Partnership_Agreement
-				JAP = { is_subject_of = CHI }
-			}
-			JAP = {
-				NOT = {
-					has_government = nationalist
-					has_government = democratic
-				}
-			}
-			JAP = {
-				influence_higher_30 = yes
+			custom_trigger_tooltip = {
+				tooltip = CHI_aggression_less_0_tt
+				check_variable = { CHI_chinese_aggression < 0 }
 			}
 		}
 
 		completion_reward = {
+			add_ideas = CHI_sez_japanese_investors
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_china_plus_one_counteroffensive executed"
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = CHI_the_quad_wedge_strategy
+		icon = generic_diplomatic_pressure
+
+		x = 2
+		y = 3
+		relative_position_id = CHI_the_fukuda_doctrine_revisited
+
+		cost = 10
+
+		prerequisite = { focus = CHI_assuage_japanese_concerns }
+		prerequisite = { focus = CHI_the_anime_generation_gambit }
+
+		search_filters = { FOCUS_FILTER_INFLUENCE FOCUS_FILTER_CHI_AGGRESSION }
+
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = CHI_aggression_less_0_tt
+				check_variable = { CHI_chinese_aggression < 0 }
+			}
+			has_war = no
+			NOT = { has_completed_focus = CHI_Wolf_Warrior_Diplomacy }
+		}
+
+		completion_reward = {
+			JAP = { add_opinion_modifier = { target = USA modifier = CHI_quad_wedge_doubt } }
+			set_country_flag = CHI_bilateral_channel_unlocked
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_quad_wedge_strategy executed"
+		}
+
+		ai_will_do = {
+			base = 1
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_the_tokyo_communique
+		icon = x
+
+		x = 0
+		y = 4
+		relative_position_id = CHI_the_fukuda_doctrine_revisited
+
+		cost = 10
+
+		prerequisite = { focus = CHI_the_anime_generation_gambit }
+		prerequisite = { focus = CHI_the_china_plus_one_counteroffensive }
+		prerequisite = { focus = CHI_the_quad_wedge_strategy }
+
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE }
+
+		available = {
+			has_war = no
+			NOT = { has_war_with = JAP }
+			JAP = { has_war = no }
+			JAP = { NOT = { has_government = nationalist } }
+			custom_trigger_tooltip = {
+				tooltip = CHI_aggression_less_-20_tt
+				check_variable = { CHI_chinese_aggression < -19 }
+			}
+			custom_trigger_tooltip = {
+				tooltip = CHI_two_of_three_pragmatic_axes_tt
+				count_triggers = {
+					amount = 2
+					has_completed_focus = CHI_the_anime_generation_gambit
+					has_completed_focus = CHI_the_china_plus_one_counteroffensive
+					has_completed_focus = CHI_the_quad_wedge_strategy
+				}
+			}
+		}
+
+		completion_reward = {
+			diplomatic_relation = { country = JAP relation = non_aggression_pact active = yes }
+			add_ideas = CHI_sino_japanese_understanding
+			country_event = { id = CHI_foreign.206 days = 1 }
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -3 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			log = "[GetDateText]: [This.GetName]: focus CHI_the_tokyo_communique executed"
+		}
+
+		ai_will_do = {
+			base = 1
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_break_the_first_island_chain
+		icon = x
+
+		x = 0
+		y = 6
+		relative_position_id = CHI_the_japan_question
+
+		cost = 10
+
+		prerequisite = {
+			focus = CHI_the_tokyo_communique
+			focus = CHI_the_senkaku_crisis
+		}
+
+		search_filters = { FOCUS_FILTER_INFLUENCE FOCUS_FILTER_ANNEXATION }
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_the_tokyo_communique
+				JAP = { is_subject_of = CHI }
+			}
+			JAP = { NOT = { has_government = nationalist } }
+			JAP = { NOT = { has_government = democratic } }
+			JAP = { influence_higher_30 = yes }
+		}
+
+		completion_reward = {
+			if = {
+				limit = { has_completed_focus = CHI_the_historical_reckoning }
+				JAP = { add_ideas = CHI_jap_forced_neutrality }
+			}
+			else_if = {
+				limit = { has_country_flag = CHI_pragmatic_path_chosen }
+				JAP = { add_ideas = CHI_jap_finlandized_sovereignty }
+			}
 			JAP = {
 				set_temp_variable = { percent_change = 2 }
 				change_domestic_influence_percentage = yes
@@ -2547,11 +2746,15 @@ focus_tree = {
 					active = no
 				}
 			}
-			log = "[GetDateText]: [This.GetName]: focus CHI_Decouple_Japan executed"
+			log = "[GetDateText]: [This.GetName]: focus CHI_break_the_first_island_chain executed"
 		}
 
 		ai_will_do = {
 			base = 1
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 		}
 	}
 
@@ -2597,9 +2800,7 @@ focus_tree = {
 			add_to_array = { global.sco_members = UZB }
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -2650,9 +2851,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -2695,9 +2894,7 @@ focus_tree = {
 			clamp_variable = { var = CHI_sco_cohesion min = 0 max = 100 }
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -2723,9 +2920,7 @@ focus_tree = {
 			unlock_decision_tooltip = sco_megaproject_dev_bank_propose
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -2758,9 +2953,7 @@ focus_tree = {
 			unlock_decision_tooltip = sco_bilateral_intel_sharing
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -2808,9 +3001,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -2836,9 +3027,7 @@ focus_tree = {
 			unlock_decision_tooltip = CHI_crack_down_tibet_separatism
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -2893,9 +3082,7 @@ focus_tree = {
 			change_the_military_opinion = yes
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -2968,9 +3155,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3006,14 +3191,12 @@ focus_tree = {
 			unlock_decision_tooltip = sco_megaproject_air_defense_propose
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_Chinese_Dominance
-		icon = x
+		icon = CHI_pro_china_russia
 
 		x = 0
 		y = 3
@@ -3070,7 +3253,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Equal_Partners
-		icon = x
+		icon = CHI_russia_china_equal_partners
 
 		x = 2
 		y = 3
@@ -3121,9 +3304,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Equal_Partners executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3165,9 +3346,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3212,9 +3391,7 @@ focus_tree = {
 			custom_effect_tooltip = CHI_sco_exclusive_core_tt
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3281,9 +3458,7 @@ focus_tree = {
 			unlock_decision_tooltip = sco_megaproject_railway_propose
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3352,9 +3527,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Split_CSTO executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3415,14 +3588,12 @@ focus_tree = {
 			set_variable = { CHI_sco_balance = 0 }
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_An_Alliance_to_Rival_NATO
-		icon = x
+		icon = nato3
 
 		x = 2
 		y = 5
@@ -3473,16 +3644,14 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = CHI_Forum_on_China_African_Cooperation
 		icon = africa2
 
-		x = 30
+		x = 36
 		y = 1
 		relative_position_id = CHI_Chinese_Diplomacy
 
@@ -3499,9 +3668,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_Forum_on_China_African_Cooperation executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3541,9 +3708,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_China_Africa_Development_Fund executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3589,9 +3754,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_Invest_in_Cheap_Energy executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3677,9 +3840,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_Invest_in_Clean_Energy executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3710,9 +3871,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_Workers_Rights executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3749,9 +3908,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_Workers_Rights executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3791,9 +3948,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_Agriculture executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3833,9 +3988,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_Develop_Hospitals executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3876,9 +4029,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_Leverage_Influence executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3934,9 +4085,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_Write_Off_Debts executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -3973,9 +4122,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_Friendship_Schools executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4012,9 +4159,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_Joint_Research executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4052,9 +4197,7 @@ focus_tree = {
 			log = "[GetDateText]: [This.GetName]: CHI_TV_and_Internet_Access executed"
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 
@@ -4078,9 +4221,7 @@ focus_tree = {
 			add_political_power = 100
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4105,9 +4246,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4161,9 +4300,7 @@ focus_tree = {
 			change_influence_percentage = yes
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4186,9 +4323,7 @@ focus_tree = {
 			add_war_support = 0.05
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4224,9 +4359,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4265,9 +4398,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4313,9 +4444,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4352,9 +4481,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4383,9 +4510,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4414,9 +4539,7 @@ focus_tree = {
 			add_war_support = 0.05
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4444,9 +4567,7 @@ focus_tree = {
 			set_country_flag = CHI_new_world_order_flag
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4504,9 +4625,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4543,9 +4662,7 @@ focus_tree = {
 			add_political_power = 50
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4589,9 +4706,7 @@ focus_tree = {
 			change_influence_percentage = yes
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4629,9 +4744,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4658,9 +4771,7 @@ focus_tree = {
 			add_political_power = 200
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4717,9 +4828,7 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -4745,8 +4854,6 @@ focus_tree = {
 			}
 		}
 
-		ai_will_do = {
-			base = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 }
