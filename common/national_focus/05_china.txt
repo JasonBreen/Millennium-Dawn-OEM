@@ -82,7 +82,7 @@ focus_tree = {
 		id = CHI_The_South_China_Sea
 		icon = CHI_south_chinese_sea
 
-		x = -8
+		x = -14
 		y = 1
 		relative_position_id = CHI_Chinese_Diplomacy
 
@@ -903,7 +903,7 @@ focus_tree = {
 		id = CHI_The_Indian_Subcontinent
 		icon = focus_RAJ_akhand_bharat
 
-		x = 8
+		x = 14
 		y = 1
 		relative_position_id = CHI_Chinese_Diplomacy
 
@@ -2111,7 +2111,7 @@ focus_tree = {
 		id = CHI_the_japan_question
 		icon = goal_JAP_japan_militarism
 
-		x = 22
+		x = 28
 		y = 1
 		relative_position_id = CHI_Chinese_Diplomacy
 
@@ -2687,8 +2687,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_the_tokyo_communique #Rework these effects and event(s)
-		icon = x
+		id = CHI_the_tokyo_communique
+		icon = focus_JAP_foreign_exchange_allocation_policy
 
 		x = 0
 		y = 4
@@ -2850,7 +2850,7 @@ focus_tree = {
 		id = CHI_Form_the_SCO
 		icon = sco
 
-		x = -19
+		x = -25
 		y = 1
 		relative_position_id = CHI_Chinese_Diplomacy
 
@@ -3741,556 +3741,6 @@ focus_tree = {
 		ai_will_do = { base = 1 }
 	}
 
-	focus = {
-		id = CHI_Forum_on_China_African_Cooperation
-		icon = africa2
-
-		x = 35
-		y = 1
-		relative_position_id = CHI_Chinese_Diplomacy
-
-		cost = 5
-
-		prerequisite = { focus = CHI_Chinese_Diplomacy }
-
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION }
-
-		completion_reward = {
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_Forum_on_China_African_Cooperation executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
-
-	focus = {
-		id = CHI_China_Africa_Development_Fund
-		icon = african_investment
-
-		x = -1
-		y = 1
-		relative_position_id = CHI_Forum_on_China_African_Cooperation
-
-		cost = 10
-
-		prerequisite = { focus = CHI_Forum_on_China_African_Cooperation }
-
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE }
-
-		completion_reward = {
-			set_temp_variable = { treasury_change = -50 }
-			modify_treasury_effect = yes
-			every_other_country = {
-				limit = {
-					is_african_nation = yes
-					NOT = {
-						has_idea = Non_State_Actor
-						has_idea = Lacks_International_Recognition
-					}
-				}
-				set_temp_variable = { percent_change = 1 }
-				set_temp_variable = { tag_index = CHI }
-				set_temp_variable = { influence_target = THIS }
-				change_influence_percentage = yes
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_China_Africa_Development_Fund executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
-
-	focus = {
-		id = CHI_Invest_in_Cheap_Energy
-		icon = oil_green
-
-		x = -3
-		y = 2
-		relative_position_id = CHI_Forum_on_China_African_Cooperation
-
-		cost = 10
-
-		prerequisite = { focus = CHI_China_Africa_Development_Fund }
-
-		available = { has_completed_focus = CHI_Cheap_Coal_Supremacy
-					}
-
-		completion_reward = {
-			set_temp_variable = { treasury_change = -25 }
-			set_temp_variable = { treasury_change = -5.00 }
-			modify_treasury_effect = yes
-			558 = {	#Shanxi
-				add_building_construction = {
-					type = fossil_powerplant
-					level = 1
-					instant_build = yes
-				}
-			}
-			modify_treasury_effect = yes
-			every_other_country = {
-				limit = {
-					is_african_nation = yes
-					NOT = {
-						has_idea = Non_State_Actor
-						has_idea = Lacks_International_Recognition
-					}
-					influence_higher_20 = yes
-				}
-				add_ideas = CHI_coal
-				set_temp_variable = { debt_change = 5 }
-				modify_debt_effect = yes
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_Invest_in_Cheap_Energy executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
-
-	focus = {
-		id = CHI_Invest_in_Clean_Energy
-		icon = green_biomass_plant
-
-		x = -1
-		y = 2
-		relative_position_id = CHI_Forum_on_China_African_Cooperation
-
-		cost = 10
-
-		prerequisite = { focus = CHI_China_Africa_Development_Fund }
-
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION }
-
-		available = {
-			OR = {
-				has_idea = CHI_solar_power
-				has_idea = CHI_nuclear_power
-				has_idea = fusion_power_1
-				hidden_trigger = {
-					OR = {
-						has_idea = fusion_power_2
-						has_idea = fusion_power_3
-					}
-				}
-			}
-		}
-
-		completion_reward = {
-			set_temp_variable = { treasury_change = -50 }
-			modify_treasury_effect = yes
-			set_temp_variable = { treasury_change = -3.25 }
-			modify_treasury_effect = yes
-			544 = {	#
-				add_building_construction = {
-					type = renewable_energy_infra
-					level = 1
-					instant_build = yes
-				}
-			}
-			if = {
-				limit = { has_idea = CHI_nuclear_power }
-				every_other_country = {
-					limit = {
-						is_african_nation = yes
-						NOT = {
-							has_idea = Non_State_Actor
-							has_idea = Lacks_International_Recognition
-						}
-						influence_higher_20 = yes
-					}
-					add_ideas = CHI_nuclear_power
-					set_temp_variable = { debt_change = 5 }
-					modify_debt_effect = yes
-				}
-			}
-			else = {
-				every_other_country = {
-					limit = {
-						is_african_nation = yes
-						NOT = {
-							has_idea = Non_State_Actor
-							has_idea = Lacks_International_Recognition
-						}
-						influence_higher_20 = yes
-					}
-					add_timed_idea = {
-						idea = CHI_solar_power
-						days = 180
-					}
-					set_temp_variable = { debt_change = 5 }
-					modify_debt_effect = yes
-				}
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_Invest_in_Clean_Energy executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
-
-	focus = {
-		id = CHI_Outsource_Cheap_Labor
-		icon = become_puppet
-
-		x = -3
-		y = 3
-		relative_position_id = CHI_Forum_on_China_African_Cooperation
-
-		cost = 10
-
-		prerequisite = { focus = CHI_Invest_in_Cheap_Energy focus = CHI_Invest_in_Clean_Energy }
-		mutually_exclusive = { focus = CHI_Workers_Rights }
-
-		completion_reward = {
-			every_other_country = {
-				limit = {
-					is_african_nation = yes
-					NOT = {
-						has_idea = Non_State_Actor
-						has_idea = Lacks_International_Recognition
-					}
-					influence_higher_20 = yes
-				}
-				add_ideas = { Cheap_Labor }
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_Workers_Rights executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
-
-	focus = {
-		id = CHI_Workers_Rights
-		icon = labor_unions
-
-		x = -1
-		y = 3
-		relative_position_id = CHI_Forum_on_China_African_Cooperation
-
-		cost = 10
-
-		prerequisite = { focus = CHI_Invest_in_Cheap_Energy focus = CHI_Invest_in_Clean_Energy }
-		mutually_exclusive = { focus = CHI_Outsource_Cheap_Labor }
-
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION }
-
-		completion_reward = {
-			every_other_country = {
-				limit = {
-					is_african_nation = yes
-					NOT = {
-						has_idea = Non_State_Actor
-						has_idea = Lacks_International_Recognition
-					}
-					influence_higher_20 = yes
-				}
-				add_ideas = { Workers_Rights }
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_Workers_Rights executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
-
-	focus = {
-		id = CHI_Agriculture
-		icon = goal_JAP_agrarian_reform
-
-		x = 1
-		y = 2
-		relative_position_id = CHI_Forum_on_China_African_Cooperation
-
-		cost = 10
-
-		prerequisite = { focus = CHI_China_Africa_Development_Fund }
-
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION }
-
-		completion_reward = {
-			set_temp_variable = { treasury_change = -10 }
-			modify_treasury_effect = yes
-			every_other_country = {
-				limit = {
-					is_african_nation = yes
-					NOT = {
-						has_idea = Non_State_Actor
-						has_idea = Lacks_International_Recognition
-					}
-					influence_higher_10 = yes
-				}
-				add_stability = 0.02
-				set_temp_variable = { debt_change = 1 }
-				modify_debt_effect = yes
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_Agriculture executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
-
-	focus = {
-		id = CHI_Develop_Hospitals
-		icon = generic_hospital
-
-		x = 1
-		y = 3
-		relative_position_id = CHI_Forum_on_China_African_Cooperation
-
-		cost = 10
-
-		prerequisite = { focus = CHI_Agriculture }
-
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION }
-
-		completion_reward = {
-			set_temp_variable = { treasury_change = -20 }
-			modify_treasury_effect = yes
-			every_other_country = {
-				limit = {
-					is_african_nation = yes
-					NOT = {
-						has_idea = Non_State_Actor
-						has_idea = Lacks_International_Recognition
-					}
-					influence_higher_10 = yes
-				}
-				add_stability = 0.05
-				set_temp_variable = { debt_change = 5 }
-				modify_debt_effect = yes
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_Develop_Hospitals executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
-
-	focus = {
-		id = CHI_Leverage_Influence
-		icon = stage_africa
-
-		x = -2
-		y = 4
-		relative_position_id = CHI_Forum_on_China_African_Cooperation
-
-		cost = 10
-
-		prerequisite = { focus = CHI_Develop_Hospitals }
-		prerequisite = { focus = CHI_Outsource_Cheap_Labor focus = CHI_Workers_Rights }
-		mutually_exclusive = { focus = CHI_Write_Off_Debts }
-
-		search_filters = { FOCUS_FILTER_INFLUENCE }
-
-		completion_reward = {
-			every_other_country = {
-				limit = {
-					is_african_nation = yes
-					NOT = {
-						has_idea = Non_State_Actor
-						has_idea = Lacks_International_Recognition
-					}
-					influence_higher_20 = yes
-				}
-				set_temp_variable = { percent_change = 3 }
-				set_temp_variable = { tag_index = CHI }
-				set_temp_variable = { influence_target = THIS }
-				change_influence_percentage = yes
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_Leverage_Influence executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
-
-	focus = {
-		id = CHI_Write_Off_Debts
-		icon = align_to_africa
-
-		x = 0
-		y = 4
-		relative_position_id = CHI_Forum_on_China_African_Cooperation
-
-		cost = 10
-
-		prerequisite = { focus = CHI_Develop_Hospitals }
-		prerequisite = { focus = CHI_Outsource_Cheap_Labor focus = CHI_Workers_Rights }
-		mutually_exclusive = { focus = CHI_Leverage_Influence }
-
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION }
-
-		completion_reward = {
-			every_other_country = {
-				limit = {
-					is_african_nation = yes
-					NOT = {
-						has_idea = Non_State_Actor
-						has_idea = Lacks_International_Recognition
-					}
-					OR = { has_idea = CHI_solar_power has_idea = CHI_nuclear_power has_idea = CHI_coal }
-					influence_higher_20 = yes
-				}
-				add_stability = 0.05
-				set_temp_variable = { debt_change = -15 }
-				modify_debt_effect = yes
-			}
-			every_other_country = {
-				limit = {
-					is_african_nation = yes
-					NOT = {
-						has_idea = Non_State_Actor
-						has_idea = Lacks_International_Recognition
-					}
-					NOT = { has_idea = CHI_solar_power has_idea = CHI_nuclear_power has_idea = CHI_coal }
-					influence_higher_10 = yes
-				}
-				add_stability = 0.05
-				set_temp_variable = { debt_change = -7.5 }
-				modify_debt_effect = yes
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_Write_Off_Debts executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
-
-	focus = {
-		id = CHI_Friendship_Schools
-		icon = focus_NOR_moscows_education_centers
-
-		x = 3
-		y = 1
-		relative_position_id = CHI_Forum_on_China_African_Cooperation
-
-		cost = 10
-
-		prerequisite = { focus = CHI_Forum_on_China_African_Cooperation }
-
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION }
-
-		completion_reward = {
-			set_temp_variable = { treasury_change = -10 }
-			modify_treasury_effect = yes
-			every_other_country = {
-				limit = {
-					is_african_nation = yes
-					NOT = {
-						has_idea = Non_State_Actor
-						has_idea = Lacks_International_Recognition
-					}
-				}
-				add_stability = 0.02
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_Friendship_Schools executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
-
-	focus = {
-		id = CHI_Joint_Research
-		icon = research3
-
-		x = 3
-		y = 2
-		relative_position_id = CHI_Forum_on_China_African_Cooperation
-
-		cost = 10
-
-		prerequisite = { focus = CHI_Friendship_Schools }
-
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_RESEARCH }
-
-		completion_reward = {
-			set_temp_variable = { treasury_change = -20 }
-			modify_treasury_effect = yes
-			every_country = {
-				limit = {
-					OR = { original_tag = CHI is_african_nation = yes }
-					NOT = {
-						has_idea = Non_State_Actor
-						has_idea = Lacks_International_Recognition
-					}
-				}
-				add_to_tech_sharing_group = China_Africa_Tech_Share
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_Joint_Research executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
-
-	focus = {
-		id = CHI_TV_and_Internet_Access
-		icon = goal_JAP_analogue_television2
-
-		x = 3
-		y = 3
-		relative_position_id = CHI_Forum_on_China_African_Cooperation
-
-		cost = 10
-
-		prerequisite = { focus = CHI_Joint_Research }
-
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION }
-
-		completion_reward = {
-			set_temp_variable = { treasury_change = -30 }
-			modify_treasury_effect = yes
-			every_other_country = {
-				limit = {
-					is_african_nation = yes
-					NOT = {
-						has_idea = Non_State_Actor
-						has_idea = Lacks_International_Recognition
-					}
-					influence_higher_10 = yes
-				}
-				add_ideas = { TV_Internet_Access }
-			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			log = "[GetDateText]: [This.GetName]: CHI_TV_and_Internet_Access executed"
-		}
-
-		ai_will_do = { base = 1 }
-	}
 
 
 	# Diplomatic Development Branch
@@ -4426,7 +3876,7 @@ focus_tree = {
 		id = CHI_Wolf_Warrior_Diplomacy
 		icon = aggressive_diplomacy
 
-		x = -3
+		x = -6
 		y = 5
 		relative_position_id = CHI_Diplomatic_Reform
 
@@ -4463,7 +3913,7 @@ focus_tree = {
 		id = CHI_Bide_Your_Time
 		icon = diplomacy
 
-		x = 3
+		x = 5
 		y = 5
 		relative_position_id = CHI_Diplomatic_Reform
 
@@ -4882,9 +4332,10 @@ focus_tree = {
 		ai_will_do = { base = 1 }
 	}
 
+
 	focus = {
-		id = CHI_BRICS_Partnership
-		icon = global_community
+		id = CHI_Belt_and_Road_Launch
+		icon = global_hegemony
 
 		x = 3
 		y = 1
@@ -4893,77 +4344,1445 @@ focus_tree = {
 		cost = 10
 
 		prerequisite = { focus = CHI_Wolf_Warrior_Diplomacy focus = CHI_Bide_Your_Time }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
 
-		search_filters = { FOCUS_FILTER_POLITICAL }
+		available = {
+			date > 2013.1.1
+		}
 
 		completion_reward = {
-			log = "[GetDateText]: [This.GetName]: focus CHI_BRICS_Partnership executed"
-			add_political_power = 50
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Belt_and_Road_Launch"
+			set_country_flag = CHI_bri_active
+			set_variable = { CHI_bri_treasury = 200 }
+			set_variable = { CHI_bri_returns_multiplier = 1.0 }
+			set_variable = { CHI_bri_monthly_income = 0 }
+			set_variable = { CHI_bri_active_projects = 0 }
+			set_variable = { CHI_bri_completed_projects = 0 }
+			set_variable = { CHI_bri_global_presence = 0 }
+			set_variable = { CHI_bri_predatory_score = 0 }
+			set_variable = { CHI_bri_winwin_score = 0 }
+			set_variable = { CHI_bri_southasia_engagement = 0 }
+			set_variable = { CHI_bri_centralasia_engagement = 0 }
+			set_variable = { CHI_bri_seasia_engagement = 0 }
+			set_variable = { CHI_bri_africa_engagement = 0 }
+			set_variable = { CHI_bri_europe_engagement = 0 }
+			set_variable = { CHI_bri_railways_built = 0 }
+			set_variable = { CHI_bri_telecom_built = 0 }
+			set_variable = { CHI_bri_project_slots = 3 }
+			add_to_variable = { CHI_bri_project_slots = 3 }
+			country_event = { id = chi_bri.1 days = 1 }
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_AIIB_Founding
+		icon = african_investment
+
+		x = 0
+		y = 1
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Belt_and_Road_Launch }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_AIIB_Founding"
+			add_to_variable = { CHI_bri_returns_multiplier = 0.15 }
+			add_to_variable = { CHI_bri_project_slots = 1 }
+			add_ideas = CHI_aiib_charter
+			if = {
+				limit = { country_exists = ENG }
+				ENG = { add_opinion_modifier = { target = ROOT modifier = aiib_founding_member } }
+			}
+			if = {
+				limit = { country_exists = FRA }
+				FRA = { add_opinion_modifier = { target = ROOT modifier = aiib_founding_member } }
+			}
+			if = {
+				limit = { country_exists = GER }
+				GER = { add_opinion_modifier = { target = ROOT modifier = aiib_founding_member } }
+			}
+			if = {
+				limit = { country_exists = ITA }
+				ITA = { add_opinion_modifier = { target = ROOT modifier = aiib_founding_member } }
+			}
+			if = {
+				limit = { country_exists = ROK }
+				ROK = { add_opinion_modifier = { target = ROOT modifier = aiib_founding_member } }
+			}
+			if = {
+				limit = { country_exists = AST }
+				AST = { add_opinion_modifier = { target = ROOT modifier = aiib_founding_member } }
+			}
+			if = {
+				limit = { country_exists = INO }
+				INO = { add_opinion_modifier = { target = ROOT modifier = aiib_founding_member } }
+			}
+			if = {
+				limit = { country_exists = PAK }
+				PAK = { add_opinion_modifier = { target = ROOT modifier = aiib_founding_member } }
+			}
+			if = {
+				limit = { country_exists = IND }
+				IND = { add_opinion_modifier = { target = ROOT modifier = aiib_founding_member } }
+			}
 			if = {
 				limit = { country_exists = BRA }
-				BRA = {
-					add_opinion_modifier = {
-						target = ROOT
-						modifier = brics_partnership
+				BRA = { add_opinion_modifier = { target = ROOT modifier = aiib_founding_member } }
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Silk_Road_Fund
+		icon = banking
+
+		x = 0
+		y = 2
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_AIIB_Founding }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_ECONOMY FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Silk_Road_Fund"
+			add_to_variable = { CHI_bri_monthly_income = 5 }
+			add_to_variable = { CHI_bri_treasury = 50 }
+			set_temp_variable = { treasury_change = -50 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Project_Coordination_Cell
+		icon = diplomacy
+
+		x = 2
+		y = 1
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_AIIB_Founding }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Project_Coordination_Cell"
+			add_to_variable = { CHI_bri_project_slots = 2 }
+			set_country_flag = CHI_bri_secretary_engaged
+		}
+
+		ai_will_do = {
+			base = 5
+		}
+	}
+
+	focus = {
+		id = CHI_China_Pakistan_Economic_Corridor
+		icon = stage_southasia
+
+		x = -3
+		y = 3
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Silk_Road_Fund }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_China_Pakistan_Economic_Corridor"
+			set_temp_variable = { treasury_change = -300 }
+			modify_treasury_effect = yes
+			add_to_variable = { CHI_bri_southasia_engagement = 5 }
+			if = {
+				limit = { country_exists = PAK }
+				PAK = {
+					country_event = { id = chi_bri.15 days = 1 }
+				}
+				custom_effect_tooltip = TT_IF_THEY_ACCEPT
+				effect_tooltip = {
+					custom_effect_tooltip = CHI_cpec_mega_project_tt
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Maritime_Silk_Road_Indian_Ocean
+		icon = stage_southasia
+
+		x = -1
+		y = 3
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Silk_Road_Fund }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Maritime_Silk_Road_Indian_Ocean"
+			set_temp_variable = { treasury_change = -200 }
+			modify_treasury_effect = yes
+			add_to_variable = { CHI_bri_southasia_engagement = 3 }
+			add_to_variable = { CHI_bri_africa_engagement = 2 }
+			if = {
+				limit = { country_exists = SRL }
+				SRL = { add_opinion_modifier = { target = ROOT modifier = bri_maritime_partner } }
+			}
+			if = {
+				limit = { country_exists = KEN }
+				KEN = { add_opinion_modifier = { target = ROOT modifier = bri_maritime_partner } }
+			}
+			if = {
+				limit = { country_exists = DJI }
+				DJI = {
+					add_opinion_modifier = { target = ROOT modifier = bri_maritime_partner }
+					set_country_flag = CHI_bri_dji_mega_project
+				}
+			}
+			if = {
+				limit = { country_exists = BAN }
+				BAN = { add_opinion_modifier = { target = ROOT modifier = bri_maritime_partner } }
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Central_Asia_Connectivity
+		icon = stage_centralasia
+
+		x = 1
+		y = 3
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Silk_Road_Fund }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Central_Asia_Connectivity"
+			set_temp_variable = { treasury_change = -150 }
+			modify_treasury_effect = yes
+			add_to_variable = { CHI_bri_centralasia_engagement = 5 }
+			if = {
+				limit = { country_exists = KAZ }
+				KAZ = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
+			}
+			if = {
+				limit = { country_exists = UZB }
+				UZB = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
+			}
+			if = {
+				limit = { country_exists = TJK }
+				TJK = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
+			}
+			if = {
+				limit = { country_exists = KGZ }
+				KGZ = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
+			}
+			if = {
+				limit = { country_exists = TKM }
+				TKM = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Mekong_Riparian_Cooperation
+		icon = stage_seasia
+
+		x = 3
+		y = 3
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Silk_Road_Fund }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Mekong_Riparian_Cooperation"
+			set_temp_variable = { treasury_change = -130 }
+			modify_treasury_effect = yes
+			add_to_variable = { CHI_bri_seasia_engagement = 5 }
+			if = {
+				limit = { country_exists = LAO }
+				LAO = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
+			}
+			if = {
+				limit = { country_exists = CAM }
+				CAM = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
+			}
+			if = {
+				limit = { country_exists = MYA }
+				MYA = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
+			}
+			if = {
+				limit = { country_exists = THL }
+				THL = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
+			}
+			if = {
+				limit = { country_exists = VIE }
+				VIE = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_17plus1_Mechanism
+		icon = stage_europe
+
+		x = -1
+		y = 4
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Silk_Road_Fund }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
+
+		available = {
+			date > 2012.1.1
+			check_variable = {
+				var = CHI_chinese_aggression
+				value = 25
+				compare = less_than
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_17plus1_Mechanism"
+			set_temp_variable = { treasury_change = -100 }
+			modify_treasury_effect = yes
+			add_to_variable = { CHI_bri_europe_engagement = 4 }
+			if = {
+				limit = { country_exists = HUN }
+				HUN = { add_opinion_modifier = { target = ROOT modifier = bri_17plus1_member } }
+			}
+			if = {
+				limit = { country_exists = SER }
+				SER = { add_opinion_modifier = { target = ROOT modifier = bri_17plus1_member } }
+			}
+			if = {
+				limit = { country_exists = CZE }
+				CZE = { add_opinion_modifier = { target = ROOT modifier = bri_17plus1_member } }
+			}
+			if = {
+				limit = { country_exists = GRE }
+				GRE = {
+					add_opinion_modifier = { target = ROOT modifier = bri_17plus1_member }
+					set_country_flag = CHI_bri_gre_mega_project
+				}
+			}
+			if = {
+				limit = { country_exists = POL }
+				POL = { add_opinion_modifier = { target = ROOT modifier = bri_17plus1_member } }
+			}
+			if = {
+				limit = { country_exists = CRO }
+				CRO = { add_opinion_modifier = { target = ROOT modifier = bri_17plus1_member } }
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+			modifier = {
+				factor = 0
+				check_variable = {
+					var = CHI_chinese_aggression
+					value = 20
+					compare = greater_than_or_equals
+				}
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Forum_on_China_African_Cooperation
+		icon = africa2
+
+		x = -5
+		y = 4
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 7
+
+		prerequisite = { focus = CHI_Silk_Road_Fund }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE FOCUS_FILTER_FOREIGN_POLICY }
+
+		available = {
+			date > 2006.1.1
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Forum_on_China_African_Cooperation"
+			set_temp_variable = { treasury_change = -50 }
+			modify_treasury_effect = yes
+			add_to_variable = { CHI_bri_treasury = 75 }
+			add_to_variable = { CHI_bri_africa_engagement = 5 }
+			add_to_variable = { CHI_bri_global_presence = 5 }
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			every_other_country = {
+				limit = {
+					is_african_nation = yes
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+				}
+				add_opinion_modifier = {
+					target = ROOT
+					modifier = focac_member
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_China_Africa_Development_Fund
+		icon = african_investment
+
+		x = -5
+		y = 5
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Forum_on_China_African_Cooperation }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_China_Africa_Development_Fund"
+			set_temp_variable = { treasury_change = -75 }
+			modify_treasury_effect = yes
+			add_to_variable = { CHI_bri_treasury = 100 }
+			add_to_variable = { CHI_bri_africa_engagement = 3 }
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			every_other_country = {
+				limit = {
+					is_african_nation = yes
+					has_opinion_modifier = { target = ROOT modifier = focac_member }
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+				}
+				set_temp_variable = { percent_change = 1 }
+				set_temp_variable = { tag_index = CHI }
+				set_temp_variable = { influence_target = THIS }
+				change_influence_percentage = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Invest_in_Cheap_Energy
+		icon = oil_green
+
+		x = -6
+		y = 6
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_China_Africa_Development_Fund }
+		mutually_exclusive = { focus = CHI_Invest_in_Clean_Energy }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_POWER_INFRASTRUCTURE FOCUS_FILTER_EXPENDITURE }
+
+		available = {
+			has_completed_focus = CHI_Cheap_Coal_Supremacy
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Invest_in_Cheap_Energy"
+			set_temp_variable = { treasury_change = -32 }
+			modify_treasury_effect = yes
+			558 = {
+				add_building_construction = {
+					type = fossil_powerplant
+					level = 1
+					instant_build = yes
+				}
+			}
+			add_to_variable = { CHI_bri_powerplants_built = 2 }
+			every_other_country = {
+				limit = {
+					is_african_nation = yes
+					has_opinion_modifier = { target = ROOT modifier = focac_member }
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+					influence_higher_20 = yes
+				}
+				add_ideas = CHI_bri_energy_fossil_idea
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Invest_in_Clean_Energy
+		icon = green_biomass_plant
+
+		x = -4
+		y = 6
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_China_Africa_Development_Fund }
+		mutually_exclusive = { focus = CHI_Invest_in_Cheap_Energy }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_RENEWABLE_ENERGY_INFRASTRUCTURE FOCUS_FILTER_EXPENDITURE }
+
+		available = {
+			OR = {
+				has_idea = CHI_solar_power
+				has_idea = CHI_nuclear_power
+				has_idea = fusion_power_1
+				hidden_trigger = {
+					OR = {
+						has_idea = fusion_power_2
+						has_idea = fusion_power_3
 					}
 				}
 			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Invest_in_Clean_Energy"
+			set_temp_variable = { treasury_change = -50 }
+			modify_treasury_effect = yes
+			one_random_renewable_energy_infra = yes
+			add_to_variable = { CHI_bri_powerplants_built = 2 }
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			every_other_country = {
+				limit = {
+					is_african_nation = yes
+					has_opinion_modifier = { target = ROOT modifier = focac_member }
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+					influence_higher_20 = yes
+				}
+				add_ideas = CHI_bri_energy_clean_idea
+				add_to_variable = { CHI_bri_winwin_score = 3 }
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Outsource_Cheap_Labor
+		icon = become_puppet
+
+		x = -6
+		y = 7
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Invest_in_Cheap_Energy focus = CHI_Invest_in_Clean_Energy }
+		mutually_exclusive = { focus = CHI_Workers_Rights }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Outsource_Cheap_Labor"
+			every_other_country = {
+				limit = {
+					is_african_nation = yes
+					has_opinion_modifier = { target = ROOT modifier = focac_member }
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+					influence_higher_20 = yes
+				}
+				add_ideas = CHI_bri_workers_exploited_idea
+				add_to_variable = { CHI_bri_predatory_score = 3 }
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+		}
+	}
+
+	focus = {
+		id = CHI_Workers_Rights
+		icon = labor_unions
+
+		x = -4
+		y = 7
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Invest_in_Cheap_Energy focus = CHI_Invest_in_Clean_Energy }
+		mutually_exclusive = { focus = CHI_Outsource_Cheap_Labor }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Workers_Rights"
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			every_other_country = {
+				limit = {
+					is_african_nation = yes
+					has_opinion_modifier = { target = ROOT modifier = focac_member }
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+					influence_higher_20 = yes
+				}
+				add_ideas = CHI_bri_workers_protected_idea
+				add_to_variable = { CHI_bri_winwin_score = 3 }
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+
+	focus = {
+		id = CHI_Agriculture
+		icon = goal_JAP_agrarian_reform
+
+		x = -2
+		y = 6
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_China_Africa_Development_Fund }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Agriculture"
+			set_temp_variable = { treasury_change = -10 }
+			modify_treasury_effect = yes
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			every_other_country = {
+				limit = {
+					is_african_nation = yes
+					has_opinion_modifier = { target = ROOT modifier = focac_member }
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+					influence_higher_10 = yes
+				}
+				add_stability = 0.02
+				add_opinion_modifier = {
+					target = ROOT
+					modifier = bri_agricultural_partnership
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Develop_Hospitals
+		icon = generic_hospital
+
+		x = -2
+		y = 7
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Agriculture }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Develop_Hospitals"
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			every_other_country = {
+				limit = {
+					is_african_nation = yes
+					has_opinion_modifier = { target = ROOT modifier = focac_member }
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+					influence_higher_10 = yes
+				}
+				add_stability = 0.05
+				add_to_variable = { CHI_bri_prestige_projects = 1 }
+				add_to_variable = { CHI_bri_winwin_score = 3 }
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Leverage_Influence
+		icon = stage_africa
+
+		x = -5
+		y = 8
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Develop_Hospitals }
+		prerequisite = { focus = CHI_Outsource_Cheap_Labor focus = CHI_Workers_Rights }
+		mutually_exclusive = { focus = CHI_Write_Off_Debts }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Leverage_Influence"
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			every_other_country = {
+				limit = {
+					is_african_nation = yes
+					has_opinion_modifier = { target = ROOT modifier = focac_member }
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+					influence_higher_20 = yes
+				}
+				set_temp_variable = { percent_change = 3 }
+				set_temp_variable = { tag_index = CHI }
+				set_temp_variable = { influence_target = THIS }
+				change_influence_percentage = yes
+				add_to_variable = { CHI_bri_predatory_score = 5 }
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+		}
+	}
+
+	focus = {
+		id = CHI_Write_Off_Debts
+		icon = align_to_africa
+
+		x = -3
+		y = 8
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Develop_Hospitals }
+		prerequisite = { focus = CHI_Outsource_Cheap_Labor focus = CHI_Workers_Rights }
+		mutually_exclusive = { focus = CHI_Leverage_Influence }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Write_Off_Debts"
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			every_other_country = {
+				limit = {
+					is_african_nation = yes
+					has_opinion_modifier = { target = ROOT modifier = focac_member }
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+					influence_higher_20 = yes
+				}
+				add_stability = 0.05
+				add_to_variable = { CHI_bri_winwin_score = 8 }
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+
+	focus = {
+		id = CHI_Friendship_Schools
+		icon = focus_NOR_moscows_education_centers
+
+		x = 0
+		y = 5
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Forum_on_China_African_Cooperation }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Friendship_Schools"
+			set_temp_variable = { treasury_change = -10 }
+			modify_treasury_effect = yes
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			every_other_country = {
+				limit = {
+					is_african_nation = yes
+					has_opinion_modifier = { target = ROOT modifier = focac_member }
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+				}
+				add_stability = 0.02
+				add_opinion_modifier = {
+					target = ROOT
+					modifier = confucius_institute
+				}
+				add_to_variable = { CHI_bri_winwin_score = 2 }
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Joint_Research
+		icon = research3
+
+		x = 0
+		y = 6
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Friendship_Schools }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_RESEARCH FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Joint_Research"
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			every_country = {
+				limit = {
+					OR = { original_tag = CHI is_african_nation = yes }
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+				}
+				add_to_tech_sharing_group = China_Africa_Tech_Share
+			}
+			add_to_variable = { CHI_bri_winwin_score = 3 }
+		}
+
+		ai_will_do = {
+			base = 4
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_TV_and_Internet_Access
+		icon = goal_JAP_analogue_television2
+
+		x = 0
+		y = 7
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Joint_Research }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_TV_and_Internet_Access"
+			set_temp_variable = { treasury_change = -30 }
+			modify_treasury_effect = yes
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+			add_to_variable = { CHI_bri_telecom_built = 3 }
+			add_to_variable = { CHI_bri_global_presence = 3 }
+			every_other_country = {
+				limit = {
+					is_african_nation = yes
+					has_opinion_modifier = { target = ROOT modifier = focac_member }
+					NOT = { has_idea = Non_State_Actor }
+					NOT = { has_idea = Lacks_International_Recognition }
+					influence_higher_10 = yes
+				}
+				add_ideas = CHI_bri_information_idea
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Predatory_Lending_Doctrine
+		icon = financial_influence
+
+		x = 1
+		y = 2
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Project_Coordination_Cell }
+		mutually_exclusive = { focus = CHI_Win_Win_Cooperation }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Predatory_Lending_Doctrine"
+			set_country_flag = CHI_bri_predatory_path
+			add_to_variable = { CHI_bri_returns_multiplier = 0.20 }
+			every_other_country = {
+				limit = {
+					has_government = democratic
+				}
+				add_opinion_modifier = {
+					target = ROOT
+					modifier = predatory_lender
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+		}
+	}
+
+	focus = {
+		id = CHI_Win_Win_Cooperation
+		icon = global_community
+
+		x = 3
+		y = 2
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Project_Coordination_Cell }
+		mutually_exclusive = { focus = CHI_Predatory_Lending_Doctrine }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Win_Win_Cooperation"
+			set_country_flag = CHI_bri_winwin_path
+			add_to_variable = { CHI_bri_monthly_income = 3 }
+			CHI = {
+				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+
+	focus = {
+		id = CHI_Digital_Silk_Road_Initiative
+		icon = research3
+
+		x = 1
+		y = 3
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Project_Coordination_Cell }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_RESEARCH FOCUS_FILTER_EXPENDITURE }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Digital_Silk_Road_Initiative"
+			set_temp_variable = { treasury_change = -150 }
+			modify_treasury_effect = yes
+			add_to_variable = { CHI_bri_telecom_built = 3 }
+			add_tech_bonus = {
+				name = CHI_Digital_Silk_Road_Initiative
+				bonus = 0.5
+				uses = 1
+				category = electronics
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Health_Silk_Road
+		icon = generic_hospital
+
+		x = 3
+		y = 3
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Project_Coordination_Cell }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
+
+		available = {
+			date > 2017.1.1
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Health_Silk_Road"
+			set_temp_variable = { treasury_change = -80 }
+			modify_treasury_effect = yes
+			add_to_variable = { CHI_bri_winwin_score = 5 }
+			add_tech_bonus = {
+				name = CHI_Health_Silk_Road
+				bonus = 0.25
+				uses = 1
+				category = medicine
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Petroyuan_Settlement
+		icon = goal_manchu_economy
+
+		x = 1
+		y = 4
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Project_Coordination_Cell }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_ECONOMY FOCUS_FILTER_TRADE }
+
+		available = {
+			check_variable = {
+				var = CHI_bri_global_presence
+				value = 49
+				compare = greater_than
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Petroyuan_Settlement"
+			add_ideas = petroyuan_settlement
+			country_event = { id = chi_bri.30 days = 1 }
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				check_variable = {
+					var = CHI_bri_global_presence
+					value = 50
+					compare = less_than
+				}
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_BRI_Forum_Beijing
+		icon = global_hegemony
+
+		x = 3
+		y = 4
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Project_Coordination_Cell }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
+
+		available = {
+			check_variable = {
+				var = CHI_bri_active_projects
+				value = 7
+				compare = greater_than
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_BRI_Forum_Beijing"
+			add_political_power = 20
+			add_to_variable = { CHI_bri_global_presence = 10 }
+			country_event = { id = chi_bri.40 days = 1 }
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				check_variable = {
+					var = CHI_bri_active_projects
+					value = 8
+					compare = less_than
+				}
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Renminbi_Internationalization
+		icon = goal_manchu_economy
+
+		x = 1
+		y = 5
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Petroyuan_Settlement }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_ECONOMY FOCUS_FILTER_TRADE }
+
+		available = {
+			check_variable = {
+				var = CHI_bri_global_presence
+				value = 99
+				compare = greater_than
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Renminbi_Internationalization"
+			add_ideas = rmb_reserve_currency
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				check_variable = {
+					var = CHI_bri_global_presence
+					value = 100
+					compare = less_than
+				}
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Polar_Silk_Road
+		icon = stage_europe
+
+		x = 5
+		y = 4
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Project_Coordination_Cell }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
+
+		available = {
+			date > 2018.1.1
+			NOT = { has_war_with = SOV }
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Polar_Silk_Road"
 			if = {
 				limit = { country_exists = SOV }
 				SOV = {
 					add_opinion_modifier = {
 						target = ROOT
-						modifier = brics_partnership
+						modifier = polar_partnership
 					}
 				}
 			}
-			if = {
-				limit = { country_exists = IND }
-				IND = {
-					add_opinion_modifier = {
-						target = ROOT
-						modifier = brics_partnership
-					}
-				}
-			}
-			if = {
-				limit = { country_exists = SAF }
-				SAF = {
-					add_opinion_modifier = {
-						target = ROOT
-						modifier = brics_partnership
-					}
-				}
-			}
+			add_ideas = arctic_observer_status
 		}
 
-		ai_will_do = { base = 1 }
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				has_war_with = SOV
+			}
+			modifier = {
+				factor = 0
+				NOT = { date > 2018.1.1 }
+			}
+		}
 	}
 
 	focus = {
-		id = CHI_New_Development_Bank
+		id = CHI_Eurasian_Land_Bridge
 		icon = global_hegemony
 
-		x = 0
-		y = 1
-		relative_position_id = CHI_BRICS_Partnership
+		x = 2
+		y = 6
+		relative_position_id = CHI_Belt_and_Road_Launch
 
 		cost = 10
 
-		prerequisite = { focus = CHI_BRICS_Partnership }
+		prerequisite = { focus = CHI_Renminbi_Internationalization focus = CHI_Polar_Silk_Road }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE FOCUS_FILTER_INFRASTRUCTURE }
 
-		search_filters = { FOCUS_FILTER_POLITICAL }
-
-		completion_reward = {
-			log = "[GetDateText]: [This.GetName]: focus CHI_New_Development_Bank executed"
-			set_temp_variable = { treasury_change = -40 }
-			modify_treasury_effect = yes
-			add_timed_idea = {
-				idea = CHI_ndb_investment
-				days = 365
+		available = {
+			check_variable = {
+				var = CHI_bri_global_presence
+				value = 149
+				compare = greater_than
+			}
+			check_variable = {
+				var = CHI_bri_railways_built
+				value = 5
+				compare = greater_than_or_equals
 			}
 		}
 
-		ai_will_do = { base = 1 }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Eurasian_Land_Bridge"
+			add_ideas = eurasian_land_bridge
+			add_to_variable = { CHI_bri_global_presence = 20 }
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				check_variable = {
+					var = CHI_bri_global_presence
+					value = 150
+					compare = less_than
+				}
+			}
+		}
 	}
+
+	focus = {
+		id = CHI_African_Continental_Integration
+		icon = align_to_africa
+
+		x = -3
+		y = 9
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Leverage_Influence focus = CHI_Write_Off_Debts }
+		prerequisite = { focus = CHI_TV_and_Internet_Access }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE FOCUS_FILTER_FOREIGN_POLICY }
+
+		available = {
+			check_variable = {
+				var = CHI_bri_africa_engagement
+				value = 29
+				compare = greater_than
+			}
+			check_variable = {
+				var = CHI_bri_completed_projects
+				value = 14
+				compare = greater_than
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_African_Continental_Integration"
+			add_ideas = chinese_african_century
+			add_to_variable = { CHI_bri_global_presence = 25 }
+			country_event = { id = chi_bri.70 days = 1 }
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				check_variable = {
+					var = CHI_bri_africa_engagement
+					value = 30
+					compare = less_than
+				}
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_Pax_Sinica
+		icon = global_hegemony
+
+		x = 2
+		y = 8
+		relative_position_id = CHI_Belt_and_Road_Launch
+
+		cost = 10
+
+		prerequisite = { focus = CHI_Eurasian_Land_Bridge }
+		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
+
+		available = {
+			check_variable = {
+				var = CHI_bri_global_presence
+				value = 199
+				compare = greater_than
+			}
+			check_variable = {
+				var = CHI_bri_completed_projects
+				value = 29
+				compare = greater_than
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_Pax_Sinica"
+			set_global_flag = chinese_century_dawn
+			add_ideas = pax_sinica
+			country_event = { id = chi_bri.50 days = 1 }
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				factor = 0
+				check_variable = {
+					var = CHI_bri_global_presence
+					value = 200
+					compare = less_than
+				}
+			}
+		}
+	}
+
 }

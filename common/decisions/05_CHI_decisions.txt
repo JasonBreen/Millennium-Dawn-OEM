@@ -7171,3 +7171,670 @@ CHI_japan_industry_invitation_category = {
 		ai_will_do = { base = 3 }
 	}
 }
+
+### Belt and Road Initiative ###
+
+CHI_BRI_treasury = {
+
+	CHI_BRI_treasury_status = {
+		icon = GFX_decision_generic_independence
+		allowed = { original_tag = CHI }
+
+		visible = {
+			tag = CHI
+			has_country_flag = CHI_bri_active
+		}
+
+		available = {
+			always = no
+		}
+
+		complete_effect = { }
+
+		ai_will_do = { factor = 0 }
+	}
+}
+
+CHI_BRI_projects = {
+
+	CHI_BRI_master_tick = {
+		icon = GFX_decision_generic_industry
+		allowed = { original_tag = CHI }
+		fire_only_once = no
+		cost = 0
+		days_remove = 30
+
+		available = { always = yes }
+
+		visible = {
+			hidden_trigger = { always = no }
+		}
+
+		complete_effect = {
+			set_temp_variable = { treasury_change = CHI_bri_monthly_income }
+			add_to_temp_variable = { treasury_change = CHI_bri_monthly_returns }
+			modify_treasury_effect = yes
+			add_to_variable = { CHI_bri_treasury = CHI_bri_monthly_income }
+			add_to_variable = { CHI_bri_treasury = CHI_bri_monthly_returns }
+
+			every_country = {
+				limit = { check_variable = { bri_application_cooldown > 0 } }
+				subtract_from_variable = { bri_application_cooldown = 1 }
+			}
+
+			clear_array = global.bri_eligible_countries
+			every_country = {
+				limit = { bri_eligible_applicant = yes }
+				add_to_array = { array = global.bri_eligible_countries value = THIS.id }
+			}
+
+			if = {
+				limit = { check_variable = { CHI_bri_global_presence > 199 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_4 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_4 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_3 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_3 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_2 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_2 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_1 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_1 } }
+				if = { limit = { NOT = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_5 } } } add_dynamic_modifier = { modifier = CHI_BRI_presence_tier_5 } }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_global_presence > 149 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_5 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_5 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_3 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_3 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_2 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_2 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_1 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_1 } }
+				if = { limit = { NOT = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_4 } } } add_dynamic_modifier = { modifier = CHI_BRI_presence_tier_4 } }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_global_presence > 99 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_5 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_5 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_4 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_4 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_2 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_2 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_1 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_1 } }
+				if = { limit = { NOT = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_3 } } } add_dynamic_modifier = { modifier = CHI_BRI_presence_tier_3 } }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_global_presence > 49 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_5 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_5 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_4 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_4 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_3 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_3 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_1 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_1 } }
+				if = { limit = { NOT = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_2 } } } add_dynamic_modifier = { modifier = CHI_BRI_presence_tier_2 } }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_global_presence > 24 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_5 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_5 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_4 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_4 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_3 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_3 } }
+				if = { limit = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_2 } } remove_dynamic_modifier = { modifier = CHI_BRI_presence_tier_2 } }
+				if = { limit = { NOT = { has_dynamic_modifier = { modifier = CHI_BRI_presence_tier_1 } } } add_dynamic_modifier = { modifier = CHI_BRI_presence_tier_1 } }
+			}
+		}
+
+		ai_will_do = { base = 100 }
+	}
+}
+
+CHI_BRI_diplomacy = {
+
+	CHI_FOCAC_Summit = {
+		icon = GFX_decision_generic_political_actions
+		allowed = { original_tag = CHI }
+
+		visible = {
+			tag = CHI
+			has_completed_focus = CHI_Forum_on_China_African_Cooperation
+			has_country_flag = CHI_bri_active
+		}
+
+		available = {
+			has_political_power > 99
+			has_war = no
+		}
+
+		cost = 100
+		days_remove = 30
+		days_re_enable = 1095
+
+		complete_effect = {
+			set_temp_variable = { treasury_change = -50 }
+			modify_treasury_effect = yes
+			subtract_from_variable = { CHI_bri_treasury = 50 }
+			every_country = {
+				limit = {
+					is_african_nation = yes
+					NOT = { has_war_with = CHI }
+				}
+				add_opinion_modifier = { target = CHI modifier = medium_increase }
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_FOCAC_Summit executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+
+	CHI_BRI_Forum_Triennial = {
+		icon = GFX_decision_generic_political_actions
+		allowed = { original_tag = CHI }
+
+		visible = {
+			tag = CHI
+			has_completed_focus = CHI_BRI_Forum_Beijing
+			has_country_flag = CHI_bri_active
+		}
+
+		available = {
+			has_political_power > 199
+			has_war = no
+		}
+
+		cost = 200
+		days_remove = 30
+		days_re_enable = 1095
+
+		complete_effect = {
+			set_temp_variable = { treasury_change = -150 }
+			modify_treasury_effect = yes
+			subtract_from_variable = { CHI_bri_treasury = 150 }
+			country_event = { id = chi_bri.40 days = 1 }
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_BRI_Forum_Triennial executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+
+	CHI_Debt_Restructuring = {
+		icon = GFX_decision_generic_political_actions
+		allowed = { original_tag = CHI }
+
+		visible = {
+			tag = CHI
+			has_country_flag = CHI_bri_winwin_path
+		}
+
+		available = {
+			has_political_power > 99
+			FROM = { has_country_flag = bri_default_THIS }
+		}
+
+		target_trigger = {
+			FROM = {
+				NOT = { tag = CHI }
+				has_country_flag = bri_default_THIS
+			}
+		}
+
+		cost = 100
+
+		complete_effect = {
+			FROM = {
+				clr_country_flag = bri_default_THIS
+				add_opinion_modifier = { target = CHI modifier = medium_increase }
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_Debt_Restructuring executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+
+	CHI_Asset_Seizure = {
+		icon = GFX_decision_generic_naval
+		allowed = { original_tag = CHI }
+
+		visible = {
+			tag = CHI
+			has_country_flag = CHI_bri_predatory_path
+		}
+
+		available = {
+			has_political_power > 49
+			FROM = { has_country_flag = bri_default_THIS }
+		}
+
+		target_trigger = {
+			FROM = {
+				NOT = { tag = CHI }
+				has_country_flag = bri_default_THIS
+			}
+		}
+
+		cost = 50
+
+		complete_effect = {
+			set_temp_variable = { resolve_mode = 1 }
+			country_event = { id = chi_bri.12 days = 1 }
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_Asset_Seizure executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+
+	CHI_Surveillance_Export = {
+		icon = GFX_decision_generic_political_actions
+		allowed = { original_tag = CHI }
+
+		visible = {
+			tag = CHI
+			has_completed_focus = CHI_Digital_Silk_Road_Initiative
+			has_country_flag = CHI_bri_active
+		}
+
+		available = {
+			has_political_power > 74
+			has_war = no
+			FROM = {
+				NOT = { has_government = democratic }
+				NOT = { has_idea = chinese_surveillance_systems }
+			}
+		}
+
+		target_trigger = {
+			FROM = {
+				NOT = { tag = CHI }
+				NOT = { has_government = democratic }
+				NOT = { has_idea = chinese_surveillance_systems }
+			}
+		}
+
+		cost = 75
+		days_re_enable = 365
+
+		complete_effect = {
+			set_temp_variable = { treasury_change = -80 }
+			modify_treasury_effect = yes
+			subtract_from_variable = { CHI_bri_treasury = 80 }
+			FROM = {
+				add_ideas = chinese_surveillance_systems
+				set_country_flag = surveillance_partner_THIS
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_Surveillance_Export executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+}
+
+BRI_recipient_actions = {
+
+	BRI_apply_for_port_project = {
+		icon = GFX_decision_generic_naval
+		allowed = { NOT = { original_tag = CHI } NOT = { original_tag = IND } }
+
+		visible = {
+			is_in_array = { global.bri_eligible_countries = THIS.id }
+		}
+
+		available = {
+			has_political_power > 24
+			has_war = no
+			any_owned_state = { is_coastal = yes }
+		}
+
+		cost = 30
+		days_re_enable = 540
+
+		complete_effect = {
+			set_variable = { bri_active_application = 1 }
+			set_variable = { bri_application_cooldown = 540 }
+			set_variable = { project_type = 1 }
+			CHI = {
+				set_temp_variable = { applicant_id = PREV.id }
+				country_event = { id = chi_bri.10 days = 1 }
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision BRI_apply_for_port_project executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+
+	BRI_apply_for_railway_project = {
+		icon = GFX_decision_generic_industry
+		allowed = { NOT = { original_tag = CHI } NOT = { original_tag = IND } }
+
+		visible = {
+			is_in_array = { global.bri_eligible_countries = THIS.id }
+		}
+
+		available = {
+			has_political_power > 24
+			has_war = no
+			OR = {
+				is_neighbor_of = CHI
+				has_country_flag = bri_partner_active
+			}
+			# TODO: EU corridor soft-lock — Latam corridor soft-lock — region detection requires per-tag listing or extended scripted_trigger
+			if = {
+				limit = { is_european_nation = yes }
+				CHI = { check_variable = { CHI_chinese_aggression < 25 } }
+			}
+			if = {
+				limit = {
+					is_american_nation = yes
+					NOT = { original_tag = USA }
+					NOT = { original_tag = CAN }
+				}
+				CHI = { check_variable = { CHI_chinese_aggression < 35 } }
+			}
+		}
+
+		cost = 30
+		days_re_enable = 540
+
+		complete_effect = {
+			set_variable = { bri_active_application = 1 }
+			set_variable = { bri_application_cooldown = 540 }
+			set_variable = { project_type = 2 }
+			CHI = {
+				set_temp_variable = { applicant_id = PREV.id }
+				country_event = { id = chi_bri.10 days = 1 }
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision BRI_apply_for_railway_project executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+
+	BRI_apply_for_pipeline_project = {
+		icon = GFX_decision_generic_industry
+		allowed = { NOT = { original_tag = CHI } NOT = { original_tag = IND } }
+
+		visible = {
+			is_in_array = { global.bri_eligible_countries = THIS.id }
+		}
+
+		available = {
+			has_political_power > 24
+			has_war = no
+			any_owned_state = {
+				OR = {
+					has_resources_amount = { resource = oil amount > 4 }
+					has_resources_amount = { resource = aluminium amount > 4 }
+				}
+			}
+		}
+
+		cost = 35
+		days_re_enable = 540
+
+		complete_effect = {
+			set_variable = { bri_active_application = 1 }
+			set_variable = { bri_application_cooldown = 540 }
+			set_variable = { project_type = 3 }
+			CHI = {
+				set_temp_variable = { applicant_id = PREV.id }
+				country_event = { id = chi_bri.10 days = 1 }
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision BRI_apply_for_pipeline_project executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+
+	BRI_apply_for_telecom_project = {
+		icon = GFX_decision_generic_political_actions
+		allowed = { NOT = { original_tag = CHI } NOT = { original_tag = IND } }
+
+		visible = {
+			is_in_array = { global.bri_eligible_countries = THIS.id }
+		}
+
+		available = {
+			has_political_power > 24
+			has_war = no
+			if = {
+				limit = { is_european_nation = yes }
+				CHI = { check_variable = { CHI_chinese_aggression < 25 } }
+			}
+			if = {
+				limit = {
+					is_american_nation = yes
+					NOT = { original_tag = USA }
+					NOT = { original_tag = CAN }
+				}
+				CHI = { check_variable = { CHI_chinese_aggression < 35 } }
+			}
+		}
+
+		cost = 25
+		days_re_enable = 540
+
+		complete_effect = {
+			set_variable = { bri_active_application = 1 }
+			set_variable = { bri_application_cooldown = 540 }
+			set_variable = { project_type = 4 }
+			CHI = {
+				set_temp_variable = { applicant_id = PREV.id }
+				country_event = { id = chi_bri.10 days = 1 }
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision BRI_apply_for_telecom_project executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+
+	BRI_apply_for_sez_project = {
+		icon = GFX_decision_generic_industry
+		allowed = { NOT = { original_tag = CHI } NOT = { original_tag = IND } }
+
+		visible = {
+			is_in_array = { global.bri_eligible_countries = THIS.id }
+		}
+
+		available = {
+			has_political_power > 34
+			has_war = no
+			num_of_factories > 4
+		}
+
+		cost = 40
+		days_re_enable = 540
+
+		complete_effect = {
+			set_variable = { bri_active_application = 1 }
+			set_variable = { bri_application_cooldown = 540 }
+			set_variable = { project_type = 5 }
+			CHI = {
+				set_temp_variable = { applicant_id = PREV.id }
+				country_event = { id = chi_bri.10 days = 1 }
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision BRI_apply_for_sez_project executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+
+	BRI_apply_for_mining_project = {
+		icon = GFX_decision_generic_industry
+		allowed = { NOT = { original_tag = CHI } NOT = { original_tag = IND } }
+
+		visible = {
+			is_in_array = { global.bri_eligible_countries = THIS.id }
+		}
+
+		available = {
+			has_political_power > 24
+			has_war = no
+			any_owned_state = {
+				OR = {
+					has_resources_amount = { resource = chromium amount > 2 }
+					has_resources_amount = { resource = tungsten amount > 2 }
+					has_resources_amount = { resource = aluminium amount > 2 }
+					has_resources_amount = { resource = steel amount > 2 }
+				}
+			}
+		}
+
+		cost = 30
+		days_re_enable = 540
+
+		complete_effect = {
+			set_variable = { bri_active_application = 1 }
+			set_variable = { bri_application_cooldown = 540 }
+			set_variable = { project_type = 6 }
+			CHI = {
+				set_temp_variable = { applicant_id = PREV.id }
+				country_event = { id = chi_bri.10 days = 1 }
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision BRI_apply_for_mining_project executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+
+	BRI_apply_for_powerplant_project = {
+		icon = GFX_decision_generic_industry
+		allowed = { NOT = { original_tag = CHI } NOT = { original_tag = IND } }
+
+		visible = {
+			is_in_array = { global.bri_eligible_countries = THIS.id }
+		}
+
+		available = {
+			has_political_power > 24
+			has_war = no
+		}
+
+		cost = 30
+		days_re_enable = 540
+
+		complete_effect = {
+			set_variable = { bri_active_application = 1 }
+			set_variable = { bri_application_cooldown = 540 }
+			set_variable = { project_type = 7 }
+			CHI = {
+				set_temp_variable = { applicant_id = PREV.id }
+				country_event = { id = chi_bri.10 days = 1 }
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision BRI_apply_for_powerplant_project executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+
+	BRI_apply_for_prestige_project = {
+		icon = GFX_decision_generic_political_actions
+		allowed = { NOT = { original_tag = CHI } NOT = { original_tag = IND } }
+
+		visible = {
+			is_in_array = { global.bri_eligible_countries = THIS.id }
+		}
+
+		available = {
+			has_political_power > 39
+			has_war = no
+			has_stability > 0.4
+		}
+
+		cost = 40
+		days_re_enable = 540
+
+		complete_effect = {
+			set_variable = { bri_active_application = 1 }
+			set_variable = { bri_application_cooldown = 540 }
+			set_variable = { project_type = 8 }
+			CHI = {
+				set_temp_variable = { applicant_id = PREV.id }
+				country_event = { id = chi_bri.10 days = 1 }
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision BRI_apply_for_prestige_project executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+
+	BRI_request_loan_extension = {
+		icon = GFX_decision_generic_political_actions
+		allowed = { NOT = { original_tag = CHI } NOT = { original_tag = IND } }
+
+		visible = {
+			has_country_flag = bri_default_THIS
+		}
+
+		available = {
+			has_political_power > 49
+			has_war = no
+		}
+
+		cost = 50
+		days_re_enable = 365
+
+		complete_effect = {
+			CHI = {
+				set_temp_variable = { applicant_id = PREV.id }
+				country_event = { id = chi_bri.13 days = 1 }
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision BRI_request_loan_extension executed"
+		}
+
+		ai_will_do = {
+			factor = 1
+			modifier = { factor = 5 has_government = neutrality }
+			modifier = { factor = 3 has_stability < 0.5 }
+			modifier = { factor = 0 has_war = yes }
+		}
+	}
+}
