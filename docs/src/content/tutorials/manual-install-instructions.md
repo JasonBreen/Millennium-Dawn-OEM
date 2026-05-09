@@ -335,11 +335,7 @@ Your Git application will show orange warning signs or a "conflict" message afte
 If you open the conflicted file in a text editor, you will see markers like this:
 
 ```
-<<<<<<< HEAD:events/MD4_Init.txt
-(your version of the code)
-=======
 (the other person's version of the code)
->>>>>>> master:events/MD_Init.txt
 ```
 
 - Everything between `<<<<<<< HEAD` and `=======` is **your** code.
