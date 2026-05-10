@@ -8310,3 +8310,1077 @@ country_event = {
 	}
 
 }
+
+#### Belt and Road Initiative Events (chi_bri namespace)
+
+# chi_bri.1 -- The Astana Speech (onboarding, fired by CHI_Belt_and_Road_Launch focus)
+country_event = {
+	id = chi_bri.1
+	title = chi_bri.1.t
+	desc = chi_bri.1.d
+	picture = GFX_report_event_china_diplomacy
+	is_triggered_only = yes
+
+	option = {
+		name = chi_bri.1.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.1.a executed"
+		add_political_power = 50
+		set_country_flag = CHI_bri_active
+		set_variable = { CHI_bri_treasury = 0 }
+		set_variable = { CHI_bri_monthly_income = 5 }
+		set_variable = { CHI_bri_monthly_returns = 0 }
+		set_variable = { CHI_bri_returns_multiplier = 1 }
+		set_variable = { CHI_bri_active_projects = 0 }
+		set_variable = { CHI_bri_completed_projects = 0 }
+		set_variable = { CHI_bri_defaulted_projects = 0 }
+		set_variable = { CHI_bri_project_slots = 3 }
+		set_variable = { CHI_bri_pending_applications = 0 }
+		set_variable = { CHI_bri_global_presence = 0 }
+		set_variable = { CHI_bri_predatory_score = 0 }
+		set_variable = { CHI_bri_winwin_score = 0 }
+		set_variable = { CHI_bri_africa_engagement = 0 }
+		set_variable = { CHI_bri_southasia_engagement = 0 }
+		set_variable = { CHI_bri_centralasia_engagement = 0 }
+		set_variable = { CHI_bri_seasia_engagement = 0 }
+		set_variable = { CHI_bri_europe_engagement = 0 }
+		set_variable = { CHI_bri_latam_engagement = 0 }
+		set_variable = { CHI_bri_meast_engagement = 0 }
+		set_variable = { CHI_bri_ports_built = 0 }
+		set_variable = { CHI_bri_railways_built = 0 }
+		set_variable = { CHI_bri_pipelines_built = 0 }
+		set_variable = { CHI_bri_telecom_built = 0 }
+		set_variable = { CHI_bri_mines_secured = 0 }
+		set_variable = { CHI_bri_powerplants_built = 0 }
+		set_variable = { CHI_bri_industrial_zones = 0 }
+		set_variable = { CHI_bri_prestige_projects = 0 }
+		ai_chance = { base = 1 }
+	}
+}
+
+# chi_bri.10 -- Application Review (CHI receives from applicant via recipient decision)
+country_event = {
+	id = chi_bri.10
+	title = chi_bri.10.t
+	desc = chi_bri.10.d
+	picture = GFX_report_event_china_diplomacy
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = CHI
+	}
+
+	option = {
+		name = chi_bri.10.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.10.a executed"
+		FROM = {
+			set_temp_variable = { application_terms = 1 }
+			BRI_handle_application = yes
+		}
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
+		effect_tooltip = {
+			FROM = {
+				add_dynamic_modifier = { modifier = bri_partner_tier_1 }
+			}
+		}
+		set_temp_variable = { CHI_bri_returns_multiplier_temp = 0.05 }
+		ai_chance = {
+			base = 3
+			modifier = {
+				add = 3
+				FROM = { has_government = communism }
+			}
+			modifier = {
+				add = 2
+				FROM = { is_in_faction_with = CHI }
+			}
+		}
+	}
+
+	option = {
+		name = chi_bri.10.b
+		log = "[GetDateText]: [This.GetName]: chi_bri.10.b executed"
+		FROM = {
+			set_temp_variable = { application_terms = 2 }
+			BRI_handle_application = yes
+		}
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
+		effect_tooltip = {
+			FROM = {
+				add_dynamic_modifier = { modifier = bri_partner_tier_1 }
+			}
+		}
+		ai_chance = {
+			base = 5
+			modifier = {
+				add = 3
+				FROM = {
+					has_opinion = { target = CHI value < 0 }
+				}
+			}
+		}
+	}
+
+	option = {
+		name = chi_bri.10.c
+		log = "[GetDateText]: [This.GetName]: chi_bri.10.c executed"
+		available = {
+			has_country_flag = CHI_bri_predatory_path
+		}
+		FROM = {
+			set_temp_variable = { application_terms = 3 }
+			BRI_handle_application = yes
+		}
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
+		effect_tooltip = {
+			FROM = {
+				add_dynamic_modifier = { modifier = bri_partner_tier_1 }
+			}
+		}
+		add_to_variable = { CHI_bri_predatory_score = 1 }
+		ai_chance = {
+			base = 0
+			modifier = {
+				add = 6
+				has_country_flag = CHI_bri_predatory_path
+			}
+		}
+	}
+
+	option = {
+		name = chi_bri.10.d
+		log = "[GetDateText]: [This.GetName]: chi_bri.10.d executed"
+		FROM = {
+			set_variable = { bri_active_application = 0 }
+		}
+		ai_chance = {
+			base = 2
+			modifier = {
+				add = 5
+				check_variable = { CHI_bri_active_projects > 13 }
+			}
+			modifier = {
+				factor = 0
+				FROM = { has_government = communism }
+			}
+		}
+	}
+}
+
+# chi_bri.11 -- Project Completion (CHI scope, FROM = recipient)
+country_event = {
+	id = chi_bri.11
+	title = chi_bri.11.t
+	desc = chi_bri.11.d
+	picture = GFX_report_event_china_politics
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = CHI
+	}
+
+	immediate = {
+		random_list = {
+			60 = { set_variable = { chi_bri_outcome = 1 } }
+			25 = { set_variable = { chi_bri_outcome = 2 } }
+			15 = { set_variable = { chi_bri_outcome = 3 } }
+		}
+	}
+
+	option = {
+		name = chi_bri.11.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.11.a executed"
+		trigger = {
+			check_variable = {
+				var = chi_bri_outcome
+				value = 1
+				compare = equals
+			}
+		}
+		FROM = {
+			set_temp_variable = { project_type = ROOT.chi_bri_project_type }
+			BRI_select_target_state = yes
+			BRI_register_and_recalc_partner = yes
+		}
+		add_to_variable = { CHI_bri_active_projects = -1 }
+		add_to_variable = { CHI_bri_completed_projects = 1 }
+		add_to_variable = { CHI_bri_global_presence = 5 }
+		set_temp_variable = { treasury_change = 50 }
+		modify_treasury_effect = yes
+		add_to_variable = { CHI_bri_treasury = 30 }
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = chi_bri.11.b
+		log = "[GetDateText]: [This.GetName]: chi_bri.11.b executed"
+		trigger = {
+			check_variable = {
+				var = chi_bri_outcome
+				value = 2
+				compare = equals
+			}
+		}
+		add_to_variable = { CHI_bri_active_projects = -1 }
+		add_to_variable = { CHI_bri_completed_projects = 1 }
+		add_to_variable = { CHI_bri_global_presence = 2 }
+		set_temp_variable = { treasury_change = 20 }
+		modify_treasury_effect = yes
+		add_to_variable = { CHI_bri_treasury = 10 }
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = chi_bri.11.c
+		log = "[GetDateText]: [This.GetName]: chi_bri.11.c executed"
+		trigger = {
+			check_variable = {
+				var = chi_bri_outcome
+				value = 3
+				compare = equals
+			}
+		}
+		add_to_variable = { CHI_bri_active_projects = -1 }
+		add_to_variable = { CHI_bri_defaulted_projects = 1 }
+		FROM = {
+			set_country_flag = bri_default_THIS
+			country_event = { id = chi_bri.12 days = 1 }
+		}
+		ai_chance = { base = 1 }
+	}
+}
+
+# chi_bri.12 -- Default Event (recipient scope, FROM = CHI)
+country_event = {
+	id = chi_bri.12
+	title = chi_bri.12.t
+	desc = chi_bri.12.d
+	picture = GFX_report_event_china_politics
+	is_triggered_only = yes
+
+	option = {
+		name = chi_bri.12.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.12.a executed"
+		clr_country_flag = bri_default_THIS
+		FROM = {
+			add_to_variable = { CHI_bri_winwin_score = 1 }
+		}
+		add_opinion_modifier = {
+			target = FROM
+			modifier = medium_commercial_relations
+		}
+		ai_chance = {
+			base = 4
+			modifier = {
+				add = 4
+				has_government = communism
+			}
+			modifier = {
+				add = 3
+				FROM = { has_opinion = { target = THIS value > 25 } }
+			}
+		}
+	}
+
+	option = {
+		name = chi_bri.12.b
+		log = "[GetDateText]: [This.GetName]: chi_bri.12.b executed"
+		available = {
+			FROM = { has_country_flag = CHI_bri_predatory_path }
+		}
+		random_owned_state = {
+			limit = {
+				has_dynamic_modifier = { modifier = bri_state_infrastructure }
+			}
+			set_temp_variable = { resolve_mode = 1 }
+			BRI_resolve_state_change = yes
+		}
+		FROM = {
+			add_to_variable = { CHI_bri_predatory_score = 1 }
+		}
+		add_opinion_modifier = {
+			target = FROM
+			modifier = negative_small_commercial_relations
+		}
+		ai_chance = {
+			base = 0
+			modifier = {
+				add = 6
+				FROM = { has_country_flag = CHI_bri_predatory_path }
+			}
+		}
+	}
+
+	option = {
+		name = chi_bri.12.c
+		log = "[GetDateText]: [This.GetName]: chi_bri.12.c executed"
+		clr_country_flag = bri_default_THIS
+		FROM = {
+			add_to_variable = { CHI_bri_winwin_score = 3 }
+		}
+		add_opinion_modifier = {
+			target = FROM
+			modifier = large_commercial_relations
+		}
+		ai_chance = {
+			base = 2
+			modifier = {
+				add = 4
+				NOT = { has_government = communism }
+				stability > 0.6
+			}
+		}
+	}
+}
+
+# chi_bri.13 -- Loan Extension Request (CHI scope, FROM = defaulting recipient)
+country_event = {
+	id = chi_bri.13
+	title = chi_bri.13.t
+	desc = chi_bri.13.d
+	picture = GFX_report_event_china_diplomacy
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = CHI
+	}
+
+	option = {
+		name = chi_bri.13.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.13.a executed"
+		FROM = {
+			clr_country_flag = bri_default_THIS
+			add_opinion_modifier = {
+				target = CHI
+				modifier = medium_commercial_relations
+			}
+		}
+		set_temp_variable = { treasury_change = -30 }
+		modify_treasury_effect = yes
+		add_to_variable = { CHI_bri_winwin_score = 1 }
+		ai_chance = {
+			base = 5
+			modifier = {
+				add = 5
+				FROM = { has_government = communism }
+			}
+			modifier = {
+				factor = 0
+				has_country_flag = CHI_bri_predatory_path
+			}
+		}
+	}
+
+	option = {
+		name = chi_bri.13.b
+		log = "[GetDateText]: [This.GetName]: chi_bri.13.b executed"
+		FROM = {
+			add_opinion_modifier = {
+				target = CHI
+				modifier = negative_small_commercial_relations
+			}
+		}
+		ai_chance = {
+			base = 3
+			modifier = {
+				add = 5
+				has_country_flag = CHI_bri_predatory_path
+			}
+		}
+	}
+}
+
+# chi_bri.15 -- Mega-Project State Selection (CHI scope, FROM = recipient)
+country_event = {
+	id = chi_bri.15
+	title = chi_bri.15.t
+	desc = chi_bri.15.d
+	picture = GFX_report_event_china_politics
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = CHI
+	}
+
+	option = {
+		name = chi_bri.15.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.15.a executed"
+		trigger = {
+			FROM = { original_tag = PAK }
+		}
+		FROM = {
+			220 = {
+				add_dynamic_modifier = { modifier = bri_state_infrastructure_controlled }
+				set_state_flag = bri_port_220
+			}
+		}
+		FROM = { BRI_register_and_recalc_partner = yes }
+		add_to_variable = { CHI_bri_ports_built = 1 }
+		add_to_variable = { CHI_bri_global_presence = 15 }
+		set_country_flag = CHI_bri_gwadar_port
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = chi_bri.15.b
+		log = "[GetDateText]: [This.GetName]: chi_bri.15.b executed"
+		trigger = {
+			FROM = { original_tag = PAK }
+		}
+		FROM = {
+			419 = {
+				add_dynamic_modifier = { modifier = bri_state_industrial_controlled }
+				set_state_flag = bri_sez_419
+			}
+		}
+		FROM = { BRI_register_and_recalc_partner = yes }
+		add_to_variable = { CHI_bri_industrial_zones = 1 }
+		add_to_variable = { CHI_bri_global_presence = 15 }
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = chi_bri.15.c
+		log = "[GetDateText]: [This.GetName]: chi_bri.15.c executed"
+		trigger = {
+			FROM = { original_tag = PAK }
+		}
+		FROM = {
+			250 = {
+				add_dynamic_modifier = { modifier = bri_state_infrastructure_controlled }
+				set_state_flag = bri_railway_250
+			}
+		}
+		FROM = { BRI_register_and_recalc_partner = yes }
+		add_to_variable = { CHI_bri_railways_built = 1 }
+		add_to_variable = { CHI_bri_global_presence = 15 }
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = chi_bri.15.d
+		log = "[GetDateText]: [This.GetName]: chi_bri.15.d executed"
+		trigger = {
+			FROM = { original_tag = SRL }
+		}
+		FROM = {
+			413 = {
+				add_dynamic_modifier = { modifier = bri_state_infrastructure_controlled }
+				set_state_flag = bri_port_413
+			}
+		}
+		FROM = { BRI_register_and_recalc_partner = yes }
+		add_to_variable = { CHI_bri_ports_built = 1 }
+		add_to_variable = { CHI_bri_global_presence = 15 }
+		set_country_flag = CHI_bri_hambantota_port
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = chi_bri.15.e
+		log = "[GetDateText]: [This.GetName]: chi_bri.15.e executed"
+		trigger = {
+			FROM = { original_tag = SRL }
+		}
+		FROM = {
+			414 = {
+				add_dynamic_modifier = { modifier = bri_state_infrastructure_controlled }
+				set_state_flag = bri_port_414
+			}
+		}
+		FROM = { BRI_register_and_recalc_partner = yes }
+		add_to_variable = { CHI_bri_ports_built = 1 }
+		add_to_variable = { CHI_bri_global_presence = 15 }
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = chi_bri.15.f
+		log = "[GetDateText]: [This.GetName]: chi_bri.15.f executed"
+		trigger = {
+			FROM = { original_tag = KEN }
+		}
+		FROM = {
+			random_owned_state = {
+				limit = { is_coastal = yes }
+				add_dynamic_modifier = { modifier = bri_state_infrastructure_controlled }
+				set_state_flag = bri_port_sgr
+			}
+		}
+		FROM = { BRI_register_and_recalc_partner = yes }
+		add_to_variable = { CHI_bri_ports_built = 1 }
+		add_to_variable = { CHI_bri_global_presence = 15 }
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = chi_bri.15.g
+		log = "[GetDateText]: [This.GetName]: chi_bri.15.g executed"
+		trigger = {
+			FROM = {
+				NOT = { original_tag = PAK }
+				NOT = { original_tag = SRL }
+				NOT = { original_tag = KEN }
+			}
+		}
+		FROM = {
+			random_owned_state = {
+				limit = { is_coastal = yes }
+				add_dynamic_modifier = { modifier = bri_state_infrastructure_controlled }
+				set_state_flag = bri_port_mega
+			}
+		}
+		FROM = { BRI_register_and_recalc_partner = yes }
+		add_to_variable = { CHI_bri_ports_built = 1 }
+		add_to_variable = { CHI_bri_global_presence = 15 }
+		ai_chance = { base = 1 }
+	}
+}
+
+# chi_bri.20 -- Hambantota Handover (SRL scope, FROM = CHI)
+country_event = {
+	id = chi_bri.20
+	title = chi_bri.20.t
+	desc = chi_bri.20.d
+	picture = GFX_news_event_generic_naval
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = SRL
+	}
+
+	option = {
+		name = chi_bri.20.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.20.a executed"
+		413 = {
+			if = {
+				limit = {
+					has_dynamic_modifier = { modifier = bri_state_infrastructure }
+				}
+				remove_dynamic_modifier = { modifier = bri_state_infrastructure }
+			}
+			add_dynamic_modifier = { modifier = bri_state_infrastructure_controlled }
+			set_state_flag = bri_port_413
+		}
+		set_country_flag = bri_default_THIS
+		add_opinion_modifier = {
+			target = FROM
+			modifier = medium_commercial_relations
+		}
+		FROM = {
+			add_to_variable = { CHI_bri_predatory_score = 2 }
+			set_country_flag = CHI_bri_hambantota_leased
+		}
+		ai_chance = {
+			base = 3
+			modifier = {
+				add = 5
+				stability < 0.35
+			}
+		}
+	}
+
+	option = {
+		name = chi_bri.20.b
+		log = "[GetDateText]: [This.GetName]: chi_bri.20.b executed"
+		add_opinion_modifier = {
+			target = FROM
+			modifier = negative_large_commercial_relations
+		}
+		FROM = {
+			add_opinion_modifier = {
+				target = ROOT
+				modifier = negative_large_commercial_relations
+			}
+		}
+		ai_chance = {
+			base = 7
+			modifier = {
+				add = 10
+				stability > 0.6
+			}
+		}
+	}
+}
+
+# chi_bri.21 -- PAK Gwadar Naval Access (PAK scope, FROM = CHI)
+country_event = {
+	id = chi_bri.21
+	title = chi_bri.21.t
+	desc = chi_bri.21.d
+	picture = GFX_news_event_generic_naval
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = PAK
+	}
+
+	option = {
+		name = chi_bri.21.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.21.a executed"
+		FROM = {
+			set_country_flag = CHI_bri_gwadar_naval_access
+		}
+		add_opinion_modifier = {
+			target = FROM
+			modifier = medium_commercial_relations
+		}
+		ai_chance = {
+			base = 8
+			modifier = {
+				add = 5
+				is_in_faction_with = CHI
+			}
+		}
+	}
+
+	option = {
+		name = chi_bri.21.b
+		log = "[GetDateText]: [This.GetName]: chi_bri.21.b executed"
+		add_opinion_modifier = {
+			target = FROM
+			modifier = negative_small_commercial_relations
+		}
+		ai_chance = {
+			base = 2
+			modifier = {
+				factor = 0
+				is_in_faction_with = CHI
+			}
+		}
+	}
+}
+
+# chi_bri.22 -- DJI Doraleh Naval Access (DJI scope, FROM = CHI)
+country_event = {
+	id = chi_bri.22
+	title = chi_bri.22.t
+	desc = chi_bri.22.d
+	picture = GFX_news_event_generic_naval
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = DJI
+	}
+
+	option = {
+		name = chi_bri.22.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.22.a executed"
+		FROM = {
+			set_country_flag = CHI_bri_doraleh_base
+		}
+		add_opinion_modifier = {
+			target = FROM
+			modifier = medium_commercial_relations
+		}
+		ai_chance = {
+			base = 9
+			modifier = {
+				add = 4
+				has_government = communism
+			}
+		}
+	}
+
+	option = {
+		name = chi_bri.22.b
+		log = "[GetDateText]: [This.GetName]: chi_bri.22.b executed"
+		add_opinion_modifier = {
+			target = FROM
+			modifier = negative_small_commercial_relations
+		}
+		ai_chance = {
+			base = 1
+			modifier = {
+				add = 4
+				has_government = democratic
+			}
+		}
+	}
+}
+
+# chi_bri.30 -- USA Reaction to Petroyuan (USA scope, fired by CHI_Petroyuan_Settlement focus)
+country_event = {
+	id = chi_bri.30
+	title = chi_bri.30.t
+	desc = chi_bri.30.d
+	picture = GFX_report_event_usa_congress
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = USA
+	}
+
+	option = {
+		name = chi_bri.30.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.30.a executed"
+		CHI = {
+			add_opinion_modifier = {
+				target = USA
+				modifier = negative_large_commercial_relations
+			}
+		}
+		add_opinion_modifier = {
+			target = CHI
+			modifier = negative_large_commercial_relations
+		}
+		set_country_flag = USA_petroyuan_sanction_response
+		ai_chance = {
+			base = 7
+			modifier = {
+				add = 5
+				has_government = democratic
+			}
+		}
+	}
+
+	option = {
+		name = chi_bri.30.b
+		log = "[GetDateText]: [This.GetName]: chi_bri.30.b executed"
+		set_country_flag = USA_petroyuan_monitor
+		add_opinion_modifier = {
+			target = CHI
+			modifier = negative_small_commercial_relations
+		}
+		ai_chance = {
+			base = 3
+			modifier = {
+				add = 3
+				CHI = { has_opinion = { target = USA value > 25 } }
+			}
+		}
+	}
+}
+
+# chi_bri.40 -- BRF Triennial Opening (CHI scope, fired by CHI_BRI_Forum_Triennial decision)
+country_event = {
+	id = chi_bri.40
+	title = chi_bri.40.t
+	desc = chi_bri.40.d
+	picture = GFX_report_event_china_politics
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = CHI
+	}
+
+	option = {
+		name = chi_bri.40.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.40.a executed"
+		add_political_power = 10
+		add_to_variable = { CHI_bri_global_presence = 5 }
+		country_event = { id = chi_bri.43 days = 7 }
+		ai_chance = { base = 4 }
+	}
+
+	option = {
+		name = chi_bri.40.b
+		log = "[GetDateText]: [This.GetName]: chi_bri.40.b executed"
+		country_event = { id = chi_bri.41 days = 1 }
+		ai_chance = { base = 5 }
+	}
+
+	option = {
+		name = chi_bri.40.c
+		log = "[GetDateText]: [This.GetName]: chi_bri.40.c executed"
+		add_to_variable = { CHI_bri_winwin_score = 5 }
+		if = {
+			limit = {
+				check_variable = {
+					var = CHI_bri_predatory_score
+					value = 2
+					compare = greater_than_or_equals
+				}
+			}
+			add_to_variable = { CHI_bri_predatory_score = -2 }
+		}
+		country_event = { id = chi_bri.43 days = 7 }
+		ai_chance = {
+			base = 3
+			modifier = {
+				add = 4
+				has_country_flag = CHI_bri_winwin_path
+			}
+		}
+	}
+}
+
+# chi_bri.41 -- Bilateral Signings (CHI scope)
+country_event = {
+	id = chi_bri.41
+	title = chi_bri.41.t
+	desc = chi_bri.41.d
+	picture = GFX_news_event_generic_sign_treaty1
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = CHI
+	}
+
+	option = {
+		name = chi_bri.41.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.41.a executed"
+		every_country = {
+			limit = {
+				NOT = { original_tag = CHI }
+				NOT = { original_tag = IND }
+				NOT = { has_war_with = CHI }
+				NOT = { has_country_flag = CHI_bri_pending_application }
+				is_in_array = { array = global.bri_eligible_countries value = THIS }
+			}
+			random_country = {
+				limit = {
+					is_in_array = { array = global.bri_eligible_countries value = THIS }
+					NOT = { original_tag = IND }
+					NOT = { has_war_with = CHI }
+				}
+				set_country_flag = CHI_bri_pending_application
+				CHI = { country_event = { id = chi_bri.10 days = 3 } }
+			}
+		}
+		add_political_power = 25
+		add_to_variable = { CHI_bri_global_presence = 3 }
+		country_event = { id = chi_bri.42 days = 2 }
+		ai_chance = { base = 1 }
+	}
+}
+
+# chi_bri.42 -- Press Conference (CHI scope)
+country_event = {
+	id = chi_bri.42
+	title = chi_bri.42.t
+	desc = chi_bri.42.d
+	picture = GFX_report_event_china_diplomacy
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = CHI
+	}
+
+	option = {
+		name = chi_bri.42.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.42.a executed"
+		add_to_variable = { CHI_bri_predatory_score = 2 }
+		add_political_power = -10
+		country_event = { id = chi_bri.43 days = 5 }
+		ai_chance = {
+			base = 3
+			modifier = {
+				add = 5
+				has_country_flag = CHI_bri_predatory_path
+			}
+		}
+	}
+
+	option = {
+		name = chi_bri.42.b
+		log = "[GetDateText]: [This.GetName]: chi_bri.42.b executed"
+		add_to_variable = { CHI_bri_winwin_score = 2 }
+		add_political_power = 10
+		country_event = { id = chi_bri.43 days = 5 }
+		ai_chance = {
+			base = 7
+			modifier = {
+				add = 5
+				has_country_flag = CHI_bri_winwin_path
+			}
+		}
+	}
+}
+
+# chi_bri.43 -- BRF Outcome (CHI scope)
+country_event = {
+	id = chi_bri.43
+	title = chi_bri.43.t
+	desc = chi_bri.43.d
+	picture = GFX_report_event_china_politics
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = CHI
+	}
+
+	option = {
+		name = chi_bri.43.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.43.a executed"
+		add_political_power = 50
+		add_to_variable = { CHI_bri_global_presence = 10 }
+		every_country = {
+			limit = {
+				has_country_flag = bri_partner_CHI
+				capital_scope = { is_on_continent = africa }
+			}
+			add_opinion_modifier = {
+				target = CHI
+				modifier = small_commercial_relations
+			}
+		}
+		ai_chance = { base = 1 }
+	}
+}
+
+# chi_bri.50 -- Pax Sinica Capstone (CHI scope, fired by CHI_Pax_Sinica focus)
+country_event = {
+	id = chi_bri.50
+	title = chi_bri.50.t
+	desc = chi_bri.50.d
+	picture = GFX_report_event_china_politics
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = CHI
+	}
+
+	option = {
+		name = chi_bri.50.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.50.a executed"
+		set_global_flag = chinese_century_dawn
+		add_political_power = 150
+		add_stability = 0.10
+		add_war_support = 0.05
+		add_to_variable = { CHI_bri_global_presence = 50 }
+		add_ideas = pax_sinica
+		every_country = {
+			limit = {
+				has_country_flag = bri_partner_CHI
+			}
+			add_opinion_modifier = {
+				target = CHI
+				modifier = large_commercial_relations
+			}
+		}
+		ai_chance = { base = 1 }
+	}
+}
+
+# chi_bri.70 -- African Continental Integration Triumph (CHI scope, fired by CHI_African_Continental_Integration focus)
+country_event = {
+	id = chi_bri.70
+	title = chi_bri.70.t
+	desc = chi_bri.70.d
+	picture = GFX_report_event_china_politics
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = CHI
+	}
+
+	option = {
+		name = chi_bri.70.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.70.a executed"
+		add_ideas = chinese_african_century
+		add_political_power = 100
+		add_to_variable = { CHI_bri_global_presence = 30 }
+		add_to_variable = { CHI_bri_africa_engagement = 10 }
+		every_country = {
+			limit = {
+				has_country_flag = bri_partner_CHI
+				capital_scope = { is_on_continent = africa }
+			}
+			remove_dynamic_modifier = { modifier = bri_partner_tier_1 }
+			add_dynamic_modifier = { modifier = bri_partner_tier_2 }
+			add_opinion_modifier = {
+				target = CHI
+				modifier = large_commercial_relations
+			}
+		}
+		country_event = { id = chi_bri.71 days = 7 }
+		ai_chance = { base = 1 }
+	}
+}
+
+# chi_bri.71 -- Mega-Project Offering to Africa (CHI scope)
+country_event = {
+	id = chi_bri.71
+	title = chi_bri.71.t
+	desc = chi_bri.71.d
+	picture = GFX_news_event_generic_sign_treaty1
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = CHI
+	}
+
+	option = {
+		name = chi_bri.71.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.71.a executed"
+		every_country = {
+			limit = {
+				has_country_flag = bri_partner_CHI
+				capital_scope = { is_on_continent = africa }
+				NOT = { has_country_flag = CHI_bri_mega_offered }
+				is_in_array = { array = global.bri_eligible_countries value = THIS }
+			}
+			random_country = {
+				limit = {
+					has_country_flag = bri_partner_CHI
+					capital_scope = { is_on_continent = africa }
+					NOT = { has_country_flag = CHI_bri_mega_offered }
+				}
+				set_country_flag = CHI_bri_mega_offered
+				CHI = {
+					country_event = { id = chi_bri.15 days = 5 }
+				}
+			}
+		}
+		ai_chance = { base = 1 }
+	}
+}
+
+# chi_bri.80 -- FOCAC Summit Reveal (CHI scope, fires on first CHI_FOCAC_Summit decision use)
+country_event = {
+	id = chi_bri.80
+	title = chi_bri.80.t
+	desc = chi_bri.80.d
+	picture = GFX_report_event_china_diplomacy
+	is_triggered_only = yes
+
+	trigger = {
+		original_tag = CHI
+	}
+
+	option = {
+		name = chi_bri.80.a
+		log = "[GetDateText]: [This.GetName]: chi_bri.80.a executed"
+		add_to_variable = { CHI_bri_winwin_score = 5 }
+		every_country = {
+			limit = {
+				has_country_flag = bri_partner_CHI
+				capital_scope = { is_on_continent = africa }
+			}
+			add_opinion_modifier = {
+				target = CHI
+				modifier = medium_commercial_relations
+			}
+		}
+		ai_chance = {
+			base = 7
+			modifier = {
+				add = 5
+				has_country_flag = CHI_bri_winwin_path
+			}
+		}
+	}
+
+	option = {
+		name = chi_bri.80.b
+		log = "[GetDateText]: [This.GetName]: chi_bri.80.b executed"
+		add_to_variable = { CHI_bri_predatory_score = 3 }
+		every_country = {
+			limit = {
+				has_country_flag = bri_partner_CHI
+				capital_scope = { is_on_continent = africa }
+			}
+			add_opinion_modifier = {
+				target = CHI
+				modifier = negative_small_commercial_relations
+			}
+		}
+		ai_chance = {
+			base = 3
+			modifier = {
+				add = 5
+				has_country_flag = CHI_bri_predatory_path
+			}
+		}
+	}
+}
