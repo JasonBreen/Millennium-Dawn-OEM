@@ -2,7 +2,9 @@
 
 **NOTE**: Non-English localisation files are managed via Paratranz — never modify them.
 
-Millennium Dawn is a Hearts of Iron IV mod (2000-present). Key directories: `common/` (game data), `events/`, `localisation/` (English `.yml`, UTF-8 BOM), `history/`, `interface/`, `gfx/`, `tools/` (Python dev scripts). Ignore `resources/`.
+Millennium Dawn is a Hearts of Iron IV mod (2000-present). Key directories: `common/` (game data), `events/`, `localisation/` (English `.yml`, UTF-8 BOM), `history/`, `interface/`, `gfx/`, `tools/` (Python dev scripts).
+
+**IMPORTANT**: The `resources/` directory is for reference material only. Do NOT modify files under `resources/` unless explicitly asked by the user.
 
 ## Validation & Tools
 
@@ -84,6 +86,10 @@ Equipment variants (`common/ai_equipment/`): see `.claude/docs/ai-equipment-refe
 - Nations blocked from generic files must have all roles covered in custom/shared files (validated by pre-commit hook)
 - CV planes: `ai_type` must be one of `cv_fighter`/`cv_interceptor`/`cv_cas`/`cv_naval_bomber`/`cv_suicide`
 - `equipment_variant_production_factor` penalties cascade to subtypes — keep base penalties <= -25%
+
+## Git Commits
+
+- Do NOT add `Co-Authored-By` or sign commits — the project does not use commit signing
 
 ## Key Resources
 
