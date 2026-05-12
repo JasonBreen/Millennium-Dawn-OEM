@@ -7394,6 +7394,354 @@ CHI_BRI_management = {
 			modifier = { factor = 0 has_war = yes }
 		}
 	}
+
+	# BRI type-counter tier promotion decisions
+	# Each promotes the next tier idea when the corresponding counter threshold is met.
+	# Cost: 25 PP. AI claims automatically (factor = 100).
+
+	CHI_BRI_promote_maritime_network = {
+		icon = GFX_decision_generic_naval
+		allowed = { original_tag = CHI }
+
+		visible = {
+			NOT = { has_idea = CHI_bri_ports_tier_3_idea }
+		}
+
+		available = {
+			OR = {
+				AND = {
+					check_variable = { CHI_bri_ports_built > 49 }
+					NOT = { has_idea = CHI_bri_ports_tier_1_idea }
+					NOT = { has_idea = CHI_bri_ports_tier_2_idea }
+					NOT = { has_idea = CHI_bri_ports_tier_3_idea }
+				}
+				AND = { check_variable = { CHI_bri_ports_built > 74 } has_idea = CHI_bri_ports_tier_1_idea }
+				AND = { check_variable = { CHI_bri_ports_built > 99 } has_idea = CHI_bri_ports_tier_2_idea }
+			}
+		}
+
+		fire_only_once = no
+		cost = 25
+
+		complete_effect = {
+			if = {
+				limit = { check_variable = { CHI_bri_ports_built > 99 } has_idea = CHI_bri_ports_tier_2_idea }
+				swap_ideas = { remove_idea = CHI_bri_ports_tier_2_idea add_idea = CHI_bri_ports_tier_3_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_ports_built > 74 } has_idea = CHI_bri_ports_tier_1_idea }
+				swap_ideas = { remove_idea = CHI_bri_ports_tier_1_idea add_idea = CHI_bri_ports_tier_2_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_ports_built > 49 } }
+				add_ideas = CHI_bri_ports_tier_1_idea
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_BRI_promote_maritime_network executed"
+		}
+
+		ai_will_do = { factor = 100 }
+	}
+
+	CHI_BRI_promote_overland_corridors = {
+		icon = GFX_decision_generic_industry
+		allowed = { original_tag = CHI }
+
+		visible = {
+			NOT = { has_idea = CHI_bri_railways_tier_3_idea }
+		}
+
+		available = {
+			OR = {
+				AND = {
+					check_variable = { CHI_bri_railways_built > 49 }
+					NOT = { has_idea = CHI_bri_railways_tier_1_idea }
+					NOT = { has_idea = CHI_bri_railways_tier_2_idea }
+					NOT = { has_idea = CHI_bri_railways_tier_3_idea }
+				}
+				AND = { check_variable = { CHI_bri_railways_built > 74 } has_idea = CHI_bri_railways_tier_1_idea }
+				AND = { check_variable = { CHI_bri_railways_built > 99 } has_idea = CHI_bri_railways_tier_2_idea }
+			}
+		}
+
+		fire_only_once = no
+		cost = 25
+
+		complete_effect = {
+			if = {
+				limit = { check_variable = { CHI_bri_railways_built > 99 } has_idea = CHI_bri_railways_tier_2_idea }
+				swap_ideas = { remove_idea = CHI_bri_railways_tier_2_idea add_idea = CHI_bri_railways_tier_3_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_railways_built > 74 } has_idea = CHI_bri_railways_tier_1_idea }
+				swap_ideas = { remove_idea = CHI_bri_railways_tier_1_idea add_idea = CHI_bri_railways_tier_2_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_railways_built > 49 } }
+				add_ideas = CHI_bri_railways_tier_1_idea
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_BRI_promote_overland_corridors executed"
+		}
+
+		ai_will_do = { factor = 100 }
+	}
+
+	CHI_BRI_promote_energy_arteries = {
+		icon = GFX_decision_generic_industry
+		allowed = { original_tag = CHI }
+
+		visible = {
+			NOT = { has_idea = CHI_bri_pipelines_tier_3_idea }
+		}
+
+		available = {
+			OR = {
+				AND = {
+					check_variable = { CHI_bri_pipelines_built > 49 }
+					NOT = { has_idea = CHI_bri_pipelines_tier_1_idea }
+					NOT = { has_idea = CHI_bri_pipelines_tier_2_idea }
+					NOT = { has_idea = CHI_bri_pipelines_tier_3_idea }
+				}
+				AND = { check_variable = { CHI_bri_pipelines_built > 74 } has_idea = CHI_bri_pipelines_tier_1_idea }
+				AND = { check_variable = { CHI_bri_pipelines_built > 99 } has_idea = CHI_bri_pipelines_tier_2_idea }
+			}
+		}
+
+		fire_only_once = no
+		cost = 25
+
+		complete_effect = {
+			if = {
+				limit = { check_variable = { CHI_bri_pipelines_built > 99 } has_idea = CHI_bri_pipelines_tier_2_idea }
+				swap_ideas = { remove_idea = CHI_bri_pipelines_tier_2_idea add_idea = CHI_bri_pipelines_tier_3_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_pipelines_built > 74 } has_idea = CHI_bri_pipelines_tier_1_idea }
+				swap_ideas = { remove_idea = CHI_bri_pipelines_tier_1_idea add_idea = CHI_bri_pipelines_tier_2_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_pipelines_built > 49 } }
+				add_ideas = CHI_bri_pipelines_tier_1_idea
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_BRI_promote_energy_arteries executed"
+		}
+
+		ai_will_do = { factor = 100 }
+	}
+
+	CHI_BRI_promote_digital_silk_road = {
+		icon = GFX_decision_generic_intel_operation
+		allowed = { original_tag = CHI }
+
+		visible = {
+			NOT = { has_idea = CHI_bri_telecom_tier_3_idea }
+		}
+
+		available = {
+			OR = {
+				AND = {
+					check_variable = { CHI_bri_telecom_built > 49 }
+					NOT = { has_idea = CHI_bri_telecom_tier_1_idea }
+					NOT = { has_idea = CHI_bri_telecom_tier_2_idea }
+					NOT = { has_idea = CHI_bri_telecom_tier_3_idea }
+				}
+				AND = { check_variable = { CHI_bri_telecom_built > 74 } has_idea = CHI_bri_telecom_tier_1_idea }
+				AND = { check_variable = { CHI_bri_telecom_built > 99 } has_idea = CHI_bri_telecom_tier_2_idea }
+			}
+		}
+
+		fire_only_once = no
+		cost = 25
+
+		complete_effect = {
+			if = {
+				limit = { check_variable = { CHI_bri_telecom_built > 99 } has_idea = CHI_bri_telecom_tier_2_idea }
+				swap_ideas = { remove_idea = CHI_bri_telecom_tier_2_idea add_idea = CHI_bri_telecom_tier_3_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_telecom_built > 74 } has_idea = CHI_bri_telecom_tier_1_idea }
+				swap_ideas = { remove_idea = CHI_bri_telecom_tier_1_idea add_idea = CHI_bri_telecom_tier_2_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_telecom_built > 49 } }
+				add_ideas = CHI_bri_telecom_tier_1_idea
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_BRI_promote_digital_silk_road executed"
+		}
+
+		ai_will_do = { factor = 100 }
+	}
+
+	CHI_BRI_promote_resource_concessions = {
+		icon = GFX_decision_generic_industry
+		allowed = { original_tag = CHI }
+
+		visible = {
+			NOT = { has_idea = CHI_bri_mines_tier_3_idea }
+		}
+
+		available = {
+			OR = {
+				AND = {
+					check_variable = { CHI_bri_mines_secured > 49 }
+					NOT = { has_idea = CHI_bri_mines_tier_1_idea }
+					NOT = { has_idea = CHI_bri_mines_tier_2_idea }
+					NOT = { has_idea = CHI_bri_mines_tier_3_idea }
+				}
+				AND = { check_variable = { CHI_bri_mines_secured > 74 } has_idea = CHI_bri_mines_tier_1_idea }
+				AND = { check_variable = { CHI_bri_mines_secured > 99 } has_idea = CHI_bri_mines_tier_2_idea }
+			}
+		}
+
+		fire_only_once = no
+		cost = 25
+
+		complete_effect = {
+			if = {
+				limit = { check_variable = { CHI_bri_mines_secured > 99 } has_idea = CHI_bri_mines_tier_2_idea }
+				swap_ideas = { remove_idea = CHI_bri_mines_tier_2_idea add_idea = CHI_bri_mines_tier_3_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_mines_secured > 74 } has_idea = CHI_bri_mines_tier_1_idea }
+				swap_ideas = { remove_idea = CHI_bri_mines_tier_1_idea add_idea = CHI_bri_mines_tier_2_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_mines_secured > 49 } }
+				add_ideas = CHI_bri_mines_tier_1_idea
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_BRI_promote_resource_concessions executed"
+		}
+
+		ai_will_do = { factor = 100 }
+	}
+
+	CHI_BRI_promote_power_generation = {
+		icon = GFX_decision_generic_industry
+		allowed = { original_tag = CHI }
+
+		visible = {
+			NOT = { has_idea = CHI_bri_powerplants_tier_3_idea }
+		}
+
+		available = {
+			OR = {
+				AND = {
+					check_variable = { CHI_bri_powerplants_built > 49 }
+					NOT = { has_idea = CHI_bri_powerplants_tier_1_idea }
+					NOT = { has_idea = CHI_bri_powerplants_tier_2_idea }
+					NOT = { has_idea = CHI_bri_powerplants_tier_3_idea }
+				}
+				AND = { check_variable = { CHI_bri_powerplants_built > 74 } has_idea = CHI_bri_powerplants_tier_1_idea }
+				AND = { check_variable = { CHI_bri_powerplants_built > 99 } has_idea = CHI_bri_powerplants_tier_2_idea }
+			}
+		}
+
+		fire_only_once = no
+		cost = 25
+
+		complete_effect = {
+			if = {
+				limit = { check_variable = { CHI_bri_powerplants_built > 99 } has_idea = CHI_bri_powerplants_tier_2_idea }
+				swap_ideas = { remove_idea = CHI_bri_powerplants_tier_2_idea add_idea = CHI_bri_powerplants_tier_3_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_powerplants_built > 74 } has_idea = CHI_bri_powerplants_tier_1_idea }
+				swap_ideas = { remove_idea = CHI_bri_powerplants_tier_1_idea add_idea = CHI_bri_powerplants_tier_2_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_powerplants_built > 49 } }
+				add_ideas = CHI_bri_powerplants_tier_1_idea
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_BRI_promote_power_generation executed"
+		}
+
+		ai_will_do = { factor = 100 }
+	}
+
+	CHI_BRI_promote_economic_zones = {
+		icon = GFX_decision_generic_industry
+		allowed = { original_tag = CHI }
+
+		visible = {
+			NOT = { has_idea = CHI_bri_industrial_zones_tier_3_idea }
+		}
+
+		available = {
+			OR = {
+				AND = {
+					check_variable = { CHI_bri_industrial_zones > 49 }
+					NOT = { has_idea = CHI_bri_industrial_zones_tier_1_idea }
+					NOT = { has_idea = CHI_bri_industrial_zones_tier_2_idea }
+					NOT = { has_idea = CHI_bri_industrial_zones_tier_3_idea }
+				}
+				AND = { check_variable = { CHI_bri_industrial_zones > 74 } has_idea = CHI_bri_industrial_zones_tier_1_idea }
+				AND = { check_variable = { CHI_bri_industrial_zones > 99 } has_idea = CHI_bri_industrial_zones_tier_2_idea }
+			}
+		}
+
+		fire_only_once = no
+		cost = 25
+
+		complete_effect = {
+			if = {
+				limit = { check_variable = { CHI_bri_industrial_zones > 99 } has_idea = CHI_bri_industrial_zones_tier_2_idea }
+				swap_ideas = { remove_idea = CHI_bri_industrial_zones_tier_2_idea add_idea = CHI_bri_industrial_zones_tier_3_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_industrial_zones > 74 } has_idea = CHI_bri_industrial_zones_tier_1_idea }
+				swap_ideas = { remove_idea = CHI_bri_industrial_zones_tier_1_idea add_idea = CHI_bri_industrial_zones_tier_2_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_industrial_zones > 49 } }
+				add_ideas = CHI_bri_industrial_zones_tier_1_idea
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_BRI_promote_economic_zones executed"
+		}
+
+		ai_will_do = { factor = 100 }
+	}
+
+	CHI_BRI_promote_prestige_diplomacy = {
+		icon = GFX_decision_generic_political_actions
+		allowed = { original_tag = CHI }
+
+		visible = {
+			NOT = { has_idea = CHI_bri_prestige_tier_3_idea }
+		}
+
+		available = {
+			OR = {
+				AND = {
+					check_variable = { CHI_bri_prestige_projects > 49 }
+					NOT = { has_idea = CHI_bri_prestige_tier_1_idea }
+					NOT = { has_idea = CHI_bri_prestige_tier_2_idea }
+					NOT = { has_idea = CHI_bri_prestige_tier_3_idea }
+				}
+				AND = { check_variable = { CHI_bri_prestige_projects > 74 } has_idea = CHI_bri_prestige_tier_1_idea }
+				AND = { check_variable = { CHI_bri_prestige_projects > 99 } has_idea = CHI_bri_prestige_tier_2_idea }
+			}
+		}
+
+		fire_only_once = no
+		cost = 25
+
+		complete_effect = {
+			if = {
+				limit = { check_variable = { CHI_bri_prestige_projects > 99 } has_idea = CHI_bri_prestige_tier_2_idea }
+				swap_ideas = { remove_idea = CHI_bri_prestige_tier_2_idea add_idea = CHI_bri_prestige_tier_3_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_prestige_projects > 74 } has_idea = CHI_bri_prestige_tier_1_idea }
+				swap_ideas = { remove_idea = CHI_bri_prestige_tier_1_idea add_idea = CHI_bri_prestige_tier_2_idea }
+			}
+			else_if = {
+				limit = { check_variable = { CHI_bri_prestige_projects > 49 } }
+				add_ideas = CHI_bri_prestige_tier_1_idea
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_BRI_promote_prestige_diplomacy executed"
+		}
+
+		ai_will_do = { factor = 100 }
+	}
 }
 
 CHI_BRI_recipient_actions = {
