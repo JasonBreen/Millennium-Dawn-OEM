@@ -3869,7 +3869,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Bide_Your_Time
-		icon = x
+		icon = focus_GER_expand_gestapo
 
 		x = 6
 		y = 2
@@ -3886,19 +3886,20 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Bide_Your_Time executed"
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -3 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			add_to_variable = { CHI_chinese_aggression = -3 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = CHI_diplomacy_modifier
 			}
-			add_stability = 0.05
-			add_ideas = CHI_bide_your_time_spirit
+			add_to_variable = { CHI_foreign_influence_continent_modifier_diplomacy = 0.10 tooltip = foreign_influence_continent_modifier_tt }
+			add_to_variable = { CHI_improve_relations_maintain_cost_factor_diplomacy = -0.25 tooltip = improve_relations_maintain_cost_factor_tt }
+			add_to_variable = { CHI_trade_opinion_factor_diplomacy = 0.20 tooltip = trade_opinion_factor_tt }
+			add_to_variable = { CHI_opinion_gain_monthly_factor_diplomacy = 0.10 tooltip = opinion_gain_monthly_factor_tt }
+			add_to_variable = { CHI_political_power_factor_diplomacy = 0.03 tooltip = political_power_factor_tt }
+			newline = yes
 			every_other_country = {
-				limit = {
-					has_opinion = {
-						target = ROOT
-						value > 0
-					}
-				}
 				add_opinion_modifier = {
 					target = ROOT
 					modifier = diplomatic_charm
@@ -3908,15 +3909,6 @@ focus_tree = {
 
 		ai_will_do = {
 			base = 1
-			modifier = {
-				add = 2
-				date < 2012.1.1
-			}
-			modifier = {
-				factor = 0
-				is_historical_focus_on = yes
-				date > 2017.1.1
-			}
 		}
 	}
 
@@ -3936,32 +3928,6 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Debt_Trap_Diplomacy executed"
-			set_temp_variable = { treasury_change = -50 }
-			modify_treasury_effect = yes
-			set_temp_variable = { percent_change = 3 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = SUD }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 3 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = ETH }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 3 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = KEN }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 3 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = NGA }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 3 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = TAN }
-			change_influence_percentage = yes
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
 		}
 
 		ai_will_do = { base = 1 }
@@ -3969,7 +3935,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Challenge_Dollar_Hegemony
-		icon = x
+		icon = money_on_fire
 
 		x = 1
 		y = 1
@@ -3996,10 +3962,8 @@ focus_tree = {
 					}
 				}
 			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 		}
 
 		ai_will_do = { base = 1 }
@@ -4007,7 +3971,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Information_Warfare
-		icon = x
+		icon = army_cyberwar
 
 		x = -1
 		y = 2
@@ -4021,14 +3985,18 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Information_Warfare executed"
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			set_country_flag = CHI_information_warfare_flag
+			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			newline = yes
 			add_timed_idea = {
 				idea = CHI_information_warfare
 				days = 365
+			}
+			custom_effect_tooltip = on_cancel_idea_tt
+			effect_tooltip = {
+				add_to_variable = { cyber_offense_investment = 5 }
+				clamp_variable = { var = cyber_offense_investment min = 0 max = 100 }
+				calculate_cyber_capability = yes
 			}
 		}
 
@@ -4036,8 +4004,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Media_Offensive
-		icon = x
+		id = CHI_Media_Offensive #Should receive an event which goes to all kind of nations to promote communism
+		icon = goal_generic_support_communism
 
 		x = 1
 		y = 2
@@ -4051,15 +4019,13 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Media_Offensive executed"
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			newline = yes
 			add_timed_idea = {
 				idea = CHI_media_offensive
 				days = 365
 			}
-			add_war_support = 0.05
 		}
 
 		ai_will_do = { base = 1 }
@@ -4082,13 +4048,10 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_New_World_Order executed"
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 5 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			add_ideas = CHI_new_world_order
-			add_political_power = 200
-			set_country_flag = CHI_new_world_order_flag
+			add_to_variable = { CHI_chinese_aggression = 5 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			newline = yes
+			#Need to add modifiers to the diplomacy dynamic modifier
 		}
 
 		ai_will_do = { base = 1 }
@@ -4110,44 +4073,9 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Belt_and_Road_Vision executed"
+			#This should increase BRI treasury or increase BRI modifier increase
 			set_temp_variable = { treasury_change = -100 }
 			modify_treasury_effect = yes
-			set_temp_variable = { percent_change = 1 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = PAK }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 1 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = MYA }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 1 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = INS }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 1 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = KAZ }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 1 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = ETH }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 1 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = KEN }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 1 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = SRL }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 1 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = LAO }
-			change_influence_percentage = yes
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
 		}
 
 		ai_will_do = { base = 1 }
@@ -4155,7 +4083,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Community_of_Shared_Future
-		icon = x
+		icon = focus_ETH_callout_to_the_world
 
 		x = 1
 		y = 1
@@ -4170,22 +4098,14 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Community_of_Shared_Future executed"
 			every_other_country = {
-				limit = {
-					has_opinion = {
-						target = ROOT
-						value > 0
-					}
-				}
 				add_opinion_modifier = {
 					target = ROOT
 					modifier = shared_future_community
 				}
 			}
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			add_political_power = 50
+			newline = yes
+			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 		}
 
 		ai_will_do = { base = 1 }
@@ -4207,30 +4127,10 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Digital_Silk_Road executed"
+			#Should give an effect to promote internet station projects from Belt and Road
+			newline = yes
 			set_temp_variable = { treasury_change = -30 }
 			modify_treasury_effect = yes
-			add_tech_bonus = {
-				name = CHI_Digital_Silk_Road
-				bonus = 0.5
-				uses = 1
-				category = CAT_electronics
-			}
-			set_temp_variable = { percent_change = 1 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = MYA }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 1 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = LAO }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 1 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = CAM }
-			change_influence_percentage = yes
-			set_temp_variable = { percent_change = 1 }
-			set_temp_variable = { tag_index = CHI }
-			set_temp_variable = { influence_target = NGA }
-			change_influence_percentage = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -4252,24 +4152,16 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Peaceful_Development executed"
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			add_stability = 0.05
-			add_political_power = 50
+			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			newline = yes
 			every_other_country = {
-				limit = {
-					has_opinion = {
-						target = ROOT
-						value > 0
-					}
-				}
 				add_opinion_modifier = {
 					target = ROOT
 					modifier = peaceful_development
 				}
 			}
+			#Should also impact the diplomacy modifier
 		}
 
 		ai_will_do = { base = 1 }
@@ -4292,12 +4184,10 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [This.GetName]: focus CHI_Responsible_Stakeholder executed"
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -5 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			add_ideas = CHI_responsible_stakeholder
-			add_political_power = 200
+			add_to_variable = { CHI_chinese_aggression = -5 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			newline = yes
+			#Something for the diplomacy modifier of economic collaboration
 		}
 
 		ai_will_do = { base = 1 }
@@ -4309,7 +4199,7 @@ focus_tree = {
 		icon = china_bri
 
 		x = 0
-		y = 3
+		y = 4
 		relative_position_id = CHI_Chinese_Diplomacy
 
 		cost = 10
@@ -4320,10 +4210,12 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Belt_and_Road_Launch"
 			set_country_flag = CHI_bri_active
-			BRI_initialize = yes
-			set_variable = { CHI_bri_treasury = 200 }
+			add_to_variable = { CHI_bri_treasury = 200 tooltip = CHI_bri_treasury_tt }
 			country_event = { id = chi_bri.1 days = 1 }
 			unlock_decision_category_tooltip = CHI_BRI_management
+			newline = yes
+			set_temp_variable = { treasury_change = -30 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = {
@@ -4336,8 +4228,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_AIIB_Founding
-		icon = x
+		id = CHI_AIIB_Founding #Should create an event to those nations which increased expense on the budget but also needs to give returns once in a while
+		icon = focus_PER_national_bank
 
 		x = 0
 		y = 1
@@ -4350,9 +4242,9 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_AIIB_Founding"
-			add_to_variable = { CHI_bri_returns_multiplier = 0.15 }
-			add_to_variable = { CHI_bri_project_slots = 1 }
-			add_ideas = CHI_aiib_charter
+			add_to_variable = { CHI_bri_returns_multiplier = 0.15 tooltip = CHI_bri_returns_multiplier }
+			add_to_variable = { CHI_bri_project_slots = 1 tooltip = CHI_bri_project_slots_tt }
+			newline = yes
 			if = {
 				limit = { country_exists = ENG }
 				ENG = { add_opinion_modifier = { target = ROOT modifier = aiib_founding_member } }
@@ -4406,7 +4298,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Silk_Road_Fund
-		icon = banking
+		icon = chinese_rmb
 
 		x = 0
 		y = 2
@@ -4419,8 +4311,8 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Silk_Road_Fund"
-			add_to_variable = { CHI_bri_monthly_income = 5 }
-			add_to_variable = { CHI_bri_treasury = 50 }
+			add_to_variable = { CHI_bri_monthly_income = 5 } #This should actually be increasing the modifier which increases the monly income
+			add_to_variable = { CHI_bri_treasury = 50 tooltip = CHI_bri_treasury_tt }
 			set_temp_variable = { treasury_change = -50 }
 			modify_treasury_effect = yes
 		}
@@ -4449,8 +4341,8 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Project_Coordination_Cell"
-			add_to_variable = { CHI_bri_project_slots = 2 }
-			set_country_flag = CHI_bri_secretary_engaged
+			add_to_variable = { CHI_bri_project_slots = 2 tooltip = CHI_bri_project_slots_tt }
+			set_country_flag = CHI_bri_secretary_engaged #Whats the point of this? Secretaries are not deployed in this treeb ut in the national committee system
 		}
 
 		ai_will_do = {
@@ -4459,65 +4351,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_China_Pakistan_Economic_Corridor
-		icon = x
-
-		x = 5
-		y = 1
-		relative_position_id = CHI_Silk_Road_Fund
-
-		cost = 10
-
-		prerequisite = { focus = CHI_Silk_Road_Fund }
-
-		search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_INFLUENCE }
-
-		available = {
-			country_exists = PAK
-			NOT = { has_war_with = PAK }
-			PAK = { has_opinion = { target = ROOT value > -50 } }
-		}
-
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus CHI_China_Pakistan_Economic_Corridor"
-			if = {
-				limit = { has_completed_focus = CHI_Wolf_Warrior_Diplomacy }
-				set_temp_variable = { treasury_change = -400 }
-				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_southasia_engagement = 7 }
-				add_to_variable = { CHI_bri_predatory_score = 3 }
-				PAK = { add_opinion_modifier = { target = ROOT modifier = bri_iron_brother_strained } }
-				PAK = { country_event = { id = chi_bri.97 days = 1 } }
-			}
-			else_if = {
-				limit = { has_completed_focus = CHI_Bide_Your_Time }
-				set_temp_variable = { treasury_change = -250 }
-				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_southasia_engagement = 4 }
-				add_to_variable = { CHI_bri_winwin_score = 3 }
-				PAK = { add_opinion_modifier = { target = ROOT modifier = bri_iron_brother } }
-				PAK = { country_event = { id = chi_bri.97 days = 1 } }
-			}
-			else = {
-				set_temp_variable = { treasury_change = -300 }
-				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_southasia_engagement = 5 }
-				PAK = { country_event = { id = chi_bri.97 days = 1 } }
-			}
-		}
-
-		ai_will_do = {
-			base = 4
-			modifier = {
-				factor = 0
-				has_active_mission = bankruptcy_incoming_collapse
-			}
-		}
-	}
-
-	focus = {
 		id = CHI_Maritime_Silk_Road_Indian_Ocean
-		icon = stage_southasia
+		icon = goal_generic_positive_trade_relations
 
 		x = 9
 		y = 1
@@ -4534,9 +4369,9 @@ focus_tree = {
 				limit = { has_completed_focus = CHI_Wolf_Warrior_Diplomacy }
 				set_temp_variable = { treasury_change = -250 }
 				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_southasia_engagement = 4 }
-				add_to_variable = { CHI_bri_africa_engagement = 3 }
-				add_to_variable = { CHI_bri_predatory_score = 3 }
+				add_to_variable = { CHI_bri_southasia_engagement = 4 tooltip = CHI_bri_southasia_engagement_tt }
+				add_to_variable = { CHI_bri_africa_engagement = 3 tooltip = CHI_bri_africa_engagement_tt }
+				add_to_variable = { CHI_bri_predatory_score = 3 tooltip = CHI_bri_predatory_score_tt }
 				if = {
 					limit = { country_exists = SRI }
 					SRI = { add_opinion_modifier = { target = ROOT modifier = bri_strategic_chokepoint } }
@@ -4561,9 +4396,9 @@ focus_tree = {
 				limit = { has_completed_focus = CHI_Bide_Your_Time }
 				set_temp_variable = { treasury_change = -175 }
 				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_southasia_engagement = 3 }
-				add_to_variable = { CHI_bri_africa_engagement = 2 }
-				add_to_variable = { CHI_bri_winwin_score = 3 }
+				add_to_variable = { CHI_bri_southasia_engagement = 3 tooltip = CHI_bri_southasia_engagement_tt }
+				add_to_variable = { CHI_bri_africa_engagement = 2 tooltip = CHI_bri_africa_engagement_tt  }
+				add_to_variable = { CHI_bri_winwin_score = 3 tooltip = CHI_bri_predatory_score_tt }
 				if = {
 					limit = { country_exists = SRI }
 					SRI = { add_opinion_modifier = { target = ROOT modifier = bri_maritime_partner_concessional } }
@@ -4587,8 +4422,8 @@ focus_tree = {
 			else = {
 				set_temp_variable = { treasury_change = -200 }
 				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_southasia_engagement = 3 }
-				add_to_variable = { CHI_bri_africa_engagement = 2 }
+				add_to_variable = { CHI_bri_southasia_engagement = 3 tooltip = CHI_bri_southasia_engagement_tt }
+				add_to_variable = { CHI_bri_africa_engagement = 2 tooltip = CHI_bri_africa_engagement_tt }
 				if = {
 					limit = { country_exists = SRI }
 					SRI = { add_opinion_modifier = { target = ROOT modifier = bri_maritime_partner } }
@@ -4622,7 +4457,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Central_Asia_Connectivity
-		icon = stage_centralasia
+		icon = focus_generic_monetary_union
 
 		x = -1
 		y = 1
@@ -4639,8 +4474,8 @@ focus_tree = {
 				limit = { has_completed_focus = CHI_Wolf_Warrior_Diplomacy }
 				set_temp_variable = { treasury_change = -200 }
 				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_centralasia_engagement = 6 }
-				add_to_variable = { CHI_bri_predatory_score = 2 }
+				add_to_variable = { CHI_bri_centralasia_engagement = 6 tooltip = CHI_bri_centralasia_engagement_tt }
+				add_to_variable = { CHI_bri_predatory_score = 2 tooltip = CHI_bri_predatory_score_tt }
 				if = {
 					limit = { country_exists = KAZ }
 					KAZ = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
@@ -4670,8 +4505,8 @@ focus_tree = {
 				limit = { has_completed_focus = CHI_Bide_Your_Time }
 				set_temp_variable = { treasury_change = -125 }
 				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_centralasia_engagement = 4 }
-				add_to_variable = { CHI_bri_winwin_score = 2 }
+				add_to_variable = { CHI_bri_centralasia_engagement = 4 tooltip = CHI_bri_centralasia_engagement_tt }
+				add_to_variable = { CHI_bri_winwin_score = 2 tooltip = CHI_bri_winwin_score_tt }
 				if = {
 					limit = { country_exists = KAZ }
 					KAZ = {
@@ -4715,7 +4550,7 @@ focus_tree = {
 			else = {
 				set_temp_variable = { treasury_change = -150 }
 				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_centralasia_engagement = 5 }
+				add_to_variable = { CHI_bri_centralasia_engagement = 5 tooltip = CHI_bri_centralasia_engagement_tt }
 				if = {
 					limit = { country_exists = KAZ }
 					KAZ = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
@@ -4749,8 +4584,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Mekong_Riparian_Cooperation
-		icon = stage_seasia
+		id = CHI_Mekong_Riparian_Cooperation #Should also increase influence in those nations
+		icon = construction2
 
 		x = 3
 		y = 2
@@ -4767,8 +4602,8 @@ focus_tree = {
 				limit = { has_completed_focus = CHI_Wolf_Warrior_Diplomacy }
 				set_temp_variable = { treasury_change = -160 }
 				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_seasia_engagement = 6 }
-				add_to_variable = { CHI_bri_predatory_score = 2 }
+				add_to_variable = { CHI_bri_seasia_engagement = 6 tooltip = CHI_bri_seasia_engagement_tt }
+				add_to_variable = { CHI_bri_predatory_score = 2 tooltip = CHI_bri_predatory_score_tt }
 				if = {
 					limit = { country_exists = LAO }
 					LAO = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
@@ -4794,8 +4629,8 @@ focus_tree = {
 				limit = { has_completed_focus = CHI_Bide_Your_Time }
 				set_temp_variable = { treasury_change = -110 }
 				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_seasia_engagement = 4 }
-				add_to_variable = { CHI_bri_winwin_score = 3 }
+				add_to_variable = { CHI_bri_seasia_engagement = 4 tooltip = CHI_bri_seasia_engagement_tt }
+				add_to_variable = { CHI_bri_winwin_score = 3 tooltip = CHI_bri_winwin_score_tt }
 				if = {
 					limit = { country_exists = LAO }
 					LAO = {
@@ -4826,7 +4661,7 @@ focus_tree = {
 			else = {
 				set_temp_variable = { treasury_change = -130 }
 				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_seasia_engagement = 5 }
+				add_to_variable = { CHI_bri_seasia_engagement = 5 tooltip = CHI_bri_seasia_engagement_tt }
 				if = {
 					limit = { country_exists = LAO }
 					LAO = { add_opinion_modifier = { target = ROOT modifier = bri_corridor_partner } }
@@ -4861,7 +4696,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_seventeen_plus_one_mechanism
-		icon = x
+		icon = focus_generic_democratic_europe
 
 		x = 7
 		y = 5
@@ -4887,8 +4722,8 @@ focus_tree = {
 				limit = { has_completed_focus = CHI_Wolf_Warrior_Diplomacy }
 				set_temp_variable = { treasury_change = -130 }
 				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_europe_engagement = 5 }
-				add_to_variable = { CHI_bri_predatory_score = 2 }
+				add_to_variable = { CHI_bri_europe_engagement = 5 tooltip = CHI_bri_europe_engagement_tt }
+				add_to_variable = { CHI_bri_predatory_score = 2 tooltip = CHI_bri_predatory_score_tt }
 				if = {
 					limit = { country_exists = HUN }
 					HUN = { add_opinion_modifier = { target = ROOT modifier = bri_17plus1_member } }
@@ -4918,8 +4753,8 @@ focus_tree = {
 				limit = { has_completed_focus = CHI_Bide_Your_Time }
 				set_temp_variable = { treasury_change = -80 }
 				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_europe_engagement = 3 }
-				add_to_variable = { CHI_bri_winwin_score = 2 }
+				add_to_variable = { CHI_bri_europe_engagement = 3 tooltip = CHI_bri_europe_engagement_tt }
+				add_to_variable = { CHI_bri_winwin_score = 2 tooltip = CHI_bri_winwin_score_tt }
 				if = {
 					limit = { country_exists = HUN }
 					HUN = { add_opinion_modifier = { target = ROOT modifier = bri_17plus1_member } }
@@ -4948,7 +4783,7 @@ focus_tree = {
 			else = {
 				set_temp_variable = { treasury_change = -100 }
 				modify_treasury_effect = yes
-				add_to_variable = { CHI_bri_europe_engagement = 4 }
+				add_to_variable = { CHI_bri_europe_engagement = 4 tooltip = CHI_bri_europe_engagement_tt }
 			}
 		}
 
@@ -4971,7 +4806,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Forum_on_China_African_Cooperation
-		icon = x
+		icon = focus_ETH_african_union
 
 		x = -3
 		y = 3
@@ -4982,21 +4817,15 @@ focus_tree = {
 		prerequisite = { focus = CHI_Silk_Road_Fund }
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_INFLUENCE FOCUS_FILTER_FOREIGN_POLICY }
 
-		available = {
-			date > 2006.1.1
-		}
-
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Forum_on_China_African_Cooperation"
+			add_to_variable = { CHI_bri_treasury = 75 tooltip = CHI_bri_treasury_tt }
+			add_to_variable = { CHI_bri_africa_engagement = 5 tooltip = CHI_bri_africa_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 5 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			set_temp_variable = { treasury_change = -50 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_treasury = 75 }
-			add_to_variable = { CHI_bri_africa_engagement = 5 }
-			add_to_variable = { CHI_bri_global_presence = 5 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
 			every_other_country = {
 				limit = {
 					is_african_nation = yes
@@ -5021,7 +4850,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_China_Africa_Development_Fund
-		icon = x
+		icon = focus_generic_africa_factory
 
 		x = 1
 		y = 1
@@ -5036,19 +4865,12 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_China_Africa_Development_Fund"
 			set_temp_variable = { treasury_change = -75 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_treasury = 100 }
-			add_to_variable = { CHI_bri_africa_engagement = 3 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_bri_treasury = 100 tooltip = CHI_bri_treasury_tt }
+			add_to_variable = { CHI_bri_africa_engagement = 3 tooltip = CHI_bri_africa_engagement_tt }
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			every_other_country = {
-				limit = {
-					is_african_nation = yes
-					has_opinion_modifier = focac_member
-					NOT = { has_idea = Non_State_Actor }
-					NOT = { has_idea = Lacks_International_Recognition }
-				}
+				limit = { has_opinion_modifier = focac_member }
 				set_temp_variable = { percent_change = 1 }
 				set_temp_variable = { tag_index = CHI }
 				set_temp_variable = { influence_target = THIS }
@@ -5067,7 +4889,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Invest_in_Cheap_Energy
-		icon = x
+		icon = Coal_Power_Plant
 
 		x = -1
 		y = 2
@@ -5078,10 +4900,6 @@ focus_tree = {
 		prerequisite = { focus = CHI_China_Africa_Development_Fund }
 		mutually_exclusive = { focus = CHI_Invest_in_Clean_Energy }
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_POWER_INFRASTRUCTURE FOCUS_FILTER_EXPENDITURE }
-
-		available = {
-			has_completed_focus = CHI_Cheap_Coal_Supremacy
-		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Invest_in_Cheap_Energy"
@@ -5094,18 +4912,14 @@ focus_tree = {
 					instant_build = yes
 				}
 			}
-			add_to_variable = { CHI_bri_powerplants_built = 2 }
+			add_to_variable = { CHI_bri_powerplants_built = 2 tooltip = CHI_bri_powerplants_built_tt }
 			every_other_country = {
 				limit = {
-					is_african_nation = yes
 					has_opinion_modifier = focac_member
-					NOT = { has_idea = Non_State_Actor }
-					NOT = { has_idea = Lacks_International_Recognition }
 					influence_higher_20 = yes
 				}
 				random_owned_controlled_state = {
 					limit = { industrial_complex > 0 }
-					add_dynamic_modifier = { modifier = CHI_bri_state_industrial }
 					add_dynamic_modifier = { modifier = CHI_bri_state_energy_fossil }
 					set_state_flag = bri_powerplant_built
 				}
@@ -5123,7 +4937,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Invest_in_Clean_Energy
-		icon = x
+		icon = windmills
 
 		x = 1
 		y = 2
@@ -5149,26 +4963,20 @@ focus_tree = {
 			set_temp_variable = { treasury_change = -50 }
 			modify_treasury_effect = yes
 			one_random_renewable_energy_infra = yes
-			add_to_variable = { CHI_bri_powerplants_built = 2 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_bri_powerplants_built = 2 tooltip = CHI_bri_powerplants_built_tt }
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			every_other_country = {
 				limit = {
-					is_african_nation = yes
 					has_opinion_modifier = focac_member
-					NOT = { has_idea = Non_State_Actor }
-					NOT = { has_idea = Lacks_International_Recognition }
 					influence_higher_20 = yes
 				}
 				random_owned_controlled_state = {
 					limit = { industrial_complex > 0 }
-					add_dynamic_modifier = { modifier = CHI_bri_state_industrial }
 					add_dynamic_modifier = { modifier = CHI_bri_state_energy_clean }
 					set_state_flag = bri_powerplant_built
 				}
-				add_to_variable = { CHI_bri_winwin_score = 3 }
+				add_to_variable = { CHI_bri_winwin_score = 3 tooltip = CHI_bri_winwin_score_tt }
 			}
 		}
 
@@ -5183,7 +4991,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Outsource_Cheap_Labor
-		icon = x
+		icon = focus_generic_public_works
 
 		x = -1
 		y = 3
@@ -5199,19 +5007,15 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Outsource_Cheap_Labor"
 			every_other_country = {
 				limit = {
-					is_african_nation = yes
 					has_opinion_modifier = focac_member
-					NOT = { has_idea = Non_State_Actor }
-					NOT = { has_idea = Lacks_International_Recognition }
 					influence_higher_20 = yes
 				}
 				random_owned_controlled_state = {
 					limit = { OR = { is_coastal = yes infrastructure > 3 } }
-					add_dynamic_modifier = { modifier = CHI_bri_state_industrial }
 					add_dynamic_modifier = { modifier = CHI_bri_state_workers_exploited }
 					set_state_flag = bri_sez_built
 				}
-				add_to_variable = { CHI_bri_predatory_score = 3 }
+				add_to_variable = { CHI_bri_predatory_score = 3 tooltip = CHI_bri_predatory_score_tt }
 			}
 		}
 
@@ -5222,7 +5026,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Workers_Rights
-		icon = x
+		icon = focus_FIN_finnish_federation_of_trade_unions
 
 		x = 1
 		y = 3
@@ -5236,25 +5040,19 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Workers_Rights"
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			every_other_country = {
 				limit = {
-					is_african_nation = yes
 					has_opinion_modifier = focac_member
-					NOT = { has_idea = Non_State_Actor }
-					NOT = { has_idea = Lacks_International_Recognition }
 					influence_higher_20 = yes
 				}
 				random_owned_controlled_state = {
 					limit = { OR = { is_coastal = yes infrastructure > 3 } }
-					add_dynamic_modifier = { modifier = CHI_bri_state_industrial }
 					add_dynamic_modifier = { modifier = CHI_bri_state_workers_protected }
 					set_state_flag = bri_sez_built
 				}
-				add_to_variable = { CHI_bri_winwin_score = 3 }
+				add_to_variable = { CHI_bri_winwin_score = 3 tooltip = CHI_bri_winwin_score_tt }
 			}
 		}
 
@@ -5265,7 +5063,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Agriculture
-		icon = x
+		icon = focus_generic_modernize_agriculture_2
 
 		x = 3
 		y = 2
@@ -5280,22 +5078,17 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Agriculture"
 			set_temp_variable = { treasury_change = -10 }
 			modify_treasury_effect = yes
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			every_other_country = {
 				limit = {
-					is_african_nation = yes
 					has_opinion_modifier = focac_member
-					NOT = { has_idea = Non_State_Actor }
-					NOT = { has_idea = Lacks_International_Recognition }
 					influence_higher_10 = yes
 				}
 				add_stability = 0.02
 				add_opinion_modifier = {
 					target = ROOT
-					modifier = bri_agricultural_partnership
+					modifier = agricultural_partnership
 				}
 			}
 		}
@@ -5311,7 +5104,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Develop_Hospitals
-		icon = x
+		icon = generic_hospital2
 
 		x = 3
 		y = 3
@@ -5324,24 +5117,18 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Develop_Hospitals"
-			set_temp_variable = { treasury_change = -20 }
-			modify_treasury_effect = yes
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			every_other_country = {
 				limit = {
-					is_african_nation = yes
 					has_opinion_modifier = focac_member
-					NOT = { has_idea = Non_State_Actor }
-					NOT = { has_idea = Lacks_International_Recognition }
 					influence_higher_10 = yes
 				}
-				add_stability = 0.05
-				add_to_variable = { CHI_bri_prestige_projects = 1 }
-				add_to_variable = { CHI_bri_winwin_score = 3 }
+				add_to_variable = { CHI_bri_prestige_projects = 1 tooltip = CHI_bri_prestige_projects_tt }
+				add_to_variable = { CHI_bri_winwin_score = 3 tooltip = CHI_bri_winwin_score_tt }
 			}
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = {
@@ -5355,7 +5142,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Leverage_Influence
-		icon = x
+		icon = focus_CHI_invoke_the_nine_powers
 
 		x = 0
 		y = 4
@@ -5370,23 +5157,19 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Leverage_Influence"
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			every_other_country = {
 				limit = {
 					is_african_nation = yes
 					has_opinion_modifier = focac_member
-					NOT = { has_idea = Non_State_Actor }
-					NOT = { has_idea = Lacks_International_Recognition }
 					influence_higher_20 = yes
 				}
 				set_temp_variable = { percent_change = 3 }
 				set_temp_variable = { tag_index = CHI }
 				set_temp_variable = { influence_target = THIS }
 				change_influence_percentage = yes
-				add_to_variable = { CHI_bri_predatory_score = 5 }
+				add_to_variable = { CHI_bri_predatory_score = 5 tooltip = CHI_bri_predatory_score_tt }
 			}
 		}
 
@@ -5396,8 +5179,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Write_Off_Debts
-		icon = x
+		id = CHI_Write_Off_Debts #We moeten echt debt uit de afrikaanse landen halen met focas_member en dat bedrag is dan ook de treasury change voor China
+		icon = customs_union
 
 		x = 2
 		y = 4
@@ -5412,10 +5195,8 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Write_Off_Debts"
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_chinese_aggression = -2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			every_other_country = {
 				limit = {
 					is_african_nation = yes
@@ -5424,8 +5205,7 @@ focus_tree = {
 					NOT = { has_idea = Lacks_International_Recognition }
 					influence_higher_20 = yes
 				}
-				add_stability = 0.05
-				add_to_variable = { CHI_bri_winwin_score = 8 }
+				add_to_variable = { CHI_bri_winwin_score = 8 tooltip = CHI_bri_winwin_score_tt }
 			}
 		}
 
@@ -5436,7 +5216,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Friendship_Schools
-		icon = x
+		icon = CHI_school
 
 		x = -3
 		y = 2
@@ -5451,23 +5231,17 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Friendship_Schools"
 			set_temp_variable = { treasury_change = -10 }
 			modify_treasury_effect = yes
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			every_other_country = {
 				limit = {
-					is_african_nation = yes
 					has_opinion_modifier = focac_member
-					NOT = { has_idea = Non_State_Actor }
-					NOT = { has_idea = Lacks_International_Recognition }
 				}
-				add_stability = 0.02
 				add_opinion_modifier = {
 					target = ROOT
 					modifier = confucius_institute
 				}
-				add_to_variable = { CHI_bri_winwin_score = 2 }
+				add_to_variable = { CHI_bri_winwin_score = 2 tooltip = CHI_bri_winwin_score_tt }
 			}
 		}
 
@@ -5482,7 +5256,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Joint_Research
-		icon = x
+		icon = focus_NORDIC_com_capstone_research
 
 		x = 0
 		y = 1
@@ -5497,10 +5271,8 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Joint_Research"
 			set_temp_variable = { treasury_change = -20 }
 			modify_treasury_effect = yes
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			every_country = {
 				limit = {
 					OR = { original_tag = CHI is_african_nation = yes }
@@ -5509,7 +5281,7 @@ focus_tree = {
 				}
 				add_to_tech_sharing_group = China_Africa_Tech_Share
 			}
-			add_to_variable = { CHI_bri_winwin_score = 3 }
+			add_to_variable = { CHI_bri_winwin_score = 3 tooltip = CHI_bri_winwin_score_tt }
 		}
 
 		ai_will_do = {
@@ -5522,8 +5294,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_TV_and_Internet_Access
-		icon = x
+		id = CHI_TV_and_Internet_Access #Deze focus moet ook daadwerkelijk internet stations bouwen in Afrikaanse landen via een event voor toestemming
+		icon = MEX_Propagandistic_media
 
 		x = 0
 		y = 2
@@ -5539,18 +5311,13 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_TV_and_Internet_Access"
 			set_temp_variable = { treasury_change = -30 }
 			modify_treasury_effect = yes
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			add_to_variable = { CHI_bri_telecom_built = 3 }
-			add_to_variable = { CHI_bri_global_presence = 3 }
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			add_to_variable = { CHI_bri_telecom_built = 3 tooltip = CHI_bri_telecom_built_tt }
+			add_to_variable = { CHI_bri_global_presence = 3 tooltip = CHI_bri_global_presence_tt }
 			every_other_country = {
 				limit = {
-					is_african_nation = yes
 					has_opinion_modifier = focac_member
-					NOT = { has_idea = Non_State_Actor }
-					NOT = { has_idea = Lacks_International_Recognition }
 					influence_higher_10 = yes
 				}
 				random_owned_controlled_state = {
@@ -5572,7 +5339,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Predatory_Lending_Doctrine
-		icon = financial_influence
+		icon = economic_another_money
 
 		x = -1
 		y = 1
@@ -5586,8 +5353,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Predatory_Lending_Doctrine"
-			set_country_flag = CHI_bri_predatory_path
-			add_to_variable = { CHI_bri_returns_multiplier = 0.20 }
+			add_to_variable = { CHI_bri_returns_multiplier = 0.20 tooltip = CHI_bri_returns_multiplier_tt }
 			every_other_country = {
 				limit = {
 					has_government = democratic
@@ -5606,7 +5372,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Win_Win_Cooperation
-		icon = x
+		icon = focus_ARG_balancing_act
 
 		x = 1
 		y = 1
@@ -5620,12 +5386,9 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Win_Win_Cooperation"
-			set_country_flag = CHI_bri_winwin_path
-			add_to_variable = { CHI_bri_monthly_income = 3 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_bri_monthly_income = 3 tooltip = CHI_bri_monthly_income_tt }
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 		}
 
 		ai_will_do = {
@@ -5634,8 +5397,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Digital_Silk_Road_Initiative
-		icon = x
+		id = CHI_Digital_Silk_Road_Initiative #Moet ook wel internet stations bouwen of korting geven aan de projecten voor de 3x
+		icon = economic_internet
 
 		x = 0
 		y = 2
@@ -5650,13 +5413,7 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Digital_Silk_Road_Initiative"
 			set_temp_variable = { treasury_change = -150 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_telecom_built = 3 }
-			add_tech_bonus = {
-				name = CHI_Digital_Silk_Road_Initiative
-				bonus = 0.5
-				uses = 1
-				category = electronics
-			}
+			add_to_variable = { CHI_bri_telecom_built = 3 tooltip = CHI_bri_telecom_built_tt }
 		}
 
 		ai_will_do = {
@@ -5669,8 +5426,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Health_Silk_Road
-		icon = x
+		id = CHI_Health_Silk_Road #Moet ook wel iets bouwen in landen (met een project of dynamic modifier) of korting geven
+		icon = health_care_reform
 
 		x = 2
 		y = 2
@@ -5692,13 +5449,7 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Health_Silk_Road"
 			set_temp_variable = { treasury_change = -80 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_winwin_score = 5 }
-			add_tech_bonus = {
-				name = CHI_Health_Silk_Road
-				bonus = 0.25
-				uses = 1
-				category = medicine
-			}
+			add_to_variable = { CHI_bri_winwin_score = 5 tooltip = CHI_bri_winwin_score_tt }
 		}
 
 		ai_will_do = {
@@ -5712,7 +5463,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Petroyuan_Settlement
-		icon = goal_manchu_economy
+		icon = oil_red
 
 		x = -2
 		y = 2
@@ -5751,8 +5502,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_BRI_Forum_Beijing
-		icon = x
+		id = CHI_BRI_Forum_Beijing #Moet eerder een timed idea geven om foreign revenue te verbeteren, influence gain en dat BRI projecten sneller of goedkoper zijn. Het event mag verwijderd worden
+		icon = communist_china
 
 		x = 2
 		y = 4
@@ -5773,8 +5524,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_BRI_Forum_Beijing"
-			add_political_power = 20
-			add_to_variable = { CHI_bri_global_presence = 10 }
+			add_to_variable = { CHI_bri_global_presence = 10 tooltip = CHI_bri_global_presence_tt }
 			country_event = { id = chi_bri.40 days = 1 }
 		}
 
@@ -5792,8 +5542,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Renminbi_Internationalization
-		icon = x
+		id = CHI_Renminbi_Internationalization #I want a second chinese_yuan (chinese_yuan_2) so it improves the current thing. Needs to be hidden. I did a familiair thing with Shinto
+		icon = prc_currency_reform
 
 		x = -2
 		y = 3
@@ -5831,8 +5581,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Polar_Silk_Road
-		icon = x
+		id = CHI_Polar_Silk_Road #Needs to do something else
+		icon = expand_trade_fleet
 
 		x = 2
 		y = 3
@@ -5844,7 +5594,6 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
 
 		available = {
-			date > 2018.1.1
 			NOT = { has_war_with = SOV }
 		}
 
@@ -5877,7 +5626,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Eurasian_Land_Bridge
-		icon = x
+		icon = align_to_europe
 
 		x = 0
 		y = 4
@@ -5904,7 +5653,7 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Eurasian_Land_Bridge"
 			add_ideas = eurasian_land_bridge
-			add_to_variable = { CHI_bri_global_presence = 20 }
+			add_to_variable = { CHI_bri_global_presence = 20 tooltip = CHI_bri_global_presence_tt }
 		}
 
 		ai_will_do = {
@@ -5922,7 +5671,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_African_Continental_Integration
-		icon = x
+		icon = focus_PRC_join_comintern
 
 		x = 1
 		y = 5
@@ -5955,20 +5704,20 @@ focus_tree = {
 			if = {
 				limit = { has_completed_focus = CHI_Wolf_Warrior_Diplomacy }
 				add_ideas = chinese_african_century
-				add_to_variable = { CHI_bri_global_presence = 25 }
-				add_to_variable = { CHI_bri_predatory_score = 4 }
+				add_to_variable = { CHI_bri_global_presence = 25 tooltip = CHI_bri_global_presence_tt }
+				add_to_variable = { CHI_bri_predatory_score = 4 tooltip = CHI_bri_predatory_score_tt }
 				country_event = { id = chi_bri.70 days = 1 }
 			}
 			else_if = {
 				limit = { has_completed_focus = CHI_Bide_Your_Time }
 				add_ideas = chinese_african_century
-				add_to_variable = { CHI_bri_global_presence = 25 }
-				add_to_variable = { CHI_bri_winwin_score = 4 }
+				add_to_variable = { CHI_bri_global_presence = 25 tooltip = CHI_bri_global_presence_tt }
+				add_to_variable = { CHI_bri_winwin_score = 4 tooltip = CHI_bri_winwin_score_tt }
 				country_event = { id = chi_bri.70 days = 1 }
 			}
 			else = {
 				add_ideas = chinese_african_century
-				add_to_variable = { CHI_bri_global_presence = 25 }
+				add_to_variable = { CHI_bri_global_presence = 25 tooltip = CHI_bri_global_presence_tt }
 				country_event = { id = chi_bri.70 days = 1 }
 			}
 		}
@@ -5988,7 +5737,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Pax_Sinica
-		icon = x
+		icon = one_china_policy_prc
 
 		x = 0
 		y = 5
@@ -6015,7 +5764,6 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Pax_Sinica"
-			set_global_flag = chinese_century_dawn
 			add_ideas = pax_sinica
 			country_event = { id = chi_bri.50 days = 1 }
 		}
@@ -6034,10 +5782,10 @@ focus_tree = {
 	}
 	focus = {
 		id = CHI_Tianxia_Realized
-		icon = global_community
+		icon = CHI_flowers_bloom
 
-		x = -3
-		y = 5
+		x = -5
+		y = 8
 		relative_position_id = CHI_Project_Coordination_Cell
 
 		cost = 10
@@ -6072,7 +5820,6 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Tianxia_Realized"
-			set_global_flag = chinese_century_dawn
 			add_ideas = pax_sinica_consensus
 			country_event = { id = chi_bri.96 days = 1 }
 		}
@@ -6092,7 +5839,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Forum_China_CELAC
-		icon = x
+		icon = focus_generic_south_america
 
 		x = -8
 		y = 3
@@ -6103,21 +5850,15 @@ focus_tree = {
 		prerequisite = { focus = CHI_Silk_Road_Fund }
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_INFLUENCE }
 
-		available = {
-			date > 2015.1.1
-		}
-
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Forum_China_CELAC"
 			set_temp_variable = { treasury_change = -50 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_treasury = 60 }
-			add_to_variable = { CHI_bri_latam_engagement = 5 }
-			add_to_variable = { CHI_bri_global_presence = 4 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_bri_treasury = 60 tooltip = CHI_bri_treasury_tt }
+			add_to_variable = { CHI_bri_latam_engagement = 5 tooltip = CHI_bri_latam_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 4 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			every_other_country = {
 				limit = {
 					is_South_America = yes
@@ -6141,8 +5882,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Lithium_Triangle_Accord
-		icon = x
+		id = CHI_Lithium_Triangle_Accord #Should be investments in their mining sector and rewarding something resourcy for China
+		icon = coal_mining_2
 
 		x = -1
 		y = 1
@@ -6153,16 +5894,12 @@ focus_tree = {
 		prerequisite = { focus = CHI_Forum_China_CELAC }
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_RESOURCE FOCUS_FILTER_EXPENDITURE }
 
-		available = {
-			date > 2018.1.1
-		}
-
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Lithium_Triangle_Accord"
 			set_temp_variable = { treasury_change = -120 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_latam_engagement = 4 }
-			add_to_variable = { CHI_bri_active_projects = 1 }
+			add_to_variable = { CHI_bri_latam_engagement = 4 tooltip = CHI_bri_latam_engagement_tt }
+			add_to_variable = { CHI_bri_active_projects = 1 tooltip = CHI_bri_active_projects_tt }
 			add_ideas = CHI_lithium_supply_chain_locked
 			if = {
 				limit = { country_exists = ARG }
@@ -6188,8 +5925,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Petrocaribe_Successor
-		icon = x
+		id = CHI_Petrocaribe_Successor #Should give a big program decision or mission towards Venezuela to help them out where China gains influence and some oil processing bonus
+		icon = ven_oil
 
 		x = 1
 		y = 1
@@ -6208,17 +5945,17 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Petrocaribe_Successor"
 			set_temp_variable = { treasury_change = -150 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_treasury = 100 }
-			add_to_variable = { CHI_bri_latam_engagement = 4 }
-			add_to_variable = { CHI_bri_global_presence = 3 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 4 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			set_country_flag = CHI_bri_ven_oil_pledge
+			add_to_variable = { CHI_bri_treasury = 100 tooltip = CHI_bri_treasury_tt }
+			add_to_variable = { CHI_bri_latam_engagement = 4 tooltip = CHI_bri_latam_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 3 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_chinese_aggression = 4 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			if = {
 				limit = { country_exists = VEN }
-				VEN = { add_opinion_modifier = { target = ROOT modifier = CHI_loans_for_oil_partner } }
+				VEN = {
+					add_opinion_modifier = { target = ROOT modifier = CHI_loans_for_oil_partner }
+					country_event = chi_bri.82
+				}
 			}
 			if = {
 				limit = { country_exists = CUB }
@@ -6261,8 +5998,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Five_Stars_Highway
-		icon = x
+		id = CHI_Five_Stars_Highway #Should start project to link these really
+		icon = economic_roads_new
 
 		x = 0
 		y = 2
@@ -6281,13 +6018,11 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Five_Stars_Highway"
 			set_temp_variable = { treasury_change = -250 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_latam_engagement = 6 }
-			add_to_variable = { CHI_bri_global_presence = 8 }
-			add_to_variable = { CHI_bri_active_projects = 2 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_bri_latam_engagement = 6 tooltip = CHI_bri_latam_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 8 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_bri_active_projects = 2 tooltip = CHI_bri_active_projects_tt }
+			add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			if = {
 				limit = { country_exists = BRA }
 				BRA = { add_opinion_modifier = { target = ROOT modifier = CHI_bri_mega_project_partner } }
@@ -6320,8 +6055,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Beidou_Latin_Constellation
-		icon = x
+		id = CHI_Beidou_Latin_Constellation #Needs to do something for agriculture, internet stations and should give China more intelligance or range or something GPS like
+		icon = radar
 
 		x = 0
 		y = 3
@@ -6340,13 +6075,11 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Beidou_Latin_Constellation"
 			set_temp_variable = { treasury_change = -100 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_latam_engagement = 4 }
-			add_to_variable = { CHI_bri_global_presence = 5 }
-			add_to_variable = { CHI_bri_active_projects = 2 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 3 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_bri_latam_engagement = 4 tooltip = CHI_bri_latam_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 5 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_bri_active_projects = 2 tooltip = CHI_bri_active_projects_tt }
+			add_to_variable = { CHI_chinese_aggression = 3 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			if = {
 				limit = { country_exists = ARG }
 				ARG = { add_opinion_modifier = { target = ROOT modifier = CHI_beidou_ground_station } }
@@ -6391,8 +6124,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Monroe_Doctrine_Inverted
-		icon = x
+		id = CHI_Monroe_Doctrine_Inverted #Should give protection to emerging american nations and give ways to china to influence nations
+		icon = focus_PER_communist_afghanistan_intervention
 
 		x = 0
 		y = 4
@@ -6418,8 +6151,8 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Monroe_Doctrine_Inverted"
-			add_to_variable = { CHI_bri_global_presence = 20 }
-			add_to_variable = { CHI_bri_completed_projects = 1 }
+			add_to_variable = { CHI_bri_global_presence = 20 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_bri_completed_projects = 1 tooltip = CHI_bri_completed_projects_tt }
 			add_ideas = CHI_monroe_inverted
 			country_event = { id = chi_bri.84 days = 1 }
 			every_country = {
@@ -6450,7 +6183,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Arab_League_Cooperation_Forum
-		icon = x
+		icon = focus_IRQ_arab_league
 
 		x = -13
 		y = 3
@@ -6461,20 +6194,14 @@ focus_tree = {
 		prerequisite = { focus = CHI_Silk_Road_Fund }
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_INFLUENCE }
 
-		available = {
-			date > 2004.1.1
-		}
-
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Arab_League_Cooperation_Forum"
 			set_temp_variable = { treasury_change = -40 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_meast_engagement = 4 }
-			add_to_variable = { CHI_bri_global_presence = 3 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_bri_meast_engagement = 4 tooltip = CHI_bri_meast_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 3 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_chinese_aggression = -1 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			every_other_country = {
 				limit = {
 					has_idea = LoAS_member
@@ -6499,7 +6226,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Suez_Eastern_Bank
-		icon = x
+		icon = suez_canal_project
 
 		x = 2
 		y = 2
@@ -6510,19 +6237,14 @@ focus_tree = {
 		prerequisite = { focus = CHI_Arab_League_Cooperation_Forum }
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
 
-		available = {
-			date > 2013.1.1
-		}
-
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Suez_Eastern_Bank"
 			set_temp_variable = { treasury_change = -180 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_meast_engagement = 4 }
-			add_to_variable = { CHI_bri_africa_engagement = 2 }
-			add_to_variable = { CHI_bri_active_projects = 1 }
-			add_to_variable = { CHI_bri_global_presence = 1 }
-			set_country_flag = CHI_bri_egy_suez_zone
+			add_to_variable = { CHI_bri_meast_engagement = 4 tooltip = CHI_bri_meast_engagement_tt }
+			add_to_variable = { CHI_bri_africa_engagement = 2 tooltip = CHI_bri_africa_engagement_tt }
+			add_to_variable = { CHI_bri_active_projects = 1 tooltip = CHI_bri_active_projects_tt }
+			add_to_variable = { CHI_bri_global_presence = 1 tooltip = CHI_bri_global_presence_tt }
 			if = {
 				limit = { country_exists = EGY }
 				EGY = { add_opinion_modifier = { target = ROOT modifier = CHI_bri_mega_project_partner } }
@@ -6540,7 +6262,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_TwentyFive_Year_Iran_Accord
-		icon = x
+		icon = focus_PER_modernizing_iran
 
 		x = -1
 		y = 1
@@ -6553,28 +6275,19 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
 
 		available = {
-			date > 2021.1.1
 			country_exists = PER
-			# B.4 completion allows bypassing the mutual exclusion with B.3
-			OR = {
-				NOT = { has_completed_focus = CHI_Vision_2030_Partnership }
-				has_completed_focus = CHI_Beijing_Communique
-			}
 		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_TwentyFive_Year_Iran_Accord"
 			set_temp_variable = { treasury_change = -200 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_treasury = 80 }
-			add_to_variable = { CHI_bri_meast_engagement = 5 }
-			add_to_variable = { CHI_bri_global_presence = 8 }
+			add_to_variable = { CHI_bri_treasury = 80 tooltip = CHI_bri_treasury_tt }
+			add_to_variable = { CHI_bri_meast_engagement = 5 tooltip = CHI_bri_meast_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 8 tooltip = CHI_bri_global_presence_tt }
 			add_ideas = CHI_sanctions_immunity_partial
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 3 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			set_country_flag = CHI_bri_per_oil_pledge
+			add_to_variable = { CHI_chinese_aggression = 3 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			if = {
 				limit = { country_exists = PER }
 				PER = { add_opinion_modifier = { target = ROOT modifier = CHI_strategic_partnership_25yr } }
@@ -6608,7 +6321,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Vision_2030_Partnership
-		icon = x
+		icon = align_to_saudi_arabia
 
 		x = 1
 		y = 1
@@ -6620,23 +6333,13 @@ focus_tree = {
 		mutually_exclusive = { focus = CHI_TwentyFive_Year_Iran_Accord }
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
 
-		available = {
-			date > 2016.1.1
-			# B.4 completion allows bypassing the mutual exclusion with B.2
-			OR = {
-				NOT = { has_completed_focus = CHI_TwentyFive_Year_Iran_Accord }
-				has_completed_focus = CHI_Beijing_Communique
-			}
-		}
-
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Vision_2030_Partnership"
 			set_temp_variable = { treasury_change = -120 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_treasury = 120 }
-			add_to_variable = { CHI_bri_meast_engagement = 4 }
-			add_to_variable = { CHI_bri_global_presence = 3 }
-			set_country_flag = CHI_bri_sau_neom_partner
+			add_to_variable = { CHI_bri_treasury = 120 tooltip = CHI_bri_treasury_tt }
+			add_to_variable = { CHI_bri_meast_engagement = 4 tooltip = CHI_bri_meast_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 3 tooltip = CHI_bri_global_presence_tt }
 			if = {
 				limit = { country_exists = SAU }
 				SAU = { add_opinion_modifier = { target = ROOT modifier = CHI_vision_2030_partner } }
@@ -6657,8 +6360,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Beijing_Communique
-		icon = x
+		id = CHI_Beijing_Communique #Needs to do something of an agreement with a non agression pact and with an idea that China will join the war as defender if war breaks out between the two
+		icon = focus_IRQ_protector_of_the_gulf
 
 		x = 0
 		y = 2
@@ -6670,7 +6373,6 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_INFLUENCE }
 
 		available = {
-			date > 2023.1.1
 			check_variable = {
 				var = CHI_bri_meast_engagement
 				value = 7
@@ -6680,13 +6382,11 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Beijing_Communique"
-			add_to_variable = { CHI_bri_meast_engagement = 5 }
-			add_to_variable = { CHI_bri_global_presence = 10 }
-			add_to_variable = { CHI_bri_completed_projects = 1 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = -3 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_bri_meast_engagement = 5 tooltip = CHI_bri_meast_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 10 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_bri_completed_projects = 1 tooltip = CHI_bri_completed_projects_tt }
+			add_to_variable = { CHI_chinese_aggression = -3 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			if = {
 				limit = { country_exists = SAU }
 				SAU = { add_opinion_modifier = { target = ROOT modifier = CHI_beijing_brokered_peace } }
@@ -6717,9 +6417,9 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Gulf_Yuan_Settlement
-		icon = x
+		icon = gcc
 
-		x = 2
+		x = 1
 		y = 3
 		relative_position_id = CHI_Arab_League_Cooperation_Forum
 
@@ -6730,7 +6430,6 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_ECONOMY FOCUS_FILTER_EXPENDITURE }
 
 		available = {
-			date > 2024.1.1
 			check_variable = {
 				var = CHI_bri_meast_engagement
 				value = 19
@@ -6765,7 +6464,7 @@ focus_tree = {
 	}
 	focus = {
 		id = CHI_Pacific_Island_Forum_Pivot
-		icon = x
+		icon = focus_GER_sentinels_of_the_pacific
 
 		x = 1
 		y = 1
@@ -6776,16 +6475,12 @@ focus_tree = {
 		prerequisite = { focus = CHI_Maritime_Silk_Road_Indian_Ocean }
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
 
-		available = {
-			date > 2019.1.1
-		}
-
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Pacific_Island_Forum_Pivot"
 			set_temp_variable = { treasury_change = -60 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_pacific_engagement = 5 }
-			add_to_variable = { CHI_bri_global_presence = 3 }
+			add_to_variable = { CHI_bri_pacific_engagement = 5 tooltip = CHI_bri_pacific_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 3 tooltip = CHI_bri_global_presence_tt }
 			every_other_country = {
 				limit = {
 					is_oceania_nation = yes
@@ -6812,8 +6507,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Honiara_Security_Pact
-		icon = x
+		id = CHI_Honiara_Security_Pact #Should unlock some decisions or development of military training for both sides and stuff like that. Also Australia should gain the event with a timed idea for increased detterance but also activate an ai strategy to increase their naval presence
+		icon = focus_CHL_protect_the_easter_island
 
 		x = -1
 		y = 1
@@ -6825,7 +6520,6 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
 
 		available = {
-			date > 2022.1.1
 			country_exists = SOL
 			SOL = {
 				has_opinion_modifier = CHI_pacific_pivot_partner
@@ -6836,13 +6530,10 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Honiara_Security_Pact"
 			set_temp_variable = { treasury_change = -80 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_pacific_engagement = 5 }
-			add_to_variable = { CHI_bri_global_presence = 6 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 5 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
-			set_country_flag = CHI_bri_sol_security_pact
+			add_to_variable = { CHI_bri_pacific_engagement = 5 tooltip = CHI_bri_pacific_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 6 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_chinese_aggression = 5 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			if = {
 				limit = { country_exists = SOL }
 				SOL = { add_opinion_modifier = { target = ROOT modifier = CHI_honiara_security_partner } }
@@ -6875,8 +6566,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Tonga_Tuna_Concession
-		icon = x
+		id = CHI_Tonga_Tuna_Concession #Should give a state a modifier for increased agriculture productivity and an agriculture building but also increase something economicly for China. Use the localisation desc for this
+		icon = focus_PHI_rally_the_fisherfolk
 
 		x = 0
 		y = 2
@@ -6888,21 +6579,15 @@ focus_tree = {
 		prerequisite = { focus = CHI_Honiara_Security_Pact }
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_RESOURCE FOCUS_FILTER_EXPENDITURE }
 
-		available = {
-			date > 2017.1.1
-		}
-
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Tonga_Tuna_Concession"
 			set_temp_variable = { treasury_change = -50 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_pacific_engagement = 3 }
-			add_to_variable = { CHI_bri_active_projects = 1 }
-			add_to_variable = { CHI_bri_monthly_income = 2 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_bri_pacific_engagement = 3 tooltip = CHI_bri_pacific_engagement_tt }
+			add_to_variable = { CHI_bri_active_projects = 1 tooltip = CHI_bri_active_projects_tt }
+			add_to_variable = { CHI_bri_monthly_income = 2 tooltip = CHI_bri_monthly_income_tt }
+			add_to_variable = { CHI_chinese_aggression = 2 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			if = {
 				limit = { country_exists = TON }
 				TON = { add_opinion_modifier = { target = ROOT modifier = CHI_bri_resource_concession } }
@@ -6928,7 +6613,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Eight_Country_Initiative
-		icon = x
+		icon = focus_JAP_expand_coal_islands
 
 		x = 1
 		y = 3
@@ -6940,7 +6625,6 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
 
 		available = {
-			date > 2022.5.1
 			check_variable = {
 				var = CHI_bri_pacific_engagement
 				value = 7
@@ -6952,12 +6636,10 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Eight_Country_Initiative"
 			set_temp_variable = { treasury_change = -100 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_pacific_engagement = 6 }
-			add_to_variable = { CHI_bri_global_presence = 8 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 3 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_bri_pacific_engagement = 6 tooltip = CHI_bri_pacific_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 8 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_chinese_aggression = 3 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			country_event = { id = chi_bri.91 days = 1 }
 		}
 
@@ -6979,8 +6661,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_Second_Island_Chain_Reach
-		icon = x
+		id = CHI_Second_Island_Chain_Reach #The island nations should get an event where China asks docking rights in exchange for economic help. Australia gains an event of this. The islands won't cancel their docking rights when their economic help is active UNLESS there economy is and influence is moderatly towards China
+		icon = goal_JAP_chinese_island_chain
 
 		x = -1
 		y = 3
@@ -6992,26 +6674,22 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
 
 		available = {
-			date > 2024.1.1
 			check_variable = {
 				var = CHI_bri_pacific_engagement
 				value = 19
 				compare = greater_than
 			}
-			has_country_flag = CHI_bri_sol_security_pact
 		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Second_Island_Chain_Reach"
 			set_temp_variable = { treasury_change = -150 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_pacific_engagement = 5 }
-			add_to_variable = { CHI_bri_global_presence = 15 }
-			add_to_variable = { CHI_bri_completed_projects = 1 }
-			CHI = {
-				add_to_variable = { CHI_chinese_aggression = 8 tooltip = CHI_chinese_aggression_tt }
-				clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
-			}
+			add_to_variable = { CHI_bri_pacific_engagement = 5 tooltip = CHI_bri_pacific_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 15 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_bri_completed_projects = 1 tooltip = CHI_bri_completed_projects_tt }
+			add_to_variable = { CHI_chinese_aggression = 8 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 			add_ideas = CHI_pacific_basing_rights
 			if = {
 				limit = { country_exists = SOL }
@@ -7046,10 +6724,10 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Rome_Memorandum
-		icon = x
+		icon = focus_generic_italy_propaganda
 
-		x = -1
-		y = 1
+		x = 0
+		y = 2
 		relative_position_id = CHI_seventeen_plus_one_mechanism
 
 		cost = 10
@@ -7058,7 +6736,6 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_EXPENDITURE }
 
 		available = {
-			date > 2019.3.1
 			country_exists = ITA
 			check_variable = {
 				var = CHI_chinese_aggression
@@ -7071,10 +6748,9 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Rome_Memorandum"
 			set_temp_variable = { treasury_change = -60 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_europe_engagement = 5 }
-			add_to_variable = { CHI_bri_global_presence = 6 }
-			add_to_variable = { CHI_bri_completed_projects = 1 }
-			set_country_flag = CHI_bri_ita_mou_signed
+			add_to_variable = { CHI_bri_europe_engagement = 5 tooltip = CHI_bri_europe_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 6 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_bri_completed_projects = 1 tooltip = CHI_bri_completed_projects_tt }
 			if = {
 				limit = { country_exists = ITA }
 				ITA = { add_opinion_modifier = { target = ROOT modifier = CHI_bri_g7_signatory } }
@@ -7101,10 +6777,10 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Piraeus_Model
-		icon = x
+		icon = trieste_port
 
 		x = -2
-		y = 2
+		y = 1
 		relative_position_id = CHI_seventeen_plus_one_mechanism
 
 		cost = 10
@@ -7120,9 +6796,9 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Piraeus_Model"
 			set_temp_variable = { treasury_change = -120 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_europe_engagement = 4 }
-			add_to_variable = { CHI_bri_active_projects = 2 }
-			add_to_variable = { CHI_bri_monthly_income = 3 }
+			add_to_variable = { CHI_bri_europe_engagement = 4 tooltip = CHI_bri_europe_engagement_tt }
+			add_to_variable = { CHI_bri_active_projects = 2 tooltip = CHI_bri_active_projects_tt }
+			add_to_variable = { CHI_bri_monthly_income = 3 tooltip = CHI_bri_monthly_income_tt }
 			if = {
 				limit = { country_exists = GRE }
 				GRE = { add_opinion_modifier = { target = ROOT modifier = CHI_bri_port_concession_holder } }
@@ -7151,35 +6827,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_16plus1_Schism
-		icon = x
-
-		x = 0
-		y = 2
-		relative_position_id = CHI_seventeen_plus_one_mechanism
-
-		cost = 8
-
-		prerequisite = { focus = CHI_seventeen_plus_one_mechanism }
-		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_FOREIGN_POLICY FOCUS_FILTER_POLITICAL }
-
-		available = {
-			date > 2021.5.1
-		}
-
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus CHI_16plus1_Schism"
-			country_event = { id = chi_bri.94 days = 1 }
-		}
-
-		ai_will_do = {
-			base = 4
-		}
-	}
-
-	focus = {
-		id = CHI_Comprehensive_Agreement_Investment
-		icon = x
+		id = CHI_Comprehensive_Agreement_Investment #SHould be like a deal with all EU members for economic construction together but for China big gains on influence, economic growth Should be a timed idea which ends then in a smaller idea, based on variable
+		icon = focus_GER_european_confederation
 
 		x = -1
 		y = 3
@@ -7187,7 +6836,8 @@ focus_tree = {
 
 		cost = 12
 
-		prerequisite = { focus = CHI_Rome_Memorandum focus = CHI_Piraeus_Model }
+		prerequisite = { focus = CHI_Rome_Memorandum }
+		prerequisite = { focus = CHI_Piraeus_Model }
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_ECONOMY FOCUS_FILTER_EXPENDITURE }
 
 		available = {
@@ -7208,8 +6858,8 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Comprehensive_Agreement_Investment"
 			set_temp_variable = { treasury_change = -100 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_europe_engagement = 6 }
-			add_to_variable = { CHI_bri_global_presence = 8 }
+			add_to_variable = { CHI_bri_europe_engagement = 6 tooltip = CHI_bri_europe_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 8 tooltip = CHI_bri_global_presence_tt }
 			add_ideas = CHI_eu_market_access
 			if = {
 				limit = { country_exists = GER }
@@ -7257,7 +6907,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_Geneva_Carve_Out
-		icon = x
+		icon = focus_SWI_swiss_guiding_principles
 
 		x = -1
 		y = 4
@@ -7269,7 +6919,6 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_CHI_AGGRESSION FOCUS_FILTER_ECONOMY FOCUS_FILTER_EXPENDITURE }
 
 		available = {
-			date > 2022.1.1
 			check_variable = {
 				var = CHI_bri_europe_engagement
 				value = 12
@@ -7281,10 +6930,9 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_Geneva_Carve_Out"
 			set_temp_variable = { treasury_change = -80 }
 			modify_treasury_effect = yes
-			add_to_variable = { CHI_bri_europe_engagement = 4 }
-			add_to_variable = { CHI_bri_global_presence = 6 }
-			add_to_variable = { CHI_bri_completed_projects = 1 }
-			set_country_flag = CHI_bri_swi_fta
+			add_to_variable = { CHI_bri_europe_engagement = 4 tooltip = CHI_bri_europe_engagement_tt }
+			add_to_variable = { CHI_bri_global_presence = 6 tooltip = CHI_bri_global_presence_tt }
+			add_to_variable = { CHI_bri_completed_projects = 1 tooltip = CHI_bri_completed_projects_tt }
 			if = {
 				limit = { country_exists = SWI }
 				SWI = { add_opinion_modifier = { target = ROOT modifier = CHI_bri_bilateral_fta } }
