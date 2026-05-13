@@ -727,40 +727,6 @@ CHI_add_brokerage = {
 	clamp_variable = { var = CHI_beijing_brokerage min = 0 max = 100 }
 }
 
-### Belt and Road Initiative — system initialization ###
-# Called from CHI_Belt_and_Road_Launch focus completion. Seeds every variable the
-# BRI subsystem reads so dynamic modifiers and tick decisions never see uninitialized values.
-BRI_initialize = {
-	set_variable = { CHI_bri_treasury = 0 }
-	set_variable = { CHI_bri_monthly_income = 0 }
-	set_variable = { CHI_bri_monthly_returns = 0 }
-	set_variable = { CHI_bri_returns_multiplier = 1 }
-	set_variable = { CHI_bri_active_projects = 0 }
-	set_variable = { CHI_bri_completed_projects = 0 }
-	set_variable = { CHI_bri_defaulted_projects = 0 }
-	set_variable = { CHI_bri_project_slots = 3 }
-	set_variable = { CHI_bri_pending_applications = 0 }
-	set_variable = { CHI_bri_global_presence = 0 }
-	set_variable = { CHI_bri_predatory_score = 0 }
-	set_variable = { CHI_bri_winwin_score = 0 }
-	set_variable = { CHI_bri_southasia_engagement = 0 }
-	set_variable = { CHI_bri_centralasia_engagement = 0 }
-	set_variable = { CHI_bri_seasia_engagement = 0 }
-	set_variable = { CHI_bri_africa_engagement = 0 }
-	set_variable = { CHI_bri_europe_engagement = 0 }
-	set_variable = { CHI_bri_latam_engagement = 0 }
-	set_variable = { CHI_bri_meast_engagement = 0 }
-	set_variable = { CHI_bri_pacific_engagement = 0 }
-	set_variable = { CHI_bri_ports_built = 0 }
-	set_variable = { CHI_bri_railways_built = 0 }
-	set_variable = { CHI_bri_pipelines_built = 0 }
-	set_variable = { CHI_bri_telecom_built = 0 }
-	set_variable = { CHI_bri_mines_secured = 0 }
-	set_variable = { CHI_bri_powerplants_built = 0 }
-	set_variable = { CHI_bri_industrial_zones = 0 }
-	set_variable = { CHI_bri_prestige_projects = 0 }
-}
-
 ### BRI — target state selection wrapper ###
 # Caller sets set_temp_variable = { project_type = N } on the recipient scope before invoking.
 # 1=port  2=railway  3=pipeline  4=telecom  5=SEZ  6=mine  7=powerplant  8=prestige
@@ -957,13 +923,12 @@ BRI_grant_focac_project = {
 	}
 }
 
+
 ### BRI — recipient handles application choice ###
 # Called from chi_bri.10 options on the recipient (THIS = recipient, FROM/CHI is sender).
 # project_type and application_terms (1=concessional, 2=commercial, 3=predatory) are set by caller.
-# Stamps recipient cooldowns and schedules the project completion event on CHI.
+# Schedules the project completion event on CHI.
 BRI_handle_application = {
-	set_variable = { CHI_bri_active_application = 0 }
-	set_variable = { CHI_bri_application_cooldown = 540 }
 	CHI = {
 		country_event = { id = chi_bri.11 days = 730 random = 365 }
 		add_to_variable = { CHI_bri_active_projects = 1 }
@@ -972,24 +937,23 @@ BRI_handle_application = {
 
 ### BRI - monthly tick for CHI ###
 # Called from on_monthly when CHI has CHI_bri_active flag.
-# Adds monthly income/returns, decrements applicant cooldowns, refreshes eligible-applicants array, and swaps the global-presence tier modifier.
+# Adds monthly income/returns and swaps the global-presence tier modifier.
 CHI_BRI_monthly_tick = {
 	set_temp_variable = { treasury_change = CHI_bri_monthly_income }
 	add_to_temp_variable = { treasury_change = CHI_bri_monthly_returns }
+	set_temp_variable = { project_bonus = CHI_bri_income_per_project_bonus }
+	multiply_temp_variable = { project_bonus = CHI_bri_active_projects }
+	add_to_temp_variable = { treasury_change = project_bonus }
 	modify_treasury_effect = yes
 	add_to_variable = { CHI_bri_treasury = CHI_bri_monthly_income }
-	add_to_variable = { CHI_bri_treasury = CHI_bri_monthly_returns }
-
-	every_country = {
-		limit = { check_variable = { CHI_bri_application_cooldown > 0 } }
-		subtract_from_variable = { CHI_bri_application_cooldown = 1 }
-	}
-
-	clear_array = global.bri_eligible_countries
-	every_country = {
-		limit = { CHI_bri_eligible_applicant = yes }
-		add_to_array = { array = global.bri_eligible_countries value = THIS.id }
-	}
+	add_to_variable = { var = CHI_bri_treasury value = project_bonus }
+	set_temp_variable = { bri_share = CHI_bri_returns_bri_pct }
+	multiply_temp_variable = { bri_share = CHI_bri_monthly_returns }
+	add_to_variable = { var = CHI_bri_treasury value = bri_share }
+	set_temp_variable = { invest_share = CHI_bri_monthly_returns }
+	subtract_from_temp_variable = { var = invest_share value = bri_share }
+	set_temp_variable = { int_investment_change = invest_share }
+	modify_international_investment_effect = yes
 
 	if = {
 		limit = { check_variable = { CHI_bri_global_presence > 199 } }

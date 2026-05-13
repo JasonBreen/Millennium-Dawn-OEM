@@ -620,4 +620,35 @@ on_actions = {
 			}
 		}
 	}
+
+	### Pacific PLA basing cancellation: target loses basing if relations collapse ###
+	on_monthly = {
+		effect = {
+			if = {
+				limit = {
+					has_idea = CHI_pla_basing_economic_help
+					NOT = { tag = CHI }
+					CHI = { exists = yes }
+					has_opinion = { target = CHI value < 0 }
+				}
+				remove_ideas = CHI_pla_basing_economic_help
+				remove_opinion_modifier = { target = CHI modifier = CHI_pla_basing_partner }
+				CHI = { country_event = { id = chi_bri.132 days = 1 } }
+			}
+		}
+	}
+
+	### Beijing Communique defender hook: both pacted parties at war triggers CHI choice ###
+	on_war_relation_added = {
+		effect = {
+			if = {
+				limit = {
+					has_idea = CHI_brokered_non_aggression_pact
+					FROM = { has_idea = CHI_brokered_non_aggression_pact }
+					CHI = { exists = yes }
+				}
+				CHI = { country_event = { id = chi_bri.134 days = 1 } }
+			}
+		}
+	}
 }
