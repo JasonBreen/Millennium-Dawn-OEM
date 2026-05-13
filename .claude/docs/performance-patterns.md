@@ -222,3 +222,56 @@ Never duplicate the same logic in an `effect_tooltip` block and a `for_each_scop
 **Why:** HOI4 evaluates both `effect_tooltip` (for tooltip display) and `for_each_scope_loop` (for effect execution). With ~27 EU members, each duplication costs ~27 extra scope switches and ~54 extra opinion modifier evaluations per trigger. In focus trees with 50+ such calls, that's thousands of wasted evaluations per campaign. `tooltip =` tells the engine to display the tooltip once and execute the loop once — a measurable performance win on any frequently-fired code path.
 
 For the before/after migration pattern, see `.claude/docs/simplification-patterns.md`.
+
+---
+
+## Static Dynamic Modifiers Should Be Ideas
+
+A dynamic modifier where every field uses a **literal numeric value** (not a variable reference) never changes at runtime — it is static by definition. Applied to a country scope, it wastes CPU: dynamic modifiers participate in the modifier recalculation pass every tick, while ideas are cached after the first recalculation.
+
+### Wrong (country-scoped, all-static values)
+
+```
+# common/dynamic_modifiers/TAG_dynamic_modifiers.txt
+some_modifier = {
+    army_attack_factor = 0.10
+    consumer_goods_factor = -0.05
+}
+
+# focus / event / decision effect
+add_dynamic_modifier = { modifier = some_modifier }
+```
+
+### Right
+
+```
+# common/ideas/TAG_ideas.txt
+ideas = {
+    country = {
+        some_idea = {
+            modifier = {
+                army_attack_factor = 0.10
+                consumer_goods_factor = -0.05
+            }
+        }
+    }
+}
+
+# focus / event / decision effect
+add_ideas = some_idea
+```
+
+**Why:** Dynamic modifiers are re-evaluated every tick as part of the modifier recalculation pass. Ideas are cached: the engine computes the idea's modifiers once and reuses the result until the idea changes. For modifiers whose values never change, the dynamic overhead is pure waste.
+
+**Exception — state scope:** Ideas are country-scoped only; they cannot target individual states. A dynamic modifier applied to a state scope (via a state ID block, `every_state`, `random_owned_state`, `CAPITAL`, etc.) is acceptable even with static values.
+
+**How to detect:**
+
+- Read each definition in `common/dynamic_modifiers/*.txt`.
+- Skip meta-fields: `icon`, `enable`, `picture`, `remove_trigger`, `cancel_trigger`, `custom_modifier_tooltip`, `visible_when_added`.
+- For the remaining `field = value` lines, check whether the value is a number literal (`-?\d+(\.\d+)?`) or an identifier.
+  - Any identifier → modifier is dynamic → do not flag.
+  - All numbers → modifier is all-static → check usage scope.
+- For each all-static modifier, find every `add_dynamic_modifier = { modifier = <name>` call in the codebase and inspect the surrounding ~15 lines for state-scope indicators:
+  - **State scope** (acceptable): a bare state ID (`\d+ = {`) or keyword (`every_state`, `random_state`, `any_state`, `random_owned_state`, `every_owned_state`, `random_controlled_state`, `every_controlled_state`, `capital_scope`, `CAPITAL`) appears in the context.
+  - **Country scope** (flag): no such indicators present.

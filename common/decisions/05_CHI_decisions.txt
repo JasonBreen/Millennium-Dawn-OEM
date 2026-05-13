@@ -9,23 +9,7 @@ CHI_sco_category = {
 
 		visible = {
 			CHI = { has_completed_focus = CHI_Form_the_SCO }
-			CHI_sco_can_apply_to_join = yes
 			NOT = { CHI_sco_is_any = yes }
-			if = {
-				limit = {
-					OR = {
-						has_idea = ASEAN_Member
-						capital_scope = { is_on_continent = asia }
-					}
-					NOT = {
-						OR = {
-							capital_scope = { is_on_continent = europe }
-							capital_scope = { is_on_continent = asia }
-						}
-					}
-				}
-				has_completed_focus = CHI_SCO_Plus_Expansion
-			}
 		}
 
 		available = {
@@ -1309,32 +1293,23 @@ CHI_sco_category = {
 		remove_effect = {
 			add_to_array = { global.sco_members = ROOT }
 			if = {
-				limit = {
-					NOT = { has_country_flag = CHI_sco_membership_rejected }
-					CHI = { has_idea = CHI_sco_member_econ }
+				limit = { NOT = { has_country_flag = CHI_sco_membership_rejected } }
+				if = {
+					limit = { CHI = { has_idea = CHI_sco_member_econ } }
+					add_ideas = CHI_sco_member_econ
 				}
-				add_ideas = CHI_sco_member_econ
-			}
-			else_if = {
-				limit = {
-					NOT = { has_country_flag = CHI_sco_membership_rejected }
-					CHI = { has_idea = CHI_sco_member_pol }
+				else_if = {
+					limit = { CHI = { has_idea = CHI_sco_member_pol } }
+					add_ideas = CHI_sco_member_pol
 				}
-				add_ideas = CHI_sco_member_pol
-			}
-			else_if = {
-				limit = {
-					NOT = { has_country_flag = CHI_sco_membership_rejected }
-					CHI = { has_idea = CHI_sco_member_mil }
+				else_if = {
+					limit = { CHI = { has_idea = CHI_sco_member_mil } }
+					add_ideas = CHI_sco_member_mil
 				}
-				add_ideas = CHI_sco_member_mil
-			}
-			else_if = {
-				limit = {
-					NOT = { has_country_flag = CHI_sco_membership_rejected }
-					CHI = { has_idea = CHI_sco_member }
+				else_if = {
+					limit = { CHI = { has_idea = CHI_sco_member } }
+					add_ideas = CHI_sco_member
 				}
-				add_ideas = CHI_sco_member
 			}
 			if = {
 				limit = {
@@ -1619,8 +1594,8 @@ CHI_sco_category = {
 			add_command_power = -40
 			if = {
 				limit = { has_completed_focus = CHI_Strengthen_Security_Framework }
-				every_country = {
-					limit = { is_sco = yes }
+				for_each_scope_loop = {
+					array = global.sco_members
 					add_timed_idea = {
 						idea = SCO_joint_drill_1
 						days = 21
@@ -1628,8 +1603,8 @@ CHI_sco_category = {
 				}
 			}
 			else = {
-				every_country = {
-					limit = { is_sco = yes }
+				for_each_scope_loop = {
+					array = global.sco_members
 					add_timed_idea = {
 						idea = SCO_joint_drill
 						days = 21
@@ -5120,16 +5095,9 @@ CHI_south_china_sea_category = {
 		complete_effect = {
 			add_to_variable = { CHI_scs_framework = 3 tooltip = CHI_scs_framework_tt }
 			clamp_variable = { var = CHI_scs_framework min = -50 max = 50 }
-			every_country = {
-				limit = {
-					OR = {
-						original_tag = VIE
-						original_tag = PHI
-						original_tag = MAY
-					}
-				}
-				add_opinion_modifier = { target = ROOT modifier = small_increase }
-			}
+			VIE = { add_opinion_modifier = { target = ROOT modifier = small_increase } }
+			PHI = { add_opinion_modifier = { target = ROOT modifier = small_increase } }
+			MAY = { add_opinion_modifier = { target = ROOT modifier = small_increase } }
 			news_event = { id = china_scs.31 hours = 6 }
 			log = "[GetDateText]: [Root.GetName]: Decision CHI_scs_invoke_doc_2002 executed"
 		}
@@ -6106,8 +6074,8 @@ CHI_japan_strategy = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision CHI_patrol_diaoyu_fishing_grounds executed"
-			add_to_variable = { var = senkaku_pressure value = 3 tooltip = senkaku_pressure_tt }
-			clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+			add_to_variable = { var = CHI_senkaku_pressure value = 3 tooltip = CHI_senkaku_pressure_tt }
+			clamp_variable = { var = CHI_senkaku_pressure min = 0 max = 100 }
 			add_to_variable = { CHI_chinese_aggression = 1 tooltip = CHI_chinese_aggression_tt }
 			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
 		}
@@ -6144,8 +6112,8 @@ CHI_japan_strategy = {
 			939 = {
 				add_dynamic_modifier = { modifier = CHI_coast_guard_standoff }
 			}
-			add_to_variable = { senkaku_pressure = 5 tooltip = senkaku_pressure_tt }
-			clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+			add_to_variable = { CHI_senkaku_pressure = 5 tooltip = CHI_senkaku_pressure_tt }
+			clamp_variable = { var = CHI_senkaku_pressure min = 0 max = 100 }
 		}
 
 		ai_will_do = {
@@ -6186,7 +6154,7 @@ CHI_japan_strategy = {
 			}
 			modifier = {
 				add = 3
-				check_variable = { senkaku_pressure > 95 }
+				check_variable = { CHI_senkaku_pressure > 95 }
 			}
 		}
 	}
@@ -6303,8 +6271,8 @@ CHI_japan_strategy = {
 			log = "[GetDateText]: [Root.GetName]: Decision CHI_jap_reinforce_coast_guard executed"
 			navy_experience = 5
 			CHI = {
-				add_to_variable = { senkaku_pressure = 1 tooltip = senkaku_pressure_tt }
-				clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+				add_to_variable = { CHI_senkaku_pressure = 1 tooltip = CHI_senkaku_pressure_tt }
+				clamp_variable = { var = CHI_senkaku_pressure min = 0 max = 100 }
 			}
 		}
 
@@ -6336,8 +6304,8 @@ CHI_japan_strategy = {
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision CHI_jap_open_back_channel executed"
 			CHI = {
-				add_to_variable = { senkaku_pressure = -15 tooltip = senkaku_pressure_tt }
-				clamp_variable = { var = senkaku_pressure min = 0 max = 100 }
+				add_to_variable = { CHI_senkaku_pressure = -15 tooltip = CHI_senkaku_pressure_tt }
+				clamp_variable = { var = CHI_senkaku_pressure min = 0 max = 100 }
 				add_opinion_modifier = { target = JAP modifier = senkaku_back_channel }
 			}
 			add_opinion_modifier = { target = CHI modifier = senkaku_back_channel }
@@ -6351,7 +6319,7 @@ CHI_japan_strategy = {
 			}
 			modifier = {
 				add = 3
-				CHI = { check_variable = { senkaku_pressure > 60 } }
+				CHI = { check_variable = { CHI_senkaku_pressure > 60 } }
 			}
 		}
 	}

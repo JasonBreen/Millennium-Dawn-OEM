@@ -1002,26 +1002,7 @@ CHI_BRI_monthly_tick = {
 # Tooltip rendered via the uighur_threat_tt loc triplet; no separate custom_effect_tooltip needed.
 CHI_modify_uighur_threat = {
 	add_to_variable = { uighur_threat = modify_uighur_threat tooltip = uighur_threat_tt }
-	if = {
-		limit = {
-			check_variable = {
-				var = uighur_threat
-				value = 0
-				compare = less_than
-			}
-		}
-		set_variable = { uighur_threat = 0 }
-	}
-	else_if = {
-		limit = {
-			check_variable = {
-				var = uighur_threat
-				value = 100
-				compare = greater_than
-			}
-		}
-		set_variable = { uighur_threat = 100 }
-	}
+	clamp_variable = { var = uighur_threat min = 0 max = 100 }
 }
 
 ### Uyghur Threat: monthly tick ###
@@ -1145,14 +1126,7 @@ CHI_uighur_monthly_tick = {
 				}
 			}
 			# Boiling tier: uighur_threat 85..100
-			else_if = {
-				limit = {
-					check_variable = {
-						var = uighur_threat
-						value = 85
-						compare = greater_than_or_equals
-					}
-				}
+			else = {
 				random_list = {
 					15 = { }
 					15 = {
