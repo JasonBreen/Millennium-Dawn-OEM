@@ -1,0 +1,334 @@
+#!/usr/bin/env python3
+
+"""
+Millennium Dawn Localisation Standardizer
+Reorganises a loc file by content category: National Focus, Ideas, Dynamic Modifiers,
+Opinion Modifiers, Decisions, Events, Characters, MIO, and Overig.
+"""
+
+import os
+import re
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, List, Optional, Set, Tuple
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from shared_utils import create_backup, log_message
+
+# Output order
+SECTION_ORDER = [
+    "National Focus",
+    "Ideas",
+    "Dynamic Modifiers",
+    "Opinion Modifiers",
+    "Decisions",
+    "Events",
+    "Characters",
+    "MIO",
+    "Overig",
+]
+
+# Content directories (relative to mod root) and extraction patterns per category.
+# Each entry: (list_of_dirs, list_of_regex_patterns, recursive_glob)
+CATEGORY_CONFIG: Dict[str, Tuple[List[str], List[str], bool]] = {
+    "National Focus": (
+        ["common/national_focus"],
+        [r"\bid\s*=\s*(\w+)"],
+        False,
+    ),
+    "Ideas": (
+        ["common/ideas"],
+        [r"^\t{2}(\w+)\s*=\s*\{"],
+        False,
+    ),
+    "Dynamic Modifiers": (
+        ["common/dynamic_modifiers"],
+        [r"^(\w+)\s*=\s*\{"],
+        False,
+    ),
+    "Opinion Modifiers": (
+        ["common/opinion_modifiers"],
+        [r"^\t(\w+)\s*=\s*\{"],
+        False,
+    ),
+    "Decisions": (
+        ["common/decisions"],
+        [r"^(\w+)\s*=\s*\{", r"^\t(\w+)\s*=\s*\{"],
+        True,  # includes categories/ subdir
+    ),
+    "Events": (
+        ["events"],
+        [r"^add_namespace\s*=\s*(\w+)"],
+        False,
+    ),
+    "Characters": (
+        ["common/characters"],
+        [r"^\t(\w+)\s*=\s*\{"],
+        False,
+    ),
+    "MIO": (
+        ["common/military_industrial_organization/organizations"],
+        [r"^(\w+)\s*=\s*\{", r"\bname\s*=\s*(\w+)"],
+        False,
+    ),
+}
+
+# Key suffixes that may be appended to a base ID to form a loc key
+_SUFFIXES = ("_desc", "_tt", "_name", "_short", "_loc", "_choice_tt")
+
+SEPARATOR = " # =============================="
+
+
+@dataclass
+class LocEntry:
+    leading_comments: List[str]
+    key: str
+    value: str  # everything after the colon (e.g. ` "Text"`)
+
+
+def _scan_dir(directory: Path, recursive: bool) -> List[Path]:
+    if not directory.exists():
+        return []
+    if recursive:
+        return list(directory.rglob("*.txt"))
+    return list(directory.glob("*.txt"))
+
+
+def _build_index(mod_root: Path, verbose: bool) -> Dict[str, Set[str]]:
+    index: Dict[str, Set[str]] = {cat: set() for cat in SECTION_ORDER}
+
+    for category, (dirs, patterns, recursive) in CATEGORY_CONFIG.items():
+        compiled = [re.compile(p, re.MULTILINE) for p in patterns]
+        for rel_dir in dirs:
+            directory = mod_root / rel_dir
+            for txt_file in _scan_dir(directory, recursive):
+                try:
+                    content = txt_file.read_text(encoding="utf-8-sig", errors="replace")
+                except OSError:
+                    continue
+                for regex in compiled:
+                    for match in regex.finditer(content):
+                        token = match.group(1)
+                        if token:
+                            index[category].add(token)
+
+        log_message(
+            "DEBUG",
+            f"{category}: {len(index[category])} IDs indexed",
+            verbose,
+        )
+
+    return index
+
+
+def _find_category(key: str, index: Dict[str, Set[str]]) -> str:
+    # Event keys: match `namespace.N` or `namespace.N.x`
+    event_match = re.match(r"^(.+?)\.\d+(?:\.\w+)?$", key)
+    if event_match:
+        namespace = event_match.group(1)
+        if namespace in index["Events"]:
+            return "Events"
+
+    # Try exact key first
+    for category in SECTION_ORDER[:-1]:
+        if key in index[category]:
+            return category
+
+    # Try stripping a known suffix
+    for suffix in _SUFFIXES:
+        if key.endswith(suffix):
+            base = key[: -len(suffix)]
+            for category in SECTION_ORDER[:-1]:
+                if base in index[category]:
+                    return category
+            break
+
+    return "Overig"
+
+
+def _parse_loc_file(content: str) -> Tuple[str, List[LocEntry]]:
+    """Return (header_line, list_of_entries). header_line is the `l_english:` line."""
+    lines = content.splitlines()
+
+    header = ""
+    entries: List[LocEntry] = []
+    pending_comments: List[str] = []
+
+    for line in lines:
+        stripped = line.strip()
+
+        if not header:
+            # First non-empty line must be the language header
+            if stripped:
+                header = line.rstrip()
+            continue
+
+        if not stripped:
+            # Blank line — discard (we add our own spacing)
+            continue
+
+        if stripped.startswith("#"):
+            pending_comments.append(line.rstrip())
+            continue
+
+        # Try to parse as a loc key: ` key: "value"` or ` key: value`
+        m = re.match(r"^\s+(\S+?)\s*:(.*)", line)
+        if m:
+            key = m.group(1)
+            value = m.group(2)
+            entries.append(LocEntry(list(pending_comments), key, value))
+            pending_comments = []
+        else:
+            # Unrecognised line — keep it as a standalone comment
+            pending_comments.append(line.rstrip())
+
+    # Any trailing comments with no following key → attach as Overig comment entries
+    if pending_comments:
+        entries.append(LocEntry(list(pending_comments), "", ""))
+
+    return header, entries
+
+
+def _format_section_header(category: str) -> List[str]:
+    return [
+        "",
+        SEPARATOR,
+        f" # {category}",
+        SEPARATOR,
+    ]
+
+
+def _format_output(
+    header: str, entries: List[LocEntry], index: Dict[str, Set[str]]
+) -> str:
+    # Group entries by category (preserve original order within each bucket)
+    buckets: Dict[str, List[LocEntry]] = {cat: [] for cat in SECTION_ORDER}
+
+    for entry in entries:
+        if not entry.key:
+            # Trailing comments with no key go to Overig
+            buckets["Overig"].append(entry)
+            continue
+        category = _find_category(entry.key, index)
+        buckets[category].append(entry)
+
+    output_lines: List[str] = [header]
+
+    for category in SECTION_ORDER:
+        bucket = buckets[category]
+        if not bucket:
+            continue
+
+        output_lines.extend(_format_section_header(category))
+
+        for entry in bucket:
+            for comment in entry.leading_comments:
+                output_lines.append(f" {comment.lstrip()}")
+            if entry.key:
+                output_lines.append(f" {entry.key}:{entry.value}")
+
+    output_lines.append("")  # trailing newline
+    return "\n".join(output_lines)
+
+
+def _detect_mod_root(start: Path) -> Optional[Path]:
+    """Walk up from start until we find a directory containing both common/ and events/."""
+    candidate = start if start.is_dir() else start.parent
+    for _ in range(10):
+        if (candidate / "common").is_dir() and (candidate / "events").is_dir():
+            return candidate
+        parent = candidate.parent
+        if parent == candidate:
+            break
+        candidate = parent
+    return None
+
+
+class LocalisationStandardizer:
+    def __init__(self, mod_root: Path, verbose: bool = False):
+        self.mod_root = mod_root
+        self.verbose = verbose
+        log_message("INFO", f"Building content index from {mod_root}", verbose)
+        self.index = _build_index(mod_root, verbose)
+
+    def standardize_file(self, input_file: Path, output_file: Path) -> bool:
+        log_message("INFO", f"Standardising {input_file}", self.verbose)
+
+        try:
+            raw = input_file.read_text(encoding="utf-8-sig")
+        except OSError as exc:
+            log_message("ERROR", f"Cannot read {input_file}: {exc}")
+            return False
+
+        header, entries = _parse_loc_file(raw)
+
+        if not header:
+            log_message("ERROR", "No language header found (expected `l_english:`)")
+            return False
+
+        log_message("INFO", f"Parsed {len(entries)} entries", self.verbose)
+
+        output = _format_output(header, entries, self.index)
+
+        try:
+            output_file.write_text(output, encoding="utf-8-sig")
+        except OSError as exc:
+            log_message("ERROR", f"Cannot write {output_file}: {exc}")
+            return False
+
+        # Summary
+        cats = {}
+        for entry in entries:
+            if entry.key:
+                cat = _find_category(entry.key, self.index)
+                cats[cat] = cats.get(cat, 0) + 1
+        for cat in SECTION_ORDER:
+            if cat in cats:
+                log_message("INFO", f"  {cat}: {cats[cat]} keys", self.verbose)
+
+        log_message("SUCCESS", f"Written to {output_file}")
+        return True
+
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Standardise a Millennium Dawn localisation file by content category"
+    )
+    parser.add_argument("input_file", help="Input .yml localisation file")
+    parser.add_argument("-o", "--output", help="Output file (default: overwrite input)")
+    parser.add_argument("-b", "--backup", action="store_true", help="Create backup first")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    parser.add_argument("--mod-root", help="Path to mod root (auto-detected if omitted)")
+    args = parser.parse_args()
+
+    input_path = Path(args.input_file)
+    if not input_path.exists():
+        log_message("ERROR", f"File not found: {input_path}")
+        sys.exit(1)
+
+    output_path = Path(args.output) if args.output else input_path
+
+    if args.mod_root:
+        mod_root = Path(args.mod_root)
+    else:
+        mod_root = _detect_mod_root(input_path)
+        if not mod_root:
+            log_message("ERROR", "Could not detect mod root. Use --mod-root.")
+            sys.exit(1)
+    log_message("INFO", f"Mod root: {mod_root}", args.verbose)
+
+    if args.backup:
+        backup = create_backup(str(input_path))
+        if not backup:
+            sys.exit(1)
+
+    standardizer = LocalisationStandardizer(mod_root, verbose=args.verbose)
+    if not standardizer.standardize_file(input_path, output_path):
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

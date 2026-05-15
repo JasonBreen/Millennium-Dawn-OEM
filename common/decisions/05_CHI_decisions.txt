@@ -3152,6 +3152,127 @@ CHI_national_commitee_decisions_category = {
 			}
 		}
 	}
+
+	CHI_eleventh_five_year_plan_mission = {
+		icon = GFX_decision_generic_china
+		allowed = { original_tag = CHI }
+
+		fire_only_once = yes
+		is_good = yes
+		days_mission_timeout = 1825
+
+		activation = { has_completed_focus = CHI_eleventh_five_year_plan }
+
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = CHI_11fyp_gdp_goal_tt
+				check_variable = { gdp_per_capita > CHI_11fyp_gdp_target }
+			}
+			custom_trigger_tooltip = {
+				tooltip = CHI_11fyp_offices_goal_tt
+				check_variable = { office_park_total > CHI_11fyp_offices_target }
+			}
+			custom_trigger_tooltip = {
+				tooltip = CHI_11fyp_civfac_goal_tt
+				check_variable = {
+					var = industrial_complex_total
+					value = CHI_11fyp_civfac_target
+					compare = greater_than_or_equals
+				}
+			}
+			custom_trigger_tooltip = {
+				tooltip = CHI_11fyp_infra_goal_tt
+				all_owned_state = {
+					infrastructure > 1
+				}
+			}
+			has_tech = energy_efficiency
+			has_tech = early_renewables
+			has_idea = edu_03
+			has_idea = health_02
+			has_idea = social_02
+			custom_trigger_tooltip = {
+				tooltip = CHI_11fyp_social_goal_tt
+				check_variable = { display_income > display_expense }
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Mission CHI_eleventh_five_year_plan_mission completed"
+			custom_effect_tooltip = CHI_11fyp_full_success_tt
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+			add_to_variable = { CHI_pol_drift_defence_factor = 0.15 tooltip = drift_defence_factor_tt }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+			add_to_variable = { CHI_economy_country_resource_cost_steel = -1 tooltip = country_resource_cost_steel_tt }
+			add_to_variable = { CHI_economy_production_speed_renewable_energy_infra_factor = 0.15 tooltip = production_speed_renewable_energy_infra_factor_tt }
+			add_to_variable = { CHI_economy_production_speed_nuclear_reactor_factor = 0.15 tooltip = production_speed_nuclear_reactor_factor_tt }
+		}
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: Mission CHI_eleventh_five_year_plan_mission timed out"
+			set_temp_variable = { CHI_fyp_goals_met = 0 }
+			if = {
+				limit = { check_variable = { gdp_per_capita > CHI_11fyp_gdp_target } }
+				add_to_temp_variable = { CHI_fyp_goals_met = 1 }
+			}
+			if = {
+				limit = { check_variable = { office_park_total > CHI_11fyp_offices_target } }
+				add_to_temp_variable = { CHI_fyp_goals_met = 1 }
+			}
+			if = {
+				limit = {
+					check_variable = {
+						var = industrial_complex_total
+						value = CHI_11fyp_civfac_target
+						compare = greater_than_or_equals
+					}
+				}
+				add_to_temp_variable = { CHI_fyp_goals_met = 1 }
+			}
+			if = {
+				limit = {
+					all_owned_state = { infrastructure > 1 }
+				}
+				add_to_temp_variable = { CHI_fyp_goals_met = 1 }
+			}
+			if = {
+				limit = {
+					has_tech = energy_efficiency
+					has_tech = early_renewables
+				}
+				add_to_temp_variable = { CHI_fyp_goals_met = 1 }
+			}
+			if = {
+				limit = {
+					has_idea = edu_03
+					has_idea = health_02
+					has_idea = social_02
+					check_variable = { display_income > display_expense }
+				}
+				add_to_temp_variable = { CHI_fyp_goals_met = 1 }
+			}
+			if = {
+				limit = { check_variable = { CHI_fyp_goals_met > 1 } }
+				custom_effect_tooltip = CHI_11fyp_partial_success_tt
+				custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+				add_to_variable = { CHI_pol_drift_defence_factor = 0.05 tooltip = drift_defence_factor_tt }
+				newline = yes
+				custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+				add_to_variable = { CHI_economy_production_speed_renewable_energy_infra_factor = 0.05 tooltip = production_speed_renewable_energy_infra_factor_tt }
+				add_to_variable = { CHI_economy_production_speed_nuclear_reactor_factor = 0.05 tooltip = production_speed_nuclear_reactor_factor_tt }
+			}
+			else = {
+				custom_effect_tooltip = CHI_11fyp_failed_tt
+				add_timed_idea = {
+					idea = CHI_failed_five_year_plan
+					years = 3
+				}
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
 }
 
 CHI_SAR_decisions_category = {
@@ -8286,5 +8407,382 @@ CHI_pacific_pla_training = {
 			log = "[GetDateText]: [Root.GetName]: Decision CHI_BRI_redirect_more_to_bri executed"
 		}
 		ai_will_do = { base = 0 }
+	}
+}
+
+CHI_olympic_preparations = {
+
+	CHI_olympic_mission = {
+		icon = GFX_decision_generic_china
+		allowed = { original_tag = CHI }
+		fire_only_once = yes
+		is_good = yes
+		days_mission_timeout = 1285
+
+		activation = {
+			has_completed_focus = CHI_beijing_action_plan_green_olympics
+		}
+
+		available = {
+			has_country_flag = CHI_olympic_venues_funded
+			has_country_flag = CHI_athlete_village_funded
+			has_country_flag = CHI_transport_links_funded
+			has_country_flag = CHI_environmental_program_done
+		}
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: Mission CHI_olympic_mission timed out"
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+			add_to_variable = { CHI_pol_political_power_factor = 0.10 tooltip = political_power_factor_tt }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_diplomacy_modifier }
+			add_to_variable = { CHI_foreign_influence_modifier_diplomacy = 0.05 tooltip = foreign_influence_modifier_tt }
+			set_country_flag = CHI_olympics_completed
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	CHI_olympic_venue_construction = {
+		icon = GFX_decision_generic_construction
+		allowed = { original_tag = CHI }
+		visible = { has_completed_focus = CHI_beijing_action_plan_green_olympics }
+		available = {
+			check_variable = { treasury > 15 }
+		}
+		cost = 0
+		fire_only_once = yes
+		days_remove = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_olympic_venue_construction executed"
+			set_temp_variable = { treasury_change = -15 }
+			modify_treasury_effect = yes
+			set_country_flag = CHI_olympic_venues_funded
+		}
+
+		remove_effect = {
+			547 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = no
+				}
+				add_state_modifier = {
+					modifier = {
+						local_building_slots_factor = 0.05
+						state_productivity_growth_modifier = 0.05
+					}
+				}
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_olympic_venue_construction completed"
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_olympic_athlete_village = {
+		icon = GFX_decision_generic_construction
+		allowed = { original_tag = CHI }
+		visible = { has_completed_focus = CHI_beijing_action_plan_green_olympics }
+		available = {
+			check_variable = { treasury > 10 }
+		}
+		cost = 0
+		fire_only_once = yes
+		days_remove = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_olympic_athlete_village executed"
+			set_temp_variable = { treasury_change = -10 }
+			modify_treasury_effect = yes
+			set_country_flag = CHI_athlete_village_funded
+		}
+
+		remove_effect = {
+			547 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = no
+				}
+				add_state_modifier = {
+					modifier = {
+						state_productivity_growth_modifier = 0.05
+					}
+				}
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_olympic_athlete_village completed"
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_olympic_transport_links = {
+		icon = GFX_decision_generic_construction
+		allowed = { original_tag = CHI }
+		visible = { has_completed_focus = CHI_beijing_action_plan_green_olympics }
+		available = {
+			check_variable = { treasury > 10 }
+		}
+		cost = 0
+		fire_only_once = yes
+		days_remove = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_olympic_transport_links executed"
+			set_temp_variable = { treasury_change = -10 }
+			modify_treasury_effect = yes
+			set_country_flag = CHI_transport_links_funded
+		}
+
+		remove_effect = {
+			547 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = no
+				}
+			}
+			548 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = no
+				}
+				add_state_modifier = {
+					modifier = {
+						state_production_speed_buildings_factor = 0.05
+					}
+				}
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_olympic_transport_links completed"
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_olympic_environmental_program = {
+		icon = GFX_decision_generic_political_action
+		allowed = { original_tag = CHI }
+		visible = { has_completed_focus = CHI_beijing_action_plan_green_olympics }
+		available = {
+			check_variable = { treasury > 8 }
+		}
+		cost = 0
+		fire_only_once = yes
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_olympic_environmental_program executed"
+			set_temp_variable = { treasury_change = -8 }
+			modify_treasury_effect = yes
+			set_country_flag = CHI_environmental_program_done
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+			add_to_variable = { CHI_pol_war_support_factor = 0.03 tooltip = war_support_factor_tt }
+			add_to_variable = { CHI_pol_drift_defence_factor = 0.02 tooltip = drift_defence_factor_tt }
+		}
+
+		ai_will_do = { base = 5 }
+	}
+}
+
+CHI_hsr_construction = {
+
+	CHI_hsr_beijing_tianjin = {
+		icon = GFX_decision_generic_construction
+		allowed = { original_tag = CHI }
+		visible = { has_completed_focus = CHI_high_speed_rail_one }
+		available = {
+			check_variable = { treasury > 15 }
+		}
+		cost = 0
+		fire_only_once = yes
+		days_remove = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_hsr_beijing_tianjin executed"
+			set_temp_variable = { treasury_change = -15 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			# Need to build railway from Beijing to Tianjin
+			547 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = no
+				}
+				add_state_modifier = {
+					modifier = {
+						state_production_speed_buildings_factor = 0.10
+					}
+				}
+			}
+			548 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = no
+				}
+				add_state_modifier = {
+					modifier = {
+						state_production_speed_buildings_factor = 0.10
+					}
+				}
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_hsr_beijing_tianjin completed"
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_hsr_wuhan_guangzhou = {
+		icon = GFX_decision_generic_construction
+		allowed = { original_tag = CHI }
+		visible = { has_completed_focus = CHI_high_speed_rail_one }
+		available = {
+			check_variable = { treasury > 15 }
+		}
+		cost = 0
+		fire_only_once = yes
+		days_remove = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_hsr_wuhan_guangzhou executed"
+			set_temp_variable = { treasury_change = -15 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			# Need to build railway from Wuhan to Guangzhou
+			570 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = no
+				}
+				add_state_modifier = {
+					modifier = {
+						state_production_speed_buildings_factor = 0.10
+					}
+				}
+			}
+			534 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = no
+				}
+				add_state_modifier = {
+					modifier = {
+						state_production_speed_buildings_factor = 0.10
+					}
+				}
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_hsr_wuhan_guangzhou completed"
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_hsr_beijing_shanghai = {
+		icon = GFX_decision_generic_construction
+		allowed = { original_tag = CHI }
+		visible = { has_completed_focus = CHI_high_speed_rail_one }
+		available = {
+			check_variable = { treasury > 20 }
+		}
+		cost = 0
+		fire_only_once = yes
+		days_remove = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_hsr_beijing_shanghai executed"
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			# Need to build railway from Beijing to Shanghai
+			547 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = no
+				}
+				add_state_modifier = {
+					modifier = {
+						state_production_speed_buildings_factor = 0.10
+					}
+				}
+			}
+			540 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = no
+				}
+				add_state_modifier = {
+					modifier = {
+						state_production_speed_buildings_factor = 0.10
+					}
+				}
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_hsr_beijing_shanghai completed"
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_hsr_chengdu_chongqing = {
+		icon = GFX_decision_generic_construction
+		allowed = { original_tag = CHI }
+		visible = { has_completed_focus = CHI_high_speed_rail_one }
+		available = {
+			check_variable = { treasury > 15 }
+		}
+		cost = 0
+		fire_only_once = yes
+		days_remove = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_hsr_chengdu_chongqing executed"
+			set_temp_variable = { treasury_change = -15 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			# Need to build railway from Chengdu to Chongqing
+			586 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = no
+				}
+				add_state_modifier = {
+					modifier = {
+						state_production_speed_buildings_factor = 0.10
+						state_productivity_growth_modifier = 0.05
+					}
+				}
+			}
+			583 = {
+				add_building_construction = {
+					type = infrastructure
+					level = 1
+					instant_build = no
+				}
+				add_state_modifier = {
+					modifier = {
+						state_production_speed_buildings_factor = 0.10
+						state_productivity_growth_modifier = 0.05
+					}
+				}
+			}
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_hsr_chengdu_chongqing completed"
+		}
+
+		ai_will_do = { base = 5 }
 	}
 }

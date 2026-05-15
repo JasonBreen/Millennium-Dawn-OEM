@@ -37,7 +37,7 @@ focus_tree = {
 	## Inlay Focusses
 	inlay_window = {
 		id = CHI_national_committee_inlay_window
-		position = { x = 200 y = 700 }
+		position = { x = 2200 y = 200 }
 	}
 
 
@@ -74,8 +74,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_scientific_development_outlook_foreshadowed #Needs to shorten the focus of Hu Jintao and add a lighter version ahead of time
-		icon = x
+		id = CHI_scientific_development_outlook_foreshadowed
+		icon = sustainable_development
 
 		x = -3
 		y = 1
@@ -96,10 +96,40 @@ focus_tree = {
 				value = 0.14
 				tooltip_side = CHI_tuanpai_youth_league
 			}
+			newline = yes
+			add_timed_idea = {
+				idea = CHI_scientific_outlook_idea_1
+				years = 2
+			}
 		}
 
 		ai_will_do = {
 			base = 3
+		}
+	}
+
+	focus = {
+		id = CHI_invigorate_country_through_STE
+		icon = x
+
+		x = -1
+		y = 1
+		relative_position_id = CHI_scientific_development_outlook_foreshadowed
+
+		cost = 5
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_scientific_development_outlook_foreshadowed }
+
+		available = { has_country_leader = { name =  "Jiang Zemin" } }
+		bypass = { NOT = { has_country_leader = { name =  "Jiang Zemin" } } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_invigorate_country_through_STE"
+		}
+
+		ai_will_do = {
+			base = 5
 		}
 	}
 
@@ -161,7 +191,7 @@ focus_tree = {
 			remove_ideas = CHI_three_represents_debate
 			newline = yes
 			custom_effect_tooltip = {
-			localization_key = modifies_dynamic_modifier_tt
+				localization_key = modifies_dynamic_modifier_tt
 				MODIFIER = CHI_political_system
 			}
 			add_to_variable = { CHI_pol_research_speed_factor = 0.05 tooltip = research_speed_factor_tt }
@@ -682,14 +712,14 @@ focus_tree = {
 		}
 	}
 	focus = {
-		id = CHI_hu_jintao_reign
-		icon = x
+		id = CHI_hu_jintao_reign #We should add a trait to Hu, based on his work as VP and in the military commission
+		icon = focus_hu_jintao
 
-		x = -5
+		x = -6
 		y = 1
 		relative_position_id = CHI_the_shanghai_succession
 
-		cost = 10
+		cost = 1
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		prerequisite = { focus = CHI_the_shanghai_succession }
@@ -698,6 +728,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_hu_jintao_reign"
+			add_power_balance_value = { id = CHI_factional_balance value = 0.10 tooltip_side = CHI_tuanpai_youth_league }
 		}
 
 		ai_will_do = {
@@ -705,8 +736,280 @@ focus_tree = {
 		}
 	}
 	focus = {
-		id = CHI_a_new_leader
-		icon = x
+		id = CHI_scientific_outlook_on_development
+		icon = tech_sharing
+
+		x = -1
+		y = 1
+		relative_position_id = CHI_hu_jintao_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_hu_jintao_reign }
+
+		available = { has_country_leader = { name =  "Hu Jintao" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_scientific_outlook_on_development"
+			add_power_balance_value = { id = CHI_factional_balance value = 0.06 tooltip_side = CHI_tuanpai_youth_league }
+			add_to_variable = { CHI_chinese_aggression = -3 tooltip = CHI_chinese_aggression_tt }
+			clamp_variable = { var = CHI_chinese_aggression min = -50 max = 50 }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+			add_to_variable = { CHI_pol_consumer_goods_expected_value = -0.05 tooltip = consumer_goods_expected_value_tt }
+			add_to_variable = { CHI_pol_research_speed_factor = 0.05 tooltip = research_speed_factor_tt }
+			if = {
+				limit = { NOT = { has_idea = CHI_scientific_outlook_idea_1 } }
+				custom_effect_tooltip = CHI_scientific_outlook_on_development_tt
+				add_to_variable = { CHI_pol_expected_education_modifier = 0.5 tooltip = expected_education_modifier_tt }
+				add_to_variable = { CHI_pol_expected_healthcare_modifier = 0.5 tooltip = expected_healthcare_modifier_tt }
+				newline = yes
+			}
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+			add_to_variable = { CHI_economy_agricolture_productivity_modifier = 0.10 tooltip = agricolture_productivity_modifier_tt }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_property_tax_pilot_program
+		icon = BRA_simplify_the_tax_system
+
+		x = -2
+		y = 2
+		relative_position_id = CHI_hu_jintao_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_scientific_outlook_on_development }
+
+		available = { has_country_leader = { name =  "Hu Jintao" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_property_tax_pilot_program"
+			540 = { add_state_modifier = { modifier = { state_productivity_growth_modifier = 0.05 } } }
+			newline = yes
+			583 = { add_state_modifier = { modifier = { state_productivity_growth_modifier = 0.05 } } }
+			newline = yes
+			add_timed_idea = { idea = CHI_property_tax_pilot_idea years = 3 }
+			newline = yes
+			add_power_balance_value = { id = CHI_factional_balance value = 0.04 tooltip_side = CHI_tuanpai_youth_league }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_intra_party_democracy_experiments
+		icon = democratic_communism
+
+		x = -3
+		y = 3
+		relative_position_id = CHI_hu_jintao_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_property_tax_pilot_program }
+
+		available = { has_country_leader = { name =  "Hu Jintao" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_intra_party_democracy_experiments"
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+			add_to_variable = { CHI_pol_stability_factor = 0.035 tooltip = stability_factor_tt }
+			add_to_variable = { CHI_pol_drift_defence_factor = -0.10 tooltip = drift_defence_factor_tt }
+			newline = yes
+			add_power_balance_value = { id = CHI_factional_balance value = 0.05 tooltip_side = CHI_tuanpai_youth_league }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_inner_party_supervision_regulations
+		icon = focus_ARG_anti_corruption_policies
+
+		x = -1
+		y = 3
+		relative_position_id = CHI_hu_jintao_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_property_tax_pilot_program }
+		prerequisite = { focus = CHI_western_development_strategy }
+
+		available = { has_country_leader = { name =  "Hu Jintao" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_inner_party_supervision_regulations"
+			add_timed_idea = { idea = CHI_inner_party_supervision_idea years = 5 }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_national_overall_emergency_response_plan
+		icon = construction_buldozer
+
+		x = 1
+		y = 3
+		relative_position_id = CHI_hu_jintao_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_youth_league_pipeline }
+		prerequisite = { focus = CHI_western_development_strategy }
+
+		available = { has_country_leader = { name =  "Hu Jintao" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_national_overall_emergency_response_plan"
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+			add_to_variable = { CHI_economy_industry_repair_factor = 0.010 tooltip = industry_repair_factor_tt }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+			add_to_variable = { CHI_pol_bureaucracy_cost_multiplier_modifier = 0.025 tooltip = bureaucracy_cost_multiplier_modifier_tt }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_beijing_action_plan_green_olympics
+		icon = olympics
+
+		x = 3
+		y = 3
+		relative_position_id = CHI_hu_jintao_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_youth_league_pipeline }
+
+		available = { has_country_leader = { name =  "Hu Jintao" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_beijing_action_plan_green_olympics"
+			unlock_decision_category_tooltip = CHI_olympic_preparations
+			newline = yes
+			custom_effect_tooltip = CHI_olympic_preparations_tt
+			effect_tooltip = {
+				custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+				add_to_variable = { CHI_pol_political_power_factor = 0.10 tooltip = political_power_factor_tt }
+				newline = yes
+				custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_diplomacy_modifier }
+				add_to_variable = { CHI_foreign_influence_modifier_diplomacy = 0.05 tooltip = foreign_influence_modifier_tt }
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_western_development_strategy
+		icon = focus_CHI_the_4_defence_areas
+
+		x = 0
+		y = 2
+		relative_position_id = CHI_hu_jintao_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_scientific_outlook_on_development }
+		prerequisite = { focus = CHI_cadre_evaluation_reform }
+
+		available = { has_country_leader = { name =  "Hu Jintao" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_western_development_strategy"
+			592 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.10 state_productivity_growth_modifier = 0.05 } } }
+			newline = yes
+			589 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.10 state_productivity_growth_modifier = 0.05 } } }
+			newline = yes
+			588 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.10 state_productivity_growth_modifier = 0.05 } } }
+			newline = yes
+			560 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.10 state_productivity_growth_modifier = 0.05 } } }
+			newline = yes
+			578 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.10 state_productivity_growth_modifier = 0.05 } } }
+			newline = yes
+			add_power_balance_value = { id = CHI_factional_balance value = 0.03 tooltip_side = CHI_tuanpai_youth_league }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_youth_league_pipeline
+		icon = focus_PRC_embrace_change_in_leadership
+
+		x = 2
+		y = 2
+		relative_position_id = CHI_hu_jintao_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_cadre_evaluation_reform }
+
+		available = { has_country_leader = { name =  "Hu Jintao" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_youth_league_pipeline"
+			add_power_balance_value = { id = CHI_factional_balance value = 0.15 tooltip_side = CHI_tuanpai_youth_league }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+			add_to_variable = { CHI_pol_pp_gain = 0.01 tooltip = political_power_gain_tt }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_cadre_evaluation_reform
+		icon = choose_the_leader
+
+		x = 1
+		y = 1
+		relative_position_id = CHI_hu_jintao_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_hu_jintao_reign }
+
+		available = { has_country_leader = { name =  "Hu Jintao" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_cadre_evaluation_reform"
+			add_timed_idea = { idea = CHI_cadre_evaluation_reform_idea years = 5 }
+			newline = yes
+			add_power_balance_value = { id = CHI_factional_balance value = 0.05 tooltip_side = CHI_tuanpai_youth_league }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_eleventh_five_year_plan
+		icon = communism16
 
 		x = 0
 		y = 1
@@ -717,10 +1020,343 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_shanghai_succession }
 
-		available = { has_country_leader = { name =  "Zeng Qinghong" } }
+		available = { emerging_communist_state_are_in_power = yes }
 
 		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus CHI_a_new_leader"
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_eleventh_five_year_plan"
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+			add_to_variable = { CHI_pol_research_speed_factor = 0.01 tooltip = research_speed_factor_tt }
+			newline = yes
+			activate_mission_tooltip = CHI_eleventh_five_year_plan_mission
+			hidden_effect = {
+				set_variable = { CHI_11fyp_gdp_target = gdp_per_capita }
+				multiply_variable = { CHI_11fyp_gdp_target = 1.1 }
+				round_variable = CHI_11fyp_gdp_target
+				set_variable = { CHI_11fyp_offices_target = office_park_total }
+				multiply_variable = { CHI_11fyp_offices_target = 1.1 }
+				round_variable = CHI_11fyp_offices_target
+				set_variable = { CHI_11fyp_civfac_target = industrial_complex_total }
+				add_to_variable = { CHI_11fyp_civfac_target = 20 }
+			}
+
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_banking_recapitalisation
+		icon = generic_bank
+
+		x = 1
+		y = 1
+		relative_position_id = CHI_eleventh_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_eleventh_five_year_plan }
+
+		available = {
+			emerging_communist_state_are_in_power = yes
+			check_variable = { treasury > 25 }
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_banking_recapitalisation"
+			add_timed_idea = { idea = CHI_banking_modernised_idea years = 3 }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+			add_to_variable = { CHI_economy_production_factory_max_efficiency_factor = 0.025 tooltip = production_factory_max_efficiency_factor_tt }
+			newline = yes
+			set_temp_variable = { treasury_change = -250 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_reconstruction_development
+		icon = ENG_edinburgh_skyline
+
+		x = 2
+		y = 2
+		relative_position_id = CHI_eleventh_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_banking_recapitalisation }
+
+		available = { emerging_communist_state_are_in_power = yes }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_reconstruction_development"
+			add_timed_idea = { idea = CHI_reconstruction_plan_idea years = 5 }
+			custom_effect_tooltip = on_cancel_idea_tt
+			effect_tooltip = {
+				custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+				add_to_variable = { CHI_economy_industry_repair_factor = 0.10 tooltip = industry_repair_factor_tt }
+			}
+			newline = yes
+			add_tech_bonus = {
+				name = CHI_reconstruction_development
+				bonus = 0.50
+				uses = 1
+				category = CAT_construction_tech
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_sasac_founding
+		icon = communism18
+
+		x = -1
+		y = 1
+		relative_position_id = CHI_eleventh_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_eleventh_five_year_plan }
+
+		available = { emerging_communist_state_are_in_power = yes }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_sasac_founding"
+			add_timed_idea = {
+				idea = CHI_sasac_idea
+				years = 2
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_public_health_reconstruction
+		icon = focus_generic_field_hostpital
+
+		x = -2
+		y = 2
+		relative_position_id = CHI_eleventh_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_sasac_founding }
+
+		available = { emerging_communist_state_are_in_power = yes }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_public_health_reconstruction"
+			add_timed_idea = { idea = CHI_nrcms_rollout_idea years = 5 }
+			newline = yes
+			556 = {
+				add_dynamic_modifier = {
+					modifier = CHI_rural_development
+					days = 1825
+				}
+			}
+			560 = {
+				add_dynamic_modifier = {
+					modifier = CHI_rural_development
+					days = 1825
+				}
+			}
+			555 = {
+				add_dynamic_modifier = {
+					modifier = CHI_rural_development
+					days = 1825
+				}
+			}
+			1097 = {
+				add_dynamic_modifier = {
+					modifier = CHI_rural_development
+					days = 1825
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_wto_implementation
+		icon = goal_generic_positive_trade_relations
+
+		x = 0
+		y = 2
+		relative_position_id = CHI_eleventh_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_eleventh_five_year_plan }
+
+		available = { emerging_communist_state_are_in_power = yes }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_wto_implementation"
+			if = {
+				limit = { NOT = {  has_completed_focus = CHI_wto_accession_drive } }
+				custom_effect_tooltip = CHI_wto_implementation_tt
+				newline = yes
+				add_timed_idea = { idea = CHI_wto_implementation_idea years = 5 }
+			}
+			else = {
+				custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+				add_to_variable = { CHI_economy_production_speed_buildings_factor = 0.10 tooltip = production_speed_buildings_factor_tt }
+				add_to_variable = { CHI_economy_trade_opinion_factor = 0.25 tooltip = trade_opinion_factor_neutral_tt }
+				add_to_variable = { CHI_economy_research_speed_factor = 0.10 tooltip = research_speed_factor_tt }
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_high_speed_rail_one
+		icon = blr_china_modernisation_railtrain
+
+		x = -1
+		y = 3
+		relative_position_id = CHI_eleventh_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_public_health_reconstruction }
+		prerequisite = { focus = CHI_wto_implementation }
+
+		available = { emerging_communist_state_are_in_power = yes }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_high_speed_rail_one"
+			add_tech_bonus = {
+				name = CHI_high_speed_rail_one
+				bonus = 0.50
+				uses = 1
+				category = CAT_infrastructure
+			}
+			newline = yes
+			unlock_decision_category_tooltip = CHI_hsr_construction
+			if = {
+				limit = { has_dlc = "Arms Against Tyranny" }
+				newline = yes
+				mio:CHI_crrc_manufacturer = {
+					add_mio_funds_gain_factor = 0.10
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_yuan_internationalisation
+		icon = focus_PRC_promote_the_silver_dollar
+
+		x = -1
+		y = 4
+		relative_position_id = CHI_eleventh_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_high_speed_rail_one }
+
+		available = { emerging_communist_state_are_in_power = yes }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_yuan_internationalisation"
+			if = {
+				limit = { has_idea = CHI_chinese_yuan_2 }
+				swap_ideas = { remove_idea = CHI_chinese_yuan_2 add_idea = CHI_chinese_yuan_3 }
+			}
+			else_if = {
+				limit = { has_idea = chinese_yuan }
+				swap_ideas = { remove_idea = chinese_yuan add_idea = CHI_chinese_yuan_3 }
+			}
+			else = {
+				add_ideas = CHI_chinese_yuan_3
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_western_pipeline_corridor
+		icon = oil_production
+
+		x = 1
+		y = 3
+		relative_position_id = CHI_eleventh_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_reconstruction_development }
+		prerequisite = { focus = CHI_wto_implementation }
+
+		available = { emerging_communist_state_are_in_power = yes }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_western_pipeline_corridor"
+			592 = {
+				add_building_construction = { type = infrastructure level = 1 instant_build = yes }
+				add_resource = { type = oil amount = 8 }
+			}
+			560 = {
+				add_building_construction = { type = infrastructure level = 1 instant_build = yes }
+				add_resource = { type = oil amount = 4 }
+			}
+			559 = { add_building_construction = { type = infrastructure level = 1 instant_build = yes } }
+			540 = { add_building_construction = { type = infrastructure level = 1 instant_build = yes } }
+			newline = yes
+			set_temp_variable = { treasury_change = -15 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_state_council_information_office
+		icon = Generic_Spy_Communist
+
+		x = 0
+		y = 5
+		relative_position_id = CHI_eleventh_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_yuan_internationalisation }
+		prerequisite = { focus = CHI_western_pipeline_corridor }
+
+		available = { emerging_communist_state_are_in_power = yes }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_state_council_information_office"
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+			add_to_variable = { CHI_pol_civilian_intel_to_others = -0.02 tooltip = civilian_intel_to_others_tt }
+			add_to_variable = { CHI_pol_drift_defence_factor = 0.05 tooltip = drift_defence_factor_tt }
+			add_to_variable = { CHI_pol_war_support_factor = 0.03 tooltip = war_support_factor_tt }
 		}
 
 		ai_will_do = {
@@ -729,9 +1365,9 @@ focus_tree = {
 	}
 	focus = {
 		id = CHI_zeng_qinghong_reign
-		icon = x
+		icon = focus_zeng_qinghong
 
-		x = 5
+		x = 6
 		y = 1
 		relative_position_id = CHI_the_shanghai_succession
 
@@ -744,6 +1380,243 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_zeng_qinghong_reign"
+			add_power_balance_value = { id = CHI_factional_balance value = -0.10 tooltip_side = CHI_princeling_shanghai }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_organisation_department_mandate #check the effect to be shure
+		icon = x
+
+		x = 0
+		y = 1
+		relative_position_id = CHI_zeng_qinghong_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_zeng_qinghong_reign }
+
+		available = { has_country_leader = { name =  "Zeng Qinghong" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_organisation_department_mandate"
+			set_variable = { CHI_ic_slot_1 = 1 }
+			CHI_assign_all_secretaries = yes
+			custom_effect_tooltip = CHI_organisation_department_mandate_tt
+			add_power_balance_value = { id = CHI_factional_balance value = -0.10 tooltip_side = CHI_princeling_shanghai }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_provincial_reshuffle
+		icon = x
+
+		x = -2
+		y = 2
+		relative_position_id = CHI_zeng_qinghong_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_organisation_department_mandate }
+
+		available = { has_country_leader = { name =  "Zeng Qinghong" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_provincial_reshuffle"
+			add_power_balance_value = { id = CHI_factional_balance value = -0.10 tooltip_side = CHI_princeling_shanghai }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+			add_to_variable = { CHI_pol_pp_gain = 0.02 tooltip = political_power_gain_tt }
+			add_to_variable = { CHI_pol_stability_factor = 0.01 tooltip = stability_factor_tt }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_coastal_acceleration_doctrine
+		icon = x
+
+		x = -1
+		y = 3
+		relative_position_id = CHI_zeng_qinghong_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_provincial_reshuffle }
+		prerequisite = { focus = CHI_selective_anti_corruption }
+
+		available = { has_country_leader = { name =  "Zeng Qinghong" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_coastal_acceleration_doctrine"
+			532 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.15 state_productivity_growth_modifier = 0.05 local_building_slots_factor = 0.05 } } }
+			534 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.15 state_productivity_growth_modifier = 0.05 local_building_slots_factor = 0.05 } } }
+			537 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.15 state_productivity_growth_modifier = 0.05 local_building_slots_factor = 0.05 } } }
+			538 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.15 state_productivity_growth_modifier = 0.05 local_building_slots_factor = 0.05 } } }
+			540 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.15 state_productivity_growth_modifier = 0.05 local_building_slots_factor = 0.05 } } }
+			541 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.15 state_productivity_growth_modifier = 0.05 local_building_slots_factor = 0.05 } } }
+			add_power_balance_value = { id = CHI_factional_balance value = -0.05 tooltip_side = CHI_princeling_shanghai }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_defence_industry_consolidation
+		icon = x
+
+		x = 0
+		y = 4
+		relative_position_id = CHI_zeng_qinghong_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_coastal_acceleration_doctrine }
+		prerequisite = { focus = CHI_western_institutional_engagement }
+
+		available = { has_country_leader = { name =  "Zeng Qinghong" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_defence_industry_consolidation"
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			newline = yes
+			army_experience = 25
+			add_tech_bonus = {
+				name = CHI_defence_industry_consolidation
+				bonus = 0.50
+				uses = 1
+				category = CAT_armor
+			}
+			add_tech_bonus = {
+				name = CHI_defence_industry_consolidation
+				bonus = 0.25
+				uses = 1
+				category = CAT_naval_air
+			}
+			newline = yes
+			586 = { add_building_construction = { type = arms_factory level = 1 instant_build = yes } }
+			534 = { add_building_construction = { type = arms_factory level = 1 instant_build = yes } }
+			540 = { add_building_construction = { type = dockyard level = 1 instant_build = yes } }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+			add_to_variable = { CHI_economy_production_factory_max_efficiency_factor = 0.03 tooltip = production_factory_max_efficiency_factor_tt }
+			add_to_variable = { CHI_economy_dockyard_output_factor = 0.05 tooltip = industrial_capacity_dockyard_tt }
+			add_power_balance_value = { id = CHI_factional_balance value = -0.05 tooltip_side = CHI_princeling_shanghai }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_china_among_the_starts
+		icon = x
+
+		x = 0
+		y = 5
+		relative_position_id = CHI_zeng_qinghong_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_defence_industry_consolidation }
+
+		available = { has_country_leader = { name =  "Zeng Qinghong" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_china_among_the_starts"
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_western_institutional_engagement
+		icon = x
+
+		x = 1
+		y = 3
+		relative_position_id = CHI_zeng_qinghong_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_quiet_succession_engineering }
+		prerequisite = { focus = CHI_selective_anti_corruption }
+
+		available = { has_country_leader = { name =  "Zeng Qinghong" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_western_institutional_engagement"
+			add_timed_idea = { idea = CHI_western_institutional_engagement_idea years = 5 }
+			add_power_balance_value = { id = CHI_factional_balance value = -0.05 tooltip_side = CHI_princeling_shanghai }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_selective_anti_corruption
+		icon = x
+
+		x = 0
+		y = 2
+		relative_position_id = CHI_zeng_qinghong_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_organisation_department_mandate }
+
+		available = { has_country_leader = { name =  "Zeng Qinghong" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_selective_anti_corruption"
+			add_timed_idea = { idea = CHI_selective_anti_corruption_campaign_idea years = 2 }
+			add_power_balance_value = { id = CHI_factional_balance value = -0.06 tooltip_side = CHI_princeling_shanghai }
+		}
+
+		ai_will_do = {
+			base = 4
+		}
+	}
+	focus = {
+		id = CHI_quiet_succession_engineering
+		icon = x
+
+		x = 2
+		y = 2
+		relative_position_id = CHI_zeng_qinghong_reign
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_organisation_department_mandate }
+
+		available = { has_country_leader = { name =  "Zeng Qinghong" } }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_quiet_succession_engineering"
+			add_power_balance_value = { id = CHI_factional_balance value = -0.06 tooltip_side = CHI_princeling_shanghai }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+			add_to_variable = { CHI_pol_pp_gain = 0.02 tooltip = political_power_gain_tt }
 		}
 
 		ai_will_do = {
