@@ -3441,6 +3441,79 @@ focus_tree = {
 		ai_will_do = { factor = 1 }
 	}
 
+	focus = {
+		id = AST_Suppress_Free_Speech
+		icon = generic_controlled_press
+
+		x = -8
+		y = 6
+		relative_position_id = AST_One_Nation
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			OR = {
+				has_country_flag = set_Nat_Fascism
+				has_country_flag = set_Nat_Autocracy
+				has_country_flag = set_Communist-State
+				has_country_flag = set_Nat_Populism
+			}
+			has_idea = AST_volatile_politics
+		}
+
+		visible = {
+			OR = {
+				has_country_flag = set_Nat_Fascism
+				has_country_flag = set_Nat_Autocracy
+				has_country_flag = set_Communist-State
+				has_country_flag = set_Nat_Populism
+			}
+		}
+
+		completion_reward = {
+			remove_ideas = AST_volatile_politics
+			increase_corruption = yes
+			log = "[GetDateText]: [Root.GetName]: Focus AST_Suppress_Free_Speech"
+		}
+
+		ai_will_do = { factor = 5 }
+	}
+
+	focus = {
+		id = AST_Restore_Free_Speech
+		icon = continuous_boost_freedom
+
+		x = -8
+		y = 7
+		relative_position_id = AST_One_Nation
+
+		cost = 10
+		prerequisite = { focus = AST_Suppress_Free_Speech }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			NOT = { has_country_flag = set_Nat_Fascism }
+			NOT = { has_country_flag = set_Nat_Autocracy }
+			NOT = { has_country_flag = set_Communist-State }
+			NOT = { has_country_flag = set_Nat_Populism }
+			NOT = { has_idea = AST_volatile_politics }
+		}
+
+		visible = {
+			has_completed_focus = AST_Suppress_Free_Speech
+		}
+
+		completion_reward = {
+			add_ideas = AST_volatile_politics
+			add_stability = 0.03
+			decrease_corruption = yes
+			log = "[GetDateText]: [Root.GetName]: Focus AST_Restore_Free_Speech"
+		}
+
+		ai_will_do = { factor = 2 }
+	}
+
 
 	focus = {
 		id = AST_Invest_in_Australia
