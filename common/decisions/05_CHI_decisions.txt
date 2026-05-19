@@ -8786,3 +8786,67 @@ CHI_hsr_construction = {
 		ai_will_do = { base = 5 }
 	}
 }
+
+CHI_public_housing_construction = {
+	CHI_build_public_housing = {
+		icon = GFX_decision_generic_construction
+
+		state_target = yes
+		on_map_mode = map_only
+
+		highlight_states = {
+			highlight_states_trigger = {
+				is_owned_and_controlled_by = ROOT
+				NOT = { has_state_flag = CHI_housing_project_complete }
+			}
+			highlight_color_before_active = 3
+			highlight_color_while_active = 2
+		}
+
+		target_trigger = {
+			FROM = {
+				is_owned_and_controlled_by = ROOT
+			}
+		}
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_country_flag = CHI_public_housing_program_active
+			FROM = {
+				NOT = { has_state_flag = CHI_housing_project_complete }
+			}
+		}
+
+		available = {
+			has_country_flag = CHI_public_housing_program_active
+			num_of_civilian_factories_available_for_projects >= 15
+			FROM = {
+				NOT = { has_state_flag = CHI_housing_project_complete }
+			}
+		}
+
+		cost = 75
+		days_remove = 730
+
+		modifier = {
+			civilian_factory_use = 15
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_build_public_housing in [FROM.GetName] started"
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_build_public_housing in [FROM.GetName] completed"
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_political_system }
+			add_to_variable = { CHI_pol_consumer_goods_expected_value = -0.01 tooltip = consumer_goods_expected_value_tt }
+			add_stability = 0.0025
+			FROM = {
+				set_state_flag = CHI_housing_project_complete
+			}
+		}
+
+		ai_will_do = { base = 3 }
+	}
+}
