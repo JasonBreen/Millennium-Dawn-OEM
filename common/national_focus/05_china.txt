@@ -18,7 +18,7 @@ focus_tree = {
 
 	## Shortcuts
 	shortcut = {
-		name = CHI_Chinese_Diplomacy
+		name = CHI_diplomacy_shortcut
 		target = CHI_Chinese_Diplomacy
 		scroll_wheel_factor = 0.80
 	}
@@ -28,8 +28,13 @@ focus_tree = {
 		scroll_wheel_factor = 0.80
 	}
 	shortcut = {
-		name = CHI_the_three_represents
+		name = CHI_political_shortcut
 		target = CHI_the_three_represents
+		scroll_wheel_factor = 0.80
+	}
+	shortcut = {
+		name = CHI_economy_shortcut
+		target = CHI_tenth_five_year_plan
 		scroll_wheel_factor = 0.80
 	}
 
@@ -2374,9 +2379,6 @@ focus_tree = {
 		}
 	}
 	#End Bo Xilai Branch
-
-
-	# Economy
 
 	# Military
 
@@ -9461,5 +9463,1601 @@ focus_tree = {
 			}
 		}
 	}
+
+############################# Economy ###################################
+
+	focus = {
+		id = CHI_tenth_five_year_plan
+		icon = x
+
+		x = 35
+		y = 20
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		available = { original_tag = CHI }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_tenth_five_year_plan"
+			add_political_power = 25
+			add_timed_idea = {
+				idea = CHI_fifth_generation_planners_idea
+				years = 2
+			}
+		}
+
+		ai_will_do = {
+			base = 10
+		}
+	}
+
+	## Pad A -- Reform and Opening 2.0
+
+	focus = {
+		id = CHI_reform_opening_2
+		icon = x
+
+		x = -4
+		y = 1
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_tenth_five_year_plan }
+
+		mutually_exclusive = { focus = CHI_socialist_market_consolidation }
+		mutually_exclusive = { focus = CHI_balanced_development }
+
+		available = {
+			NOT = { has_government = fascism }
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_reform_opening_2"
+			add_ideas = CHI_pad_a_export_orientation_idea
+			add_to_variable = { CHI_economy_production_factory_max_efficiency_factor = 0.02 }
+		}
+
+		ai_will_do = {
+			base = 8
+			modifier = {
+				factor = 1.5
+				has_government = democratic
+			}
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	## Pad B -- Socialist Market Consolidation
+
+	focus = {
+		id = CHI_socialist_market_consolidation
+		icon = x
+
+		x = 0
+		y = 1
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_tenth_five_year_plan }
+
+		mutually_exclusive = { focus = CHI_reform_opening_2 }
+		mutually_exclusive = { focus = CHI_balanced_development }
+
+		available = {
+			has_government = communism
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_socialist_market_consolidation"
+			add_ideas = CHI_pad_b_strategic_industry_idea
+			add_to_variable = { CHI_economy_production_speed_buildings_factor = 0.03 }
+		}
+
+		ai_will_do = {
+			base = 8
+			modifier = {
+				factor = 1.5
+				has_government = communism
+			}
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	## Pad C -- Balanced Development
+
+	focus = {
+		id = CHI_balanced_development
+		icon = x
+
+		x = 4
+		y = 1
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_tenth_five_year_plan }
+
+		mutually_exclusive = { focus = CHI_reform_opening_2 }
+		mutually_exclusive = { focus = CHI_socialist_market_consolidation }
+
+		available = {
+			has_stability > 0.55
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_balanced_development"
+			add_ideas = CHI_pad_c_rural_development_idea
+			567 = { add_state_modifier = { modifier = { state_productivity_growth_modifier = 0.05 } } }
+			570 = { add_state_modifier = { modifier = { state_productivity_growth_modifier = 0.05 } } }
+			572 = { add_state_modifier = { modifier = { state_productivity_growth_modifier = 0.05 } } }
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 1.3
+				has_stability > 0.65
+			}
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	## =================================================================
+	## TIER 1 -- Problem 1: SOE Crisis
+	## =================================================================
+
+	focus = {
+		id = CHI_zhua_da_fang_xiao
+		icon = x
+
+		x = -8
+		y = 2
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 14
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = {
+			focus = CHI_reform_opening_2
+			focus = CHI_socialist_market_consolidation
+		}
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_reform_opening_2
+				has_completed_focus = CHI_socialist_market_consolidation
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_zhua_da_fang_xiao"
+			add_timed_idea = {
+				idea = CHI_soe_restructuring_shock_idea
+				years = 3
+			}
+			increase_economic_growth = yes
+			add_political_power = -15
+		}
+
+		ai_will_do = {
+			base = 6
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_amc_formation
+		icon = x
+
+		x = 0
+		y = 1
+		relative_position_id = CHI_zhua_da_fang_xiao
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_zhua_da_fang_xiao }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_amc_formation"
+			set_temp_variable = { treasury_change = -120 }
+			modify_treasury_effect = yes
+			add_timed_idea = {
+				idea = CHI_amc_bad_debt_idea
+				years = 4
+			}
+		}
+
+		ai_will_do = {
+			base = 8
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_state_champion_consolidation
+		icon = x
+
+		x = -6
+		y = 2
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_socialist_market_consolidation }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_state_champion_consolidation"
+			add_timed_idea = {
+				idea = CHI_sasac_precursor_idea
+				years = 3
+			}
+			add_to_variable = { CHI_economy_production_factory_max_efficiency_factor = 0.01 }
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 1.5
+				has_government = communism
+			}
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_gradual_soe_reform
+		icon = x
+
+		x = -4
+		y = 2
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_balanced_development }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_gradual_soe_reform"
+			add_timed_idea = {
+				idea = CHI_gradual_reform_idea
+				years = 5
+			}
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_laid_off_workers_support
+		icon = x
+
+		x = -6
+		y = 3
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_POLITICAL }
+
+		prerequisite = {
+			focus = CHI_state_champion_consolidation
+			focus = CHI_gradual_soe_reform
+		}
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_amc_formation
+				has_completed_focus = CHI_state_champion_consolidation
+				has_completed_focus = CHI_gradual_soe_reform
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_laid_off_workers_support"
+			add_timed_idea = {
+				idea = CHI_xiagang_reemployment_idea
+				years = 4
+			}
+			one_random_industrial_complex = yes
+		}
+
+		ai_will_do = {
+			base = 8
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_hukou_reform_partial
+		icon = x
+
+		x = 0
+		y = 1
+		relative_position_id = CHI_laid_off_workers_support
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_laid_off_workers_support }
+		prerequisite = { focus = CHI_amc_formation }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_hukou_reform_partial"
+			547 = { add_extra_state_shared_building_slots = 1 }
+			540 = { add_extra_state_shared_building_slots = 1 }
+			534 = { add_extra_state_shared_building_slots = 1 }
+			add_ideas = CHI_hukou_mobility_idea
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_soe_reform_complete
+		icon = x
+
+		x = 0
+		y = 1
+		relative_position_id = CHI_hukou_reform_partial
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_hukou_reform_partial }
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_amc_formation
+				has_completed_focus = CHI_state_champion_consolidation
+				has_completed_focus = CHI_gradual_soe_reform
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_soe_reform_complete"
+			set_country_flag = CHI_soe_reform_foundation_done
+			add_to_variable = { CHI_economy_production_factory_max_efficiency_factor = 0.015 }
+		}
+
+		ai_will_do = {
+			base = 8
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	## =================================================================
+	## TIER 1 -- Problem 2: Demographic Policy
+	## =================================================================
+
+	focus = {
+		id = CHI_one_child_strict_enforcement
+		icon = x
+
+		x = -2
+		y = 2
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = {
+			focus = CHI_reform_opening_2
+			focus = CHI_socialist_market_consolidation
+			focus = CHI_balanced_development
+		}
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_reform_opening_2
+				has_completed_focus = CHI_socialist_market_consolidation
+				has_completed_focus = CHI_balanced_development
+			}
+		}
+
+		mutually_exclusive = { focus = CHI_rural_family_exception }
+		mutually_exclusive = { focus = CHI_planned_parenthood_reform }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_one_child_strict_enforcement"
+			add_timed_idea = {
+				idea = CHI_demographic_dividend_maintained_idea
+				years = 5
+			}
+			set_country_flag = CHI_one_child_strict
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 1.5
+				has_government = communism
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_rural_family_exception
+		icon = x
+
+		x = 0
+		y = 2
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = {
+			focus = CHI_reform_opening_2
+			focus = CHI_socialist_market_consolidation
+			focus = CHI_balanced_development
+		}
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_reform_opening_2
+				has_completed_focus = CHI_socialist_market_consolidation
+				has_completed_focus = CHI_balanced_development
+			}
+		}
+
+		mutually_exclusive = { focus = CHI_one_child_strict_enforcement }
+		mutually_exclusive = { focus = CHI_planned_parenthood_reform }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_rural_family_exception"
+			add_timed_idea = {
+				idea = CHI_relaxed_demographic_idea
+				years = 5
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+		}
+	}
+
+	focus = {
+		id = CHI_planned_parenthood_reform
+		icon = x
+
+		x = 2
+		y = 2
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		prerequisite = {
+			focus = CHI_reform_opening_2
+			focus = CHI_socialist_market_consolidation
+			focus = CHI_balanced_development
+		}
+
+		available = {
+			has_completed_focus = CHI_balanced_development
+		}
+
+		mutually_exclusive = { focus = CHI_one_child_strict_enforcement }
+		mutually_exclusive = { focus = CHI_rural_family_exception }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_planned_parenthood_reform"
+			add_stability = 0.05
+			add_political_power = 25
+			set_country_flag = CHI_two_child_early
+		}
+
+		ai_will_do = {
+			base = 4
+			modifier = {
+				factor = 1.5
+				has_completed_focus = CHI_balanced_development
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_yellow_river_crisis_response
+		icon = x
+
+		x = 4
+		y = 2
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY }
+
+		prerequisite = {
+			focus = CHI_reform_opening_2
+			focus = CHI_socialist_market_consolidation
+			focus = CHI_balanced_development
+		}
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_reform_opening_2
+				has_completed_focus = CHI_socialist_market_consolidation
+				has_completed_focus = CHI_balanced_development
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_yellow_river_crisis_response"
+			add_timed_idea = {
+				idea = CHI_water_management_drive
+				years = 3
+			}
+			increase_economic_growth = yes
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_south_north_water_transfer_project
+		icon = x
+
+		x = 3
+		y = 1
+		relative_position_id = CHI_yellow_river_crisis_response
+
+		cost = 14
+		search_filters = { FOCUS_FILTER_INDUSTRY }
+
+		prerequisite = { focus = CHI_yellow_river_crisis_response }
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_reform_opening_2
+				has_completed_focus = CHI_socialist_market_consolidation
+			}
+		}
+
+		mutually_exclusive = { focus = CHI_water_pricing_reform }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_south_north_water_transfer_project"
+			set_temp_variable = { treasury_change = -200 }
+			modify_treasury_effect = yes
+			add_timed_idea = {
+				idea = CHI_snwtp_construction_idea
+				years = 10
+			}
+			549 = { add_extra_state_shared_building_slots = 2 }
+			544 = { add_extra_state_shared_building_slots = 2 }
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_water_pricing_reform
+		icon = x
+
+		x = 5
+		y = 1
+		relative_position_id = CHI_yellow_river_crisis_response
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_yellow_river_crisis_response }
+
+		available = {
+			has_completed_focus = CHI_reform_opening_2
+		}
+
+		mutually_exclusive = { focus = CHI_south_north_water_transfer_project }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_water_pricing_reform"
+			add_timed_idea = {
+				idea = CHI_water_pricing_reform_idea
+				years = 4
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_industrial_relocation_water
+		icon = x
+
+		x = 7
+		y = 1
+		relative_position_id = CHI_yellow_river_crisis_response
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY }
+
+		prerequisite = { focus = CHI_yellow_river_crisis_response }
+
+		available = {
+			has_completed_focus = CHI_balanced_development
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_industrial_relocation_water"
+			570 = {
+				add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.08 } }
+				one_random_industrial_complex = yes
+			}
+			583 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.08 } } }
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_zhu_rongji_wto_push
+		icon = x
+
+		x = 8
+		y = 2
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_reform_opening_2 }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_zhu_rongji_wto_push"
+			add_timed_idea = {
+				idea = CHI_zhu_rongji_reform_momentum_idea
+				years = 2
+			}
+			set_country_flag = CHI_wto_push_done
+			if = {
+				limit = { country_exists = USA }
+				USA = {
+					add_opinion_modifier = {
+						target = ROOT
+						modifier = CHI_made_in_china_opinion
+					}
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 8
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_mfn_consolidation
+		icon = x
+
+		x = 0
+		y = 2
+		relative_position_id = CHI_zhu_rongji_wto_push
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_zhu_rongji_wto_push }
+		prerequisite = {
+			focus = CHI_south_north_water_transfer_project
+			focus = CHI_water_pricing_reform
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_mfn_consolidation"
+			add_ideas = CHI_mfn_trade_idea
+			add_to_variable = { CHI_economy_production_factory_max_efficiency_factor = 0.02 }
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_bilateral_trade_strategy
+		icon = x
+
+		x = 10
+		y = 4
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_socialist_market_consolidation }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_bilateral_trade_strategy"
+			add_timed_idea = {
+				idea = CHI_selective_trade_opening_idea
+				years = 5
+			}
+			if = {
+				limit = { country_exists = MAY }
+				MAY = { add_opinion_modifier = { target = ROOT modifier = CHI_made_in_china_opinion } }
+			}
+			if = {
+				limit = { country_exists = IND }
+				IND = { add_opinion_modifier = { target = ROOT modifier = CHI_made_in_china_opinion } }
+			}
+			if = {
+				limit = { country_exists = PHI }
+				PHI = { add_opinion_modifier = { target = ROOT modifier = CHI_made_in_china_opinion } }
+			}
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_asean_fta_initiative
+		icon = x
+
+		x = 0
+		y = 1
+		relative_position_id = CHI_bilateral_trade_strategy
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_bilateral_trade_strategy }
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_bilateral_trade_strategy
+				has_completed_focus = CHI_balanced_development
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_asean_fta_initiative"
+			add_ideas = CHI_asean_trade_idea
+			add_to_variable = { CHI_economy_production_factory_max_efficiency_factor = 0.01 }
+			if = {
+				limit = { country_exists = SIA }
+				SIA = { add_opinion_modifier = { target = ROOT modifier = CHI_made_in_china_opinion } }
+			}
+			if = {
+				limit = { country_exists = VIE }
+				VIE = { add_opinion_modifier = { target = ROOT modifier = CHI_made_in_china_opinion } }
+			}
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_domestic_consumption_drive
+		icon = x
+
+		x = 12
+		y = 4
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_balanced_development }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_domestic_consumption_drive"
+			add_ideas = CHI_domestic_market_idea
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_coastal_sez_2nd_generation
+		icon = x
+
+		x = -10
+		y = 5
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_hukou_reform_partial }
+		prerequisite = { focus = CHI_mfn_consolidation }
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_soe_reform_complete
+				has_completed_focus = CHI_mfn_consolidation
+				has_completed_focus = CHI_asean_fta_initiative
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_coastal_sez_2nd_generation"
+			540 = {
+				add_extra_state_shared_building_slots = 2
+				add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.10 } }
+			}
+			534 = {
+				add_extra_state_shared_building_slots = 2
+				add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.10 } }
+			}
+		}
+
+		ai_will_do = {
+			base = 8
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_pudong_financial_hub
+		icon = x
+
+		x = -1
+		y = 1
+		relative_position_id = CHI_coastal_sez_2nd_generation
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_coastal_sez_2nd_generation }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_pudong_financial_hub"
+			540 = {
+				add_building_construction = {
+					type = industrial_complex
+					level = 2
+					instant_build = yes
+				}
+			}
+			add_ideas = CHI_pudong_hub_idea
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_pearl_river_delta_tech_cluster
+		icon = x
+
+		x = 1
+		y = 1
+		relative_position_id = CHI_coastal_sez_2nd_generation
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_coastal_sez_2nd_generation }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_pearl_river_delta_tech_cluster"
+			534 = {
+				add_extra_state_shared_building_slots = 2
+				two_random_industrial_complex = yes
+			}
+			add_ideas = CHI_prd_tech_idea
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_joint_venture_framework
+		icon = x
+
+		x = 0
+		y = 2
+		relative_position_id = CHI_coastal_sez_2nd_generation
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		prerequisite = {
+			focus = CHI_pudong_financial_hub
+			focus = CHI_pearl_river_delta_tech_cluster
+		}
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_pudong_financial_hub
+				has_completed_focus = CHI_pearl_river_delta_tech_cluster
+			}
+			OR = {
+				has_completed_focus = CHI_wto_accession_drive
+				has_completed_focus = CHI_bilateral_trade_strategy
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_joint_venture_framework"
+			add_timed_idea = {
+				idea = CHI_joint_venture_era_idea
+				years = 7
+			}
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_export_processing_zones
+		icon = x
+
+		x = 0
+		y = 1
+		relative_position_id = CHI_joint_venture_framework
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_joint_venture_framework }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_export_processing_zones"
+			541 = { add_extra_state_shared_building_slots = 1 }
+			537 = { add_extra_state_shared_building_slots = 1 }
+			538 = { add_extra_state_shared_building_slots = 1 }
+			add_ideas = CHI_epz_trade_idea
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_western_energy_strategy
+		icon = x
+
+		x = -4
+		y = 5
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY }
+
+		prerequisite = { focus = CHI_hukou_reform_partial }
+		prerequisite = { focus = CHI_mfn_consolidation }
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_yellow_river_crisis_response
+				has_completed_focus = CHI_soe_reform_complete
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_western_energy_strategy"
+			add_ideas = CHI_western_energy_idea
+			add_tech_bonus = {
+				bonus = 0.25
+				uses = 1
+				category = CAT_fuel_oil
+			}
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_west_east_gas_pipeline
+		icon = x
+
+		x = -1
+		y = 1
+		relative_position_id = CHI_western_energy_strategy
+
+		cost = 14
+		search_filters = { FOCUS_FILTER_INDUSTRY }
+
+		prerequisite = { focus = CHI_western_energy_strategy }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_west_east_gas_pipeline"
+			set_temp_variable = { treasury_change = -150 }
+			modify_treasury_effect = yes
+			592 = { add_state_modifier = { modifier = { state_productivity_growth_modifier = 0.05 } } }
+			add_ideas = CHI_natural_gas_connectivity_idea
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_rare_earth_dominance
+		icon = x
+
+		x = 1
+		y = 1
+		relative_position_id = CHI_western_energy_strategy
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_western_energy_strategy }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_rare_earth_dominance"
+			556 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.10 } } }
+			add_ideas = CHI_ree_monopoly_idea
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_qinghai_tibet_railway_planning
+		icon = x
+
+		x = -1
+		y = 2
+		relative_position_id = CHI_western_energy_strategy
+
+		cost = 14
+		search_filters = { FOCUS_FILTER_INDUSTRY }
+
+		prerequisite = { focus = CHI_western_energy_strategy }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_qinghai_tibet_railway_planning"
+			set_temp_variable = { treasury_change = -100 }
+			modify_treasury_effect = yes
+			add_tech_bonus = {
+				bonus = 0.25
+				uses = 1
+				category = CAT_construction_tech
+			}
+			589 = {
+				add_extra_state_shared_building_slots = 2
+				add_building_construction = {
+					type = infrastructure
+					level = 2
+					instant_build = yes
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_xinjiang_industrial_zones
+		icon = x
+
+		x = 1
+		y = 2
+		relative_position_id = CHI_western_energy_strategy
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY }
+
+		prerequisite = { focus = CHI_west_east_gas_pipeline }
+		prerequisite = { focus = CHI_rare_earth_dominance }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_xinjiang_industrial_zones"
+			592 = {
+				add_extra_state_shared_building_slots = 3
+				two_random_industrial_complex = yes
+				add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.08 } }
+			}
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_northeast_revitalization_plan
+		icon = x
+
+		x = 2
+		y = 5
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_hukou_reform_partial }
+		prerequisite = { focus = CHI_mfn_consolidation }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_northeast_revitalization_plan"
+			552 = {
+				add_extra_state_shared_building_slots = 1
+				add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.08 } }
+			}
+			554 = {
+				add_extra_state_shared_building_slots = 1
+				add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.08 } }
+			}
+			555 = {
+				add_extra_state_shared_building_slots = 1
+				add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.08 } }
+			}
+			add_timed_idea = {
+				idea = CHI_northeast_revival_idea
+				years = 5
+			}
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_anshan_steel_modernization
+		icon = x
+
+		x = -2
+		y = 1
+		relative_position_id = CHI_northeast_revitalization_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY }
+
+		prerequisite = { focus = CHI_northeast_revitalization_plan }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_anshan_steel_modernization"
+			552 = {
+				add_building_construction = {
+					type = arms_factory
+					level = 1
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 1
+			}
+			add_ideas = CHI_steel_modernization_idea
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_faw_changchun_automotive
+		icon = x
+
+		x = 0
+		y = 1
+		relative_position_id = CHI_northeast_revitalization_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY }
+
+		prerequisite = { focus = CHI_northeast_revitalization_plan }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_faw_changchun_automotive"
+			554 = {
+				add_building_construction = {
+					type = industrial_complex
+					level = 2
+					instant_build = yes
+				}
+			}
+			add_ideas = CHI_faw_automotive_idea
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_harbin_equipment_manufacturing
+		icon = x
+
+		x = 2
+		y = 1
+		relative_position_id = CHI_northeast_revitalization_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY }
+
+		prerequisite = { focus = CHI_northeast_revitalization_plan }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_harbin_equipment_manufacturing"
+			555 = { add_extra_state_shared_building_slots = 2 }
+			add_ideas = CHI_harbin_engineering_idea
+			add_tech_bonus = {
+				bonus = 0.25
+				uses = 1
+				category = CAT_construction_tech
+			}
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_northeast_russia_corridor
+		icon = x
+
+		x = 0
+		y = 2
+		relative_position_id = CHI_northeast_revitalization_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_POLITICAL }
+
+		prerequisite = { focus = CHI_faw_changchun_automotive }
+		prerequisite = { focus = CHI_harbin_equipment_manufacturing }
+
+		available = {
+			has_completed_focus = CHI_SOV_treaty_good_neighbourliness
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_northeast_russia_corridor"
+			if = {
+				limit = { country_exists = RUS }
+				RUS = {
+					add_opinion_modifier = {
+						target = ROOT
+						modifier = CHI_made_in_china_opinion
+					}
+				}
+			}
+			add_ideas = CHI_russia_trade_idea
+			555 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.10 } } }
+		}
+
+		ai_will_do = {
+			base = 6
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_central_china_development
+		icon = x
+
+		x = 8
+		y = 5
+		relative_position_id = CHI_tenth_five_year_plan
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_hukou_reform_partial }
+		prerequisite = { focus = CHI_mfn_consolidation }
+
+		available = {
+			OR = {
+				has_completed_focus = CHI_asean_fta_initiative
+				has_completed_focus = CHI_domestic_consumption_drive
+				has_completed_focus = CHI_one_child_strict_enforcement
+				has_completed_focus = CHI_rural_family_exception
+				has_completed_focus = CHI_planned_parenthood_reform
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_central_china_development"
+			567 = { add_state_modifier = { modifier = { state_productivity_growth_modifier = 0.05 } } }
+			570 = { add_state_modifier = { modifier = { state_productivity_growth_modifier = 0.05 } } }
+			572 = { add_state_modifier = { modifier = { state_productivity_growth_modifier = 0.05 } } }
+			add_ideas = CHI_central_development_idea
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_henan_grain_modernization
+		icon = x
+
+		x = -2
+		y = 1
+		relative_position_id = CHI_central_china_development
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY }
+
+		prerequisite = { focus = CHI_central_china_development }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_henan_grain_modernization"
+			567 = {
+				add_extra_state_shared_building_slots = 2
+				add_building_construction = {
+					type = industrial_complex
+					level = 1
+					instant_build = yes
+				}
+			}
+			add_ideas = CHI_food_security_idea
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_wuhan_automotive_hub
+		icon = x
+
+		x = 0
+		y = 1
+		relative_position_id = CHI_central_china_development
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY }
+
+		prerequisite = { focus = CHI_central_china_development }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_wuhan_automotive_hub"
+			570 = {
+				add_extra_state_shared_building_slots = 2
+				add_building_construction = {
+					type = industrial_complex
+					level = 2
+					instant_build = yes
+				}
+			}
+			add_ideas = CHI_dongfeng_automotive_idea
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_yangtze_logistics_corridor
+		icon = x
+
+		x = 2
+		y = 1
+		relative_position_id = CHI_central_china_development
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_central_china_development }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_yangtze_logistics_corridor"
+			570 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.08 } } }
+			538 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.08 } } }
+			540 = { add_state_modifier = { modifier = { state_production_speed_buildings_factor = 0.08 } } }
+			add_ideas = CHI_yangtze_logistics_idea
+			add_tech_bonus = {
+				bonus = 0.15
+				uses = 1
+				category = CAT_construction_tech
+			}
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = CHI_central_urbanization_drive
+		icon = x
+
+		x = 0
+		y = 2
+		relative_position_id = CHI_central_china_development
+
+		cost = 10
+		search_filters = { FOCUS_FILTER_INDUSTRY FOCUS_FILTER_ECONOMY }
+
+		prerequisite = { focus = CHI_henan_grain_modernization }
+		prerequisite = { focus = CHI_wuhan_automotive_hub }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus CHI_central_urbanization_drive"
+			567 = { add_extra_state_shared_building_slots = 1 }
+			570 = { add_extra_state_shared_building_slots = 1 }
+			572 = { add_extra_state_shared_building_slots = 1 }
+			583 = { add_extra_state_shared_building_slots = 1 }
+			add_ideas = CHI_central_urbanization_idea
+		}
+
+		ai_will_do = {
+			base = 7
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
 
 }
