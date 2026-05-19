@@ -1,5 +1,6 @@
 ﻿#Rework Author(s): TheGeneral
 add_namespace = CHI_political_events
+add_namespace = CHI_semiconductor_events
 add_namespace = china_national_committee
 add_namespace = china_sar
 add_namespace = CHI_sco
@@ -11349,6 +11350,148 @@ country_event = {
 		}
 		ai_chance = {
 			base = 20
+		}
+	}
+}
+
+# CHI_big_tech_crackdown -- impact scales with platform development progress
+country_event = {
+	id = CHI_political_events.7
+	title = CHI_political_events.7.t
+	desc = CHI_political_events.7.d
+	picture = GFX_PLACEHOLDER
+
+	is_triggered_only = yes
+	fire_only_once = yes
+
+	# Option A: Severe crackdown (< 5 platform focuses completed)
+	option = {
+		name = CHI_political_events.7.a
+		log = "[GetDateText]: [Root.GetName]: CHI_political_events.7.a"
+		trigger = {
+			check_variable = {
+				var = CHI_services_platform_count
+				value = 5
+				compare = less_than
+			}
+		}
+		add_ideas = CHI_tech_crackdown_severe
+		ai_chance = { base = 100 }
+	}
+
+	# Option B: Managed restructuring (5-9 platform focuses completed)
+	option = {
+		name = CHI_political_events.7.b
+		log = "[GetDateText]: [Root.GetName]: CHI_political_events.7.b"
+		trigger = {
+			check_variable = {
+				var = CHI_services_platform_count
+				value = 5
+				compare = greater_than_or_equals
+			}
+			check_variable = {
+				var = CHI_services_platform_count
+				value = 10
+				compare = less_than
+			}
+		}
+		add_ideas = CHI_tech_crackdown_moderate
+		ai_chance = { base = 100 }
+	}
+
+	# Option C: Structural consolidation (10-13 platform focuses completed)
+	option = {
+		name = CHI_political_events.7.c
+		log = "[GetDateText]: [Root.GetName]: CHI_political_events.7.c"
+		trigger = {
+			check_variable = {
+				var = CHI_services_platform_count
+				value = 10
+				compare = greater_than_or_equals
+			}
+			check_variable = {
+				var = CHI_services_platform_count
+				value = 14
+				compare = less_than
+			}
+		}
+		add_stability = 0.01
+		ai_chance = { base = 100 }
+	}
+
+	# Option D: Full sector maturity -- minimal disruption (14 platform focuses = all done)
+	option = {
+		name = CHI_political_events.7.e
+		log = "[GetDateText]: [Root.GetName]: CHI_political_events.7.e"
+		trigger = {
+			check_variable = {
+				var = CHI_services_platform_count
+				value = 14
+				compare = greater_than_or_equals
+			}
+		}
+		add_stability = 0.03
+		add_to_variable = { CHI_economy_production_speed_offices_factor = 0.03 tooltip = production_speed_offices_factor_tt }
+		ai_chance = { base = 100 }
+	}
+}
+
+# Western Semiconductor Boycott
+country_event = {
+	id = CHI_semiconductor_events.1
+	title = CHI_semiconductor_events.1.t
+	desc = CHI_semiconductor_events.1.d
+	picture = GFX_PLACEHOLDER
+
+	is_triggered_only = yes
+	fire_only_once = yes
+
+	option = {
+		name = CHI_semiconductor_events.1.o1
+		log = "[GetDateText]: [Root.GetName]: CHI_semiconductor_events.1.o1"
+
+		USA = {
+			add_opinion_modifier = {
+				target = CHI
+				modifier = chi_usa_sanctions_response
+			}
+		}
+
+		if = {
+			limit = {
+				has_completed_focus = CHI_big_fund_phase2
+				has_completed_focus = CHI_smic_advanced_node
+				has_completed_focus = CHI_loongson_riscv
+				has_completed_focus = CHI_smee_lithography
+				has_completed_focus = CHI_memory_independence
+			}
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+			add_to_variable = { CHI_economy_trade_opinion_factor = 0.05 tooltip = trade_opinion_factor_tt }
+			add_stability = 0.03
+		}
+		else_if = {
+			limit = {
+				OR = {
+					has_completed_focus = CHI_mature_node_counter_offensive
+					has_completed_focus = CHI_memory_independence
+				}
+			}
+			add_stability = -0.03
+		}
+		else_if = {
+			limit = {
+				has_completed_focus = CHI_smic_advanced_node
+				has_completed_focus = CHI_fabless_design_cluster
+			}
+			add_stability = -0.05
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+			add_to_variable = { CHI_economy_research_speed_factor = -0.03 tooltip = research_speed_factor_tt }
+		}
+		else = {
+			add_stability = -0.10
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+			add_to_variable = { CHI_economy_research_speed_factor = -0.06 tooltip = research_speed_factor_tt }
+			add_to_variable = { CHI_economy_production_factory_max_efficiency_factor = -0.05 tooltip = production_factory_max_efficiency_factor_tt }
 		}
 	}
 }
