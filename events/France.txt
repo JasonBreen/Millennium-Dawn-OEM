@@ -7283,9 +7283,9 @@ country_event = {
 		add_war_support = -0.1
 		add_political_power = -50
 		ai_chance = {
-			factor = 2
+			base = 2
 			modifier = {
-				factor = 10
+				add = 10
 				has_government = communism
 			}
 		}
@@ -7338,7 +7338,7 @@ country_event = {#call for world revolution
 		add_war_support = 0.15
 		add_political_power = 100
 		ai_chance = {
-			base = 1
+			base = 4
 		}
 	}
 	#refuse
@@ -7359,7 +7359,7 @@ country_event = {#call for world revolution
 		add_stability = 0.15
 		add_political_power = 50
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 }
@@ -7459,7 +7459,7 @@ country_event = {#artillery or aircraft
 			}
 		}
 		ai_chance = {
-			base = 1
+			base = 2
 		}
 	}
 	#air
@@ -7481,7 +7481,7 @@ country_event = {#artillery or aircraft
 			}
 		}
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 }
@@ -7504,7 +7504,11 @@ country_event = {#frexit or scam
 				}
 			}
 		ai_chance = {
-			base = 1
+			base = 2
+			modifier = {
+				add = 1
+				FRA.eurosceptic < 0.3
+			}
 		}
 	}
 	#exit
@@ -7518,7 +7522,7 @@ country_event = {#frexit or scam
 				country_event = france_md.286
 			}
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 }
@@ -7586,7 +7590,11 @@ country_event = {#BCE refuse
 		add_political_power = -50
 
 		ai_chance = {
-			base = 1
+			base = 2
+			modifier = {
+				add = 1
+				FRA.eurosceptic < 0.1
+			}
 		}
 	}
 		#exit
@@ -7608,7 +7616,7 @@ country_event = {#BCE refuse
 		add_relative_party_popularity = yes
 		add_political_power = -50
 		ai_chance = {
-			base = 1
+			base = 4
 		}
 	}
 }
@@ -7642,14 +7650,38 @@ country_event = {#proclamation empire
 	option = {#TODO change flag
 		name = france_md.290.a
 		log = "[GetDateText]: [This.GetName]: france_md.290.a executed"
-		add_named_threat = { threat = 5 name = threat_FRA_napo_empire }
 		add_ideas = FRA_4th_empire
 		set_cosmetic_tag = FRA_4th_empire
 		clr_country_flag = dynamic_flag
-
+		every_other_country = {
+			country_event = france_md.523
+		}
 		ai_chance = {
 			base = 1
 		}
+	}
+}
+country_event = {
+	id = france_md.523
+	title = france_md.523.t
+	desc = france_md.523.d
+	is_triggered_only = yes
+	trigger = {
+		NOT = { original_tag = FRA }
+	}
+
+	# difficult times are coming
+	option = {
+		name = france_md.523.a
+		log = "[GetDateText]: [This.GetName]: france_md.523.a executed"
+		ai_chance = { base = 3 }
+	}
+
+	# who cares
+	option = {
+		name = france_md.523.b
+		log = "[GetDateText]: [This.GetName]: france_md.523.b executed"
+		ai_chance = { base = 1 }
 	}
 }
 country_event = {#boost nationalism
@@ -7675,7 +7707,11 @@ country_event = {#boost nationalism
 		}
 
 		ai_chance = {
-			base = 1
+			base = 4
+			modifier = {
+				add = 1
+				has_opinion = { target = FRA value > 10 }
+			}
 		}
 	}
 	option = {#still fck you
@@ -7692,7 +7728,7 @@ country_event = {#boost nationalism
 			add_opinion_modifier = { target = ROOT modifier = major_breach_of_trust }
 		}
 		ai_chance = {
-			base = 1
+			base = 2
 		}
 	}
 }
@@ -7716,7 +7752,7 @@ country_event = {#debuff non nationalism
 		}
 	}
 }
-country_event = {#surrounded by ennemy find a way to close border
+country_event = {#surrounded by ennemy
 	id = france_md.293
 	title = france_md.293.t
 	desc = france_md.293.d
@@ -7727,6 +7763,45 @@ country_event = {#surrounded by ennemy find a way to close border
 		add_war_support = 0.2
 		add_stability = -0.1
 		add_ideas = FRA_surrounded
+		every_other_country = {
+			limit = {
+				OR = {
+					is_in_faction_with = ENG
+					original_tag = ENG
+				}
+			}
+			FRA = {
+				diplomatic_relation = {
+					country = FROM
+					relation = military_access
+					active = no
+				}
+			}
+		}
+		if = {
+			limit = { has_idea = slightly_regulated_immigration }
+			swap_ideas = {
+				remove_idea = slightly_regulated_immigration
+				add_idea = closed_borders
+			}
+		}
+		else_if = {
+			limit = { has_idea = heavily_regulated_immigration }
+			swap_ideas = {
+				remove_idea = heavily_regulated_immigration
+				add_idea = closed_borders
+			}
+		}
+		else_if = {
+			limit = { has_idea = regulated_immigration }
+			swap_ideas = {
+				remove_idea = regulated_immigration
+				add_idea = closed_borders
+			}
+		}
+		else = {
+			add_political_power = 150
+		}
 
 		ai_chance = {
 			base = 1
@@ -7767,7 +7842,11 @@ country_event = {#propose alliance to all nationalist in europe
 		}
 
 		ai_chance = {
-			base = 1
+			base = 3
+			modifier = {
+				add = 1
+				has_opinion = { target = FRA value > 50 }
+			}
 		}
 	}
 	option = {#no
@@ -7809,14 +7888,14 @@ country_event = {#propose alliance to all communist state
 		FRA= {
 			if = {
 					limit = { is_faction_leader = yes }
-					FRA = { add_to_faction = ROOT }
+					FRA = { add_to_faction = PREV }
 			}
 			else={
 				diplomatic_relation = {
-					country = ROOT
+					country = PREV
 					relation = guarantee
 				}
-				ROOT = {
+				PREV = {
 					diplomatic_relation = {
 						country = FRA
 						relation = guarantee
@@ -7826,7 +7905,11 @@ country_event = {#propose alliance to all communist state
 		}
 
 		ai_chance = {
-			base = 1
+			base = 3
+			modifier = {
+				add = 1
+				has_opinion = { target = FRA value > 50 }
+			}
 		}
 	}
 	option = {#no
@@ -7838,7 +7921,7 @@ country_event = {#propose alliance to all communist state
 		add_relative_party_popularity = yes
 		add_stability = 0.05
 		FRA = {
-			add_opinion_modifier = { target = ROOT modifier = betrayed_our_cause }
+			add_opinion_modifier = { target = PREV modifier = betrayed_our_cause }
 		}
 		ai_chance = {
 			base = 1
@@ -7870,9 +7953,11 @@ country_event = {#attack rival countries name like so close to fire
 					is_neighbor_of = FRA
 				}
 				NOT = {
-					is_in_faction_with = ENG
-					is_in_faction_with = FRA
-					original_tag = ENG
+					OR = {
+						is_in_faction_with = ENG
+						is_in_faction_with = FRA
+						original_tag = ENG
+					}
 				}
 			}
 			country_event = { id = france_md.298 days = 25 }
@@ -7947,6 +8032,14 @@ country_event = {#attack rival countries name like so close to fire
 		}
 		ai_chance = {
 			base = 1
+			modifier = {
+				add = 2
+				OR = {
+					has_idea = great_power
+					has_idea = large_power
+					has_idea = super_power
+				}
+			}
 		}
 	}
 	option = {#we shall remain cautious
@@ -7963,7 +8056,7 @@ country_event = {#attack rival countries name like so close to fire
 				days = 1825
 		}
 		ai_chance = {
-			base = 1
+			base = 4
 		}
 	}
 }
@@ -7972,49 +8065,9 @@ country_event = {#UK react to french attack make a faction rule
 	title = france_md.297.t
 	desc = france_md.297.d
 	is_triggered_only = yes
-	option = {#we shall create a coalition
+	option = {#we will guarantee them
 		name = france_md.297.a
 		log = "[GetDateText]: [This.GetName]: france_md.297.a executed"
-		add_war_support = 0.1
-		add_stability = -0.15
-		add_political_power = -250
-		add_manpower = -25
-		if = { limit = { is_faction_leader = yes }
-				add_political_power = 100
-				add_stability = 0.5
-		}
-		else_if = { limit = { is_in_faction = yes }
-			every_other_country = {
-				limit = {
-					AND = {
-						is_in_europe = yes
-						is_neighbor_of = FRA
-					}
-					NOT = {
-						is_in_faction_with = FRA
-						original_tag = FRA
-					}
-				}
-				ENG = {
-					diplomatic_relation = {
-						country = ROOT
-						relation = guarantee
-						active = yes
-					}
-				}
-			}
-		}
-		if = { limit = { is_in_faction = no }
-			create_faction = 8th_coalition
-		}
-
-		ai_chance = {
-			base = 1
-		}
-	}
-	option = {#we will guarantee them
-		name = france_md.297.b
-		log = "[GetDateText]: [This.GetName]: france_md.297.b executed"
 		add_war_support = 0.1
 		add_stability = -0.15
 		add_political_power = -150
@@ -8023,7 +8076,7 @@ country_event = {#UK react to french attack make a faction rule
 			limit = {
 				AND = {
 					is_in_europe = yes
-				is_neighbor_of = FRA
+					is_neighbor_of = FRA
 				}
 				NOT = {
 					is_in_faction_with = FRA
@@ -8040,11 +8093,19 @@ country_event = {#UK react to french attack make a faction rule
 		}
 		ai_chance = {
 			base = 1
+			modifier = {
+				add = 2
+				OR = {
+					has_idea = great_power
+					has_idea = large_power
+					has_idea = super_power
+				}
+			}
 		}
 	}
 	option = {#we will prepare our defense
-		name = france_md.297.c
-		log = "[GetDateText]: [This.GetName]: france_md.297.c executed"
+		name = france_md.297.b
+		log = "[GetDateText]: [This.GetName]: france_md.297.b executed"
 		add_war_support = 0.1
 		add_stability = -0.15
 		add_political_power = -150
@@ -8054,7 +8115,7 @@ country_event = {#UK react to french attack make a faction rule
 				days = 365
 		}
 		ai_chance = {
-			base = 1
+			base = 4
 		}
 	}
 }
@@ -8124,10 +8185,10 @@ country_event = {#other react to french attack
 				days = 365
 		}
 		ai_chance = {
-			base = 1
+			base = 4
 		}
 	}
-	option = {#its ok
+	option = {#its fine
 		name = france_md.298.c
 		log = "[GetDateText]: [This.GetName]: france_md.298.c executed"
 		add_war_support = 0.1
@@ -8135,7 +8196,7 @@ country_event = {#other react to french attack
 		add_political_power = -150
 		add_manpower = -10
 		ai_chance = {
-			base = 1
+			base = 2
 		}
 	}
 }
@@ -8148,40 +8209,52 @@ country_event = {#uk respond to help
 		name = france_md.299.a
 		log = "[GetDateText]: [This.GetName]: france_md.299.a executed"
 		if = { limit = { is_faction_leader = yes }
-			add_to_faction = ROOT
+			add_to_faction = FROM
 		}
 		else = {
 			diplomatic_relation = {
-				country = ROOT
+				country = FROM
 				relation = guarantee
 				active = yes
 			}
 		}
 		ai_chance = {
-			base = 1
+			base = 2
+			modifier = {
+				add = 1
+				has_opinion = { target = FROM value > 80 }
+			}
 		}
 	}
 	option = {#i'll only gurantee
 		name = france_md.299.b
 		log = "[GetDateText]: [This.GetName]: france_md.298.b executed"
 		diplomatic_relation = {
-			country = ROOT
+			country = FROM
 			relation = guarantee
 			active = yes
 		}
 		ai_chance = {
-			base = 1
+			base = 3
+			modifier = {
+				add = 1
+				has_opinion = { target = FROM value > 50 }
+			}
 		}
 	}
 	option = {#wont help you
 		name = france_md.299.c
 		log = "[GetDateText]: [This.GetName]: france_md.299.c executed"
-		ROOT = {
+		FROM = {
 			add_opinion_modifier = { target = ENG modifier = major_breach_of_trust }
 		}
 		add_political_power = 50
 		ai_chance = {
-			base = 1
+			base = 1.1
+			modifier = {
+				add= 1
+				has_government = nationalist
+			}
 		}
 	}
 }
@@ -8202,14 +8275,14 @@ country_event = {#propose to poland to take revenge of germany promise to protec
 		FRA= {
 			if = {
 					limit = { is_faction_leader = yes }
-					FRA = { add_to_faction = ROOT }
+					FRA = { add_to_faction = FROM }
 			}
 			else={
 				diplomatic_relation = {
-					country = ROOT
+					country = FROM
 					relation = guarantee
 				}
-				ROOT = {
+				FROM = {
 					diplomatic_relation = {
 						country = FRA
 						relation = guarantee
@@ -8219,7 +8292,15 @@ country_event = {#propose to poland to take revenge of germany promise to protec
 		}
 
 		ai_chance = {
-			base = 1
+			base = 3
+			modifier = {
+				add = 2
+				has_government = nationalist
+			}
+			modifier = {
+				add = 1
+				has_opinion = { target = FRA value > 50 }
+			}
 		}
 	}
 	option = {#no
@@ -8240,7 +8321,7 @@ country_event = {#propose to poland to take revenge of germany promise to protec
 			add_opinion_modifier = { target = ROOT modifier = major_breach_of_trust }
 		}
 		ai_chance = {
-			base = 1
+			base = 2
 		}
 	}
 }
@@ -8261,11 +8342,11 @@ country_event = {#propose to sweden alliance in the memory of their former king
 		FRA= {
 			if = {
 					limit = { is_faction_leader = yes }
-					FRA = { add_to_faction = ROOT }
+					add_to_faction = FROM
 			}
 			else={
 				diplomatic_relation = {
-					country = ROOT
+					country =FROM
 					relation = guarantee
 				}
 				ROOT = {
@@ -8276,9 +8357,16 @@ country_event = {#propose to sweden alliance in the memory of their former king
 				}
 			}
 		}
-
 		ai_chance = {
-			base = 1
+			base = 3
+			modifier = {
+				add = 2
+				has_government = nationalist
+			}
+			modifier = {
+				add = 1
+				has_opinion = { target = FRA value > 50 }
+			}
 		}
 	}
 	option = {#no
@@ -8292,14 +8380,14 @@ country_event = {#propose to sweden alliance in the memory of their former king
 		ENG = {
 			add_opinion_modifier = {
 				modifier = recent_actions_positive
-				target = ROOT
+				target = FROM
 			}
 		}
 		FRA = {
-			add_opinion_modifier = { target = ROOT modifier = major_breach_of_trust }
+			add_opinion_modifier = { target = FROM modifier = major_breach_of_trust }
 		}
 		ai_chance = {
-			base = 1
+			base = 2
 		}
 	}
 }
@@ -8323,6 +8411,14 @@ country_event = {#USA friend or foe
 
 		ai_chance = {
 			base = 1
+			modifier = {
+				add = 1
+				USA ={has_government = nationalist}
+			}
+			modifier = {
+				add = 1
+				has_opinion = { target = USA value > 50 }
+			}
 		}
 	}
 	option = {#trade deal in the good old days
@@ -8334,7 +8430,15 @@ country_event = {#USA friend or foe
 		}
 
 		ai_chance = {
-			base = 1
+			base = 3
+			modifier = {
+				add = 1
+				USA ={has_government = nationalist}
+			}
+			modifier = {
+				add = 1
+				has_opinion = { target = USA value > 50 }
+			}
 		}
 	}
 	option = {#they will also perish
@@ -8353,7 +8457,15 @@ country_event = {#USA friend or foe
 			add_opinion_modifier = { target = FRA modifier = major_breach_of_trust }
 		}
 		ai_chance = {
-			base = 1
+			base = 4
+			add = 2
+			modifier = {
+				OR = {
+					has_idea = great_power
+					has_idea = large_power
+					has_idea = super_power
+				}
+			}
 		}
 	}
 	option = {#we dont have time to befriend them
@@ -8381,15 +8493,15 @@ country_event = {#propose to USA alliance to beat brits
 		add_relative_party_popularity = yes
 		FRA= {
 			if = {
-					limit = { is_faction_leader = yes }
-					FRA = { add_to_faction = ROOT }
+				limit = { is_faction_leader = yes }
+				add_to_faction = PREV
 			}
 			else={
 				diplomatic_relation = {
-					country = ROOT
+					country = PREV
 					relation = guarantee
 				}
-				ROOT = {
+				PREV = {
 					diplomatic_relation = {
 						country = FRA
 						relation = guarantee
@@ -8400,12 +8512,20 @@ country_event = {#propose to USA alliance to beat brits
 		ENG = {
 			add_opinion_modifier = {
 				add_opinion_modifier = { target = USA modifier = major_breach_of_trust }
-				target = ROOT
+				target = USA
 			}
 		}
 
 		ai_chance = {
 			base = 1
+			modifier = {
+				add = 2
+				has_government = nationalist
+			}
+			modifier = {
+				add = 1
+				has_opinion = { target = FRA value > 50 }
+			}
 		}
 	}
 	option = {#no
@@ -8419,14 +8539,18 @@ country_event = {#propose to USA alliance to beat brits
 		ENG = {
 			add_opinion_modifier = {
 				modifier = recent_actions_positive
-				target = ROOT
+				target = USA
 			}
 		}
 		FRA = {
-			add_opinion_modifier = { target = ROOT modifier = major_breach_of_trust }
+			add_opinion_modifier = { target = USA modifier = major_breach_of_trust }
 		}
 		ai_chance = {
-			base = 1
+			base = 3
+			modifier = {
+				add = 1
+				has_government = democratic
+			}
 		}
 	}
 }
@@ -8449,14 +8573,15 @@ country_event = {#agree trade deal
 		}
 		add_ideas = FRA_trade_USA
 		ENG = {
-			add_opinion_modifier = {
-				add_opinion_modifier = { target = USA modifier = major_breach_of_trust }
-				target = ROOT
-			}
+			add_opinion_modifier = { target = USA modifier = major_breach_of_trust }
 		}
 
 		ai_chance = {
-			base = 1
+			base = 3
+			modifier = {
+				add = 2
+				has_government = nationalist
+			}
 		}
 	}
 	option = {#no
@@ -8470,14 +8595,18 @@ country_event = {#agree trade deal
 		ENG = {
 			add_opinion_modifier = {
 				modifier = recent_actions_positive
-				target = ROOT
+				target = USA
 			}
 		}
 		FRA = {
-			add_opinion_modifier = { target = ROOT modifier = major_breach_of_trust }
+			add_opinion_modifier = { target = USA modifier = major_breach_of_trust }
 		}
 		ai_chance = {
-			base = 1
+			base = 2
+			modifier = {
+				add = 1
+				has_government = democratic
+			}
 		}
 	}
 }
@@ -8558,14 +8687,14 @@ country_event = {#propose alliance to all eu christian
 		FRA= {
 			if = {
 					limit = { is_faction_leader = yes }
-					FRA = { add_to_faction = ROOT }
+					add_to_faction = PREV
 			}
 			else={
 				diplomatic_relation = {
-					country = ROOT
+					country = PREV
 					relation = guarantee
 				}
-				ROOT = {
+				PREV = {
 					diplomatic_relation = {
 						country = FRA
 						relation = guarantee
@@ -8577,7 +8706,15 @@ country_event = {#propose alliance to all eu christian
 		change_the_clergy_opinion = yes
 
 		ai_chance = {
-			base = 1
+			base = 4
+			modifier = {
+				add = 2
+				has_government = nationalist
+			}
+			modifier = {
+				add = 1
+				has_opinion = { target = FRA value > 50 }
+			}
 		}
 	}
 	option = {#no
@@ -8589,12 +8726,12 @@ country_event = {#propose alliance to all eu christian
 		add_relative_party_popularity = yes
 		add_stability = -0.05
 		FRA = {
-			add_opinion_modifier = { target = ROOT modifier = betrayed_our_cause }
+			add_opinion_modifier = { target = PREV modifier = betrayed_our_cause }
 		}
 		set_temp_variable = { temp_opinion = -5 }
 		change_the_clergy_opinion = yes
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 }
@@ -8610,7 +8747,7 @@ country_event = {#plan to reach jerusalem
 			country_event = france_md.310
 		}
 		ai_chance = {
-			base = 1
+			base = 5
 		}
 	}
 	option = {#buildup navy
@@ -8623,7 +8760,7 @@ country_event = {#plan to reach jerusalem
 		set_temp_variable = { temp_opinion = 10 }
 		change_maritime_industry_opinion = yes
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 }
@@ -8639,7 +8776,21 @@ country_event = {#france ask us to be puppet
 			country_event = france_md.311
 		}
 		ai_chance = {
-			base = 1
+			base = 5
+			modifier = {
+				add = 1
+				FRA = {
+					OR = {
+						has_idea = great_power
+						has_idea = large_power
+						has_idea = super_power
+					}
+				}
+			}
+			modifier = {
+				add = 1
+				has_opinion = { target = FRA value > 80 }
+			}
 		}
 	}
 	option = {#no
@@ -8655,7 +8806,7 @@ country_event = {#france ask us to be puppet
 			country_event = france_md.312
 		}
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 }
@@ -8703,7 +8854,7 @@ country_event = {#leb said no
 		set_temp_variable = { temp_opinion = 10 }
 		change_maritime_industry_opinion = yes
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 	option = {#political preassure goes if syria and leb dont exist or puppet
@@ -8716,7 +8867,7 @@ country_event = {#leb said no
 		add_stability = 0.1
 		add_ideas = FRA_political_preassure
 		ai_chance = {
-			base = 1
+			base = 2
 		}
 	}
 }
@@ -8732,7 +8883,15 @@ country_event = {#france ask us to be puppet and red
 			country_event = france_md.314
 		}
 		ai_chance = {
-			base = 1
+			base = 2
+			modifier = {
+				add = 2
+				has_government = communism
+			}
+			modifier = {
+				add = 1
+				has_opinion = { target = FRA value > 80 }
+			}
 		}
 	}
 	option = {#no
@@ -8748,7 +8907,7 @@ country_event = {#france ask us to be puppet and red
 			country_event = france_md.315
 		}
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 }
@@ -8802,7 +8961,7 @@ country_event = {#target said no
 			target = FROM
 		}
 		ai_chance = {
-			base = 1
+			base = 5
 		}
 	}
 	option = {#nothing
@@ -8814,7 +8973,7 @@ country_event = {#target said no
 		add_relative_party_popularity = yes
 		add_political_power = -50
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 }
@@ -8941,7 +9100,7 @@ country_event = {#attack russia and neightbor
 		add_war_support = 0.15
 		add_timed_idea = { idea = FRA_attack_russia_fast days = 150 }
 		ai_chance = {
-			base = 1
+			base = 5
 		}
 	}
 	option = {
@@ -8951,7 +9110,14 @@ country_event = {#attack russia and neightbor
 		add_war_support = 0.15
 		add_timed_idea = { idea = FRA_attack_russia_slow days = 365 }
 		ai_chance = {
-			base = 1
+			base = 4
+			modifier = {
+				add = 2
+				SOV = {
+					has_idea = large_power
+					has_idea = super_power
+				}
+			}
 		}
 	}
 }
@@ -8967,7 +9133,7 @@ country_event = {#attack UK
 		add_war_support = 0.1
 		add_timed_idea = { idea = FRA_attack_UK_naval days = 130 }
 		ai_chance = {
-			base = 1
+			base = 5
 		}
 	}
 	option = {
@@ -8977,7 +9143,14 @@ country_event = {#attack UK
 		add_war_support = 0.1
 		add_timed_idea = { idea = FRA_attack_UK_air days = 130 }
 		ai_chance = {
-			base = 1
+			base = 6
+			modifier = {
+				add = 2
+				OR = {
+					has_idea = FRA_army_reformed_air_cavalry
+					FRA_army_reformed_air_infantry
+				}
+			}
 		}
 	}
 }
@@ -8997,6 +9170,7 @@ country_event = {#victory napoleon
 		}
 	}
 }
+#TODO give king some traits about their model
 country_event = {#choose expansion policy
 	id = france_md.478
 	title = france_md.478.t
@@ -9007,7 +9181,7 @@ country_event = {#choose expansion policy
 		log = "[GetDateText]: [This.GetName]: france_md.478.a executed"
 		add_ideas = FRA_expansion_europe
 		ai_chance = {
-			base = 1
+			base = 4
 		}
 	}
 	option = {#become saint louis start crusadind around
@@ -9015,7 +9189,7 @@ country_event = {#choose expansion policy
 		log = "[GetDateText]: [This.GetName]: france_md.478.b executed"
 		add_ideas = FRA_expansion_crusades
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 }
@@ -9031,7 +9205,11 @@ country_event = {#france demand annexation
 			country_event = france_md.480
 		}
 		ai_chance = {
-			base = 1
+			base = 3
+			modifier = {
+				add = 10
+				is_subject_of = FRA
+			}
 		}
 	}
 	option = {#no
@@ -9047,7 +9225,7 @@ country_event = {#france demand annexation
 			country_event = france_md.481
 		}
 		ai_chance = {
-			base = 1
+			base = 6
 		}
 	}
 }
@@ -9086,7 +9264,7 @@ country_event = {#target said no
 			target = FROM
 		}
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 	option = {#nothing
@@ -9122,11 +9300,10 @@ country_event = {#france demand we fold italy
 			79 = { transfer_state_to = FRA }
 		}
 		FRA= {
-			if = {
+			IF = {
 				limit = { NOT = { ITA = { is_subject_of = FRA } } }
 				puppet = ITA
 			}
-
 		}
 		hidden_effect = {
 			clear_array = ruling_party
@@ -9143,6 +9320,14 @@ country_event = {#france demand we fold italy
 			}
 		ai_chance = {
 			base = 1
+			modifier = {
+				add = 5
+				is_subject_of = FRA
+			}
+			modifier = {
+				add = 1
+				has_opinion = { target = FRA value > 90 }
+			}
 		}
 
 	}
@@ -9159,7 +9344,7 @@ country_event = {#france demand we fold italy
 			country_event = france_md.483
 		}
 		ai_chance = {
-			base = 1
+			base = 4
 		}
 	}
 }
@@ -9181,7 +9366,7 @@ country_event = {#target said no fold or alliance
 			type = puppet_wargoal_focus
 		}
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 	option = {#nothing
@@ -9225,7 +9410,7 @@ country_event = {#france demand puppet
 				}
 			}
 		ai_chance = {
-			base = 1
+			base = 2
 		}
 
 	}
@@ -9242,7 +9427,7 @@ country_event = {#france demand puppet
 			country_event = france_md.483
 		}
 		ai_chance = {
-			base = 1
+			base = 4
 		}
 	}
 }
@@ -9298,6 +9483,14 @@ country_event = {#france demand road to jerusalem
 			}
 		ai_chance = {
 			base = 1
+			modifier = {
+				add = 5
+				is_subject_of = FRA
+			}
+			modifier = {
+				add = 1
+				has_opinion = { target = FRA value > 80 }
+			}
 		}
 
 	}
@@ -9314,10 +9507,11 @@ country_event = {#france demand road to jerusalem
 			country_event = france_md.483
 		}
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 }
+#add a trait instead of idea for victors
 country_event = {#victory saint louis kingdom of jerusalem
 	id = france_md.487
 	title = france_md.487.t
@@ -9332,7 +9526,7 @@ country_event = {#victory saint louis kingdom of jerusalem
 		remove_ideas = FRA_expansion_crusades
 		add_ideas = FRA_expansion_crusades_plus
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 	option = {#im fine for now
@@ -9383,7 +9577,15 @@ country_event = {#alliance or war
 		change_the_clergy_opinion = yes
 
 		ai_chance = {
-			base = 1
+			base = 3
+			modifier = {
+				add = 1
+				has_government = nationalist
+			}
+			modifier = {
+				add = 1
+				has_opinion = { target = FRA value > 50 }
+			}
 		}
 	}
 	option = {#no
@@ -9401,10 +9603,19 @@ country_event = {#alliance or war
 		set_temp_variable = { temp_opinion = -5 }
 		change_the_clergy_opinion = yes
 		ai_chance = {
-			base = 1
+			base = 2
+			modifier = {
+				add = 2
+				OR = {
+					has_idea = great_power
+					has_idea = large_power
+					has_idea = super_power
+				}
+			}
 		}
 	}
 }
+#same give a trait instead of an idea for victory
 country_event = {#victory saint louis on europe
 	id = france_md.489
 	title = france_md.489.t
@@ -9454,7 +9665,7 @@ country_event = {#victory saint louis on europe
 			}
 		}
 		ai_chance = {
-			base = 1
+			base = 4
 		}
 	}
 	option = {#they will see the light
@@ -9470,10 +9681,11 @@ country_event = {#victory saint louis on europe
 		}
 
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 }
+#TODO give cosmetic tag and change color
 country_event = {#integration of natural border
 	id = france_md.490
 	title = france_md.490.t
@@ -9690,11 +9902,11 @@ country_event = {#france demand annexation
 	option = {#yes
 		name = france_md.496.a
 		log = "[GetDateText]: [This.GetName]: france_md.496.a executed"
-		FRA= {
+		FRA = {
 			country_event = france_md.480
 		}
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 	option = {#no break free +annex wargoal only if is stronger than master
@@ -9704,13 +9916,21 @@ country_event = {#france demand annexation
 		set_temp_variable = { party_popularity_increase = -0.2 }
 		set_temp_variable = { temp_outlook_increase = -0.2 }
 		add_relative_party_popularity = yes
-		add_stability = -0.4
-		add_war_support = 0.2
-		FRA= {
+		add_stability = -0.2
+		add_war_support = 0.15
+		FRA = {
 			country_event = france_md.497
 		}
 		ai_chance = {
 			base = 1
+			modifier = {
+				add = 2
+				OR = {
+					has_idea = great_power
+					has_idea = large_power
+					has_idea = super_power
+				}
+			}
 		}
 	}
 }
@@ -9742,7 +9962,7 @@ country_event = {#target said no to annexation of puppet
 			}
 		}
 		ai_chance = {
-			base = 1
+			base = 3
 		}
 	}
 	option = {#nothing
@@ -14429,6 +14649,7 @@ country_event = {
 
 #2002 election event
 #TODO give flag
+#TODO add tooltip
 country_event = {#chirac weakened who shall compete
 	id = france_md.503
 	title = france_md.503.t
@@ -14477,7 +14698,13 @@ country_event = {#chirac weakened who shall compete
 		hidden_effect = {
 			country_event = { id = france_md.508 days = 3 }
 		}
-		ai_chance = { base = 3 }
+		ai_chance = {
+			base = 3
+			modifier = {
+				is_historical_focus_on = yes
+				add = 5
+			}
+		}
 	}
 }
 #PS vs communist
@@ -14494,7 +14721,9 @@ country_event = {#yes
 		hidden_effect = {
 			country_event = { id = france_md.505 days = 10 }
 		}
-		ai_chance = { base = 3 }
+		ai_chance = {
+			base = 3
+		}
 	}
 	option = {#communist and barrage
 		name = france_md.504.b
@@ -14648,7 +14877,13 @@ country_event = {#neither right nor left
 				country_event = { id = france_md.510 days = 10 }
 			}
 		}
-		ai_chance = { base = 3 }
+		ai_chance = { 
+			base = 3
+			modifier = {
+				is_historical_focus_on = yes
+				add = 5
+			}
+		}
 	}
 }
 country_event = {#eurosceptic have a chance
@@ -14683,7 +14918,13 @@ country_event = {#eurosceptic have a chance
 		hidden_effect = {
 			country_event = { id = france_md.510 days = 10 }
 		}
-		ai_chance = { base = 3 }
+		ai_chance = {
+			base = 3
+			modifier = {
+				is_historical_focus_on = yes
+				add = 5
+			}
+		}
 	}
 }
 country_event = {#national rally win right
@@ -14727,7 +14968,13 @@ country_event = {#national rally win right
 		set_temp_variable = { temp_outlook_increase = -0.1 }
 		add_relative_party_popularity = yes
 		set_country_flag = FRA_FN_BARRAGE
-		ai_chance = { base = 3 }
+		ai_chance = {
+			base = 3
+			modifier = {
+				is_historical_focus_on = yes
+				add = 5
+			}
+		}
 	}
 }
 country_event = {#1st tour day
