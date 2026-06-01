@@ -2557,7 +2557,7 @@ country_event = {
 	title = france_md.165.t
 	desc = france_md.165.d
 	is_triggered_only = yes
-	option = {
+	option = {#this provent a little market crashs
 		name = france_md.165.a
 		log = "[GetDateText]: [This.GetName]: france_md.165.a executed"
 		add_ideas = FRA_regulation
@@ -15112,6 +15112,9 @@ country_event = {#FN win
 			set_variable = { party_pop_array^20 = 0.45 } #Nat_Populism
 		}
 		add_timed_idea = { idea = FRA_election_result days = 15 }
+		hidden_effect = {
+			country_event = { id = france_md.538 days = 35 }
+		}
 		ai_chance = { base = 3 }
 	}
 }
@@ -15160,6 +15163,9 @@ country_event = {#PCF win
 			set_variable = { party_pop_array^4 = 0.45 } #Communist-State
 		}
 		add_timed_idea = { idea = FRA_election_result days = 15 }
+		hidden_effect = {
+			country_event = { id = france_md.538 days = 35 }
+		}
 		ai_chance = { base = 3 }
 	}
 }
@@ -15208,6 +15214,9 @@ country_event = {#RPF 2nd tour
 			set_variable = { party_pop_array^14 = 0.45 } #Neutral_conservatism
 		}
 		add_timed_idea = { idea = FRA_election_result days = 15 }
+		hidden_effect = {
+			country_event = { id = france_md.538 days = 35 }
+		}
 		ai_chance = { base = 3 }
 	}
 	option = {#chirac win
@@ -15248,6 +15257,9 @@ country_event = {#liberal 2nd tour
 			set_variable = { party_pop_array^2 = 0.43 } #liberalism
 		}
 		add_timed_idea = { idea = FRA_election_result days = 15 }
+		hidden_effect = {
+			country_event = { id = france_md.538 days = 35 }
+		}
 		ai_chance = { base = 3 }
 	}
 	option = {#chirac win
@@ -15282,6 +15294,9 @@ country_event = {#green 2nd tour
 			set_variable = { party_pop_array^17 = 0.45 } #Neutral_green
 		}
 		add_timed_idea = { idea = FRA_election_result days = 15 }
+		hidden_effect = {
+			country_event = { id = france_md.538 days = 35 }
+		}
 		ai_chance = { base = 3 }
 	}
 	option = {#chirac win
@@ -15364,6 +15379,7 @@ country_event = {#ps splitting #TODO event met macron en 1er candidat UDF UDF de
 		set_temp_variable = { temp_outlook_increase = -0.2 }
 		add_relative_party_popularity = yes
 		set_country_flag = FRA_LFI_CREATED
+		set_country_flag = FRA_LREM_CREATED
 		add_to_variable = { liberalism_leader = 1 }
 		ai_chance = { base = 3 }
 	}
@@ -15822,6 +15838,82 @@ country_event = {#socialist refuse
 				popularity = -0.10
 		}
 		add_stability = -0.05
+		ai_chance = { base = 3 }
+	}
+}
+country_event = {#decide if you want start to play or wait election
+	id = france_md.537
+	title = france_md.537.t
+	desc = france_md.537.d
+	picture = GFX_generic_parliament
+	is_triggered_only = yes
+	option = {#i start now has chirac
+		name = france_md.537.a
+		log = "[GetDateText]: [This.GetName]: france_md.537.a executed"
+		set_country_flag = FRA_start_election
+		ai_chance = { base = 3 }
+	}
+	option = {#i prefer to wait
+		name = france_md.537.b
+		log = "[GetDateText]: [This.GetName]: france_md.537.b executed"
+		ai_chance = { base = 3 }
+	}
+}
+country_event = {#chirac retire
+	id = france_md.538
+	title = france_md.538.t
+	desc = france_md.538.d
+	picture = GFX_generic_parliament
+	is_triggered_only = yes
+	option = {#farewell
+		name = france_md.538.a
+		log = "[GetDateText]: [This.GetName]: france_md.538.a executed"
+		set_country_flag = FRA_chirac_retire
+		add_to_variable = { conservatism_leader = 1 }
+		ai_chance = { base = 3 }
+	}
+}
+country_event = {#jean marie le pen out
+	id = france_md.539
+	title = france_md.539.t
+	desc = france_md.539.d
+	picture = GFX_generic_parliament
+	is_triggered_only = yes
+	option = {#get out
+		name = france_md.539.a
+		log = "[GetDateText]: [This.GetName]: france_md.539.a executed"
+		set_country_flag = FRA_jmlp_retire
+		set_temp_variable = { party_index = 20 }
+		set_temp_variable = { party_popularity_increase = -0.075 }
+		add_relative_party_popularity = yes
+		add_to_variable = { FRA_balance_domestic_nationalist_drift = 0.02 tooltip = fascism_drift_tt }
+		ai_chance = {
+			base = 3
+			modifier = {
+				is_historical_focus_on = yes
+				add = 4
+			}
+		}
+	}
+	option = {#i mean its alright
+		name = france_md.539.b
+		log = "[GetDateText]: [This.GetName]: france_md.539.b executed"
+		set_temp_variable = { party_index = 20 }
+		set_temp_variable = { party_popularity_increase = 0.1 }
+		add_relative_party_popularity = yes
+		ai_chance = { base = 2 }
+	}
+}
+country_event = {#fn become RN
+	id = france_md.540
+	title = france_md.540.t
+	desc = france_md.540.d
+	picture = GFX_generic_parliament
+	is_triggered_only = yes
+	option = {#a turning point in far right history ?
+		name = france_md.540.a
+		log = "[GetDateText]: [This.GetName]: france_md.540.a executed"
+		set_country_flag = FRA_RN_CREATED
 		ai_chance = { base = 3 }
 	}
 }
