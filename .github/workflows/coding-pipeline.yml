@@ -11,18 +11,20 @@ on:
     - 'localisation/**'
     - 'interface/**'
     - 'gfx/**'
-    - 'tools/validation/**'
-    - 'tools/standardization/**'
+    # Tooling paths are intentionally absent: the validator jobs gate on
+    # detect-changes (content groups), so a tooling-only PR would trigger the
+    # workflow but skip every validator, posting an empty report. Changes under
+    # tools/ are smoke-tested by tools-validation.yml instead.
     - '.github/workflows/coding-pipeline.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# Least privilege: validator jobs run PR-authored code and only need to read.
+# The validation-report job declares its own pull-requests/checks write scope.
 permissions:
   contents: read
-  pull-requests: write
-  checks: write
 
 jobs:
   # ───────────────────────────────────────────────────────────────
@@ -30,7 +32,6 @@ jobs:
   # ───────────────────────────────────────────────────────────────
   detect-changes:
     name: Detect Changes
-    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     outputs:
       common:        ${{ steps.filter.outputs.common }}
@@ -54,7 +55,7 @@ jobs:
     # changed-file list straight from the GitHub API, so cloning the repo
     # just to diff locally is pure overhead.
     - name: Detect changed file groups
-      uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+      uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
       id: filter
       with:
         filters: |
@@ -517,11 +518,10 @@ jobs:
       contents: read
       pull-requests: write
       checks: write
-    if: >-
-      always() &&
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.draft == false &&
-      !cancelled()
+    # Run the report whether validators passed or failed, but not if the run
+    # was cancelled. (The workflow only triggers on pull_request, so no event
+    # guard is needed.)
+    if: ${{ !cancelled() }}
     steps:
     # Checkout the report generator + the report_lib package it imports.
     # Stays much smaller than a full checkout — we skip everything else.
