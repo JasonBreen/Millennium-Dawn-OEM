@@ -9651,3 +9651,141 @@ CHI_industrial_investment_category = {
 		}
 	}
 }
+
+CHI_military_decisions_category = {
+
+	# Reform path — stand up the five theatre commands (CHI_joint_operations_command)
+	CHI_establish_theatre_command = {
+		icon = GFX_decision_generic_military
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_country_flag = CHI_theatre_commands_unlocked
+		}
+
+		cost = 75
+
+		fire_only_once = yes
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_establish_theatre_command executed"
+			army_experience = 25
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_landforce_modifier }
+			add_to_variable = { CHI_land_coordination_bonus = 0.05 tooltip = coordination_bonus_tt }
+			add_to_variable = { CHI_land_initiative_factor = 0.05 tooltip = initiative_factor_tt }
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	# Reform path — weaponise the rare earth supply against a major rival (CHI_rare_earth_leverage)
+	CHI_rare_earth_embargo_decision = {
+		icon = GFX_decision_generic_operation
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_country_flag = CHI_rare_earth_lever_unlocked
+		}
+
+		target_array = global.majors
+
+		target_trigger = {
+			country_exists = FROM
+			FROM = { NOT = { original_tag = CHI } }
+			NOT = { is_in_faction_with = FROM }
+		}
+
+		available = {
+			FROM = { NOT = { has_dynamic_modifier = { modifier = CHI_rare_earth_embargoed } } }
+		}
+
+		cost = 100
+
+		days_re_enable = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_rare_earth_embargo_decision on [From.GetName]"
+			FROM = {
+				add_dynamic_modifier = { modifier = CHI_rare_earth_embargoed days = 180 }
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	# Corruption path — periodically rein in the cliques, trading business income for order (CHI_the_northeast_tiger)
+	CHI_rein_in_cliques = {
+		icon = GFX_decision_generic_intelligence_operation
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_country_flag = CHI_clique_management_unlocked
+		}
+
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = CHI_clique_income_req_tt
+				check_variable = { CHI_pla_business_income > 10 }
+			}
+		}
+
+		cost = 50
+
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_rein_in_cliques executed"
+			subtract_from_variable = { CHI_pla_business_income = 5 }
+			clamp_variable = { var = CHI_pla_business_income min = 0 max = 500 }
+			add_stability = 0.03
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	# Corruption path — sell arms abroad for cash and influence (CHI_arms_for_influence)
+	CHI_arms_for_influence_offer = {
+		icon = GFX_decision_generic_army_support
+
+		allowed = { original_tag = CHI }
+
+		visible = {
+			has_country_flag = CHI_arms_for_influence_unlocked
+		}
+
+		target_array = global.countries
+
+		target_trigger = {
+			country_exists = FROM
+			FROM = {
+				NOT = { original_tag = CHI }
+				is_major = no
+				NOT = { is_in_faction_with = ROOT }
+			}
+		}
+
+		available = {
+			NOT = { has_war_with = FROM }
+		}
+
+		cost = 50
+
+		days_re_enable = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_arms_for_influence_offer to [From.GetName]"
+			FROM = { country_event = { id = CHI_military_event.7 days = 2 } }
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				set_temp_variable = { treasury_change = 100 }
+				modify_treasury_effect = yes
+				add_to_variable = { CHI_pla_business_income = 5 }
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+}
