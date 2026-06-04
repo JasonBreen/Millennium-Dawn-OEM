@@ -1,0 +1,26 @@
+# ============================================================================
+# COUNTRY SPECIALIZATION — on_actions
+# on_startup: initialise every country immediately so the panel works on day 1.
+# on_weekly: ONLY a cheap lazy-init for newly-created tags (civil-war split-offs).
+# The recompute is NOT on a timer — it runs only when the player changes an
+# allocation (every +/- / toggle / reset calls spec_recompute_bonuses directly).
+# ============================================================================
+
+on_actions = {
+	on_startup = {
+		effect = {
+			every_country = {
+				spec_effects_initialize = yes
+			}
+		}
+	}
+
+	on_weekly = {
+		effect = {
+			if = {
+				limit = { NOT = { has_country_flag = spec_initialized } }
+				spec_effects_initialize = yes
+			}
+		}
+	}
+}

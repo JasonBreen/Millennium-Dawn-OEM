@@ -1,0 +1,1572 @@
+# ============================================================================
+# COUNTRY SPECIALIZATION — Building Augmentation System
+# ----------------------------------------------------------------------------
+# Global mechanic. Each building type can be activated and augmented with raw
+# resources; each resource gets a 0-5 contribution LEVEL set with +/- arrows.
+# A building's strength = the sum of its resource levels. Augmentation draws GW
+# (electricity), workers (employment) and diverts the chosen resources from
+# export, all wired into the live MD economy.
+#
+# State: spec_active_<b> (0/1)  +  spec_lvl_<b>_<token> (0-5)
+# Building keys: civ mil dock office agri refinery chip comp
+# ============================================================================
+
+spec_set_tunables = {
+	# Re-applied on every startup/load (not flag-gated) so tuning takes effect on existing saves.
+	set_variable = { global.spec_per_factory_units = 0.15 }      # resource units consumed per factory, per level (TUNE)
+	set_variable = { global.spec_building_cap = 0.15 }           # max fraction of a resource ONE building can divert (when maxed)
+	set_variable = { global.spec_resource_cap = 0.5 }            # hard cap: max fraction of a resource diverted across ALL buildings
+	set_variable = { global.spec_buff_base = 0.01 }              # buff per level x rule-weight (TUNE)
+	set_variable = { global.spec_power_flat = 0.02 }             # flat power-use bump per building with active resources (TUNE)
+}
+
+spec_effects_initialize = {
+	spec_set_tunables = yes
+	if = {
+		limit = { NOT = { has_country_flag = spec_initialized } }
+		set_country_flag = spec_initialized
+		hidden_effect = {
+			set_variable = { spec_active_civ = 0 }
+			set_variable = { spec_lvl_civ_oil = 0 }
+			set_variable = { spec_lvl_civ_steel = 0 }
+			set_variable = { spec_lvl_civ_aluminium = 0 }
+			set_variable = { spec_lvl_civ_tungsten = 0 }
+			set_variable = { spec_lvl_civ_chromium = 0 }
+			set_variable = { spec_lvl_civ_rubber = 0 }
+			set_variable = { spec_lvl_civ_microchips = 0 }
+			set_variable = { spec_lvl_civ_composites = 0 }
+			set_variable = { spec_lvl_civ_workforce = 0 }
+			set_variable = { spec_active_mil = 0 }
+			set_variable = { spec_lvl_mil_oil = 0 }
+			set_variable = { spec_lvl_mil_steel = 0 }
+			set_variable = { spec_lvl_mil_aluminium = 0 }
+			set_variable = { spec_lvl_mil_tungsten = 0 }
+			set_variable = { spec_lvl_mil_chromium = 0 }
+			set_variable = { spec_lvl_mil_rubber = 0 }
+			set_variable = { spec_lvl_mil_microchips = 0 }
+			set_variable = { spec_lvl_mil_composites = 0 }
+			set_variable = { spec_lvl_mil_workforce = 0 }
+			set_variable = { spec_active_dock = 0 }
+			set_variable = { spec_lvl_dock_oil = 0 }
+			set_variable = { spec_lvl_dock_steel = 0 }
+			set_variable = { spec_lvl_dock_aluminium = 0 }
+			set_variable = { spec_lvl_dock_tungsten = 0 }
+			set_variable = { spec_lvl_dock_chromium = 0 }
+			set_variable = { spec_lvl_dock_rubber = 0 }
+			set_variable = { spec_lvl_dock_microchips = 0 }
+			set_variable = { spec_lvl_dock_composites = 0 }
+			set_variable = { spec_lvl_dock_workforce = 0 }
+			set_variable = { spec_active_office = 0 }
+			set_variable = { spec_lvl_office_oil = 0 }
+			set_variable = { spec_lvl_office_steel = 0 }
+			set_variable = { spec_lvl_office_aluminium = 0 }
+			set_variable = { spec_lvl_office_tungsten = 0 }
+			set_variable = { spec_lvl_office_chromium = 0 }
+			set_variable = { spec_lvl_office_rubber = 0 }
+			set_variable = { spec_lvl_office_microchips = 0 }
+			set_variable = { spec_lvl_office_composites = 0 }
+			set_variable = { spec_lvl_office_workforce = 0 }
+			set_variable = { spec_active_agri = 0 }
+			set_variable = { spec_lvl_agri_oil = 0 }
+			set_variable = { spec_lvl_agri_steel = 0 }
+			set_variable = { spec_lvl_agri_aluminium = 0 }
+			set_variable = { spec_lvl_agri_tungsten = 0 }
+			set_variable = { spec_lvl_agri_chromium = 0 }
+			set_variable = { spec_lvl_agri_rubber = 0 }
+			set_variable = { spec_lvl_agri_microchips = 0 }
+			set_variable = { spec_lvl_agri_composites = 0 }
+			set_variable = { spec_lvl_agri_workforce = 0 }
+			set_variable = { spec_active_refinery = 0 }
+			set_variable = { spec_lvl_refinery_oil = 0 }
+			set_variable = { spec_lvl_refinery_steel = 0 }
+			set_variable = { spec_lvl_refinery_aluminium = 0 }
+			set_variable = { spec_lvl_refinery_tungsten = 0 }
+			set_variable = { spec_lvl_refinery_chromium = 0 }
+			set_variable = { spec_lvl_refinery_rubber = 0 }
+			set_variable = { spec_lvl_refinery_microchips = 0 }
+			set_variable = { spec_lvl_refinery_composites = 0 }
+			set_variable = { spec_lvl_refinery_workforce = 0 }
+			set_variable = { spec_active_chip = 0 }
+			set_variable = { spec_lvl_chip_oil = 0 }
+			set_variable = { spec_lvl_chip_steel = 0 }
+			set_variable = { spec_lvl_chip_aluminium = 0 }
+			set_variable = { spec_lvl_chip_tungsten = 0 }
+			set_variable = { spec_lvl_chip_chromium = 0 }
+			set_variable = { spec_lvl_chip_rubber = 0 }
+			set_variable = { spec_lvl_chip_microchips = 0 }
+			set_variable = { spec_lvl_chip_composites = 0 }
+			set_variable = { spec_lvl_chip_workforce = 0 }
+			set_variable = { spec_active_comp = 0 }
+			set_variable = { spec_lvl_comp_oil = 0 }
+			set_variable = { spec_lvl_comp_steel = 0 }
+			set_variable = { spec_lvl_comp_aluminium = 0 }
+			set_variable = { spec_lvl_comp_tungsten = 0 }
+			set_variable = { spec_lvl_comp_chromium = 0 }
+			set_variable = { spec_lvl_comp_rubber = 0 }
+			set_variable = { spec_lvl_comp_microchips = 0 }
+			set_variable = { spec_lvl_comp_composites = 0 }
+			set_variable = { spec_lvl_comp_workforce = 0 }
+			set_variable = { spec_gui_dirty = 0 }
+			spec_recompute_bonuses = yes
+		}
+		if = {
+			limit = { NOT = { has_dynamic_modifier = { modifier = specialization_bonuses } } }
+			add_dynamic_modifier = { modifier = specialization_bonuses }
+		}
+	}
+}
+
+spec_recompute_bonuses = {
+	set_variable = { spec_buf_production_speed_infrastructure_factor = 0 }
+	set_variable = { spec_buf_production_speed_renewable_energy_infra_factor = 0 }
+	set_variable = { spec_buf_production_speed_fossil_powerplant_factor = 0 }
+	set_variable = { spec_buf_production_speed_fuel_silo_factor = 0 }
+	set_variable = { spec_buf_production_speed_buildings_factor = 0 }
+	set_variable = { spec_buf_industrial_capacity_factory = 0 }
+	set_variable = { spec_buf_civilian_factories_productivity = 0 }
+	set_variable = { spec_buf_production_speed_microchip_plant_factor = 0 }
+	set_variable = { spec_buf_tax_gain_multiplier_modifier = 0 }
+	set_variable = { spec_buf_production_speed_offices_factor = 0 }
+	set_variable = { spec_buf_production_speed_synthetic_refinery_factor = 0 }
+	set_variable = { spec_buf_production_speed_composite_plant_factor = 0 }
+	set_variable = { spec_buf_production_speed_radar_station_factor = 0 }
+	set_variable = { spec_buf_production_speed_anti_air_building_factor = 0 }
+	set_variable = { spec_buf_production_speed_nuclear_reactor_factor = 0 }
+	set_variable = { spec_buf_production_factory_max_efficiency_factor = 0 }
+	set_variable = { spec_buf_civ_facs_worker_requirement_modifier = 0 }
+	set_variable = { spec_buf_military_factories_productivity = 0 }
+	set_variable = { spec_buf_mil_facs_worker_requirement_modifier = 0 }
+	set_variable = { spec_buf_dockyard_productivity = 0 }
+	set_variable = { spec_buf_buildings_worker_requirement_modifier = 0 }
+	set_variable = { spec_buf_offices_productivity = 0 }
+	set_variable = { spec_buf_offices_worker_requirement_modifier = 0 }
+	set_variable = { spec_buf_agricolture_productivity_modifier = 0 }
+	set_variable = { spec_buf_agriculture_district_worker_requirement_modifier = 0 }
+	set_variable = { spec_buf_synthetic_refinery_productivity_modifier = 0 }
+	set_variable = { spec_buf_synthetic_refinery_worker_requirement_modifier = 0 }
+	set_variable = { spec_buf_microchip_plant_productivity_modifier = 0 }
+	set_variable = { spec_buf_microchip_plant_worker_requirement_modifier = 0 }
+	set_variable = { spec_buf_composite_plant_productivity_modifier = 0 }
+	set_variable = { spec_buf_composite_plant_worker_requirement_modifier = 0 }
+	set_variable = { spec_buf_energy_use_modifier_civs = 0 }
+	set_variable = { spec_buf_energy_use_modifier_mils = 0 }
+	set_variable = { spec_buf_energy_use_modifier_dockyards = 0 }
+	set_variable = { spec_buf_energy_use_modifier_offices = 0 }
+	set_variable = { spec_buf_energy_use_modifier_agriculture_district = 0 }
+	set_variable = { spec_buf_energy_use_modifier_synthetic_refinery = 0 }
+	set_variable = { spec_buf_energy_use_modifier_microchip_plant = 0 }
+	set_variable = { spec_buf_energy_use_modifier_composite_plant = 0 }
+	set_temp_variable = { af_oil = 0 }
+	set_temp_variable = { af_steel = 0 }
+	set_temp_variable = { af_aluminium = 0 }
+	set_temp_variable = { af_tungsten = 0 }
+	set_temp_variable = { af_chromium = 0 }
+	set_temp_variable = { af_rubber = 0 }
+	set_temp_variable = { af_microchips = 0 }
+	set_temp_variable = { af_composites = 0 }
+
+	# Civilian Factories
+	set_temp_variable = { a = spec_active_civ }
+	set_temp_variable = { cf = industrial_complex_total }  multiply_temp_variable = { cf = global.spec_per_factory_units }
+	set_temp_variable = { reseff = 0 }
+	set_temp_variable = { lv = spec_lvl_civ_oil }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_civ_oil = 0 }
+	set_variable = { spec_use_civ_oil = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@oil > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@oil }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_civ_oil = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_oil = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@oil }  set_variable = { spec_use_civ_oil = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_infrastructure_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_renewable_energy_infra_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_fossil_powerplant_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_fuel_silo_factor = bf }
+	set_temp_variable = { lv = spec_lvl_civ_steel }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_civ_steel = 0 }
+	set_variable = { spec_use_civ_steel = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@steel > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@steel }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_civ_steel = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_steel = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@steel }  set_variable = { spec_use_civ_steel = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_buildings_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_industrial_capacity_factory = bf }
+	set_temp_variable = { lv = spec_lvl_civ_aluminium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_civ_aluminium = 0 }
+	set_variable = { spec_use_civ_aluminium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@aluminium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@aluminium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_civ_aluminium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_aluminium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@aluminium }  set_variable = { spec_use_civ_aluminium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = 1.5 }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_buildings_factor = bf }
+	set_temp_variable = { lv = spec_lvl_civ_tungsten }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_civ_tungsten = 0 }
+	set_variable = { spec_use_civ_tungsten = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@tungsten > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@tungsten }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_civ_tungsten = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_tungsten = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@tungsten }  set_variable = { spec_use_civ_tungsten = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_civilian_factories_productivity = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_microchip_plant_factor = bf }
+	set_temp_variable = { lv = spec_lvl_civ_chromium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_civ_chromium = 0 }
+	set_variable = { spec_use_civ_chromium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@chromium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@chromium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_civ_chromium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_chromium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@chromium }  set_variable = { spec_use_civ_chromium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_tax_gain_multiplier_modifier = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_offices_factor = bf }
+	set_temp_variable = { lv = spec_lvl_civ_rubber }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_civ_rubber = 0 }
+	set_variable = { spec_use_civ_rubber = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@rubber > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@rubber }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_civ_rubber = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_rubber = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@rubber }  set_variable = { spec_use_civ_rubber = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_synthetic_refinery_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_composite_plant_factor = bf }
+	set_temp_variable = { lv = spec_lvl_civ_microchips }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_civ_microchips = 0 }
+	set_variable = { spec_use_civ_microchips = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@microchips > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@microchips }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_civ_microchips = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_microchips = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@microchips }  set_variable = { spec_use_civ_microchips = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = 2 }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_buildings_factor = bf }
+	set_temp_variable = { lv = spec_lvl_civ_composites }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_civ_composites = 0 }
+	set_variable = { spec_use_civ_composites = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@composites > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@composites }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_civ_composites = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_composites = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@composites }  set_variable = { spec_use_civ_composites = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_radar_station_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_anti_air_building_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_speed_nuclear_reactor_factor = bf }
+	set_temp_variable = { lv = spec_lvl_civ_workforce }  multiply_temp_variable = { lv = a }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_civilian_factories_productivity = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_factory_max_efficiency_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = 2 }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_civ_facs_worker_requirement_modifier = bf }
+	if = { limit = { check_variable = { reseff > 0 } } set_variable = { spec_buf_energy_use_modifier_civs = global.spec_power_flat } }
+
+	# Military Factories
+	set_temp_variable = { a = spec_active_mil }
+	set_temp_variable = { cf = military_fac }  multiply_temp_variable = { cf = global.spec_per_factory_units }
+	set_temp_variable = { reseff = 0 }
+	set_temp_variable = { lv = spec_lvl_mil_oil }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_mil_oil = 0 }
+	set_variable = { spec_use_mil_oil = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@oil > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@oil }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_mil_oil = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_oil = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@oil }  set_variable = { spec_use_mil_oil = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_military_factories_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_mil_steel }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_mil_steel = 0 }
+	set_variable = { spec_use_mil_steel = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@steel > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@steel }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_mil_steel = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_steel = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@steel }  set_variable = { spec_use_mil_steel = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_military_factories_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_mil_aluminium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_mil_aluminium = 0 }
+	set_variable = { spec_use_mil_aluminium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@aluminium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@aluminium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_mil_aluminium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_aluminium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@aluminium }  set_variable = { spec_use_mil_aluminium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_military_factories_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_mil_tungsten }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_mil_tungsten = 0 }
+	set_variable = { spec_use_mil_tungsten = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@tungsten > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@tungsten }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_mil_tungsten = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_tungsten = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@tungsten }  set_variable = { spec_use_mil_tungsten = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_military_factories_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_mil_chromium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_mil_chromium = 0 }
+	set_variable = { spec_use_mil_chromium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@chromium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@chromium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_mil_chromium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_chromium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@chromium }  set_variable = { spec_use_mil_chromium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_military_factories_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_mil_rubber }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_mil_rubber = 0 }
+	set_variable = { spec_use_mil_rubber = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@rubber > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@rubber }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_mil_rubber = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_rubber = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@rubber }  set_variable = { spec_use_mil_rubber = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_military_factories_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_mil_microchips }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_mil_microchips = 0 }
+	set_variable = { spec_use_mil_microchips = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@microchips > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@microchips }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_mil_microchips = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_microchips = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@microchips }  set_variable = { spec_use_mil_microchips = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_military_factories_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_mil_composites }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_mil_composites = 0 }
+	set_variable = { spec_use_mil_composites = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@composites > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@composites }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_mil_composites = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_composites = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@composites }  set_variable = { spec_use_mil_composites = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_military_factories_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_mil_workforce }  multiply_temp_variable = { lv = a }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_military_factories_productivity = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_factory_max_efficiency_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = 2 }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_mil_facs_worker_requirement_modifier = bf }
+	if = { limit = { check_variable = { reseff > 0 } } set_variable = { spec_buf_energy_use_modifier_mils = global.spec_power_flat } }
+
+	# Shipyards
+	set_temp_variable = { a = spec_active_dock }
+	set_temp_variable = { cf = dockyard_fac }  multiply_temp_variable = { cf = global.spec_per_factory_units }
+	set_temp_variable = { reseff = 0 }
+	set_temp_variable = { lv = spec_lvl_dock_oil }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_dock_oil = 0 }
+	set_variable = { spec_use_dock_oil = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@oil > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@oil }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_dock_oil = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_oil = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@oil }  set_variable = { spec_use_dock_oil = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_dockyard_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_dock_steel }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_dock_steel = 0 }
+	set_variable = { spec_use_dock_steel = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@steel > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@steel }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_dock_steel = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_steel = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@steel }  set_variable = { spec_use_dock_steel = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_dockyard_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_dock_aluminium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_dock_aluminium = 0 }
+	set_variable = { spec_use_dock_aluminium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@aluminium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@aluminium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_dock_aluminium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_aluminium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@aluminium }  set_variable = { spec_use_dock_aluminium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_dockyard_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_dock_tungsten }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_dock_tungsten = 0 }
+	set_variable = { spec_use_dock_tungsten = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@tungsten > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@tungsten }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_dock_tungsten = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_tungsten = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@tungsten }  set_variable = { spec_use_dock_tungsten = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_dockyard_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_dock_chromium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_dock_chromium = 0 }
+	set_variable = { spec_use_dock_chromium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@chromium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@chromium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_dock_chromium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_chromium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@chromium }  set_variable = { spec_use_dock_chromium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_dockyard_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_dock_rubber }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_dock_rubber = 0 }
+	set_variable = { spec_use_dock_rubber = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@rubber > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@rubber }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_dock_rubber = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_rubber = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@rubber }  set_variable = { spec_use_dock_rubber = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_dockyard_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_dock_microchips }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_dock_microchips = 0 }
+	set_variable = { spec_use_dock_microchips = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@microchips > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@microchips }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_dock_microchips = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_microchips = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@microchips }  set_variable = { spec_use_dock_microchips = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_dockyard_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_dock_composites }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_dock_composites = 0 }
+	set_variable = { spec_use_dock_composites = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@composites > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@composites }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_dock_composites = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_composites = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@composites }  set_variable = { spec_use_dock_composites = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_dockyard_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_dock_workforce }  multiply_temp_variable = { lv = a }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_dockyard_productivity = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_factory_max_efficiency_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = 2 }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_buildings_worker_requirement_modifier = bf }
+	if = { limit = { check_variable = { reseff > 0 } } set_variable = { spec_buf_energy_use_modifier_dockyards = global.spec_power_flat } }
+
+	# Offices
+	set_temp_variable = { a = spec_active_office }
+	set_temp_variable = { cf = office_park_total }  multiply_temp_variable = { cf = global.spec_per_factory_units }
+	set_temp_variable = { reseff = 0 }
+	set_temp_variable = { lv = spec_lvl_office_oil }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_office_oil = 0 }
+	set_variable = { spec_use_office_oil = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@oil > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@oil }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_office_oil = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_oil = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@oil }  set_variable = { spec_use_office_oil = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_offices_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_office_steel }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_office_steel = 0 }
+	set_variable = { spec_use_office_steel = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@steel > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@steel }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_office_steel = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_steel = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@steel }  set_variable = { spec_use_office_steel = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_offices_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_office_aluminium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_office_aluminium = 0 }
+	set_variable = { spec_use_office_aluminium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@aluminium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@aluminium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_office_aluminium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_aluminium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@aluminium }  set_variable = { spec_use_office_aluminium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_offices_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_office_tungsten }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_office_tungsten = 0 }
+	set_variable = { spec_use_office_tungsten = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@tungsten > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@tungsten }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_office_tungsten = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_tungsten = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@tungsten }  set_variable = { spec_use_office_tungsten = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_offices_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_office_chromium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_office_chromium = 0 }
+	set_variable = { spec_use_office_chromium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@chromium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@chromium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_office_chromium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_chromium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@chromium }  set_variable = { spec_use_office_chromium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_offices_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_office_rubber }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_office_rubber = 0 }
+	set_variable = { spec_use_office_rubber = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@rubber > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@rubber }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_office_rubber = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_rubber = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@rubber }  set_variable = { spec_use_office_rubber = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_offices_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_office_microchips }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_office_microchips = 0 }
+	set_variable = { spec_use_office_microchips = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@microchips > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@microchips }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_office_microchips = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_microchips = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@microchips }  set_variable = { spec_use_office_microchips = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_offices_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_office_composites }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_office_composites = 0 }
+	set_variable = { spec_use_office_composites = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@composites > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@composites }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_office_composites = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_composites = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@composites }  set_variable = { spec_use_office_composites = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_offices_productivity = bf }
+	set_temp_variable = { lv = spec_lvl_office_workforce }  multiply_temp_variable = { lv = a }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_offices_productivity = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_factory_max_efficiency_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = 2 }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_offices_worker_requirement_modifier = bf }
+	if = { limit = { check_variable = { reseff > 0 } } set_variable = { spec_buf_energy_use_modifier_offices = global.spec_power_flat } }
+
+	# Agriculture
+	set_temp_variable = { a = spec_active_agri }
+	set_temp_variable = { cf = agriculture_district_total }  multiply_temp_variable = { cf = global.spec_per_factory_units }
+	set_temp_variable = { reseff = 0 }
+	set_temp_variable = { lv = spec_lvl_agri_oil }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_agri_oil = 0 }
+	set_variable = { spec_use_agri_oil = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@oil > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@oil }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_agri_oil = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_oil = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@oil }  set_variable = { spec_use_agri_oil = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_agricolture_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_agri_steel }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_agri_steel = 0 }
+	set_variable = { spec_use_agri_steel = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@steel > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@steel }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_agri_steel = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_steel = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@steel }  set_variable = { spec_use_agri_steel = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_agricolture_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_agri_aluminium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_agri_aluminium = 0 }
+	set_variable = { spec_use_agri_aluminium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@aluminium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@aluminium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_agri_aluminium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_aluminium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@aluminium }  set_variable = { spec_use_agri_aluminium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_agricolture_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_agri_tungsten }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_agri_tungsten = 0 }
+	set_variable = { spec_use_agri_tungsten = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@tungsten > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@tungsten }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_agri_tungsten = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_tungsten = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@tungsten }  set_variable = { spec_use_agri_tungsten = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_agricolture_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_agri_chromium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_agri_chromium = 0 }
+	set_variable = { spec_use_agri_chromium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@chromium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@chromium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_agri_chromium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_chromium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@chromium }  set_variable = { spec_use_agri_chromium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_agricolture_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_agri_rubber }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_agri_rubber = 0 }
+	set_variable = { spec_use_agri_rubber = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@rubber > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@rubber }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_agri_rubber = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_rubber = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@rubber }  set_variable = { spec_use_agri_rubber = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_agricolture_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_agri_microchips }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_agri_microchips = 0 }
+	set_variable = { spec_use_agri_microchips = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@microchips > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@microchips }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_agri_microchips = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_microchips = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@microchips }  set_variable = { spec_use_agri_microchips = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_agricolture_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_agri_composites }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_agri_composites = 0 }
+	set_variable = { spec_use_agri_composites = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@composites > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@composites }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_agri_composites = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_composites = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@composites }  set_variable = { spec_use_agri_composites = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_agricolture_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_agri_workforce }  multiply_temp_variable = { lv = a }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_agricolture_productivity_modifier = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_factory_max_efficiency_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = 2 }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_agriculture_district_worker_requirement_modifier = bf }
+	if = { limit = { check_variable = { reseff > 0 } } set_variable = { spec_buf_energy_use_modifier_agriculture_district = global.spec_power_flat } }
+
+	# Refineries
+	set_temp_variable = { a = spec_active_refinery }
+	set_temp_variable = { cf = synthetic_refinery_total }  multiply_temp_variable = { cf = global.spec_per_factory_units }
+	set_temp_variable = { reseff = 0 }
+	set_temp_variable = { lv = spec_lvl_refinery_oil }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_refinery_oil = 0 }
+	set_variable = { spec_use_refinery_oil = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@oil > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@oil }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_refinery_oil = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_oil = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@oil }  set_variable = { spec_use_refinery_oil = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_synthetic_refinery_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_refinery_steel }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_refinery_steel = 0 }
+	set_variable = { spec_use_refinery_steel = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@steel > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@steel }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_refinery_steel = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_steel = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@steel }  set_variable = { spec_use_refinery_steel = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_synthetic_refinery_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_refinery_aluminium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_refinery_aluminium = 0 }
+	set_variable = { spec_use_refinery_aluminium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@aluminium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@aluminium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_refinery_aluminium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_aluminium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@aluminium }  set_variable = { spec_use_refinery_aluminium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_synthetic_refinery_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_refinery_tungsten }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_refinery_tungsten = 0 }
+	set_variable = { spec_use_refinery_tungsten = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@tungsten > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@tungsten }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_refinery_tungsten = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_tungsten = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@tungsten }  set_variable = { spec_use_refinery_tungsten = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_synthetic_refinery_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_refinery_chromium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_refinery_chromium = 0 }
+	set_variable = { spec_use_refinery_chromium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@chromium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@chromium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_refinery_chromium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_chromium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@chromium }  set_variable = { spec_use_refinery_chromium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_synthetic_refinery_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_refinery_rubber }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_refinery_rubber = 0 }
+	set_variable = { spec_use_refinery_rubber = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@rubber > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@rubber }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_refinery_rubber = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_rubber = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@rubber }  set_variable = { spec_use_refinery_rubber = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_synthetic_refinery_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_refinery_microchips }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_refinery_microchips = 0 }
+	set_variable = { spec_use_refinery_microchips = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@microchips > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@microchips }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_refinery_microchips = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_microchips = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@microchips }  set_variable = { spec_use_refinery_microchips = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_synthetic_refinery_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_refinery_composites }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_refinery_composites = 0 }
+	set_variable = { spec_use_refinery_composites = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@composites > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@composites }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_refinery_composites = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_composites = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@composites }  set_variable = { spec_use_refinery_composites = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_synthetic_refinery_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_refinery_workforce }  multiply_temp_variable = { lv = a }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_synthetic_refinery_productivity_modifier = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_factory_max_efficiency_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = 2 }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_synthetic_refinery_worker_requirement_modifier = bf }
+	if = { limit = { check_variable = { reseff > 0 } } set_variable = { spec_buf_energy_use_modifier_synthetic_refinery = global.spec_power_flat } }
+
+	# Microchip Plants
+	set_temp_variable = { a = spec_active_chip }
+	set_temp_variable = { cf = microchip_plant_total }  multiply_temp_variable = { cf = global.spec_per_factory_units }
+	set_temp_variable = { reseff = 0 }
+	set_temp_variable = { lv = spec_lvl_chip_oil }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_chip_oil = 0 }
+	set_variable = { spec_use_chip_oil = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@oil > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@oil }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_chip_oil = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_oil = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@oil }  set_variable = { spec_use_chip_oil = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_microchip_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_chip_steel }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_chip_steel = 0 }
+	set_variable = { spec_use_chip_steel = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@steel > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@steel }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_chip_steel = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_steel = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@steel }  set_variable = { spec_use_chip_steel = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_microchip_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_chip_aluminium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_chip_aluminium = 0 }
+	set_variable = { spec_use_chip_aluminium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@aluminium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@aluminium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_chip_aluminium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_aluminium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@aluminium }  set_variable = { spec_use_chip_aluminium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_microchip_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_chip_tungsten }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_chip_tungsten = 0 }
+	set_variable = { spec_use_chip_tungsten = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@tungsten > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@tungsten }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_chip_tungsten = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_tungsten = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@tungsten }  set_variable = { spec_use_chip_tungsten = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_microchip_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_chip_chromium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_chip_chromium = 0 }
+	set_variable = { spec_use_chip_chromium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@chromium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@chromium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_chip_chromium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_chromium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@chromium }  set_variable = { spec_use_chip_chromium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_microchip_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_chip_rubber }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_chip_rubber = 0 }
+	set_variable = { spec_use_chip_rubber = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@rubber > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@rubber }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_chip_rubber = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_rubber = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@rubber }  set_variable = { spec_use_chip_rubber = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_microchip_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_chip_microchips }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_chip_microchips = 0 }
+	set_variable = { spec_use_chip_microchips = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@microchips > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@microchips }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_chip_microchips = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_microchips = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@microchips }  set_variable = { spec_use_chip_microchips = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_microchip_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_chip_composites }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_chip_composites = 0 }
+	set_variable = { spec_use_chip_composites = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@composites > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@composites }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_chip_composites = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_composites = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@composites }  set_variable = { spec_use_chip_composites = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_microchip_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_chip_workforce }  multiply_temp_variable = { lv = a }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_microchip_plant_productivity_modifier = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_factory_max_efficiency_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = 2 }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_microchip_plant_worker_requirement_modifier = bf }
+	if = { limit = { check_variable = { reseff > 0 } } set_variable = { spec_buf_energy_use_modifier_microchip_plant = global.spec_power_flat } }
+
+	# Composite Plants
+	set_temp_variable = { a = spec_active_comp }
+	set_temp_variable = { cf = composite_plant_total }  multiply_temp_variable = { cf = global.spec_per_factory_units }
+	set_temp_variable = { reseff = 0 }
+	set_temp_variable = { lv = spec_lvl_comp_oil }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_comp_oil = 0 }
+	set_variable = { spec_use_comp_oil = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@oil > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@oil }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_comp_oil = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_oil = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@oil }  set_variable = { spec_use_comp_oil = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_composite_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_comp_steel }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_comp_steel = 0 }
+	set_variable = { spec_use_comp_steel = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@steel > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@steel }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_comp_steel = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_steel = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@steel }  set_variable = { spec_use_comp_steel = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_composite_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_comp_aluminium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_comp_aluminium = 0 }
+	set_variable = { spec_use_comp_aluminium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@aluminium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@aluminium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_comp_aluminium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_aluminium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@aluminium }  set_variable = { spec_use_comp_aluminium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_composite_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_comp_tungsten }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_comp_tungsten = 0 }
+	set_variable = { spec_use_comp_tungsten = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@tungsten > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@tungsten }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_comp_tungsten = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_tungsten = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@tungsten }  set_variable = { spec_use_comp_tungsten = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_composite_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_comp_chromium }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_comp_chromium = 0 }
+	set_variable = { spec_use_comp_chromium = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@chromium > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@chromium }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_comp_chromium = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_chromium = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@chromium }  set_variable = { spec_use_comp_chromium = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_composite_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_comp_rubber }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_comp_rubber = 0 }
+	set_variable = { spec_use_comp_rubber = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@rubber > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@rubber }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_comp_rubber = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_rubber = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@rubber }  set_variable = { spec_use_comp_rubber = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_composite_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_comp_microchips }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_comp_microchips = 0 }
+	set_variable = { spec_use_comp_microchips = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@microchips > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@microchips }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_comp_microchips = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_microchips = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@microchips }  set_variable = { spec_use_comp_microchips = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_composite_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_comp_composites }  multiply_temp_variable = { lv = a }
+	add_to_temp_variable = { reseff = lv }
+	set_variable = { spec_atcap_comp_composites = 0 }
+	set_variable = { spec_use_comp_composites = 0 }
+	if = {
+		limit = { check_variable = { resource_produced@composites > 0 } }
+		set_temp_variable = { fb = lv }  multiply_temp_variable = { fb = cf }  divide_temp_variable = { fb = resource_produced@composites }
+		if = { limit = { check_variable = { var = fb value = global.spec_building_cap compare = greater_than_or_equals } } set_variable = { spec_atcap_comp_composites = 1 } }
+		clamp_temp_variable = { var = fb  min = 0  max = global.spec_building_cap }
+		add_to_temp_variable = { af_composites = fb }
+		set_temp_variable = { ub = fb }  multiply_temp_variable = { ub = resource_produced@composites }  set_variable = { spec_use_comp_composites = ub }
+	}
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_composite_plant_productivity_modifier = bf }
+	set_temp_variable = { lv = spec_lvl_comp_workforce }  multiply_temp_variable = { lv = a }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_composite_plant_productivity_modifier = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_production_factory_max_efficiency_factor = bf }
+	set_temp_variable = { bf = lv }  multiply_temp_variable = { bf = 2 }  multiply_temp_variable = { bf = global.spec_buff_base }  add_to_variable = { spec_buf_composite_plant_worker_requirement_modifier = bf }
+	if = { limit = { check_variable = { reseff > 0 } } set_variable = { spec_buf_energy_use_modifier_composite_plant = global.spec_power_flat } }
+
+	# af_<res> = sum of per-building capped fractions. Clamp at the 50% total cap, store NEGATIVE
+	# so local_resources_<res>_factor reduces that resource's production. Flag when total at cap.
+	set_variable = { spec_restotcap_oil = 0 }
+	if = { limit = { check_variable = { var = af_oil value = global.spec_resource_cap compare = greater_than_or_equals } } set_variable = { spec_restotcap_oil = 1 } }
+	set_variable = { spec_divert_oil = af_oil }
+	clamp_variable = { var = spec_divert_oil  min = 0  max = global.spec_resource_cap }
+	multiply_variable = { spec_divert_oil = -1 }
+	set_variable = { spec_restotcap_steel = 0 }
+	if = { limit = { check_variable = { var = af_steel value = global.spec_resource_cap compare = greater_than_or_equals } } set_variable = { spec_restotcap_steel = 1 } }
+	set_variable = { spec_divert_steel = af_steel }
+	clamp_variable = { var = spec_divert_steel  min = 0  max = global.spec_resource_cap }
+	multiply_variable = { spec_divert_steel = -1 }
+	set_variable = { spec_restotcap_aluminium = 0 }
+	if = { limit = { check_variable = { var = af_aluminium value = global.spec_resource_cap compare = greater_than_or_equals } } set_variable = { spec_restotcap_aluminium = 1 } }
+	set_variable = { spec_divert_aluminium = af_aluminium }
+	clamp_variable = { var = spec_divert_aluminium  min = 0  max = global.spec_resource_cap }
+	multiply_variable = { spec_divert_aluminium = -1 }
+	set_variable = { spec_restotcap_tungsten = 0 }
+	if = { limit = { check_variable = { var = af_tungsten value = global.spec_resource_cap compare = greater_than_or_equals } } set_variable = { spec_restotcap_tungsten = 1 } }
+	set_variable = { spec_divert_tungsten = af_tungsten }
+	clamp_variable = { var = spec_divert_tungsten  min = 0  max = global.spec_resource_cap }
+	multiply_variable = { spec_divert_tungsten = -1 }
+	set_variable = { spec_restotcap_chromium = 0 }
+	if = { limit = { check_variable = { var = af_chromium value = global.spec_resource_cap compare = greater_than_or_equals } } set_variable = { spec_restotcap_chromium = 1 } }
+	set_variable = { spec_divert_chromium = af_chromium }
+	clamp_variable = { var = spec_divert_chromium  min = 0  max = global.spec_resource_cap }
+	multiply_variable = { spec_divert_chromium = -1 }
+	set_variable = { spec_restotcap_rubber = 0 }
+	if = { limit = { check_variable = { var = af_rubber value = global.spec_resource_cap compare = greater_than_or_equals } } set_variable = { spec_restotcap_rubber = 1 } }
+	set_variable = { spec_divert_rubber = af_rubber }
+	clamp_variable = { var = spec_divert_rubber  min = 0  max = global.spec_resource_cap }
+	multiply_variable = { spec_divert_rubber = -1 }
+	set_variable = { spec_restotcap_microchips = 0 }
+	if = { limit = { check_variable = { var = af_microchips value = global.spec_resource_cap compare = greater_than_or_equals } } set_variable = { spec_restotcap_microchips = 1 } }
+	set_variable = { spec_divert_microchips = af_microchips }
+	clamp_variable = { var = spec_divert_microchips  min = 0  max = global.spec_resource_cap }
+	multiply_variable = { spec_divert_microchips = -1 }
+	set_variable = { spec_restotcap_composites = 0 }
+	if = { limit = { check_variable = { var = af_composites value = global.spec_resource_cap compare = greater_than_or_equals } } set_variable = { spec_restotcap_composites = 1 } }
+	set_variable = { spec_divert_composites = af_composites }
+	clamp_variable = { var = spec_divert_composites  min = 0  max = global.spec_resource_cap }
+	multiply_variable = { spec_divert_composites = -1 }
+}
+
+spec_refresh_gui = {
+	set_variable = { spec_augcount_civ = 0 }
+	set_variable = { spec_totlvl_civ = 0 }
+	set_variable = { spec_augcount_mil = 0 }
+	set_variable = { spec_totlvl_mil = 0 }
+	set_variable = { spec_augcount_dock = 0 }
+	set_variable = { spec_totlvl_dock = 0 }
+	set_variable = { spec_augcount_office = 0 }
+	set_variable = { spec_totlvl_office = 0 }
+	set_variable = { spec_augcount_agri = 0 }
+	set_variable = { spec_totlvl_agri = 0 }
+	set_variable = { spec_augcount_refinery = 0 }
+	set_variable = { spec_totlvl_refinery = 0 }
+	set_variable = { spec_augcount_chip = 0 }
+	set_variable = { spec_totlvl_chip = 0 }
+	set_variable = { spec_augcount_comp = 0 }
+	set_variable = { spec_totlvl_comp = 0 }
+	if = { limit = { check_variable = { spec_lvl_civ_oil > 0 } } add_to_variable = { spec_augcount_civ = 1 } }
+	add_to_variable = { spec_totlvl_civ = spec_lvl_civ_oil }
+	if = { limit = { check_variable = { spec_lvl_civ_steel > 0 } } add_to_variable = { spec_augcount_civ = 1 } }
+	add_to_variable = { spec_totlvl_civ = spec_lvl_civ_steel }
+	if = { limit = { check_variable = { spec_lvl_civ_aluminium > 0 } } add_to_variable = { spec_augcount_civ = 1 } }
+	add_to_variable = { spec_totlvl_civ = spec_lvl_civ_aluminium }
+	if = { limit = { check_variable = { spec_lvl_civ_tungsten > 0 } } add_to_variable = { spec_augcount_civ = 1 } }
+	add_to_variable = { spec_totlvl_civ = spec_lvl_civ_tungsten }
+	if = { limit = { check_variable = { spec_lvl_civ_chromium > 0 } } add_to_variable = { spec_augcount_civ = 1 } }
+	add_to_variable = { spec_totlvl_civ = spec_lvl_civ_chromium }
+	if = { limit = { check_variable = { spec_lvl_civ_rubber > 0 } } add_to_variable = { spec_augcount_civ = 1 } }
+	add_to_variable = { spec_totlvl_civ = spec_lvl_civ_rubber }
+	if = { limit = { check_variable = { spec_lvl_civ_microchips > 0 } } add_to_variable = { spec_augcount_civ = 1 } }
+	add_to_variable = { spec_totlvl_civ = spec_lvl_civ_microchips }
+	if = { limit = { check_variable = { spec_lvl_civ_composites > 0 } } add_to_variable = { spec_augcount_civ = 1 } }
+	add_to_variable = { spec_totlvl_civ = spec_lvl_civ_composites }
+	if = { limit = { check_variable = { spec_lvl_civ_workforce > 0 } } add_to_variable = { spec_augcount_civ = 1 } }
+	add_to_variable = { spec_totlvl_civ = spec_lvl_civ_workforce }
+	if = { limit = { check_variable = { spec_lvl_mil_oil > 0 } } add_to_variable = { spec_augcount_mil = 1 } }
+	add_to_variable = { spec_totlvl_mil = spec_lvl_mil_oil }
+	if = { limit = { check_variable = { spec_lvl_mil_steel > 0 } } add_to_variable = { spec_augcount_mil = 1 } }
+	add_to_variable = { spec_totlvl_mil = spec_lvl_mil_steel }
+	if = { limit = { check_variable = { spec_lvl_mil_aluminium > 0 } } add_to_variable = { spec_augcount_mil = 1 } }
+	add_to_variable = { spec_totlvl_mil = spec_lvl_mil_aluminium }
+	if = { limit = { check_variable = { spec_lvl_mil_tungsten > 0 } } add_to_variable = { spec_augcount_mil = 1 } }
+	add_to_variable = { spec_totlvl_mil = spec_lvl_mil_tungsten }
+	if = { limit = { check_variable = { spec_lvl_mil_chromium > 0 } } add_to_variable = { spec_augcount_mil = 1 } }
+	add_to_variable = { spec_totlvl_mil = spec_lvl_mil_chromium }
+	if = { limit = { check_variable = { spec_lvl_mil_rubber > 0 } } add_to_variable = { spec_augcount_mil = 1 } }
+	add_to_variable = { spec_totlvl_mil = spec_lvl_mil_rubber }
+	if = { limit = { check_variable = { spec_lvl_mil_microchips > 0 } } add_to_variable = { spec_augcount_mil = 1 } }
+	add_to_variable = { spec_totlvl_mil = spec_lvl_mil_microchips }
+	if = { limit = { check_variable = { spec_lvl_mil_composites > 0 } } add_to_variable = { spec_augcount_mil = 1 } }
+	add_to_variable = { spec_totlvl_mil = spec_lvl_mil_composites }
+	if = { limit = { check_variable = { spec_lvl_mil_workforce > 0 } } add_to_variable = { spec_augcount_mil = 1 } }
+	add_to_variable = { spec_totlvl_mil = spec_lvl_mil_workforce }
+	if = { limit = { check_variable = { spec_lvl_dock_oil > 0 } } add_to_variable = { spec_augcount_dock = 1 } }
+	add_to_variable = { spec_totlvl_dock = spec_lvl_dock_oil }
+	if = { limit = { check_variable = { spec_lvl_dock_steel > 0 } } add_to_variable = { spec_augcount_dock = 1 } }
+	add_to_variable = { spec_totlvl_dock = spec_lvl_dock_steel }
+	if = { limit = { check_variable = { spec_lvl_dock_aluminium > 0 } } add_to_variable = { spec_augcount_dock = 1 } }
+	add_to_variable = { spec_totlvl_dock = spec_lvl_dock_aluminium }
+	if = { limit = { check_variable = { spec_lvl_dock_tungsten > 0 } } add_to_variable = { spec_augcount_dock = 1 } }
+	add_to_variable = { spec_totlvl_dock = spec_lvl_dock_tungsten }
+	if = { limit = { check_variable = { spec_lvl_dock_chromium > 0 } } add_to_variable = { spec_augcount_dock = 1 } }
+	add_to_variable = { spec_totlvl_dock = spec_lvl_dock_chromium }
+	if = { limit = { check_variable = { spec_lvl_dock_rubber > 0 } } add_to_variable = { spec_augcount_dock = 1 } }
+	add_to_variable = { spec_totlvl_dock = spec_lvl_dock_rubber }
+	if = { limit = { check_variable = { spec_lvl_dock_microchips > 0 } } add_to_variable = { spec_augcount_dock = 1 } }
+	add_to_variable = { spec_totlvl_dock = spec_lvl_dock_microchips }
+	if = { limit = { check_variable = { spec_lvl_dock_composites > 0 } } add_to_variable = { spec_augcount_dock = 1 } }
+	add_to_variable = { spec_totlvl_dock = spec_lvl_dock_composites }
+	if = { limit = { check_variable = { spec_lvl_dock_workforce > 0 } } add_to_variable = { spec_augcount_dock = 1 } }
+	add_to_variable = { spec_totlvl_dock = spec_lvl_dock_workforce }
+	if = { limit = { check_variable = { spec_lvl_office_oil > 0 } } add_to_variable = { spec_augcount_office = 1 } }
+	add_to_variable = { spec_totlvl_office = spec_lvl_office_oil }
+	if = { limit = { check_variable = { spec_lvl_office_steel > 0 } } add_to_variable = { spec_augcount_office = 1 } }
+	add_to_variable = { spec_totlvl_office = spec_lvl_office_steel }
+	if = { limit = { check_variable = { spec_lvl_office_aluminium > 0 } } add_to_variable = { spec_augcount_office = 1 } }
+	add_to_variable = { spec_totlvl_office = spec_lvl_office_aluminium }
+	if = { limit = { check_variable = { spec_lvl_office_tungsten > 0 } } add_to_variable = { spec_augcount_office = 1 } }
+	add_to_variable = { spec_totlvl_office = spec_lvl_office_tungsten }
+	if = { limit = { check_variable = { spec_lvl_office_chromium > 0 } } add_to_variable = { spec_augcount_office = 1 } }
+	add_to_variable = { spec_totlvl_office = spec_lvl_office_chromium }
+	if = { limit = { check_variable = { spec_lvl_office_rubber > 0 } } add_to_variable = { spec_augcount_office = 1 } }
+	add_to_variable = { spec_totlvl_office = spec_lvl_office_rubber }
+	if = { limit = { check_variable = { spec_lvl_office_microchips > 0 } } add_to_variable = { spec_augcount_office = 1 } }
+	add_to_variable = { spec_totlvl_office = spec_lvl_office_microchips }
+	if = { limit = { check_variable = { spec_lvl_office_composites > 0 } } add_to_variable = { spec_augcount_office = 1 } }
+	add_to_variable = { spec_totlvl_office = spec_lvl_office_composites }
+	if = { limit = { check_variable = { spec_lvl_office_workforce > 0 } } add_to_variable = { spec_augcount_office = 1 } }
+	add_to_variable = { spec_totlvl_office = spec_lvl_office_workforce }
+	if = { limit = { check_variable = { spec_lvl_agri_oil > 0 } } add_to_variable = { spec_augcount_agri = 1 } }
+	add_to_variable = { spec_totlvl_agri = spec_lvl_agri_oil }
+	if = { limit = { check_variable = { spec_lvl_agri_steel > 0 } } add_to_variable = { spec_augcount_agri = 1 } }
+	add_to_variable = { spec_totlvl_agri = spec_lvl_agri_steel }
+	if = { limit = { check_variable = { spec_lvl_agri_aluminium > 0 } } add_to_variable = { spec_augcount_agri = 1 } }
+	add_to_variable = { spec_totlvl_agri = spec_lvl_agri_aluminium }
+	if = { limit = { check_variable = { spec_lvl_agri_tungsten > 0 } } add_to_variable = { spec_augcount_agri = 1 } }
+	add_to_variable = { spec_totlvl_agri = spec_lvl_agri_tungsten }
+	if = { limit = { check_variable = { spec_lvl_agri_chromium > 0 } } add_to_variable = { spec_augcount_agri = 1 } }
+	add_to_variable = { spec_totlvl_agri = spec_lvl_agri_chromium }
+	if = { limit = { check_variable = { spec_lvl_agri_rubber > 0 } } add_to_variable = { spec_augcount_agri = 1 } }
+	add_to_variable = { spec_totlvl_agri = spec_lvl_agri_rubber }
+	if = { limit = { check_variable = { spec_lvl_agri_microchips > 0 } } add_to_variable = { spec_augcount_agri = 1 } }
+	add_to_variable = { spec_totlvl_agri = spec_lvl_agri_microchips }
+	if = { limit = { check_variable = { spec_lvl_agri_composites > 0 } } add_to_variable = { spec_augcount_agri = 1 } }
+	add_to_variable = { spec_totlvl_agri = spec_lvl_agri_composites }
+	if = { limit = { check_variable = { spec_lvl_agri_workforce > 0 } } add_to_variable = { spec_augcount_agri = 1 } }
+	add_to_variable = { spec_totlvl_agri = spec_lvl_agri_workforce }
+	if = { limit = { check_variable = { spec_lvl_refinery_oil > 0 } } add_to_variable = { spec_augcount_refinery = 1 } }
+	add_to_variable = { spec_totlvl_refinery = spec_lvl_refinery_oil }
+	if = { limit = { check_variable = { spec_lvl_refinery_steel > 0 } } add_to_variable = { spec_augcount_refinery = 1 } }
+	add_to_variable = { spec_totlvl_refinery = spec_lvl_refinery_steel }
+	if = { limit = { check_variable = { spec_lvl_refinery_aluminium > 0 } } add_to_variable = { spec_augcount_refinery = 1 } }
+	add_to_variable = { spec_totlvl_refinery = spec_lvl_refinery_aluminium }
+	if = { limit = { check_variable = { spec_lvl_refinery_tungsten > 0 } } add_to_variable = { spec_augcount_refinery = 1 } }
+	add_to_variable = { spec_totlvl_refinery = spec_lvl_refinery_tungsten }
+	if = { limit = { check_variable = { spec_lvl_refinery_chromium > 0 } } add_to_variable = { spec_augcount_refinery = 1 } }
+	add_to_variable = { spec_totlvl_refinery = spec_lvl_refinery_chromium }
+	if = { limit = { check_variable = { spec_lvl_refinery_rubber > 0 } } add_to_variable = { spec_augcount_refinery = 1 } }
+	add_to_variable = { spec_totlvl_refinery = spec_lvl_refinery_rubber }
+	if = { limit = { check_variable = { spec_lvl_refinery_microchips > 0 } } add_to_variable = { spec_augcount_refinery = 1 } }
+	add_to_variable = { spec_totlvl_refinery = spec_lvl_refinery_microchips }
+	if = { limit = { check_variable = { spec_lvl_refinery_composites > 0 } } add_to_variable = { spec_augcount_refinery = 1 } }
+	add_to_variable = { spec_totlvl_refinery = spec_lvl_refinery_composites }
+	if = { limit = { check_variable = { spec_lvl_refinery_workforce > 0 } } add_to_variable = { spec_augcount_refinery = 1 } }
+	add_to_variable = { spec_totlvl_refinery = spec_lvl_refinery_workforce }
+	if = { limit = { check_variable = { spec_lvl_chip_oil > 0 } } add_to_variable = { spec_augcount_chip = 1 } }
+	add_to_variable = { spec_totlvl_chip = spec_lvl_chip_oil }
+	if = { limit = { check_variable = { spec_lvl_chip_steel > 0 } } add_to_variable = { spec_augcount_chip = 1 } }
+	add_to_variable = { spec_totlvl_chip = spec_lvl_chip_steel }
+	if = { limit = { check_variable = { spec_lvl_chip_aluminium > 0 } } add_to_variable = { spec_augcount_chip = 1 } }
+	add_to_variable = { spec_totlvl_chip = spec_lvl_chip_aluminium }
+	if = { limit = { check_variable = { spec_lvl_chip_tungsten > 0 } } add_to_variable = { spec_augcount_chip = 1 } }
+	add_to_variable = { spec_totlvl_chip = spec_lvl_chip_tungsten }
+	if = { limit = { check_variable = { spec_lvl_chip_chromium > 0 } } add_to_variable = { spec_augcount_chip = 1 } }
+	add_to_variable = { spec_totlvl_chip = spec_lvl_chip_chromium }
+	if = { limit = { check_variable = { spec_lvl_chip_rubber > 0 } } add_to_variable = { spec_augcount_chip = 1 } }
+	add_to_variable = { spec_totlvl_chip = spec_lvl_chip_rubber }
+	if = { limit = { check_variable = { spec_lvl_chip_microchips > 0 } } add_to_variable = { spec_augcount_chip = 1 } }
+	add_to_variable = { spec_totlvl_chip = spec_lvl_chip_microchips }
+	if = { limit = { check_variable = { spec_lvl_chip_composites > 0 } } add_to_variable = { spec_augcount_chip = 1 } }
+	add_to_variable = { spec_totlvl_chip = spec_lvl_chip_composites }
+	if = { limit = { check_variable = { spec_lvl_chip_workforce > 0 } } add_to_variable = { spec_augcount_chip = 1 } }
+	add_to_variable = { spec_totlvl_chip = spec_lvl_chip_workforce }
+	if = { limit = { check_variable = { spec_lvl_comp_oil > 0 } } add_to_variable = { spec_augcount_comp = 1 } }
+	add_to_variable = { spec_totlvl_comp = spec_lvl_comp_oil }
+	if = { limit = { check_variable = { spec_lvl_comp_steel > 0 } } add_to_variable = { spec_augcount_comp = 1 } }
+	add_to_variable = { spec_totlvl_comp = spec_lvl_comp_steel }
+	if = { limit = { check_variable = { spec_lvl_comp_aluminium > 0 } } add_to_variable = { spec_augcount_comp = 1 } }
+	add_to_variable = { spec_totlvl_comp = spec_lvl_comp_aluminium }
+	if = { limit = { check_variable = { spec_lvl_comp_tungsten > 0 } } add_to_variable = { spec_augcount_comp = 1 } }
+	add_to_variable = { spec_totlvl_comp = spec_lvl_comp_tungsten }
+	if = { limit = { check_variable = { spec_lvl_comp_chromium > 0 } } add_to_variable = { spec_augcount_comp = 1 } }
+	add_to_variable = { spec_totlvl_comp = spec_lvl_comp_chromium }
+	if = { limit = { check_variable = { spec_lvl_comp_rubber > 0 } } add_to_variable = { spec_augcount_comp = 1 } }
+	add_to_variable = { spec_totlvl_comp = spec_lvl_comp_rubber }
+	if = { limit = { check_variable = { spec_lvl_comp_microchips > 0 } } add_to_variable = { spec_augcount_comp = 1 } }
+	add_to_variable = { spec_totlvl_comp = spec_lvl_comp_microchips }
+	if = { limit = { check_variable = { spec_lvl_comp_composites > 0 } } add_to_variable = { spec_augcount_comp = 1 } }
+	add_to_variable = { spec_totlvl_comp = spec_lvl_comp_composites }
+	if = { limit = { check_variable = { spec_lvl_comp_workforce > 0 } } add_to_variable = { spec_augcount_comp = 1 } }
+	add_to_variable = { spec_totlvl_comp = spec_lvl_comp_workforce }
+	if = {
+		limit = { is_ai = no }
+		add_to_variable = { spec_gui_dirty = 1 }
+		if = { limit = { check_variable = { spec_gui_dirty > 1000000 } } set_variable = { spec_gui_dirty = 1 } }
+	}
+}
+
+# ---------------------------------------------------------------------------
+# PLAYER VERBS
+# ---------------------------------------------------------------------------
+spec_toggle_active_civ = {
+	if = { limit = { check_variable = { spec_active_civ = 0 } } set_variable = { spec_active_civ = 1 } }
+	else = { set_variable = { spec_active_civ = 0 } }
+	spec_recompute_bonuses = yes  spec_refresh_gui = yes
+}
+spec_res_up_civ_oil = { if = { limit = { check_variable = { spec_active_civ = 1 } check_variable = { spec_lvl_civ_oil < 5 } check_variable = { spec_atcap_civ_oil = 0 } check_variable = { spec_restotcap_oil = 0 } spec_can_aug_oil = yes } add_to_variable = { spec_lvl_civ_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_civ_oil = { if = { limit = { check_variable = { spec_lvl_civ_oil > 0 } } subtract_from_variable = { spec_lvl_civ_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_civ_steel = { if = { limit = { check_variable = { spec_active_civ = 1 } check_variable = { spec_lvl_civ_steel < 5 } check_variable = { spec_atcap_civ_steel = 0 } check_variable = { spec_restotcap_steel = 0 } spec_can_aug_steel = yes } add_to_variable = { spec_lvl_civ_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_civ_steel = { if = { limit = { check_variable = { spec_lvl_civ_steel > 0 } } subtract_from_variable = { spec_lvl_civ_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_civ_aluminium = { if = { limit = { check_variable = { spec_active_civ = 1 } check_variable = { spec_lvl_civ_aluminium < 5 } check_variable = { spec_atcap_civ_aluminium = 0 } check_variable = { spec_restotcap_aluminium = 0 } spec_can_aug_aluminium = yes } add_to_variable = { spec_lvl_civ_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_civ_aluminium = { if = { limit = { check_variable = { spec_lvl_civ_aluminium > 0 } } subtract_from_variable = { spec_lvl_civ_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_civ_tungsten = { if = { limit = { check_variable = { spec_active_civ = 1 } check_variable = { spec_lvl_civ_tungsten < 5 } check_variable = { spec_atcap_civ_tungsten = 0 } check_variable = { spec_restotcap_tungsten = 0 } spec_can_aug_tungsten = yes } add_to_variable = { spec_lvl_civ_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_civ_tungsten = { if = { limit = { check_variable = { spec_lvl_civ_tungsten > 0 } } subtract_from_variable = { spec_lvl_civ_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_civ_chromium = { if = { limit = { check_variable = { spec_active_civ = 1 } check_variable = { spec_lvl_civ_chromium < 5 } check_variable = { spec_atcap_civ_chromium = 0 } check_variable = { spec_restotcap_chromium = 0 } spec_can_aug_chromium = yes } add_to_variable = { spec_lvl_civ_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_civ_chromium = { if = { limit = { check_variable = { spec_lvl_civ_chromium > 0 } } subtract_from_variable = { spec_lvl_civ_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_civ_rubber = { if = { limit = { check_variable = { spec_active_civ = 1 } check_variable = { spec_lvl_civ_rubber < 5 } check_variable = { spec_atcap_civ_rubber = 0 } check_variable = { spec_restotcap_rubber = 0 } spec_can_aug_rubber = yes } add_to_variable = { spec_lvl_civ_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_civ_rubber = { if = { limit = { check_variable = { spec_lvl_civ_rubber > 0 } } subtract_from_variable = { spec_lvl_civ_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_civ_microchips = { if = { limit = { check_variable = { spec_active_civ = 1 } check_variable = { spec_lvl_civ_microchips < 5 } check_variable = { spec_atcap_civ_microchips = 0 } check_variable = { spec_restotcap_microchips = 0 } spec_can_aug_microchips = yes } add_to_variable = { spec_lvl_civ_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_civ_microchips = { if = { limit = { check_variable = { spec_lvl_civ_microchips > 0 } } subtract_from_variable = { spec_lvl_civ_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_civ_composites = { if = { limit = { check_variable = { spec_active_civ = 1 } check_variable = { spec_lvl_civ_composites < 5 } check_variable = { spec_atcap_civ_composites = 0 } check_variable = { spec_restotcap_composites = 0 } spec_can_aug_composites = yes } add_to_variable = { spec_lvl_civ_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_civ_composites = { if = { limit = { check_variable = { spec_lvl_civ_composites > 0 } } subtract_from_variable = { spec_lvl_civ_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_civ_workforce = { if = { limit = { check_variable = { spec_active_civ = 1 } check_variable = { spec_lvl_civ_workforce < 5 } } add_to_variable = { spec_lvl_civ_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_civ_workforce = { if = { limit = { check_variable = { spec_lvl_civ_workforce > 0 } } subtract_from_variable = { spec_lvl_civ_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_toggle_active_mil = {
+	if = { limit = { check_variable = { spec_active_mil = 0 } } set_variable = { spec_active_mil = 1 } }
+	else = { set_variable = { spec_active_mil = 0 } }
+	spec_recompute_bonuses = yes  spec_refresh_gui = yes
+}
+spec_res_up_mil_oil = { if = { limit = { check_variable = { spec_active_mil = 1 } check_variable = { spec_lvl_mil_oil < 5 } check_variable = { spec_atcap_mil_oil = 0 } check_variable = { spec_restotcap_oil = 0 } spec_can_aug_oil = yes } add_to_variable = { spec_lvl_mil_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_mil_oil = { if = { limit = { check_variable = { spec_lvl_mil_oil > 0 } } subtract_from_variable = { spec_lvl_mil_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_mil_steel = { if = { limit = { check_variable = { spec_active_mil = 1 } check_variable = { spec_lvl_mil_steel < 5 } check_variable = { spec_atcap_mil_steel = 0 } check_variable = { spec_restotcap_steel = 0 } spec_can_aug_steel = yes } add_to_variable = { spec_lvl_mil_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_mil_steel = { if = { limit = { check_variable = { spec_lvl_mil_steel > 0 } } subtract_from_variable = { spec_lvl_mil_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_mil_aluminium = { if = { limit = { check_variable = { spec_active_mil = 1 } check_variable = { spec_lvl_mil_aluminium < 5 } check_variable = { spec_atcap_mil_aluminium = 0 } check_variable = { spec_restotcap_aluminium = 0 } spec_can_aug_aluminium = yes } add_to_variable = { spec_lvl_mil_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_mil_aluminium = { if = { limit = { check_variable = { spec_lvl_mil_aluminium > 0 } } subtract_from_variable = { spec_lvl_mil_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_mil_tungsten = { if = { limit = { check_variable = { spec_active_mil = 1 } check_variable = { spec_lvl_mil_tungsten < 5 } check_variable = { spec_atcap_mil_tungsten = 0 } check_variable = { spec_restotcap_tungsten = 0 } spec_can_aug_tungsten = yes } add_to_variable = { spec_lvl_mil_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_mil_tungsten = { if = { limit = { check_variable = { spec_lvl_mil_tungsten > 0 } } subtract_from_variable = { spec_lvl_mil_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_mil_chromium = { if = { limit = { check_variable = { spec_active_mil = 1 } check_variable = { spec_lvl_mil_chromium < 5 } check_variable = { spec_atcap_mil_chromium = 0 } check_variable = { spec_restotcap_chromium = 0 } spec_can_aug_chromium = yes } add_to_variable = { spec_lvl_mil_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_mil_chromium = { if = { limit = { check_variable = { spec_lvl_mil_chromium > 0 } } subtract_from_variable = { spec_lvl_mil_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_mil_rubber = { if = { limit = { check_variable = { spec_active_mil = 1 } check_variable = { spec_lvl_mil_rubber < 5 } check_variable = { spec_atcap_mil_rubber = 0 } check_variable = { spec_restotcap_rubber = 0 } spec_can_aug_rubber = yes } add_to_variable = { spec_lvl_mil_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_mil_rubber = { if = { limit = { check_variable = { spec_lvl_mil_rubber > 0 } } subtract_from_variable = { spec_lvl_mil_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_mil_microchips = { if = { limit = { check_variable = { spec_active_mil = 1 } check_variable = { spec_lvl_mil_microchips < 5 } check_variable = { spec_atcap_mil_microchips = 0 } check_variable = { spec_restotcap_microchips = 0 } spec_can_aug_microchips = yes } add_to_variable = { spec_lvl_mil_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_mil_microchips = { if = { limit = { check_variable = { spec_lvl_mil_microchips > 0 } } subtract_from_variable = { spec_lvl_mil_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_mil_composites = { if = { limit = { check_variable = { spec_active_mil = 1 } check_variable = { spec_lvl_mil_composites < 5 } check_variable = { spec_atcap_mil_composites = 0 } check_variable = { spec_restotcap_composites = 0 } spec_can_aug_composites = yes } add_to_variable = { spec_lvl_mil_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_mil_composites = { if = { limit = { check_variable = { spec_lvl_mil_composites > 0 } } subtract_from_variable = { spec_lvl_mil_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_mil_workforce = { if = { limit = { check_variable = { spec_active_mil = 1 } check_variable = { spec_lvl_mil_workforce < 5 } } add_to_variable = { spec_lvl_mil_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_mil_workforce = { if = { limit = { check_variable = { spec_lvl_mil_workforce > 0 } } subtract_from_variable = { spec_lvl_mil_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_toggle_active_dock = {
+	if = { limit = { check_variable = { spec_active_dock = 0 } } set_variable = { spec_active_dock = 1 } }
+	else = { set_variable = { spec_active_dock = 0 } }
+	spec_recompute_bonuses = yes  spec_refresh_gui = yes
+}
+spec_res_up_dock_oil = { if = { limit = { check_variable = { spec_active_dock = 1 } check_variable = { spec_lvl_dock_oil < 5 } check_variable = { spec_atcap_dock_oil = 0 } check_variable = { spec_restotcap_oil = 0 } spec_can_aug_oil = yes } add_to_variable = { spec_lvl_dock_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_dock_oil = { if = { limit = { check_variable = { spec_lvl_dock_oil > 0 } } subtract_from_variable = { spec_lvl_dock_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_dock_steel = { if = { limit = { check_variable = { spec_active_dock = 1 } check_variable = { spec_lvl_dock_steel < 5 } check_variable = { spec_atcap_dock_steel = 0 } check_variable = { spec_restotcap_steel = 0 } spec_can_aug_steel = yes } add_to_variable = { spec_lvl_dock_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_dock_steel = { if = { limit = { check_variable = { spec_lvl_dock_steel > 0 } } subtract_from_variable = { spec_lvl_dock_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_dock_aluminium = { if = { limit = { check_variable = { spec_active_dock = 1 } check_variable = { spec_lvl_dock_aluminium < 5 } check_variable = { spec_atcap_dock_aluminium = 0 } check_variable = { spec_restotcap_aluminium = 0 } spec_can_aug_aluminium = yes } add_to_variable = { spec_lvl_dock_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_dock_aluminium = { if = { limit = { check_variable = { spec_lvl_dock_aluminium > 0 } } subtract_from_variable = { spec_lvl_dock_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_dock_tungsten = { if = { limit = { check_variable = { spec_active_dock = 1 } check_variable = { spec_lvl_dock_tungsten < 5 } check_variable = { spec_atcap_dock_tungsten = 0 } check_variable = { spec_restotcap_tungsten = 0 } spec_can_aug_tungsten = yes } add_to_variable = { spec_lvl_dock_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_dock_tungsten = { if = { limit = { check_variable = { spec_lvl_dock_tungsten > 0 } } subtract_from_variable = { spec_lvl_dock_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_dock_chromium = { if = { limit = { check_variable = { spec_active_dock = 1 } check_variable = { spec_lvl_dock_chromium < 5 } check_variable = { spec_atcap_dock_chromium = 0 } check_variable = { spec_restotcap_chromium = 0 } spec_can_aug_chromium = yes } add_to_variable = { spec_lvl_dock_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_dock_chromium = { if = { limit = { check_variable = { spec_lvl_dock_chromium > 0 } } subtract_from_variable = { spec_lvl_dock_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_dock_rubber = { if = { limit = { check_variable = { spec_active_dock = 1 } check_variable = { spec_lvl_dock_rubber < 5 } check_variable = { spec_atcap_dock_rubber = 0 } check_variable = { spec_restotcap_rubber = 0 } spec_can_aug_rubber = yes } add_to_variable = { spec_lvl_dock_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_dock_rubber = { if = { limit = { check_variable = { spec_lvl_dock_rubber > 0 } } subtract_from_variable = { spec_lvl_dock_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_dock_microchips = { if = { limit = { check_variable = { spec_active_dock = 1 } check_variable = { spec_lvl_dock_microchips < 5 } check_variable = { spec_atcap_dock_microchips = 0 } check_variable = { spec_restotcap_microchips = 0 } spec_can_aug_microchips = yes } add_to_variable = { spec_lvl_dock_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_dock_microchips = { if = { limit = { check_variable = { spec_lvl_dock_microchips > 0 } } subtract_from_variable = { spec_lvl_dock_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_dock_composites = { if = { limit = { check_variable = { spec_active_dock = 1 } check_variable = { spec_lvl_dock_composites < 5 } check_variable = { spec_atcap_dock_composites = 0 } check_variable = { spec_restotcap_composites = 0 } spec_can_aug_composites = yes } add_to_variable = { spec_lvl_dock_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_dock_composites = { if = { limit = { check_variable = { spec_lvl_dock_composites > 0 } } subtract_from_variable = { spec_lvl_dock_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_dock_workforce = { if = { limit = { check_variable = { spec_active_dock = 1 } check_variable = { spec_lvl_dock_workforce < 5 } } add_to_variable = { spec_lvl_dock_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_dock_workforce = { if = { limit = { check_variable = { spec_lvl_dock_workforce > 0 } } subtract_from_variable = { spec_lvl_dock_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_toggle_active_office = {
+	if = { limit = { check_variable = { spec_active_office = 0 } } set_variable = { spec_active_office = 1 } }
+	else = { set_variable = { spec_active_office = 0 } }
+	spec_recompute_bonuses = yes  spec_refresh_gui = yes
+}
+spec_res_up_office_oil = { if = { limit = { check_variable = { spec_active_office = 1 } check_variable = { spec_lvl_office_oil < 5 } check_variable = { spec_atcap_office_oil = 0 } check_variable = { spec_restotcap_oil = 0 } spec_can_aug_oil = yes } add_to_variable = { spec_lvl_office_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_office_oil = { if = { limit = { check_variable = { spec_lvl_office_oil > 0 } } subtract_from_variable = { spec_lvl_office_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_office_steel = { if = { limit = { check_variable = { spec_active_office = 1 } check_variable = { spec_lvl_office_steel < 5 } check_variable = { spec_atcap_office_steel = 0 } check_variable = { spec_restotcap_steel = 0 } spec_can_aug_steel = yes } add_to_variable = { spec_lvl_office_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_office_steel = { if = { limit = { check_variable = { spec_lvl_office_steel > 0 } } subtract_from_variable = { spec_lvl_office_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_office_aluminium = { if = { limit = { check_variable = { spec_active_office = 1 } check_variable = { spec_lvl_office_aluminium < 5 } check_variable = { spec_atcap_office_aluminium = 0 } check_variable = { spec_restotcap_aluminium = 0 } spec_can_aug_aluminium = yes } add_to_variable = { spec_lvl_office_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_office_aluminium = { if = { limit = { check_variable = { spec_lvl_office_aluminium > 0 } } subtract_from_variable = { spec_lvl_office_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_office_tungsten = { if = { limit = { check_variable = { spec_active_office = 1 } check_variable = { spec_lvl_office_tungsten < 5 } check_variable = { spec_atcap_office_tungsten = 0 } check_variable = { spec_restotcap_tungsten = 0 } spec_can_aug_tungsten = yes } add_to_variable = { spec_lvl_office_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_office_tungsten = { if = { limit = { check_variable = { spec_lvl_office_tungsten > 0 } } subtract_from_variable = { spec_lvl_office_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_office_chromium = { if = { limit = { check_variable = { spec_active_office = 1 } check_variable = { spec_lvl_office_chromium < 5 } check_variable = { spec_atcap_office_chromium = 0 } check_variable = { spec_restotcap_chromium = 0 } spec_can_aug_chromium = yes } add_to_variable = { spec_lvl_office_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_office_chromium = { if = { limit = { check_variable = { spec_lvl_office_chromium > 0 } } subtract_from_variable = { spec_lvl_office_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_office_rubber = { if = { limit = { check_variable = { spec_active_office = 1 } check_variable = { spec_lvl_office_rubber < 5 } check_variable = { spec_atcap_office_rubber = 0 } check_variable = { spec_restotcap_rubber = 0 } spec_can_aug_rubber = yes } add_to_variable = { spec_lvl_office_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_office_rubber = { if = { limit = { check_variable = { spec_lvl_office_rubber > 0 } } subtract_from_variable = { spec_lvl_office_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_office_microchips = { if = { limit = { check_variable = { spec_active_office = 1 } check_variable = { spec_lvl_office_microchips < 5 } check_variable = { spec_atcap_office_microchips = 0 } check_variable = { spec_restotcap_microchips = 0 } spec_can_aug_microchips = yes } add_to_variable = { spec_lvl_office_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_office_microchips = { if = { limit = { check_variable = { spec_lvl_office_microchips > 0 } } subtract_from_variable = { spec_lvl_office_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_office_composites = { if = { limit = { check_variable = { spec_active_office = 1 } check_variable = { spec_lvl_office_composites < 5 } check_variable = { spec_atcap_office_composites = 0 } check_variable = { spec_restotcap_composites = 0 } spec_can_aug_composites = yes } add_to_variable = { spec_lvl_office_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_office_composites = { if = { limit = { check_variable = { spec_lvl_office_composites > 0 } } subtract_from_variable = { spec_lvl_office_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_office_workforce = { if = { limit = { check_variable = { spec_active_office = 1 } check_variable = { spec_lvl_office_workforce < 5 } } add_to_variable = { spec_lvl_office_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_office_workforce = { if = { limit = { check_variable = { spec_lvl_office_workforce > 0 } } subtract_from_variable = { spec_lvl_office_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_toggle_active_agri = {
+	if = { limit = { check_variable = { spec_active_agri = 0 } } set_variable = { spec_active_agri = 1 } }
+	else = { set_variable = { spec_active_agri = 0 } }
+	spec_recompute_bonuses = yes  spec_refresh_gui = yes
+}
+spec_res_up_agri_oil = { if = { limit = { check_variable = { spec_active_agri = 1 } check_variable = { spec_lvl_agri_oil < 5 } check_variable = { spec_atcap_agri_oil = 0 } check_variable = { spec_restotcap_oil = 0 } spec_can_aug_oil = yes } add_to_variable = { spec_lvl_agri_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_agri_oil = { if = { limit = { check_variable = { spec_lvl_agri_oil > 0 } } subtract_from_variable = { spec_lvl_agri_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_agri_steel = { if = { limit = { check_variable = { spec_active_agri = 1 } check_variable = { spec_lvl_agri_steel < 5 } check_variable = { spec_atcap_agri_steel = 0 } check_variable = { spec_restotcap_steel = 0 } spec_can_aug_steel = yes } add_to_variable = { spec_lvl_agri_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_agri_steel = { if = { limit = { check_variable = { spec_lvl_agri_steel > 0 } } subtract_from_variable = { spec_lvl_agri_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_agri_aluminium = { if = { limit = { check_variable = { spec_active_agri = 1 } check_variable = { spec_lvl_agri_aluminium < 5 } check_variable = { spec_atcap_agri_aluminium = 0 } check_variable = { spec_restotcap_aluminium = 0 } spec_can_aug_aluminium = yes } add_to_variable = { spec_lvl_agri_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_agri_aluminium = { if = { limit = { check_variable = { spec_lvl_agri_aluminium > 0 } } subtract_from_variable = { spec_lvl_agri_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_agri_tungsten = { if = { limit = { check_variable = { spec_active_agri = 1 } check_variable = { spec_lvl_agri_tungsten < 5 } check_variable = { spec_atcap_agri_tungsten = 0 } check_variable = { spec_restotcap_tungsten = 0 } spec_can_aug_tungsten = yes } add_to_variable = { spec_lvl_agri_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_agri_tungsten = { if = { limit = { check_variable = { spec_lvl_agri_tungsten > 0 } } subtract_from_variable = { spec_lvl_agri_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_agri_chromium = { if = { limit = { check_variable = { spec_active_agri = 1 } check_variable = { spec_lvl_agri_chromium < 5 } check_variable = { spec_atcap_agri_chromium = 0 } check_variable = { spec_restotcap_chromium = 0 } spec_can_aug_chromium = yes } add_to_variable = { spec_lvl_agri_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_agri_chromium = { if = { limit = { check_variable = { spec_lvl_agri_chromium > 0 } } subtract_from_variable = { spec_lvl_agri_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_agri_rubber = { if = { limit = { check_variable = { spec_active_agri = 1 } check_variable = { spec_lvl_agri_rubber < 5 } check_variable = { spec_atcap_agri_rubber = 0 } check_variable = { spec_restotcap_rubber = 0 } spec_can_aug_rubber = yes } add_to_variable = { spec_lvl_agri_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_agri_rubber = { if = { limit = { check_variable = { spec_lvl_agri_rubber > 0 } } subtract_from_variable = { spec_lvl_agri_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_agri_microchips = { if = { limit = { check_variable = { spec_active_agri = 1 } check_variable = { spec_lvl_agri_microchips < 5 } check_variable = { spec_atcap_agri_microchips = 0 } check_variable = { spec_restotcap_microchips = 0 } spec_can_aug_microchips = yes } add_to_variable = { spec_lvl_agri_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_agri_microchips = { if = { limit = { check_variable = { spec_lvl_agri_microchips > 0 } } subtract_from_variable = { spec_lvl_agri_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_agri_composites = { if = { limit = { check_variable = { spec_active_agri = 1 } check_variable = { spec_lvl_agri_composites < 5 } check_variable = { spec_atcap_agri_composites = 0 } check_variable = { spec_restotcap_composites = 0 } spec_can_aug_composites = yes } add_to_variable = { spec_lvl_agri_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_agri_composites = { if = { limit = { check_variable = { spec_lvl_agri_composites > 0 } } subtract_from_variable = { spec_lvl_agri_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_agri_workforce = { if = { limit = { check_variable = { spec_active_agri = 1 } check_variable = { spec_lvl_agri_workforce < 5 } } add_to_variable = { spec_lvl_agri_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_agri_workforce = { if = { limit = { check_variable = { spec_lvl_agri_workforce > 0 } } subtract_from_variable = { spec_lvl_agri_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_toggle_active_refinery = {
+	if = { limit = { check_variable = { spec_active_refinery = 0 } } set_variable = { spec_active_refinery = 1 } }
+	else = { set_variable = { spec_active_refinery = 0 } }
+	spec_recompute_bonuses = yes  spec_refresh_gui = yes
+}
+spec_res_up_refinery_oil = { if = { limit = { check_variable = { spec_active_refinery = 1 } check_variable = { spec_lvl_refinery_oil < 5 } check_variable = { spec_atcap_refinery_oil = 0 } check_variable = { spec_restotcap_oil = 0 } spec_can_aug_oil = yes } add_to_variable = { spec_lvl_refinery_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_refinery_oil = { if = { limit = { check_variable = { spec_lvl_refinery_oil > 0 } } subtract_from_variable = { spec_lvl_refinery_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_refinery_steel = { if = { limit = { check_variable = { spec_active_refinery = 1 } check_variable = { spec_lvl_refinery_steel < 5 } check_variable = { spec_atcap_refinery_steel = 0 } check_variable = { spec_restotcap_steel = 0 } spec_can_aug_steel = yes } add_to_variable = { spec_lvl_refinery_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_refinery_steel = { if = { limit = { check_variable = { spec_lvl_refinery_steel > 0 } } subtract_from_variable = { spec_lvl_refinery_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_refinery_aluminium = { if = { limit = { check_variable = { spec_active_refinery = 1 } check_variable = { spec_lvl_refinery_aluminium < 5 } check_variable = { spec_atcap_refinery_aluminium = 0 } check_variable = { spec_restotcap_aluminium = 0 } spec_can_aug_aluminium = yes } add_to_variable = { spec_lvl_refinery_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_refinery_aluminium = { if = { limit = { check_variable = { spec_lvl_refinery_aluminium > 0 } } subtract_from_variable = { spec_lvl_refinery_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_refinery_tungsten = { if = { limit = { check_variable = { spec_active_refinery = 1 } check_variable = { spec_lvl_refinery_tungsten < 5 } check_variable = { spec_atcap_refinery_tungsten = 0 } check_variable = { spec_restotcap_tungsten = 0 } spec_can_aug_tungsten = yes } add_to_variable = { spec_lvl_refinery_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_refinery_tungsten = { if = { limit = { check_variable = { spec_lvl_refinery_tungsten > 0 } } subtract_from_variable = { spec_lvl_refinery_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_refinery_chromium = { if = { limit = { check_variable = { spec_active_refinery = 1 } check_variable = { spec_lvl_refinery_chromium < 5 } check_variable = { spec_atcap_refinery_chromium = 0 } check_variable = { spec_restotcap_chromium = 0 } spec_can_aug_chromium = yes } add_to_variable = { spec_lvl_refinery_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_refinery_chromium = { if = { limit = { check_variable = { spec_lvl_refinery_chromium > 0 } } subtract_from_variable = { spec_lvl_refinery_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_refinery_rubber = { if = { limit = { check_variable = { spec_active_refinery = 1 } check_variable = { spec_lvl_refinery_rubber < 5 } check_variable = { spec_atcap_refinery_rubber = 0 } check_variable = { spec_restotcap_rubber = 0 } spec_can_aug_rubber = yes } add_to_variable = { spec_lvl_refinery_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_refinery_rubber = { if = { limit = { check_variable = { spec_lvl_refinery_rubber > 0 } } subtract_from_variable = { spec_lvl_refinery_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_refinery_microchips = { if = { limit = { check_variable = { spec_active_refinery = 1 } check_variable = { spec_lvl_refinery_microchips < 5 } check_variable = { spec_atcap_refinery_microchips = 0 } check_variable = { spec_restotcap_microchips = 0 } spec_can_aug_microchips = yes } add_to_variable = { spec_lvl_refinery_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_refinery_microchips = { if = { limit = { check_variable = { spec_lvl_refinery_microchips > 0 } } subtract_from_variable = { spec_lvl_refinery_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_refinery_composites = { if = { limit = { check_variable = { spec_active_refinery = 1 } check_variable = { spec_lvl_refinery_composites < 5 } check_variable = { spec_atcap_refinery_composites = 0 } check_variable = { spec_restotcap_composites = 0 } spec_can_aug_composites = yes } add_to_variable = { spec_lvl_refinery_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_refinery_composites = { if = { limit = { check_variable = { spec_lvl_refinery_composites > 0 } } subtract_from_variable = { spec_lvl_refinery_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_refinery_workforce = { if = { limit = { check_variable = { spec_active_refinery = 1 } check_variable = { spec_lvl_refinery_workforce < 5 } } add_to_variable = { spec_lvl_refinery_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_refinery_workforce = { if = { limit = { check_variable = { spec_lvl_refinery_workforce > 0 } } subtract_from_variable = { spec_lvl_refinery_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_toggle_active_chip = {
+	if = { limit = { check_variable = { spec_active_chip = 0 } } set_variable = { spec_active_chip = 1 } }
+	else = { set_variable = { spec_active_chip = 0 } }
+	spec_recompute_bonuses = yes  spec_refresh_gui = yes
+}
+spec_res_up_chip_oil = { if = { limit = { check_variable = { spec_active_chip = 1 } check_variable = { spec_lvl_chip_oil < 5 } check_variable = { spec_atcap_chip_oil = 0 } check_variable = { spec_restotcap_oil = 0 } spec_can_aug_oil = yes } add_to_variable = { spec_lvl_chip_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_chip_oil = { if = { limit = { check_variable = { spec_lvl_chip_oil > 0 } } subtract_from_variable = { spec_lvl_chip_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_chip_steel = { if = { limit = { check_variable = { spec_active_chip = 1 } check_variable = { spec_lvl_chip_steel < 5 } check_variable = { spec_atcap_chip_steel = 0 } check_variable = { spec_restotcap_steel = 0 } spec_can_aug_steel = yes } add_to_variable = { spec_lvl_chip_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_chip_steel = { if = { limit = { check_variable = { spec_lvl_chip_steel > 0 } } subtract_from_variable = { spec_lvl_chip_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_chip_aluminium = { if = { limit = { check_variable = { spec_active_chip = 1 } check_variable = { spec_lvl_chip_aluminium < 5 } check_variable = { spec_atcap_chip_aluminium = 0 } check_variable = { spec_restotcap_aluminium = 0 } spec_can_aug_aluminium = yes } add_to_variable = { spec_lvl_chip_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_chip_aluminium = { if = { limit = { check_variable = { spec_lvl_chip_aluminium > 0 } } subtract_from_variable = { spec_lvl_chip_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_chip_tungsten = { if = { limit = { check_variable = { spec_active_chip = 1 } check_variable = { spec_lvl_chip_tungsten < 5 } check_variable = { spec_atcap_chip_tungsten = 0 } check_variable = { spec_restotcap_tungsten = 0 } spec_can_aug_tungsten = yes } add_to_variable = { spec_lvl_chip_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_chip_tungsten = { if = { limit = { check_variable = { spec_lvl_chip_tungsten > 0 } } subtract_from_variable = { spec_lvl_chip_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_chip_chromium = { if = { limit = { check_variable = { spec_active_chip = 1 } check_variable = { spec_lvl_chip_chromium < 5 } check_variable = { spec_atcap_chip_chromium = 0 } check_variable = { spec_restotcap_chromium = 0 } spec_can_aug_chromium = yes } add_to_variable = { spec_lvl_chip_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_chip_chromium = { if = { limit = { check_variable = { spec_lvl_chip_chromium > 0 } } subtract_from_variable = { spec_lvl_chip_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_chip_rubber = { if = { limit = { check_variable = { spec_active_chip = 1 } check_variable = { spec_lvl_chip_rubber < 5 } check_variable = { spec_atcap_chip_rubber = 0 } check_variable = { spec_restotcap_rubber = 0 } spec_can_aug_rubber = yes } add_to_variable = { spec_lvl_chip_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_chip_rubber = { if = { limit = { check_variable = { spec_lvl_chip_rubber > 0 } } subtract_from_variable = { spec_lvl_chip_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_chip_microchips = { if = { limit = { check_variable = { spec_active_chip = 1 } check_variable = { spec_lvl_chip_microchips < 5 } check_variable = { spec_atcap_chip_microchips = 0 } check_variable = { spec_restotcap_microchips = 0 } spec_can_aug_microchips = yes } add_to_variable = { spec_lvl_chip_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_chip_microchips = { if = { limit = { check_variable = { spec_lvl_chip_microchips > 0 } } subtract_from_variable = { spec_lvl_chip_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_chip_composites = { if = { limit = { check_variable = { spec_active_chip = 1 } check_variable = { spec_lvl_chip_composites < 5 } check_variable = { spec_atcap_chip_composites = 0 } check_variable = { spec_restotcap_composites = 0 } spec_can_aug_composites = yes } add_to_variable = { spec_lvl_chip_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_chip_composites = { if = { limit = { check_variable = { spec_lvl_chip_composites > 0 } } subtract_from_variable = { spec_lvl_chip_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_chip_workforce = { if = { limit = { check_variable = { spec_active_chip = 1 } check_variable = { spec_lvl_chip_workforce < 5 } } add_to_variable = { spec_lvl_chip_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_chip_workforce = { if = { limit = { check_variable = { spec_lvl_chip_workforce > 0 } } subtract_from_variable = { spec_lvl_chip_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_toggle_active_comp = {
+	if = { limit = { check_variable = { spec_active_comp = 0 } } set_variable = { spec_active_comp = 1 } }
+	else = { set_variable = { spec_active_comp = 0 } }
+	spec_recompute_bonuses = yes  spec_refresh_gui = yes
+}
+spec_res_up_comp_oil = { if = { limit = { check_variable = { spec_active_comp = 1 } check_variable = { spec_lvl_comp_oil < 5 } check_variable = { spec_atcap_comp_oil = 0 } check_variable = { spec_restotcap_oil = 0 } spec_can_aug_oil = yes } add_to_variable = { spec_lvl_comp_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_comp_oil = { if = { limit = { check_variable = { spec_lvl_comp_oil > 0 } } subtract_from_variable = { spec_lvl_comp_oil = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_comp_steel = { if = { limit = { check_variable = { spec_active_comp = 1 } check_variable = { spec_lvl_comp_steel < 5 } check_variable = { spec_atcap_comp_steel = 0 } check_variable = { spec_restotcap_steel = 0 } spec_can_aug_steel = yes } add_to_variable = { spec_lvl_comp_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_comp_steel = { if = { limit = { check_variable = { spec_lvl_comp_steel > 0 } } subtract_from_variable = { spec_lvl_comp_steel = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_comp_aluminium = { if = { limit = { check_variable = { spec_active_comp = 1 } check_variable = { spec_lvl_comp_aluminium < 5 } check_variable = { spec_atcap_comp_aluminium = 0 } check_variable = { spec_restotcap_aluminium = 0 } spec_can_aug_aluminium = yes } add_to_variable = { spec_lvl_comp_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_comp_aluminium = { if = { limit = { check_variable = { spec_lvl_comp_aluminium > 0 } } subtract_from_variable = { spec_lvl_comp_aluminium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_comp_tungsten = { if = { limit = { check_variable = { spec_active_comp = 1 } check_variable = { spec_lvl_comp_tungsten < 5 } check_variable = { spec_atcap_comp_tungsten = 0 } check_variable = { spec_restotcap_tungsten = 0 } spec_can_aug_tungsten = yes } add_to_variable = { spec_lvl_comp_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_comp_tungsten = { if = { limit = { check_variable = { spec_lvl_comp_tungsten > 0 } } subtract_from_variable = { spec_lvl_comp_tungsten = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_comp_chromium = { if = { limit = { check_variable = { spec_active_comp = 1 } check_variable = { spec_lvl_comp_chromium < 5 } check_variable = { spec_atcap_comp_chromium = 0 } check_variable = { spec_restotcap_chromium = 0 } spec_can_aug_chromium = yes } add_to_variable = { spec_lvl_comp_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_comp_chromium = { if = { limit = { check_variable = { spec_lvl_comp_chromium > 0 } } subtract_from_variable = { spec_lvl_comp_chromium = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_comp_rubber = { if = { limit = { check_variable = { spec_active_comp = 1 } check_variable = { spec_lvl_comp_rubber < 5 } check_variable = { spec_atcap_comp_rubber = 0 } check_variable = { spec_restotcap_rubber = 0 } spec_can_aug_rubber = yes } add_to_variable = { spec_lvl_comp_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_comp_rubber = { if = { limit = { check_variable = { spec_lvl_comp_rubber > 0 } } subtract_from_variable = { spec_lvl_comp_rubber = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_comp_microchips = { if = { limit = { check_variable = { spec_active_comp = 1 } check_variable = { spec_lvl_comp_microchips < 5 } check_variable = { spec_atcap_comp_microchips = 0 } check_variable = { spec_restotcap_microchips = 0 } spec_can_aug_microchips = yes } add_to_variable = { spec_lvl_comp_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_comp_microchips = { if = { limit = { check_variable = { spec_lvl_comp_microchips > 0 } } subtract_from_variable = { spec_lvl_comp_microchips = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_comp_composites = { if = { limit = { check_variable = { spec_active_comp = 1 } check_variable = { spec_lvl_comp_composites < 5 } check_variable = { spec_atcap_comp_composites = 0 } check_variable = { spec_restotcap_composites = 0 } spec_can_aug_composites = yes } add_to_variable = { spec_lvl_comp_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_comp_composites = { if = { limit = { check_variable = { spec_lvl_comp_composites > 0 } } subtract_from_variable = { spec_lvl_comp_composites = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_up_comp_workforce = { if = { limit = { check_variable = { spec_active_comp = 1 } check_variable = { spec_lvl_comp_workforce < 5 } } add_to_variable = { spec_lvl_comp_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+spec_res_down_comp_workforce = { if = { limit = { check_variable = { spec_lvl_comp_workforce > 0 } } subtract_from_variable = { spec_lvl_comp_workforce = 1 } spec_recompute_bonuses = yes spec_refresh_gui = yes } }
+
+spec_reset_all = {
+	set_variable = { spec_active_civ = 0 }
+	set_variable = { spec_lvl_civ_oil = 0 }
+	set_variable = { spec_lvl_civ_steel = 0 }
+	set_variable = { spec_lvl_civ_aluminium = 0 }
+	set_variable = { spec_lvl_civ_tungsten = 0 }
+	set_variable = { spec_lvl_civ_chromium = 0 }
+	set_variable = { spec_lvl_civ_rubber = 0 }
+	set_variable = { spec_lvl_civ_microchips = 0 }
+	set_variable = { spec_lvl_civ_composites = 0 }
+	set_variable = { spec_lvl_civ_workforce = 0 }
+	set_variable = { spec_active_mil = 0 }
+	set_variable = { spec_lvl_mil_oil = 0 }
+	set_variable = { spec_lvl_mil_steel = 0 }
+	set_variable = { spec_lvl_mil_aluminium = 0 }
+	set_variable = { spec_lvl_mil_tungsten = 0 }
+	set_variable = { spec_lvl_mil_chromium = 0 }
+	set_variable = { spec_lvl_mil_rubber = 0 }
+	set_variable = { spec_lvl_mil_microchips = 0 }
+	set_variable = { spec_lvl_mil_composites = 0 }
+	set_variable = { spec_lvl_mil_workforce = 0 }
+	set_variable = { spec_active_dock = 0 }
+	set_variable = { spec_lvl_dock_oil = 0 }
+	set_variable = { spec_lvl_dock_steel = 0 }
+	set_variable = { spec_lvl_dock_aluminium = 0 }
+	set_variable = { spec_lvl_dock_tungsten = 0 }
+	set_variable = { spec_lvl_dock_chromium = 0 }
+	set_variable = { spec_lvl_dock_rubber = 0 }
+	set_variable = { spec_lvl_dock_microchips = 0 }
+	set_variable = { spec_lvl_dock_composites = 0 }
+	set_variable = { spec_lvl_dock_workforce = 0 }
+	set_variable = { spec_active_office = 0 }
+	set_variable = { spec_lvl_office_oil = 0 }
+	set_variable = { spec_lvl_office_steel = 0 }
+	set_variable = { spec_lvl_office_aluminium = 0 }
+	set_variable = { spec_lvl_office_tungsten = 0 }
+	set_variable = { spec_lvl_office_chromium = 0 }
+	set_variable = { spec_lvl_office_rubber = 0 }
+	set_variable = { spec_lvl_office_microchips = 0 }
+	set_variable = { spec_lvl_office_composites = 0 }
+	set_variable = { spec_lvl_office_workforce = 0 }
+	set_variable = { spec_active_agri = 0 }
+	set_variable = { spec_lvl_agri_oil = 0 }
+	set_variable = { spec_lvl_agri_steel = 0 }
+	set_variable = { spec_lvl_agri_aluminium = 0 }
+	set_variable = { spec_lvl_agri_tungsten = 0 }
+	set_variable = { spec_lvl_agri_chromium = 0 }
+	set_variable = { spec_lvl_agri_rubber = 0 }
+	set_variable = { spec_lvl_agri_microchips = 0 }
+	set_variable = { spec_lvl_agri_composites = 0 }
+	set_variable = { spec_lvl_agri_workforce = 0 }
+	set_variable = { spec_active_refinery = 0 }
+	set_variable = { spec_lvl_refinery_oil = 0 }
+	set_variable = { spec_lvl_refinery_steel = 0 }
+	set_variable = { spec_lvl_refinery_aluminium = 0 }
+	set_variable = { spec_lvl_refinery_tungsten = 0 }
+	set_variable = { spec_lvl_refinery_chromium = 0 }
+	set_variable = { spec_lvl_refinery_rubber = 0 }
+	set_variable = { spec_lvl_refinery_microchips = 0 }
+	set_variable = { spec_lvl_refinery_composites = 0 }
+	set_variable = { spec_lvl_refinery_workforce = 0 }
+	set_variable = { spec_active_chip = 0 }
+	set_variable = { spec_lvl_chip_oil = 0 }
+	set_variable = { spec_lvl_chip_steel = 0 }
+	set_variable = { spec_lvl_chip_aluminium = 0 }
+	set_variable = { spec_lvl_chip_tungsten = 0 }
+	set_variable = { spec_lvl_chip_chromium = 0 }
+	set_variable = { spec_lvl_chip_rubber = 0 }
+	set_variable = { spec_lvl_chip_microchips = 0 }
+	set_variable = { spec_lvl_chip_composites = 0 }
+	set_variable = { spec_lvl_chip_workforce = 0 }
+	set_variable = { spec_active_comp = 0 }
+	set_variable = { spec_lvl_comp_oil = 0 }
+	set_variable = { spec_lvl_comp_steel = 0 }
+	set_variable = { spec_lvl_comp_aluminium = 0 }
+	set_variable = { spec_lvl_comp_tungsten = 0 }
+	set_variable = { spec_lvl_comp_chromium = 0 }
+	set_variable = { spec_lvl_comp_rubber = 0 }
+	set_variable = { spec_lvl_comp_microchips = 0 }
+	set_variable = { spec_lvl_comp_composites = 0 }
+	set_variable = { spec_lvl_comp_workforce = 0 }
+	spec_recompute_bonuses = yes
+	spec_refresh_gui = yes
+}
