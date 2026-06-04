@@ -2483,7 +2483,7 @@ focus_tree = {
 		id = CHI_eat_imperial_grain
 		icon = x
 
-		x = 3
+		x = 4
 		y = 1
 		relative_position_id = CHI_open_the_august_1st_building
 
@@ -4287,7 +4287,7 @@ focus_tree = {
 		id = CHI_integrated_air_and_space
 		icon = Jet_Fighters
 
-		x = 20
+		x = 21
 		y = 1
 		relative_position_id = CHI_open_the_august_1st_building
 
@@ -5084,10 +5084,10 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_the_sovremenny_bridge #Needs to be that China receives those Ships
-		icon = x
+		id = CHI_the_sovremenny_bridge
+		icon = russian_cooperation
 
-		x = 4
+		x = 5
 		y = 1
 		relative_position_id = CHI_liu_huaqing_first_island_chain
 
@@ -5099,6 +5099,36 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_sovremenny_bridge"
+			navy_experience = 10
+			create_ship = {
+				type = destroyer_hull_2
+				equipment_variant = "Sovremennyy Class"
+				creator = SOV
+				name = "Hangzhou"
+			}
+			create_ship = {
+				type = destroyer_hull_2
+				equipment_variant = "Sovremennyy Class"
+				creator = SOV
+				name = "Fuzhou"
+			}
+			create_ship = {
+				type = destroyer_hull_2
+				equipment_variant = "Sovremennyy Class"
+				creator = SOV
+				name = "Taizhou"
+			}
+			create_ship = {
+				type = destroyer_hull_2
+				equipment_variant = "Sovremennyy Class"
+				creator = SOV
+				name = "Ningbo"
+			}
+			SOV = { add_opinion_modifier = { target = CHI modifier = medium_increase } }
+			add_opinion_modifier = { target = SOV modifier = medium_increase }
+			newline = yes
+			set_temp_variable = { treasury_change = -45 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -5123,7 +5153,7 @@ focus_tree = {
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_navy_modifier }
 			add_to_variable = { CHI_navy_navy_submarine_detection_factor = 0.07 tooltip = navy_submarine_detection_factor_tt }
 			newline = yes
-			add_tech_bonus = { name = CHI_the_yuan_and_the_shang bonus = 0.25 uses = 1 category = CAT_atk_sub }
+			add_tech_bonus = { name = CHI_the_yuan_and_the_shang bonus = 0.25 uses = 1 category = CAT_sub }
 		}
 
 		ai_will_do = { base = 1 }
@@ -5217,8 +5247,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_054a_production_line #Change the effects, use HOL_Return_Of_Destroyers as inspiration for the 054 Frigate
-		icon = x
+		id = CHI_054a_production_line
+		icon = frigates
 
 		x = -3
 		y = 2
@@ -5232,6 +5262,55 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_054a_production_line"
+			create_equipment_variant = {
+				name = "Type 054A"
+				type = frigate_hull_5
+				allow_without_tech = yes
+				modules = {
+					fixed_ship_engine_slot = module_light_surface_jet_turbine_power3
+					fixed_ship_fire_control_system_slot = module_screen_digital_integrated_fire_control
+					fixed_ship_radar_slot = module_radar_4
+					fixed_ship_auxillary_slot_2 = module_asm_3
+					fixed_ship_auxillary_slot_1 = module_anti_submarine_missile_3
+					fixed_ship_auxillary_slot = module_ciws_3
+					fixed_ship_battery_slot = module_76mm_gun_3
+					front_1_custom_slot = module_vls_sam_3
+					rear_1_custom_slot = module_light_helipad_2
+				}
+				icon = "gfx/interface/technologies/CHI/NAV/054A.dds"
+				design_team = mio:CHI_cssc_manufacturer
+			}
+			add_equipment_production = {
+				equipment = {
+					version_name = "Type 054A"
+					type = frigate_hull_5
+				}
+				amount = 1
+				progress = 0.15
+				requested_factories = 1
+			}
+			add_equipment_production = {
+				equipment = {
+					version_name = "Type 054A"
+					type = frigate_hull_5
+				}
+				amount = 1
+				progress = 0.15
+				requested_factories = 1
+			}
+			random_owned_state = {
+				limit = { is_coastal = yes }
+				add_building_construction = {
+					type = dockyard
+					level = 2
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 2
+			}
+			mio:CHI_cssc_manufacturer = { add_mio_funds = 2000 }
+			newline = yes
+			set_temp_variable = { treasury_change = -25 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -5316,8 +5395,8 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_sea_eagles_of_the_liaoning #Create an carrier aircraft template
-		icon = x
+		id = CHI_sea_eagles_of_the_liaoning
+		icon = blr_mig_25
 
 		x = -4
 		y = 2
@@ -5331,6 +5410,47 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_sea_eagles_of_the_liaoning"
+			if = {
+				limit = { has_dlc = "By Blood Alone" }
+				create_equipment_variant = {
+					name = "J-15 Flying Shark"
+					type = cv_medium_plane_airframe_2
+					parent_version = 0
+					modules = {
+						fixed_main_weapon_slot = weap_mp_med_hardpoint_2
+						fixed_gun_slot = weap_multi_gun_3
+						engine_type_slot = engine_jet_double_3
+						avionics_type_slot = avionics_manned_3
+						wingform_type_slot = wing_swept
+						special_slot_type_1 = spec_countermeasures_2
+						special_slot_type_2 = empty
+						special_slot_type_3 = spec_redundant_2
+						special_slot_type_4 = spec_tgp_2
+						fixed_auxiliary_weapon_slot_1 = weap_a2a_hardpoint_2
+						fixed_auxiliary_weapon_slot_3 = weap_as_hardpoint_2
+					}
+					icon = "gfx/interface/technologies/CHI/AIR/J-15.dds"
+					design_team = mio:CHI_avic_manufacturer
+				}
+				add_equipment_to_stockpile = {
+					type = cv_medium_plane_airframe_2
+					variant_name = "J-15 Flying Shark"
+					amount = 24
+					producer = CHI
+				}
+			}
+			else = {
+				add_equipment_to_stockpile = {
+					type = CV_MR_Fighter3
+					amount = 24
+					producer = CHI
+				}
+			}
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_navy_modifier }
+			add_to_variable = { CHI_navy_sortie_efficiency = 0.05 tooltip = sortie_efficiency_tt }
+			newline = yes
+			set_temp_variable = { treasury_change = -22 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -5338,7 +5458,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_sea_eagles_carrier_wing
-		icon = Generic_Naval_Helicopter
+		icon = maya
 
 		x = -2
 		y = 2
@@ -5436,10 +5556,10 @@ focus_tree = {
 	}
 
 	focus = {
-		id = CHI_the_renhai_cruiser #Create a design for a cruiser
-		icon = x
+		id = CHI_the_renhai_cruiser
+		icon = cruisers
 
-		x = -1
+		x = 0
 		y = 4
 		relative_position_id = CHI_liu_huaqing_first_island_chain
 
@@ -5448,12 +5568,56 @@ focus_tree = {
 		prerequisite = { focus = CHI_huludao_schoolhouse }
 		prerequisite = { focus = CHI_sea_eagles_of_the_liaoning }
 
-		avaiable = { is_special_project_completed = sp:sp_radar_jamming_module  }
+		available = { is_special_project_completed = sp:sp_radar_jamming_module }
 
 		search_filters = { FOCUS_FILTER_MILITARY }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_renhai_cruiser"
+			create_equipment_variant = {
+				name = "Type 055 Renhai"
+				type = cruiser_hull_5
+				allow_without_tech = yes
+				modules = {
+					fixed_ship_engine_slot = module_surface_jet_turbine_power4
+					fixed_ship_fire_control_system_slot = module_capital_digital_integrated_fire_control
+					fixed_ship_radar_slot = module_radar_5
+					fixed_ship_battery_slot = module_127mm_battery
+					fixed_ship_battery_slot_2 = module_vls_sam_4
+					fixed_ship_battery_slot_3 = module_vls_asm_4
+					fixed_ship_battery_slot_4 = module_vls_lam_4
+					front_1_custom_slot = module_vls_sam_4
+					front_2_custom_slot = module_vls_asm_4
+					mid_1_custom_slot = module_ciws_4
+					mid_2_custom_slot = module_anti_submarine_missile_4
+					rear_1_custom_slot = module_vls_lam_4
+					rear_2_custom_slot = module_light_helipad_2
+				}
+				icon = "gfx/interface/technologies/CHI/NAV/055.dds"
+				design_team = mio:CHI_cssc_manufacturer
+			}
+			add_equipment_production = {
+				equipment = {
+					version_name = "Type 055 Renhai"
+					type = cruiser_hull_5
+				}
+				amount = 1
+				progress = 0.10
+				requested_factories = 2
+			}
+			random_owned_state = {
+				limit = { is_coastal = yes }
+				add_building_construction = {
+					type = dockyard
+					level = 3
+					instant_build = yes
+				}
+				add_extra_state_shared_building_slots = 3
+			}
+			mio:CHI_cssc_manufacturer = { add_mio_funds = 2000 add_mio_task_capacity = 1 }
+			newline = yes
+			set_temp_variable = { treasury_change = -40 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -5463,7 +5627,7 @@ focus_tree = {
 		id = CHI_shandong_at_sanya
 		icon = future_carrier
 
-		x = 0
+		x = -1
 		y = 3
 		relative_position_id = CHI_the_sovremenny_bridge
 
@@ -5498,9 +5662,9 @@ focus_tree = {
 
 	focus = {
 		id = CHI_the_fujian_catapults
-		icon = cruisers
+		icon = carriers2
 
-		x = -3
+		x = -1
 		y = 5
 		relative_position_id = CHI_liu_huaqing_first_island_chain
 
@@ -5525,9 +5689,9 @@ focus_tree = {
 
 	focus = {
 		id = CHI_the_type_075_yushen
-		icon = cruisers
+		icon = hyuga
 
-		x = 2
+		x = 1
 		y = 5
 		relative_position_id = CHI_liu_huaqing_first_island_chain
 
@@ -5545,7 +5709,36 @@ focus_tree = {
 			add_to_variable = { CHI_navy_naval_coordination = 0.03 tooltip = naval_coordination_tt }
 			newline = yes
 			add_tech_bonus = { name = CHI_the_type_075_yushen bonus = 0.25 uses = 1 category = CAT_helicopter_operators }
+			create_equipment_variant = {
+				name = "Type 075 Yushen"
+				type = helicopter_operator_hull_4
+				allow_without_tech = yes
+				modules = {
+					fixed_ship_engine_slot = module_surface_jet_turbine_power3
+					fixed_ship_fire_control_system_slot = module_digital_integrated_fire_control
+					fixed_ship_radar_slot = module_radar_4
+					fixed_ship_auxillary_slot_3 = module_fuel_tank
+					fixed_ship_auxillary_slot_2 = module_ram_4
+					fixed_ship_auxillary_slot = module_ram_4
+					fixed_ship_battery_slot = module_light_flight_deck_3
+					front_1_custom_slot = module_helipads_2
+					mid_1_custom_slot = module_helipads_2
+					rear_1_custom_slot = module_fuel_tank
+				}
+				icon = "gfx/interface/technologies/CHI/NAV/075.dds"
+				design_team = mio:CHI_cssc_manufacturer
+			}
+			add_equipment_production = {
+				equipment = {
+					version_name = "Type 075 Yushen"
+					type = helicopter_operator_hull_4
+				}
+				amount = 1
+				progress = 0.10
+				requested_factories = 1
+			}
 			mio:CHI_cssc_manufacturer = { add_mio_funds = 2000 }
+			newline = yes
 			set_temp_variable = { treasury_change = -30 }
 			modify_treasury_effect = yes
 		}
@@ -5555,7 +5748,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_the_quiet_dragons
-		icon = cruisers
+		icon = submarines
 
 		x = 0
 		y = 1
@@ -5572,10 +5765,8 @@ focus_tree = {
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_navy_modifier }
 			add_to_variable = { CHI_navy_navy_submarine_detection_factor = 0.08 tooltip = navy_submarine_detection_factor_tt }
 			newline = yes
-			add_tech_bonus = { name = CHI_the_quiet_dragons bonus = 0.25 uses = 1 category = CAT_nuke_sub }
+			add_tech_bonus = { name = CHI_the_quiet_dragons bonus = 0.25 uses = 1 category = CAT_sub }
 			mio:CHI_csic_manufacturer = { add_mio_funds = 2000 }
-			set_temp_variable = { treasury_change = -35 }
-			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -5583,7 +5774,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_the_bohai_bastion
-		icon = cruisers
+		icon = Generic_Submarine3
 
 		x = 0
 		y = 1
@@ -5604,8 +5795,9 @@ focus_tree = {
 			add_tech_bonus = { name = CHI_the_bohai_bastion bonus = 0.25 uses = 1 category = CAT_m_sub }
 			552 = {
 				add_building_construction = { type = dockyard level = 2 instant_build = yes }
+				add_extra_state_shared_building_slots = 2
 			}
-			set_temp_variable = { treasury_change = -40 }
+			set_temp_variable = { treasury_change = -17 }
 			modify_treasury_effect = yes
 		}
 
@@ -5614,7 +5806,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_undersea_supremacy
-		icon = cruisers
+		icon = wolfpacks
 
 		x = 0
 		y = 2
@@ -5630,14 +5822,11 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_undersea_supremacy"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_navy_modifier }
-			add_to_variable = { CHI_navy_navy_submarine_detection_factor = 0.10 tooltip = navy_submarine_detection_factor_tt }
-			add_to_variable = { CHI_navy_naval_coordination = 0.04 tooltip = naval_coordination_tt }
+			add_to_variable = { CHI_navy_naval_torpedo_reveal_chance_factor = -0.10 tooltip = naval_torpedo_reveal_chance_factor_tt }
+			add_to_variable = { CHI_navy_navy_submarine_attack_factor = 0.10 tooltip = navy_submarine_attack_factor_tt }
+			add_to_variable = { CHI_navy_guerre_de_course_mastery_gain_factor = 0.10 tooltip = guerre_de_course_mastery_gain_factor_tt }
 			newline = yes
-			navy_experience = 20
-			add_tech_bonus = { name = CHI_undersea_supremacy bonus = 0.25 uses = 1 category = CAT_sub }
 			mio:CHI_csic_manufacturer = { add_mio_funds = 2000 add_mio_task_capacity = 1 }
-			set_temp_variable = { treasury_change = -45 }
-			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -5645,7 +5834,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_the_surface_capital_fleet
-		icon = cruisers
+		icon = focus_SMB_blue_water_fleet
 
 		x = 0
 		y = 2
@@ -5661,30 +5850,33 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_surface_capital_fleet"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_navy_modifier }
-			add_to_variable = { CHI_navy_navy_anti_air_attack_factor = 0.08 tooltip = navy_anti_air_attack_factor_tt }
-			add_to_variable = { CHI_navy_navy_org_factor = 0.05 tooltip = navy_org_factor_tt }
-			add_to_variable = { CHI_navy_naval_coordination = 0.04 tooltip = naval_coordination_tt }
+			add_to_variable = { CHI_navy_naval_coordination = 0.10 tooltip = naval_coordination_tt }
+			add_to_variable = { CHI_navy_blue_water_mastery_gain_factor = 0.05 tooltip = blue_water_mastery_gain_factor_tt }
+			add_to_variable = { CHI_navy_screening_without_screens = 0.05 tooltip = screening_without_screens_tt }
 			newline = yes
-			navy_experience = 20
-			add_tech_bonus = { name = CHI_the_surface_capital_fleet bonus = 0.25 uses = 1 category = CAT_surface_ship }
 			mio:CHI_cssc_manufacturer = { add_mio_funds = 2000 add_mio_task_capacity = 1 }
-			set_temp_variable = { treasury_change = -45 }
-			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
 	}
 	focus = {
 		id = CHI_two_ocean_fleet
-		icon = cruisers
+		icon = focus_PRC_the_pla_naval_school
 
-		x = -2
+		x = -1
 		y = 3
 		relative_position_id = CHI_the_type_075_yushen
 
 		cost = 10
 
 		prerequisite = { focus = CHI_the_surface_capital_fleet focus = CHI_undersea_supremacy }
+
+		available = {
+			naval_strength_ratio = {
+				tag = USA
+				ratio > 0.75
+			}
+		}
 
 		search_filters = { FOCUS_FILTER_MILITARY }
 
@@ -5696,24 +5888,20 @@ focus_tree = {
 			add_to_variable = { CHI_navy_naval_morale_factor = 0.05 tooltip = naval_morale_factor_tt }
 			add_to_variable = { CHI_navy_naval_coordination = 0.05 tooltip = naval_coordination_tt }
 			newline = yes
-			navy_experience = 25
-			add_tech_bonus = { name = CHI_two_ocean_fleet bonus = 0.25 uses = 1 category = CAT_naval_all }
 			if = {
 				limit = { has_completed_focus = CHI_undersea_supremacy }
 				newline = yes
-				custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_navy_modifier }
 				add_to_variable = { CHI_navy_navy_submarine_detection_factor = 0.05 tooltip = navy_submarine_detection_factor_tt }
+				newline = yes
 				mio:CHI_csic_manufacturer = { add_mio_funds = 2000 }
 			}
 			else_if = {
 				limit = { has_completed_focus = CHI_the_surface_capital_fleet }
 				newline = yes
-				custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_navy_modifier }
 				add_to_variable = { CHI_navy_navy_anti_air_attack_factor = 0.05 tooltip = navy_anti_air_attack_factor_tt }
+				newline = yes
 				mio:CHI_cssc_manufacturer = { add_mio_funds = 2000 }
 			}
-			set_temp_variable = { treasury_change = -60 }
-			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
