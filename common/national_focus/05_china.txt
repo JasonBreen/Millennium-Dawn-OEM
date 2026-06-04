@@ -2456,7 +2456,7 @@ focus_tree = {
 
 		cost = 10
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_open_the_august_1st_building"
@@ -2481,7 +2481,7 @@ focus_tree = {
 	## Reform branch - Eat Imperial Grain
 	focus = {
 		id = CHI_eat_imperial_grain
-		icon = x
+		icon = focus_PRC_hundred_regiments_offensive
 
 		x = 4
 		y = 1
@@ -2492,17 +2492,18 @@ focus_tree = {
 		prerequisite = { focus = CHI_open_the_august_1st_building }
 		mutually_exclusive = { focus = CHI_the_poly_compromise }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_eat_imperial_grain"
 			add_ideas = CHI_divestiture_transition_idea
+			newline	= yes
 			set_temp_variable = { temp_opinion = 10 }
 			change_the_military_opinion = yes
 			set_temp_variable = { temp_opinion = -10 }
 			change_communist_cadres_opinion = yes
 			newline = yes
-			set_temp_variable = { treasury_change = -120 }
+			set_temp_variable = { treasury_change = -50 }
 			modify_treasury_effect = yes
 		}
 
@@ -2511,7 +2512,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_sasac
-		icon = x
+		icon = aviation_industry
 
 		x = -2
 		y = 0
@@ -2521,13 +2522,16 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_eat_imperial_grain }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_sasac"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
-			add_to_variable = { CHI_economy_corporate_tax_income_multiplier_modifier = 0.05 tooltip = corporate_tax_income_multiplier_modifier_tt }
-			add_to_variable = { CHI_economy_civilian_industry_tax_modifier = 0.05 tooltip = civilian_industry_tax_modifier_tt }
+			add_to_variable = { CHI_di_industrial_capacity_factory = 0.05 tooltip = industrial_capacity_factory_tt }
+			add_to_variable = { CHI_di_production_cost_arms_factory_factor = -0.05 tooltip = production_cost_arms_factory_factor_tt }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
+			add_to_variable = { CHI_di_military_industry_tax_modifier = -0.05 tooltip = military_industry_tax_modifier_tt }
 		}
 
 		ai_will_do = { base = 1 }
@@ -2535,7 +2539,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_fifty_vanke_handover
-		icon = x
+		icon = industry_military
 
 		x = -2
 		y = 1
@@ -2545,15 +2549,16 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_eat_imperial_grain }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_fifty_vanke_handover"
-			CHI = { country_event = { id = CHI_military_event.1 days = 2 } }
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_production_speed_buildings_factor = 0.05 tooltip = production_speed_buildings_factor_tt }
 			newline = yes
-			set_temp_variable = { treasury_change = 200 }
+			two_random_arms_factory = yes
+			newline = yes
+			set_temp_variable = { treasury_change = -50 }
 			modify_treasury_effect = yes
 		}
 
@@ -2582,7 +2587,7 @@ focus_tree = {
 			focus = CHI_the_poly_compromise
 		}
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			add_dynamic_modifier = { modifier = CHI_landforce_modifier }
@@ -2609,7 +2614,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_eat_imperial_grain }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_nco_corps_reform"
@@ -2628,7 +2633,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_establish_defence_conglomerates
-		icon = x
+		icon = industrialization
 
 		x = 1
 		y = 1
@@ -2639,7 +2644,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_sasac }
 		prerequisite = { focus = CHI_fifty_vanke_handover }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		available = {
 			custom_trigger_tooltip = {
@@ -2654,6 +2659,10 @@ focus_tree = {
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
 			add_to_variable = { CHI_di_industrial_capacity_factory = 0.05 tooltip = industrial_capacity_factory_tt }
 			add_to_variable = { CHI_di_production_speed_arms_factory_factor = 0.10 tooltip = production_speed_arms_factory_factor_tt }
+			add_to_variable = { CHI_di_military_industry_tax_modifier = -0.05 tooltip = military_industry_tax_modifier_tt }
+			newline = yes
+			set_temp_variable = { treasury_change = -100 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -2671,7 +2680,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_nco_corps_reform }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_above_the_neck_reform"
@@ -2695,7 +2704,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_nco_corps_reform }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_below_the_neck_disband"
@@ -2719,12 +2728,13 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_establish_defence_conglomerates }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_avic_reunification"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
 			add_to_variable = { CHI_di_military_factories_productivity = 0.05 tooltip = military_factories_productivity_tt }
+			add_to_variable = { CHI_di_military_industry_tax_modifier = -0.05 tooltip = military_industry_tax_modifier_tt }
 			newline = yes
 			add_tech_bonus = {
 				name = CHI_avic_reunification
@@ -2738,6 +2748,9 @@ focus_tree = {
 				uses = 1
 				category = CAT_avionics
 			}
+			newline = yes
+			set_temp_variable = { treasury_change = -75 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -2755,12 +2768,13 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_establish_defence_conglomerates }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_norinco_rationalism"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
 			add_to_variable = { CHI_di_production_factory_efficiency_gain_factor = 0.05 tooltip = production_factory_efficiency_gain_factor_tt }
+			add_to_variable = { CHI_di_military_industry_tax_modifier = -0.05 tooltip = military_industry_tax_modifier_tt }
 			newline = yes
 			add_tech_bonus = {
 				name = CHI_norinco_rationalism
@@ -2774,6 +2788,9 @@ focus_tree = {
 				uses = 1
 				category = CAT_arty
 			}
+			newline = yes
+			set_temp_variable = { treasury_change = -75 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -2791,7 +2808,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_establish_defence_conglomerates }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_own_designs"
@@ -2800,6 +2817,9 @@ focus_tree = {
 			newline = yes
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
 			add_to_variable = { CHI_di_production_factory_efficiency_gain_factor = 0.05 tooltip = production_factory_efficiency_gain_factor_tt }
+			newline = yes
+			set_temp_variable = { treasury_change = -50 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -2817,7 +2837,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_avic_reunification }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_ws15_bottleneck_solve"
@@ -2845,12 +2865,15 @@ focus_tree = {
 		prerequisite = { focus = CHI_avic_reunification }
 		prerequisite = { focus = CHI_norinco_rationalism }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_jiangnan_scale"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_dockyard_output_factor = 0.05 tooltip = industrial_capacity_dockyard_tt }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
+			add_to_variable = { CHI_di_military_industry_tax_modifier = -0.05 tooltip = military_industry_tax_modifier_tt }
 			newline = yes
 			add_tech_bonus = {
 				name = CHI_jiangnan_scale
@@ -2864,6 +2887,9 @@ focus_tree = {
 				uses = 1
 				category = CAT_carrier
 			}
+			newline = yes
+			set_temp_variable = { treasury_change = -75 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -2881,7 +2907,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_norinco_rationalism focus = CHI_own_designs }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_central_military_civil_fusion"
@@ -2891,6 +2917,7 @@ focus_tree = {
 			newline = yes
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
 			add_to_variable = { CHI_di_production_factory_max_efficiency_factor = 0.05 tooltip = production_factory_max_efficiency_factor_tt }
+			add_to_variable = { CHI_di_military_industry_tax_modifier = -0.05 tooltip = military_industry_tax_modifier_tt }
 		}
 
 		ai_will_do = { base = 1 }
@@ -2908,7 +2935,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_ws15_bottleneck_solve }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_original_innovation_problem"
@@ -2933,7 +2960,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_central_military_civil_fusion }
 		prerequisite = { focus = CHI_jiangnan_scale }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_rare_earth_leverage"
@@ -2960,7 +2987,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_above_the_neck_reform }
 		prerequisite = { focus = CHI_below_the_neck_disband }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_joint_operations_command"
@@ -2971,6 +2998,9 @@ focus_tree = {
 			newline = yes
 			set_country_flag = CHI_theatre_commands_unlocked
 			unlock_decision_tooltip = CHI_establish_theatre_command
+			newline = yes
+			set_temp_variable = { treasury_change = -25 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -2988,7 +3018,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_joint_operations_command }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_train_as_you_fight"
@@ -3012,7 +3042,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_joint_operations_command }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_train_generals"
@@ -3037,13 +3067,16 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_joint_operations_command }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_military_training_outline"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_landforce_modifier }
 			add_to_variable = { CHI_land_army_attack_factor = 0.05 tooltip = army_attack_factor_tt }
 			add_to_variable = { CHI_land_army_defence_factor = 0.05 tooltip = army_defence_factor_tt }
+			newline = yes
+			set_temp_variable = { treasury_change = -25 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -3061,7 +3094,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_military_training_outline }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_army_reorganisation"
@@ -3085,7 +3118,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_military_training_outline }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_system_of_systems_operations"
@@ -3101,7 +3134,7 @@ focus_tree = {
 	## Corruption branch - The Poly Compromise
 	focus = {
 		id = CHI_the_poly_compromise
-		icon = x
+		icon = focus_PRC_yanan_rectification_movement
 
 		x = 13
 		y = 1
@@ -3112,11 +3145,10 @@ focus_tree = {
 		prerequisite = { focus = CHI_open_the_august_1st_building }
 		mutually_exclusive = { focus = CHI_eat_imperial_grain }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_poly_compromise"
-			set_country_flag = CHI_pla_business_active
 			set_variable = { CHI_pla_business_income = 30 }
 			set_variable = { CHI_pla_business_treasury = 0 }
 			custom_effect_tooltip = CHI_pla_business_ventures_tt
@@ -3152,7 +3184,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_poly_compromise }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_keep_the_shell_companies"
@@ -3162,6 +3194,7 @@ focus_tree = {
 			newline = yes
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
 			add_to_variable = { CHI_di_military_factories_productivity = -0.05 tooltip = military_factories_productivity_tt }
+			add_to_variable = { CHI_di_mio_research_bonus = 0.05 tooltip = military_industrial_organization_research_bonus_tt }
 			newline = yes
 			add_to_variable = { CHI_pla_business_income = 10 }
 		}
@@ -3181,12 +3214,15 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_poly_compromise }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_smuggling_tax"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_landforce_modifier }
 			add_to_variable = { CHI_land_army_morale_factor = -0.03 tooltip = army_morale_factor_tt }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
+			add_to_variable = { CHI_di_mio_industrial_manufacturer_assign_cost = -0.10 tooltip = military_industrial_organization_industrial_manufacturer_assign_cost_tt }
 			newline = yes
 			add_to_variable = { CHI_pla_business_income = 15 }
 			newline = yes
@@ -3209,7 +3245,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_poly_compromise }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_ranks_for_sale"
@@ -3217,6 +3253,9 @@ focus_tree = {
 			add_to_variable = { CHI_land_army_leader_cost_factor = -0.15 tooltip = army_leader_cost_factor_tt }
 			add_to_variable = { CHI_land_army_morale_factor = -0.08 tooltip = army_morale_factor_tt }
 			add_to_variable = { CHI_land_experience_gain_army_factor = -0.05 tooltip = experience_gain_army_factor_tt }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
+			add_to_variable = { CHI_di_mio_design_team_assign_cost = -0.15 tooltip = military_industrial_organization_design_team_assign_cost_tt }
 			newline = yes
 			set_temp_variable = { treasury_change = 120 }
 			modify_treasury_effect = yes
@@ -3237,12 +3276,15 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_poly_compromise }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_northeast_tiger"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_political_power_factor = 0.05 tooltip = political_power_factor_tt }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
+			add_to_variable = { CHI_di_mio_task_capacity = 1 tooltip = military_industrial_organization_task_capacity_tt }
 			newline = yes
 			set_country_flag = CHI_clique_management_unlocked
 		}
@@ -3262,7 +3304,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_keep_the_shell_companies }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		available = {
 			custom_trigger_tooltip = {
@@ -3279,6 +3321,7 @@ focus_tree = {
 			newline = yes
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
 			add_to_variable = { CHI_di_production_factory_efficiency_gain_factor = -0.05 tooltip = production_factory_efficiency_gain_factor_tt }
+			add_to_variable = { CHI_di_mio_funds_gain = 0.05 tooltip = military_industrial_organization_funds_gain_tt }
 			newline = yes
 			add_to_variable = { CHI_pla_business_income = 25 }
 		}
@@ -3299,12 +3342,15 @@ focus_tree = {
 		prerequisite = { focus = CHI_keep_the_shell_companies }
 		prerequisite = { focus = CHI_smuggling_tax }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_arms_for_influence"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_trade_opinion_factor = 0.05 tooltip = trade_opinion_factor_tt }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
+			add_to_variable = { CHI_di_mio_industrial_manufacturer_assign_cost = -0.10 tooltip = military_industrial_organization_industrial_manufacturer_assign_cost_tt }
 			newline = yes
 			set_country_flag = CHI_arms_for_influence_unlocked
 			unlock_decision_tooltip = CHI_arms_for_influence_offer
@@ -3325,12 +3371,13 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_smuggling_tax }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_yuanhua_model"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
 			add_to_variable = { CHI_di_military_factories_productivity = -0.05 tooltip = military_factories_productivity_tt }
+			add_to_variable = { CHI_di_mio_design_team_change_cost = -0.10 tooltip = military_industrial_organization_design_team_change_cost_tt }
 			newline = yes
 			add_to_variable = { CHI_pla_business_income = 15 }
 			newline = yes
@@ -3353,7 +3400,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_northeast_tiger }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_beijing_command_clique"
@@ -3362,6 +3409,9 @@ focus_tree = {
 			newline = yes
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_landforce_modifier }
 			add_to_variable = { CHI_land_military_leader_cost_factor = -0.10 tooltip = military_leader_cost_factor_tt }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
+			add_to_variable = { CHI_di_mio_task_capacity = 1 tooltip = military_industrial_organization_task_capacity_tt }
 		}
 
 		ai_will_do = { base = 1 }
@@ -3379,7 +3429,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_yuanhua_model }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		available = {
 			custom_trigger_tooltip = {
@@ -3390,11 +3440,9 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_money_alliance"
-			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
-			add_to_variable = { CHI_economy_civilian_factories_productivity = 0.05 tooltip = civilian_factories_productivity_tt }
-			newline = yes
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
 			add_to_variable = { CHI_di_military_factories_productivity = -0.05 tooltip = military_factories_productivity_tt }
+			add_to_variable = { CHI_di_mio_design_team_change_cost = -0.15 tooltip = military_industrial_organization_design_team_change_cost_tt }
 			newline = yes
 			add_to_variable = { CHI_pla_business_income = 20 }
 			set_country_flag = CHI_money_alliance_done
@@ -3415,7 +3463,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_money_alliance }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_guatian_reckoning"
@@ -3437,7 +3485,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_money_alliance }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_bow_to_china_dream"
@@ -3462,7 +3510,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_beijing_command_clique }
 		prerequisite = { focus = CHI_money_alliance }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		available = {
 			custom_trigger_tooltip = {
@@ -3474,11 +3522,13 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_warlord_temptation"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_landforce_modifier }
-			add_to_variable = { CHI_land_max_command_power_mult = 0.10 tooltip = max_command_power_mult_tt }
 			add_to_variable = { CHI_land_army_org_factor = -0.05 tooltip = army_org_factor_tt }
 			newline = yes
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_political_power_factor = -0.05 tooltip = political_power_factor_tt }
+			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
+			add_to_variable = { CHI_di_mio_size_up_requirement = -0.10 tooltip = military_industrial_organization_size_up_requirement_tt }
 			newline = yes
 			add_to_variable = { CHI_pla_business_income = 30 }
 		}
@@ -3499,7 +3549,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_open_the_august_1st_building }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_streamline_the_ranks"
@@ -3536,7 +3586,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_streamline_the_ranks }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_informatized_local_wars"
@@ -3564,7 +3614,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_streamline_the_ranks }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_combat_engineer_modernisation"
@@ -3605,7 +3655,7 @@ focus_tree = {
 			}
 		}
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_tactical_electronic_warfare"
@@ -3664,7 +3714,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_streamline_the_ranks }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_type_95_adoption"
@@ -3689,7 +3739,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_type_95_adoption }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_qbz191_rifle"
@@ -3728,7 +3778,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_type_95_adoption }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		available = {
 			has_tech = cnc_equipment_5
@@ -3761,7 +3811,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_type_95_adoption }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_red_arrow_program"
@@ -3811,7 +3861,7 @@ focus_tree = {
 			}
 		}
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_tactical_uav_integration"
@@ -3835,7 +3885,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_streamline_the_ranks }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_plz_howitzer_program"
@@ -3895,7 +3945,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_plz_howitzer_program }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_artillery_modernisation"
@@ -3925,7 +3975,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_plz_howitzer_program }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_phl_mlrs_modernisation"
@@ -3959,7 +4009,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_artillery_modernisation }
 		prerequisite = { focus = CHI_phl_mlrs_modernisation }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_hq17_short_range_sam"
@@ -3988,7 +4038,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_hq17_short_range_sam }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_hq17_medium_range_air_defense"
@@ -4020,7 +4070,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_hq17_short_range_sam }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_pgz_gun_missile_hybrid"
@@ -4047,7 +4097,7 @@ focus_tree = {
 		mutually_exclusive = { focus = CHI_the_iron_fist }
 		mutually_exclusive = { focus = CHI_the_sharp_blade }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_great_wall"
@@ -4076,7 +4126,7 @@ focus_tree = {
 		mutually_exclusive = { focus = CHI_the_great_wall }
 		mutually_exclusive = { focus = CHI_the_sharp_blade }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_iron_fist"
@@ -4104,7 +4154,7 @@ focus_tree = {
 		mutually_exclusive = { focus = CHI_the_great_wall }
 		mutually_exclusive = { focus = CHI_the_iron_fist }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_sharp_blade"
@@ -4130,7 +4180,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_great_wall }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_strategic_reserve_system"
@@ -4156,7 +4206,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_great_wall }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_peoples_armed_police_integration"
@@ -4182,7 +4232,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_strategic_reserve_system }
 		prerequisite = { focus = CHI_peoples_armed_police_integration }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_active_defense_doctrine"
@@ -4214,7 +4264,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_active_defense_doctrine }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_underground_great_wall"
@@ -4235,7 +4285,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_iron_fist }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_ztz99_rollout"
@@ -4264,7 +4314,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_iron_fist }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_heavy_combined_arms_brigade"
@@ -4292,7 +4342,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_ztz99_rollout }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_zbd_mechanisation"
@@ -4317,7 +4367,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_heavy_combined_arms_brigade }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_long_range_firepower"
@@ -4341,7 +4391,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_sharp_blade }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_type_15_light_tank"
@@ -4376,7 +4426,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_type_15_light_tank }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_army_aviation_corps"
@@ -4428,7 +4478,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_sharp_blade }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_special_operations_forces"
@@ -4459,7 +4509,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_special_operations_forces }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_rapid_reaction_corps"
@@ -4484,7 +4534,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_streamline_the_ranks }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_ztz96_mainstreaming"
@@ -4514,7 +4564,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_ztz96_mainstreaming }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_ztz99a_apex"
@@ -4569,7 +4619,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_ztz96_mainstreaming }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_mengshi_program"
@@ -4596,7 +4646,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_mengshi_program }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_logistic_modernisation"
@@ -4620,7 +4670,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_streamline_the_ranks }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_zbd04_apex_ifv"
@@ -4677,7 +4727,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_zbd04_apex_ifv }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_zb108_wheeled_family"
@@ -4711,7 +4761,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_open_the_august_1st_building }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_integrated_air_and_space"
@@ -4739,7 +4789,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_integrated_air_and_space }
 		mutually_exclusive = { focus = CHI_the_self_reliant_path }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_komsomolsk_pipeline"
@@ -4781,7 +4831,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_integrated_air_and_space }
 		mutually_exclusive = { focus = CHI_the_komsomolsk_pipeline }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_self_reliant_path"
@@ -4824,7 +4874,7 @@ focus_tree = {
 			}
 		}
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_j11b_sinification"
@@ -4886,7 +4936,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_self_reliant_path }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_project_no_10"
@@ -4944,7 +4994,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_j11b_sinification focus = CHI_project_no_10 }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_saturn_engine_crisis"
@@ -4986,7 +5036,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_saturn_engine_crisis }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_project_jxx"
@@ -5023,7 +5073,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_saturn_engine_crisis }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_998_project"
@@ -5051,7 +5101,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_saturn_engine_crisis }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_kj2000_mainring_awacs"
@@ -5077,7 +5127,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_project_jxx }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_j10c_multirole_refit"
@@ -5139,7 +5189,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_project_jxx }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_shenyang_j35_gyrfalcon"
@@ -5219,7 +5269,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_998_project }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_h6k_revival"
@@ -5279,7 +5329,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_h6k_revival }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_yj12_standoff_family"
@@ -5305,7 +5355,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_h6k_revival }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_jh7a_update"
@@ -5366,7 +5416,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_yj12_standoff_family }
 		prerequisite = { focus = CHI_jh7a_update }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_j16_strike_platform"
@@ -5427,7 +5477,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_j16_strike_platform }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_cj10_cj20_cruise_missile_family"
@@ -5453,7 +5503,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_j10c_multirole_refit }
 		prerequisite = { focus = CHI_shenyang_j35_gyrfalcon }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		available = {
 			has_tech = suicide_drone_1
@@ -5486,7 +5536,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_cj10_cj20_cruise_missile_family }
 		prerequisite = { focus = CHI_the_sharp_sword_doctrine }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_hypersonic_strike_integration"
@@ -5513,7 +5563,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_kj2000_mainring_awacs }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_kj500_network_centric_hub"
@@ -5539,7 +5589,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_kj2000_mainring_awacs }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_tanker_gap"
@@ -5564,7 +5614,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_kj2000_mainring_awacs }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_y20_strategic_lift_program"
@@ -5591,7 +5641,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_kj500_network_centric_hub }
 		prerequisite = { focus = CHI_the_tanker_gap }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_pterodactyl_generation"
@@ -5618,7 +5668,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_the_tanker_gap }
 		prerequisite = { focus = CHI_y20_strategic_lift_program }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_soaring_dragon"
@@ -5645,7 +5695,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_the_pterodactyl_generation }
 		prerequisite = { focus = CHI_the_soaring_dragon }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_theaterization_of_command"
@@ -5672,7 +5722,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_theaterization_of_command }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_h20_programme"
@@ -5712,7 +5762,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_open_the_august_1st_building }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_liu_huaqing_first_island_chain"
@@ -5740,7 +5790,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_liu_huaqing_first_island_chain }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_project_998"
@@ -5768,7 +5818,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_liu_huaqing_first_island_chain }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_sovremenny_bridge"
@@ -5819,7 +5869,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_project_998 }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_yuan_and_the_shang"
@@ -5844,7 +5894,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_project_998 }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_jiangnan_changxing_move"
@@ -5877,7 +5927,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_sovremenny_bridge }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_flying_leopard_doctrine"
@@ -5904,7 +5954,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_sovremenny_bridge }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_yuzhao_pathfinders"
@@ -5931,7 +5981,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_yuan_and_the_shang }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_054a_production_line"
@@ -6001,7 +6051,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_yuan_and_the_shang }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_dragon_eye_over_lanzhou"
@@ -6026,7 +6076,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_jiangnan_changxing_move }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_varyag_refit"
@@ -6055,7 +6105,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_jiangnan_changxing_move }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_huludao_schoolhouse"
@@ -6079,7 +6129,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_flying_leopard_doctrine }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_sea_eagles_of_the_liaoning"
@@ -6141,7 +6191,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_flying_leopard_doctrine }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_sea_eagles_carrier_wing"
@@ -6163,7 +6213,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_yuzhao_pathfinders }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_yuzhao_hull_coral_brigades"
@@ -6188,7 +6238,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_yuzhao_pathfinders }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_type_901"
@@ -6215,7 +6265,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_dragon_eye_over_lanzhou }
 		prerequisite = { focus = CHI_the_varyag_refit }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_service_of_the_three_distances"
@@ -6243,7 +6293,7 @@ focus_tree = {
 
 		available = { is_special_project_completed = sp:sp_radar_jamming_module }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_renhai_cruiser"
@@ -6309,7 +6359,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_sea_eagles_carrier_wing }
 		prerequisite = { focus = CHI_yuzhao_hull_coral_brigades }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		available = {
 			has_navy_size = {
@@ -6346,7 +6396,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_service_of_the_three_distances }
 		prerequisite = { focus = CHI_the_renhai_cruiser }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_fujian_catapults"
@@ -6373,7 +6423,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_the_renhai_cruiser }
 		prerequisite = { focus = CHI_shandong_at_sanya }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_type_075_yushen"
@@ -6431,7 +6481,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_fujian_catapults }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_quiet_dragons"
@@ -6457,7 +6507,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_the_type_075_yushen }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_bohai_bastion"
@@ -6490,7 +6540,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_the_quiet_dragons }
 		mutually_exclusive = { focus = CHI_the_surface_capital_fleet }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_undersea_supremacy"
@@ -6518,7 +6568,7 @@ focus_tree = {
 		prerequisite = { focus = CHI_the_bohai_bastion }
 		mutually_exclusive = { focus = CHI_undersea_supremacy }
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_the_surface_capital_fleet"
@@ -6551,7 +6601,7 @@ focus_tree = {
 			}
 		}
 
-		search_filters = { FOCUS_FILTER_MILITARY }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_two_ocean_fleet"
@@ -8144,7 +8194,7 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_Disengage_from_Pakistan }
 
-		search_filters = { FOCUS_FILTER_MILITARY_COOPERATION }
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
 		completion_reward = {
 			set_country_flag = CHI_pak_joint_exercises_ended
