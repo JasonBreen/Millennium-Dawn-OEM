@@ -9351,6 +9351,8 @@ CHI_industrial_investment_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision CHI_mature_node_export_drive_decision executed"
+			set_temp_variable = { CHI_semi_progress_amount = 2 }
+			CHI_add_semiconductor_progress = yes
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_trade_opinion_factor = 0.01 tooltip = trade_opinion_factor_tt }
 			add_to_variable = { CHI_mature_node_export_stacks = 1 }
@@ -9394,6 +9396,8 @@ CHI_industrial_investment_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision CHI_fabless_provincial_subsidy_decision executed"
+			set_temp_variable = { CHI_semi_progress_amount = 2 }
+			CHI_add_semiconductor_progress = yes
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_civilian_factories_productivity = 0.01 tooltip = civilian_factories_productivity_tt }
 			add_to_variable = { CHI_fabless_subsidy_stacks = 1 }
@@ -9432,6 +9436,8 @@ CHI_industrial_investment_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision CHI_replace_synopsys_cadence_decision executed"
+			set_temp_variable = { CHI_semi_progress_amount = 6 }
+			CHI_add_semiconductor_progress = yes
 			add_tech_bonus = {
 				name = CHI_replace_synopsys_cadence_decision
 				bonus = 0.15
@@ -9473,6 +9479,8 @@ CHI_industrial_investment_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision CHI_duv_breakthrough_decision executed"
+			set_temp_variable = { CHI_semi_progress_amount = 6 }
+			CHI_add_semiconductor_progress = yes
 			set_country_flag = CHI_smee_breakthrough_attempted
 			random_list = {
 				60 = {
@@ -9578,6 +9586,8 @@ CHI_industrial_investment_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision CHI_cxmt_hbm_qualification_decision executed"
+			set_temp_variable = { CHI_semi_progress_amount = 6 }
+			CHI_add_semiconductor_progress = yes
 			add_tech_bonus = {
 				name = CHI_cxmt_hbm_qualification_decision
 				bonus = 0.10
@@ -9629,6 +9639,8 @@ CHI_industrial_investment_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision CHI_big_fund_iii_allocate_tranche_decision executed"
+			set_temp_variable = { CHI_semi_progress_amount = 2 }
+			CHI_add_semiconductor_progress = yes
 			one_random_microchip_plant = yes
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_production_factory_max_efficiency_factor = 0.02 tooltip = production_factory_max_efficiency_factor_tt }
@@ -9647,6 +9659,44 @@ CHI_industrial_investment_category = {
 			modifier = {
 				factor = 0
 				has_political_power < 50
+			}
+		}
+	}
+
+	CHI_rare_earth_chip_leverage_decision = {
+		icon = x
+		allowed = { original_tag = CHI }
+		fire_only_once = yes
+
+		visible = {
+			has_completed_focus = CHI_strategic_materials
+		}
+
+		available = {
+			country_exists = USA
+			has_political_power > 119
+		}
+
+		cost = 120
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_rare_earth_chip_leverage_decision executed"
+			USA = { country_event = { id = CHI_semiconductor_events.5 days = 3 } }
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			custom_effect_tooltip = CHI_rare_earth_leverage_accept_tt
+			custom_effect_tooltip = TT_IF_THEY_REJECT
+			custom_effect_tooltip = CHI_rare_earth_leverage_reject_tt
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+			modifier = {
+				factor = 0
+				has_political_power < 120
 			}
 		}
 	}
@@ -10112,7 +10162,6 @@ CHI_military_decisions_category = {
 			log = "[GetDateText]: [Root.GetName]: Decision CHI_rein_in_cliques executed"
 			subtract_from_variable = { CHI_pla_business_income = 5 }
 			clamp_variable = { var = CHI_pla_business_income min = 0 max = 500 }
-			add_stability = 0.03
 		}
 
 		ai_will_do = { base = 1 }

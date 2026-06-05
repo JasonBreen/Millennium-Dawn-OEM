@@ -1157,3 +1157,76 @@ CHI_uighur_monthly_tick = {
 		}
 	}
 }
+
+# Semiconductor boycott self-reliance — adds the temp amount CHI_semi_progress_amount to the
+# running self-reliance score (0-100), then re-evaluates which backwardness tier China sits in.
+CHI_add_semiconductor_progress = {
+	add_to_variable = { var = CHI_semiconductor_self_reliance value = CHI_semi_progress_amount }
+	clamp_variable = { var = CHI_semiconductor_self_reliance min = 0 max = 100 }
+	custom_effect_tooltip = CHI_semiconductor_progress_tt
+	CHI_evaluate_semiconductor_boycott = yes
+}
+
+# Swaps the CHI_semiconductor_backwardness idea down a tier (or removes it) once self-reliance
+# crosses a threshold. Idempotent: each branch only acts on the tier actually held, and jumps
+# straight to the correct tier so a large single gain (e.g. the leverage event) skips levels.
+CHI_evaluate_semiconductor_boycott = {
+	if = {
+		limit = {
+			has_idea = CHI_semiconductor_backwardness
+			check_variable = { CHI_semiconductor_self_reliance > 24 }
+		}
+		if = {
+			limit = { check_variable = { CHI_semiconductor_self_reliance > 99 } }
+			remove_ideas = CHI_semiconductor_backwardness
+		}
+		else_if = {
+			limit = { check_variable = { CHI_semiconductor_self_reliance > 74 } }
+			swap_ideas = { remove_idea = CHI_semiconductor_backwardness add_idea = CHI_semiconductor_backwardness_4 }
+		}
+		else_if = {
+			limit = { check_variable = { CHI_semiconductor_self_reliance > 49 } }
+			swap_ideas = { remove_idea = CHI_semiconductor_backwardness add_idea = CHI_semiconductor_backwardness_3 }
+		}
+		else = {
+			swap_ideas = { remove_idea = CHI_semiconductor_backwardness add_idea = CHI_semiconductor_backwardness_2 }
+		}
+	}
+	else_if = {
+		limit = {
+			has_idea = CHI_semiconductor_backwardness_2
+			check_variable = { CHI_semiconductor_self_reliance > 49 }
+		}
+		if = {
+			limit = { check_variable = { CHI_semiconductor_self_reliance > 99 } }
+			remove_ideas = CHI_semiconductor_backwardness_2
+		}
+		else_if = {
+			limit = { check_variable = { CHI_semiconductor_self_reliance > 74 } }
+			swap_ideas = { remove_idea = CHI_semiconductor_backwardness_2 add_idea = CHI_semiconductor_backwardness_4 }
+		}
+		else = {
+			swap_ideas = { remove_idea = CHI_semiconductor_backwardness_2 add_idea = CHI_semiconductor_backwardness_3 }
+		}
+	}
+	else_if = {
+		limit = {
+			has_idea = CHI_semiconductor_backwardness_3
+			check_variable = { CHI_semiconductor_self_reliance > 74 }
+		}
+		if = {
+			limit = { check_variable = { CHI_semiconductor_self_reliance > 99 } }
+			remove_ideas = CHI_semiconductor_backwardness_3
+		}
+		else = {
+			swap_ideas = { remove_idea = CHI_semiconductor_backwardness_3 add_idea = CHI_semiconductor_backwardness_4 }
+		}
+	}
+	else_if = {
+		limit = {
+			has_idea = CHI_semiconductor_backwardness_4
+			check_variable = { CHI_semiconductor_self_reliance > 99 }
+		}
+		remove_ideas = CHI_semiconductor_backwardness_4
+	}
+}

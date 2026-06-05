@@ -11448,7 +11448,7 @@ country_event = {
 	fire_only_once = yes
 
 	option = {
-		name = CHI_semiconductor_events.1.o1 ### So the boycot needs to be transfered to an idea
+		name = CHI_semiconductor_events.1.o1
 		log = "[GetDateText]: [Root.GetName]: CHI_semiconductor_events.1.o1"
 
 		USA = {
@@ -11458,8 +11458,10 @@ country_event = {
 			}
 		}
 
+		# The boycott bites in proportion to how far China still depends on foreign chips,
+		# tracked by CHI_semiconductor_self_reliance (0 = wholly dependent, 100 = self-reliant).
 		if = {
-			limit = { has_completed_focus = CHI_sicarrier_euv }
+			limit = { check_variable = { CHI_semiconductor_self_reliance > 74 } }
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_microchip_export_multiplier_modifier = 0.10 tooltip = microchip_export_multiplier_modifier_tt }
 			add_to_variable = { CHI_economy_trade_opinion_factor = 0.05 tooltip = trade_opinion_factor_tt }
@@ -11470,40 +11472,15 @@ country_event = {
 			}
 		}
 		else_if = {
-			limit = { has_completed_focus = CHI_mature_node_counter_offensive }
-			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
-			add_to_variable = { CHI_economy_trade_opinion_factor = 0.04 tooltip = trade_opinion_factor_tt }
-			add_to_variable = { CHI_economy_research_speed_factor = -0.02 tooltip = research_speed_factor_tt }
-		}
-		else_if = {
-			limit = {
-				has_completed_focus = CHI_big_fund_phase2
-				has_completed_focus = CHI_smic_advanced_node
-				has_completed_focus = CHI_loongson_riscv
-				has_completed_focus = CHI_smee_lithography
-				has_completed_focus = CHI_memory_independence
-			}
+			limit = { check_variable = { CHI_semiconductor_self_reliance > 49 } }
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_research_speed_factor = -0.02 tooltip = research_speed_factor_tt }
+			add_to_variable = { CHI_economy_civilian_factories_productivity = -0.02 tooltip = civilian_factories_productivity_tt }
 		}
 		else_if = {
-			limit = {
-				OR = {
-					has_completed_focus = CHI_mature_node_counter_offensive
-					has_completed_focus = CHI_memory_independence
-				}
-			}
+			limit = { check_variable = { CHI_semiconductor_self_reliance > 24 } }
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
-			add_to_variable = { CHI_economy_civilian_factories_productivity = -0.03 tooltip = civilian_factories_productivity_tt }
-			add_to_variable = { CHI_economy_research_speed_factor = -0.03 tooltip = research_speed_factor_tt }
-		}
-		else_if = {
-			limit = {
-				has_completed_focus = CHI_smic_advanced_node
-				has_completed_focus = CHI_fabless_design_cluster
-			}
-			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
-			add_to_variable = { CHI_economy_research_speed_factor = -0.05 tooltip = research_speed_factor_tt }
+			add_to_variable = { CHI_economy_research_speed_factor = -0.04 tooltip = research_speed_factor_tt }
 			add_to_variable = { CHI_economy_civilian_factories_productivity = -0.04 tooltip = civilian_factories_productivity_tt }
 		}
 		else = {
@@ -11631,6 +11608,73 @@ country_event = {
 			USA = { add_opinion_modifier = { target = ROOT modifier = chi_hbm_proliferation_concern } }
 		}
 		ai_chance = { base = 10 }
+	}
+}
+
+# Rare-Earth-for-Chips Leverage — request (fires on USA)
+# Fired by CHI_rare_earth_chip_leverage_decision. ROOT = USA, FROM = China.
+country_event = {
+	id = CHI_semiconductor_events.5
+	title = CHI_semiconductor_events.5.t
+	desc = CHI_semiconductor_events.5.d
+	picture = GFX_PLACEHOLDER
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_semiconductor_events.5.a
+		log = "[GetDateText]: [Root.GetName]: CHI_semiconductor_events.5.a executed"
+		ai_chance = {
+			base = 20
+			modifier = { factor = 0 has_war_with = FROM }
+			modifier = { factor = 3 has_opinion = { target = FROM value > 20 } }
+		}
+		FROM = { country_event = { id = CHI_semiconductor_events.6 days = 2 } }
+	}
+
+	option = {
+		name = CHI_semiconductor_events.5.b
+		log = "[GetDateText]: [Root.GetName]: CHI_semiconductor_events.5.b executed"
+		ai_chance = { base = 80 }
+		FROM = { country_event = { id = CHI_semiconductor_events.7 days = 2 } }
+	}
+}
+
+# Rare-Earth-for-Chips Leverage — acceptance reply (fires on China)
+# ROOT = China, FROM = USA.
+country_event = {
+	id = CHI_semiconductor_events.6
+	title = CHI_semiconductor_events.6.t
+	desc = CHI_semiconductor_events.6.d
+	picture = GFX_PLACEHOLDER
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_semiconductor_events.6.a
+		log = "[GetDateText]: [Root.GetName]: CHI_semiconductor_events.6.a executed"
+		set_temp_variable = { CHI_semi_progress_amount = 15 }
+		CHI_add_semiconductor_progress = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+		add_to_variable = { CHI_economy_trade_opinion_factor = 0.05 tooltip = trade_opinion_factor_tt }
+		set_country_flag = CHI_chip_controls_relaxed
+	}
+}
+
+# Rare-Earth-for-Chips Leverage — rejection reply (fires on China)
+# ROOT = China, FROM = USA.
+country_event = {
+	id = CHI_semiconductor_events.7
+	title = CHI_semiconductor_events.7.t
+	desc = CHI_semiconductor_events.7.d
+	picture = GFX_PLACEHOLDER
+
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_semiconductor_events.7.a
+		log = "[GetDateText]: [Root.GetName]: CHI_semiconductor_events.7.a executed"
+		add_political_power = -50
 	}
 }
 
