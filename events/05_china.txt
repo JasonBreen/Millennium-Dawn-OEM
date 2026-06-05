@@ -11,6 +11,7 @@ add_namespace = chi_bri
 add_namespace = chi_uighur
 add_namespace = arunachal_war
 add_namespace = CHI_military_event
+add_namespace = CHI_space_events
 
 
 # National Congress Convened
@@ -12116,5 +12117,45 @@ country_event = {
 		set_temp_variable = { temp_opinion = 5 }
 		change_communist_cadres_opinion = yes
 		ai_chance = { base = 5 }
+	}
+}
+
+# CHI_space_events.1 — The Launch (fires on CHI 5 days after CHI_crewed_lunar_landing focus completes)
+country_event = {
+	id = CHI_space_events.1
+	title = CHI_space_events.1.t
+	desc = CHI_space_events.1.d
+	picture = GFX_the_wandering_earth
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_space_events.1.a
+		log = "[GetDateText]: [This.GetName]: CHI_space_events.1.a executed"
+		add_political_power = 25
+		country_event = { id = CHI_space_events.2 days = 5 }
+		ai_chance = { base = 10 }
+	}
+}
+
+# CHI_space_events.2 — Taikonauts on the Moon (fires on CHI 5 days after CHI_space_events.1)
+country_event = {
+	id = CHI_space_events.2
+	title = CHI_space_events.2.t
+	desc = CHI_space_events.2.d
+	picture = GFX_CHI_landing
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_space_events.2.a
+		log = "[GetDateText]: [This.GetName]: CHI_space_events.2.a executed"
+		add_stability = 0.05
+		add_war_support = 0.05
+		add_tech_bonus = {
+			name = CHI_space_events_moon
+			ahead_reduction = 1
+			uses = 1
+			category = CAT_space
+		}
+		ai_chance = { base = 10 }
 	}
 }
