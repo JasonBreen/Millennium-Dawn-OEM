@@ -1188,7 +1188,7 @@ SAU_Foregin_affairs_category = {
 
 	# Among the Major Powers - Cooperation with West
 		SAU_Among_Major_powers_Open_west = {
-		icon = decision_usa
+		icon = recogn_usa_button
 		priority = 100
 
 		allowed = { original_tag = SAU }
@@ -1214,7 +1214,7 @@ SAU_Foregin_affairs_category = {
 	}
 
 		SAU_Among_Major_powers_Close_west = {
-		icon = decision_usa
+		icon = recogn_usa_button
 		priority = 100
 
 		allowed = { original_tag = SAU }
@@ -1239,9 +1239,149 @@ SAU_Foregin_affairs_category = {
 
 		ai_will_do = { base = 1 }
 	}
+
+	SAU_west_free_trade = {
+		icon = recogn_usa_button
+		priority = 90
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = Among_Major_powers_open_west
+			NOT = { has_country_flag = Among_Major_powers_close_west }
+		}
+		available = {
+			OR = {
+				NOT = { has_country_flag = SAU_west_deal_locked }
+				has_country_flag = SAU_west_chose_free_trade
+			}
+		}
+
+		cost = 50
+		days_remove = 90
+		days_re_enable = 365
+		fire_only_once = no
+
+		complete_effect = {
+			set_country_flag = SAU_west_deal_locked
+			set_country_flag = SAU_west_chose_free_trade
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_west_free_trade"
+			set_temp_variable = { treasury_change = 25 }
+			modify_treasury_effect = yes
+			set_country_flag = SAU_west_trade_deal_open
+			every_other_country = {
+				limit = {
+					exists = yes
+					is_in_array = { array = global.nato_members value = THIS.id }
+				}
+				add_opinion_modifier = { target = ROOT modifier = SAU_open_trade_deal }
+				ROOT = { add_opinion_modifier = { target = PREV modifier = SAU_open_trade_deal } }
+			}
+			clr_country_flag = SAU_west_chose_free_trade
+			clr_country_flag = SAU_west_deal_locked
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_west_petrodollar = {
+		icon = recogn_usa_button
+		priority = 89
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = Among_Major_powers_open_west
+			NOT = { has_country_flag = Among_Major_powers_close_west }
+		}
+		available = {
+			OR = {
+				NOT = { has_country_flag = SAU_west_deal_locked }
+				has_country_flag = SAU_west_chose_petrodollar
+			}
+		}
+
+		cost = 50
+		days_remove = 100
+		days_re_enable = 365
+		fire_only_once = no
+
+		complete_effect = {
+			set_country_flag = SAU_west_deal_locked
+			set_country_flag = SAU_west_chose_petrodollar
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_west_petrodollar"
+			set_temp_variable = { treasury_change = 15 }
+			modify_treasury_effect = yes
+			if = {
+				limit = { country_exists = USA }
+				USA = { 
+					add_political_power = 25
+			set_temp_variable = { treasury_change = 15 }
+			modify_treasury_effect = yes
+					}
+				set_temp_variable = { percent_change = 6 }
+				set_temp_variable = { tag_index = USA }
+				set_temp_variable = { influence_target = SAU }
+				change_influence_percentage = yes
+			}
+			clr_country_flag = SAU_west_deal_locked
+			clr_country_flag = SAU_west_chose_petrodollar
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_west_joint_training = {
+		icon = recogn_usa_button
+		priority = 88
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = Among_Major_powers_open_west
+			NOT = { has_country_flag = Among_Major_powers_close_west }
+		}
+		available = {
+			OR = {
+				NOT = { has_country_flag = SAU_west_deal_locked }
+				has_country_flag = SAU_west_chose_joint_training
+			}
+		}
+
+		cost = 50
+		days_remove = 120
+		days_re_enable = 365
+		fire_only_once = no
+
+		complete_effect = {
+			set_country_flag = SAU_west_deal_locked
+			set_country_flag = SAU_west_chose_joint_training
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_west_joint_training"
+			army_experience = 25
+			air_experience = 20
+			navy_experience = 15
+			USA = {
+			army_experience = 25
+			air_experience = 20
+			navy_experience = 15
+			}
+			clr_country_flag = SAU_west_deal_locked
+			clr_country_flag = SAU_west_chose_joint_training
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+
 	# Among Major Powers - Cooperation with East
 SAU_Among_Major_powers_Open_east = {
-		icon = decision_china
+		icon = recogn_china_button
 		priority = 100
 
 		allowed = { original_tag = SAU }
@@ -1267,7 +1407,7 @@ SAU_Among_Major_powers_Open_east = {
 	}
 
 		SAU_Among_Major_powers_Close_east = {
-		icon = decision_china
+		icon = recogn_china_button
 		priority = 100
 
 		allowed = { original_tag = SAU }
@@ -1292,6 +1432,134 @@ SAU_Among_Major_powers_Open_east = {
 
 		ai_will_do = { base = 1 }
 	}
-	# The End of the Among Major Powers Decisions.
 
+	SAU_east_trade = {
+		icon = recogn_china_button
+		priority = 0
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = Among_Major_powers_open_east
+			NOT = { has_country_flag = Among_Major_powers_close_east }
+		}
+		available = {
+			OR = {
+				NOT = { has_country_flag = SAU_east_deal_locked }
+				has_country_flag = SAU_east_chose_trade
+			}
+		}
+
+		cost = 50
+		days_remove = 90
+		days_re_enable = 365
+		fire_only_once = no
+
+		complete_effect = {
+			set_country_flag = SAU_east_deal_locked
+			set_country_flag = SAU_east_chose_trade
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_east_trade"
+			set_temp_variable = { treasury_change = 25 }
+			modify_treasury_effect = yes
+			add_opinion_modifier = { target = CHI modifier = SAU_open_trade_deal }
+			CHI = { add_opinion_modifier = { target = PREV modifier = SAU_open_trade_deal } }
+			177 = { add_extra_state_shared_building_slots = 1 }
+			add_political_power = 10
+			clr_country_flag = SAU_east_deal_locked
+			clr_country_flag = SAU_east_chose_trade
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_east_energy_markets = {
+		icon = recogn_china_button
+		priority = 0
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = Among_Major_powers_open_east
+			NOT = { has_country_flag = Among_Major_powers_close_east }
+		}
+		available = {
+			OR = {
+				NOT = { has_country_flag = SAU_east_deal_locked }
+				has_country_flag = SAU_east_chose_energy
+			}
+		}
+
+		cost = 50
+		days_remove = 100
+		days_re_enable = 365
+		fire_only_once = no
+
+		complete_effect = {
+			set_country_flag = SAU_east_deal_locked
+			set_country_flag = SAU_east_chose_energy
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_east_energy_markets"
+			set_temp_variable = { treasury_change = 35 }
+			modify_treasury_effect = yes
+			add_political_power = 10
+			if = {
+				limit = { country_exists = CHI }
+				set_temp_variable = { percent_change = 6 }
+				set_temp_variable = { tag_index = CHI }
+				set_temp_variable = { influence_target = SAU }
+				change_influence_percentage = yes
+			}
+			clr_country_flag = SAU_east_deal_locked
+			clr_country_flag = SAU_east_chose_energy
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_east_belt_road = {
+		icon = recogn_china_button
+		priority = 0
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = Among_Major_powers_open_east
+			NOT = { has_country_flag = Among_Major_powers_close_east }
+		}
+		available = {
+			OR = {
+				NOT = { has_country_flag = SAU_east_deal_locked }
+				has_country_flag = SAU_east_chose_belt_road
+			}
+		}
+
+		cost = 50
+		days_remove = 120
+		days_re_enable = 365
+		fire_only_once = no
+
+		complete_effect = {
+			set_country_flag = SAU_east_deal_locked
+			set_country_flag = SAU_east_chose_belt_road
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_east_belt_road"
+			1081 = { add_building_construction = { type = infrastructure level = 1 instant_build = yes } }
+			177 = { add_building_construction = { type = infrastructure level = 1 instant_build = yes } }
+			if = {
+				limit = { country_exists = CHI }
+				set_temp_variable = { percent_change = 5 }
+				set_temp_variable = { tag_index = CHI }
+				set_temp_variable = { influence_target = SAU }
+				change_influence_percentage = yes
+			}
+			clr_country_flag = SAU_east_deal_locked
+			clr_country_flag = SAU_east_chose_belt_road
+		}
+		ai_will_do = { base = 1 }
+	}
+	# The End of the Among Major Powers Decisions.
 }
