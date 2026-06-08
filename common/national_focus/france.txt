@@ -2009,8 +2009,8 @@ focus_tree = {
 		}
 		completion_reward = {
 			log = "[GetDateText]: [THIS.GetName]: Focus FRA_strat_indus"
-			remove_idea = FRA_french_rearmament
-			add_idea = FRA_french_rearmament2
+			remove_ideas = FRA_french_rearmament
+			add_ideas = FRA_french_rearmament2
 			country_event = france_md.524
 		}
 
@@ -3216,21 +3216,21 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [THIS.GetName]: Focus FRA_sovereignism"
 			if = {
-				limit = { FRA.eurosceptic > 0.5 }
+				limit = { check_variable = { FRA.eurosceptic > 0.5 } }
 				set_temp_variable = { party_index = 14 }
 				set_temp_variable = { party_popularity_increase = 0.25 }
 				set_temp_variable = { temp_outlook_increase = 0.25 }
 				add_relative_party_popularity = yes
 			}
 			else_if = {#to get max go higer 0.5 eurospecticism
-				limit = { FRA.eurosceptic < 0.25 }
+				limit = { check_variable = { FRA.eurosceptic < 0.25 } }
 				set_temp_variable = { party_index = 14 }
 				set_temp_variable = { party_popularity_increase = 0.15 }
 				set_temp_variable = { temp_outlook_increase = 0.15 }
 				add_relative_party_popularity = yes
 			}
 			else_if = {#tooltip you are too europhile go higer 25 or 50
-				limit = { FRA.eurosceptic < 0.10 }
+				limit = { check_variable = { FRA.eurosceptic < 0.10 } }
 				set_temp_variable = { party_index = 14 }
 				set_temp_variable = { party_popularity_increase = 0.075 }
 				set_temp_variable = { temp_outlook_increase = 0.075 }
@@ -5062,6 +5062,8 @@ focus_tree = {
 		cost = 10
 
 		prerequisite = { focus = FRA_question_republic_fn }
+		mutually_exclusive = { focus = FRA_restore_kingdom_fn }
+		mutually_exclusive = { focus = FRA_restore_empire_fn }
 		search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
 		available = {
@@ -6132,8 +6134,10 @@ focus_tree = {
 		completion_reward = {#you'll get pop for how many country are green
 			log = "[GetDateText]: [THIS.GetName]: Focus id = FRA_strong_eu"
 			every_other_country = {
-				limit = { has_idea = EU_member }
-				limit = {neutrality_neutral_green_in_power_or_coalition = yes}
+				limit = {
+					has_idea = EU_member
+					neutrality_neutral_green_in_power_or_coalition = yes
+				}
 				FRA = {
 					set_temp_variable = { party_index = 17 }
 					set_temp_variable = { party_popularity_increase = 0.075 }
@@ -7100,14 +7104,16 @@ focus_tree = {
 					add_extra_state_shared_building_slots = 2
 				}
 			}
-			limit = { has_full_control_of_state = 54 }
-			54 = { #Nord pas de calais
-				add_building_construction = {
-					type = industrial_complex
-					level = 1
-					instant_build = yes
+			if = {
+				limit = { has_full_control_of_state = 54 }
+				54 = { #Nord pas de calais
+					add_building_construction = {
+						type = industrial_complex
+						level = 1
+						instant_build = yes
+					}
+					add_extra_state_shared_building_slots = 2
 				}
-				add_extra_state_shared_building_slots = 2
 			}
 			set_temp_variable = { temp_change = -0.02 }
 			FRA_change_politics_nationalist = yes
@@ -7810,7 +7816,7 @@ focus_tree = {
 			FRA_change_politics_nationalist = yes
 			set_temp_variable = { temp_change = 0.1 }
 			FRA_increase_output = yes
-			et_temp_variable = { temp_change = 0.075 }
+			set_temp_variable = { temp_change = 0.075 }
 			FRA_desindus =yes
 			set_temp_variable = { temp_change = -0.1 }
 			FRA_services_boost = yes
@@ -7892,9 +7898,9 @@ focus_tree = {
 						country_exists = EST
 						EST = { is_subject = no }
 					}
-					EST = {
-					country_event = france_md.260
 				}
+				EST = {
+					country_event = france_md.260
 				}
 			}
 		}
@@ -8056,6 +8062,7 @@ focus_tree = {
 		cost = 10
 
 		prerequisite = { focus = FRA_constitutional_crisis_pcf }
+		mutually_exclusive = { focus = FRA_french_commune_peaceful }
 		search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
 
 		available = {
@@ -8683,7 +8690,6 @@ focus_tree = {
 		cost = 10
 
 		prerequisite = { focus = FRA_eu_kingdom }
-		prerequisite = {nationalist_monarchists_are_in_power = yes}
 		available = {
 			nationalist_monarchists_are_in_power = yes
 			has_idea = FRA_kingdom_restored_idea
@@ -10566,7 +10572,7 @@ focus_tree = {
 			set_temp_variable = { temp_change = -0.15 }
 			FRA_comie_factout = yes
 			set_temp_variable = { temp_change = 1 }
-			FRA_commie_interest = yes
+			FRA_comie_interest = yes
 			set_temp_variable = { temp_opinion = -5 }
 			change_industrial_conglomerates_opinion = yes
 			change_small_medium_business_owners_opinion = yes
