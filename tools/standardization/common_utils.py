@@ -11,13 +11,11 @@ import re
 import sys
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from shared_utils import (
-    compact_block,
     create_backup,
-    create_standard_parser,
     extract_block,
     log_message,
 )
@@ -31,14 +29,11 @@ def compact_search_filters(block_lines: List[str]) -> str:
     entities = []
     for line in block_lines:
         if "search_filters" in line and "{" in line:
-            # Get everything after the first '{'
             after_brace = line.split("{", 1)[1]
-            # Remove everything after '}' if present
             after_brace = after_brace.split("}", 1)[0]
             tokens = after_brace.strip().split()
             entities.extend(tokens)
         elif "}" in line:
-            # Get everything before '}'
             before_brace = line.split("}", 1)[0]
             tokens = before_brace.strip().split()
             entities.extend(tokens)
@@ -53,17 +48,62 @@ def compact_search_filters(block_lines: List[str]) -> str:
 def compact_icon(block_lines: List[str]) -> str:
     """Compact icon block into a single line, handling both simple strings and multi-line blocks"""
     if not block_lines:
-        return "icon = GFX_goal_generic_support_the_left_wing"  # Default fallback
+        return "icon = GFX_goal_generic_support_the_left_wing"
 
     if len(block_lines) == 1:
         return block_lines[0].strip()
 
     compacted_lines = []
     for line in block_lines:
-        if line.strip():  # Only keep non-empty lines
+        if line.strip():
             compacted_lines.append(line.rstrip())
 
     return "\n".join(compacted_lines)
+
+
+def collapse_blank_runs(lines: List[str], max_blank: int = 1) -> List[str]:
+    """Collapse consecutive blank lines to at most `max_blank` in a row."""
+    result = []
+    blank_count = 0
+    for line in lines:
+        if line.strip() == "":
+            blank_count += 1
+            if blank_count <= max_blank:
+                result.append(line)
+        else:
+            blank_count = 0
+            result.append(line)
+    return result
+
+
+def block_has_log(block_lines: List[str]) -> bool:
+    """Check whether any line in a block contains a log statement."""
+    return any("log =" in line for line in block_lines)
+
+
+def inject_log_after_brace(block_lines: List[str], log_line: str) -> List[str]:
+    """Return a copy of block_lines with `log_line` inserted after the first line
+    that contains an opening brace. No-op if no such line exists."""
+    result = []
+    injected = False
+    for line in block_lines:
+        result.append(line)
+        if not injected and "{" in line:
+            result.append(log_line)
+            injected = True
+    return result
+
+
+# Shared regex: matches the property name at the start of a stripped line
+# like `prop_name = value` or `prop_name = { ... }`.
+PROP_NAME_RE = re.compile(r"^(\w+)\s*=")
+
+
+def emit_comments(lines: List[str], comments: List[str]) -> None:
+    """Append non-blank comment lines (rstripped) onto `lines` in-place."""
+    for comment in comments:
+        if comment.strip():
+            lines.append(comment.rstrip())
 
 
 class BaseStandardizer(ABC):
@@ -137,10 +177,16 @@ class BaseStandardizer(ABC):
                 output_lines.append(line)
                 i += 1
 
+        if self.processed_count == 0:
+            log_message("INFO", "No blocks matched — skipping file write")
+            return True
+
         try:
-            with open(output_file, "w", encoding="utf-8") as f:
+            tmp_path = output_file + ".tmp"
+            with open(tmp_path, "w", encoding="utf-8") as f:
                 for line in output_lines:
                     f.write(line + "\n")
+            os.replace(tmp_path, output_file)
 
             end_time = time.time()
             elapsed_time = end_time - self.start_time
@@ -158,6 +204,11 @@ class BaseStandardizer(ABC):
 
         except Exception as e:
             log_message("ERROR", f"Failed to write {output_file}: {e}")
+            try:
+                if os.path.exists(output_file + ".tmp"):
+                    os.remove(output_file + ".tmp")
+            except OSError:
+                pass
             return False
 
         return True

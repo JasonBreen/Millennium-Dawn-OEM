@@ -23,6 +23,13 @@ description: Collection of knowledge-based resources for Millennium Dawn develop
 
 - [List of Hos & HoG](https://en.wikipedia.org/wiki/List_of_current_heads_of_state_and_government)
 
+**HOI4 Scripting Reference**
+
+- [Paradox Wiki — Data structures](https://hoi4.paradoxwikis.com/Data_structures) — Full reference for game variables, built-in game arrays (`neighbors`, `allies`, `subjects`, `owned_states`, etc.), dynamic variables, and array/variable access syntax. Read this before adding new targeted decisions or scoping loops.
+- [Paradox Wiki — Effects](https://hoi4.paradoxwikis.com/Effects) — All vanilla effects with arguments and scope requirements
+- [Paradox Wiki — Triggers](https://hoi4.paradoxwikis.com/Triggers) — All vanilla triggers with arguments and scope requirements
+- [Paradox Wiki — Modifiers](https://hoi4.paradoxwikis.com/Modifiers) — All vanilla modifier tokens
+
 **Modding Tools**
 
 - [CWTools HOI4 Config](https://github.com/AngriestBird/cwtools-hoi4-config) — .cwt config files for HOI4, used by the CWTools VSCode extension for validation
@@ -31,7 +38,7 @@ description: Collection of knowledge-based resources for Millennium Dawn develop
 **Git & Workflow**
 
 - [Git Conflict Resolution & Best Practices](https://youtu.be/edoJhO7ZkCs) — Video walkthrough of solving git conflicts in the MD workflow
-- [Git Setup & Usage Guide](/player-tutorials/manual-install-instructions/) — On-site guide covering cloning, branches, commits, and pull requests
+- [Git Setup & Usage Guide](https://github.com/MillenniumDawn/Millennium-Dawn/blob/main/CONTRIBUTING.md#development-setup) — Cloning, branches, commits, and pull requests
 
 **Graphics Requests**
 

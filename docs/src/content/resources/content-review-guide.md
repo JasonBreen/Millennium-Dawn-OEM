@@ -11,6 +11,8 @@ This guide outlines the quality expectations for Millennium Dawn content. It cov
 > - [Code Stylization Guide](/dev-resources/code-stylization-guide/)
 > - [Code Resource](/dev-resources/code-resource/)
 > - [New General Guidelines](/dev-resources/new-general-guidelines/)
+> - [Dynamic Modifiers](/dev-resources/dynamic-modifiers/)
+> - [Claude Code Skills](/dev-resources/claude-code-skills/)
 
 ---
 
@@ -36,7 +38,7 @@ These are baseline expectations for all developers on the team:
 - **Ask when in doubt.** If you are unsure about a content decision, ask a lead developer or Council Member before proceeding.
 - **Review your own content first.** Complete this checklist and the standards in the [Code Resource](/dev-resources/code-resource/) before requesting a lead review.
 - **Read the [Focus Tree Design Principles](/dev-resources/focus-tree-design-principles/).** Familiarize yourself with the design philosophy for branch structure, pacing, and player choice.
-- **Set up your environment.** Run `python3 tools/setup.py` after cloning to install pre-commit hooks and tool dependencies. See the [Git Setup & Usage Guide](/player-tutorials/manual-install-instructions/) for full instructions.
+- **Set up your environment.** Run `python3 tools/setup.py` after cloning to install pre-commit hooks and tool dependencies. See the [Git Setup & Usage Guide](https://github.com/MillenniumDawn/Millennium-Dawn/blob/main/CONTRIBUTING.md#development-setup) for full instructions.
 
 ---
 
@@ -213,3 +215,9 @@ These are baseline expectations for all developers on the team:
 
 - **Are any references to the tag capitalised?**
   All tags should be capitalised, including at the start of script IDs (e.g., `SPR_focus_name_here`).
+
+- **Do high-cost focuses have a bankruptcy guard in `ai_will_do`?**
+  Focuses with `cost ≥ 8`, or `cost ≥ 5` tagged with military, economy, or research `search_filters`, must include a `factor = 0` modifier in `ai_will_do` conditioned on `has_active_mission = bankruptcy_incoming_collapse`. This is an AI-only measure — placing the guard in `available` would incorrectly block the player as well. See [Search Filters](/dev-resources/search-filters) for which filters apply.
+
+- **Are `custom_effect_tooltip` + `effect_tooltip` + `for_each_scope_loop` duplicated?**
+  When a tooltip describes effects applied to every member of an array, use `tooltip = TT_ALL_*` inside the `for_each_scope_loop` instead. Duplicating the same logic in `effect_tooltip` and the loop causes double-evaluation and is a known performance anti-pattern. See the [Code Stylization Guide](/dev-resources/code-stylization-guide/) for the performance tip.
