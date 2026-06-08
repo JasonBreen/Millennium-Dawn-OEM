@@ -898,65 +898,6 @@ FRA_french_africa_decision_category = {
 	# }
 }
 
-# TODO: MISSION
-FRA_french_construction_decision_category = {  # rename
-    FRA_build_factories_mission = {  # rename
-		icon = political_actions  # change
-        allowed = { original_tag = FRA }
-		available = { always = no }
-		fire_only_once = yes  # change...?
-        days_mission_timeout = 25  # testing -> 365
-        activation = {  # modify focus or create individualized flags
-			AND = {
-				has_country_flag = FRA_timed_mission
-				# has_completed_focus = FRA_reinvest_rural
-				# lookup array_count in repo
-				# check_variable = { FRA.states_for_timed_mission^0 = 0 }
-				check_variable = { FRA.states_for_timed_mission^i > 1 }
-			}
-        }
-        timeout_effect = {
-			log = "[GetDateText]: [THIS.GetName]: focus FRA_build_factories_mission timeout"
-			# custom_effect_tooltip = FRA_build_factories_mission_fail_tt
-
-			if = {  # success
-				limit = {
-					check_variable = { FRA.factories_now > 4 }
-				}
-				newline = yes
-				add_stability = 0.075
-				set_party_index_to_ruling_party = yes
-				set_temp_variable = { party_popularity_increase = 0.10 }
-				add_relative_party_popularity = yes
-				add_timed_idea = {
-					idea = FRA_campaign_promises_kept_idea
-					days = 200 # TODO: CHANGE?
-				}
-				# for reuse - move to function
-				hidden_effect = {
-					clear_variable = FRA.num_beginning_factories
-					clear_variable = FRA.factories_now
-					clear_array = FRA.states_for_timed_mission
-				}
-			}
-			else = {  # failure
-				newline = yes
-				add_stability = -0.1
-				set_party_index_to_ruling_party = yes
-				set_temp_variable = { party_popularity_increase = -0.15 }
-				add_relative_party_popularity = yes
-				add_political_power = -100
-				# for reuse - move to function
-				hidden_effect = {
-					clear_variable = FRA.num_beginning_factories
-					clear_variable = FRA.factories_now
-					clear_array = FRA.states_for_timed_mission
-				}
-			}
-			clr_country_flag = FRA_timed_mission
-        }
-    }
-}
 FRA_french_communism_expansionism_decision_category = {
 	FRA_red_benelux = {
 		fire_only_once = yes
@@ -1919,9 +1860,9 @@ FRA_french_communism_expansionism_decision_category = {
 					}
 				}
 				AND = {
-					country_exists = NOR
+					country_exists = NRY
 					NOT = {
-						NOR = {
+						NRY = {
 							is_subject_of = FRA
 						}
 					}
@@ -1965,12 +1906,12 @@ FRA_french_communism_expansionism_decision_category = {
 			if = {
 				limit = {
 					NOT = {
-						NOR = {
+						NRY = {
 							is_subject_of = FRA
 						}
 					}
 				}
-				NOR={
+				NRY={
 					country_event = france_md.313
 				}
 			}
@@ -2012,9 +1953,9 @@ FRA_french_communism_expansionism_decision_category = {
 				}
 				OR = {
 					NOT = {
-						country_exists = NOR
+						country_exists = NRY
 					}
-					NOR = {
+					NRY = {
 						is_subject_of = FRA
 					}
 				}
@@ -4640,7 +4581,7 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 					country_exists = EST
 					country_exists = LAT
 					country_exists = DEN
-					country_exists = NOR
+					country_exists = NRY
 					country_exists = FIN
 					country_exists = SWE
 					country_exists = ENG
@@ -4702,10 +4643,10 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			}
 			if = {
 				limit = {
-					country_exists = NOR
-					NOT = {NOR = { is_subject_of = FRA}}
+					country_exists = NRY
+					NOT = {NRY = { is_subject_of = FRA}}
 				}
-				NOR = {
+				NRY = {
 					country_event = france_md.484
 				}
 			}
@@ -5125,7 +5066,7 @@ FRA_extremist_foreign_policy_category = {
 		remove_effect = {
 			add_opinion_modifier = {
 				target = SOV
-				modifier = improved_relations
+				modifier = medium_increase
 			}
 			USA = {
 				add_opinion_modifier = {
@@ -5167,7 +5108,7 @@ FRA_extremist_foreign_policy_category = {
 			ISR = {
 				add_opinion_modifier = {
 					target = FRA
-					modifier = diplomatic_rejection
+					modifier = medium_decrease
 				}
 			}
 			every_country = {
@@ -5274,13 +5215,13 @@ FRA_extremist_foreign_policy_category = {
 			IND = {
 				add_opinion_modifier = {
 					target = FRA
-					modifier = improved_relations
+					modifier = medium_increase
 				}
 			}
 			BRA = {
 				add_opinion_modifier = {
 					target = FRA
-					modifier = improved_relations
+					modifier = medium_increase
 				}
 			}
 		}
@@ -5317,13 +5258,13 @@ FRA_extremist_foreign_policy_category = {
 			CUB = {
 				add_opinion_modifier = {
 					target = FRA
-					modifier = improved_relations
+					modifier = medium_increase
 				}
 			}
 			VEN = {
 				add_opinion_modifier = {
 					target = FRA
-					modifier = improved_relations
+					modifier = medium_increase
 				}
 			}
 			# Boost communist popularity
