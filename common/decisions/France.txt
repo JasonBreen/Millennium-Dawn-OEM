@@ -308,7 +308,7 @@ FRA_LFI6th_decision_category = {
 	FRA_6threp_mission = {
 		available = { always = no }
 		activation = { has_completed_focus = FRA_toward_6th_rep }
-		days_mission_timeout = 365
+		days_mission_timeout = 730
 		is_good = no
 		fire_only_once = yes
 		icon = GFX_france_mcdonalds_bombing
@@ -345,15 +345,14 @@ FRA_LFI6th_decision_category = {
 			factor = 1
 			modifier = {
 				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = communism
-					has_government = nationalist
+				OR = {
+					NOT = {neutrality_neutral_social_are_in_power =yes}
+					NOT = {has_active_mission = FRA_6threp_mission}
 				}
 			}
 		}
 	}
-	FRA_rally_ennemy = {
+	FRA_rally_ennemy = {#our ennemies lower our support
 		available = {
 			has_active_mission = FRA_6threp_mission
 		}
@@ -372,7 +371,12 @@ FRA_LFI6th_decision_category = {
 			}
 		}
 		timeout_effect = {
-			country_event = { id = france_md.237 }
+			set_temp_variable = { party_index = 18 }
+			set_temp_variable = { party_popularity_increase = -0.075 }
+			set_temp_variable = { temp_outlook_increase = -0.075 }
+			add_relative_party_popularity = yes
+			add_stability = -0.05
+			add_political_power = -75
 		}
 	}
 }
@@ -452,11 +456,7 @@ FRA_french_socialist_downfall_decision_category = {
 			factor = 1
 			modifier = {
 				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = communism
-					has_government = nationalist
-				}
+				is_historical_focus_on = yes
 			}
 		}
 	}
@@ -490,11 +490,7 @@ FRA_french_socialist_downfall_decision_category = {
 			factor = 1
 			modifier = {
 				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = communism
-					has_government = nationalist
-				}
+				is_historical_focus_on = yes
 			}
 		}
 	}
@@ -970,12 +966,12 @@ FRA_french_communism_expansionism_decision_category = {
 			}
 		}
 		ai_will_do = {
-			base = 2
+			base = 8
 			modifier = {
 				add = -1
 				strength_ratio = {
 					tag = BEL
-					ratio > 1
+					ratio < 1
 				}
 			}
 			modifier = {
@@ -1036,6 +1032,9 @@ FRA_french_communism_expansionism_decision_category = {
 			FRA_WR_education_cost =yes
 			set_temp_variable = { temp_change = -0.025 }
 			FRA_WR_stab =yes
+		}
+		ai_will_do = {
+			base = 5
 		}
 	}
 	FRA_done_with_dumping = {
@@ -1109,6 +1108,57 @@ FRA_french_communism_expansionism_decision_category = {
 				}
 			}
 		}
+		ai_will_do = {
+			base = 8
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SWI
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = ADO
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = MNC
+					ratio < 1
+				}
+			}
+
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = SWI
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = SWI
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = SWI
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = SWI
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_dumping_boost = {
 		fire_only_once = yes
@@ -1152,6 +1202,9 @@ FRA_french_communism_expansionism_decision_category = {
 			FRA_WR_office_money = yes
 			set_temp_variable = { temp_change = -0.025 }
 			FRA_WR_stab =yes
+		}
+		ai_will_do = {
+			base = 5
 		}
 	}
 	FRA_red_iberia = {
@@ -1206,6 +1259,49 @@ FRA_french_communism_expansionism_decision_category = {
 				}
 			}
 		}
+		ai_will_do = {
+			base = 6
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SPR
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = POR
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = SPR
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = SPR
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = SPR
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = SPR
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_iberia_boost = {
 		fire_only_once = yes
@@ -1242,6 +1338,9 @@ FRA_french_communism_expansionism_decision_category = {
 			set_temp_variable = { temp_change = -0.05 }
 			FRA_WR_stab =yes
 		}
+		ai_will_do = {
+			base = 5
+		}
 	}
 	FRA_ciao_bella = {
 		fire_only_once = yes
@@ -1264,6 +1363,42 @@ FRA_french_communism_expansionism_decision_category = {
 				target = ITA
 			}
 		}
+		ai_will_do = {
+			base = 5
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = ITA
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = ITA
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = ITA
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = ITA
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = ITA
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_italy_boost = {
 		fire_only_once = yes
@@ -1284,6 +1419,9 @@ FRA_french_communism_expansionism_decision_category = {
 			FRA_WR_navy_speed = yes
 			set_temp_variable = { temp_change = -0.05 }
 			FRA_WR_stab =yes
+		}
+		ai_will_do = {
+			base = 5
 		}
 	}
 	FRA_avenge_long_knife = {
@@ -1338,6 +1476,49 @@ FRA_french_communism_expansionism_decision_category = {
 				}
 			}
 		}
+		ai_will_do = {
+			base = 4
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = GER
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = AUS
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = GER
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = GER
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = GER
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = GER
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_ger_aus_boost = {
 		fire_only_once = yes
@@ -1375,6 +1556,9 @@ FRA_french_communism_expansionism_decision_category = {
 			FRA_WR_renable =yes
 			set_temp_variable = { temp_change = -0.075 }
 			FRA_WR_stab =yes
+		}
+		ai_will_do = {
+			base = 5
 		}
 	}
 	FRA_ostalgia = {
@@ -1608,6 +1792,49 @@ FRA_french_communism_expansionism_decision_category = {
 				}
 			}
 		}
+		ai_will_do = {
+			base = 4
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = POL
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = ROM
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = POL
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = POL
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = POL
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = POL
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_ostalgia_boost = {
 		fire_only_once = yes
@@ -1716,6 +1943,9 @@ FRA_french_communism_expansionism_decision_category = {
 			set_temp_variable = { temp_change = -0.1 }
 			FRA_WR_stab =yes
 		}
+		ai_will_do = {
+			base = 5
+		}
 	}
 	FRA_birthplace_revolution = {
 		fire_only_once = yes
@@ -1789,6 +2019,49 @@ FRA_french_communism_expansionism_decision_category = {
 				}
 			}
 		}
+		ai_will_do = {
+			base = 3
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SOV
+					ratio < 3
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = UKR
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = SOV
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = SOV
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag =SOV
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = SOV
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_birthplace_boost = {
 		fire_only_once = yes
@@ -1834,6 +2107,9 @@ FRA_french_communism_expansionism_decision_category = {
 			FRA_WR_police_cost =yes
 			set_temp_variable = { temp_change = -0.12 }
 			FRA_WR_stab =yes
+		}
+		ai_will_do = {
+			base = 5
 		}
 	}
 	FRA_no_more_neutrality = {
@@ -1927,6 +2203,49 @@ FRA_french_communism_expansionism_decision_category = {
 				}
 			}
 		}
+		ai_will_do = {
+			base = 6
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SWE
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = FIN
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = SWE
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = SWE
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = SWE
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = SWE
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_neutrality_boost = {
 		fire_only_once = yes
@@ -1980,6 +2299,9 @@ FRA_french_communism_expansionism_decision_category = {
 			FRA_WR_reco =yes
 			set_temp_variable = { temp_change = -0.075 }
 			FRA_WR_stab =yes
+		}
+		ai_will_do = {
+			base = 5
 		}
 	}
 	FRA_cold_war2 = {
@@ -2035,6 +2357,49 @@ FRA_french_communism_expansionism_decision_category = {
 				}
 			}
 		}
+		ai_will_do = {
+			base = 3
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = USA
+					ratio < 3
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = ENG
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = USA
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = USA
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = USA
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = USA
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_cold_war_boost = {
 		fire_only_once = yes
@@ -2073,6 +2438,9 @@ FRA_french_communism_expansionism_decision_category = {
 			set_temp_variable = { temp_change = -0.15 }
 			FRA_WR_stab =yes
 		}
+		ai_will_do = {
+			base = 5
+		}
 	}
 	FRA_red_Europe = {
 		fire_only_once = yes
@@ -2104,6 +2472,31 @@ FRA_french_communism_expansionism_decision_category = {
 						type = puppet_wargoal_focus
 						target = FROM
 					}
+				}
+			}
+		}
+		ai_will_do = {
+			base = -5
+			modifier = {
+				add = 15
+				OR = {
+					SOV = {is_subject_of = FRA}
+					country_exists = SOV
+				}
+				OR = {
+					USA = {is_subject_of = FRA}
+					country_exists = USA
+				}
+				OR = {
+					GER = {is_subject_of = FRA}
+					country_exists = GER
+				}
+			}
+			modifier = {
+				add = 15
+				OR = {
+					has_idea = large_power
+					has_idea = super_power
 				}
 			}
 		}
@@ -2173,6 +2566,30 @@ FRA_3rd_empire_decision_category = {#TODO add claim for all
 			48 = {add_claim_by = FRA}
 			1169 = {add_claim_by = FRA}
 		}
+		ai_will_do = {
+			base = 8
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = BEL
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = HOL
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = LUX
+					ratio < 1
+				}
+			}
+		}
 	}
 	FRA_Never_another_guerilla = {#claim catalogna
 		fire_only_once = yes
@@ -2201,6 +2618,50 @@ FRA_3rd_empire_decision_category = {#TODO add claim for all
 						target = POR
 				}
 			}
+			86 = {add_claim_by = FRA}
+		}
+		ai_will_do = {
+			base = 6
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SPR
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = POR
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = SPR
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = SPR
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = SPR
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = SPR
+						ratio > 2
+					}
+				}
+			}
 		}
 	}
 	FRA_Avenge_Sedan = {#claim Rheinland
@@ -2218,6 +2679,44 @@ FRA_3rd_empire_decision_category = {#TODO add claim for all
 				create_wargoal = {
 						type = puppet_wargoal_focus
 						target = GER
+				}
+			}
+			40 = {add_claim_by = FRA}
+			966 = {add_claim_by = FRA}
+		}
+		ai_will_do = {
+			base = 5
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = GER
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = GER
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = GER
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = GER
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = GER
+						ratio > 2
+					}
 				}
 			}
 		}
@@ -2297,6 +2796,9 @@ FRA_3rd_empire_decision_category = {#TODO add claim for all
 			log = "[GetDateText]: [Root.GetName]: Decision FRA_natural_border"
 			country_event = france_md.490
 		}
+		ai_will_do = {
+			base = 15
+		}
 	}
 	FRA_crush_coalition = {#claim north of italy
 		fire_only_once = yes
@@ -2366,6 +2868,52 @@ FRA_3rd_empire_decision_category = {#TODO add claim for all
 						target = CRO
 				}
 			}
+			1059 = {add_claim_by = FRA}
+			77 = {add_claim_by = FRA}
+			1060 = {add_claim_by = FRA}
+			81 = {add_claim_by = FRA}
+			79 = {add_claim_by = FRA}
+			1061 = {add_claim_by = FRA}
+			127 = {add_claim_by = FRA}
+			124 = {add_claim_by = FRA}
+			125 = {add_claim_by = FRA}
+			126 = {add_claim_by = FRA}
+		}
+		ai_will_do = {
+			base = 4
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = ITA
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = ITA
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = ITA
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = ITA
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = ITA
+						ratio > 2
+					}
+				}
+			}
 		}
 	}
 	FRA_napoleon_empire = {#core napoleon empire
@@ -2431,6 +2979,20 @@ FRA_3rd_empire_decision_category = {#TODO add claim for all
 					}
 				}
 				OR = {
+					125 = { is_core_of = FRA }
+					AND = {
+						has_full_control_of_state = 125
+						125={compliance > 50}
+					}
+				}
+				OR = {
+					126 = { is_core_of = FRA }
+					AND = {
+						has_full_control_of_state = 126
+						126={compliance > 50}
+					}
+				}
+				OR = {
 					1061 = { is_core_of = FRA }
 					AND = {
 						has_full_control_of_state = 1061
@@ -2463,6 +3025,9 @@ FRA_3rd_empire_decision_category = {#TODO add claim for all
 		remove_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision FRA_napoleon_empire"
 			country_event = france_md.494
+		}
+		ai_will_do = {
+			base = 15
 		}
 	}
 	FRA_prepare_russia = {
@@ -2595,6 +3160,49 @@ FRA_3rd_empire_decision_category = {#TODO add claim for all
 				}
 				LIT = {
 					country_event = france_md.321
+				}
+			}
+		}
+		ai_will_do = {
+			base = 4
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = POL
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = ROM
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = POL
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = POL
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = POL
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = POL
+						ratio > 2
+					}
 				}
 			}
 		}
@@ -2795,6 +3403,31 @@ FRA_3rd_empire_decision_category = {#TODO add claim for all
 				}
 			}
 		}
+		ai_will_do = {
+			base = -5
+			modifier = {
+				add = 15
+				OR = {
+					SOV = {is_subject_of = FRA}
+					country_exists = SOV
+				}
+				OR = {
+					ENG = {is_subject_of = FRA}
+					country_exists = ENG
+				}
+				OR = {
+					GER = {is_subject_of = FRA}
+					country_exists = GER
+				}
+			}
+			modifier = {
+				add = 15
+				OR = {
+					has_idea = large_power
+					has_idea = super_power
+				}
+			}
+		}
 	}
 	FRA_no_more_berezina = {
 		fire_only_once = yes
@@ -2833,6 +3466,49 @@ FRA_3rd_empire_decision_category = {#TODO add claim for all
 				}
 			}
 		}
+		ai_will_do = {
+			base = 3
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SOV
+					ratio < 3
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = UKR
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = SOV
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = SOV
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag =SOV
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = SOV
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_the_Foe = {
 		fire_only_once = yes
@@ -2849,6 +3525,42 @@ FRA_3rd_empire_decision_category = {#TODO add claim for all
 				create_wargoal = {
 						type = puppet_wargoal_focus
 						target = ENG
+				}
+			}
+		}
+		ai_will_do = {
+			base = 5
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = ENG
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = ENG
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = ENG
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = ENG
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = ENG
+						ratio > 2
+					}
 				}
 			}
 		}
@@ -2872,6 +3584,9 @@ FRA_3rd_empire_decision_category = {#TODO add claim for all
 				add_ideas = FRA_exploitation
 			}
 		}
+		ai_will_do = {
+			base = 15
+		}
 	}
 }
 FRA_royalist_expansion_decision_category = {#TODO add claim for all
@@ -2890,6 +3605,9 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 		remove_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision FRA_European_crusade"
 			country_event = france_md.478
+		}
+		ai_will_do = {
+			base = 20
 		}
 	}
 	FRA_frankish_nest = {#claim belgium holland luxembourg
@@ -2936,6 +3654,30 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			48 = {add_claim_by = FRA}
 			1169 = {add_claim_by = FRA}
 		}
+		ai_will_do = {
+			base = 8
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = BEL
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = HOL
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = LUX
+					ratio < 1
+				}
+			}
+		}
 	}
 	FRA_heir_of_charles_le_chauve = {#claim germany
 		fire_only_once = yes
@@ -2973,6 +3715,42 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			44 = {add_claim_by = FRA}
 			545 = {add_claim_by = FRA}
 			972 = {add_claim_by = FRA}
+		}
+		ai_will_do = {
+			base = 5
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = GER
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = GER
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = GER
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = GER
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = GER
+						ratio > 2
+					}
+				}
+			}
 		}
 	}
 	FRA_protect_papacy = {#claim northern italy switzerland and austria
@@ -3033,6 +3811,49 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			1061 = {add_claim_by = FRA}
 			79 = {add_claim_by = FRA}
 		}
+		ai_will_do = {
+			base = 4
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = ITA
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SWI
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = ITA
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = ITA
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = ITA
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = ITA
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_sog_of_the_cor = {#song of roland
 		fire_only_once = yes
@@ -3074,6 +3895,49 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			92 = {add_claim_by = FRA}
 			86 = {add_claim_by = FRA}
 			945 = {add_claim_by = FRA}
+		}
+		ai_will_do = {
+			base = 6
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SPR
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = POR
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = SPR
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = SPR
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = SPR
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = SPR
+						ratio > 2
+					}
+				}
+			}
 		}
 	}
 	FRA_unite_frank_europe = {#core frank
@@ -3150,6 +4014,9 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 		remove_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision FRA_unite_frank_europe"
 			country_event = france_md.491
+		}
+		ai_will_do = {
+			base = 15
 		}
 	}
 	FRA_frankish_empire = {#core charlemagne empire TODO change flag
@@ -3493,6 +4360,9 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			log = "[GetDateText]: [Root.GetName]: Decision FRA_frankish_empire"
 			country_event = france_md.492
 		}
+		ai_will_do = {
+			base = 15
+		}
 	}
 	FRA_annex_puppet_king = {#TODO find a way to transfer states withount annexation or immidiatly realease
 		days_remove = 1
@@ -3510,6 +4380,9 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 					country_event = france_md.492
 				}
 			}
+		}
+		ai_will_do = {
+			base = 20
 		}
 	}
 	FRA_glacis = {
@@ -3603,6 +4476,49 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 				}
 			}
 		}
+		ai_will_do = {
+			base = 4
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = POL
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = ROM
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = POL
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = POL
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = POL
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = POL
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_one_over_europe = {
 		fire_only_once = yes
@@ -3640,6 +4556,49 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 				}
 			}
 		}
+		ai_will_do = {
+			base = 3
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SOV
+					ratio < 3
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = UKR
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = SOV
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = SOV
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag =SOV
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = SOV
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_the_original_ennemy = {
 		fire_only_once = yes
@@ -3658,6 +4617,42 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 				create_wargoal = {
 					type = puppet_wargoal_focus
 					target = ENG
+				}
+			}
+		}
+		ai_will_do = {
+			base = 5
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = ENG
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = ENG
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = ENG
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = ENG
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = ENG
+						ratio > 2
+					}
 				}
 			}
 		}
@@ -3690,6 +4685,9 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 		remove_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision FRA_king_europe_victory"
 			country_event = france_md.485
+		}
+		ai_will_do = {
+			base = 15
 		}
 	}
 	FRA_recover_7_year_war_charlemagne = {#attack ancien colonies TODO integrate colonird
@@ -3784,6 +4782,31 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			989 = {add_claim_by = FRA}
 			985 = {add_claim_by = FRA}
 		}
+		ai_will_do = {
+			base = -5
+			modifier = {
+				add = 15
+				OR = {
+					SOV = {is_subject_of = FRA}
+					country_exists = SOV
+				}
+				OR = {
+					ENG = {is_subject_of = FRA}
+					country_exists = ENG
+				}
+				OR = {
+					GER = {is_subject_of = FRA}
+					country_exists = GER
+				}
+			}
+			modifier = {
+				add = 15
+				OR = {
+					has_idea = large_power
+					has_idea = super_power
+				}
+			}
+		}
 	}
 	FRA_start_crusade = {#claim rome sardignia and sicily
 		fire_only_once = yes
@@ -3831,7 +4854,42 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			84 = {add_claim_by = FRA}
 			83 = {add_claim_by = FRA}
 			85 = {add_claim_by = FRA}
-
+		}
+		ai_will_do = {
+			base = 5
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = ITA
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = ITA
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = ITA
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = ITA
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = ITA
+						ratio > 2
+					}
+				}
+			}
 		}
 	}
 	FRA_crusade_siege = {#attack syria cyprus
@@ -3881,6 +4939,9 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			186 = {add_claim_by = FRA}
 			184 = {add_claim_by = FRA}
 			185 = {add_claim_by = FRA}
+		}
+		ai_will_do = {
+			base = 5
 		}
 	}
 	FRA_claim_jerusalem = {#attack syria cyprus
@@ -3932,6 +4993,9 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			205 = {add_claim_by = FRA}
 			201 = {add_claim_by = FRA}
 			587 = {add_claim_by = FRA}
+		}
+		ai_will_do = {
+			base = 4
 		}
 	}
 	FRA_revenge_over_saladin = {#attack saudi egypt turk jordanie irak iran
@@ -4011,6 +5075,49 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			934 = {add_claim_by = FRA}
 			146= {add_claim_by = FRA}
 		}
+		ai_will_do = {
+			base = 4
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = PER
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SAU
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = PER
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = PER
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag = PER
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = PER
+						ratio > 2
+					}
+				}
+			}
+		}
 	}
 	FRA_king_crusade1_victory = {
 		fire_only_once = yes
@@ -4039,6 +5146,9 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 		remove_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision FRA_king_crusade1_victory"
 			country_event = france_md.487
+		}
+		ai_will_do = {
+			base = 15
 		}
 	}
 	FRA_kingdom_heaven = {#core kingdom of heaven TODO change flag
@@ -4312,6 +5422,9 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			log = "[GetDateText]: [Root.GetName]: Decision FRA_kingdom_heaven"
 			country_event = france_md.493
 		}
+		ai_will_do = {
+			base = 20
+		}
 	}
 	FRA_rally_frank = {#annex belgium luxembourg swiss monaco andora
 		fire_only_once = yes
@@ -4369,6 +5482,30 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			946 = {add_claim_by = FRA}
 			72 = {add_claim_by = FRA}
 			945 = {add_claim_by = FRA}
+		}
+		ai_will_do = {
+			base = 8
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = BEL
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = HOL
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SWI
+					ratio < 1
+				}
+			}
 		}
 	}
 	FRA_unite_frank = {#core frank
@@ -4445,6 +5582,9 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 		remove_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision FRA_unite_frank"
 			country_event = france_md.491
+		}
+		ai_will_do = {
+			base = 15
 		}
 	}
 	FRA_noah_ark = {#ally all remaining catholic
@@ -4566,6 +5706,9 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 				}
 			}
 		}
+		ai_will_do = {
+			base = 15
+		}
 	}
 	FRA_war_against_protestantism = {#attack germany holland nordic and baltic TODO maybe little event about this
 		fire_only_once = yes
@@ -4682,6 +5825,30 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			966 = {add_claim_by = FRA}
 			47 = {add_claim_by = FRA}
 		}
+		ai_will_do = {
+			base = 2
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = ENG
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = GER
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SWE
+					ratio < 1
+				}
+			}
+		}
 	}
 	FRA_end_the_schism = {#attack orthodox TODO maybe a little event
 		fire_only_once = yes
@@ -4704,6 +5871,49 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 					}
 				}
 				country_event = france_md.484
+			}
+		}
+		ai_will_do = {
+			base = 2
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = SOV
+					ratio < 3
+				}
+			}
+			modifier = {
+				add = -1
+				strength_ratio = {
+					tag = UKR
+					ratio < 1
+				}
+			}
+			modifier = {
+				add = -1
+				AND = {
+					faction_strength_ratio = {
+						tag = SOV
+						ratio < 0.25
+					}
+					strength_ratio = {
+						tag = SOV
+						ratio < 1
+					}
+				}
+			}
+			modifier = {
+				add = 2
+				AND = {
+					faction_strength_ratio = {
+						tag =SOV
+						ratio > 0.75
+					}
+					strength_ratio = {
+						tag = SOV
+						ratio > 2
+					}
+				}
 			}
 		}
 	}
@@ -4731,6 +5941,9 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 		remove_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision FRA_king_crusade2_victory"
 			country_event = france_md.489
+		}
+		ai_will_do = {
+			base = 15
 		}
 	}
 	FRA_recover_7_year_war_holy = {#attack ancien colonies TODO integrate colonird
@@ -4827,6 +6040,31 @@ FRA_royalist_expansion_decision_category = {#TODO add claim for all
 			991 = {add_claim_by = FRA}
 			989 = {add_claim_by = FRA}
 			985 = {add_claim_by = FRA}
+		}
+		ai_will_do = {
+			base = -5
+			modifier = {
+				add = 15
+				OR = {
+					SOV = {is_subject_of = FRA}
+					country_exists = SOV
+				}
+				OR = {
+					ENG = {is_subject_of = FRA}
+					country_exists = ENG
+				}
+				OR = {
+					GER = {is_subject_of = FRA}
+					country_exists = GER
+				}
+			}
+			modifier = {
+				add = 15
+				OR = {
+					has_idea = large_power
+					has_idea = super_power
+				}
+			}
 		}
 	}
 }
@@ -5910,15 +7148,19 @@ FRA_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -4 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = 1
+				has_government = democratic
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -5953,15 +7195,19 @@ FRA_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -4 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = 1
+				has_government = democratic
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -5994,15 +7240,19 @@ FRA_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -4 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = 1
+				has_government = democratic
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6035,15 +7285,19 @@ FRA_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -4 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = 1
+				has_government = democratic
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6076,15 +7330,19 @@ FRA_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -4 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = 1
+				has_government = democratic
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6117,15 +7375,19 @@ FRA_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -4 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = 1
+				has_government = democratic
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6160,15 +7422,19 @@ FRA_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -3 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = 1
+				has_government = democratic
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6203,15 +7469,19 @@ FRA_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -3 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = 1
+				has_government = democratic
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6244,15 +7514,19 @@ FRA_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -3 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = 1
+				has_government = democratic
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6285,15 +7559,19 @@ FRA_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -3 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = 1
+				has_government = democratic
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6326,15 +7604,19 @@ FRA_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -3 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = 1
+				has_government = democratic
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6367,15 +7649,19 @@ FRA_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -3 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = 1
+				has_government = democratic
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6412,15 +7698,19 @@ FRA_GREEN_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -4 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = -5
+				NOT = {neutrality_neutral_green_are_in_power=yes}
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6455,15 +7745,19 @@ FRA_GREEN_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -4 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = -5
+				NOT = {neutrality_neutral_green_are_in_power=yes}
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6496,15 +7790,19 @@ FRA_GREEN_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -4 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = -5
+				NOT = {neutrality_neutral_green_are_in_power=yes}
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6537,15 +7835,19 @@ FRA_GREEN_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -4 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = -5
+				NOT = {neutrality_neutral_green_are_in_power=yes}
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6578,15 +7880,19 @@ FRA_GREEN_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -4 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = -5
+				NOT = {neutrality_neutral_green_are_in_power=yes}
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
@@ -6619,15 +7925,19 @@ FRA_GREEN_EU_assistance_decision_category = {
 			set_temp_variable = { treasury_change = -4 }
 			modify_treasury_effect = yes
 		}
-
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
-				factor = 0
-				NOT = {
-					has_global_flag = FRA_CHAOS_PATH
-					has_government = democratic
-				}
+				add = -5
+				NOT = {neutrality_neutral_green_are_in_power=yes}
+			}
+			modifier = {
+				add = 2
+				NOT = {has_active_mission = bankruptcy_incoming_collapse}
+			}
+			modifier = {
+				add = -2
+				check_variable = { FRA.eurosceptic > 0.30 }
 			}
 		}
 	}
