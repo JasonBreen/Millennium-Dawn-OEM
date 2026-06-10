@@ -7403,19 +7403,14 @@
 	 	}
 	 }
 	 focus = {
-	 	id = SWI_arms_deals
+	 	id = SWI_foreign_investments
 	 	relative_position_id = SWI_effort_to_better_relations
 	 	x = -5
-	 	prerequisite = {
+		prerequisite = {
 	 		focus = SWI_effort_to_better_relations
 	 	}
 		completion_reward = {
-			SWI = { set_country_flag = SWI_arms_deals }
-		}
-		complete_tooltip = { 
-			activate_decision = SWI_buy_from_France
-			activate_decision = SWI_buy_from_Germany
-			activate_decision = SWI_buy_from_Italy
+			add_ideas = SWI_foreign_investments1
 		}
 	 }
 	 focus = {
@@ -7454,17 +7449,7 @@
 			SWI = { country_event = switzerland.22}
 		}
 	 }
-	 focus = {
-	 	id = SWI_foreign_investments
-	 	relative_position_id = SWI_arms_deals
-	 	y = 1
-	 	prerequisite = {
-	 		focus = SWI_arms_deals
-	 	}
-		completion_reward = {
-			add_ideas = SWI_foreign_investments1
-		}
-	 }
+
 	 focus = {
 	 	id = SWI_internal_investments
 	 	relative_position_id = SWI_local_arms_production
@@ -7492,7 +7477,7 @@
 	 		focus = SWI_nato
 	 	}
 		available = {
-			always = no
+			has_idea = NATO_member
 		}
 		completion_reward = {
 			every_country = {
@@ -7516,7 +7501,7 @@
 	 		focus = SWI_nato
 	 	}
 		available = {
-			always = no
+			NOT = { has_idea = NATO_member }
 		}
 		completion_reward = {
 	 		set_temp_variable = { percent_change = 5 }
@@ -7569,7 +7554,18 @@
 	 		focus = SWI_alone_is_safer
 	 	}
 		completion_reward = {
-			add_ideas = SWI_bank_of_the_west1
+			if = {
+				limit = {
+					has_idea = SWI_bank_of_the_west1
+				}
+				swap_ideas = {
+					add_idea = SWI_bank_of_the_west2
+					remove_idea = SWI_bank_of_the_west1
+				}
+			}
+			else = {
+				add_ideas = SWI_bank_of_the_west1
+			}
 		}
 	 }
 	 focus = {
@@ -7581,7 +7577,27 @@
 	 		focus = SWI_partner_like_everyone
 	 	}
 		completion_reward = {
-			add_ideas = SWI_bank_of_the_world1
+			if = {
+				limit = {
+					has_completed_focus = SWI_on_our_own_path
+				}
+				swap_ideas = {
+					remove_idea = SWI_bank_of_the_world1
+					add_idea = SWI_bank_of_the_world3
+				}
+			}
+			else_if = {
+				limit = {
+					has_completed_focus = SWI_eu_investments
+				}
+				swap_ideas = {
+					remove_idea = SWI_bank_of_the_world1
+					add_idea = SWI_bank_of_the_world2
+				}
+			}
+			else = {
+				add_ideas = SWI_bank_of_the_world1
+			}
 		}
 	 }
 	 focus = {
@@ -7617,9 +7633,17 @@
 	 		focus = SWI_expanded_trade
 	 	}
 		completion_reward = {
-			swap_ideas = {
-				remove_idea = SWI_bank_of_the_world1
-				add_idea = SWI_bank_of_the_world2
+			if = {
+				limit = {
+					has_completed_focus = SWI_the_bank_of_the_world
+				}
+				swap_ideas = {
+					remove_idea = SWI_bank_of_the_world1
+					add_idea = SWI_bank_of_the_world2
+				}
+			}
+			else = {
+				add_ideas = SWI_bank_of_the_world1
 			}
 		}
 	 }
@@ -7631,9 +7655,17 @@
 	 		focus = SWI_partner_like_everyone
 	 	}
 		completion_reward = {
-			swap_ideas = {
-				remove_idea = SWI_bank_of_the_world1
-				add_idea = SWI_bank_of_the_world3
+			if = {
+				limit = {
+					has_completed_focus = SWI_the_bank_of_the_world
+				}
+				swap_ideas = {
+					remove_idea = SWI_bank_of_the_world1
+					add_idea = SWI_bank_of_the_world3
+				}
+			}
+			else = {
+				add_ideas = SWI_bank_of_the_world1
 			}
 		}
 	 }
@@ -7805,19 +7837,39 @@
 		}
 	 }
 	 focus = {
-	 	id = SWI_swiss_banking_2
+	 	id = SWI_swiss_banking_two
 	 	relative_position_id = SWI_national_investments
 	 	y = 1
 	 	prerequisite = {
 	 		focus = SWI_national_investments
 	 	}
 		available = {
-			has_idea = bank_of_the_world_2
+			OR = {
+				has_idea = SWI_bank_of_the_world2
+				has_idea = SWI_bank_of_the_world3
+			}
 		}
 		completion_reward = {
-			swap_ideas = {
-				remove_idea = SWI_bank_of_the_world2
-				add_idea = SWI_bank_of_the_world3
+			if = {
+				limit = {
+					has_idea = SWI_bank_of_the_world2
+				}
+				swap_ideas = {
+					remove_idea = SWI_bank_of_the_world2
+					add_idea = SWI_bank_of_the_world4
+				}
+			}
+			else_if = {
+				limit = {
+					has_idea = SWI_bank_of_the_world3
+				}
+				swap_ideas = {
+					remove_idea = SWI_bank_of_the_world3
+					add_idea = SWI_bank_of_the_world5
+				}
+			}
+			else = {
+				add_ideas = SWI_bank_of_the_world1
 			}
 		}
 	 }
