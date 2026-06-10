@@ -1490,4 +1490,786 @@ SAU_Among_Major_powers_Open_east = {
 		ai_will_do = { base = 1 }
 	}
 	# The End of the Among Major Powers Decisions.
+
+	
+
+
+	# End of The Foreign Policy
+
+	# === Support the Free Syrian Army (focus: SAU_Fund_the_Free_Syrian_Army) ===
+	SAU_fsa_send_cash = {
+		icon = syr_money_button
+		priority = 90
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Fund_the_Free_Syrian_Army
+			country_exists = FSA
+		}
+		available = {
+			NOT = { has_country_flag = SAU_fsa_cash_locked }
+		}
+
+		cost = 40
+		days_remove = 90
+		days_re_enable = 180
+		fire_only_once = no
+
+		complete_effect = {
+			set_country_flag = SAU_fsa_cash_locked
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_fsa_send_cash"
+			set_temp_variable = { treasury_change = -30 }
+			modify_treasury_effect = yes
+			if = {
+				limit = { country_exists = FSA }
+				FSA = {
+				set_temp_variable = { treasury_change = 30 }
+			 	modify_treasury_effect = yes
+					add_political_power = 50
+					add_stability = 0.03
+					add_war_support = 0.03
+					add_opinion_modifier = { target = ROOT modifier = military_aid }
+				}
+			}
+			clr_country_flag = SAU_fsa_cash_locked
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_fsa_smuggle_weapons = {
+		icon = category_generic_arms_trade
+		priority = 90
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Fund_the_Free_Syrian_Army
+			country_exists = FSA
+		}
+		available = {
+			NOT = { has_country_flag = SAU_fsa_weapons_locked }
+		}
+
+		cost = 50
+		days_remove = 120
+		days_re_enable = 200
+		fire_only_once = no
+
+		complete_effect = {
+			set_country_flag = SAU_fsa_weapons_locked
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_fsa_smuggle_weapons"
+			set_temp_variable = { treasury_change = -25 }
+			modify_treasury_effect = yes
+			if = {
+				limit = { country_exists = FSA }
+				FSA = {
+					army_experience = 10
+					add_manpower = 2000
+					add_equipment_to_stockpile = { type = infantry_weapons_1 amount = 300 producer = ROOT }
+				}
+			}
+			clr_country_flag = SAU_fsa_weapons_locked
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_fsa_foreign_fighters = {
+		icon = sov_volunteer_storm_corps_button
+		priority = 90
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Fund_the_Free_Syrian_Army
+			country_exists = FSA
+		}
+		available = {
+			NOT = { has_country_flag = SAU_fsa_fighters_locked }
+		}
+
+		cost = 35
+		days_remove = 150
+		days_re_enable = 250
+		fire_only_once = no
+
+		complete_effect = {
+			set_country_flag = SAU_fsa_fighters_locked
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_fsa_foreign_fighters"
+			if = {
+				limit = { country_exists = FSA }
+				FSA = {
+					add_manpower = 1500
+					add_war_support = 0.02
+				}
+				add_ai_strategy = { type = support id = "FSA" value = 20 }
+			}
+			clr_country_flag = SAU_fsa_fighters_locked
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	# === Palestine: Two-State Solution (focus: SAU_Palestine_4) ===
+	SAU_pal_fund_development = {
+		icon = urban_development_fund_category
+		priority = 90
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Palestine_4
+			country_exists = PAL
+		}
+		available = {
+			NOT = { has_country_flag = SAU_pal_dev_locked }
+		}
+
+		cost = 40
+		days_remove = 120
+		days_re_enable = 200
+		fire_only_once = no
+
+		complete_effect = {
+			set_country_flag = SAU_pal_dev_locked
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_pal_fund_development"
+			set_temp_variable = { treasury_change = -40 }
+			modify_treasury_effect = yes
+			if = {
+				limit = { country_exists = PAL }
+				PAL = {
+					add_stability = 0.05
+					add_political_power = 50
+					add_opinion_modifier = { target = ROOT modifier = SAU_funds_the_cause }
+					random_owned_state = {
+						add_building_construction = { type = infrastructure level = 1 instant_build = yes }
+					}
+				}
+			}
+			clr_country_flag = SAU_pal_dev_locked
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_pal_sponsor_peace = {
+		icon = negotiate_icon
+		priority = 90
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Palestine_4
+		}
+		available = {
+			NOT = { has_country_flag = SAU_pal_peace_locked }
+		}
+
+		cost = 50
+		days_remove = 90
+		days_re_enable = 180
+		fire_only_once = no
+
+		complete_effect = {
+			set_country_flag = SAU_pal_peace_locked
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_pal_sponsor_peace"
+			add_political_power = 25
+			add_war_support = 0.03
+			if = {
+				limit = { country_exists = PAL }
+				PAL = {
+					add_stability = 0.05
+					add_opinion_modifier = { target = ROOT modifier = SAU_funds_the_cause }
+				}
+			}
+			clr_country_flag = SAU_pal_peace_locked
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_pal_invest_gaza = {
+		icon = category_investment
+		priority = 90
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Palestine_4
+			country_exists = PAL
+		}
+		available = {
+			NOT = { has_country_flag = SAU_pal_gaza_locked }
+		}
+
+		cost = 60
+		days_remove = 180
+		days_re_enable = 300
+		fire_only_once = no
+
+		complete_effect = {
+			set_country_flag = SAU_pal_gaza_locked
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_pal_invest_gaza"
+			set_temp_variable = { treasury_change = -50 }
+			modify_treasury_effect = yes
+			if = {
+				limit = { country_exists = PAL }
+				PAL = {
+					add_stability = 0.03
+					random_owned_state = {
+						add_building_construction = { type = industrial_complex level = 1 instant_build = yes }
+					}
+					random_owned_state = {
+						add_building_construction = { type = infrastructure level = 1 instant_build = yes }
+					}
+				}
+			}
+			clr_country_flag = SAU_pal_gaza_locked
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	# === Palestine: Support the Militia (focus: SAU_Palestine_3) - choose one faction ===
+	SAU_militia_back_hamas = {
+		icon = hamas
+		priority = 100
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Palestine_3
+		}
+		available = {
+			NOT = { has_country_flag = SAU_militia_chosen }
+		}
+
+		cost = 75
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_militia_back_hamas"
+			set_country_flag = SAU_militia_chosen
+			set_country_flag = SAU_sponsors_hamas
+			add_war_support = 0.03
+			if = {
+				limit = { country_exists = HAM }
+				HAM = {
+					add_political_power = 50
+					add_manpower = 10000
+					add_opinion_modifier = { target = ROOT modifier = military_aid }
+				}
+				add_ai_strategy = { type = support id = "HAM" value = 30 }
+				add_ai_strategy = { type = befriend id = "HAM" value = 30 }
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_militia_back_dflp = {
+		icon = com_militia_2000_dec
+		priority = 100
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Palestine_3
+		}
+		available = {
+			NOT = { has_country_flag = SAU_militia_chosen }
+		}
+
+		cost = 75
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_militia_back_dflp"
+			set_country_flag = SAU_militia_chosen
+			set_country_flag = SAU_sponsors_dflp
+			add_political_power = 40
+			add_stability = 0.02
+			if = {
+				limit = { country_exists = PAL }
+				PAL = {
+					add_opinion_modifier = { target = ROOT modifier = SAU_funds_the_cause }
+				}
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_militia_islamic_front = {
+		icon = category_taliban_insurgency
+		priority = 100
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Palestine_3
+		}
+		available = {
+			NOT = { has_country_flag = SAU_militia_chosen }
+		}
+
+		cost = 75
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_militia_islamic_front"
+			set_country_flag = SAU_militia_chosen
+			set_country_flag = SAU_sponsors_islamic_front
+			country_event = { id = SAU_events.20 hours = 6 }
+			unlock_decision_tooltip = SAU_if_rocket_barrage
+			unlock_decision_tooltip = SAU_if_suicide_bombing
+			unlock_decision_tooltip = SAU_if_cross_border_raid
+			add_war_support = 0.05
+			add_political_power = 50
+			if = {
+				limit = { country_exists = PAL }
+				PAL = {
+					add_opinion_modifier = { target = ROOT modifier = SAU_funds_the_cause }
+				}
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	# === Loyal Islamic Front: strikes against Israel (flag: SAU_sponsors_islamic_front) ===
+	SAU_if_rocket_barrage = {
+		icon = missile_rocket_button
+		priority = 100
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_sponsors_islamic_front
+			country_exists = ISR
+		}
+		available = {
+			country_exists = ISR
+			NOT = { ISR = { has_capitulated = yes } }
+		}
+
+		cost = 30
+		days_re_enable = 60
+		fire_only_once = no
+		days_remove = 15
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_if_rocket_barrage"
+			if = {
+				limit = { country_exists = ISR }
+				ISR = {
+					add_stability = -0.05
+					add_war_support = -0.03
+					add_opinion_modifier = { target = ROOT modifier = SAU_proxy_aggression }
+					random = {
+						chance = 50
+						random_owned_state = {
+							damage_building = { type = infrastructure damage = 1 }
+						}
+					}
+					country_event = { id = SAU_events.17 hours = 6 }
+				}
+			}
+			random = {
+				chance = 20
+				add_political_power = -25
+				add_war_support = -0.02
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_if_suicide_bombing = {
+		icon = jet_bomber
+		priority = 100
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_sponsors_islamic_front
+			country_exists = ISR
+		}
+		available = {
+			country_exists = ISR
+			NOT = { ISR = { has_capitulated = yes } }
+		}
+
+		cost = 40
+		days_re_enable = 75
+		fire_only_once = no
+		days_remove = 20
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_if_suicide_bombing"
+			if = {
+				limit = { country_exists = ISR }
+				ISR = {
+					add_stability = -0.07
+					add_political_power = -50
+					add_manpower = -2000
+					add_opinion_modifier = { target = ROOT modifier = SAU_proxy_aggression }
+					country_event = { id = SAU_events.18 hours = 6 }
+				}
+			}
+			random = {
+				chance = 30
+				add_political_power = -30
+				add_war_support = -0.02
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_if_cross_border_raid = {
+		icon = border_war
+		priority = 100
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_sponsors_islamic_front
+			country_exists = ISR
+		}
+		available = {
+			country_exists = ISR
+			NOT = { ISR = { has_capitulated = yes } }
+		}
+
+		cost = 50
+		days_re_enable = 90
+		fire_only_once = no
+		days_remove = 20
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_if_cross_border_raid"
+			if = {
+				limit = { country_exists = ISR }
+				ISR = {
+					add_war_support = -0.05
+					add_manpower = -1000
+					add_opinion_modifier = { target = ROOT modifier = SAU_proxy_aggression }
+					random = {
+						chance = 50
+						random_owned_state = {
+							damage_building = { type = arms_factory damage = 1 }
+						}
+					}
+					country_event = { id = SAU_events.19 hours = 6 }
+				}
+			}
+			random = {
+				chance = 40
+				add_political_power = -40
+				add_war_support = -0.03
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	# === Pipeline routes (focus: SAU_Pipelines_for_Saudi_arabia) ===
+	SAU_pipeline_yemen = {
+		icon = oil
+		priority = 100
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Pipelines_for_Saudi_arabia
+			NOT = { has_country_flag = SAU_yemen_pipeline_open }
+			custom_trigger_tooltip = { tooltip = SAU_tt_not_houthi NOT = { SAU_houthis_won_south = yes } }
+		}
+		available = {
+			SAU_yemen_route_secure = yes
+			country_exists = YEM
+		}
+		cost = 75
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_pipeline_yemen"
+			YEM = { country_event = { id = SAU_events.22 hours = 6 } }
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = { add_ideas = SAU_yemen_pipeline_t3 }
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_pipeline_syria_fsa = {
+		icon = oil_green
+		priority = 100
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Pipelines_for_Saudi_arabia
+			SAU_fsa_controls_syria = yes
+			NOT = { has_country_flag = SAU_syria_pipeline_open }
+		}
+		available = { country_exists = FSA country_exists = JOR }
+		cost = 75
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_pipeline_syria_fsa"
+			JOR = { country_event = { id = SAU_events.29 hours = 6 } }
+			custom_effect_tooltip = SAU_tt_via_jordan
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_pipeline_syria_assad = {
+		icon = oil_red
+		priority = 100
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Pipelines_for_Saudi_arabia
+			SAU_assad_controls_syria = yes
+			NOT = { has_country_flag = SAU_syria_pipeline_open }
+		}
+		available = { country_exists = SYR country_exists = JOR }
+		cost = 100
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_pipeline_syria_assad"
+			JOR = { country_event = { id = SAU_events.29 hours = 6 } }
+			custom_effect_tooltip = SAU_tt_via_jordan
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_pipeline_iraq = {
+		icon = petro_dollar
+		priority = 100
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Pipelines_for_Saudi_arabia
+			SAU_saddam_fell = yes
+			NOT = { has_country_flag = SAU_iraq_pipeline_open }
+		}
+		available = { country_exists = IRQ }
+		cost = 100
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_pipeline_iraq"
+			IRQ = { country_event = { id = SAU_events.24 hours = 6 } }
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = { add_ideas = SAU_iraq_pipeline_t3 }
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_pipeline_turkey_extend = {
+		icon = oil_green
+		priority = 100
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_iraq_pipeline_open
+			NOT = { has_country_flag = SAU_turkey_pipeline_open }
+		}
+		available = { country_exists = TUR }
+		cost = 75
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_pipeline_turkey_extend"
+			TUR = { country_event = { id = SAU_events.33 hours = 6 } }
+			custom_effect_tooltip = SAU_tt_extend_turkey
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_pipeline_iraq_talks = {
+		icon = generic_political_actions
+		priority = 100
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Pipelines_for_Saudi_arabia
+			SAU_saddam_in_power = yes
+			NOT = { has_country_flag = SAU_iraq_pipeline_open }
+		}
+		available = {
+			country_exists = IRQ
+			NOT = { has_country_flag = SAU_saddam_talks_done }
+		}
+		cost = 75
+		days_re_enable = 365
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_pipeline_iraq_talks"
+			IRQ = { country_event = { id = SAU_events.25 hours = 6 } }
+			custom_effect_tooltip = SAU_tt_saddam_talks
+		}
+		ai_will_do = { base = 1 }
+	}
+	# === Pipeline repair (restore a sabotaged tier) ===
+	SAU_repair_pipeline_yemen = {
+		icon = generic_construction
+		priority = 95
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_yemen_pipeline_open
+			OR = { has_idea = SAU_yemen_pipeline_t1 has_idea = SAU_yemen_pipeline_t2 }
+		}
+		available = {
+			command_power > 0
+			NOT = { has_country_flag = SAU_repair_active }
+		}
+		cost = 75
+		days_remove = 60
+		days_re_enable = 90
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_repair_pipeline_yemen"
+			set_country_flag = SAU_repair_active
+		}
+		remove_effect = {
+			clr_country_flag = SAU_repair_active
+			SAU_yemen_tier_up = yes
+		}
+		ai_will_do = { base = 1 }
+	}
+	SAU_repair_pipeline_syria = {
+		icon = generic_construction
+		priority = 95
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_syria_pipeline_open
+			OR = { has_idea = SAU_syria_pipeline_t1 has_idea = SAU_syria_pipeline_t2 }
+		}
+		available = {
+			command_power > 0
+			NOT = { has_country_flag = SAU_repair_active }
+		}
+		cost = 75
+		days_remove = 60
+		days_re_enable = 90
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_repair_pipeline_syria"
+			set_country_flag = SAU_repair_active
+		}
+		remove_effect = {
+			clr_country_flag = SAU_repair_active
+			SAU_syria_tier_up = yes
+		}
+		ai_will_do = { base = 1 }
+	}
+	SAU_repair_pipeline_iraq = {
+		icon = generic_construction
+		priority = 95
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_iraq_pipeline_open
+			OR = { has_idea = SAU_iraq_pipeline_t1 has_idea = SAU_iraq_pipeline_t2 }
+		}
+		available = {
+			command_power > 0
+			NOT = { has_country_flag = SAU_repair_active }
+		}
+		cost = 75
+		days_remove = 60
+		days_re_enable = 90
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_repair_pipeline_iraq"
+			set_country_flag = SAU_repair_active
+		}
+		remove_effect = {
+			clr_country_flag = SAU_repair_active
+			SAU_iraq_tier_up = yes
+		}
+		ai_will_do = { base = 1 }
+	}
+}
+
+SAU_pipeline_sabotage_category = {
+	SAU_sabotage_pipeline_yemen = {
+		icon = generic_operation
+		priority = 100
+		allowed = { SAU_is_pipeline_saboteur = yes }
+		visible = { SAU = { has_country_flag = SAU_yemen_pipeline_open } }
+		available = {
+			NOT = { is_in_faction_with = SAU }
+			NOT = { has_country_flag = SAU_sabotage_active }
+		}
+		cost = 50
+		days_remove = 30
+		days_re_enable = 120
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_sabotage_pipeline_yemen"
+			set_country_flag = SAU_sabotage_active
+		}
+		remove_effect = {
+			clr_country_flag = SAU_sabotage_active
+			custom_effect_tooltip = SAU_tt_sabotage_chance
+			random = {
+				chance = 50
+				SAU = { country_event = { id = SAU_events.28 hours = 6 } }
+			}
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_sabotage_pipeline_syria = {
+		icon = generic_operation
+		priority = 100
+		allowed = { SAU_is_pipeline_saboteur = yes }
+		visible = { SAU = { has_country_flag = SAU_syria_pipeline_open } }
+		available = {
+			NOT = { is_in_faction_with = SAU }
+			NOT = { has_country_flag = SAU_sabotage_active }
+		}
+		cost = 50
+		days_remove = 30
+		days_re_enable = 120
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_sabotage_pipeline_syria"
+			set_country_flag = SAU_sabotage_active
+		}
+		remove_effect = {
+			clr_country_flag = SAU_sabotage_active
+			custom_effect_tooltip = SAU_tt_sabotage_chance
+			random = {
+				chance = 50
+				SAU = { country_event = { id = SAU_events.34 hours = 6 } }
+			}
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_sabotage_pipeline_iraq = {
+		icon = generic_operation
+		priority = 100
+		allowed = { SAU_is_pipeline_saboteur = yes }
+		visible = { SAU = { has_country_flag = SAU_iraq_pipeline_open } }
+		available = {
+			NOT = { is_in_faction_with = SAU }
+			NOT = { has_country_flag = SAU_sabotage_active }
+		}
+		cost = 50
+		days_remove = 30
+		days_re_enable = 120
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_sabotage_pipeline_iraq"
+			set_country_flag = SAU_sabotage_active
+		}
+		remove_effect = {
+			clr_country_flag = SAU_sabotage_active
+			custom_effect_tooltip = SAU_tt_sabotage_chance
+			random = {
+				chance = 50
+				SAU = { country_event = { id = SAU_events.35 hours = 6 } }
+			}
+		}
+		ai_will_do = { base = 1 }
+	}
 }
