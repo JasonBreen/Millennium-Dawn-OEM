@@ -12715,7 +12715,7 @@ focus_tree = {
 
 	focus = {
 		id = SAU_Arabia_Yemen
-		icon = GFX_focus_generic_treaty
+		icon = yemenmap
 
 		x = -3
 		y = 1
@@ -12727,11 +12727,12 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Arabia_Yemen"
+			add_political_power = 30
+			add_war_support = 0.02
+			custom_effect_tooltip = SAU_arabia_yemen_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -12784,7 +12785,7 @@ focus_tree = {
 
 	focus = {
 		id = SAU_Yemeni_Civil_war
-		icon = GFX_focus_generic_treaty
+		icon = flames_of_rebellion
 
 		x = -3
 		y = 2
@@ -12794,18 +12795,32 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Arabia_Yemen }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Yemeni_Civil_war"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_houthi_war_tt
+				country_exists = HOU
+				HOU = { has_war_with = YEM }
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Yemeni_Civil_war"
+			add_political_power = 25
+			add_war_support = 0.03
+			set_country_flag = SAU_yemen_intervention
+			if = {
+				limit = { country_exists = YEM }
+				YEM = { add_opinion_modifier = { target = ROOT modifier = military_aid } }
+			}
+			custom_effect_tooltip = SAU_yemeni_civil_war_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Support_The_Government_Proxy
-		icon = GFX_focus_generic_treaty
+		icon = align_to_yemen
 
 		x = -4
 		y = 3
@@ -12818,16 +12833,28 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Support_The_Government_Proxy"
+			add_political_power = 25
+			set_country_flag = SAU_yemen_proxy
+			if = {
+				limit = { country_exists = YEM }
+				YEM = {
+					add_opinion_modifier = { target = ROOT modifier = military_aid }
+					army_experience = 15
+					add_manpower = 10000
+				}
+				add_ai_strategy = { type = support id = "YEM" value = 30 }
+				add_ai_strategy = { type = antagonize id = "HOU" value = 30 }
+			}
+			unlock_decision_tooltip = SAU_operation_decisive_storm
+			custom_effect_tooltip = SAU_yemen_proxy_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Support_The_Government_Direct
-		icon = GFX_focus_generic_treaty
+		icon = military_mission
 
 		x = -2
 		y = 3
@@ -12840,16 +12867,30 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Support_The_Government_Direct"
+			add_war_support = 0.05
+			set_country_flag = SAU_yemen_direct
+			if = {
+				limit = { country_exists = HOU HOU = { has_idea = faction_resistance_axis_member } }
+				HOU = { remove_ideas = faction_resistance_axis_member }
+			}
+			if = {
+				limit = { country_exists = YEM }
+				YEM = { give_military_access = ROOT }
+			}
+			if = {
+				limit = { country_exists = HOU }
+				create_wargoal = { type = puppet_wargoal_focus target = HOU }
+				add_ai_strategy = { type = antagonize id = "HOU" value = 50 }
+			}
+			custom_effect_tooltip = SAU_yemen_direct_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_The_Yemeni_Peace_Talks
-		icon = GFX_focus_generic_treaty
+		icon = dangerous_deal2
 
 		x = -3
 		y = 4
@@ -12861,16 +12902,18 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_The_Yemeni_Peace_Talks"
+			add_political_power = 50
+			add_war_support = 0.03
+			add_stability = 0.02
+			custom_effect_tooltip = SAU_yemen_peace_talks_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Partion_The_Yemen
-		icon = GFX_focus_generic_treaty
+		icon = dangerous_deal
 
 		x = -4
 		y = 5
@@ -12881,18 +12924,30 @@ focus_tree = {
 		prerequisite = { focus = SAU_The_Yemeni_Peace_Talks }
 		mutually_exclusive = { focus = SAU_Total_Victory_in_Civil_war }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Partion_The_Yemen"
+		available = {
+			country_exists = HOU
+			country_exists = YEM
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Partion_The_Yemen"
+			if = {
+				limit = { country_exists = PER }
+				PER = { country_event = { id = SAU_events.36 days = 1 } }
+				custom_effect_tooltip = TT_IF_THEY_ACCEPT
+				effect_tooltip = { custom_effect_tooltip = SAU_partition_yemen_tt }
+			}
+			else = {
+				SAU_partition_yemen_effect = yes
+			}
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Total_Victory_in_Civil_war
-		icon = GFX_focus_generic_treaty
+		icon = yemenflag
 
 		x = -2
 		y = 5
@@ -12903,13 +12958,34 @@ focus_tree = {
 		prerequisite = { focus = SAU_The_Yemeni_Peace_Talks }
 		mutually_exclusive = { focus = SAU_Partion_The_Yemen }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Total_Victory_in_Civil_war"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_houthi_defeated_tt
+				OR = {
+					NOT = { country_exists = HOU }
+					HOU = { has_capitulated = yes }
+				}
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Total_Victory_in_Civil_war"
+			add_war_support = 0.05
+			add_stability = 0.05
+			if = {
+				limit = { country_exists = HOU country_exists = YEM }
+				YEM = { annex_country = { target = HOU transfer_troops = yes } }
+			}
+			if = {
+				limit = { country_exists = YEM }
+				give_guarantee = YEM
+				YEM = { add_opinion_modifier = { target = ROOT modifier = SAU_yemen_aligned } }
+				add_opinion_modifier = { target = YEM modifier = SAU_yemen_aligned }
+			}
+			custom_effect_tooltip = SAU_total_victory_yemen_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {

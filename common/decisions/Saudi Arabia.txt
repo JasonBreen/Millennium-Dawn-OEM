@@ -1848,7 +1848,7 @@ SAU_Among_Major_powers_Open_east = {
 		ai_will_do = { base = 1 }
 	}
 
-	# === Loyal Islamic Front: strikes against Israel (flag: SAU_sponsors_islamic_front) ===
+	#Loyal Islamic Front: strikes against Israel (flag: SAU_sponsors_islamic_front)
 	SAU_if_rocket_barrage = {
 		icon = missile_rocket_button
 		priority = 100
@@ -1979,7 +1979,7 @@ SAU_Among_Major_powers_Open_east = {
 		ai_will_do = { base = 1 }
 	}
 
-	# === Pipeline routes (focus: SAU_Pipelines_for_Saudi_arabia) ===
+	# Pipeline routes (focus: SAU_Pipelines_for_Saudi_arabia)
 	SAU_pipeline_yemen = {
 		icon = oil
 		priority = 100
@@ -2107,7 +2107,7 @@ SAU_Among_Major_powers_Open_east = {
 		}
 		ai_will_do = { base = 1 }
 	}
-	# === Pipeline repair (restore a sabotaged tier) ===
+	# Pipeline repair
 	SAU_repair_pipeline_yemen = {
 		icon = generic_construction
 		priority = 95
@@ -2183,6 +2183,133 @@ SAU_Among_Major_powers_Open_east = {
 		remove_effect = {
 			clr_country_flag = SAU_repair_active
 			SAU_iraq_tier_up = yes
+		}
+		ai_will_do = { base = 1 }
+	}
+	# Yemen Proxies
+	SAU_yemen_raise_brigade = {
+		icon = generic_operation
+		priority = 90
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_decisive_storm
+			country_exists = YEM
+			NOT = { YEM = { has_idea = SAU_yemen_attack_buff } }
+		}
+		available = {
+			YEM = { has_war_with = HOU }
+		}
+		cost = 50
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_yemen_raise_brigade"
+			if = { limit = { country_exists = YEM } YEM = { add_timed_idea = { idea = SAU_yemen_attack_buff days = 60 } } }
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_yemen_old_weapons = {
+		icon = generic_operation
+		priority = 90
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_decisive_storm
+			country_exists = YEM
+		}
+		available = {
+			YEM = { has_war_with = HOU }
+			NOT = { has_country_flag = SAU_yem_weapons_lock }
+		}
+		cost = 35
+		days_remove = 60
+		days_re_enable = 120
+		fire_only_once = no
+		complete_effect = {
+			set_country_flag = SAU_yem_weapons_lock
+		}
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_yemen_old_weapons"
+			clr_country_flag = SAU_yem_weapons_lock
+			if = {
+				limit = { country_exists = YEM }
+				YEM = { add_equipment_to_stockpile = { type = infantry_weapons_1 amount = 300 producer = ROOT } }
+			}
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_yemen_war_funds = {
+		icon = generic_operation
+		priority = 90
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_decisive_storm
+			country_exists = YEM
+		}
+		available = {
+			YEM = { has_war_with = HOU }
+			NOT = { has_country_flag = SAU_yem_funds_lock }
+		}
+		cost = 30
+		days_remove = 60
+		days_re_enable = 120
+		fire_only_once = no
+		complete_effect = {
+			set_country_flag = SAU_yem_funds_lock
+		}
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_yemen_war_funds"
+			clr_country_flag = SAU_yem_funds_lock
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			if = {
+				limit = { country_exists = YEM }
+				YEM = {
+					add_manpower = 8000
+					add_war_support = 0.03
+				}
+			}
+		}
+		ai_will_do = { base = 1 }
+	}
+	
+	SAU_operation_decisive_storm = {
+		icon = military_buildup
+		priority = 95
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_yemen_proxy
+			country_exists = HOU
+			NOT = { has_country_flag = SAU_decisive_storm }
+		}
+		available = {
+			country_exists = YEM
+			YEM = { has_war_with = HOU }
+		}
+		cost = 75
+		fire_only_once = yes
+		days_remove = 10
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_operation_decisive_storm"
+			set_country_flag = SAU_decisive_storm
+			news_event = { id = SAU_events.39 days = 1 }
+			unlock_decision_tooltip = SAU_yemen_raise_brigade
+			unlock_decision_tooltip = SAU_yemen_old_weapons
+			unlock_decision_tooltip = SAU_yemen_war_funds
+			if = {
+				limit = { country_exists = YEM }
+				YEM = { add_ideas = SAU_decisive_storm_air_cover }
+			}
+			if = {
+				limit = { country_exists = HOU }
+				HOU = {
+					every_controlled_state = {
+						random = { chance = 50 damage_building = { type = infrastructure damage = 2 } }
+						random = { chance = 35 damage_building = { type = anti_air_building damage = 1 } }
+					}
+				}
+			}
+			custom_effect_tooltip = SAU_decisive_storm_tt
 		}
 		ai_will_do = { base = 1 }
 	}
@@ -2271,5 +2398,100 @@ SAU_pipeline_sabotage_category = {
 			}
 		}
 		ai_will_do = { base = 1 }
+	}
+}
+
+# === Yemen War: Iranian Houthi support + North/South Yemen name (moved from Yemen_war.txt) ===
+PER_houthi_support_category = {
+	# === Iran arms the Houthis (mirror of the Saudi proxy effort) ===
+	PER_houthi_raise_brigade = {
+		icon = generic_operation
+		priority = 90
+		allowed = { original_tag = PER }
+		visible = { country_exists = HOU NOT = { HOU = { has_idea = PER_houthi_defense_buff } } }
+		available = {
+			HOU = { has_war_with = YEM }
+		}
+		cost = 50
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision PER_houthi_raise_brigade"
+			if = { limit = { country_exists = HOU } HOU = { add_timed_idea = { idea = PER_houthi_defense_buff days = 60 } } }
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	PER_houthi_militia = {
+		icon = generic_operation
+		priority = 90
+		allowed = { original_tag = PER }
+		visible = { country_exists = HOU }
+		available = {
+			HOU = { has_war_with = YEM }
+			NOT = { has_country_flag = PER_hou_militia_lock }
+		}
+		cost = 35
+		days_remove = 60
+		days_re_enable = 120
+		fire_only_once = no
+		complete_effect = { set_country_flag = PER_hou_militia_lock }
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision PER_houthi_militia"
+			clr_country_flag = PER_hou_militia_lock
+			if = { limit = { country_exists = HOU } HOU = { add_manpower = 10000 } }
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	PER_houthi_old_weapons = {
+		icon = generic_operation
+		priority = 90
+		allowed = { original_tag = PER }
+		visible = { country_exists = HOU }
+		available = {
+			HOU = { has_war_with = YEM }
+			NOT = { has_country_flag = PER_hou_weapons_lock }
+		}
+		cost = 35
+		days_remove = 60
+		days_re_enable = 120
+		fire_only_once = no
+		complete_effect = { set_country_flag = PER_hou_weapons_lock }
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision PER_houthi_old_weapons"
+			clr_country_flag = PER_hou_weapons_lock
+			if = {
+				limit = { country_exists = HOU }
+				HOU = { add_equipment_to_stockpile = { type = infantry_weapons_1 amount = 300 producer = ROOT } }
+			}
+		}
+		ai_will_do = { base = 1 }
+	}
+}
+
+yemen_partition_category = {
+	YEM_drop_south_yemen_name = {
+		icon = generic_political_actions
+		allowed = { original_tag = YEM }
+		visible = { has_cosmetic_tag = YEM_south_yemen }
+		cost = 25
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision YEM_drop_south_yemen_name"
+			drop_cosmetic_tag = yes
+		}
+		ai_will_do = { base = 0 }
+	}
+	HOU_drop_north_yemen_name = {
+		icon = generic_political_actions
+		allowed = { original_tag = HOU }
+		visible = { has_cosmetic_tag = HOU_north_yemen }
+		cost = 25
+		fire_only_once = no
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision HOU_drop_north_yemen_name"
+			drop_cosmetic_tag = yes
+		}
+		ai_will_do = { base = 0 }
 	}
 }
