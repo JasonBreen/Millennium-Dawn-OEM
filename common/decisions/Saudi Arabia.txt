@@ -2495,3 +2495,45 @@ yemen_partition_category = {
 		ai_will_do = { base = 0 }
 	}
 }
+
+SAU_arab_shield_category = {
+
+	SAU_arab_shield_invite = {
+		icon = GFX_decision_generic_form_nation
+
+		target_array = global.arab_league_members
+
+		target_root_trigger = {
+			has_country_flag = SAU_arab_shield_formed
+		}
+		target_trigger = {
+			country_exists = FROM
+			FROM = {
+				NOT = { original_tag = SAU }
+				NOT = { is_in_faction_with = ROOT }
+			}
+		}
+
+		allowed = { original_tag = SAU }
+
+		visible = {
+			FROM = { NOT = { has_war_with = ROOT } }
+		}
+		available = {
+			custom_trigger_tooltip = { tooltip = SAU_arab_shield_target_free_tt FROM = { is_in_faction = no } }
+		}
+
+		cost = 25
+		days_re_enable = 120
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_arab_shield_invite"
+			FROM = { country_event = { id = SAU_events.41 days = 1 } }
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = { FROM = { add_ideas = SAU_arab_shield_member } }
+		}
+
+		ai_will_do = { base = 1 }
+	}
+}
