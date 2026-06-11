@@ -3827,25 +3827,8 @@ country_event = {
 	}
 
 }
-# Rover Mars Mission
-country_event = {
-	id = HOL_military.088
-	title = HOL_military.088.t
-	desc = HOL_military.088.d
-	picture = GFX_mars_mission
-	is_triggered_only = yes
-
-	option = { # Launch!
-		name = HOL_military.088.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.088.o1 executed"
-		hidden_effect = {
-			country_event = { id = HOL_military.089 days = 20 random_hours = 480 }
-		}
-	}
-
-}
-
-# Mars Colony Event Chain - Launch
+# Mars Colony Event Chain - Mid-Mission: Funding Dilemma
+# Fired from HOL_mars_one focus completion_reward (days = 150 random_hours = 720)
 country_event = {
 	id = HOL_military.089
 	title = HOL_military.089.t
@@ -3854,26 +3837,31 @@ country_event = {
 	is_triggered_only = yes
 
 	option = {
-		name = HOL_military.089.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.089.o1 executed"
+		name = HOL_military.089.a
+		log = "[GetDateText]: [This.GetName]: HOL_military.089.a executed"
+		set_country_flag = HOL_mars_invested_budget
+		add_political_power = -25
+		custom_effect_tooltip = HOL_mars_invested_budget_tt
 		hidden_effect = {
-			random_list = {
-				60 = {
-					hidden_effect = {
-						country_event = { id = HOL_military.090 days = 20 random_hours = 480 }
-					}
-				}
-				40 = {
-					hidden_effect = {
-						country_event = { id = HOL_military.093 days = 20 random_hours = 480 }
-					}
-				}
-			}
+			country_event = { id = HOL_military.090 days = 180 random_hours = 720 }
+		}
+		newline = yes
+		set_temp_variable = { treasury_change = gdp_per_capita }
+		multiply_temp_variable = { treasury_change = -0.15 }
+		modify_treasury_effect = yes
+	}
+
+	option = {
+		name = HOL_military.089.b
+		log = "[GetDateText]: [This.GetName]: HOL_military.089.b executed"
+		hidden_effect = {
+			country_event = { id = HOL_military.090 days = 180 random_hours = 720 }
 		}
 	}
 
 }
 
+# Mars Colony Event Chain - Mid-Mission: Software Crisis
 country_event = {
 	id = HOL_military.090
 	title = HOL_military.090.t
@@ -3882,15 +3870,34 @@ country_event = {
 	is_triggered_only = yes
 
 	option = {
-		name = HOL_military.090.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.090.o1 executed"
+		name = HOL_military.090.a
+		log = "[GetDateText]: [This.GetName]: HOL_military.090.a executed"
+		set_country_flag = HOL_mars_software_resolved
+		add_political_power = -50
 		hidden_effect = {
-			country_event = { id = HOL_military.091 days = 20 random_hours = 480 }
+			country_event = { id = HOL_military.091 days = 240 random_hours = 720 }
+		}
+		newline = yes
+		set_temp_variable = { treasury_change = gdp_per_capita }
+		multiply_temp_variable = { treasury_change = -0.10 }
+		modify_treasury_effect = yes
+	}
+
+	option = {
+		name = HOL_military.090.b
+		log = "[GetDateText]: [This.GetName]: HOL_military.090.b executed"
+		add_days_mission_timeout = {
+			mission = HOL_mars_colony_mission
+			days = 120
+		}
+		hidden_effect = {
+			country_event = { id = HOL_military.091 days = 240 random_hours = 720 }
 		}
 	}
 
 }
 
+# Mars Colony Event Chain - Mid-Mission: First Soil Samples
 country_event = {
 	id = HOL_military.091
 	title = HOL_military.091.t
@@ -3899,15 +3906,40 @@ country_event = {
 	is_triggered_only = yes
 
 	option = {
-		name = HOL_military.091.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.091.o1 executed"
+		name = HOL_military.091.a
+		log = "[GetDateText]: [This.GetName]: HOL_military.091.a executed"
+		if = {
+			limit = { has_country_flag = HOL_mars_invested_budget }
+			add_tech_bonus = {
+				name = HOL_military.091.t
+				category = CAT_construction_tech
+				bonus = 0.10
+				uses = 1
+			}
+		}
+		capital_scope = {
+			add_resource = {
+				type = chromium
+				amount = 6
+			}
+		}
+		custom_effect_tooltip = HOL_mars_chromium_found_tt
 		hidden_effect = {
-			country_event = { id = HOL_military.092 days = 20 random_hours = 480 }
+			country_event = { id = HOL_military.092 days = 300 random_hours = 1440 }
+		}
+	}
+
+	option = {
+		name = HOL_military.091.b
+		log = "[GetDateText]: [This.GetName]: HOL_military.091.b executed"
+		hidden_effect = {
+			country_event = { id = HOL_military.092 days = 300 random_hours = 1440 }
 		}
 	}
 
 }
 
+# Mars Colony Event Chain - Mid-Mission: Structural Integrity Alert
 country_event = {
 	id = HOL_military.092
 	title = HOL_military.092.t
@@ -3916,336 +3948,89 @@ country_event = {
 	is_triggered_only = yes
 
 	option = {
-		name = HOL_military.092.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.092.o1 executed"
-		hidden_effect = {
-			country_event = { id = HOL_military.095 days = 20 random_hours = 480 }
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.093
-	title = HOL_military.093.t
-	desc = HOL_military.093.d
-	picture = GFX_mars_mission
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.093.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.093.o1 executed"
-		hidden_effect = {
-			country_event = { id = HOL_military.094 days = 20 random_hours = 480 }
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.094
-	title = HOL_military.094.t
-	desc = HOL_military.094.d
-	picture = GFX_mars_mission
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.094.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.094.o1 executed"
-		hidden_effect = {
-			country_event = { id = HOL_military.095 days = 20 random_hours = 480 }
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.095
-	title = HOL_military.095.t
-	desc = HOL_military.095.d
-	picture = GFX_mars_mission
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.095.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.095.o1 executed"
-		hidden_effect = {
-			country_event = { id = HOL_military.096 days = 20 random_hours = 480 }
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.096
-	title = HOL_military.096.t
-	desc = HOL_military.096.d
-	picture = GFX_mars_mission
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.096.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.096.o1 executed"
-		random_owned_state = {
-			add_resource = {
-				type = chromium
-				amount = 4
-			}
-		}
-		hidden_effect = {
-			country_event = { id = HOL_military.097 days = 20 random_hours = 480 }
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.097
-	title = HOL_military.097.t
-	desc = HOL_military.097.d
-	picture = GFX_mars_mission
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.097.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.097.o1 executed"
-		hidden_effect = {
-			country_event = { id = HOL_military.098 days = 20 random_hours = 480 }
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.098 #Crisis
-	title = HOL_military.098.t
-	desc = HOL_military.098.d
-	picture = GFX_mars_mission
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.098.o1 #Leave
-		log = "[GetDateText]: [This.GetName]: HOL_military.098.o1 executed"
-		hidden_effect = {
-			country_event = { id = HOL_military.099 days = 20 random_hours = 480 }
-		}
-	}
-
-	option = {
-		name = HOL_military.098.o2 #Stay
-		log = "[GetDateText]: [This.GetName]: HOL_military.098.o2 executed"
-		hidden_effect = {
-			country_event = { id = HOL_military.100 days = 20 random_hours = 480 }
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.099
-	title = HOL_military.099.t
-	desc = HOL_military.099.d
-	picture = GFX_mars_mission
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.099.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.099.o1 executed"
-		hidden_effect = {
-			country_event = { id = HOL_military.101 days = 20 random_hours = 480 }
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.100
-	title = HOL_military.100.t
-	desc = HOL_military.100.d
-	picture = GFX_mars_mission
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.100.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.100.o1 executed"
-		set_temp_variable = { treasury_change = gdp_per_capita }
-		multiply_temp_variable = { treasury_change = -0.20 }
-		modify_treasury_effect = yes
-		hidden_effect = {
-			country_event = { id = HOL_military.101 days = 120 random_hours = 3200 }
-			set_country_flag = HOL_repaired_mars_base
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.101
-	title = HOL_military.101.t
-	desc = HOL_military.101.d
-	picture = GFX_mars_mission
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.101.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.101.o1 executed"
+		name = HOL_military.092.a
+		log = "[GetDateText]: [This.GetName]: HOL_military.092.a executed"
 		if = {
-			limit = { has_country_flag = HOL_repaired_mars_base }
-			custom_effect_tooltip = HOL_military.101_tt
-			random_owned_state = {
+			limit = { has_country_flag = HOL_mars_software_resolved }
+			custom_effect_tooltip = HOL_mars_software_bonus_tt
+			capital_scope = {
 				add_resource = {
 					type = steel
-					amount = 4
+					amount = 6
 				}
 			}
-			add_tech_bonus = {
-				name = HOL_military.101.t
-				category = CAT_construction_tech
-				bonus = 0.10
-				uses = 1
-			}
 		}
+		add_political_power = 75
+		newline = yes
 		set_temp_variable = { treasury_change = gdp_per_capita }
 		multiply_temp_variable = { treasury_change = -0.10 }
 		modify_treasury_effect = yes
-		hidden_effect = {
-			country_event = { id = HOL_military.102 days = 120 random_hours = 3200 }
+	}
+
+	option = {
+		name = HOL_military.092.b
+		log = "[GetDateText]: [This.GetName]: HOL_military.092.b executed"
+		add_days_mission_timeout = {
+			mission = HOL_mars_colony_mission
+			days = 120
 		}
 	}
 
 }
+
+# Mars Colony Event Chain - Colony Dedication (fired by HOL_mars_colony_mission timeout)
 country_event = {
-	id = HOL_military.102
-	title = HOL_military.102.t
-	desc = HOL_military.102.d
+	id = HOL_military.088
+	title = HOL_military.088.t
+	desc = HOL_military.088.d
 	picture = GFX_mars_mission
 	is_triggered_only = yes
 
 	option = {
-		name = HOL_military.102.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.102.o1 executed"
+		name = HOL_military.088.a
+		log = "[GetDateText]: [This.GetName]: HOL_military.088.a executed"
+		add_ideas = HOL_mars_colony1
 		add_political_power = 100
-		hidden_effect = {
-			country_event = { id = HOL_military.103 days = 720 random_hours = 16384 }
-		}
 	}
 
-}
-
-country_event = {
-	id = HOL_military.103
-	title = HOL_military.103.t
-	desc = HOL_military.103.d
-	picture = GFX_mars_mission
-	is_triggered_only = yes
+	option = {
+		name = HOL_military.088.b
+		log = "[GetDateText]: [This.GetName]: HOL_military.088.b executed"
+		add_ideas = HOL_mars_colony2
+		add_political_power = 100
+	}
 
 	option = {
-		name = HOL_military.103.o1
-		log = "[GetDateText]: [This.GetName]: HOL_military.103.o1 executed"
-		random_list = {
-			33 = {
-				capital_scope = {
-					add_resource = {
-						type = chromium
-						amount = 48
-					}
-				}
+		name = HOL_military.088.c
+		log = "[GetDateText]: [This.GetName]: HOL_military.088.c executed"
+		add_ideas = HOL_mars_colony3
+		add_political_power = 100
+	}
+
+	option = {
+		name = HOL_military.088.e
+		log = "[GetDateText]: [This.GetName]: HOL_military.088.e executed"
+		add_ideas = HOL_mars_colony4
+		capital_scope = {
+			add_resource = {
+				type = chromium
+				amount = 36
 			}
-			33 = {
-				capital_scope = {
-					add_resource = {
-						type = chromium
-						amount = 36
-					}
-				}
+			add_resource = {
+				type = tungsten
+				amount = 36
 			}
-			33 = {
-				capital_scope = {
-					add_resource = {
-						type = chromium
-						amount = 24
-					}
-				}
+			add_resource = {
+				type = steel
+				amount = 36
 			}
-		}
-		random_list = {
-			33 = {
-				capital_scope = {
-					add_resource = {
-						type = tungsten
-						amount = 48
-					}
-				}
-			}
-			33 = {
-				capital_scope = {
-					add_resource = {
-						type = tungsten
-						amount = 36
-					}
-				}
-			}
-			33 = {
-				capital_scope = {
-					add_resource = {
-						type = tungsten
-						amount = 24
-					}
-				}
+			add_resource = {
+				type = aluminium
+				amount = 36
 			}
 		}
-		random_list = {
-			33 = {
-				capital_scope = {
-					add_resource = {
-						type = steel
-						amount = 48
-					}
-				}
-			}
-			33 = {
-				capital_scope = {
-					add_resource = {
-						type = steel
-						amount = 36
-					}
-				}
-			}
-			33 = {
-				capital_scope = {
-					add_resource = {
-						type = steel
-						amount = 24
-					}
-				}
-			}
-		}
-		random_list = {
-			33 = {
-				capital_scope = {
-					add_resource = {
-						type = aluminium
-						amount = 48
-					}
-				}
-			}
-			33 = {
-				capital_scope = {
-					add_resource = {
-						type = aluminium
-						amount = 36
-					}
-				}
-			}
-			33 = {
-				capital_scope = {
-					add_resource = {
-						type = aluminium
-						amount = 24
-					}
-				}
-			}
-		}
+		custom_effect_tooltip = HOL_mars_mining_colony_tt
+		add_political_power = 100
 	}
 
 }

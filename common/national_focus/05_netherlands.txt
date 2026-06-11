@@ -887,32 +887,39 @@ focus_tree = {
 		ai_will_do = { base = 1 }
 	}
 	focus = {
-		id = HOL_unilever_consolidation #Completly change this focus. Look on internet for an alternative
-		icon = balance_buget
+		id = HOL_adyen_fintech_hub
+		icon = coins
 
 		x = 1
 		y = 1
 		relative_position_id = HOL_postbank_fusion
 
-		cost = 3
+		cost = 6
 
 		prerequisite = { focus = HOL_postbank_fusion }
 
 		search_filters = { FOCUS_FILTER_ECONOMY }
 
 		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus HOL_unilever_consolidation"
-			set_temp_variable = { treasury_change = gdp_per_capita }
-			multiply_temp_variable = { treasury_change = 0.10 }
-			modify_treasury_effect = yes
-			set_temp_variable = { percent_change = 5 }
-			set_temp_variable = { influence_target = ENG }
-			change_influence_percentage = yes
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_adyen_fintech_hub"
+			set_temp_variable = { int_investment_change = gdp_per_capita }
+			multiply_temp_variable = { int_investment_change = 0.12 }
+			modify_international_investment_effect = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = HOL_economy
+			}
+			add_to_variable = { HOL_economy_offices_productivity = 0.05 tooltip = offices_productivity_tt }
+			add_to_variable = { HOL_economy_international_market_income_modifier = 0.05 tooltip = international_market_income_modifier_tt }
 			if = {
 				limit = { has_idea = international_bankers }
 				set_temp_variable = { temp_opinion = 5 }
 				change_international_bankers_opinion = yes
 			}
+			newline = yes
+			set_temp_variable = { treasury_change = gdp_per_capita }
+			multiply_temp_variable = { treasury_change = 0.08 }
+			modify_treasury_effect = yes
 		}
 
 		ai_will_do = { base = 1 }
@@ -945,29 +952,35 @@ focus_tree = {
 		ai_will_do = { base = 1 }
 	}
 	focus = {
-		id = HOL_aegon_shares_sell #Completly change this focus. Look on internet for an alternative
+		id = HOL_pension_fund_reform
 		icon = expand_finance_ministry
 
 		x = -1
 		y = 1
 		relative_position_id = HOL_ing_group_strategy
 
-		cost = 3
+		cost = 6
 
 		prerequisite = { focus = HOL_ing_group_strategy }
 
 		search_filters = { FOCUS_FILTER_ECONOMY }
 
 		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus HOL_aegon_shares_sell"
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_pension_fund_reform"
 			if = {
 				limit = { has_idea = international_bankers }
 				set_temp_variable = { temp_opinion = 5 }
 				change_international_bankers_opinion = yes
 			}
 			set_temp_variable = { int_investment_change = gdp_per_capita }
-			multiply_temp_variable = { int_investment_change = 0.15 }
+			multiply_temp_variable = { int_investment_change = 0.18 }
 			modify_international_investment_effect = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = HOL_economy
+			}
+			add_to_variable = { HOL_economy_return_on_investment_modifier = 0.05 tooltip = return_on_investment_modifier_tt }
+			newline = yes
 			if = {
 				limit = {
 					OR = {
@@ -1011,6 +1024,58 @@ focus_tree = {
 			add_to_variable = { HOL_economy_supply_node_range = 0.05 tooltip = supply_node_range_tt }
 			add_to_variable = { HOL_economy_production_lack_of_resource_penalty_factor = -0.10 tooltip = production_lack_of_resource_penalty_factor_tt }
 			add_to_variable = { HOL_economy_supply_consumption_factor = -0.15 tooltip = supply_consumption_factor_tt }
+			newline = yes
+			if = {
+				limit = {
+					OR = {
+						has_idea = HOL_liberal_society5
+						has_idea = HOL_liberal_society6
+					}
+				}
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.09 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.10 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = HOL_booking_digital_services
+		icon = meeting
+
+		x = 2
+		y = 2
+		relative_position_id = HOL_postbank_fusion
+
+		cost = 8
+
+		prerequisite = { focus = HOL_adyen_fintech_hub }
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_booking_digital_services"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = HOL_economy
+			}
+			add_to_variable = { HOL_economy_offices_productivity = 0.05 tooltip = offices_productivity_tt }
+			add_to_variable = { HOL_economy_production_speed_internet_station_factor = 0.10 tooltip = production_speed_internet_station_factor_tt }
+			add_to_variable = { HOL_economy_political_power_gain = 0.05 tooltip = political_power_gain_tt }
+			set_temp_variable = { int_investment_change = gdp_per_capita }
+			multiply_temp_variable = { int_investment_change = 0.10 }
+			modify_international_investment_effect = yes
+			if = {
+				limit = { has_idea = small_medium_business_owners }
+				set_temp_variable = { temp_opinion = 2 }
+				change_small_medium_business_owners_opinion = yes
+			}
 			newline = yes
 			if = {
 				limit = {
@@ -4023,7 +4088,7 @@ focus_tree = {
 		id = HOL_dutch_legends
 		icon = Dutch_Trade1
 
-		x = 46
+		x = 42
 		y = 0
 
 		cost = 3
@@ -4351,9 +4416,9 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_ECONOMY }
 
 		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus HOL_corporation_space"
-			custom_effect_tooltip = HOL_mars_one_tt
-			hidden_effect = { country_event = HOL_military.088 }
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_mars_one"
+			activate_mission = HOL_mars_colony_mission
+			hidden_effect = { country_event = { id = HOL_military.089 days = 150 random_hours = 720 } }
 			set_temp_variable = { treasury_change = gdp_per_capita }
 			multiply_temp_variable = { treasury_change = -0.60 }
 			modify_treasury_effect = yes
@@ -5212,6 +5277,164 @@ focus_tree = {
 				}
 				set_temp_variable = { treasury_change = gdp_per_capita }
 				multiply_temp_variable = { treasury_change = -0.135 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.15 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = HOL_dredging_industry
+		icon = trieste_port
+
+		x = 3
+		y = 1
+		relative_position_id = HOL_dutch_water_sector
+
+		cost = 8
+
+		prerequisite = { focus = HOL_dutch_water_sector }
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_dredging_industry"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = HOL_economy
+			}
+			add_to_variable = { HOL_economy_dockyard_productivity = 0.10 tooltip = dockyard_productivity_tt }
+			add_to_variable = { HOL_economy_offices_productivity = 0.05 tooltip = offices_productivity_tt }
+			newline = yes
+			set_temp_variable = { int_investment_change = gdp_per_capita }
+			multiply_temp_variable = { int_investment_change = 0.12 }
+			modify_international_investment_effect = yes
+			if = {
+				limit = { has_idea = maritime_industry }
+				set_temp_variable = { temp_opinion = 5 }
+				change_maritime_industry_opinion = yes
+			}
+			if = {
+				limit = { has_idea = industrial_conglomerates }
+				set_temp_variable = { temp_opinion = 5 }
+				change_industrial_conglomerates_opinion = yes
+			}
+			newline = yes
+			if = {
+				limit = {
+					OR = {
+						has_idea = HOL_liberal_society5
+						has_idea = HOL_liberal_society6
+					}
+				}
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.14 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.15 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = HOL_van_oord_offshore
+		icon = windmill
+
+		x = -1
+		y = 1
+		relative_position_id = HOL_dredging_industry
+
+		cost = 8
+
+		prerequisite = { focus = HOL_dredging_industry }
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_van_oord_offshore"
+			46 = {
+				add_building_construction = {
+					type = renewable_energy_infra
+					level = 2
+					instant_build = yes
+				}
+			}
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = HOL_economy
+			}
+			add_to_variable = { HOL_economy_production_speed_renewable_energy_infra_factor = 0.10 tooltip = production_speed_renewable_energy_infra_factor_tt }
+			add_to_variable = { HOL_economy_renewable_energy_gain = 0.05 tooltip = renewable_energy_gain_tt }
+			newline = yes
+			if = {
+				limit = {
+					OR = {
+						has_idea = HOL_liberal_society5
+						has_idea = HOL_liberal_society6
+					}
+				}
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.135 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.15 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = HOL_global_land_reclamation #Add a mission to build IJStad project (https://ijstad.nl/)
+		icon = land_reform
+
+		x = 1
+		y = 1
+		relative_position_id = HOL_dredging_industry
+
+		cost = 8
+
+		prerequisite = { focus = HOL_dredging_industry }
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_global_land_reclamation"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = HOL_economy
+			}
+			add_to_variable = { HOL_economy_global_building_slots_factor = 0.05 tooltip = global_building_slots_factor_tt }
+			add_to_variable = { HOL_economy_international_market_income_modifier = 0.05 tooltip = international_market_income_modifier_tt }
+			add_to_variable = { HOL_economy_trade_opinion_factor = 0.05 tooltip = trade_opinion_factor_tt }
+			newline = yes
+			set_temp_variable = { int_investment_change = gdp_per_capita }
+			multiply_temp_variable = { int_investment_change = 0.12 }
+			modify_international_investment_effect = yes
+			activate_mission = HOL_ijstad_mission
+			custom_effect_tooltip = HOL_ijstad_mission_started_tt
+			newline = yes
+			if = {
+				limit = {
+					OR = {
+						has_idea = HOL_liberal_society5
+						has_idea = HOL_liberal_society6
+					}
+				}
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.14 }
 				modify_treasury_effect = yes
 			}
 			else = {
@@ -22818,7 +23041,7 @@ focus_tree = {
 		id = HOL_territories_plan
 		icon = focus_GER_our_place_in_the_sun
 
-		x = -5
+		x = -4
 		y = 2
 		relative_position_id = HOL_voc
 
@@ -23833,7 +24056,7 @@ focus_tree = {
 		id = HOL_reclaim_crown_colony
 		icon = batavian_war
 
-		x = 4
+		x = 3
 		y = 2
 		relative_position_id = HOL_voc
 
@@ -23961,7 +24184,7 @@ focus_tree = {
 		id = HOL_secret_embassy_expansion
 		icon = Lyudvig_Chibirov_goverment
 
-		x = -3
+		x = -2
 		y = 2
 		relative_position_id = HOL_reclaim_crown_colony
 
@@ -24051,7 +24274,7 @@ focus_tree = {
 		id = HOL_contact_rebels_indonesia
 		icon = indonesian_supply_rebels
 
-		x = 3
+		x = 2
 		y = 2
 		relative_position_id = HOL_reclaim_crown_colony
 
@@ -24096,7 +24319,7 @@ focus_tree = {
 		icon = highway_repairs
 
 		x = 0
-		y = 3
+		y = 2
 		relative_position_id = HOL_reclaim_crown_colony
 
 		cost = 15
@@ -24828,7 +25051,7 @@ focus_tree = {
 		id = HOL_strategic_voc_presence
 		icon = dutch_voc_strategic_presence
 
-		x = -5
+		x = -3
 		y = 4
 		relative_position_id = HOL_rebuilding_dutch_indies
 
