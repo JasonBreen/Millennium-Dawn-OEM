@@ -7,6 +7,7 @@ add_namespace = HOL_voc
 add_namespace = HOL_wic
 add_namespace = HOL_common_event
 add_namespace = HOL_nvu
+add_namespace = HOL_groningen
 
 # CONSTANT FOR Minor Parties TIMES (These needs to be x7 compared to the Focus cost in the focus file) - NEEDS TO MATCH THE SAME CONSTANTS USED IN THE FOCUS FILE x7
 @HOL_D66_time_tier_1 = 105
@@ -13543,4 +13544,47 @@ country_event = {
 		add_relative_party_popularity = yes
 	}
 
+}
+
+#Groningen Earthquakes
+country_event = { # The first induced earthquake; seeds the dynamic modifier, chance variable, and starts the monthly roll
+	id = HOL_groningen.1
+	title = HOL_groningen.1.t
+	desc = HOL_groningen.1.d
+	picture = GFX_great_east_japan_earthquake_news
+
+	is_triggered_only = yes
+
+	option = {
+		name = HOL_groningen.1.a
+		log = "[GetDateText]: [This.GetName]: HOL_groningen.1.a executed"
+		1169 = {
+			add_dynamic_modifier = { modifier = HOL_diversify_groningen_economy }
+			damage_building = { type = infrastructure damage = 1.0 }
+			damage_building = { type = industrial_complex damage = 1.0 }
+		}
+		set_variable = { HOL_groningen_quake_chance = 40 }
+		add_stability = -0.02
+		ai_chance = { base = 1 }
+	}
+}
+
+country_event = { # A recurring earthquake strikes Groningen
+	id = HOL_groningen.2
+	title = HOL_groningen.2.t
+	desc = HOL_groningen.2.d
+	picture = GFX_great_east_japan_earthquake_news
+
+	is_triggered_only = yes
+
+	option = {
+		name = HOL_groningen.2.a
+		log = "[GetDateText]: [This.GetName]: HOL_groningen.2.a executed"
+		1169 = {
+			damage_building = { type = infrastructure damage = 1.0 }
+			damage_building = { type = industrial_complex damage = 1.0 }
+		}
+		add_stability = -0.02
+		ai_chance = { base = 1 }
+	}
 }
