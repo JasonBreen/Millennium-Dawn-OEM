@@ -1598,6 +1598,111 @@ focus_tree = {
 	}
 
 	focus = {
+		id = HOL_stedelijke_reststromen
+		icon = Wheat_Industry
+
+		x = -1
+		y = 1
+		relative_position_id = HOL_randstad
+
+		cost = 5
+
+		prerequisite = {
+			focus = HOL_randstad
+			focus = HOL_regio
+		}
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_stedelijke_reststromen"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = HOL_economy
+			}
+			add_to_variable = { HOL_economy_agricolture_productivity_modifier = 0.05 tooltip = agricolture_productivity_modifier_tt }
+			add_to_variable = { HOL_economy_energy_use_modifier_agriculture_district = -0.10 tooltip = energy_use_modifier_agriculture_district_tt }
+			newline = yes
+			if = {
+				limit = { has_idea = farmers }
+				set_temp_variable = { temp_opinion = 2 }
+				change_farmers_opinion = yes
+			}
+			if = {
+				limit = {
+					OR = {
+						has_idea = HOL_liberal_society5
+						has_idea = HOL_liberal_society6
+					}
+				}
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.20 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.21 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_boeren_en_gemeenschap
+		icon = farms_red_barn
+
+		x = 7
+		y = 1
+		relative_position_id = HOL_randstad
+
+		cost = 8
+
+		prerequisite = {
+			focus = HOL_randstad
+			focus = HOL_regio
+		}
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_boeren_en_gemeenschap"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = HOL_economy
+			}
+			add_to_variable = { HOL_economy_stability_factor = 0.05 tooltip = stability_factor_tt }
+			add_to_variable = { HOL_economy_political_power_gain = 0.05 tooltip = political_power_gain_tt }
+			newline = yes
+			if = {
+				limit = { has_idea = farmers }
+				set_temp_variable = { temp_opinion = 5 }
+				change_farmers_opinion = yes
+			}
+			country_event = { id = HOL_economy.027 days = 5 }
+			if = {
+				limit = {
+					OR = {
+						has_idea = HOL_liberal_society5
+						has_idea = HOL_liberal_society6
+					}
+				}
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.24 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.25 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
 		id = HOL_smart_dairy_farming
 		icon = farming
 
@@ -1799,6 +1904,56 @@ focus_tree = {
 			else = {
 				set_temp_variable = { treasury_change = gdp_per_capita }
 				multiply_temp_variable = { treasury_change = -0.35 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_floating_farm_project
+		icon = Dutch_Watermanagement
+
+		x = 0
+		y = 5
+		relative_position_id = HOL_dutch_agriculture
+
+		cost = 8
+
+		prerequisite = { focus = HOL_food_valley }
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_floating_farm_project"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = HOL_economy
+			}
+			add_to_variable = { HOL_economy_agricolture_productivity_modifier = 0.05 tooltip = agricolture_productivity_modifier_tt }
+			add_to_variable = { HOL_economy_energy_use_modifier_agriculture_district = -0.10 tooltip = energy_use_modifier_agriculture_district_tt }
+			add_to_variable = { HOL_economy_monthly_population = 0.05 tooltip = monthly_population_tt }
+			newline = yes
+			if = {
+				limit = { has_idea = farmers }
+				set_temp_variable = { temp_opinion = 2 }
+				change_farmers_opinion = yes
+			}
+			if = {
+				limit = {
+					OR = {
+						has_idea = HOL_liberal_society5
+						has_idea = HOL_liberal_society6
+					}
+				}
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.19 }
+				modify_treasury_effect = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.20 }
 				modify_treasury_effect = yes
 			}
 		}
@@ -8411,6 +8566,7 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus HOL_marinestudie"
 			add_ideas = HOL_marine1
+			activate_mission = HOL_annual_naval_deployment
 			if = {
 				limit = { has_idea = the_military }
 				set_temp_variable = { temp_opinion = 2 }
@@ -10123,9 +10279,17 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus HOL_submarine_drones"
-			add_breakthrough_points = {
-				specialization = specialization_naval
-				value = 1
+			if = {
+				NOT = { is_special_project_completed = sp:sp_drone_submarine }
+				sp:sp_drone_submarine = {
+					add_project_progress_ratio = 0.75
+				}
+			}
+			else = {
+				add_breakthrough_progress = {
+					value = 1
+					specialization = specialization_naval
+				}
 			}
 			if = {
 				limit = { has_idea = the_military }
@@ -10564,7 +10728,7 @@ focus_tree = {
 		id = HOL_global_vision
 		icon = focus_RAJ_to_shake_the_world
 
-		x = 10
+		x = 0
 		y = 8
 
 		cost = 1
@@ -10573,6 +10737,7 @@ focus_tree = {
 
 		available = {
 			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 		}
 
 		completion_reward = {
@@ -10604,6 +10769,7 @@ focus_tree = {
 
 		available = {
 			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			OR = {
 				owns_state = 49
 				NLA = {
@@ -10659,6 +10825,7 @@ focus_tree = {
 
 		available = {
 			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			OR = {
 				owns_state = 49
 				NLA = {
@@ -10728,6 +10895,8 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			MEX = {
 				exists = yes
 				NOT = { has_war_with = FROM }
@@ -10836,6 +11005,7 @@ focus_tree = {
 
 		available = {
 			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			OR = {
 				owns_state = 49
 				NLA = {
@@ -10899,7 +11069,10 @@ focus_tree = {
 
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
-		available = { has_western_aligned_government = yes }
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus HOL_dutch_caribbean_federation"
@@ -10930,6 +11103,7 @@ focus_tree = {
 
 		available = {
 			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			OR = {
 				owns_state = 49
 				NLA = {
@@ -10984,7 +11158,10 @@ focus_tree = {
 
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
-		available = { has_western_aligned_government = yes }
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
 
 		bypass = {
 			OR = {
@@ -11022,6 +11199,7 @@ focus_tree = {
 
 		available = {
 			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			OR = {
 				owns_state = 49
 				NLA = {
@@ -11101,7 +11279,10 @@ focus_tree = {
 
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
-		available = { has_western_aligned_government = yes }
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus HOL_revitilaze_dutch_latin_trade"
@@ -11142,7 +11323,10 @@ focus_tree = {
 
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
-		available = { has_western_aligned_government = yes }
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus HOL_dutch_latin_energy_cooperation"
@@ -11206,6 +11390,8 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			threat > 0.05
 			has_idea = NATO_member
 		}
@@ -11260,6 +11446,8 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			threat > 0.05
 			has_idea = NATO_member
 		}
@@ -11326,6 +11514,8 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			threat > 0.05
 			has_idea = NATO_member
 		}
@@ -11363,8 +11553,9 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
-			USA = { has_western_aligned_government = yes }
 			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+			USA = { has_western_aligned_government = yes }
 		}
 
 		completion_reward = {
@@ -11410,8 +11601,9 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
-			USA = { has_western_aligned_government = yes }
 			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+			USA = { has_western_aligned_government = yes }
 		}
 
 		completion_reward = {
@@ -11439,8 +11631,9 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
-			USA = { has_western_aligned_government = yes }
 			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+			USA = { has_western_aligned_government = yes }
 		}
 
 		completion_reward = {
@@ -11498,8 +11691,9 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
-			USA = { has_western_aligned_government = yes }
 			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+			USA = { has_western_aligned_government = yes }
 		}
 
 		completion_reward = {
@@ -11545,8 +11739,9 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
-			USA = { has_western_aligned_government = yes }
 			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+			USA = { has_western_aligned_government = yes }
 		}
 
 		completion_reward = {
@@ -11583,11 +11778,12 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			SUR = {
 				exists = yes
 				NOT = { has_war_with = FROM }
 			}
-			has_western_aligned_government = yes
 		}
 
 		completion_reward = {
@@ -11622,11 +11818,12 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			SUR = {
 				exists = yes
 				NOT = { has_war_with = FROM }
 			}
-			has_western_aligned_government = yes
 		}
 
 		completion_reward = {
@@ -11652,13 +11849,14 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			SUR = {
 				exists = yes
 				NOT = { has_war_with = FROM }
 				SUR = { has_idea = HOL_suriname_trade_agreement_idea1 }
 				has_idea = HOL_suriname_trade_agreement_idea1
 			}
-			has_western_aligned_government = yes
 		}
 
 		completion_reward = {
@@ -11693,11 +11891,12 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			SUR = {
 				exists = yes
 				NOT = { has_war_with = FROM }
 			}
-			has_western_aligned_government = yes
 		}
 
 		completion_reward = {
@@ -11723,11 +11922,12 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			SUR = {
 				exists = yes
 				NOT = { has_war_with = FROM }
 			}
-			has_western_aligned_government = yes
 		}
 
 		completion_reward = {
@@ -11754,11 +11954,12 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			SUR = {
 				exists = yes
 				NOT = { has_war_with = FROM }
 			}
-			has_western_aligned_government = yes
 			SUR = { has_idea = HOL_suriname_trade_agreement_idea2 }
 			has_idea = HOL_suriname_trade_agreement_idea2
 		}
@@ -11786,11 +11987,12 @@ focus_tree = {
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
 			SUR = {
 				exists = yes
 				NOT = { has_war_with = FROM }
 			}
-			has_western_aligned_government = yes
 		}
 
 		completion_reward = {
@@ -11800,6 +12002,533 @@ focus_tree = {
 
 		ai_will_do = { base = 1 }
 	}
+
+	### Soft Power
+	focus = {
+		id = HOL_soft_power_doctrine
+		icon = un_peace_keeping_2
+
+		x = 18
+		y = 1
+		relative_position_id = HOL_global_vision
+
+		cost = 8
+
+		prerequisite = { focus = HOL_global_vision }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_soft_power_doctrine"
+			add_ideas = HOL_soft_power_doctrine_idea
+			add_political_power = 50
+			newline = yes
+			set_temp_variable = { treasury_change = gdp_per_capita }
+			multiply_temp_variable = { treasury_change = -0.05 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_development_cooperation_ministry
+		icon = partnership_with_unesco
+
+		x = -3
+		y = 1
+		relative_position_id = HOL_soft_power_doctrine
+
+		cost = 8
+
+		prerequisite = { focus = HOL_soft_power_doctrine }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_development_cooperation_ministry"
+			add_ideas = HOL_development_cooperation_idea
+			add_political_power = 50
+			newline = yes
+			set_temp_variable = { treasury_change = gdp_per_capita }
+			multiply_temp_variable = { treasury_change = -0.10 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_global_development_partnerships
+		icon = accept_treaty
+
+		x = -3
+		y = 2
+		relative_position_id = HOL_soft_power_doctrine
+
+		cost = 8
+
+		prerequisite = { focus = HOL_development_cooperation_ministry }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_global_development_partnerships"
+			every_other_country = {
+				limit = {
+					NOT = { has_war_with = ROOT }
+					is_major = no
+					NOT = { has_government = fascism }
+					NOT = { has_government = communism }
+					OR = {
+						has_country_flag = african_nation_flag
+						has_country_flag = south_america_nation_flag
+						has_country_flag = asian_nation_flag
+						has_country_flag = middle_east_nation_flag
+					}
+				}
+				add_opinion_modifier = {
+					target = HOL
+					modifier = HOL_development_partner_opinion
+				}
+				reverse_add_opinion_modifier = {
+					target = HOL
+					modifier = HOL_development_partner_opinion
+				}
+				set_temp_variable = { percent_change = 3 }
+				set_temp_variable = { tag_index = ROOT.id }
+				set_temp_variable = { influence_target = THIS.id }
+				change_influence_percentage = yes
+			}
+			add_political_power = 25
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_untied_aid_program
+		icon = concessions2
+
+		x = -4
+		y = 3
+		relative_position_id = HOL_soft_power_doctrine
+
+		cost = 8
+
+		prerequisite = { focus = HOL_global_development_partnerships }
+		mutually_exclusive = { focus = HOL_humanitarian_leadership }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_untied_aid_program"
+			every_other_country = {
+				limit = {
+					NOT = { has_war_with = ROOT }
+					is_major = no
+					OR = {
+						has_country_flag = african_nation_flag
+						has_country_flag = south_america_nation_flag
+						has_country_flag = asian_nation_flag
+						has_country_flag = middle_east_nation_flag
+					}
+				}
+				set_temp_variable = { percent_change = 5 }
+				set_temp_variable = { tag_index = ROOT.id }
+				set_temp_variable = { influence_target = THIS.id }
+				change_influence_percentage = yes
+			}
+			add_political_power = 50
+			newline = yes
+			set_temp_variable = { treasury_change = gdp_per_capita }
+			multiply_temp_variable = { treasury_change = -0.10 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_humanitarian_leadership
+		icon = un_peace_keeping_2
+
+		x = -2
+		y = 3
+		relative_position_id = HOL_soft_power_doctrine
+
+		cost = 8
+
+		prerequisite = { focus = HOL_global_development_partnerships }
+		mutually_exclusive = { focus = HOL_untied_aid_program }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_humanitarian_leadership"
+			add_timed_idea = {
+				idea = HOL_humanitarian_leadership_idea
+				years = 5
+			}
+			add_political_power = 75
+			add_stability = 0.03
+			newline = yes
+			set_temp_variable = { treasury_change = gdp_per_capita }
+			multiply_temp_variable = { treasury_change = -0.10 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_eu_single_market_champion
+		icon = liberalism
+
+		x = 0
+		y = 1
+		relative_position_id = HOL_soft_power_doctrine
+
+		cost = 8
+
+		prerequisite = { focus = HOL_soft_power_doctrine }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+			has_idea = EU_member
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_eu_single_market_champion"
+			add_ideas = HOL_eu_leadership_idea
+			every_other_country = {
+				limit = {
+					has_idea = EU_member
+					NOT = { tag = ROOT }
+					NOT = { has_war_with = ROOT }
+				}
+				add_opinion_modifier = {
+					target = HOL
+					modifier = HOL_eu_leadership_opinion
+				}
+				reverse_add_opinion_modifier = {
+					target = HOL
+					modifier = HOL_eu_leadership_opinion
+				}
+			}
+			add_political_power = 50
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_frugal_four_leadership
+		icon = economic_prosperity2
+
+		x = 0
+		y = 2
+		relative_position_id = HOL_soft_power_doctrine
+
+		cost = 8
+
+		prerequisite = { focus = HOL_eu_single_market_champion }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+			has_idea = EU_member
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_frugal_four_leadership"
+			if = {
+				limit = { AUT = { exists = yes NOT = { has_war_with = ROOT } } }
+				AUT = {
+					add_opinion_modifier = { target = HOL modifier = HOL_eu_leadership_opinion }
+					reverse_add_opinion_modifier = { target = HOL modifier = HOL_eu_leadership_opinion }
+				}
+			}
+			if = {
+				limit = { DEN = { exists = yes NOT = { has_war_with = ROOT } } }
+				DEN = {
+					add_opinion_modifier = { target = HOL modifier = HOL_eu_leadership_opinion }
+					reverse_add_opinion_modifier = { target = HOL modifier = HOL_eu_leadership_opinion }
+				}
+			}
+			if = {
+				limit = { SWE = { exists = yes NOT = { has_war_with = ROOT } } }
+				SWE = {
+					add_opinion_modifier = { target = HOL modifier = HOL_eu_leadership_opinion }
+					reverse_add_opinion_modifier = { target = HOL modifier = HOL_eu_leadership_opinion }
+				}
+			}
+			add_political_power = 75
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_european_strategic_autonomy
+		icon = western_doctrine
+
+		x = 0
+		y = 3
+		relative_position_id = HOL_soft_power_doctrine
+
+		cost = 8
+
+		prerequisite = { focus = HOL_frugal_four_leadership }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+			has_idea = EU_member
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_european_strategic_autonomy"
+			every_other_country = {
+				limit = {
+					has_idea = EU_member
+					NOT = { tag = ROOT }
+					NOT = { has_war_with = ROOT }
+				}
+				add_opinion_modifier = {
+					target = HOL
+					modifier = HOL_eu_leadership_opinion
+				}
+				reverse_add_opinion_modifier = {
+					target = HOL
+					modifier = HOL_eu_leadership_opinion
+				}
+				set_temp_variable = { percent_change = 3 }
+				set_temp_variable = { tag_index = ROOT.id }
+				set_temp_variable = { influence_target = THIS.id }
+				change_influence_percentage = yes
+			}
+			add_political_power = 50
+			newline = yes
+			set_temp_variable = { treasury_change = gdp_per_capita }
+			multiply_temp_variable = { treasury_change = -0.10 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_water_diplomacy_initiative
+		icon = civitavecchia_port
+
+		x = 3
+		y = 1
+		relative_position_id = HOL_soft_power_doctrine
+
+		cost = 8
+
+		prerequisite = { focus = HOL_soft_power_doctrine }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_water_diplomacy_initiative"
+			add_ideas = HOL_water_diplomacy_idea
+			every_other_country = {
+				limit = {
+					NOT = { has_war_with = ROOT }
+					is_major = no
+					OR = {
+						has_country_flag = african_nation_flag
+						has_country_flag = south_america_nation_flag
+						has_country_flag = asian_nation_flag
+						has_country_flag = middle_east_nation_flag
+					}
+					any_owned_state = { is_coastal = yes }
+				}
+				add_opinion_modifier = {
+					target = HOL
+					modifier = HOL_water_partnership_opinion
+				}
+				reverse_add_opinion_modifier = {
+					target = HOL
+					modifier = HOL_water_partnership_opinion
+				}
+				set_temp_variable = { percent_change = 4 }
+				set_temp_variable = { tag_index = ROOT.id }
+				set_temp_variable = { influence_target = THIS.id }
+				change_influence_percentage = yes
+			}
+			add_political_power = 25
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_gateway_to_europe
+		icon = GFX_goal_generic_trade
+
+		x = 3
+		y = 2
+		relative_position_id = HOL_soft_power_doctrine
+
+		cost = 8
+
+		prerequisite = { focus = HOL_water_diplomacy_initiative }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_gateway_to_europe"
+			every_other_country = {
+				limit = {
+					is_major = yes
+					NOT = { tag = ROOT }
+					NOT = { has_war_with = ROOT }
+					NOT = { has_government = fascism }
+					NOT = { has_government = communism }
+				}
+				add_opinion_modifier = {
+					target = HOL
+					modifier = HOL_dutch_latin_trade_efforts
+				}
+				reverse_add_opinion_modifier = {
+					target = HOL
+					modifier = HOL_dutch_latin_trade_efforts
+				}
+			}
+			add_political_power = 50
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_global_trade_facilitation
+		icon = expand_trade_fleet
+
+		x = 3
+		y = 3
+		relative_position_id = HOL_soft_power_doctrine
+
+		cost = 8
+
+		prerequisite = { focus = HOL_gateway_to_europe }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_global_trade_facilitation"
+			every_other_country = {
+				limit = {
+					NOT = { tag = ROOT }
+					NOT = { has_war_with = ROOT }
+					NOT = { has_government = fascism }
+					NOT = { has_government = communism }
+				}
+				add_opinion_modifier = {
+					target = HOL
+					modifier = HOL_dutch_trade_effors
+				}
+				reverse_add_opinion_modifier = {
+					target = HOL
+					modifier = HOL_dutch_trade_effors
+				}
+			}
+			add_political_power = 50
+			newline = yes
+			set_temp_variable = { treasury_change = gdp_per_capita }
+			multiply_temp_variable = { treasury_change = -0.10 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_dutch_soft_power_powerhouse
+		icon = focus_RAJ_to_shake_the_world
+
+		x = 0
+		y = 4
+		relative_position_id = HOL_soft_power_doctrine
+
+		cost = 10
+
+		prerequisite = { focus = HOL_untied_aid_program focus = HOL_humanitarian_leadership }
+		prerequisite = { focus = HOL_european_strategic_autonomy }
+		prerequisite = { focus = HOL_global_trade_facilitation }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			has_western_aligned_government = yes
+			western_autocrats_are_in_power = no
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_dutch_soft_power_powerhouse"
+			add_ideas = HOL_soft_power_powerhouse_idea
+			add_political_power = 100
+			add_stability = 0.05
+			newline = yes
+			set_temp_variable = { treasury_change = gdp_per_capita }
+			multiply_temp_variable = { treasury_change = -0.15 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
 	### Politics
 	focus = {
 		id = HOL_paars

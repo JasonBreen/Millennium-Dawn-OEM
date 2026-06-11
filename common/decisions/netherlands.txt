@@ -1312,7 +1312,7 @@ HOL_voc_category_ind = {
 		selectable_mission = no
 		priority = 100
 
-		visible = {
+		activation = {
 			HOL = {
 				OR = {
 					has_completed_focus = HOL_reclaim_batavia
@@ -5975,6 +5975,43 @@ HOL_grey_society_category = {
 	}
 }
 HOL_foreign_policy_category = {
+	HOL_annual_naval_deployment = {
+		icon = GFX_decision_navy
+
+		allowed = {
+			original_tag = HOL
+		}
+
+		is_good = yes
+		selectable_mission = no
+		fire_only_once = no
+		priority = 100
+
+		days_mission_timeout = 365
+
+		activation = {
+			has_completed_focus = HOL_marinestudie
+			NOT = { has_government = nationalist }
+		}
+
+		cancel_trigger = {
+			has_government = nationalist
+		}
+
+		timeout_effect = {
+			navy_experience = 10
+			every_other_country = {
+				limit = {
+					is_western_nation = yes
+					any_owned_state = { is_coastal = yes }
+					NOT = { has_opinion_modifier = { target = ROOT modifier = HOL_naval_diplomacy_voyage } }
+				}
+				random_select_amount = 3
+				add_opinion_modifier = { target = ROOT modifier = HOL_naval_diplomacy_voyage }
+				reverse_add_opinion_modifier = { target = ROOT modifier = HOL_naval_diplomacy_voyage }
+			}
+		}
+	}
 	HOL_antilles_expand_civilian_industry = {
 		priority = 50
 
