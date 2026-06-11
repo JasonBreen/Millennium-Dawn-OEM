@@ -5791,7 +5791,7 @@ focus_tree = {
 		id = HOL_dutch_defense_doctrine
 		icon = Dutch_Defense_Doctrine1
 
-		x = -12
+		x = -14
 		y = 1
 		relative_position_id = HOL_commissariaat_militaire_productie
 
@@ -6469,7 +6469,9 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus HOL_koninklijke_luchtmacht"
-			add_ideas = HOL_air1
+			add_dynamic_modifier = { modifier = HOL_air }
+			add_to_variable = { HOL_air_mission_efficiency = 0.25 tooltip = air_mission_efficiency_tt }
+			add_to_variable = { HOL_experience_gain_air_factor = 0.10 tooltip = experience_gain_air_factor_tt }
 			if = {
 				limit = { has_idea = the_military }
 				set_temp_variable = { temp_opinion = 2 }
@@ -6487,7 +6489,7 @@ focus_tree = {
 		id = HOL_qra_benelux
 		icon = Benelux_Air_Defense_Treaty
 
-		x = -4
+		x = -6
 		y = 1
 		relative_position_id = HOL_koninklijke_luchtmacht
 
@@ -6517,14 +6519,19 @@ focus_tree = {
 		}
 
 		bypass = {
-			NOT = { country_exists = BEL }
-			NOT = { country_exists = LUX }
+			OR = {
+				NOT = { country_exists = BEL }
+				NOT = { country_exists = LUX }
+			}
 		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus HOL_qra_benelux"
-			BEL = {
-				country_event = HOL_military.008
+			BEL = { country_event = HOL_military.008 }
+			newline = yes
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				add_ideas = HOL_benelux_air1
 			}
 		}
 
@@ -6566,14 +6573,22 @@ focus_tree = {
 		}
 
 		bypass = {
-			NOT = { country_exists = BEL }
-			NOT = { country_exists = LUX }
+			OR = {
+				NOT = { country_exists = BEL }
+				NOT = { country_exists = LUX }
+			}
 		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus HOL_benecc"
-			BEL = {
-				country_event = HOL_military.015
+			BEL = { country_event = HOL_military.015 }
+			newline = yes
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				swap_ideas = {
+					remove_idea = HOL_benelux_air1
+					add_idea = HOL_benelux_air2
+				}
 			}
 		}
 
@@ -6615,14 +6630,22 @@ focus_tree = {
 		}
 
 		bypass = {
-			NOT = { country_exists = BEL }
-			NOT = { country_exists = LUX }
+			OR = {
+				NOT = { country_exists = BEL }
+				NOT = { country_exists = LUX }
+			}
 		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus HOL_bnlc"
-			BEL = {
-				country_event = HOL_military.022
+			BEL = { country_event = HOL_military.022 }
+			newline = yes
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				swap_ideas = {
+					remove_idea = HOL_benelux_air2
+					add_idea = HOL_benelux_air3
+				}
 			}
 		}
 
@@ -6663,8 +6686,10 @@ focus_tree = {
 		}
 
 		bypass = {
-			NOT = { country_exists = BEL }
-			NOT = { country_exists = LUX }
+			OR = {
+				NOT = { country_exists = BEL }
+				NOT = { country_exists = LUX }
+			}
 		}
 
 		completion_reward = {
@@ -6681,7 +6706,7 @@ focus_tree = {
 		id = HOL_join_jsf
 		icon = align_to_america2
 
-		x = -2
+		x = -4
 		y = 1
 		relative_position_id = HOL_koninklijke_luchtmacht
 
@@ -6798,7 +6823,7 @@ focus_tree = {
 		id = HOL_join_eurofighter_project
 		icon = align_to_europe
 
-		x = 0
+		x = -2
 		y = 1
 		relative_position_id = HOL_koninklijke_luchtmacht
 
@@ -6908,7 +6933,7 @@ focus_tree = {
 		id = HOL_buy_saab_jas39
 		icon = align_to_sweden2
 
-		x = 2
+		x = 0
 		y = 1
 		relative_position_id = HOL_koninklijke_luchtmacht
 
@@ -7028,10 +7053,12 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus HOL_defensie_helikopter_commando"
-			swap_ideas = {
-				remove_idea = HOL_air1
-				add_idea = HOL_air2
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = HOL_air
 			}
+			add_to_variable = { HOL_air_experience_gain_helicopter_operator_combat_factor = 0.10 tooltip = experience_gain_helicopter_operator_combat_factor_tt }
+			add_to_variable = { HOL_air_cas_efficiency = 0.10 tooltip = air_cas_efficiency_tt }
 			if = {
 				limit = { has_idea = the_military }
 				set_temp_variable = { temp_opinion = 2 }
@@ -7215,6 +7242,254 @@ focus_tree = {
 
 		ai_will_do = { base = 1 }
 	}
+		focus = {
+			id = HOL_air_mobility_command
+			icon = airforce_base_1
+
+			x = 1
+			y = 2
+			relative_position_id = HOL_koninklijke_luchtmacht
+
+			cost = 8
+
+			prerequisite = {
+				focus = HOL_join_jsf
+				focus = HOL_join_eurofighter_project
+				focus = HOL_buy_saab_jas39
+			}
+
+			search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+			completion_reward = {
+				log = "[GetDateText]: [Root.GetName]: Focus HOL_air_mobility_command"
+				custom_effect_tooltip = {
+					localization_key = modifies_dynamic_modifier_tt
+					MODIFIER = HOL_air
+				}
+				add_to_variable = { HOL_air_mission_efficiency = 0.05 tooltip = air_mission_efficiency_tt }
+				if = {
+					limit = { has_idea = the_military }
+					set_temp_variable = { temp_opinion = 2 }
+					change_the_military_opinion = yes
+				}
+				newline = yes
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.10 }
+				modify_treasury_effect = yes
+			}
+
+			ai_will_do = { base = 1 }
+		}
+
+		focus = {
+			id = HOL_woensdrecht_mro
+			icon = f-2a
+
+			x = -2
+			y = 1
+			relative_position_id = HOL_air_mobility_command
+
+			cost = 8
+
+			prerequisite = { focus = HOL_air_mobility_command }
+
+			search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+			completion_reward = {
+				log = "[GetDateText]: [Root.GetName]: Focus HOL_woensdrecht_mro"
+				mio:HOL_fokker_technologies_planes_manufacturer = {
+					add_mio_funds = 1500
+				}
+				custom_effect_tooltip = {
+					localization_key = modifies_dynamic_modifier_tt
+					MODIFIER = HOL_air
+				}
+				add_to_variable = { HOL_air_cas_efficiency = 0.05 tooltip = air_cas_efficiency_tt }
+				add_to_variable = { HOL_air_defence_factor = 0.05 tooltip = air_defence_factor_tt }
+				if = {
+					limit = { has_idea = defense_industry }
+					set_temp_variable = { temp_opinion = 2 }
+					change_defense_industry_opinion = yes
+				}
+				newline = yes
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.08 }
+				modify_treasury_effect = yes
+			}
+
+			ai_will_do = { base = 1 }
+		}
+
+		focus = {
+			id = HOL_expand_fighter_fleet
+			icon = F16
+
+			x = 0
+			y = 1
+			relative_position_id = HOL_air_mobility_command
+
+			cost = 8
+
+			prerequisite = { focus = HOL_air_mobility_command }
+
+			search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+			completion_reward = {
+				log = "[GetDateText]: [Root.GetName]: Focus HOL_expand_fighter_fleet"
+				add_tech_bonus = {
+					name = HOL_expand_fighter_fleet
+					uses = 1
+					bonus = 0.25
+					category = CAT_air_eqp
+				}
+				newline	= yes
+				custom_effect_tooltip = {
+					localization_key = modifies_dynamic_modifier_tt
+					MODIFIER = HOL_air
+				}
+				add_to_variable = { HOL_air_attack_factor = 0.05 tooltip = air_attack_factor_tt }
+				newline = yes
+				add_timed_idea = {
+					idea = HOL_expand_fighter_fleet_idea
+					years = 2
+				}
+				newline = yes
+				if = {
+					limit = { has_idea = the_military }
+					set_temp_variable = { temp_opinion = 2 }
+					change_the_military_opinion = yes
+				}
+				if = {
+					limit = { has_dlc = "Arms Against Tyranny" }
+					mio:HOL_fokker_technologies_planes_manufacturer = { add_mio_funds = 1000 }
+				}
+				newline = yes
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.10 }
+				modify_treasury_effect = yes
+			}
+
+			ai_will_do = { base = 1 }
+		}
+
+		focus = {
+			id = HOL_frisian_flag_training
+			icon = air_training
+
+			x = 2
+			y = 1
+			relative_position_id = HOL_air_mobility_command
+
+			cost = 8
+
+			prerequisite = { focus = HOL_air_mobility_command }
+
+			search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+			completion_reward = {
+				log = "[GetDateText]: [Root.GetName]: Focus HOL_frisian_flag_training"
+				custom_effect_tooltip = {
+					localization_key = modifies_dynamic_modifier_tt
+					MODIFIER = HOL_air
+				}
+				add_to_variable = { HOL_experience_gain_air_factor = 0.10 tooltip = experience_gain_air_factor_tt }
+				add_to_variable = { HOL_air_agility_factor = 0.05 tooltip = air_agility_factor_tt }
+				newline = yes
+				air_experience = 25
+				if = {
+					limit = { has_idea = the_military }
+					set_temp_variable = { temp_opinion = 2 }
+					change_the_military_opinion = yes
+				}
+				newline = yes
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.07 }
+				modify_treasury_effect = yes
+			}
+
+			ai_will_do = { base = 1 }
+		}
+
+		focus = {
+			id = HOL_precision_munitions
+			icon = F16_2
+
+			x = 0
+			y = 2
+			relative_position_id = HOL_air_mobility_command
+
+			cost = 8
+
+			prerequisite = { focus = HOL_woensdrecht_mro }
+			prerequisite = { focus = HOL_expand_fighter_fleet }
+
+			search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+			completion_reward = {
+				log = "[GetDateText]: [Root.GetName]: Focus HOL_precision_munitions"
+				add_tech_bonus = {
+					name = HOL_precision_munitions
+					uses = 1
+					bonus = 0.25
+					category = CAT_missile
+				}
+				custom_effect_tooltip = {
+					localization_key = modifies_dynamic_modifier_tt
+					MODIFIER = HOL_air
+				}
+				add_to_variable = { HOL_air_attack_factor = 0.05 tooltip = air_attack_factor_tt }
+				add_to_variable = { HOL_air_superiority_efficiency = 0.05 tooltip = air_superiority_efficiency_tt }
+				if = {
+					limit = { has_idea = the_military }
+					set_temp_variable = { temp_opinion = 2 }
+					change_the_military_opinion = yes
+				}
+				newline = yes
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.10 }
+				modify_treasury_effect = yes
+			}
+
+			ai_will_do = { base = 1 }
+		}
+
+		focus = {
+			id = HOL_sovereign_air_operations
+			icon = air_superiority
+
+			x = 0
+			y = 3
+			relative_position_id = HOL_air_mobility_command
+
+			cost = 8
+
+			prerequisite = { focus = HOL_precision_munitions }
+			prerequisite = { focus = HOL_frisian_flag_training }
+
+			search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+			completion_reward = {
+				log = "[GetDateText]: [Root.GetName]: Focus HOL_sovereign_air_operations"
+				custom_effect_tooltip = {
+					localization_key = modifies_dynamic_modifier_tt
+					MODIFIER = HOL_air
+				}
+				add_to_variable = { HOL_air_superiority_efficiency = 0.05 tooltip = air_superiority_efficiency_tt }
+				add_to_variable = { HOL_air_intercept_efficiency = 0.10 tooltip = air_intercept_efficiency_tt }
+				add_to_variable = { HOL_air_mission_efficiency = 0.05 tooltip = air_mission_efficiency_tt }
+				if = {
+					limit = { has_idea = the_military }
+					set_temp_variable = { temp_opinion = 2 }
+					change_the_military_opinion = yes
+				}
+				newline = yes
+				set_temp_variable = { treasury_change = gdp_per_capita }
+				multiply_temp_variable = { treasury_change = -0.12 }
+				modify_treasury_effect = yes
+			}
+
+			ai_will_do = { base = 1 }
+		}
 	### Army
 	focus = {
 		id = HOL_commando_landstrijdkrachten
@@ -10280,7 +10555,7 @@ focus_tree = {
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus HOL_submarine_drones"
 			if = {
-				NOT = { is_special_project_completed = sp:sp_drone_submarine }
+				limit = { NOT = { is_special_project_completed = sp:sp_drone_submarine } }
 				sp:sp_drone_submarine = {
 					add_project_progress_ratio = 0.75
 				}
@@ -19102,11 +19377,13 @@ focus_tree = {
 				limit = { has_idea = euro }
 				swap_ideas = {
 					remove_idea = euro
-					add_idea = no_foreign_reserve
+					add_idea = gulden
 				}
 			}
-			newline = yes
-			add_ideas = HOL_gulden
+			else = {
+				add_ideas = gulden
+			}
+			set_global_flag = HOL_gulden_reintroduced
 			newline = yes
 			set_temp_variable = { treasury_change = gdp_per_capita }
 			multiply_temp_variable = { treasury_change = -0.10 }
