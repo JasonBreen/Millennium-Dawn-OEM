@@ -1409,3 +1409,255 @@ country_event = {
 		ai_chance = { base = 15 }
 	}
 }
+
+# Strait of Hormuz closed (weekly updater)
+country_event = {
+	id = SAU_events.54
+	title = SAU_events.54.t
+	desc = SAU_events.54.d
+	picture = GFX_generic_oil_field
+
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.54.a
+		add_war_support = 0.05
+	}
+}
+
+# Strait of Hormuz reopens (weekly updater)
+country_event = {
+	id = SAU_events.55
+	title = SAU_events.55.t
+	desc = SAU_events.55.d
+	picture = GFX_generic_oil_field
+
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.55.a
+		add_stability = 0.02
+	}
+}
+
+# Chinese mediation: request to Beijing (fired to CHI, FROM = SAU)
+country_event = {
+	id = SAU_events.56
+	title = SAU_events.56.t
+	desc = SAU_events.56.d
+	picture = GFX_SAU_generic
+
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.56.a		# Host the talks
+		ai_chance = {
+			base = 80
+			modifier = { factor = 0 has_war_with = FROM }
+			modifier = { factor = 0.2 has_opinion = { target = FROM value < 0 } }
+		}
+		add_political_power = 25
+		PER = { country_event = { id = SAU_events.57 days = 3 } }
+	}
+	option = {
+		name = SAU_events.56.b		# Decline
+		ai_chance = { base = 20 }
+		FROM = { country_event = { id = SAU_events.59 days = 1 } }
+	}
+}
+
+# Chinese mediation: Beijing invitation (fired to PER, FROM = CHI)
+country_event = {
+	id = SAU_events.57
+	title = SAU_events.57.t
+	desc = SAU_events.57.d
+	picture = GFX_SAU_generic
+
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.57.a		# Sign the agreement
+		ai_chance = {
+			base = 60
+			modifier = { add = 30 has_opinion = { target = FROM value > 30 } }
+			modifier = { factor = 0 has_war_with = SAU }
+			modifier = { factor = 0.3 has_opinion = { target = SAU value < -50 } }
+		}
+		set_global_flag = SAU_PER_beijing_agreement
+		hidden_effect = { news_event = { id = SAU_events.67 days = 1 } }
+		SAU = {
+			add_opinion_modifier = { target = PER modifier = SAU_beijing_agreement }
+			reverse_add_opinion_modifier = { target = PER modifier = SAU_beijing_agreement }
+			country_event = { id = SAU_events.58 days = 1 }
+		}
+		FROM = { add_political_power = 50 }
+	}
+	option = {
+		name = SAU_events.57.b		# Refuse
+		ai_chance = { base = 40 }
+		SAU = { country_event = { id = SAU_events.59 days = 1 } }
+	}
+}
+
+# Mediation succeeded (notification to SAU)
+country_event = {
+	id = SAU_events.58
+	title = SAU_events.58.t
+	desc = SAU_events.58.d
+	picture = GFX_SAU_generic
+
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.58.a
+		add_political_power = 25
+		add_stability = 0.02
+	}
+}
+
+# Mediation failed (notification to SAU)
+country_event = {
+	id = SAU_events.59
+	title = SAU_events.59.t
+	desc = SAU_events.59.d
+	picture = GFX_SAU_generic
+
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.59.a
+		add_political_power = -10
+	}
+}
+
+# Riyadh asks the rebuilt Lebanese Army to move on Hezbollah (fired to LEB, FROM = SAU)
+country_event = {
+	id = SAU_events.60
+	title = SAU_events.60.t
+	desc = SAU_events.60.d
+	picture = GFX_SAU_generic
+
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.60.a		# March on Hezbollah
+		ai_chance = {
+			base = 60
+			modifier = { add = 30 has_opinion = { target = FROM value > 50 } }
+			modifier = { factor = 0 has_war = yes }
+			modifier = { factor = 0 has_opinion = { target = FROM value < 0 } }
+		}
+		add_timed_idea = { idea = SAU_laf_offensive days = 365 }
+		if = {
+			limit = {
+				country_exists = HEZ
+				NOT = { has_war_with = HEZ }
+			}
+			declare_war_on = { target = HEZ type = annex_everything }
+			hidden_effect = { news_event = { id = SAU_events.61 days = 1 } }
+		}
+	}
+	option = {
+		name = SAU_events.60.b		# Refuse
+		ai_chance = { base = 40 }
+		FROM = { add_opinion_modifier = { target = ROOT modifier = SAU_proxy_aggression } }
+	}
+}
+
+news_event = {
+	id = SAU_events.61
+	title = SAU_events.61.t
+	desc = SAU_events.61.d
+	picture = GFX_news_event_war
+
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.61.a
+	}
+}
+
+news_event = {
+	id = SAU_events.62
+	title = SAU_events.62.t
+	desc = SAU_events.62.d
+	picture = GFX_news_gcc
+
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.62.a
+	}
+}
+
+news_event = {
+	id = SAU_events.63
+	title = SAU_events.63.t
+	desc = SAU_events.63.d
+	picture = GFX_news_SAU_YEM_Missile
+
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.63.a
+	}
+}
+
+news_event = {
+	id = SAU_events.64
+	title = SAU_events.64.t
+	desc = SAU_events.64.d
+	picture = GFX_news_arab_spring
+
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.64.a
+	}
+}
+
+news_event = {
+	id = SAU_events.65
+	title = SAU_events.65.t
+	desc = SAU_events.65.d
+	picture = GFX_news_arab_conference
+
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.65.a
+	}
+}
+
+news_event = {
+	id = SAU_events.66
+	title = SAU_events.66.t
+	desc = SAU_events.66.d
+	picture = GFX_news_missilesOnRoad
+
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.66.a
+	}
+}
+
+news_event = {
+	id = SAU_events.67
+	title = SAU_events.67.t
+	desc = SAU_events.67.d
+	picture = GFX_news_doha_peace_agreement
+
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = SAU_events.67.a
+	}
+}

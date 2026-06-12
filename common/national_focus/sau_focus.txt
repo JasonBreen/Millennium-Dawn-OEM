@@ -11724,7 +11724,7 @@ focus_tree = {
 
 	focus = {
 		id = SAU_the_Islamic_Rivalry
-		icon = GFX_focus_generic_treaty
+		icon = islam
 
 		x = 16
 		y = 1
@@ -11736,11 +11736,20 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_the_Islamic_Rivalry"
+			add_political_power = 35
+			set_country_flag = SAU_islamic_rivalry_decisions
+			if = {
+				limit = { country_exists = PER }
+				PER = {
+					add_opinion_modifier = { target = ROOT modifier = SAU_islamic_rivalry }
+					reverse_add_opinion_modifier = { target = ROOT modifier = SAU_islamic_rivalry }
+				}
+				add_ai_strategy = { type = antagonize id = "PER" value = 50 }
+			}
+			custom_effect_tooltip = SAU_islamic_rivalry_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 	# Normalization with Zionist
 	focus = {
@@ -14070,6 +14079,7 @@ focus_tree = {
 			set_country_flag = SAU_arab_shield_formed
 			set_country_flag = SAU_Foregin_affairs_decisions
 			custom_effect_tooltip = SAU_arab_shield_tt
+					hidden_effect = { news_event = { id = SAU_events.62 days = 1 } }
 		}
 
 		ai_will_do = { base = 1 }
@@ -14077,7 +14087,7 @@ focus_tree = {
 
 	focus = {
 		id = SAU_Anti_Iran_propandia
-		icon = GFX_focus_generic_treaty
+		icon = propaganda
 
 		x = 85
 		y = 16
@@ -14088,16 +14098,18 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Anti_Iran_propandia"
+			add_political_power = 20
+			add_war_support = 0.05
+			if = { limit = { country_exists = PER } PER = { add_stability = -0.02 } }
+			custom_effect_tooltip = SAU_anti_iran_prop_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_The_Silk_Web_Network
-		icon = GFX_focus_generic_treaty
+		icon = army_cyberwar
 
 		x = 87
 		y = 16
@@ -14108,16 +14120,25 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_The_Silk_Web_Network"
+			add_political_power = 20
+			if = {
+				limit = { country_exists = PER }
+				add_intel = {
+					target = PER
+					civilian_intel = 20
+					army_intel = 10
+					navy_intel = 10
+				}
+			}
+			custom_effect_tooltip = SAU_silk_web_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Fight_Iran_In_directly
-		icon = GFX_focus_generic_treaty
+		icon = aggressive_diplomacy
 
 		x = 89
 		y = 16
@@ -14128,16 +14149,18 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Fight_Iran_In_directly"
+			add_political_power = 25
+			add_war_support = 0.02
+			set_country_flag = SAU_indirect_war_doctrine
+			custom_effect_tooltip = SAU_indirect_war_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Spark_protest_inside_the_Axis
-		icon = GFX_focus_generic_treaty
+		icon = focus_PER_stage_mass_protests
 
 		x = 90
 		y = 17
@@ -14148,16 +14171,29 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Spark_protest_inside_the_Axis"
+			add_political_power = 15
+			set_country_flag = SAU_separatist_support
+			if = {
+				limit = { country_exists = PER }
+				PER = {
+					add_stability = -0.03
+					add_war_support = -0.02
+				}
+			}
+			every_other_country = {
+				limit = { has_idea = faction_resistance_axis_member }
+				add_stability = -0.02
+			}
+			custom_effect_tooltip = SAU_spark_protest_tt
+					hidden_effect = { news_event = { id = SAU_events.64 days = 1 } }
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Attack_iranian_influnce_in_Gulf
-		icon = GFX_focus_generic_treaty
+		icon = dominion_in_the_gulf
 
 		x = 88
 		y = 17
@@ -14168,16 +14204,25 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Attack_iranian_influnce_in_Gulf"
+			add_political_power = 15
+			if = {
+				limit = { country_exists = PER }
+				for_each_scope_loop = {
+					array = global.gcc_member_state
+					set_temp_variable = { percent_change = -5 }
+					set_temp_variable = { tag_index = PER.id }
+					change_influence_percentage = yes
+				}
+			}
+			custom_effect_tooltip = SAU_attack_iran_gulf_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Fortify_the_Kingdom
-		icon = GFX_focus_generic_treaty
+		icon = military_sphere
 
 		x = 86
 		y = 17
@@ -14188,16 +14233,16 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Fortify_the_Kingdom"
+			add_political_power = 15
+			add_ideas = SAU_fortified_kingdom
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_The_Yemen_Quagmire_exposed_iran
-		icon = GFX_focus_generic_treaty
+		icon = houthi_yemen
 
 		x = 84
 		y = 17
@@ -14205,40 +14250,52 @@ focus_tree = {
 		cost = 10
 
 		prerequisite = { focus = SAU_Anti_Iran_propandia }
-
+		available = {
+			country_exists = HOU
+		}
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_The_Yemen_Quagmire_exposed_iran"
+			add_political_power = 20
+			add_war_support = 0.03
+			if = {
+				limit = { country_exists = PER }
+				for_each_scope_loop = {
+					array = global.arab_league_members
+					add_opinion_modifier = { target = PER modifier = SAU_exposed_iran }
+				}
+			}
+			custom_effect_tooltip = SAU_yemen_quagmire_tt
+					hidden_effect = { news_event = { id = SAU_events.63 days = 1 } }
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_The_Battle_for_the_Straits
-		icon = GFX_focus_generic_treaty
+		icon = 350_ship_navy
 
 		x = 85
 		y = 18
 
 		cost = 10
 
-		prerequisite = { focus = SAU_Fortify_the_Kingdom }
-		prerequisite = { focus = SAU_The_Yemen_Quagmire_exposed_iran }
+		prerequisite = { focus = SAU_The_Yemen_Quagmire_exposed_iran focus = SAU_Fortify_the_Kingdom }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_The_Battle_for_the_Straits"
+			navy_experience = 25
+			add_war_support = 0.03
+			set_country_flag = SAU_straits_doctrine
+			custom_effect_tooltip = SAU_battle_straits_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Hormouz_sheild
-		icon = GFX_focus_generic_treaty
+		icon = al_sawary
 
 		x = 84
 		y = 19
@@ -14249,16 +14306,16 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Hormouz_sheild"
+			navy_experience = 15
+			add_ideas = SAU_hormuz_shield
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Operation_Red_Gulf
-		icon = GFX_focus_generic_treaty
+		icon = attack_iran
 
 		x = 86
 		y = 19
@@ -14267,38 +14324,29 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_The_Battle_for_the_Straits }
 
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_strait_crisis_tt
+				OR = {
+					has_idea = SAU_strait_of_hormuz_closed
+					has_war_with = PER
+				}
+			}
+		}
+
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Operation_Red_Gulf"
+			army_experience = 25
+			navy_experience = 25
+			add_timed_idea = { idea = SAU_red_gulf_planning days = 365 }
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
-	}
-
-	focus = {
-		id = SAU_Supplies_from_Eastern_province
-		icon = GFX_focus_generic_treaty
-
-		x = 86
-		y = 20
-
-		cost = 10
-
-		prerequisite = { focus = SAU_Operation_Red_Gulf }
-
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Supplies_from_Eastern_province"
-		}
-
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Iran_focuses_copy6_copy4
-		icon = GFX_focus_generic_treaty
+		icon = hegemon_of_gulf
 
 		x = 84
 		y = 20
@@ -14307,18 +14355,35 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Hormouz_sheild }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Iran_focuses_copy6_copy4"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_strait_crisis_tt
+				OR = {
+					has_idea = SAU_strait_of_hormuz_closed
+					has_war_with = PER
+				}
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Iran_focuses_copy6_copy4"
+			add_war_support = 0.05
+			if = {
+				limit = {
+					country_exists = PER
+					NOT = { has_war_with = PER }
+				}
+				create_wargoal = { type = puppet_wargoal_focus target = PER }
+			}
+			custom_effect_tooltip = SAU_command_gulf_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Chinese_mediation
-		icon = GFX_focus_generic_treaty
+		icon = align_to_china
 
 		x = 92
 		y = 18
@@ -14327,18 +14392,30 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Spark_protest_inside_the_Axis }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Chinese_mediation"
+		available = {
+			country_exists = CHI
+			country_exists = PER
+			NOT = { has_war_with = PER }
+			NOT = { has_war_with = CHI }
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Chinese_mediation"
+			add_political_power = 10
+			CHI = { country_event = { id = SAU_events.56 days = 1 } }
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				PER = { country_event = { id = SAU_events.57 days = 3 } }
+			}
+			custom_effect_tooltip = SAU_chinese_mediation_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Return_of_the_relationship
-		icon = GFX_focus_generic_treaty
+		icon = befriend_middle_east
 
 		x = 92
 		y = 19
@@ -14347,18 +14424,34 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Chinese_mediation }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Return_of_the_relationship"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_beijing_needed_tt
+				has_global_flag = SAU_PER_beijing_agreement
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Return_of_the_relationship"
+			add_political_power = 20
+			if = {
+				limit = { country_exists = PER }
+				PER = {
+					add_opinion_modifier = { target = ROOT modifier = SAU_beijing_agreement }
+					reverse_add_opinion_modifier = { target = ROOT modifier = SAU_beijing_agreement }
+					remove_opinion_modifier = { target = ROOT modifier = SAU_islamic_rivalry }
+				}
+				remove_opinion_modifier = { target = PER modifier = SAU_islamic_rivalry }
+			}
+			custom_effect_tooltip = SAU_return_relation_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Mecca_summit
-		icon = GFX_focus_generic_treaty
+		icon = aid_quran
 
 		x = 92
 		y = 20
@@ -14367,13 +14460,30 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Return_of_the_relationship }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Mecca_summit"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_beijing_needed_tt
+				has_global_flag = SAU_PER_beijing_agreement
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Mecca_summit"
+			add_political_power = 25
+			add_stability = 0.03
+			add_ideas = SAU_islamic_leadership
+			if = {
+				limit = { country_exists = PER }
+				PER = {
+					add_political_power = 25
+					add_stability = 0.02
+				}
+			}
+			custom_effect_tooltip = SAU_mecca_summit_tt
+					hidden_effect = { news_event = { id = SAU_events.65 days = 1 } }
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
@@ -14386,6 +14496,16 @@ focus_tree = {
 		cost = 10
 
 		prerequisite = { focus = SAU_Attack_iranian_influnce_in_Gulf }
+
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_baath_gone_tt
+				OR = {
+					has_completed_focus = SAU_Saddem_Fell
+					IRQ = { NOT = { has_government = nationalist } }
+				}
+			}
+		}
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Buy_Iraqi_Parliament"
@@ -14404,7 +14524,7 @@ focus_tree = {
 
 	focus = {
 		id = SAU_Fund_LAF
-		icon = GFX_focus_generic_treaty
+		icon = align_to_lebanon2
 
 		x = 90
 		y = 19
@@ -14415,16 +14535,29 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Fund_LAF"
+			add_political_power = 15
+			if = {
+				limit = { country_exists = LEB }
+				set_temp_variable = { treasury_change = -10 }
+				modify_treasury_effect = yes
+				LEB = {
+					set_temp_variable = { treasury_change = 10 }
+					modify_treasury_effect = yes
+					army_experience = 25
+					add_equipment_to_stockpile = { type = infantry_weapons_type amount = 1000 producer = SAU }
+					set_temp_variable = { percent_change = 5 }
+					change_influence_percentage = yes
+				}
+			}
+			custom_effect_tooltip = SAU_fund_laf_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Sacation_in_southern_bloc
-		icon = GFX_focus_generic_treaty
+		icon = embargo
 
 		x = 90
 		y = 18
@@ -14435,16 +14568,24 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Sacation_in_southern_bloc"
+			add_political_power = 10
+			set_temp_variable = { treasury_change = -5 }
+			modify_treasury_effect = yes
+			every_other_country = {
+				limit = { has_idea = faction_resistance_axis_member }
+				set_temp_variable = { treasury_change = -10 }
+				modify_treasury_effect = yes
+				add_opinion_modifier = { target = ROOT modifier = SAU_islamic_rivalry }
+			}
+			custom_effect_tooltip = SAU_sanction_bloc_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_The_Taif_Agreement
-		icon = GFX_focus_generic_treaty
+		icon = arm_gagick_peace_deal
 
 		x = 90
 		y = 20
@@ -14455,16 +14596,25 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_The_Taif_Agreement"
+			add_political_power = 20
+			if = {
+				limit = { country_exists = LEB }
+				LEB = {
+					add_stability = 0.05
+					add_opinion_modifier = { target = ROOT modifier = SAU_taif_spirit }
+					set_temp_variable = { percent_change = 5 }
+					change_influence_percentage = yes
+				}
+			}
+			custom_effect_tooltip = SAU_taif_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Basra_Grid_connection
-		icon = GFX_focus_generic_treaty
+		icon = arm_energy
 
 		x = 88
 		y = 19
@@ -14475,16 +14625,29 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Basra_Grid_connection"
+			add_political_power = 15
+			if = {
+				limit = { country_exists = IRQ }
+				IRQ = {
+					add_stability = 0.03
+					random_owned_state = { add_building_construction = { type = infrastructure level = 1 instant_build = yes } }
+					set_temp_variable = { percent_change = -10 }
+					set_temp_variable = { tag_index = PER.id }
+					change_influence_percentage = yes
+					set_temp_variable = { percent_change = 5 }
+					set_temp_variable = { tag_index = ROOT.id }
+					change_influence_percentage = yes
+				}
+			}
+			custom_effect_tooltip = SAU_basra_grid_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Armed_Anti_Iranian_groups
-		icon = GFX_focus_generic_treaty
+		icon = flames_of_rebellion
 
 		x = 88
 		y = 20
@@ -14495,11 +14658,21 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Armed_Anti_Iranian_groups"
+			add_political_power = 10
+			add_war_support = 0.02
+			if = {
+				limit = { country_exists = IRQ }
+				IRQ = {
+					add_equipment_to_stockpile = { type = infantry_weapons_type amount = 1000 producer = SAU }
+					set_temp_variable = { percent_change = -5 }
+					set_temp_variable = { tag_index = PER.id }
+					change_influence_percentage = yes
+				}
+			}
+			custom_effect_tooltip = SAU_anti_iran_groups_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	## GCC Foreign Affairs (Saudi copy) ##

@@ -1005,6 +1005,37 @@ SAU_Intelligence_category = {
 
 		ai_will_do = { base = 1 }
 	}
+
+	SAU_rivalry_back_separatists = {
+		icon = GFX_decision_generic_break_treaty
+		priority = 90
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_islamic_rivalry_open
+			has_completed_focus = SAU_internal_foregin_affairs_police
+			NOT = { has_global_flag = SAU_PER_beijing_agreement }
+		}
+		available = {
+			country_exists = PER
+		}
+
+		cost = 50
+		days_re_enable = 180
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_rivalry_back_separatists"
+			set_temp_variable = { treasury_change = -10 }
+			modify_treasury_effect = yes
+			PER = {
+				add_stability = -0.04
+				add_war_support = -0.02
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
 }
 
 # ============ Foreign Affairs Category ============
@@ -2313,6 +2344,198 @@ SAU_Among_Major_powers_Open_east = {
 		}
 		ai_will_do = { base = 1 }
 	}
+
+	SAU_islamic_rivalry_open = {
+		icon = GFX_decision_generic_political_discourse
+		priority = 100
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_the_Islamic_Rivalry
+			NOT = { has_country_flag = SAU_islamic_rivalry_open }
+			NOT = { has_global_flag = SAU_PER_beijing_agreement }
+		}
+
+		cost = 0
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_islamic_rivalry_open"
+			set_country_flag = SAU_islamic_rivalry_open
+		}
+
+		ai_will_do = { base = 1 }
+	}
+	SAU_islamic_rivalry_close = {
+		icon = GFX_decision_generic_political_discourse
+		priority = 100
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_islamic_rivalry_open
+		}
+
+		cost = 0
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_islamic_rivalry_close"
+			clr_country_flag = SAU_islamic_rivalry_open
+		}
+
+		ai_will_do = { base = 0 }
+	}
+	SAU_rivalry_propaganda_blitz = {
+		icon = GFX_decision_generic_nationalism
+		priority = 90
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_islamic_rivalry_open
+			NOT = { has_global_flag = SAU_PER_beijing_agreement }
+		}
+		available = {
+			country_exists = PER
+		}
+
+		cost = 25
+		days_re_enable = 90
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_rivalry_propaganda_blitz"
+			add_war_support = 0.01
+			PER = {
+				add_stability = -0.01
+				add_war_support = -0.01
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+	SAU_rivalry_strait_patrols = {
+		icon = GFX_decision_generic_naval
+		priority = 90
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_islamic_rivalry_open
+			has_completed_focus = SAU_The_Battle_for_the_Straits
+		}
+
+		cost = 25
+		days_re_enable = 180
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_rivalry_strait_patrols"
+			navy_experience = 15
+			add_war_support = 0.01
+		}
+
+		ai_will_do = { base = 1 }
+	}
+	SAU_arab_shield_invite = {
+		icon = GFX_decision_generic_form_nation
+
+		target_array = global.arab_league_members
+
+		target_root_trigger = {
+			has_country_flag = SAU_arab_shield_formed
+		}
+		target_trigger = {
+			country_exists = FROM
+			FROM = {
+				NOT = { original_tag = SAU }
+				NOT = { is_in_faction_with = ROOT }
+			}
+		}
+
+		allowed = { original_tag = SAU }
+
+		visible = {
+			FROM = { NOT = { has_war_with = ROOT } }
+		}
+		available = {
+			custom_trigger_tooltip = { tooltip = SAU_arab_shield_target_free_tt FROM = { is_in_faction = no } }
+		}
+
+		cost = 25
+		days_re_enable = 120
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_arab_shield_invite"
+			FROM = { country_event = { id = SAU_events.41 days = 1 } }
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = { FROM = { add_ideas = SAU_arab_shield_member } }
+		}
+
+		ai_will_do = { base = 1 }
+	}
+	SAU_arm_lebanese_army = {
+		icon = GFX_decision_generic_army_support
+		priority = 85
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Fund_LAF
+			country_exists = LEB
+			NOT = { has_war_with = LEB }
+		}
+
+		cost = 25
+		days_re_enable = 90
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_arm_lebanese_army"
+			set_temp_variable = { treasury_change = -5 }
+			modify_treasury_effect = yes
+			add_to_variable = { SAU_laf_strength = 1 }
+			LEB = {
+				add_equipment_to_stockpile = { type = infantry_weapons_type amount = 1000 producer = SAU }
+				army_experience = 15
+			}
+			custom_effect_tooltip = SAU_laf_strength_tt
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_unleash_laf = {
+		icon = GFX_decision_generic_military
+		priority = 85
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Fund_LAF
+			country_exists = LEB
+			country_exists = HEZ
+			NOT = { LEB = { has_war_with = HEZ } }
+		}
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_laf_armed_req_tt
+				check_variable = { var = SAU_laf_strength value = 3 compare = greater_than_or_equals }
+			}
+		}
+
+		cost = 50
+		days_re_enable = 365
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_unleash_laf"
+			LEB = { country_event = { id = SAU_events.60 days = 1 } }
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				LEB = { declare_war_on = { target = HEZ type = annex_everything } }
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
 }
 
 SAU_pipeline_sabotage_category = {
@@ -2493,47 +2716,5 @@ yemen_partition_category = {
 			drop_cosmetic_tag = yes
 		}
 		ai_will_do = { base = 0 }
-	}
-}
-
-SAU_arab_shield_category = {
-
-	SAU_arab_shield_invite = {
-		icon = GFX_decision_generic_form_nation
-
-		target_array = global.arab_league_members
-
-		target_root_trigger = {
-			has_country_flag = SAU_arab_shield_formed
-		}
-		target_trigger = {
-			country_exists = FROM
-			FROM = {
-				NOT = { original_tag = SAU }
-				NOT = { is_in_faction_with = ROOT }
-			}
-		}
-
-		allowed = { original_tag = SAU }
-
-		visible = {
-			FROM = { NOT = { has_war_with = ROOT } }
-		}
-		available = {
-			custom_trigger_tooltip = { tooltip = SAU_arab_shield_target_free_tt FROM = { is_in_faction = no } }
-		}
-
-		cost = 25
-		days_re_enable = 120
-		fire_only_once = no
-
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision SAU_arab_shield_invite"
-			FROM = { country_event = { id = SAU_events.41 days = 1 } }
-			custom_effect_tooltip = TT_IF_THEY_ACCEPT
-			effect_tooltip = { FROM = { add_ideas = SAU_arab_shield_member } }
-		}
-
-		ai_will_do = { base = 1 }
 	}
 }
