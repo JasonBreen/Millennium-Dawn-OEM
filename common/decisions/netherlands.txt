@@ -1132,6 +1132,110 @@ HOL_carrier_production = {
 		ai_will_do = { base = 0 }
 	}
 }
+HOL_future_air_defender_program = {
+	HOL_FAD_produce_batch = {
+		icon = GFX_decision_generic_construction
+
+		available = {
+			has_country_flag = HOL_FAD_member
+		}
+
+		cost = 50
+
+		days_re_enable = 180
+
+		complete_effect = {
+			if = {
+				limit = { NOT = { has_country_flag = HOL_FAD_variant_created } }
+				if = {
+					limit = { original_tag = HOL }
+					create_equipment_variant = {
+						name = "Future Air Defender"
+						type = frigate_hull_5
+						allow_without_tech = yes
+						modules = {
+							fixed_ship_engine_slot = module_surface_mod_reactor_power
+							fixed_ship_fire_control_system_slot = module_advanced_integrated_missile_radar_control
+							fixed_ship_radar_slot = module_radar_6
+							fixed_ship_auxillary_slot_2 = module_vls_lam_4
+							fixed_ship_auxillary_slot_1 = module_esm_3
+							fixed_ship_auxillary_slot = module_152mm_battery
+							fixed_ship_battery_slot = module_aa_missiles_4
+							front_1_custom_slot = module_aa_missiles_4
+							rear_1_custom_slot = module_asm_4
+						}
+						design_team = mio:HOL_Damen_naval_equipment_organisation
+					}
+				}
+				else = {
+					create_equipment_variant = {
+						name = "Future Air Defender"
+						type = frigate_hull_5
+						allow_without_tech = yes
+						modules = {
+							fixed_ship_engine_slot = module_surface_mod_reactor_power
+							fixed_ship_fire_control_system_slot = module_advanced_integrated_missile_radar_control
+							fixed_ship_radar_slot = module_radar_6
+							fixed_ship_auxillary_slot_2 = module_vls_lam_4
+							fixed_ship_auxillary_slot_1 = module_esm_3
+							fixed_ship_auxillary_slot = module_152mm_battery
+							fixed_ship_battery_slot = module_aa_missiles_4
+							front_1_custom_slot = module_aa_missiles_4
+							rear_1_custom_slot = module_asm_4
+						}
+					}
+				}
+				set_country_flag = HOL_FAD_variant_created
+			}
+			add_equipment_production = {
+				equipment = {
+					type = frigate_hull_5
+					version_name = "Future Air Defender"
+				}
+				amount = 2
+				progress = 0.20
+				requested_factories = 1
+			}
+			newline = yes
+			set_temp_variable = { treasury_change = gdp_per_capita }
+			multiply_temp_variable = { treasury_change = -0.08 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 1 }
+	}
+	HOL_FAD_invite_partner = {
+		icon = GFX_decision_generic_form_nation
+
+		allowed = { original_tag = HOL }
+
+		targets = { SWE DEN NOR }
+		target_trigger = {
+			FROM = {
+				exists = yes
+				NOT = { has_country_flag = HOL_FAD_member }
+				NOT = { has_country_flag = HOL_FAD_invited }
+				NOT = { has_country_flag = HOL_FAD_declined }
+				NOT = { has_war_with = ROOT }
+			}
+		}
+
+		available = {
+			has_country_flag = HOL_FAD_GER_declined
+		}
+
+		cost = 50
+
+		complete_effect = {
+			FROM = {
+				set_country_flag = HOL_FAD_invited
+				country_event = { id = HOL_military.035 days = 1 }
+			}
+		}
+
+		ai_will_do = { base = 0 }
+	}
+}
 HOL_influence_flanders = {
 	BEL_counter_influence_flanders = {
 		icon = GFX_decision_boost

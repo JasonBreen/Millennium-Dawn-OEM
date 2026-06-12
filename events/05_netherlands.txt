@@ -1813,7 +1813,7 @@ country_event = {
 
 }
 country_event = {
-	id = HOL_military.035 #Joint Future Air Defender Ship request to Germany
+	id = HOL_military.035 #Future Air Defender Program - invitation to a partner
 	title = HOL_military.035.t
 	desc = HOL_military.035.d
 	picture = GFX_hol_future_air_defender_event_picture
@@ -1822,12 +1822,12 @@ country_event = {
 	option = {
 		name = HOL_military.035.a #Accept
 		log = "[GetDateText]: [This.GetName]: HOL_military.035.a executed"
-		set_technology = { FAD_access_tech = 1 }
-		newline = yes
+		set_country_flag = HOL_FAD_member
+		set_country_flag = HOL_FAD_variant_created
 		create_equipment_variant = {
 			name = "Future Air Defender"
-			type = cruiser_hull_4
-			parent_version = 3
+			type = frigate_hull_5
+			allow_without_tech = yes
 			modules = {
 				fixed_ship_engine_slot = module_surface_mod_reactor_power
 				fixed_ship_fire_control_system_slot = module_advanced_integrated_missile_radar_control
@@ -1839,43 +1839,34 @@ country_event = {
 				front_1_custom_slot = module_aa_missiles_4
 				rear_1_custom_slot = module_asm_4
 			}
-			design_team = mio:HOL_Damen_naval_equipment_organisation
 		}
 		add_equipment_production = {
 			equipment = {
-				type = cruiser_hull_4
+				type = frigate_hull_5
 				version_name = "Future Air Defender"
 			}
 			amount = 2
 			progress = 0.20
 			requested_factories = 1
 		}
-		newline = yes
-		set_temp_variable = { treasury_change = -25 }
-		modify_treasury_effect = yes
-		newline = yes
-		HOL = { country_event = HOL_military.036 }
-		newline = yes
-		mio:GER_thyssenkrupp_marine_naval_manufacturer = {
-			add_mio_funds = 1000
-		}
-		mio:GER_lurssen_werft_naval_manufacturer = {
-			add_mio_funds = 1000
-		}
+		FROM = { country_event = { id = HOL_military.036 days = 1 } }
 		if = {
 			limit = { has_idea = maritime_industry }
-			newline = yes
 			set_temp_variable = { temp_opinion = 5 }
 			change_maritime_industry_opinion = yes
 		}
-		hidden_effect = {
-			GER = { country_event = { id = HOL_military.036 days = 120 } }
-		}
+		newline = yes
+		set_temp_variable = { treasury_change = -25 }
+		modify_treasury_effect = yes
 		ai_chance = {
 			base = 70
 			modifier = {
-				HOL = { same_ideology = no }
-				add = -60
+				FROM = { has_same_ideology = no }
+				add = -50
+			}
+			modifier = {
+				is_puppet_of = FROM
+				factor = 2
 			}
 		}
 	}
@@ -1883,15 +1874,16 @@ country_event = {
 	option = {
 		name = HOL_military.035.b #Reject
 		log = "[GetDateText]: [This.GetName]: HOL_military.035.b executed"
-		HOL = { country_event = { id = HOL_military.037 days = 1 } }
+		set_country_flag = HOL_FAD_declined
+		FROM = { country_event = { id = HOL_military.037 days = 1 } }
 		ai_chance = {
 			base = 30
 			modifier = {
-				HOL = { same_ideology = yes }
+				FROM = { has_same_ideology = yes }
 				add = -10
 			}
 			modifier = {
-				is_puppet_of = HOL
+				is_puppet_of = FROM
 				factor = 0
 			}
 		}
@@ -1899,7 +1891,7 @@ country_event = {
 
 }
 country_event = {
-	id = HOL_military.036 #Germany Accepted FAD to Netherlands
+	id = HOL_military.036 #Future Air Defender Program - a partner joins
 	title = HOL_military.036.t
 	desc = HOL_military.036.d
 	picture = GFX_hol_future_air_defender_event_picture
@@ -1908,567 +1900,68 @@ country_event = {
 	option = {
 		name = HOL_military.036.a
 		log = "[GetDateText]: [This.GetName]: HOL_military.036.a executed"
-		set_technology = { FAD_access_tech = 1 }
-		newline = yes
-		create_equipment_variant = {
-			name = "Future Air Defender"
-			type = cruiser_hull_4
-			parent_version = 3
-			modules = {
-				fixed_ship_engine_slot = module_surface_mod_reactor_power
-				fixed_ship_fire_control_system_slot = module_advanced_integrated_missile_radar_control
-				fixed_ship_radar_slot = module_radar_6
-				fixed_ship_auxillary_slot_2 = module_vls_lam_4
-				fixed_ship_auxillary_slot_1 = module_esm_3
-				fixed_ship_auxillary_slot = module_152mm_battery
-				fixed_ship_battery_slot = module_aa_missiles_4
-				front_1_custom_slot = module_aa_missiles_4
-				rear_1_custom_slot = module_asm_4
+		if = {
+			limit = { NOT = { has_country_flag = HOL_FAD_member } }
+			set_country_flag = HOL_FAD_member
+			set_country_flag = HOL_FAD_variant_created
+			unlock_decision_category_tooltip = HOL_future_air_defender_program
+			create_equipment_variant = {
+				name = "Future Air Defender"
+				type = frigate_hull_5
+				allow_without_tech = yes
+				modules = {
+					fixed_ship_engine_slot = module_surface_mod_reactor_power
+					fixed_ship_fire_control_system_slot = module_advanced_integrated_missile_radar_control
+					fixed_ship_radar_slot = module_radar_6
+					fixed_ship_auxillary_slot_2 = module_vls_lam_4
+					fixed_ship_auxillary_slot_1 = module_esm_3
+					fixed_ship_auxillary_slot = module_152mm_battery
+					fixed_ship_battery_slot = module_aa_missiles_4
+					front_1_custom_slot = module_aa_missiles_4
+					rear_1_custom_slot = module_asm_4
+				}
+				design_team = mio:HOL_Damen_naval_equipment_organisation
 			}
-			design_team = mio:HOL_Damen_naval_equipment_organisation
-		}
-		add_equipment_production = {
-			equipment = {
-				type = cruiser_hull_4
-				version_name = "Future Air Defender"
+			add_equipment_production = {
+				equipment = {
+					type = frigate_hull_5
+					version_name = "Future Air Defender"
+				}
+				amount = 2
+				progress = 0.20
+				requested_factories = 1
 			}
-			amount = 2
-			progress = 0.20
-			requested_factories = 1
+			newline = yes
+			set_temp_variable = { treasury_change = -25 }
+			modify_treasury_effect = yes
 		}
-		set_temp_variable = { treasury_change = -25 }
-		modify_treasury_effect = yes
+		if = {
+			limit = { has_idea = maritime_industry }
+			set_temp_variable = { temp_opinion = 5 }
+			change_maritime_industry_opinion = yes
+		}
 	}
 
 }
 
 country_event = {
-	id = HOL_military.037 #Challenges for Germany to develop this ship
+	id = HOL_military.037 #Future Air Defender Program - a partner declines
 	title = HOL_military.037.t
 	desc = HOL_military.037.d
-	picture = GFX_euro
+	picture = GFX_hol_dutch_flag_bad_event_picture
 	is_triggered_only = yes
 
 	option = {
-		name = HOL_military.037.a # Germany invests more and gets another ship
+		name = HOL_military.037.a
 		log = "[GetDateText]: [This.GetName]: HOL_military.037.a executed"
-		add_equipment_production = {
-			equipment = {
-				type = frigate_hull_5
-				version_name = "Future Air Defender"
-			}
-			amount = 1
-			progress = 0.33
+		if = {
+			limit = { NOT = { has_country_flag = HOL_FAD_member } }
+			set_country_flag = HOL_FAD_member
+			unlock_decision_category_tooltip = HOL_future_air_defender_program
 		}
 		if = {
-			limit = { has_idea = maritime_industry }
-			newline = yes
-			set_temp_variable = { temp_opinion = 5 }
-			change_maritime_industry_opinion = yes
-		}
-		set_temp_variable = { treasury_change = -15 }
-		modify_treasury_effect = yes
-		ai_chance = {
-			base = 70
-			modifier = {
-				gdp_debt_ratio_higher_50 = yes
-				add = -60
-			}
-		}
-	}
-
-	option = {
-		name = HOL_military.037.b # Germany quits the project
-		log = "[GetDateText]: [This.GetName]: HOL_military.037.b executed"
-		set_technology = { FAD_access_tech = 0 }
-		add_equipment_production = {
-			equipment = {
-				type = frigate_hull_5
-				version_name = "Future Air Defender"
-			}
-			amount = -2
-		}
-		HOL = { country_event = { id = HOL_military.038 days = 1 } }
-		set_country_flag = HOL_germany_scrapped_FAD
-		ai_chance = {
-			base = 25
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.038 #Germany scraps the project to Netherlands
-	title = HOL_military.038.t
-	desc = HOL_military.038.d
-	picture = GFX_hol_future_air_defender_event_picture
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.038.a # Invest more and start building two ships
-		log = "[GetDateText]: [This.GetName]: HOL_military.038.b executed"
-		add_equipment_production = {
-			equipment = {
-				type = frigate_hull_5
-				version_name = "Future Air Defender"
-			}
-			amount = 2
-			progress = 0.33
-		}
-		set_temp_variable = { treasury_change = -35 }
-		modify_treasury_effect = yes
-		ai_chance = {
-			base = 70
-			modifier = {
-				gdp_debt_ratio_higher_70 = yes
-				add = -60
-			}
-		}
-	}
-
-	option = {
-		name = HOL_military.038.b # Search for new partners in Scandinavia
-		log = "[GetDateText]: [This.GetName]: HOL_military.038.b executed"
-		SWE = { country_event = { id = HOL_military.038 days = 7 } }
-		DEN = { country_event = { id = HOL_military.039 days = 7 } }
-		NRY = { country_event = { id = HOL_military.041 days = 7 } }
-	}
-
-	option = {
-		name = HOL_military.038.c # Scrap the project
-		log = "[GetDateText]: [This.GetName]: HOL_military.038.a executed"
-		set_technology = { FAD_access_tech = 0 }
-		add_equipment_production = {
-			equipment = {
-				type = frigate_hull_5
-				version_name = "Future Air Defender"
-			}
-			amount = -2
-		}
-		ai_chance = {
-			base = 25
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.039 #Joint Future Air Defender Ship request to Sweden
-	title = HOL_military.039.t
-	desc = HOL_military.039.d
-	picture = GFX_hol_future_air_defender_event_picture
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.039.a #Accept
-		log = "[GetDateText]: [This.GetName]: HOL_military.039.a executed"
-		set_technology = { FAD_access_tech = 1 }
-		newline = yes
-		newline = yes
-		create_equipment_variant = {
-			name = "Future Air Defender"
-			type = frigate_hull_5
-			parent_version = 3
-			modules = {
-				fixed_ship_engine_slot = module_surface_mod_reactor_power
-				fixed_ship_fire_control_system_slot = module_advanced_integrated_missile_radar_control
-				fixed_ship_radar_slot = module_radar_6
-				fixed_ship_auxillary_slot_2 = module_vls_lam_4
-				fixed_ship_auxillary_slot_1 = module_esm_3
-				fixed_ship_auxillary_slot = module_152mm_battery
-				fixed_ship_battery_slot = module_aa_missiles_4
-				front_1_custom_slot = module_aa_missiles_4
-				rear_1_custom_slot = module_asm_4
-			}
-			design_team = mio:HOL_Damen_naval_equipment_organisation
-		}
-		add_equipment_production = {
-			equipment = {
-				type = frigate_hull_5
-				version_name = "Future Air Defender"
-			}
-			amount = 2
-			progress = 0.33
-			requested_factories = 1
-		}
-		if = {
-			limit = { has_idea = maritime_industry }
-			newline = yes
-			set_temp_variable = { temp_opinion = 5 }
-			change_maritime_industry_opinion = yes
-		}
-		newline = yes
-		set_temp_variable = { treasury_change = -35 }
-		modify_treasury_effect = yes
-		HOL = { country_event = { id = HOL_military.042 days = 1 } }
-		ai_chance = {
-			base = 40
-			modifier = {
-				gdp_debt_ratio_higher_70 = yes
-				add = -40
-			}
-			modifier = {
-				HOL = { has_same_ideology = yes }
-				add = 20
-			}
-			modifier = {
-				has_opinion = {
-					target = HOL
-					value > 50
-				}
-				add = 20
-			}
-		}
-	}
-
-	option = {
-		name = HOL_military.039.b #Decline
-		log = "[GetDateText]: [This.GetName]: HOL_military.039.b executed"
-		HOL = { country_event = { id = HOL_military.045 days = 1 } }
-		ai_chance = {
-			base = 25
-			modifier = {
-				is_puppet_of = HOL
-				factor = 0
-			}
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.040 #Joint Future Air Defender Ship request to Denmark
-	title = HOL_military.040.t
-	desc = HOL_military.040.d
-	picture = GFX_hol_future_air_defender_event_picture
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.040.a #Agreed
-		log = "[GetDateText]: [This.GetName]: HOL_military.040.a executed"
-		set_technology = { FAD_access_tech = 1 }
-		newline = yes
-		create_equipment_variant = {
-			name = "Future Air Defender"
-			type = frigate_hull_5
-			parent_version = 3
-			modules = {
-				fixed_ship_engine_slot = module_surface_mod_reactor_power
-				fixed_ship_fire_control_system_slot = module_advanced_integrated_missile_radar_control
-				fixed_ship_radar_slot = module_radar_6
-				fixed_ship_auxillary_slot_2 = module_vls_lam_4
-				fixed_ship_auxillary_slot_1 = module_esm_3
-				fixed_ship_auxillary_slot = module_152mm_battery
-				fixed_ship_battery_slot = module_aa_missiles_4
-				front_1_custom_slot = module_aa_missiles_4
-				rear_1_custom_slot = module_asm_4
-			}
-			design_team = mio:HOL_Damen_naval_equipment_organisation
-		}
-		newline = yes
-		add_equipment_production = {
-			equipment = {
-				type = frigate_hull_5
-				version_name = "Future Air Defender"
-			}
-			amount = 2
-			progress = 0.33
-			requested_factories = 1
-		}
-		if = {
-			limit = { has_idea = maritime_industry }
-			newline = yes
-			set_temp_variable = { temp_opinion = 5 }
-			change_maritime_industry_opinion = yes
-		}
-		newline = yes
-		set_temp_variable = { treasury_change = -35 }
-		modify_treasury_effect = yes
-		HOL = { country_event = { id = HOL_military.043 days = 1 } }
-		ai_chance = {
-			base = 40
-			modifier = {
-				gdp_debt_ratio_higher_70 = yes
-				add = -40
-			}
-			modifier = {
-				HOL = { has_same_ideology = yes }
-				add = 20
-			}
-			modifier = {
-				has_opinion = {
-					target = HOL
-					value > 50
-				}
-				add = 20
-			}
-		}
-	}
-
-	option = {
-		name = HOL_military.040.b #Declined
-		log = "[GetDateText]: [This.GetName]: HOL_military.040.b executed"
-		HOL = { country_event = { id = HOL_military.046 days = 1 } }
-		ai_chance = {
-			base = 25
-			modifier = {
-				is_puppet_of = HOL
-				factor = 0
-			}
-		}
-	}
-
-}
-
-country_event = {
-	id = HOL_military.041 #Joint Future Air Defender Ship request to Norway
-	title = HOL_military.041.t
-	desc = HOL_military.041.d
-	picture = GFX_hol_future_air_defender_event_picture
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.041.a # Norway agrees to collaborate
-		log = "[GetDateText]: [This.GetName]: HOL_military.041.a executed"
-		set_technology = { FAD_access_tech = 1 }
-		newline = yes
-		create_equipment_variant = {
-			name = "Future Air Defender"
-			type = frigate_hull_5
-			parent_version = 3
-			modules = {
-				fixed_ship_engine_slot = module_surface_mod_reactor_power
-				fixed_ship_fire_control_system_slot = module_advanced_integrated_missile_radar_control
-				fixed_ship_radar_slot = module_radar_6
-				fixed_ship_auxillary_slot_2 = module_vls_lam_4
-				fixed_ship_auxillary_slot_1 = module_esm_3
-				fixed_ship_auxillary_slot = module_152mm_battery
-				fixed_ship_battery_slot = module_aa_missiles_4
-				front_1_custom_slot = module_aa_missiles_4
-				rear_1_custom_slot = module_asm_4
-			}
-			design_team = mio:HOL_Damen_naval_equipment_organisation
-		}
-		newline = yes
-		add_equipment_production = {
-			equipment = {
-				type = frigate_hull_5
-				version_name = "Future Air Defender"
-			}
-			amount = 2
-			progress = 0.33
-			requested_factories = 1
-		}
-		if = {
-			limit = { has_idea = maritime_industry }
-			newline = yes
-			set_temp_variable = { temp_opinion = 5 }
-			change_maritime_industry_opinion = yes
-		}
-		newline = yes
-		set_temp_variable = { treasury_change = -35 }
-		modify_treasury_effect = yes
-		HOL = { country_event = { id = HOL_military.044 days = 1 } }
-		ai_chance = {
-			base = 40
-			modifier = {
-				gdp_debt_ratio_higher_70 = yes
-				add = -40
-			}
-			modifier = {
-				HOL = { has_same_ideology = yes }
-				add = 20
-			}
-			modifier = {
-				has_opinion = {
-					target = HOL
-					value > 50
-				}
-				add = 20
-			}
-		}
-	}
-
-	option = {
-		name = HOL_military.041.b # Norway declines the project
-		log = "[GetDateText]: [This.GetName]: HOL_military.041.b executed"
-		HOL = { country_event = { id = HOL_military.047 days = 1 } }
-		ai_chance = {
-			base = 25
-			modifier = {
-				is_puppet_of = HOL
-				factor = 0
-			}
-		}
-	}
-
-}
-country_event = {
-	id = HOL_military.042 #Sweden Accepts FADs
-	title = HOL_military.042.t
-	desc = HOL_military.042.d
-	picture = GFX_hol_future_air_defender_event_picture
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.042.a
-		log = "[GetDateText]: [This.GetName]: HOL_military.042.a executed"
-		add_equipment_production = {
-			equipment = {
-				type = frigate_hull_5
-				version_name = "Future Air Defender"
-			}
-			amount = 1
-			progress = 0.33
-			requested_factories = 1
-		}
-		set_temp_variable = { treasury_change = -10 }
-		modify_treasury_effect = yes
-	}
-
-}
-country_event = {
-	id = HOL_military.043 #Denmark Accepts FADs
-	title = HOL_military.043.t
-	desc = HOL_military.043.d
-	picture = GFX_hol_future_air_defender_event_picture
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.042.a
-		log = "[GetDateText]: [This.GetName]: HOL_military.043.a executed"
-		add_equipment_production = {
-			equipment = {
-				type = frigate_hull_5
-				version_name = "Future Air Defender"
-			}
-			amount = 1
-			progress = 0.33
-			requested_factories = 1
-		}
-		set_temp_variable = { treasury_change = -10 }
-		modify_treasury_effect = yes
-	}
-
-}
-country_event = {
-	id = HOL_military.044 #Norway Accepts FADs
-	title = HOL_military.044.t
-	desc = HOL_military.044.d
-	picture = GFX_hol_future_air_defender_event_picture
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.044.a
-		log = "[GetDateText]: [This.GetName]: HOL_military.044.a executed"
-		add_equipment_production = {
-			equipment = {
-				type = frigate_hull_5
-				version_name = "Future Air Defender"
-			}
-			amount = 1
-			progress = 0.33
-			requested_factories = 1
-		}
-		set_temp_variable = { treasury_change = -10 }
-		modify_treasury_effect = yes
-	}
-
-}
-
-country_event = {
-	id = HOL_military.045 #Sweden Rejects FADs
-	title = HOL_military.045.t
-	desc = HOL_military.045.d
-	picture = GFX_hol_dutch_flag_bad_event_picture
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.045.a
-		log = "[GetDateText]: [This.GetName]: HOL_military.045.a executed"
-		set_country_flag = HOL_sweden_rejected_FAD
-	}
-
-}
-
-country_event = {
-	id = HOL_military.046 #Denmark Rejects FADs
-	title = HOL_military.046.t
-	desc = HOL_military.046.d
-	picture = GFX_hol_dutch_flag_bad_event_picture
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.046.a
-		log = "[GetDateText]: [This.GetName]: HOL_military.046.a executed"
-		set_country_flag = HOL_denmark_rejected_FAD
-	}
-
-}
-
-country_event = {
-	id = HOL_military.047 #Norway Rejects FADs
-	title = HOL_military.047.t
-	desc = HOL_military.047.d
-	picture = GFX_hol_dutch_flag_bad_event_picture
-	is_triggered_only = yes
-
-	option = {
-		name = HOL_military.047.a
-		log = "[GetDateText]: [This.GetName]: HOL_military.047.a executed"
-		set_country_flag = HOL_norway_rejected_FAD
-	}
-
-}
-country_event = {
-	id = HOL_military.048
-	title = HOL_military.048.t
-	desc = HOL_military.048.d
-	picture = GFX_hol_future_air_defender_event_picture
-	is_triggered_only = yes
-
-	trigger = {
-		has_country_flag = HOL_germany_scrapped_FAD
-		has_country_flag = HOL_sweden_rejected_FAD
-		has_country_flag = HOL_denmark_rejected_FAD
-		has_country_flag = HOL_norway_rejected_FAD
-	}
-
-	option = {
-		name = HOL_military.048.a # Invest more and start building two ships
-		log = "[GetDateText]: [This.GetName]: HOL_military.048.a executed"
-		add_equipment_production = {
-			equipment = {
-				type = frigate_hull_5
-				version_name = "Future Air Defender"
-			}
-			amount = 2
-			progress = 0.33
-		}
-		set_temp_variable = { treasury_change = -35 }
-		modify_treasury_effect = yes
-		ai_chance = {
-			base = 70
-			modifier = {
-				gdp_debt_ratio_higher_70 = yes
-				add = -60
-			}
-		}
-	}
-
-	option = {
-		name = HOL_military.048.b # Scrap the project
-		log = "[GetDateText]: [This.GetName]: HOL_military.048.b executed"
-		set_technology = { FAD_access_tech = 0 }
-		add_equipment_production = {
-			equipment = {
-				type = frigate_hull_5
-				version_name = "Future Air Defender"
-			}
-			amount = -2
-		}
-		ai_chance = {
-			base = 25
+			limit = { FROM = { original_tag = GER } }
+			set_country_flag = HOL_FAD_GER_declined
 		}
 	}
 
