@@ -1782,6 +1782,7 @@ SAU_Among_Major_powers_Open_east = {
 
 		allowed = { original_tag = SAU }
 		visible = {
+			NOT = { has_global_flag = SAU_ISR_normalized }
 			has_completed_focus = SAU_Palestine_3
 		}
 		available = {
@@ -1817,6 +1818,7 @@ SAU_Among_Major_powers_Open_east = {
 
 		allowed = { original_tag = SAU }
 		visible = {
+			NOT = { has_global_flag = SAU_ISR_normalized }
 			has_completed_focus = SAU_Palestine_3
 		}
 		available = {
@@ -1849,6 +1851,7 @@ SAU_Among_Major_powers_Open_east = {
 
 		allowed = { original_tag = SAU }
 		visible = {
+			NOT = { has_global_flag = SAU_ISR_normalized }
 			has_completed_focus = SAU_Palestine_3
 		}
 		available = {
@@ -1886,6 +1889,7 @@ SAU_Among_Major_powers_Open_east = {
 
 		allowed = { original_tag = SAU }
 		visible = {
+			NOT = { has_global_flag = SAU_ISR_normalized }
 			has_country_flag = SAU_sponsors_islamic_front
 			country_exists = ISR
 		}
@@ -1931,6 +1935,7 @@ SAU_Among_Major_powers_Open_east = {
 
 		allowed = { original_tag = SAU }
 		visible = {
+			NOT = { has_global_flag = SAU_ISR_normalized }
 			has_country_flag = SAU_sponsors_islamic_front
 			country_exists = ISR
 		}
@@ -1971,6 +1976,7 @@ SAU_Among_Major_powers_Open_east = {
 
 		allowed = { original_tag = SAU }
 		visible = {
+			NOT = { has_global_flag = SAU_ISR_normalized }
 			has_country_flag = SAU_sponsors_islamic_front
 			country_exists = ISR
 		}
@@ -2532,6 +2538,227 @@ SAU_Among_Major_powers_Open_east = {
 			effect_tooltip = {
 				LEB = { declare_war_on = { target = HEZ type = annex_everything } }
 			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+
+	SAU_isr_talks_clock = {
+		icon = GFX_decision_generic_political_discourse
+		priority = 110
+
+		allowed = { original_tag = SAU }
+		activation = {
+			has_country_flag = SAU_isr_talks_opened
+			NOT = { has_global_flag = SAU_ISR_talks_failed }
+			NOT = { has_global_flag = SAU_ISR_normalized }
+		}
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_isr_success_tt
+				has_global_flag = SAU_ISR_t1_answered
+				has_global_flag = SAU_ISR_t2_answered
+				has_global_flag = SAU_ISR_t3_answered
+				has_global_flag = SAU_ISR_t2_yes
+				OR = {
+					has_global_flag = SAU_ISR_t1_yes
+					has_global_flag = SAU_ISR_t3_yes
+				}
+			}
+		}
+		cancel_trigger = {
+			has_global_flag = SAU_ISR_normalized
+		}
+
+		days_mission_timeout = 120
+		selectable_mission = no
+		fire_only_once = yes
+		is_good = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Mission SAU_isr_talks_clock complete"
+			country_event = { id = SAU_events.77 days = 1 }
+		}
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: Mission SAU_isr_talks_clock timeout"
+			set_global_flag = SAU_ISR_talks_failed
+			set_global_flag = SAU_ISR_t1_answered
+			set_global_flag = SAU_ISR_t2_answered
+			set_global_flag = SAU_ISR_t3_answered
+			country_event = { id = SAU_events.76 days = 1 }
+		}
+	}
+
+	SAU_isr_talks_backchannel = {
+		icon = GFX_decision_generic_political_discourse
+		priority = 105
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_isr_talks_opened
+			NOT = { has_global_flag = SAU_ISR_talks_failed }
+			NOT = { has_global_flag = SAU_ISR_normalized }
+		}
+		available = {
+			country_exists = ISR
+		}
+
+		cost = 25
+		fire_only_once = yes
+
+		complete_effect = {
+			set_country_flag = SAU_isr_talks_started
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_isr_talks_backchannel"
+			ISR = { country_event = { id = SAU_events.68 days = 3 } }
+			custom_effect_tooltip = SAU_isr_track_tt
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_isr_talks_palestine = {
+		icon = GFX_decision_generic_form_nation
+		priority = 105
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_isr_talks_opened
+			NOT = { has_global_flag = SAU_ISR_talks_failed }
+			NOT = { has_global_flag = SAU_ISR_normalized }
+		}
+		available = {
+			country_exists = ISR
+		}
+
+		cost = 25
+		fire_only_once = yes
+
+		complete_effect = {
+			set_country_flag = SAU_isr_talks_started
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_isr_talks_palestine"
+			ISR = { country_event = { id = SAU_events.71 days = 3 } }
+			custom_effect_tooltip = SAU_isr_track_tt
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_isr_talks_sweeten = {
+		icon = GFX_decision_generic_civil_support
+		priority = 105
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_isr_talks_opened
+			NOT = { has_global_flag = SAU_ISR_talks_failed }
+			NOT = { has_global_flag = SAU_ISR_normalized }
+		}
+		available = {
+			country_exists = ISR
+		}
+
+		cost = 25
+		fire_only_once = yes
+
+		complete_effect = {
+			set_country_flag = SAU_isr_talks_started
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_isr_talks_sweeten"
+			set_temp_variable = { treasury_change = -25 }
+			modify_treasury_effect = yes
+			ISR = { country_event = { id = SAU_events.72 days = 3 } }
+			custom_effect_tooltip = SAU_isr_track_tt
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_isr_talks_us_mediation = {
+		icon = GFX_decision_generic_break_treaty
+		priority = 104
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_country_flag = SAU_isr_talks_opened
+			NOT = { has_global_flag = SAU_ISR_talks_failed }
+			NOT = { has_global_flag = SAU_ISR_normalized }
+			NOT = { has_global_flag = SAU_ISR_us_mediation }
+		}
+		available = {
+			country_exists = USA
+			has_opinion = { target = USA value > 0 }
+		}
+
+		cost = 50
+		fire_only_once = yes
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_isr_talks_us_mediation"
+			set_global_flag = SAU_ISR_us_mediation
+			custom_effect_tooltip = SAU_isr_us_mediation_tt
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_pal_aid_package = {
+		icon = GFX_decision_generic_civil_support
+		priority = 90
+
+		allowed = { original_tag = SAU }
+		visible = {
+			has_completed_focus = SAU_Normalzation_with_zionist_5
+			country_exists = PAL
+			NOT = { has_global_flag = SAU_ISR_normalized }
+		}
+
+		cost = 25
+		days_re_enable = 120
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_pal_aid_package"
+			set_temp_variable = { treasury_change = -10 }
+			modify_treasury_effect = yes
+			PAL = {
+				set_temp_variable = { treasury_change = 10 }
+				modify_treasury_effect = yes
+				add_stability = 0.02
+				set_temp_variable = { percent_change = 3 }
+				change_influence_percentage = yes
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_pal_recognition_drive = {
+		icon = GFX_decision_generic_form_nation
+		priority = 90
+
+		targets = { USA ENG FRA GER ITA HOL JAP CAN }
+
+		target_trigger = {
+			FROM = {
+				NOT = { has_country_flag = Recognised_PAL }
+				NOT = { has_war_with = ROOT }
+			}
+		}
+
+		allowed = { original_tag = SAU }
+		visible = {
+			country_exists = PAL
+		}
+
+		cost = 25
+		days_re_enable = 90
+		fire_only_once = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_pal_recognition_drive"
+			FROM = { country_event = { id = SAU_events.78 days = 2 } }
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			custom_effect_tooltip = SAU_recog_grant_tt
 		}
 
 		ai_will_do = { base = 1 }

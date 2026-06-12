@@ -11,7 +11,7 @@ focus_tree = {
 	default = no
 	continuous_focus_position = { x = 0 y = 1000 }
 
-	# === Focus tree tabs (shortcuts) ===
+	
 	shortcut = { name = SAU_economic_tree_shortcut    target = SAU_Saudi_Economic_Tree              scroll_wheel_factor = 0.80 }
 	shortcut = { name = SAU_foreign_tree_shortcut     target = SAU_Foregin_Affairs_Begin_Focus_Tree scroll_wheel_factor = 0.80 }
 	shortcut = { name = SAU_internal_tree_shortcut    target = SAU_internal_foregin_affairs          scroll_wheel_factor = 0.80 }
@@ -11751,10 +11751,10 @@ focus_tree = {
 
 		ai_will_do = { base = 1 }
 	}
-	# Normalization with Zionist
+	
 	focus = {
 		id = SAU_Normalzation_with_zionist
-		icon = GFX_focus_generic_treaty
+		icon = accept_majlis
 
 		x = 27
 		y = 1
@@ -11766,16 +11766,16 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist"
+			add_political_power = 35
+			custom_effect_tooltip = SAU_isr_question_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
-	# Normalization with Israel but with Condtions and accepted
+	
 	focus = {
 		id = SAU_Normalzation_with_zionist_2
-		icon = GFX_focus_generic_treaty
+		icon = align_to_palestine
 
 		x = 32
 		y = 2
@@ -11785,19 +11785,34 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Normalzation_with_zionist }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_2"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_no_norm_tt
+				NOT = { has_global_flag = SAU_ISR_normalized }
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_2"
+			add_war_support = 0.03
+			if = {
+				limit = { country_exists = PAL }
+				PAL = {
+					add_opinion_modifier = { target = ROOT modifier = SAU_cause_solidarity }
+					reverse_add_opinion_modifier = { target = ROOT modifier = SAU_cause_solidarity }
+				}
+			}
+			add_ai_strategy = { type = antagonize id = "ISR" value = 30 }
+			custom_effect_tooltip = SAU_isr_refuse_tt
 		}
+
+		ai_will_do = { base = 2 }
 	}
 
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_5
-		icon = GFX_focus_generic_treaty
+		icon = befriend_middle_east
 
 		x = 32
 		y = 3
@@ -11807,18 +11822,25 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Normalzation_with_zionist_2 }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_5"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_no_norm_tt
+				NOT = { has_global_flag = SAU_ISR_normalized }
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_5"
+			add_political_power = 15
+			custom_effect_tooltip = SAU_isr_unlock_aid_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_6
-		icon = GFX_focus_generic_treaty
+		icon = flames_of_rebellion
 
 		x = 32
 		y = 4
@@ -11828,18 +11850,26 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Normalzation_with_zionist_5 }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_6"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_no_norm_tt
+				NOT = { has_global_flag = SAU_ISR_normalized }
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_6"
+			add_political_power = 15
+			add_war_support = 0.02
+			custom_effect_tooltip = SAU_isr_resistance_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_7
-		icon = GFX_focus_generic_treaty
+		icon = embargo
 
 		x = 30
 		y = 4
@@ -11849,18 +11879,32 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Normalzation_with_zionist_5 }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_7"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_no_norm_tt
+				NOT = { has_global_flag = SAU_ISR_normalized }
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_7"
+			add_political_power = 10
+			if = {
+				limit = { country_exists = ISR }
+				ISR = {
+					add_opinion_modifier = { target = ROOT modifier = SAU_boycott_israel }
+					reverse_add_opinion_modifier = { target = ROOT modifier = SAU_boycott_israel }
+				}
+			}
+			custom_effect_tooltip = SAU_isr_boycott_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_8
-		icon = GFX_focus_generic_treaty
+		icon = aggressive_diplomacy
 
 		x = 31
 		y = 5
@@ -11870,18 +11914,32 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Normalzation_with_zionist_5 }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_8"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_no_norm_tt
+				NOT = { has_global_flag = SAU_ISR_normalized }
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_8"
+			add_political_power = 15
+			for_each_scope_loop = {
+				array = global.arab_league_members
+				if = {
+					limit = { NOT = { tag = ROOT } }
+					add_opinion_modifier = { target = ROOT modifier = SAU_cause_solidarity }
+				}
+			}
+			custom_effect_tooltip = SAU_isr_pressure_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_9
-		icon = GFX_focus_generic_treaty
+		icon = islam
 
 		x = 34
 		y = 4
@@ -11891,18 +11949,35 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Normalzation_with_zionist_5 }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_9"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_no_norm_tt
+				NOT = { has_global_flag = SAU_ISR_normalized }
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_9"
+			add_political_power = 15
+			if = {
+				limit = { country_exists = ISR }
+				for_each_scope_loop = {
+					array = global.arab_league_members
+					if = {
+						limit = { NOT = { tag = ROOT } }
+						add_opinion_modifier = { target = ISR modifier = SAU_arab_consensus }
+					}
+				}
+			}
+			custom_effect_tooltip = SAU_isr_consensus_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_10
-		icon = GFX_focus_generic_treaty
+		icon = aid_quran
 
 		x = 33
 		y = 5
@@ -11912,18 +11987,31 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Normalzation_with_zionist_5 }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_10"
+		available = {
+			has_completed_focus = SAU_Palestine_4
+			custom_trigger_tooltip = {
+				tooltip = SAU_no_norm_tt
+				NOT = { has_global_flag = SAU_ISR_normalized }
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_10"
+			add_political_power = 25
+			add_ideas = SAU_custodian_of_the_cause
+			if = {
+				limit = { country_exists = PAL }
+				give_guarantee = PAL
+			}
+			custom_effect_tooltip = SAU_isr_cause_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
-	# No Normalization with Zionist
+	
 	focus = {
 		id = SAU_Normalzation_with_zionist_3
-		icon = GFX_focus_generic_treaty
+		icon = Abraham
 
 		x = 27
 		y = 2
@@ -11933,81 +12021,140 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Normalzation_with_zionist }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_3"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_no_norm_tt
+				NOT = { has_global_flag = SAU_ISR_normalized }
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_3"
+			add_political_power = 25
+			if = {
+				limit = { country_exists = ISR }
+				ISR = { country_event = { id = SAU_events.79 days = 2 } }
+				custom_effect_tooltip = TT_IF_THEY_ACCEPT
+				effect_tooltip = {
+					set_country_flag = SAU_isr_talks_opened
+				}
+				custom_effect_tooltip = TT_IF_THEY_REJECT
+				effect_tooltip = {
+					custom_effect_tooltip = SAU_isr_talks_dead_tt
+				}
+			}
+			custom_effect_tooltip = SAU_isr_cond_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_11
-		icon = GFX_focus_generic_treaty
+		icon = aggressive_diplomacy
 
 		x = 25
 		y = 3
 		relative_position_id = SAU_Foregin_Affairs_Begin_Focus_Tree
 
-		cost = 10
+		cost = 1.45
 
 		prerequisite = { focus = SAU_Normalzation_with_zionist_3 }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_11"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_isr_talks_alive_tt
+				NOT = { has_global_flag = SAU_ISR_talks_failed }
+			}
+			custom_trigger_tooltip = {
+				tooltip = SAU_no_norm_tt
+				NOT = { has_global_flag = SAU_ISR_normalized }
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_11"
+			add_political_power = 10
+			custom_effect_tooltip = SAU_isr_unlock_backchannel_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_12
-		icon = GFX_focus_generic_treaty
+		icon = arm_gagick_peace_deal
 
 		x = 27
 		y = 3
 		relative_position_id = SAU_Foregin_Affairs_Begin_Focus_Tree
 
-		cost = 10
+		cost = 1.45
 
 		prerequisite = { focus = SAU_Normalzation_with_zionist_3 }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_12"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_isr_talks_alive_tt
+				NOT = { has_global_flag = SAU_ISR_talks_failed }
+			}
+			custom_trigger_tooltip = {
+				tooltip = SAU_no_norm_tt
+				NOT = { has_global_flag = SAU_ISR_normalized }
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_12"
+			add_political_power = 10
+			if = {
+				limit = { country_exists = PAL }
+				PAL = {
+					add_opinion_modifier = { target = ROOT modifier = SAU_two_state_champion }
+					reverse_add_opinion_modifier = { target = ROOT modifier = SAU_two_state_champion }
+				}
+			}
+			custom_effect_tooltip = SAU_isr_unlock_price_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_13
-		icon = GFX_focus_generic_treaty
+		icon = coins
 
 		x = 29
 		y = 3
 		relative_position_id = SAU_Foregin_Affairs_Begin_Focus_Tree
 
-		cost = 10
+		cost = 1.45
 
 		prerequisite = { focus = SAU_Normalzation_with_zionist_3 }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_13"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_isr_talks_alive_tt
+				NOT = { has_global_flag = SAU_ISR_talks_failed }
+			}
+			custom_trigger_tooltip = {
+				tooltip = SAU_no_norm_tt
+				NOT = { has_global_flag = SAU_ISR_normalized }
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_13"
+			add_political_power = 10
+			custom_effect_tooltip = SAU_isr_unlock_sweeten_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_14
-		icon = GFX_focus_generic_treaty
+		icon = palestine_riots
 
 		x = 28
 		y = 4
@@ -12019,18 +12166,45 @@ focus_tree = {
 		prerequisite = { focus = SAU_Normalzation_with_zionist_12 }
 		mutually_exclusive = { focus = SAU_Normalzation_with_zionist_15 }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_14"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_isr_fail_tt
+				has_global_flag = SAU_ISR_t1_answered
+				has_global_flag = SAU_ISR_t2_answered
+				has_global_flag = SAU_ISR_t3_answered
+				NOT = {
+					AND = {
+						has_global_flag = SAU_ISR_t2_yes
+						OR = {
+							has_global_flag = SAU_ISR_t1_yes
+							has_global_flag = SAU_ISR_t3_yes
+						}
+					}
+				}
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_14"
+			add_war_support = 0.03
+			set_global_flag = SAU_ISR_talks_failed
+			if = {
+				limit = { country_exists = ISR }
+				ISR = {
+					add_opinion_modifier = { target = ROOT modifier = SAU_talks_collapsed }
+					reverse_add_opinion_modifier = { target = ROOT modifier = SAU_talks_collapsed }
+				}
+			}
+			hidden_effect = { news_event = { id = SAU_events.74 days = 1 } }
+			custom_effect_tooltip = SAU_isr_collapse_tt
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_18
-		icon = GFX_focus_generic_treaty
+		icon = money
 
 		x = 28
 		y = 5
@@ -12042,16 +12216,28 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_18"
+			add_political_power = 15
+			set_temp_variable = { treasury_change = -15 }
+			modify_treasury_effect = yes
+			if = {
+				limit = { country_exists = PAL }
+				PAL = {
+					set_temp_variable = { treasury_change = 15 }
+					modify_treasury_effect = yes
+					add_stability = 0.03
+					set_temp_variable = { percent_change = 5 }
+					change_influence_percentage = yes
+				}
+			}
+			custom_effect_tooltip = SAU_isr_double_down_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_19
-		icon = GFX_focus_generic_treaty
+		icon = islam
 
 		x = 28
 		y = 6
@@ -12063,16 +12249,26 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_19"
+			add_political_power = 25
+			if = {
+				limit = { country_exists = ISR }
+				for_each_scope_loop = {
+					array = global.arab_league_members
+					if = {
+						limit = { NOT = { tag = ROOT } }
+						add_opinion_modifier = { target = ISR modifier = SAU_arab_consensus }
+					}
+				}
+			}
+			custom_effect_tooltip = SAU_isr_rally_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_20
-		icon = GFX_focus_generic_treaty
+		icon = align_to_palestine
 
 		x = 27
 		y = 7
@@ -12084,16 +12280,29 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_20"
+			add_political_power = 50
+			if = {
+				limit = { country_exists = PAL }
+				PAL = {
+					set_temp_variable = { treasury_change = 20 }
+					modify_treasury_effect = yes
+					add_stability = 0.03
+					random_owned_state = { add_building_construction = { type = infrastructure level = 1 instant_build = yes } }
+				}
+				if = {
+					limit = { NOT = { has_global_flag = SAU_ISR_normalized } }
+					give_guarantee = PAL
+				}
+			}
+			custom_effect_tooltip = SAU_isr_fate_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_15
-		icon = GFX_focus_generic_treaty
+		icon = two_state_draw_up
 
 		x = 26
 		y = 4
@@ -12105,18 +12314,66 @@ focus_tree = {
 		prerequisite = { focus = SAU_Normalzation_with_zionist_11 }
 		mutually_exclusive = { focus = SAU_Normalzation_with_zionist_14 }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_15"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_isr_success_tt
+				has_global_flag = SAU_ISR_t1_answered
+				has_global_flag = SAU_ISR_t2_answered
+				has_global_flag = SAU_ISR_t3_answered
+				has_global_flag = SAU_ISR_t2_yes
+				OR = {
+					has_global_flag = SAU_ISR_t1_yes
+					has_global_flag = SAU_ISR_t3_yes
+				}
+			}
 		}
 
-		ai_will_do = {
-			factor = 1
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_15"
+			add_political_power = 50
+			set_global_flag = SAU_ISR_normalized
+			set_global_flag = SAU_ISR_accords
+			if = {
+				limit = { country_exists = ISR }
+				ISR = {
+					add_opinion_modifier = { target = ROOT modifier = SAU_israel_normalization }
+					reverse_add_opinion_modifier = { target = ROOT modifier = SAU_israel_normalization }
+				}
+			}
+			if = {
+				limit = { country_exists = PAL }
+				if = {
+					limit = { PAL = { is_subject_of = ISR } }
+					set_autonomy = {
+						target = PAL
+						autonomy_state = autonomy_free
+					}
+				}
+				give_guarantee = PAL
+				if = {
+					limit = { country_exists = JOR }
+					JOR = { give_guarantee = PAL }
+				}
+				PAL = {
+					add_stability = 0.05
+					set_temp_variable = { treasury_change = 10 }
+					modify_treasury_effect = yes
+				}
+			}
+			hidden_effect = { news_event = { id = SAU_events.73 days = 1 } }
+			custom_effect_tooltip = SAU_isr_accords_tt
+					if = {
+				limit = { has_idea = full_isr_boycotte }
+				remove_ideas = full_isr_boycotte
+			}
 		}
+
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_16
-		icon = GFX_focus_generic_treaty
+		icon = ExpandTrade
 
 		x = 26
 		y = 5
@@ -12128,16 +12385,27 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_16"
+			add_political_power = 20
+			if = {
+				limit = { country_exists = ISR }
+				ISR = {
+					set_country_flag = trade_agreement@SAU
+					add_opinion_modifier = { target = ROOT modifier = mutual_trade_agreement }
+					reverse_add_opinion_modifier = { target = ROOT modifier = mutual_trade_agreement }
+				}
+				set_country_flag = trade_agreement@ISR
+				set_temp_variable = { int_investment_change = 10 }
+				modify_international_investment_effect = yes
+			}
+			custom_effect_tooltip = SAU_isr_trade_tt
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
 
 	focus = {
 		id = SAU_Normalzation_with_zionist_17
-		icon = GFX_focus_generic_treaty
+		icon = research
 
 		x = 26
 		y = 6
@@ -12149,16 +12417,16 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_17"
+			add_political_power = 25
+			add_ideas = SAU_israel_tech_partnership
 		}
 
-		ai_will_do = {
-			factor = 1
-		}
+		ai_will_do = { base = 1 }
 	}
-	# Normalization with Zionist without Condtions.
+	
 	focus = {
 		id = SAU_Normalzation_with_zionist_4
-		icon = GFX_focus_generic_treaty
+		icon = Abraham_Accords
 
 		x = 22
 		y = 2
@@ -12168,13 +12436,42 @@ focus_tree = {
 
 		prerequisite = { focus = SAU_Normalzation_with_zionist }
 
-		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_4"
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_no_norm_tt
+				NOT = { has_global_flag = SAU_ISR_normalized }
+			}
 		}
 
-		ai_will_do = {
-			factor = 0
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_Normalzation_with_zionist_4"
+			set_global_flag = SAU_ISR_normalized
+			add_stability = -0.05
+			if = {
+				limit = { country_exists = ISR }
+				ISR = {
+					add_opinion_modifier = { target = ROOT modifier = SAU_israel_normalization }
+					reverse_add_opinion_modifier = { target = ROOT modifier = SAU_israel_normalization }
+					set_country_flag = trade_agreement@SAU
+				}
+				set_country_flag = trade_agreement@ISR
+			}
+			for_each_scope_loop = {
+				array = global.arab_league_members
+				if = {
+					limit = { NOT = { tag = ROOT } }
+					add_opinion_modifier = { target = ROOT modifier = SAU_betrayed_palestine }
+				}
+			}
+			hidden_effect = { news_event = { id = SAU_events.75 days = 1 } }
+			custom_effect_tooltip = SAU_isr_uncond_tt
+					if = {
+				limit = { has_idea = full_isr_boycotte }
+				remove_ideas = full_isr_boycotte
+			}
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
 	focus = {
@@ -14674,10 +14971,6 @@ focus_tree = {
 
 		ai_will_do = { base = 1 }
 	}
-
-	## GCC Foreign Affairs (Saudi copy) ##
-	##FOREIGN##
-
 	focus = {
 		id = SAU_FA_influence_muslim_europe
 		icon = muslim_europe
