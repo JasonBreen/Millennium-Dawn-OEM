@@ -8,6 +8,7 @@ add_namespace = HOL_wic
 add_namespace = HOL_common_event
 add_namespace = HOL_nvu
 add_namespace = HOL_groningen
+add_namespace = HOL_mocro
 
 # CONSTANT FOR Minor Parties TIMES (These needs to be x7 compared to the Focus cost in the focus file) - NEEDS TO MATCH THE SAME CONSTANTS USED IN THE FOCUS FILE x7
 @HOL_D66_time_tier_1 = 105
@@ -13466,4 +13467,285 @@ country_event = {
 		ai_chance = { base = 1 }
 	}
 
+}
+
+##############################
+# Mocro Maffia (Cartel System)
+##############################
+
+# Activation event fired from trigger_year_2012_events
+country_event = {
+	id = HOL_mocro.1
+	title = HOL_mocro.1.t
+	desc = HOL_mocro.1.d
+	picture = GFX_harbor
+	fire_only_once = yes
+	is_triggered_only = yes
+
+	trigger = {
+		NOT = { has_country_flag = HOL_mocro_maffia_active }
+	}
+
+	immediate = {
+		log = "[GetDateText]: [Root.GetName]: event HOL_mocro.1"
+		set_country_flag = HOL_mocro_maffia_active
+		set_variable = { strength_of_cartels = 40 }
+		set_variable = { cartel_political_influence = 20 }
+		calculate_cartel_penalty = yes
+	}
+
+	option = { # Confront the threat to the rule of law
+		name = HOL_mocro.1.a
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.1.a executed"
+		add_political_power = 50
+		add_war_support = 0.03
+		add_stability = -0.02
+
+		ai_chance = { base = 10 }
+	}
+
+	option = { # The threat is overstated
+		name = HOL_mocro.1.b
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.1.b executed"
+		add_political_power = 25
+		set_temp_variable = { cart_strength_change = 3 }
+		set_temp_variable = { cart_influence_change = 3 }
+		modify_cartel_variables_effect = yes
+
+		ai_chance = { base = 1 }
+	}
+}
+
+country_event = { # Cocaine Seized at the Port of Rotterdam
+	id = HOL_mocro.2
+	title = HOL_mocro.2.t
+	desc = HOL_mocro.2.d
+	picture = GFX_harbor
+	is_triggered_only = yes
+
+	trigger = {
+		has_country_flag = HOL_mocro_maffia_active
+		NOT = { has_country_flag = CARTEL_defeated_the_cartels }
+	}
+
+	option = { # Reinforce customs at the port
+		name = HOL_mocro.2.a
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.2.a executed"
+		add_command_power = -25
+		set_temp_variable = { cart_strength_change = -2 }
+		modify_cartel_variables_effect = yes
+		newline = yes
+		set_temp_variable = { treasury_change = -2 }
+		modify_treasury_effect = yes
+
+		ai_chance = { base = 5 }
+	}
+
+	option = { # The shipment slips through
+		name = HOL_mocro.2.b
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.2.b executed"
+		set_temp_variable = { cart_strength_change = 2 }
+		modify_cartel_variables_effect = yes
+
+		ai_chance = { base = 1 }
+	}
+}
+
+country_event = { # A Lawyer is Gunned Down
+	id = HOL_mocro.3
+	title = HOL_mocro.3.t
+	desc = HOL_mocro.3.d
+	picture = GFX_hol_pim_assassinated_event_picture
+	is_triggered_only = yes
+
+	trigger = {
+		has_country_flag = HOL_mocro_maffia_active
+		NOT = { has_country_flag = CARTEL_defeated_the_cartels }
+	}
+
+	option = { # Provide state protection to witnesses
+		name = HOL_mocro.3.a
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.3.a executed"
+		add_political_power = -50
+		add_stability = 0.02
+		set_temp_variable = { cart_influence_change = -2 }
+		modify_cartel_variables_effect = yes
+
+		ai_chance = { base = 5 }
+	}
+
+	option = { # We cannot protect everyone
+		name = HOL_mocro.3.b
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.3.b executed"
+		add_stability = -0.03
+		set_temp_variable = { cart_influence_change = 3 }
+		modify_cartel_variables_effect = yes
+
+		ai_chance = { base = 1 }
+	}
+}
+
+country_event = { # Encrypted Criminal Network Cracked
+	id = HOL_mocro.4
+	title = HOL_mocro.4.t
+	desc = HOL_mocro.4.d
+	picture = GFX_drug_dillers_apprehended
+	is_triggered_only = yes
+
+	trigger = {
+		has_country_flag = HOL_mocro_maffia_active
+		NOT = { has_country_flag = CARTEL_defeated_the_cartels }
+	}
+
+	option = { # Act on the intercepted messages
+		name = HOL_mocro.4.a
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.4.a executed"
+		add_command_power = -40
+		set_temp_variable = { cart_strength_change = -4 }
+		modify_cartel_variables_effect = yes
+
+		ai_chance = { base = 10 }
+	}
+
+	option = { # We lack the manpower to follow every lead
+		name = HOL_mocro.4.b
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.4.b executed"
+		add_political_power = 15
+		set_temp_variable = { cart_strength_change = -1 }
+		modify_cartel_variables_effect = yes
+
+		ai_chance = { base = 1 }
+	}
+}
+
+country_event = { # Laundered Millions in Real Estate
+	id = HOL_mocro.5
+	title = HOL_mocro.5.t
+	desc = HOL_mocro.5.d
+	picture = GFX_cartels_stacks
+	is_triggered_only = yes
+
+	trigger = {
+		has_country_flag = HOL_mocro_maffia_active
+		NOT = { has_country_flag = CARTEL_defeated_the_cartels }
+	}
+
+	option = { # Seize the assets
+		name = HOL_mocro.5.a
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.5.a executed"
+		add_political_power = -50
+		set_temp_variable = { cart_strength_change = -2 }
+		modify_cartel_variables_effect = yes
+		newline = yes
+		set_temp_variable = { treasury_change = gdp_total }
+		multiply_temp_variable = { treasury_change = 0.006 }
+		modify_treasury_effect = yes
+
+		ai_chance = { base = 5 }
+	}
+
+	option = { # Look the other way
+		name = HOL_mocro.5.b
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.5.b executed"
+		add_stability = -0.02
+		set_temp_variable = { cart_influence_change = 3 }
+		modify_cartel_variables_effect = yes
+
+		ai_chance = { base = 1 }
+	}
+}
+
+country_event = { # Youths Drawn into the Drug Trade
+	id = HOL_mocro.6
+	title = HOL_mocro.6.t
+	desc = HOL_mocro.6.d
+	picture = GFX_drug_dealers_trial
+	is_triggered_only = yes
+
+	trigger = {
+		has_country_flag = HOL_mocro_maffia_active
+		NOT = { has_country_flag = CARTEL_defeated_the_cartels }
+	}
+
+	option = { # Fund prevention and youth programs
+		name = HOL_mocro.6.a
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.6.a executed"
+		set_temp_variable = { cart_strength_change = -2 }
+		modify_cartel_variables_effect = yes
+		newline = yes
+		set_temp_variable = { treasury_change = -2 }
+		modify_treasury_effect = yes
+
+		ai_chance = { base = 5 }
+	}
+
+	option = { # Answer with a hard crackdown
+		name = HOL_mocro.6.b
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.6.b executed"
+		add_command_power = -25
+		add_stability = -0.02
+		set_temp_variable = { cart_strength_change = -1 }
+		modify_cartel_variables_effect = yes
+
+		ai_chance = { base = 1 }
+	}
+}
+
+country_event = { # Corruption in the Harbour
+	id = HOL_mocro.7
+	title = HOL_mocro.7.t
+	desc = HOL_mocro.7.d
+	picture = GFX_harbor
+	is_triggered_only = yes
+
+	trigger = {
+		has_country_flag = HOL_mocro_maffia_active
+		NOT = { has_country_flag = CARTEL_defeated_the_cartels }
+	}
+
+	option = { # Purge the corrupt officials
+		name = HOL_mocro.7.a
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.7.a executed"
+		add_political_power = -40
+		set_temp_variable = { cart_influence_change = -3 }
+		modify_cartel_variables_effect = yes
+
+		ai_chance = { base = 5 }
+	}
+
+	option = { # There is no proof we can act on
+		name = HOL_mocro.7.b
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.7.b executed"
+		set_temp_variable = { cart_influence_change = 2 }
+		modify_cartel_variables_effect = yes
+
+		ai_chance = { base = 1 }
+	}
+}
+
+country_event = { # The Marengo Trial Reaches a Verdict
+	id = HOL_mocro.8
+	title = HOL_mocro.8.t
+	desc = HOL_mocro.8.d
+	picture = GFX_court
+	is_triggered_only = yes
+
+	trigger = {
+		has_country_flag = HOL_mocro_maffia_active
+		NOT = { has_country_flag = CARTEL_defeated_the_cartels }
+	}
+
+	option = { # Justice is served
+		name = HOL_mocro.8.a
+		log = "[GetDateText]: [This.GetName]: HOL_mocro.8.a executed"
+		add_stability = 0.03
+		set_party_index_to_ruling_party = yes
+		set_temp_variable = { party_popularity_increase = 0.02 }
+		set_temp_variable = { temp_outlook_increase = 0.02 }
+		add_relative_party_popularity = yes
+		set_temp_variable = { cart_strength_change = -3 }
+		modify_cartel_variables_effect = yes
+
+		ai_chance = { base = 1 }
+	}
 }
