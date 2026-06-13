@@ -938,45 +938,34 @@ country_event = {
 
 	option = {
 		name = korea.18.a #Let's hope for a majority!
+		log = "[GetDateText]: [This.GetName]: korea.18.a executed"
 		hidden_effect = {
 			country_event = {
 				days = 26
 				id = korea.20 #check result
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: korea.18.a executed"
 	}
 }
 
 #hidden event checking for elections
 country_event = {
 	id = korea.19
-
 	hidden = yes
-
 	is_triggered_only = yes
-
-	option = {
-		name = korea.19.a
-		if = {
-			limit = {
-				has_elections = yes
-			}
-			country_event = {
-				days = 1
-				id = korea.18 #The elections are coming!
-			}
-		}
-		log = "[GetDateText]: [This.GetName]: korea.19.a executed"
+	trigger = {
+		has_elections = yes
+	}
+	immediate = {
+		#The elections are coming!
+		country_event = { days = 1 id = korea.18 }
 	}
 }
 
 #hidden event checking result
 country_event = {
 	id = korea.20
-
 	hidden = yes
-
 	is_triggered_only = yes
 	immediate = {
 		log = "[GetDateText]: [This.GetName]: korea.20 executed"
@@ -1544,8 +1533,6 @@ country_event = {
 				days = 1
 				id = korea.28
 			}
-		}
-		KOR = {
 			set_country_flag = KOR_reunification_talks_failed
 			clr_country_flag = KOR_proposed_south_reunification
 			clr_country_flag = KOR_proposed_unity_reunification
@@ -1889,8 +1876,6 @@ country_event = {
 				days = 1
 				id = korea.36
 			}
-		}
-		NKO = {
 			clr_country_flag = NKO_proposed_north_reunification
 		}
 		ai_chance = {
@@ -2221,7 +2206,6 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: korea.41.b executed"
 		set_country_flag = KOR_confederation_talks_failed
 		NKO = {
-			set_country_flag = NKO_confederation_talks_failed
 			country_event = {
 				days = 1
 				id = korea.43
@@ -2257,6 +2241,9 @@ country_event = {
 				end_wars = no
 				end_civil_wars = no
 			}
+			inherit_technology = KOR
+			research_slot_init_for_country = yes
+			KOR_inherit_special_projects_from_south = yes
 			add_ideas = KOR_reunification_shocks
 			add_ideas = KOR_divided_military
 			add_ideas = KOR_mass_migration
@@ -2396,7 +2383,6 @@ country_event = {
 		name = korea_north.4.a
 		log = "[GetDateText]: [This.GetName]: korea_north.4.a executed"
 		add_political_power = 100
-		complete_national_focus = NKO_Revaluation_Success
 	}
 }
 
@@ -2442,10 +2428,9 @@ country_event = {
 	is_triggered_only = yes
 
 	option = {
+		log = "[GetDateText]: [This.GetName]: korea_north.6.a executed"
 		name = korea_north.6.a
 		add_stability = -0.05
-		complete_national_focus = NKO_Revaluation_Failure
-		log = "[GetDateText]: [This.GetName]: korea_north.6.a executed"
 	}
 }
 #Export Weapon
@@ -4132,7 +4117,7 @@ country_event = {
 					modifier = large_commercial_relations
 				}
 		}
-		VIE = {
+		KOR = {
 			set_temp_variable = { treasury_change = -25 }
 			modify_treasury_effect = yes
 			set_temp_variable = { int_investment_change = 50 }
@@ -4215,20 +4200,14 @@ country_event = {
 				amount = 20
 				state = 446
 			}
-			add_opinion_modifier = {
-					target = KOR
-					modifier = large_commercial_relations
-				}
+			add_opinion_modifier = { target = KOR modifier = large_commercial_relations }
 		}
-		ARG = {
+		KOR = {
 			set_temp_variable = { treasury_change = -25 }
 			modify_treasury_effect = yes
 			set_temp_variable = { int_investment_change = 50 }
 			modify_international_investment_effect = yes
-			add_opinion_modifier = {
-				target = ARG
-				modifier = mutual_trade_agreement
-			}
+			add_opinion_modifier = { target = ARG modifier = mutual_trade_agreement }
 		}
 	}
 	option = { #gives factories and resource but no idea
@@ -4258,7 +4237,7 @@ country_event = {
 	option = { #gives one factory and smalles amount of resources to argentina
 		name = korea.63.c
 		log = "[GetDateText]: [This.GetName]: korea.63.c executed"
-		VIE = {
+		ARG = {
 			one_random_industrial_complex = yes
 			add_ideas = KOR_posco_idea2
 			set_temp_variable = { treasury_change = -10 }
@@ -4629,29 +4608,24 @@ country_event = {
 # NKO_spa.6 — Civil-war / collapse cleanup.
 country_event = {
 	id = NKO_spa.6
-	title = NKO_spa.6.t
-	desc = NKO_spa.6.d
-
-	is_triggered_only = yes
-	hidden = yes
-
-	immediate = { NKO_spa_suppress_for_collapse = yes }
-
-	option = {
-		name = NKO_spa.6.a
-		log = "[GetDateText]: [Root.GetName]: NKO_spa.6.a executed"
-	}
-}
-
-country_event = {
-	id = NKO_spa.10
-	title = NKO_spa.10.t
-	desc = NKO_spa.10.d
 
 	is_triggered_only = yes
 	hidden = yes
 
 	immediate = {
+		NKO_spa_suppress_for_collapse = yes
+		log = "[GetDateText]: [Root.GetName]: NKO_spa.6 executed"
+	}
+}
+
+country_event = {
+	id = NKO_spa.10
+
+	is_triggered_only = yes
+	hidden = yes
+
+	immediate = {
+		log = "[GetDateText]: [Root.GetName]: NKO_spa.10 executed"
 		hidden_effect = {
 			if = {
 				limit = {
@@ -4664,14 +4638,8 @@ country_event = {
 				country_event = { id = NKO_spa.1 hours = 6 }
 				set_country_flag = { flag = NKO_spa_recent_session days = 100 value = 1 }
 			}
-			# Always reschedule so the cycle survives skipped iterations.
 			country_event = { id = NKO_spa.10 days = 365 }
 		}
-	}
-
-	option = {
-		name = NKO_spa.10.a
-		log = "[GetDateText]: [Root.GetName]: NKO_spa.10.a executed"
 	}
 }
 
@@ -5533,10 +5501,6 @@ country_event = {
 			country_event = { id = nko_naval_buildup.11 days = 0 }
 		}
 	}
-
-	option = {
-		name = nko_naval_buildup.10.a
-	}
 }
 
 country_event = {
@@ -5550,7 +5514,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.11.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.11.a executed"
-		navy_experience = 25
+		navy_experience = 13
+		NKO_naval_buildup_grant_mastery_naval = yes
 		add_manpower = 300
 		add_timed_idea = { idea = NKO_sub_drill_momentum days = 60 }
 	}
@@ -5567,7 +5532,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.12.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.12.a executed"
-		navy_experience = 30
+		navy_experience = 15
+		NKO_naval_buildup_grant_mastery_naval = yes
 		add_manpower = 500
 		if = {
 			limit = { has_tech = attack_submarine_hull_3 }
@@ -5600,7 +5566,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.13.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.13.a executed"
-		navy_experience = 40
+		navy_experience = 20
+		NKO_naval_buildup_grant_mastery_naval = yes
 		set_temp_variable = { treasury_change = 0.5 }
 		modify_treasury_effect = yes
 		add_timed_idea = { idea = NKO_sub_drill_momentum days = 90 }
@@ -5620,7 +5587,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.14.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.14.a executed"
-		navy_experience = 75
+		navy_experience = 38
+		NKO_naval_buildup_grant_mastery_naval = yes
 		add_war_support = 0.05
 		add_manpower = 1500
 		if = {
@@ -5705,10 +5673,6 @@ country_event = {
 			country_event = { id = nko_naval_buildup.21 days = 0 }
 		}
 	}
-
-	option = {
-		name = nko_naval_buildup.20.a
-	}
 }
 
 country_event = {
@@ -5722,7 +5686,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.21.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.21.a executed"
-		navy_experience = 20
+		navy_experience = 10
+		NKO_naval_buildup_grant_mastery_naval = yes
 		add_manpower = 200
 		add_timed_idea = { idea = NKO_mb_swarm_momentum days = 60 }
 	}
@@ -5739,7 +5704,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.22.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.22.a executed"
-		navy_experience = 30
+		navy_experience = 15
+		NKO_naval_buildup_grant_mastery_naval = yes
 		add_manpower = 500
 		set_temp_variable = { treasury_change = 0.3 }
 		modify_treasury_effect = yes
@@ -5757,7 +5723,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.23.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.23.a executed"
-		navy_experience = 40
+		navy_experience = 20
+		NKO_naval_buildup_grant_mastery_naval = yes
 		if = {
 			limit = { has_tech = destroyer_hull_3 }
 			add_tech_bonus = {
@@ -5792,7 +5759,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.24.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.24.a executed"
-		navy_experience = 60
+		navy_experience = 30
+		NKO_naval_buildup_grant_mastery_naval = yes
 		add_war_support = 0.04
 		if = {
 			limit = { has_tech = destroyer_hull_3 }
@@ -5873,10 +5841,6 @@ country_event = {
 			country_event = { id = nko_naval_buildup.31 days = 0 }
 		}
 	}
-
-	option = {
-		name = nko_naval_buildup.30.a
-	}
 }
 
 country_event = {
@@ -5890,7 +5854,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.31.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.31.a executed"
-		army_experience = 25
+		army_experience = 13
+		NKO_naval_buildup_grant_mastery_land = yes
 		add_manpower = 800
 		601 = {
 			add_building_construction = {
@@ -5914,7 +5879,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.32.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.32.a executed"
-		army_experience = 30
+		army_experience = 15
+		NKO_naval_buildup_grant_mastery_land = yes
 		add_manpower = 500
 		add_timed_idea = { idea = NKO_cd_bunker_momentum days = 60 }
 	}
@@ -5931,7 +5897,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.33.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.33.a executed"
-		army_experience = 40
+		army_experience = 20
+		NKO_naval_buildup_grant_mastery_land = yes
 		601 = {
 			add_building_construction = {
 				type = coastal_bunker
@@ -5955,7 +5922,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.34.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.34.a executed"
-		army_experience = 60
+		army_experience = 30
+		NKO_naval_buildup_grant_mastery_land = yes
 		add_war_support = 0.05
 		add_tech_bonus = {
 			name = nko_naval_buildup_ashm_bonus
@@ -6023,10 +5991,6 @@ country_event = {
 			country_event = { id = nko_naval_buildup.41 days = 0 }
 		}
 	}
-
-	option = {
-		name = nko_naval_buildup.40.a
-	}
 }
 
 country_event = {
@@ -6040,7 +6004,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.41.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.41.a executed"
-		army_experience = 20
+		army_experience = 10
+		NKO_naval_buildup_grant_mastery_sf = yes
 		add_manpower = 1000
 		add_timed_idea = { idea = NKO_so_recon_momentum days = 60 }
 	}
@@ -6057,7 +6022,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.42.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.42.a executed"
-		army_experience = 35
+		army_experience = 18
+		NKO_naval_buildup_grant_mastery_sf = yes
 		add_manpower = 600
 		add_tech_bonus = {
 			name = nko_naval_buildup_sniper_bonus
@@ -6079,7 +6045,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.43.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.43.a executed"
-		army_experience = 45
+		army_experience = 23
+		NKO_naval_buildup_grant_mastery_sf = yes
 		add_manpower = 800
 		add_timed_idea = { idea = NKO_so_recon_momentum days = 90 }
 		set_temp_variable = { NKO_spa_eq_amount = 1500 }
@@ -6098,7 +6065,8 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.44.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.44.a executed"
-		army_experience = 70
+		army_experience = 35
+		NKO_naval_buildup_grant_mastery_sf = yes
 		add_war_support = 0.05
 		add_manpower = 1200
 		add_tech_bonus = {
@@ -6149,10 +6117,6 @@ country_event = {
 			}
 			country_event = { id = nko_naval_buildup.50 days = 60 }
 		}
-	}
-
-	option = {
-		name = nko_naval_buildup.50.a
 	}
 }
 
@@ -6337,7 +6301,7 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.60.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.60.a executed"
-		navy_experience = 200
+		navy_experience = 100
 		add_war_support = 0.05
 		add_manpower = 3000
 		add_to_variable = { NKO_naval_tracks_at_max = 1 }
@@ -6366,7 +6330,7 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.61.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.61.a executed"
-		navy_experience = 200
+		navy_experience = 100
 		add_war_support = 0.05
 		add_manpower = 2500
 		add_to_variable = { NKO_naval_tracks_at_max = 1 }
@@ -6395,7 +6359,7 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.62.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.62.a executed"
-		army_experience = 200
+		army_experience = 100
 		add_stability = 0.05
 		add_war_support = 0.05
 		add_manpower = 8000
@@ -6447,7 +6411,7 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.63.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.63.a executed"
-		army_experience = 200
+		army_experience = 100
 		add_war_support = 0.07
 		add_manpower = 5000
 		add_to_variable = { NKO_naval_tracks_at_max = 1 }
@@ -6469,7 +6433,7 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.70.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.70.a executed"
-		navy_experience = 25
+		navy_experience = 13
 		add_war_support = 0.03
 		add_political_power = 25
 	}
@@ -6487,7 +6451,7 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.71.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.71.a executed"
-		navy_experience = 30
+		navy_experience = 15
 		add_manpower = 600
 	}
 }
@@ -6504,7 +6468,7 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.72.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.72.a executed"
-		navy_experience = 30
+		navy_experience = 15
 		add_manpower = 500
 		set_temp_variable = { NKO_naval_eq_amount = 2 }
 		NKO_naval_grant_latest_attack_sub = yes
@@ -6523,7 +6487,7 @@ country_event = {
 	option = {
 		name = nko_naval_buildup.73.a
 		log = "[GetDateText]: [This.GetName]: nko_naval_buildup.73.a executed"
-		navy_experience = 50
+		navy_experience = 25
 		add_war_support = 0.05
 		add_manpower = 1000
 	}

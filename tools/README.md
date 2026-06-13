@@ -37,14 +37,14 @@ tools/
 ├── standardization/   Auto-standardizers for focuses, events, decisions, ideas
 ├── tests/             Test suites for validators
 ├── validation/        Content validators (events, decisions, variables, etc.)
-├── path_utils.py      Shared path utilities (used by linting scripts)
-├── shared_utils.py    Shared utilities (used by validation + standardization)
+├── shared_utils.py    Shared utilities (Colors, FileOpener, path helpers, arg parsers)
 ├── loc.py             Localisation utilities
 ├── logging_tool.py    Logging utility
 ├── validate_staged.py Pre-commit hook: routes staged files to validators
 ├── standardize_staged.py Pre-commit hook: routes staged files to standardizers
 ├── generate_validation_report.py CI: generates PR validation reports
 ├── validate_tools.py  CI: validates Python scripts in tools/
+├── COMMENT_STYLE.md   Comment style for Python tooling (why, not what)
 └── README.md
 ```
 
@@ -53,6 +53,74 @@ tools/
 - **Writing a new validator?** Subclass `BaseValidator` from `tools/validation/validator_common.py`. Prefer `add_error(category, msg, file, line)` for structured issues; `_report(list_of_strings, ...)` still works and now auto-parses common `path:line - msg` formats into file+line for the PR comment's inline annotations.
 - **Writing a new linter or fixer?** Import helpers from `tools/shared_utils.py`. Skip `validator_common` — linters don't emit the structured issue stream validators produce.
 - **Reading validator output?** Import from `tools/report_lib`. It parses the JSON sidecars each validator writes and renders the PR comment + GitHub Check Runs.
+- **Writing comments?** See [COMMENT_STYLE.md](COMMENT_STYLE.md). Default to none; add one when the _why_ is non-obvious.
+
+### Writing a new validator
+
+1. Create `tools/validation/validate_<topic>.py`.
+2. Subclass `BaseValidator` from `validator_common`. Implement `run_validations(self, files: List[str]) -> None`.
+3. Use `self.add_error(category, message, file, line)` for structured issues. The PR report renderer picks these up for inline annotations.
+4. Use `DEFAULT_EXTRA_SKIP_PATTERNS` from `validator_common` for `EXTRA_SKIP_PATTERNS` (extend with domain-specific patterns if needed).
+5. Wire into CI:
+   - Add an entry to `.github/workflows/coding-pipeline.yml` in the `validate-core` or `validate-targeted` matrix.
+   - Add a `stages: [manual]` entry in `.pre-commit-config.yaml` (validators are manual-only in pre-commit; CI runs them unconditionally).
+6. Wire into `validate_staged.py` if the validator should run on staged files during pre-commit.
+7. Add tests in `tools/validation/tests/`.
+
+```python
+#!/usr/bin/env python3
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.dirname(__file__))
+
+import disk_cache
+from validator_common import (
+    BaseValidator,
+    Colors,
+    DEFAULT_EXTRA_SKIP_PATTERNS,
+    Severity,
+    run_validator_main,
+    should_skip_file,
+)
+
+EXTRA_SKIP_PATTERNS = DEFAULT_EXTRA_SKIP_PATTERNS
+
+
+class MyValidator(BaseValidator):
+    def run_validations(self, files):
+        for path in files:
+            if should_skip_file(path, EXTRA_SKIP_PATTERNS):
+                continue
+            content = disk_cache.per_file_cached_by_content(
+                self.mod_path, "my_ns", path, Path(path).read_text(encoding="utf-8"),
+                lambda: self._validate_file(path),
+            )
+            # results already stored via add_error inside _validate_file
+
+    def _validate_file(self, path):
+        # ... validation logic ...
+        self.add_error("my_category", "Something is wrong", path, line=42)
+
+
+if __name__ == "__main__":
+    run_validator_main(MyValidator, "My custom validation")
+```
+
+### Common imports from `shared_utils`
+
+| Symbol                           | Use                                                                                           |
+| -------------------------------- | --------------------------------------------------------------------------------------------- |
+| `Colors`                         | ANSI color constants (`GREEN`, `RED`, `YELLOW`, etc.)                                         |
+| `DEFAULT_EXTRA_SKIP_PATTERNS`    | `["FR_loc"]` — base skip patterns for validators                                              |
+| `clean_filepath(path)`           | Trim absolute path to start from `common/`, `events/`, etc.                                   |
+| `should_skip_file(path, extra)`  | Check if a file matches skip patterns                                                         |
+| `strip_comments(text)`           | Remove `#`-comments from HOI4 script text                                                     |
+| `FileOpener`                     | LRU-cached file reader (8192 entries)                                                         |
+| `create_validation_parser(desc)` | Argparse factory for validators (`--path`, `--strict`, `--staged`, `--no-cache`, `--workers`) |
+| `create_linting_parser(desc)`    | Argparse factory for linting scripts (`--mode`, `--files`, `--workers`)                       |
+| `run_validator_main(cls, desc)`  | Entry point for validators — parses args, creates instance, runs, exits                       |
 
 ## Scripts by Category
 
@@ -62,11 +130,7 @@ Style checkers, formatters, and encoding validators. These are used in pre-commi
 
 | Script                                | Description                                                                                                                                       |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **check_basic_style.py**              | Style checker for mod `.txt` files (pre-commit + CI)                                                                                              |
-| **check_basic_style_2.py**            | Extended style checker with additional rules (pre-commit + CI)                                                                                    |
-| **check_braces.py**                   | Validates matching braces in mod script files                                                                                                     |
 | **check_common_mistakes.py**          | Detects common scripting mistakes: bad value ranges, `allowed`/`cancel` no-ops, `ai_will_do factor` vs `base`, division instead of multiplication |
-| **coding_standards.py**               | Enforces Millennium Dawn coding standards                                                                                                         |
 | **fix_styling.py**                    | Comprehensive auto-fixer for style issues (tabs, spacing, braces, whitespace)                                                                     |
 | **fix_line_endings.py**               | Converts CRLF to LF line endings                                                                                                                  |
 | **fix_loc_yaml.py**                   | Fixes localisation YAML issues (quotes, tabs, colons, version keys)                                                                               |
@@ -75,7 +139,7 @@ Style checkers, formatters, and encoding validators. These are used in pre-commi
 
 ### Validation (`validation/`)
 
-Content validators run in CI via matrix strategy. See `validation/README.md` for details.
+Content validators run in CI via matrix strategy. See `validation/README.md` for full list of all 25 validators and their checks.
 
 ### Standardization (`standardization/`)
 
@@ -103,14 +167,15 @@ See `assets/gfxEntryGenerator.md` for the GFX entry generator guide.
 
 Metrics, reference analysis, and review tools.
 
-| Script                              | Description                                                            |
-| ----------------------------------- | ---------------------------------------------------------------------- |
-| **calculate_days.py**               | Calculates days from January 1st for the HOI4 date system              |
-| **estimate_gdp.py**                 | Estimates starting GDP for country tags using MD's building formulas   |
-| **find_idea_references.py**         | Finds which ideas from a file are referenced elsewhere in the codebase |
-| **find_scripted_loc_references.py** | Checks whether scripted localisation names are actually referenced     |
-| **review_branch.py**                | Generates a diff summary of the current branch vs main                 |
-| **search_add_ideas.py**             | Searches for `add_ideas` / `add_timed_idea` usage across the codebase  |
+| Script                              | Description                                                                                                                                                     |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **calculate_days.py**               | Calculates days from January 1st for the HOI4 date system                                                                                                       |
+| **estimate_gdp.py**                 | Estimates starting GDP for country tags using MD's building formulas                                                                                            |
+| **find_idea_references.py**         | Finds which ideas from a file are referenced elsewhere in the codebase                                                                                          |
+| **find_scripted_loc_references.py** | Checks whether scripted localisation names are actually referenced                                                                                              |
+| **pre_place_power_plants.py**       | Bakes fossil_powerplant + composite_plant counts into `history/states/` to skip startup loops. Re-run after edits to the energy formula or country/state setup. |
+| **review_branch.py**                | Generates a diff summary of the current branch vs main                                                                                                          |
+| **search_add_ideas.py**             | Searches for `add_ideas` / `add_timed_idea` usage across the codebase                                                                                           |
 
 ### Generators (`generators/`)
 
@@ -151,20 +216,26 @@ Tests live in `report_lib/tests/` and run on every PR via the `tools-validation.
 | **staged_validators_test.py**      | Tests staged validators using synthetic temporary files          |
 | **staged_validators_real_test.py** | Tests staged validators against real mod files with known issues |
 
+Tests for individual validators live in `validation/tests/`:
+
+| Script                               | Description                                                                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| **all_validators_test.py**           | Suite-wide smoke test: every `validate_*.py` must expose a `BaseValidator` subclass and run cleanly on an empty mod tree |
+| **validate_simplifications_test.py** | Unit tests for the scope-merge and two-bucket `random_list` detectors, including suppression edge cases                  |
+
 ### Root-Level Scripts
 
 Hook entry points, CI tools, and shared libraries that stay at the `tools/` root.
 
-| Script                            | Description                                                      |
-| --------------------------------- | ---------------------------------------------------------------- |
-| **validate_staged.py**            | Pre-commit hook: routes staged files to the correct validator    |
-| **standardize_staged.py**         | Pre-commit hook: routes staged files to the correct standardizer |
-| **generate_validation_report.py** | CI: renders the PR validation comment + posts GitHub Check Runs  |
-| **validate_tools.py**             | CI: validates Python scripts in the tools directory              |
-| **path_utils.py**                 | Shared path utilities (imported by linting scripts)              |
-| **shared_utils.py**               | Shared utilities (imported by validation + standardization)      |
-| **loc.py**                        | Localisation utilities                                           |
-| **logging_tool.py**               | Logging utility                                                  |
+| Script                            | Description                                                                                                                                                                                                                                                                                                                                        |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **validate_staged.py**            | Pre-commit hook: routes staged files to the correct validator                                                                                                                                                                                                                                                                                      |
+| **standardize_staged.py**         | Pre-commit hook: routes staged files to the correct standardizer                                                                                                                                                                                                                                                                                   |
+| **generate_validation_report.py** | CI: renders the PR validation comment + posts GitHub Check Runs                                                                                                                                                                                                                                                                                    |
+| **validate_tools.py**             | CI: validates Python scripts in the tools directory                                                                                                                                                                                                                                                                                                |
+| **shared_utils.py**               | Shared utilities: `Colors` class, `FileOpener` (LRU cache), `clean_filepath()`, `should_skip_file()`, `DEFAULT_EXTRA_SKIP_PATTERNS`, argparse factories (`create_validation_parser`, `create_linting_parser`, `create_standard_parser`), entry points (`run_validator_main`, `run_tool_main`), `find_hoi4_install()`, `extract_block_from_text()`. |
+| **loc.py**                        | Localisation utilities                                                                                                                                                                                                                                                                                                                             |
+| **logging_tool.py**               | Logging utility                                                                                                                                                                                                                                                                                                                                    |
 
 ---
 

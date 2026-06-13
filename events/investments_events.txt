@@ -363,21 +363,6 @@ country_event = {
 	}
 }
 
-#Construction Cancelled
-country_event = {
-	id = investments_event.12
-	title = investments_event.3.t
-	desc = investments_event.3.d
-	picture = GFX_united_states_dollar
-
-	is_triggered_only = yes
-
-	option = {
-		name = investments_event.3.o1
-		log = "[GetDateText]: [This.GetName]: investments_event.3.o1 executed"
-	}
-}
-
 # Cleanup event for any project slot. Reads `project` from country scope
 # (set by initialize_end_project_decisions before firing).
 country_event = {
@@ -411,7 +396,9 @@ country_event = {
 	}
 
 	immediate = {
-		log = "[GetDateText]: [This.GetName]: AI Investment initiation Current Treasury: [?treasury], Current Interest Rate: [?interest_rate], Current Debt Ratio: [?debt_ratio]"
+		if = { limit = { is_debug = yes }
+			log = "[GetDateText]: [THIS.GetName]: DEBUG: AI Investment initiation Current Treasury: [?treasury], Current Interest Rate: [?interest_rate], Current Debt Ratio: [?debt_ratio]"
+		}
 
 		# Minimum Score for a Valid Project
 		set_temp_variable = { AI_MIN_STATE_SCORE = 100 }
@@ -438,13 +425,10 @@ country_event = {
 			array = investment_targets
 			if = {
 				limit = {
-					THIS = { exists = yes }
-					THIS = {
-						NOT = { has_country_flag = int_auto_reject_investment_flag }
-						# Don't even run country scoring for targets flagged as recently failed;
-						# AI_country_selection_calculation would assign -200 and they can't win.
-						NOT = { has_country_flag = recently_failed_to_invest }
-					}
+					country_exists = THIS
+					NOT = { has_country_flag = int_auto_reject_investment_flag }
+					NOT = { has_country_flag = not_investment_target }
+					NOT = { has_country_flag = recently_failed_to_invest }
 				}
 				set_temp_variable = { AI_selected_country = THIS.id }
 				set_temp_variable = { AI_country_score = 0 }
@@ -461,10 +445,14 @@ country_event = {
 
 		# Check Investing Country
 		if = { limit = { check_variable = { AI_best_country_score = -1 } }
-			log = "[GetDateText]: [This.GetName]: Investment Failed. No valid investing country. Skipping this investment pulse."
+			if = { limit = { is_debug = yes }
+				log = "[GetDateText]: [THIS.GetName]: DEBUG: Investment Failed. No valid investing country. Skipping this investment pulse."
+			}
 		}
 		else = {
-			log = "[GetDateText]: [This.GetName]: Investment Country Succeeded. [?var:AI_best_country.GetName] scored a [?AI_best_country_score]"
+			if = { limit = { is_debug = yes }
+				log = "[GetDateText]: [THIS.GetName]: DEBUG: Investment Country Succeeded. [?var:AI_best_country.GetName] scored a [?AI_best_country_score]"
+			}
 			var:AI_best_country = {
 				set_temp_variable = { target_nation = THIS.id }
 				if = { limit = { ROOT = { OR = { has_idea = defense_industry has_idea = the_military } } }
@@ -551,6 +539,13 @@ country_event = {
 					set_temp_variable = { tgt_neighbor_at_war = 1 }
 				}
 
+				# Hoisted reactor-policy check (ideas don't change mid-loop).
+				set_temp_variable = { tgt_can_build_reactors = 0 }
+				if = {
+					limit = { country_can_build_nuclear_reactors = yes }
+					set_temp_variable = { tgt_can_build_reactors = 1 }
+				}
+
 				if = { limit = { check_variable = { tgt_at_war_with_investor = 0 } }
 				for_each_scope_loop = {
 					array = controlled_states
@@ -612,7 +607,7 @@ country_event = {
 						# Fossil Fuel Powerplant - Building Type - 12
 						AI_get_fossil_powerplant_score = yes
 						# Nuclear Reactor - Building Type - 13
-						if = { limit = { check_variable = { AI_has_reactor_tech = 1 } }
+						if = { limit = { check_variable = { AI_has_reactor_tech = 1 } check_variable = { tgt_can_build_reactors = 1 } }
 							AI_get_nuclear_reactor_score = yes
 						}
 
