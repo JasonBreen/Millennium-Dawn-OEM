@@ -7,6 +7,10 @@ merged result when any contributing file's stat changes.
 
 Cache lives under `.validation_cache/v<N>/` (gitignored). Pool workers call
 these directly; atomic writes via `os.replace` keep concurrent writers safe.
+
+Bypass: set ``MD_NO_CACHE=1`` in the environment or pass ``--no-cache`` to
+any validator (which sets the env var automatically). Both skip every lookup
+and every write.
 """
 
 from __future__ import annotations
@@ -19,7 +23,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, List, Optional, Tuple
 
 # Bump to invalidate every entry after a schema change.
-CACHE_VERSION = 1
+CACHE_VERSION = 4
 
 _CACHE_DIR_NAME = ".validation_cache"
 _PICKLE_ERRORS = (FileNotFoundError, EOFError, pickle.UnpicklingError, OSError)
@@ -111,6 +115,34 @@ def per_file_cached(
         return entry["result"]
     result = compute_fn()
     _store(cache_path, {"stat": current_stat, "result": result})
+    return result
+
+
+def per_file_cached_by_content(
+    mod_path: str,
+    namespace: str,
+    source_path: str,
+    content: str,
+    compute_fn: Callable[[], Any],
+) -> Any:
+    """Like ``per_file_cached`` but keyed on a content hash instead of file stat.
+
+    The caller supplies ``content`` it has already read, so this adds no extra
+    file read. Keying on ``(len, sha1)`` survives git checkouts, which reset
+    mtimes and make the stat-based key in ``per_file_cached`` miss on every
+    entry on CI. Entries store a ``"content"`` field (vs ``per_file_cached``'s
+    ``"stat"``), so a stale stat-keyed entry under the same namespace simply
+    fails the check and gets recomputed rather than being misread.
+    """
+    if _cache_disabled():
+        return compute_fn()
+    content_key = (len(content), hashlib.sha1(content.encode("utf-8")).hexdigest())
+    cache_path = _per_file_path(mod_path, namespace, source_path)
+    entry = _load(cache_path)
+    if entry is not None and entry.get("content") == content_key:
+        return entry["result"]
+    result = compute_fn()
+    _store(cache_path, {"content": content_key, "result": result})
     return result
 
 

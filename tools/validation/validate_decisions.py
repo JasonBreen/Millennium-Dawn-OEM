@@ -1,35 +1,9 @@
 #!/usr/bin/env python3
-##########################
-# Decision Validation Script (Multiprocessing Optimized)
-# Validates decision definitions and usage
-# Checks for:
-#   1. Duplicated decisions
-#   2. Unused decisions (always=no in allowed but never manually activated)
-#   3. Unused decision categories (empty categories not used in BOP)
-#   4. Decisions with AI factor issues
-#   5. Custom cost trigger validation (tooltip presence)
-#   6. Targeted decisions without targets (performance issue)
-#   7. Decisions with targets but no target_trigger (performance issue)
-#   8. Decisions using FROM without a target set (undefined scope)
-#   9. Decisions without allowed check in unchecked categories
-#  10. Random list without explicit fixed_random_seed
-#  11. Redundant tag checks (allowed already pins tag)
-#  12. Allowed redundant with parent category
-#  13. Political power charge in effects (hidden or double cost)
-#  14. Identical visible and available blocks
-#  15. Bare trigger names missing has_ prefix
-#  16. Missing localisation keys
-#  17. Visible block in missions (does nothing; use activation instead)
-#  18. war_with_on_* = FROM in targeted decisions (use war_with_target_on_*)
-#  19. cancel_if_not_visible without a visible block (dead code)
-#  20. Custom cost with PP but no ai_hint_pp_cost (AI unaware of cost)
-#  21. Incompatible state_target value with explicit targets
-#  22. Mission-only attributes on regular decisions (silently ignored)
-#  23. remove_effect without days_remove or remove_trigger (dead code)
-#  24. targets_dynamic / target_non_existing without targets (meaningless)
-# Based on Kaiserreich Autotests by Pelmen, https://github.com/Pelmen323
-# Adapted for Millennium Dawn with multiprocessing
-##########################
+"""Validate decision definitions and usage in Millennium Dawn.
+
+Based on Kaiserreich Autotests by Pelmen (https://github.com/Pelmen323),
+adapted for Millennium Dawn with multiprocessing.
+"""
 import glob
 import os
 import re
@@ -37,6 +11,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 from validator_common import (
+    DEFAULT_EXTRA_SKIP_PATTERNS,
     BaseValidator,
     Colors,
     FileOpener,
@@ -45,7 +20,7 @@ from validator_common import (
     should_skip_file,
 )
 
-EXTRA_SKIP_PATTERNS = ["FR_loc"]
+EXTRA_SKIP_PATTERNS = DEFAULT_EXTRA_SKIP_PATTERNS
 
 # Decisions activated dynamically (e.g. via variable-constructed IDs) that
 # cannot be detected by static analysis and should be excluded from the
@@ -244,7 +219,7 @@ class DecisionFactory:
         self.desc_override = _top_level_field_value(dec, "desc")
 
 
-# Decisions parsing cache - enabled by default, disabled via --no-cache for CI
+# Decisions parsing cache - enabled by default, disabled via BaseValidator.no_cache
 _DECISION_CACHE = {"enabled": True, "data": {}}
 
 
@@ -283,7 +258,6 @@ def parse_all_decisions(
 
     def _parse():
         filepath = str(Path(mod_path) / "common" / "decisions")
-        # Pre-compile pattern once
         _decisions_pattern = re.compile(
             r"^\t[^\t#]+ = \{.*?^\t\}", flags=re.MULTILINE | re.DOTALL
         )
@@ -353,7 +327,6 @@ def parse_decision_categories(
     def _parse():
         filepath = str(Path(mod_path) / "common" / "decisions" / "categories")
         categories = {}
-        # Pre-compile patterns once
         _cat_pattern = re.compile(r"^\w* = \{.*?^\}", flags=re.DOTALL | re.MULTILINE)
         _name_pattern = re.compile(r"^(.*) = \{")
 
@@ -381,7 +354,6 @@ def parse_categories_with_decisions(
     """Parse categories with their decisions - reuses category cache."""
 
     def _parse():
-        # Reuse the categories cache instead of re-parsing
         categories = parse_decision_categories(mod_path, lowercase, visible_when_empty)
         category_names = list(categories.keys())
 
@@ -481,10 +453,10 @@ class Validator(BaseValidator):
     TITLE = "DECISION VALIDATION"
     STAGED_EXTENSIONS = [".txt"]
 
-    def __init__(self, *args, fix: bool = False, no_cache: bool = False, **kwargs):
+    def __init__(self, *args, fix: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
         self.fix = fix
-        if no_cache:
+        if self.no_cache:
             _set_cache_enabled(False)
 
     def _apply_ai_factor_fixes(self, fixes: list):
@@ -1759,11 +1731,6 @@ def _add_extra_args(parser):
         "--fix",
         action="store_true",
         help="Auto-fix decisions: insert 'ai_will_do = { base = 0 }' for missing AI factors, and move identical available blocks into visible",
-    )
-    parser.add_argument(
-        "--no-cache",
-        action="store_true",
-        help="Disable decision parsing cache (useful for CI runs where cache overhead exceeds benefit)",
     )
 
 
