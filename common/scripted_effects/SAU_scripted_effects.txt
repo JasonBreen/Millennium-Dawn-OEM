@@ -233,3 +233,381 @@ SAU_update_hormuz_status = {
 		}
 	}
 }
+
+SAU_clear_vision_ideas = {
+	if = { limit = { has_idea = SAU_vision_2030_expectations }   remove_ideas = SAU_vision_2030_expectations }
+	if = { limit = { has_idea = SAU_vision_2030_progress }       remove_ideas = SAU_vision_2030_progress }
+	if = { limit = { has_idea = SAU_vision_2030_delivered }      remove_ideas = SAU_vision_2030_delivered }
+	if = { limit = { has_idea = SAU_vision_2030_white_elephant } remove_ideas = SAU_vision_2030_white_elephant }
+}
+
+# Re-evaluate the Vision 2030 national mood each month from projects delivered
+SAU_update_vision2030 = {
+	set_temp_variable = { v2030_eff = SAU_giga_projects_built }
+	subtract_from_temp_variable = { v2030_eff = SAU_giga_projects_failed }
+	if = {
+		limit = { check_variable = { v2030_eff > 11 } }
+		if = {
+			limit = { NOT = { has_idea = SAU_vision_2030_delivered } }
+			SAU_clear_vision_ideas = yes
+			add_ideas = SAU_vision_2030_delivered
+			news_event = { id = SAU_events.82 days = 1 }
+		}
+	}
+	else_if = {
+		limit = {
+			OR = {
+				AND = { date > 2030.1.1 check_variable = { v2030_eff < 6 } }
+				check_variable = { SAU_giga_projects_failed > 7 }
+			}
+		}
+		if = {
+			limit = { NOT = { has_idea = SAU_vision_2030_white_elephant } }
+			SAU_clear_vision_ideas = yes
+			add_ideas = SAU_vision_2030_white_elephant
+			country_event = { id = SAU_events.83 days = 1 }
+		}
+	}
+	else_if = {
+		limit = { check_variable = { v2030_eff > 5 } }
+		if = {
+			limit = { NOT = { has_idea = SAU_vision_2030_progress } }
+			SAU_clear_vision_ideas = yes
+			add_ideas = SAU_vision_2030_progress
+		}
+	}
+	else = {
+		if = {
+			limit = { NOT = { has_idea = SAU_vision_2030_expectations } }
+			SAU_clear_vision_ideas = yes
+			add_ideas = SAU_vision_2030_expectations
+		}
+	}
+}
+
+# Weekly countdown for every undelivered Vision 2030 project; misses fire the penalty
+SAU_tick_vision_deadlines = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_neom }
+			NOT = { has_country_flag = SAU_built_neom }
+			NOT = { has_country_flag = SAU_failed_neom }
+		}
+		subtract_from_variable = { SAU_remain_neom = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_neom < 1 } }
+			set_variable = { SAU_remain_neom = 0 }
+			set_country_flag = SAU_failed_neom
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			932 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_the_line }
+			NOT = { has_country_flag = SAU_built_the_line }
+			NOT = { has_country_flag = SAU_failed_the_line }
+		}
+		subtract_from_variable = { SAU_remain_the_line = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_the_line < 1 } }
+			set_variable = { SAU_remain_the_line = 0 }
+			set_country_flag = SAU_failed_the_line
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			932 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_oxagon }
+			NOT = { has_country_flag = SAU_built_oxagon }
+			NOT = { has_country_flag = SAU_failed_oxagon }
+		}
+		subtract_from_variable = { SAU_remain_oxagon = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_oxagon < 1 } }
+			set_variable = { SAU_remain_oxagon = 0 }
+			set_country_flag = SAU_failed_oxagon
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			932 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_trojena }
+			NOT = { has_country_flag = SAU_built_trojena }
+			NOT = { has_country_flag = SAU_failed_trojena }
+		}
+		subtract_from_variable = { SAU_remain_trojena = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_trojena < 1 } }
+			set_variable = { SAU_remain_trojena = 0 }
+			set_country_flag = SAU_failed_trojena
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			932 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_sindalah }
+			NOT = { has_country_flag = SAU_built_sindalah }
+			NOT = { has_country_flag = SAU_failed_sindalah }
+		}
+		subtract_from_variable = { SAU_remain_sindalah = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_sindalah < 1 } }
+			set_variable = { SAU_remain_sindalah = 0 }
+			set_country_flag = SAU_failed_sindalah
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			932 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_red_sea }
+			NOT = { has_country_flag = SAU_built_red_sea }
+			NOT = { has_country_flag = SAU_failed_red_sea }
+		}
+		subtract_from_variable = { SAU_remain_red_sea = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_red_sea < 1 } }
+			set_variable = { SAU_remain_red_sea = 0 }
+			set_country_flag = SAU_failed_red_sea
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			932 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_amaala }
+			NOT = { has_country_flag = SAU_built_amaala }
+			NOT = { has_country_flag = SAU_failed_amaala }
+		}
+		subtract_from_variable = { SAU_remain_amaala = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_amaala < 1 } }
+			set_variable = { SAU_remain_amaala = 0 }
+			set_country_flag = SAU_failed_amaala
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			932 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_qiddiya }
+			NOT = { has_country_flag = SAU_built_qiddiya }
+			NOT = { has_country_flag = SAU_failed_qiddiya }
+		}
+		subtract_from_variable = { SAU_remain_qiddiya = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_qiddiya < 1 } }
+			set_variable = { SAU_remain_qiddiya = 0 }
+			set_country_flag = SAU_failed_qiddiya
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			176 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_diriyah }
+			NOT = { has_country_flag = SAU_built_diriyah }
+			NOT = { has_country_flag = SAU_failed_diriyah }
+		}
+		subtract_from_variable = { SAU_remain_diriyah = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_diriyah < 1 } }
+			set_variable = { SAU_remain_diriyah = 0 }
+			set_country_flag = SAU_failed_diriyah
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			176 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_alula }
+			NOT = { has_country_flag = SAU_built_alula }
+			NOT = { has_country_flag = SAU_failed_alula }
+		}
+		subtract_from_variable = { SAU_remain_alula = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_alula < 1 } }
+			set_variable = { SAU_remain_alula = 0 }
+			set_country_flag = SAU_failed_alula
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			177 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_new_murabba }
+			NOT = { has_country_flag = SAU_built_new_murabba }
+			NOT = { has_country_flag = SAU_failed_new_murabba }
+		}
+		subtract_from_variable = { SAU_remain_new_murabba = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_new_murabba < 1 } }
+			set_variable = { SAU_remain_new_murabba = 0 }
+			set_country_flag = SAU_failed_new_murabba
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			176 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_king_salman_park }
+			NOT = { has_country_flag = SAU_built_king_salman_park }
+			NOT = { has_country_flag = SAU_failed_king_salman_park }
+		}
+		subtract_from_variable = { SAU_remain_king_salman_park = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_king_salman_park < 1 } }
+			set_variable = { SAU_remain_king_salman_park = 0 }
+			set_country_flag = SAU_failed_king_salman_park
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			176 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_sports_blvd }
+			NOT = { has_country_flag = SAU_built_sports_blvd }
+			NOT = { has_country_flag = SAU_failed_sports_blvd }
+		}
+		subtract_from_variable = { SAU_remain_sports_blvd = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_sports_blvd < 1 } }
+			set_variable = { SAU_remain_sports_blvd = 0 }
+			set_country_flag = SAU_failed_sports_blvd
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			176 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_green_riyadh }
+			NOT = { has_country_flag = SAU_built_green_riyadh }
+			NOT = { has_country_flag = SAU_failed_green_riyadh }
+		}
+		subtract_from_variable = { SAU_remain_green_riyadh = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_green_riyadh < 1 } }
+			set_variable = { SAU_remain_green_riyadh = 0 }
+			set_country_flag = SAU_failed_green_riyadh
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			176 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_jeddah_central }
+			NOT = { has_country_flag = SAU_built_jeddah_central }
+			NOT = { has_country_flag = SAU_failed_jeddah_central }
+		}
+		subtract_from_variable = { SAU_remain_jeddah_central = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_jeddah_central < 1 } }
+			set_variable = { SAU_remain_jeddah_central = 0 }
+			set_country_flag = SAU_failed_jeddah_central
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			177 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_soudah_peaks }
+			NOT = { has_country_flag = SAU_built_soudah_peaks }
+			NOT = { has_country_flag = SAU_failed_soudah_peaks }
+		}
+		subtract_from_variable = { SAU_remain_soudah_peaks = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_soudah_peaks < 1 } }
+			set_variable = { SAU_remain_soudah_peaks = 0 }
+			set_country_flag = SAU_failed_soudah_peaks
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			178 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = SAU_committed_roshn }
+			NOT = { has_country_flag = SAU_built_roshn }
+			NOT = { has_country_flag = SAU_failed_roshn }
+		}
+		subtract_from_variable = { SAU_remain_roshn = 7 }
+		if = {
+			limit = { check_variable = { SAU_remain_roshn < 1 } }
+			set_variable = { SAU_remain_roshn = 0 }
+			set_country_flag = SAU_failed_roshn
+			add_to_variable = { SAU_giga_projects_failed = 1 }
+			set_temp_variable = { treasury_change = -20 }
+			modify_treasury_effect = yes
+			add_stability = -0.01
+			176 = { add_building_construction = { type = industrial_complex level = -1 instant_build = yes } }
+			country_event = { id = SAU_events.84 days = 1 }
+		}
+	}
+}
