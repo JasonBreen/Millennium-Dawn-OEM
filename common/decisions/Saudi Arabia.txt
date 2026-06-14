@@ -3626,3 +3626,278 @@ SAU_vision2030_category = {
 		ai_will_do = { base = 1 }
 	}
 }
+
+SAU_crown_prince_category = {
+
+	#### STEP 1 - Back a candidate (one-time) ####
+
+	SAU_back_salman = {
+		icon = GFX_decision_generic_political_rally
+		cost = 0
+		fire_only_once = yes
+
+		visible = {
+			has_country_flag = SAU_succession_race_active
+			check_variable = { SAU_crown_choice = 0 }
+		}
+		available = { always = yes }
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_back_salman"
+			set_variable = { SAU_crown_choice = 1 }
+		}
+
+		ai_will_do = { base = 100 }
+	}
+
+	SAU_back_mbn = {
+		icon = GFX_decision_generic_political_rally
+		cost = 0
+		fire_only_once = yes
+
+		visible = {
+			has_country_flag = SAU_succession_race_active
+			check_variable = { SAU_crown_choice = 0 }
+		}
+		available = { always = yes }
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_back_mbn"
+			set_variable = { SAU_crown_choice = 2 }
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SAU_back_mutaib = {
+		icon = GFX_decision_generic_political_rally
+		cost = 0
+		fire_only_once = yes
+
+		visible = {
+			has_country_flag = SAU_succession_race_active
+			check_variable = { SAU_crown_choice = 0 }
+		}
+		available = { always = yes }
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_back_mutaib"
+			set_variable = { SAU_crown_choice = 3 }
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	#### STEP 2 - Rally support behind your candidate (30-day timed action) ####
+
+	SAU_rally_support = {
+		icon = GFX_decision_influence
+		cost = 30
+		days_remove = 30
+		fire_only_once = no
+
+		visible = {
+			has_country_flag = SAU_succession_race_active
+			NOT = { check_variable = { SAU_crown_choice = 0 } }
+		}
+		available = { always = yes }
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_rally_support"
+			random_list = {
+				55 = { set_temp_variable = { prince = SAU_crown_choice } set_temp_variable = { amount = 2 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_rally_slight_tt }
+				33 = { set_temp_variable = { prince = SAU_crown_choice } set_temp_variable = { amount = 5 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_rally_normal_tt }
+				12 = { set_temp_variable = { prince = SAU_crown_choice } set_temp_variable = { amount = 10 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_rally_major_tt }
+			}
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	#### STEP 2 - Undermine a rival (30-day timed action, two visible at a time) ####
+
+	SAU_undermine_salman = {
+		icon = GFX_decision_generic_intelligence_operation
+		cost = 35
+		days_remove = 30
+		fire_only_once = no
+
+		visible = {
+			has_country_flag = SAU_succession_race_active
+			NOT = { check_variable = { SAU_crown_choice = 0 } }
+			NOT = { check_variable = { SAU_crown_choice = 1 } }
+		}
+		available = { always = yes }
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_undermine_salman"
+			random_list = {
+				20 = { custom_effect_tooltip = SAU_undermine_fail_tt }
+				50 = { set_temp_variable = { prince = 1 } set_temp_variable = { amount = -3 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_undermine_minor_tt }
+				30 = { set_temp_variable = { prince = 1 } set_temp_variable = { amount = -6 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_undermine_major_tt }
+			}
+		}
+
+		ai_will_do = { base = 2 }
+	}
+
+	SAU_undermine_mbn = {
+		icon = GFX_decision_generic_intelligence_operation
+		cost = 35
+		days_remove = 30
+		fire_only_once = no
+
+		visible = {
+			has_country_flag = SAU_succession_race_active
+			NOT = { check_variable = { SAU_crown_choice = 0 } }
+			NOT = { check_variable = { SAU_crown_choice = 2 } }
+		}
+		available = { always = yes }
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_undermine_mbn"
+			random_list = {
+				20 = { custom_effect_tooltip = SAU_undermine_fail_tt }
+				50 = { set_temp_variable = { prince = 2 } set_temp_variable = { amount = -3 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_undermine_minor_tt }
+				30 = { set_temp_variable = { prince = 2 } set_temp_variable = { amount = -6 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_undermine_major_tt }
+			}
+		}
+
+		ai_will_do = { base = 2 }
+	}
+
+	SAU_undermine_mutaib = {
+		icon = GFX_decision_generic_intelligence_operation
+		cost = 35
+		days_remove = 30
+		fire_only_once = no
+
+		visible = {
+			has_country_flag = SAU_succession_race_active
+			NOT = { check_variable = { SAU_crown_choice = 0 } }
+			NOT = { check_variable = { SAU_crown_choice = 3 } }
+		}
+		available = { always = yes }
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_undermine_mutaib"
+			random_list = {
+				20 = { custom_effect_tooltip = SAU_undermine_fail_tt }
+				50 = { set_temp_variable = { prince = 3 } set_temp_variable = { amount = -3 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_undermine_minor_tt }
+				30 = { set_temp_variable = { prince = 3 } set_temp_variable = { amount = -6 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_undermine_major_tt }
+			}
+		}
+
+		ai_will_do = { base = 2 }
+	}
+
+	#### Rival factions act on their own (recurring 30-day auto missions, two run at a time) ####
+
+	SAU_salman_maneuver = {
+		icon = GFX_decision_generic_political_discourse
+		fire_only_once = no
+		is_good = no
+		selectable_mission = no
+		days_mission_timeout = 30
+
+		activation = {
+			has_country_flag = SAU_succession_race_active
+			NOT = { check_variable = { SAU_crown_choice = 0 } }
+			NOT = { check_variable = { SAU_crown_choice = 1 } }
+		}
+		available = {
+			NOT = { has_country_flag = SAU_succession_race_active }
+		}
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: mission timeout SAU_salman_maneuver"
+			random_list = {
+				45 = { set_temp_variable = { prince = 1 } set_temp_variable = { amount = 2 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_maneuver_slight_tt }
+				25 = { set_temp_variable = { prince = 1 } set_temp_variable = { amount = 4 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_maneuver_normal_tt }
+				10 = { set_temp_variable = { prince = 1 } set_temp_variable = { amount = 7 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_maneuver_major_tt }
+				20 = {
+					set_temp_variable = { prince = 1 } set_temp_variable = { amount = 2 } SAU_add_crown_points = yes
+					custom_effect_tooltip = SAU_maneuver_scheme_tt
+					hidden_effect = {
+						random_list = {
+							50 = { set_temp_variable = { prince = 2 } set_temp_variable = { amount = -3 } SAU_add_crown_points = yes }
+							50 = { set_temp_variable = { prince = 3 } set_temp_variable = { amount = -3 } SAU_add_crown_points = yes }
+						}
+					}
+				}
+			}
+		}
+	}
+
+	SAU_mbn_maneuver = {
+		icon = GFX_decision_generic_political_discourse
+		fire_only_once = no
+		is_good = no
+		selectable_mission = no
+		days_mission_timeout = 30
+
+		activation = {
+			has_country_flag = SAU_succession_race_active
+			NOT = { check_variable = { SAU_crown_choice = 0 } }
+			NOT = { check_variable = { SAU_crown_choice = 2 } }
+		}
+		available = {
+			NOT = { has_country_flag = SAU_succession_race_active }
+		}
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: mission timeout SAU_mbn_maneuver"
+			random_list = {
+				45 = { set_temp_variable = { prince = 2 } set_temp_variable = { amount = 2 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_maneuver_slight_tt }
+				25 = { set_temp_variable = { prince = 2 } set_temp_variable = { amount = 4 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_maneuver_normal_tt }
+				10 = { set_temp_variable = { prince = 2 } set_temp_variable = { amount = 7 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_maneuver_major_tt }
+				20 = {
+					set_temp_variable = { prince = 2 } set_temp_variable = { amount = 2 } SAU_add_crown_points = yes
+					custom_effect_tooltip = SAU_maneuver_scheme_tt
+					hidden_effect = {
+						random_list = {
+							50 = { set_temp_variable = { prince = 1 } set_temp_variable = { amount = -3 } SAU_add_crown_points = yes }
+							50 = { set_temp_variable = { prince = 3 } set_temp_variable = { amount = -3 } SAU_add_crown_points = yes }
+						}
+					}
+				}
+			}
+		}
+	}
+
+	SAU_mutaib_maneuver = {
+		icon = GFX_decision_generic_political_discourse
+		fire_only_once = no
+		is_good = no
+		selectable_mission = no
+		days_mission_timeout = 30
+
+		activation = {
+			has_country_flag = SAU_succession_race_active
+			NOT = { check_variable = { SAU_crown_choice = 0 } }
+			NOT = { check_variable = { SAU_crown_choice = 3 } }
+		}
+		available = {
+			NOT = { has_country_flag = SAU_succession_race_active }
+		}
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: mission timeout SAU_mutaib_maneuver"
+			random_list = {
+				45 = { set_temp_variable = { prince = 3 } set_temp_variable = { amount = 2 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_maneuver_slight_tt }
+				25 = { set_temp_variable = { prince = 3 } set_temp_variable = { amount = 4 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_maneuver_normal_tt }
+				10 = { set_temp_variable = { prince = 3 } set_temp_variable = { amount = 7 } SAU_add_crown_points = yes custom_effect_tooltip = SAU_maneuver_major_tt }
+				20 = {
+					set_temp_variable = { prince = 3 } set_temp_variable = { amount = 2 } SAU_add_crown_points = yes
+					custom_effect_tooltip = SAU_maneuver_scheme_tt
+					hidden_effect = {
+						random_list = {
+							50 = { set_temp_variable = { prince = 1 } set_temp_variable = { amount = -3 } SAU_add_crown_points = yes }
+							50 = { set_temp_variable = { prince = 2 } set_temp_variable = { amount = -3 } SAU_add_crown_points = yes }
+						}
+					}
+				}
+			}
+		}
+	}
+}

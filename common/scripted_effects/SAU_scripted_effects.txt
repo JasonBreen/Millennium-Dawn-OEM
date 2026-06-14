@@ -611,3 +611,273 @@ SAU_tick_vision_deadlines = {
 		}
 	}
 }
+
+
+# Crown Prince succession influence race (share-of-the-pie model).
+# Raw support points accumulate; each prince's displayed share = points / total * 100.
+# SAU_crown_choice: 0 = undecided, 1 = Salman, 2 = Mohammed bin Nayef, 3 = Mutaib.
+
+SAU_init_succession_race = {
+	set_variable = { SAU_salman_points = 45 }
+	set_variable = { SAU_mbn_points = 30 }
+	set_variable = { SAU_mutaib_points = 25 }
+	set_variable = { SAU_crown_choice = 0 }
+	set_country_flag = SAU_succession_race_active
+	SAU_recompute_crown_shares = yes
+}
+
+
+SAU_recompute_crown_shares = {
+	set_temp_variable = { SAU_crown_total = SAU_salman_points }
+	add_to_temp_variable = { var = SAU_crown_total value = SAU_mbn_points }
+	add_to_temp_variable = { var = SAU_crown_total value = SAU_mutaib_points }
+	if = { limit = { check_variable = { SAU_crown_total < 1 } } set_temp_variable = { SAU_crown_total = 1 } }
+
+	set_variable = { SAU_salman_share = SAU_salman_points }
+	multiply_variable = { SAU_salman_share = 100 }
+	divide_variable = { var = SAU_salman_share value = SAU_crown_total }
+
+	set_variable = { SAU_mbn_share = SAU_mbn_points }
+	multiply_variable = { SAU_mbn_share = 100 }
+	divide_variable = { var = SAU_mbn_share value = SAU_crown_total }
+
+	set_variable = { SAU_mutaib_share = SAU_mutaib_points }
+	multiply_variable = { SAU_mutaib_share = 100 }
+	divide_variable = { var = SAU_mutaib_share value = SAU_crown_total }
+}
+
+# temp args: prince (1/2/3), amount (may be negative). Points clamp at a floor of 1 so the pie is never empty.
+SAU_add_crown_points = {
+	if = {
+		limit = { check_variable = { prince = 1 } }
+		add_to_variable = { var = SAU_salman_points value = amount }
+		clamp_variable = { var = SAU_salman_points min = 1 }
+	}
+	else_if = {
+		limit = { check_variable = { prince = 2 } }
+		add_to_variable = { var = SAU_mbn_points value = amount }
+		clamp_variable = { var = SAU_mbn_points min = 1 }
+	}
+	else_if = {
+		limit = { check_variable = { prince = 3 } }
+		add_to_variable = { var = SAU_mutaib_points value = amount }
+		clamp_variable = { var = SAU_mutaib_points min = 1 }
+	}
+	SAU_recompute_crown_shares = yes
+}
+
+# Crown the prince with the most points. Ties resolve to Salman (most senior). Installs via the generic leader system.
+SAU_resolve_succession = {
+	set_country_flag = set_Kingdom
+	if = {
+		limit = {
+			check_variable = { SAU_mbn_points > SAU_salman_points }
+			check_variable = { SAU_mbn_points > SAU_mutaib_points }
+		}
+		set_variable = { Kingdom_leader = 1 }
+	}
+	else_if = {
+		limit = {
+			check_variable = { SAU_mutaib_points > SAU_salman_points }
+			check_variable = { SAU_mutaib_points > SAU_mbn_points }
+		}
+		set_variable = { Kingdom_leader = 4 }
+	}
+	else = {
+		set_variable = { Kingdom_leader = 0 }
+	}
+	set_leader_SAU = yes
+	# Bypass-complete the winner's accession focus so his branch opens without a manual click
+	if = {
+		limit = {
+			check_variable = { SAU_mbn_points > SAU_salman_points }
+			check_variable = { SAU_mbn_points > SAU_mutaib_points }
+		}
+		complete_national_focus = SAU_focus_MBN
+	}
+	else_if = {
+		limit = {
+			check_variable = { SAU_mutaib_points > SAU_salman_points }
+			check_variable = { SAU_mutaib_points > SAU_mbn_points }
+		}
+		complete_national_focus = SAU_focus_Miteb_sonofAbdullah
+	}
+	else = {
+		complete_national_focus = SAU_Salman_Abdulaziz
+	}
+	clr_country_flag = SAU_succession_race_active
+}
+
+
+# Pipeline tier-management effects (SAU pipeline feature)
+
+SAU_yemen_set_tier = {
+	if = { limit = { has_idea = SAU_yemen_pipeline_t1 } remove_ideas = SAU_yemen_pipeline_t1 }
+	if = { limit = { has_idea = SAU_yemen_pipeline_t2 } remove_ideas = SAU_yemen_pipeline_t2 }
+	if = { limit = { has_idea = SAU_yemen_pipeline_t3 } remove_ideas = SAU_yemen_pipeline_t3 }
+	if = { limit = { country_exists = YEM } YEM = {
+		if = { limit = { has_idea = SAU_pipeline_transit_YEM_t1 } remove_ideas = SAU_pipeline_transit_YEM_t1 }
+		if = { limit = { has_idea = SAU_pipeline_transit_YEM_t2 } remove_ideas = SAU_pipeline_transit_YEM_t2 }
+		if = { limit = { has_idea = SAU_pipeline_transit_YEM_t3 } remove_ideas = SAU_pipeline_transit_YEM_t3 }
+	} }
+	if = { limit = { check_variable = { SAU_yemen_tier = 1 } }
+		add_ideas = SAU_yemen_pipeline_t1
+		if = { limit = { country_exists = YEM } YEM = { add_ideas = SAU_pipeline_transit_YEM_t1 } }
+	}
+	if = { limit = { check_variable = { SAU_yemen_tier = 2 } }
+		add_ideas = SAU_yemen_pipeline_t2
+		if = { limit = { country_exists = YEM } YEM = { add_ideas = SAU_pipeline_transit_YEM_t2 } }
+	}
+	if = { limit = { check_variable = { SAU_yemen_tier = 3 } }
+		add_ideas = SAU_yemen_pipeline_t3
+		if = { limit = { country_exists = YEM } YEM = { add_ideas = SAU_pipeline_transit_YEM_t3 } }
+	}
+}
+
+SAU_yemen_tier_down = {
+	if = { limit = { has_idea = SAU_yemen_pipeline_t3 } set_temp_variable = { SAU_yemen_tier = 2 } SAU_yemen_set_tier = yes }
+	else_if = { limit = { has_idea = SAU_yemen_pipeline_t2 } set_temp_variable = { SAU_yemen_tier = 1 } SAU_yemen_set_tier = yes }
+	else_if = { limit = { has_idea = SAU_yemen_pipeline_t1 }
+		set_temp_variable = { SAU_yemen_tier = 0 } SAU_yemen_set_tier = yes
+		clr_country_flag = SAU_yemen_pipeline_open
+		if = { limit = { has_idea = SAU_pipeline_empire } remove_ideas = SAU_pipeline_empire }
+	}
+}
+
+SAU_yemen_tier_up = {
+	if = { limit = { has_idea = SAU_yemen_pipeline_t1 } set_temp_variable = { SAU_yemen_tier = 2 } SAU_yemen_set_tier = yes }
+	else_if = { limit = { has_idea = SAU_yemen_pipeline_t2 } set_temp_variable = { SAU_yemen_tier = 3 } SAU_yemen_set_tier = yes }
+}
+
+SAU_syria_set_tier = {
+	if = { limit = { has_idea = SAU_syria_pipeline_t1 } remove_ideas = SAU_syria_pipeline_t1 }
+	if = { limit = { has_idea = SAU_syria_pipeline_t2 } remove_ideas = SAU_syria_pipeline_t2 }
+	if = { limit = { has_idea = SAU_syria_pipeline_t3 } remove_ideas = SAU_syria_pipeline_t3 }
+	if = { limit = { country_exists = JOR } JOR = {
+		if = { limit = { has_idea = SAU_pipeline_transit_JOR_t1 } remove_ideas = SAU_pipeline_transit_JOR_t1 }
+		if = { limit = { has_idea = SAU_pipeline_transit_JOR_t2 } remove_ideas = SAU_pipeline_transit_JOR_t2 }
+		if = { limit = { has_idea = SAU_pipeline_transit_JOR_t3 } remove_ideas = SAU_pipeline_transit_JOR_t3 }
+	} }
+	if = { limit = { country_exists = SYR } SYR = {
+		if = { limit = { has_idea = SAU_pipeline_transit_SYR_t1 } remove_ideas = SAU_pipeline_transit_SYR_t1 }
+		if = { limit = { has_idea = SAU_pipeline_transit_SYR_t2 } remove_ideas = SAU_pipeline_transit_SYR_t2 }
+		if = { limit = { has_idea = SAU_pipeline_transit_SYR_t3 } remove_ideas = SAU_pipeline_transit_SYR_t3 }
+	} }
+	if = { limit = { country_exists = FSA } FSA = {
+		if = { limit = { has_idea = SAU_pipeline_transit_SYR_t1 } remove_ideas = SAU_pipeline_transit_SYR_t1 }
+		if = { limit = { has_idea = SAU_pipeline_transit_SYR_t2 } remove_ideas = SAU_pipeline_transit_SYR_t2 }
+		if = { limit = { has_idea = SAU_pipeline_transit_SYR_t3 } remove_ideas = SAU_pipeline_transit_SYR_t3 }
+	} }
+	if = { limit = { check_variable = { SAU_syria_tier = 1 } }
+		add_ideas = SAU_syria_pipeline_t1
+		if = { limit = { country_exists = JOR } JOR = { add_ideas = SAU_pipeline_transit_JOR_t1 } }
+		if = { limit = { country_exists = SYR } SYR = { add_ideas = SAU_pipeline_transit_SYR_t1 } }
+		if = { limit = { country_exists = FSA } FSA = { add_ideas = SAU_pipeline_transit_SYR_t1 } }
+	}
+	if = { limit = { check_variable = { SAU_syria_tier = 2 } }
+		add_ideas = SAU_syria_pipeline_t2
+		if = { limit = { country_exists = JOR } JOR = { add_ideas = SAU_pipeline_transit_JOR_t2 } }
+		if = { limit = { country_exists = SYR } SYR = { add_ideas = SAU_pipeline_transit_SYR_t2 } }
+		if = { limit = { country_exists = FSA } FSA = { add_ideas = SAU_pipeline_transit_SYR_t2 } }
+	}
+	if = { limit = { check_variable = { SAU_syria_tier = 3 } }
+		add_ideas = SAU_syria_pipeline_t3
+		if = { limit = { country_exists = JOR } JOR = { add_ideas = SAU_pipeline_transit_JOR_t3 } }
+		if = { limit = { country_exists = SYR } SYR = { add_ideas = SAU_pipeline_transit_SYR_t3 } }
+		if = { limit = { country_exists = FSA } FSA = { add_ideas = SAU_pipeline_transit_SYR_t3 } }
+	}
+}
+
+SAU_syria_tier_down = {
+	if = { limit = { has_idea = SAU_syria_pipeline_t3 } set_temp_variable = { SAU_syria_tier = 2 } SAU_syria_set_tier = yes }
+	else_if = { limit = { has_idea = SAU_syria_pipeline_t2 } set_temp_variable = { SAU_syria_tier = 1 } SAU_syria_set_tier = yes }
+	else_if = { limit = { has_idea = SAU_syria_pipeline_t1 }
+		set_temp_variable = { SAU_syria_tier = 0 } SAU_syria_set_tier = yes
+		clr_country_flag = SAU_syria_pipeline_open
+		if = { limit = { has_idea = SAU_pipeline_empire } remove_ideas = SAU_pipeline_empire }
+	}
+}
+
+SAU_syria_tier_up = {
+	if = { limit = { has_idea = SAU_syria_pipeline_t1 } set_temp_variable = { SAU_syria_tier = 2 } SAU_syria_set_tier = yes }
+	else_if = { limit = { has_idea = SAU_syria_pipeline_t2 } set_temp_variable = { SAU_syria_tier = 3 } SAU_syria_set_tier = yes }
+}
+
+SAU_iraq_set_tier = {
+	if = { limit = { has_idea = SAU_iraq_pipeline_t1 } remove_ideas = SAU_iraq_pipeline_t1 }
+	if = { limit = { has_idea = SAU_iraq_pipeline_t2 } remove_ideas = SAU_iraq_pipeline_t2 }
+	if = { limit = { has_idea = SAU_iraq_pipeline_t3 } remove_ideas = SAU_iraq_pipeline_t3 }
+	if = { limit = { country_exists = IRQ } IRQ = {
+		if = { limit = { has_idea = SAU_pipeline_transit_IRQ_t1 } remove_ideas = SAU_pipeline_transit_IRQ_t1 }
+		if = { limit = { has_idea = SAU_pipeline_transit_IRQ_t2 } remove_ideas = SAU_pipeline_transit_IRQ_t2 }
+		if = { limit = { has_idea = SAU_pipeline_transit_IRQ_t3 } remove_ideas = SAU_pipeline_transit_IRQ_t3 }
+	} }
+	if = { limit = { check_variable = { SAU_iraq_tier = 1 } }
+		add_ideas = SAU_iraq_pipeline_t1
+		if = { limit = { country_exists = IRQ } IRQ = { add_ideas = SAU_pipeline_transit_IRQ_t1 } }
+	}
+	if = { limit = { check_variable = { SAU_iraq_tier = 2 } }
+		add_ideas = SAU_iraq_pipeline_t2
+		if = { limit = { country_exists = IRQ } IRQ = { add_ideas = SAU_pipeline_transit_IRQ_t2 } }
+	}
+	if = { limit = { check_variable = { SAU_iraq_tier = 3 } }
+		add_ideas = SAU_iraq_pipeline_t3
+		if = { limit = { country_exists = IRQ } IRQ = { add_ideas = SAU_pipeline_transit_IRQ_t3 } }
+	}
+}
+
+SAU_iraq_tier_down = {
+	if = { limit = { has_idea = SAU_iraq_pipeline_t3 } set_temp_variable = { SAU_iraq_tier = 2 } SAU_iraq_set_tier = yes }
+	else_if = { limit = { has_idea = SAU_iraq_pipeline_t2 } set_temp_variable = { SAU_iraq_tier = 1 } SAU_iraq_set_tier = yes }
+	else_if = { limit = { has_idea = SAU_iraq_pipeline_t1 }
+		set_temp_variable = { SAU_iraq_tier = 0 } SAU_iraq_set_tier = yes
+		clr_country_flag = SAU_iraq_pipeline_open
+		if = { limit = { has_idea = SAU_pipeline_empire } remove_ideas = SAU_pipeline_empire }
+		clr_country_flag = SAU_turkey_pipeline_open
+		if = { limit = { country_exists = TUR } TUR = {
+			if = { limit = { has_idea = SAU_pipeline_transit_TUR_t1 } remove_ideas = SAU_pipeline_transit_TUR_t1 }
+			if = { limit = { has_idea = SAU_pipeline_transit_TUR_t2 } remove_ideas = SAU_pipeline_transit_TUR_t2 }
+			if = { limit = { has_idea = SAU_pipeline_transit_TUR_t3 } remove_ideas = SAU_pipeline_transit_TUR_t3 }
+		} }
+	}
+}
+
+SAU_iraq_tier_up = {
+	if = { limit = { has_idea = SAU_iraq_pipeline_t1 } set_temp_variable = { SAU_iraq_tier = 2 } SAU_iraq_set_tier = yes }
+	else_if = { limit = { has_idea = SAU_iraq_pipeline_t2 } set_temp_variable = { SAU_iraq_tier = 3 } SAU_iraq_set_tier = yes }
+}
+
+# Partition of Yemen: North (Houthi) and South (recognised government), both guaranteed, neither may escalate
+SAU_partition_yemen_effect = {
+	if = { limit = { YEM = { has_war_with = HOU } } YEM = { white_peace = HOU } }
+	if = {
+		limit = { country_exists = HOU }
+		HOU = {
+			set_cosmetic_tag = HOU_north_yemen
+			transfer_state = 195
+			transfer_state = 197
+			transfer_state = 951
+			transfer_state = 952
+			transfer_state = 1077
+			transfer_state = 1103
+			transfer_state = 1104
+			set_country_flag = yemen_partition_north
+			if = { limit = { has_idea = faction_resistance_axis_member } remove_ideas = faction_resistance_axis_member }
+		}
+		if = { limit = { country_exists = PER } PER = { give_guarantee = HOU } }
+	}
+	if = {
+		limit = { country_exists = YEM }
+		YEM = {
+			set_cosmetic_tag = YEM_south_yemen
+			transfer_state = 198
+			transfer_state = 199
+			transfer_state = 194
+			transfer_state = 196
+			transfer_state = 200
+			transfer_state = 1105
+			set_country_flag = yemen_partition_south
+		}
+		SAU = { give_guarantee = YEM }
+	}
+}
