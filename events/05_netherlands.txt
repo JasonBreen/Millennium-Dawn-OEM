@@ -5155,9 +5155,10 @@ country_event = {
 
 	option = {
 		name = HOL_politics.05.b
+		trigger = { NOT = { has_country_flag = HOL_wilders_party_created } }
 		log = "[GetDateText]: [This.GetName]: HOL_politics.05.b executed"
 		hidden_effect = {
-			complete_national_focus = HOL_rita_verdonk
+			complete_national_focus = HOL_wilders_vvd
 			set_country_flag = VVD_Leader_Verdonk
 		}
 		ai_chance = {
@@ -5166,6 +5167,19 @@ country_event = {
 				factor = 4.0
 				is_historical_focus_on = no
 			}
+		}
+	}
+
+	option = {
+		name = HOL_politics.05.c
+		trigger = { has_country_flag = HOL_wilders_party_created }
+		log = "[GetDateText]: [This.GetName]: HOL_politics.05.c executed"
+		hidden_effect = {
+			complete_national_focus = HOL_rita_verdonk
+			set_country_flag = VVD_Leader_Verdonk
+		}
+		ai_chance = {
+			base = 20
 		}
 	}
 
@@ -5511,7 +5525,7 @@ country_event = {
 	option = {
 		name = HOL_politics.12.a
 		log = "[GetDateText]: [This.GetName]: HOL_politics.12.a executed"
-		set_country_flag = HOL_Wilders_Party_Created
+		set_country_flag = HOL_wilders_party_created
 		set_temp_variable = { party_index = 20 }
 		set_temp_variable = { party_popularity_increase = 0.04 }
 		set_temp_variable = { temp_outlook_increase = 0.04 }
@@ -8195,7 +8209,7 @@ country_event = {
 
 	option = {
 		name = HOL_politics.73.d #PVV
-		trigger = { has_country_flag = HOL_Wilders_Party_Created }
+		trigger = { has_country_flag = HOL_wilders_party_created }
 		log = "[GetDateText]: [Root.GetName]: HOL_politics.73.e executed"
 		set_temp_variable = { rul_party_temp = 20 }
 		set_temp_variable = { col_one = 1 }
@@ -8321,6 +8335,117 @@ country_event = {
 			remove_idea = HOL_afriforum2SAF
 			add_idea = HOL_afriforum3SAF
 		}
+	}
+
+}
+
+# --- Geert Wilders friction-with-VVD chain (flashpoints -> split roll) ---
+country_event = {
+	id = HOL_politics.78
+	title = HOL_politics.78.t
+	desc = HOL_politics.78.d
+	picture = GFX_hol_geert_wilders_splits_event_picture
+	is_triggered_only = yes
+	fire_only_once = yes
+
+	trigger = {
+		NOT = { has_country_flag = Pim_Fortuyn_Alive }
+		NOT = { has_country_flag = HOL_wilders_party_created }
+	}
+
+	immediate = {
+		set_variable = { HOL_wilders_split_chance = 10 }
+	}
+
+	option = {
+		name = HOL_politics.78.a
+		log = "[GetDateText]: [This.GetName]: HOL_politics.78.a executed"
+		add_political_power = 25
+		hidden_effect = { country_event = { id = HOL_politics.79 days = 60 random_days = 20 } }
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = HOL_politics.78.b
+		log = "[GetDateText]: [This.GetName]: HOL_politics.78.b executed"
+		add_stability = 0.02
+		add_to_variable = { HOL_wilders_split_chance = 30 }
+		hidden_effect = { country_event = { id = HOL_politics.79 days = 60 random_days = 20 } }
+		ai_chance = {
+			base = 50
+			modifier = { factor = 2 is_historical_focus_on = yes }
+		}
+	}
+
+}
+country_event = {
+	id = HOL_politics.79
+	title = HOL_politics.79.t
+	desc = HOL_politics.79.d
+	picture = GFX_hol_geert_wilders_splits_event_picture
+	is_triggered_only = yes
+
+	option = {
+		name = HOL_politics.79.a
+		log = "[GetDateText]: [This.GetName]: HOL_politics.79.a executed"
+		add_political_power = 25
+		hidden_effect = { country_event = { id = HOL_politics.80 days = 60 random_days = 20 } }
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = HOL_politics.79.b
+		log = "[GetDateText]: [This.GetName]: HOL_politics.79.b executed"
+		add_stability = 0.02
+		add_to_variable = { HOL_wilders_split_chance = 30 }
+		hidden_effect = { country_event = { id = HOL_politics.80 days = 60 random_days = 20 } }
+		ai_chance = {
+			base = 50
+			modifier = { factor = 2 is_historical_focus_on = yes }
+		}
+	}
+
+}
+country_event = {
+	id = HOL_politics.80
+	title = HOL_politics.80.t
+	desc = HOL_politics.80.d
+	picture = GFX_hol_geert_wilders_splits_event_picture
+	is_triggered_only = yes
+
+	option = {
+		name = HOL_politics.80.a
+		log = "[GetDateText]: [This.GetName]: HOL_politics.80.a executed"
+		add_political_power = 25
+		hidden_effect = { HOL_wilders_split_check = yes }
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = HOL_politics.80.b
+		log = "[GetDateText]: [This.GetName]: HOL_politics.80.b executed"
+		add_stability = 0.02
+		add_to_variable = { HOL_wilders_split_chance = 30 }
+		hidden_effect = { HOL_wilders_split_check = yes }
+		ai_chance = {
+			base = 50
+			modifier = { factor = 2 is_historical_focus_on = yes }
+		}
+	}
+
+}
+country_event = {
+	id = HOL_politics.81
+	title = HOL_politics.81.t
+	desc = HOL_politics.81.d
+	picture = GFX_hol_vvd_leadership_event_picture
+	is_triggered_only = yes
+
+	option = {
+		name = HOL_politics.81.a
+		log = "[GetDateText]: [This.GetName]: HOL_politics.81.a executed"
+		add_stability = 0.03
+		add_political_power = 50
 	}
 
 }

@@ -13776,6 +13776,8 @@ focus_tree = {
 
 		prerequisite = { focus = HOL_vvd_leadership }
 
+		allow_branch = { has_country_flag = HOL_wilders_party_created }
+
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
@@ -13976,6 +13978,220 @@ focus_tree = {
 	}
 
 	focus = {
+		id = HOL_wilders_vvd
+		icon = dutch_wilders
+
+		x = 6
+		y = 1
+		relative_position_id = HOL_vvd_leadership
+
+		cost = 1
+
+		prerequisite = { focus = HOL_vvd_leadership }
+
+		allow_branch = { NOT = { has_country_flag = HOL_wilders_party_created } }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			always = no
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_wilders_vvd"
+			if = {
+				limit = { has_country_leader = { name = "Geert Wilders" } }
+				add_political_power = 50
+			}
+			else = {
+				create_country_leader = {
+					name = "Geert Wilders"
+					picture = "geert_wilders.dds"
+					ideology = liberalism
+					traits = {
+						western_liberalism
+						career_politician
+					}
+				}
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_immigration_hardliner
+		icon = Generic_Enough
+
+		x = 0
+		y = 1
+		relative_position_id = HOL_wilders_vvd
+
+		cost = 8
+
+		prerequisite = { focus = HOL_wilders_vvd }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+			has_country_flag = VVD_Leader_Verdonk
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_immigration_hardliner"
+			decrease_migration_law = yes
+			add_political_power = 25
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_islam_integration_debate
+		icon = Dutch_Nationalism
+
+		x = -2
+		y = 2
+		relative_position_id = HOL_wilders_vvd
+
+		cost = 8
+
+		prerequisite = { focus = HOL_immigration_hardliner }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+			has_country_flag = VVD_Leader_Verdonk
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_islam_integration_debate"
+			add_stability = 0.03
+			add_political_power = 50
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_eurosceptic_vvd_wing
+		icon = dutch_european_flag
+
+		x = 0
+		y = 2
+		relative_position_id = HOL_wilders_vvd
+
+		cost = 8
+
+		prerequisite = { focus = HOL_immigration_hardliner }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+			has_country_flag = VVD_Leader_Verdonk
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_eurosceptic_vvd_wing"
+			set_temp_variable = { modify_eurosceptic = 0.05 }
+			set_temp_variable = { modify_eurosceptic_target = ROOT }
+			eurosceptic_change = yes
+			add_political_power = 25
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_security_first
+		icon = police_funding_bonus
+
+		x = 2
+		y = 2
+		relative_position_id = HOL_wilders_vvd
+
+		cost = 8
+
+		prerequisite = { focus = HOL_immigration_hardliner }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+			has_country_flag = VVD_Leader_Verdonk
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_security_first"
+			add_stability = 0.02
+			add_war_support = 0.03
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_wilders_dutch_sovereignty
+		icon = Dutch_Food_Valley
+
+		x = 0
+		y = 3
+		relative_position_id = HOL_wilders_vvd
+
+		cost = 5
+
+		prerequisite = { focus = HOL_islam_integration_debate }
+		prerequisite = { focus = HOL_eurosceptic_vvd_wing }
+		prerequisite = { focus = HOL_security_first }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+			has_country_flag = VVD_Leader_Verdonk
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_wilders_dutch_sovereignty"
+			set_temp_variable = { percent_change = 10 }
+			change_domestic_influence_percentage = yes
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
+		id = HOL_wilders_vvd_capstone
+		icon = dutch_wilders
+
+		x = 0
+		y = 4
+		relative_position_id = HOL_wilders_vvd
+
+		cost = 5
+
+		prerequisite = { focus = HOL_wilders_dutch_sovereignty }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+			has_country_leader = { name = "Geert Wilders" ruling_only = yes }
+			has_country_flag = { flag = VVD_Leader_Verdonk days > 365 }
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus HOL_wilders_vvd_capstone"
+			add_country_leader_trait = populist
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	focus = {
 		id = HOL_liberal_society
 		icon = liberalism
 
@@ -13988,6 +14204,7 @@ focus_tree = {
 		prerequisite = {
 			focus = HOL_mark_rutte
 			focus = HOL_rita_verdonk
+			focus = HOL_wilders_vvd
 		}
 
 		search_filters = { FOCUS_FILTER_POLITICAL }
@@ -19442,11 +19659,13 @@ focus_tree = {
 		prerequisite = { focus = HOL_un_mission_ehtiopia }
 		prerequisite = { focus = HOL_gay }
 
+		allow_branch = { has_country_flag = HOL_wilders_party_created }
+
 		search_filters = { FOCUS_FILTER_POLITICAL }
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 			has_country_flag = HOL_Purple_elections_done
 			has_country_flag = HOL_pim_dead
 		}
@@ -19508,7 +19727,7 @@ focus_tree = {
 		available = {
 			has_idea = EU_member
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 		}
 
 		bypass = {
@@ -19569,7 +19788,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 			NOT = { has_idea = EU_member }
 			has_idea = euro
 		}
@@ -19616,7 +19835,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 		}
 
 		completion_reward = {
@@ -19652,7 +19871,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 		}
 
 		completion_reward = {
@@ -19688,7 +19907,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 			50 = { compliance > 80 }
 		}
 
@@ -19721,7 +19940,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 			ISR = {
 				exists = yes
 				NOT = { has_war_with = FROM }
@@ -19766,7 +19985,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 			ISR = {
 				exists = yes
 				NOT = { has_war_with = FROM }
@@ -19810,7 +20029,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 			ISR = {
 				exists = yes
 				NOT = { has_war_with = FROM }
@@ -19858,7 +20077,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 		}
 
 		completion_reward = {
@@ -19898,7 +20117,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 		}
 
 		completion_reward = {
@@ -19932,7 +20151,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 		}
 
 		completion_reward = {
@@ -19966,7 +20185,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 		}
 
 		completion_reward = {
@@ -20000,7 +20219,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 			SAF = {
 				exists = yes
 				NOT = { has_war_with = FROM }
@@ -20036,7 +20255,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 			SAF = {
 				exists = yes
 				NOT = { has_war_with = FROM }
@@ -20077,7 +20296,7 @@ focus_tree = {
 
 		available = {
 			nationalist_right_wing_populists_are_in_power = yes
-			has_country_flag = HOL_Wilders_Party_Created
+			has_country_flag = HOL_wilders_party_created
 			SAF = {
 				exists = yes
 				NOT = { has_war_with = FROM }
