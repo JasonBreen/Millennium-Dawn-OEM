@@ -1,0 +1,911 @@
+### BENELUX SHARED FOCUS TREE (BEL / HOL / LUX) ###
+# Localisation in localisation/english/MD_focus_Benelux_shared_l_english.yml
+# Root is a joint_focus so it completes for all three members at once.
+# Economy / Science branches are shared_focus (each member completes for itself).
+# Unification branch is joint_focus (organiser drives it, members consent via events).
+
+shared_focus = {
+	id = BNL_benelux_consultation
+	icon = x
+	x = 40
+	y = 0
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_POLITICAL }
+
+	allow_branch = { is_benelux_country = yes }
+
+	available = {
+		benelux_cooperation_trigger = yes
+	}
+
+	joint_trigger = { is_benelux_country = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_benelux_consultation"
+		add_political_power = 50
+		add_stability = 0.02
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+##############################
+### A) ECONOMIC UNION (shared_focus)
+##############################
+
+shared_focus = {
+	id = BNL_customs_union
+	icon = x
+	relative_position_id = BNL_benelux_consultation
+	x = -6
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_ECONOMY }
+
+	prerequisite = { focus = BNL_benelux_consultation }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_customs_union"
+		BNL_ensure_economy_dynmod = yes
+		add_to_variable = { BNL_consumer_goods_factor = -0.03 }
+		increase_exports = yes
+		custom_effect_tooltip = BNL_customs_union_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_single_market
+	icon = x
+	relative_position_id = BNL_customs_union
+	x = 0
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_INDUSTRY }
+
+	prerequisite = { focus = BNL_customs_union }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_single_market"
+		BNL_ensure_economy_dynmod = yes
+		add_to_variable = { BNL_industrial_capacity_factory = 0.05 }
+		add_to_variable = { BNL_consumer_goods_factor = -0.02 }
+		custom_effect_tooltip = BNL_single_market_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_labour_mobility
+	icon = x
+	relative_position_id = BNL_single_market
+	x = -1
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_MANPOWER }
+
+	prerequisite = { focus = BNL_single_market }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_labour_mobility"
+		BNL_ensure_economy_dynmod = yes
+		add_to_variable = { BNL_production_speed_buildings_factor = 0.05 }
+		add_manpower = 5000
+		custom_effect_tooltip = BNL_labour_mobility_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_capital_integration
+	icon = x
+	relative_position_id = BNL_single_market
+	x = 1
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_ECONOMY }
+
+	prerequisite = { focus = BNL_single_market }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_capital_integration"
+		BNL_ensure_economy_dynmod = yes
+		add_to_variable = { BNL_production_factory_efficiency_gain_factor = 0.05 }
+		set_temp_variable = { treasury_change = 10 }
+		modify_treasury_effect = yes
+		custom_effect_tooltip = BNL_capital_integration_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_port_cooperation
+	icon = x
+	relative_position_id = BNL_labour_mobility
+	x = 0
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_INDUSTRY }
+
+	prerequisite = { focus = BNL_labour_mobility }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_port_cooperation"
+		BNL_ensure_economy_dynmod = yes
+		add_to_variable = { BNL_line_change_production_efficiency_factor = 0.10 }
+		add_to_variable = { BNL_production_speed_buildings_factor = 0.03 }
+		custom_effect_tooltip = BNL_port_cooperation_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_freight_corridors
+	icon = x
+	relative_position_id = BNL_capital_integration
+	x = 0
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_INDUSTRY }
+
+	prerequisite = { focus = BNL_capital_integration }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_freight_corridors"
+		BNL_ensure_economy_dynmod = yes
+		add_to_variable = { BNL_production_speed_buildings_factor = 0.03 }
+		add_to_variable = { BNL_line_change_production_efficiency_factor = 0.05 }
+		custom_effect_tooltip = BNL_freight_corridors_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_north_sea_wind
+	icon = x
+	relative_position_id = BNL_port_cooperation
+	x = 0
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_INDUSTRY }
+
+	prerequisite = { focus = BNL_port_cooperation }
+
+	mutually_exclusive = { focus = BNL_gas_hub }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_north_sea_wind"
+		one_random_renewable_energy_infra = yes
+		BNL_ensure_economy_dynmod = yes
+		add_to_variable = { BNL_production_speed_buildings_factor = 0.03 }
+		custom_effect_tooltip = BNL_north_sea_wind_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_gas_hub
+	icon = x
+	relative_position_id = BNL_freight_corridors
+	x = 0
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_INDUSTRY }
+
+	prerequisite = { focus = BNL_freight_corridors }
+
+	mutually_exclusive = { focus = BNL_north_sea_wind }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_gas_hub"
+		one_random_fossil_fuel_powerplant = yes
+		BNL_ensure_economy_dynmod = yes
+		add_to_variable = { BNL_production_speed_buildings_factor = 0.03 }
+		custom_effect_tooltip = BNL_gas_hub_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_economic_union_treaty
+	icon = x
+	relative_position_id = BNL_north_sea_wind
+	x = 1
+	y = 1
+	cost = 10
+
+	search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_INDUSTRY }
+
+	prerequisite = {
+		focus = BNL_north_sea_wind
+		focus = BNL_gas_hub
+	}
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_economic_union_treaty"
+		BNL_ensure_economy_dynmod = yes
+		add_to_variable = { BNL_industrial_capacity_factory = 0.05 }
+		add_to_variable = { BNL_consumer_goods_factor = -0.03 }
+		add_to_variable = { BNL_production_factory_efficiency_gain_factor = 0.05 }
+		if = {
+			limit = { NOT = { has_global_flag = BNL_economic_union_treaty_counted } }
+			set_global_flag = BNL_economic_union_treaty_counted
+			every_country = {
+				limit = { is_benelux_country = yes }
+				add_to_variable = { BNL_integration = 15 }
+			}
+			custom_effect_tooltip = BNL_integration_increased_tt
+		}
+		custom_effect_tooltip = BNL_economic_union_treaty_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+##############################
+### B) SCIENCE & INNOVATION (shared_focus)
+##############################
+
+shared_focus = {
+	id = BNL_research_cooperation
+	icon = x
+	relative_position_id = BNL_benelux_consultation
+	x = 6
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_RESEARCH }
+
+	prerequisite = { focus = BNL_benelux_consultation }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_research_cooperation"
+		BNL_ensure_science_dynmod = yes
+		add_to_variable = { BNL_research_speed_factor = 0.03 }
+		custom_effect_tooltip = BNL_research_cooperation_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_university_network
+	icon = x
+	relative_position_id = BNL_research_cooperation
+	x = -1
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_RESEARCH }
+
+	prerequisite = { focus = BNL_research_cooperation }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_university_network"
+		BNL_ensure_science_dynmod = yes
+		add_to_variable = { BNL_research_speed_factor = 0.03 }
+		custom_effect_tooltip = BNL_university_network_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_hightech_triangle
+	icon = x
+	relative_position_id = BNL_research_cooperation
+	x = 1
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_RESEARCH FOCUS_FILTER_INDUSTRY }
+
+	prerequisite = { focus = BNL_research_cooperation }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_hightech_triangle"
+		BNL_ensure_science_dynmod = yes
+		add_to_variable = { BNL_research_speed_factor = 0.03 }
+		add_tech_bonus = {
+			name = BNL_hightech_triangle
+			bonus = 0.15
+			uses = 1
+			category = CAT_computing_tech
+		}
+		custom_effect_tooltip = BNL_hightech_triangle_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_space_cooperation
+	icon = x
+	relative_position_id = BNL_university_network
+	x = 0
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_RESEARCH }
+
+	prerequisite = { focus = BNL_university_network }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_space_cooperation"
+		BNL_ensure_science_dynmod = yes
+		add_to_variable = { BNL_research_speed_factor = 0.03 }
+		custom_effect_tooltip = BNL_space_cooperation_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_nuclear_research
+	icon = x
+	relative_position_id = BNL_hightech_triangle
+	x = 0
+	y = 1
+	cost = 8
+
+	search_filters = { FOCUS_FILTER_RESEARCH }
+
+	prerequisite = { focus = BNL_hightech_triangle }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_nuclear_research"
+		BNL_ensure_science_dynmod = yes
+		add_to_variable = { BNL_research_speed_factor = 0.02 }
+		add_tech_bonus = {
+			name = BNL_nuclear_research
+			bonus = 0.15
+			uses = 2
+			category = CAT_nuclear_reactors
+		}
+		custom_effect_tooltip = BNL_nuclear_research_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+shared_focus = {
+	id = BNL_innovation_area
+	icon = x
+	relative_position_id = BNL_space_cooperation
+	x = 1
+	y = 1
+	cost = 10
+
+	search_filters = { FOCUS_FILTER_RESEARCH }
+
+	prerequisite = {
+		focus = BNL_space_cooperation
+		focus = BNL_nuclear_research
+	}
+
+	available = { benelux_cooperation_trigger = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_innovation_area"
+		BNL_ensure_science_dynmod = yes
+		add_to_variable = { BNL_research_speed_factor = 0.05 }
+		add_research_slot = 1
+		if = {
+			limit = { NOT = { has_global_flag = BNL_innovation_area_counted } }
+			set_global_flag = BNL_innovation_area_counted
+			every_country = {
+				limit = { is_benelux_country = yes }
+				add_to_variable = { BNL_integration = 15 }
+			}
+			custom_effect_tooltip = BNL_integration_increased_tt
+		}
+		custom_effect_tooltip = BNL_innovation_area_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+##############################
+### C) POLITICAL UNION / UNIFICATION (joint_focus)
+##############################
+
+joint_focus = {
+	id = BNL_benelux_parliament
+	icon = x
+	relative_position_id = BNL_benelux_consultation
+	x = 0
+	y = 1
+	cost = 10
+
+	search_filters = { FOCUS_FILTER_POLITICAL }
+
+	prerequisite = { focus = BNL_benelux_consultation }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	joint_trigger = { is_benelux_country = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_benelux_parliament"
+		if = {
+			limit = { NOT = { has_global_flag = BNL_benelux_parliament_counted } }
+			set_global_flag = BNL_benelux_parliament_counted
+			every_country = {
+				limit = { is_benelux_country = yes }
+				BNL_ensure_union_dynmod = yes
+				add_to_variable = { BNL_political_power_factor = 0.05 }
+				add_to_variable = { BNL_integration = 20 }
+			}
+			custom_effect_tooltip = BNL_integration_increased_tt
+		}
+		custom_effect_tooltip = BNL_benelux_parliament_tt
+	}
+
+	completion_reward_joint_originator = {
+		add_political_power = -50
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+joint_focus = {
+	id = BNL_open_borders
+	icon = x
+	relative_position_id = BNL_benelux_parliament
+	x = -1
+	y = 1
+	cost = 10
+
+	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_STABILITY }
+
+	prerequisite = { focus = BNL_benelux_parliament }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	joint_trigger = { is_benelux_country = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_open_borders"
+		if = {
+			limit = { NOT = { has_global_flag = BNL_open_borders_counted } }
+			set_global_flag = BNL_open_borders_counted
+			every_country = {
+				limit = { is_benelux_country = yes }
+				BNL_ensure_union_dynmod = yes
+				add_to_variable = { BNL_stability_factor = 0.03 }
+				add_to_variable = { BNL_integration = 15 }
+			}
+			custom_effect_tooltip = BNL_integration_increased_tt
+		}
+		custom_effect_tooltip = BNL_open_borders_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+joint_focus = {
+	id = BNL_benelux_court
+	icon = x
+	relative_position_id = BNL_benelux_parliament
+	x = 1
+	y = 1
+	cost = 10
+
+	search_filters = { FOCUS_FILTER_POLITICAL }
+
+	prerequisite = { focus = BNL_benelux_parliament }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	joint_trigger = { is_benelux_country = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_benelux_court"
+		if = {
+			limit = { NOT = { has_global_flag = BNL_benelux_court_counted } }
+			set_global_flag = BNL_benelux_court_counted
+			every_country = {
+				limit = { is_benelux_country = yes }
+				BNL_ensure_union_dynmod = yes
+				add_to_variable = { BNL_political_power_factor = 0.05 }
+				add_to_variable = { BNL_integration = 20 }
+			}
+			custom_effect_tooltip = BNL_integration_increased_tt
+		}
+		custom_effect_tooltip = BNL_benelux_court_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+joint_focus = {
+	id = BNL_shared_foreign_policy
+	icon = x
+	relative_position_id = BNL_benelux_court
+	x = 0
+	y = 1
+	cost = 10
+
+	search_filters = { FOCUS_FILTER_POLITICAL FOCUS_FILTER_DIPLOMACY }
+
+	prerequisite = { focus = BNL_benelux_court }
+
+	available = { benelux_cooperation_trigger = yes }
+
+	joint_trigger = { is_benelux_country = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_shared_foreign_policy"
+		if = {
+			limit = { NOT = { has_global_flag = BNL_shared_foreign_policy_counted } }
+			set_global_flag = BNL_shared_foreign_policy_counted
+			every_country = {
+				limit = { is_benelux_country = yes }
+				add_to_variable = { BNL_integration = 15 }
+			}
+			custom_effect_tooltip = BNL_integration_increased_tt
+		}
+		add_political_power = 50
+		custom_effect_tooltip = BNL_shared_foreign_policy_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+joint_focus = {
+	id = BNL_political_union
+	icon = x
+	relative_position_id = BNL_open_borders
+	x = 1
+	y = 2
+	cost = 10
+
+	search_filters = { FOCUS_FILTER_POLITICAL }
+
+	prerequisite = { focus = BNL_open_borders }
+	prerequisite = { focus = BNL_benelux_court }
+
+	available = {
+		benelux_cooperation_trigger = yes
+		has_completed_focus = BNL_shared_foreign_policy
+	}
+
+	joint_trigger = { is_benelux_country = yes }
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_political_union"
+		if = {
+			limit = { NOT = { has_global_flag = BNL_political_union_counted } }
+			set_global_flag = BNL_political_union_counted
+			every_country = {
+				limit = { is_benelux_country = yes }
+				BNL_ensure_union_dynmod = yes
+				add_to_variable = { BNL_political_power_factor = 0.05 }
+				add_to_variable = { BNL_stability_factor = 0.03 }
+				add_to_variable = { BNL_integration = 30 }
+			}
+			custom_effect_tooltip = BNL_integration_increased_tt
+		}
+		custom_effect_tooltip = BNL_political_union_tt
+	}
+
+	completion_reward_joint_originator = {
+		add_political_power = -75
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+joint_focus = {
+	id = BNL_treaty_of_union
+	icon = x
+	relative_position_id = BNL_political_union
+	x = 0
+	y = 1
+	cost = 10
+
+	search_filters = { FOCUS_FILTER_POLITICAL }
+
+	prerequisite = { focus = BNL_political_union }
+
+	available = {
+		benelux_cooperation_trigger = yes
+		custom_trigger_tooltip = {
+			tooltip = BNL_integration_requirement_tt
+			check_variable = { BNL_integration > 100 }
+		}
+	}
+
+	joint_trigger = { is_benelux_country = yes }
+
+	bypass = {
+		has_country_flag = is_HBL
+	}
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus BNL_treaty_of_union"
+		custom_effect_tooltip = BNL_treaty_of_union_tt
+	}
+
+	completion_reward_joint_originator = {
+		every_other_country = {
+			limit = { is_benelux_country = yes }
+			country_event = { id = benelux.1 days = 1 }
+		}
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
+		effect_tooltip = {
+			custom_effect_tooltip = BNL_treaty_of_union_accept_tt
+		}
+		custom_effect_tooltip = BNL_form_benelux_tt
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+##############################
+### D) MILITARY / DEFENCE COOPERATION (moved from 05_netherlands.txt, HOL-led)
+##############################
+
+focus = {
+	id = HOL_qra_benelux
+	icon = Benelux_Air_Defense_Treaty
+
+	relative_position_id = BNL_benelux_consultation
+	x = 13
+	y = 1
+
+	cost = 8
+
+	prerequisite = { focus = BNL_benelux_consultation }
+
+	allow_branch = { original_tag = HOL }
+
+	search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+	available = {
+		BEL = {
+			exists = yes
+			NOT = { has_war_with = HOL }
+			has_opinion = {
+				target = HOL
+				value > 80
+			}
+		}
+		LUX = {
+			exists = yes
+			NOT = { has_war_with = HOL }
+			has_opinion = {
+				target = HOL
+				value > 80
+			}
+		}
+	}
+
+	bypass = {
+		OR = {
+			NOT = { country_exists = BEL }
+			NOT = { country_exists = LUX }
+		}
+	}
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus HOL_qra_benelux"
+		BEL = { country_event = HOL_military.008 }
+		newline = yes
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
+		effect_tooltip = {
+			add_ideas = HOL_benelux_air1
+		}
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+focus = {
+	id = HOL_benecc
+	icon = Dutch_BENECC
+
+	x = 1
+	y = 1
+	relative_position_id = HOL_qra_benelux
+
+	cost = 8
+
+	prerequisite = { focus = HOL_qra_benelux }
+
+	search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+	available = {
+		has_idea = HOL_benelux_air1
+		BEL = {
+			exists = yes
+			NOT = { has_war_with = HOL }
+			has_opinion = {
+				target = HOL
+				value > 80
+			}
+		}
+		LUX = {
+			exists = yes
+			NOT = { has_war_with = HOL }
+			has_opinion = {
+				target = HOL
+				value > 80
+			}
+		}
+	}
+
+	bypass = {
+		OR = {
+			NOT = { country_exists = BEL }
+			NOT = { country_exists = LUX }
+		}
+	}
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus HOL_benecc"
+		BEL = { country_event = HOL_military.015 }
+		newline = yes
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
+		effect_tooltip = {
+			swap_ideas = {
+				remove_idea = HOL_benelux_air1
+				add_idea = HOL_benelux_air2
+			}
+		}
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+focus = {
+	id = HOL_bnlc
+	icon = Dutch_BNLC
+
+	x = 2
+	y = 2
+	relative_position_id = HOL_qra_benelux
+
+	cost = 8
+
+	prerequisite = { focus = HOL_benecc }
+
+	search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+	available = {
+		has_idea = HOL_benelux_air2
+		BEL = {
+			exists = yes
+			NOT = { has_war_with = HOL }
+			has_opinion = {
+				target = HOL
+				value > 80
+			}
+		}
+		LUX = {
+			exists = yes
+			NOT = { has_war_with = HOL }
+			has_opinion = {
+				target = HOL
+				value > 80
+			}
+		}
+	}
+
+	bypass = {
+		OR = {
+			NOT = { country_exists = BEL }
+			NOT = { country_exists = LUX }
+		}
+	}
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus HOL_bnlc"
+		BEL = { country_event = HOL_military.022 }
+		newline = yes
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
+		effect_tooltip = {
+			swap_ideas = {
+				remove_idea = HOL_benelux_air2
+				add_idea = HOL_benelux_air3
+			}
+		}
+	}
+
+	ai_will_do = { base = 1 }
+}
+
+focus = {
+	id = HOL_airbus_mrtt
+	icon = Generic_Transport_Aircraft
+
+	x = -1
+	y = 1
+	relative_position_id = HOL_qra_benelux
+
+	cost = 8
+
+	prerequisite = { focus = HOL_qra_benelux }
+
+	search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+	available = {
+		BEL = {
+			exists = yes
+			NOT = { has_war_with = HOL }
+			has_opinion = {
+				target = HOL
+				value > 80
+			}
+		}
+		LUX = {
+			exists = yes
+			NOT = { has_war_with = HOL }
+			has_opinion = {
+				target = HOL
+				value > 80
+			}
+		}
+	}
+
+	bypass = {
+		OR = {
+			NOT = { country_exists = BEL }
+			NOT = { country_exists = LUX }
+		}
+	}
+
+	completion_reward = {
+		log = "[GetDateText]: [Root.GetName]: Focus HOL_airbus_mrtt"
+		HOL = { country_event = { id = HOL_military.029 days = 1 } }
+		BEL = { country_event = { id = HOL_military.030 days = 1 } }
+		LUX = { country_event = { id = HOL_military.031 days = 1 } }
+	}
+
+	ai_will_do = { base = 1 }
+}
