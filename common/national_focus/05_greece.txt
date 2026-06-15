@@ -1467,6 +1467,36 @@ focus_tree = {
 		ai_will_do = { base = 10 }
 	}
 	focus = {
+		id = GRE_integrated_air_defense
+		icon = air_defense
+
+		x = 1
+		y = 3
+		relative_position_id = GRE_patriot_air_defense
+
+		cost = 10
+
+		prerequisite = { focus = GRE_lora_ballistic }
+		prerequisite = { focus = GRE_grypas_ucav }
+
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_integrated_air_defense"
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_airforce_modifier
+			}
+			add_to_variable = { GRE_static_anti_air_damage_factor_airforce = 0.10 tooltip = static_anti_air_damage_factor_tt }
+			add_to_variable = { GRE_static_anti_air_hit_chance_factor_airforce = 0.10 tooltip = static_anti_air_hit_chance_factor_tt }
+			add_to_variable = { GRE_air_defence_factor_airforce = 0.10 tooltip = air_defence_factor_tt }
+			add_to_variable = { GRE_air_detection_airforce = 0.10 tooltip = air_detection_tt }
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	focus = {
 		id = GRE_lora_ballistic
 		icon = rocketry
 
@@ -1883,6 +1913,37 @@ focus_tree = {
 	}
 
 	focus = {
+		id = GRE_eastern_med_supremacy
+		icon = focus_PER_persian_gulf_fleet
+
+		x = 1
+		y = 3
+		relative_position_id = GRE_eastern_med_doctrine
+
+		cost = 10
+
+		prerequisite = { focus = GRE_eastern_med_taskforce }
+
+		search_filters = { FOCUS_FILTER_MILITARY_LAWS }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_eastern_med_supremacy"
+			add_ideas = GRE_drydock_modernization
+			newline = yes
+			custom_effect_tooltip = {
+				localization_key = modifies_dynamic_modifier_tt
+				MODIFIER = GRE_navy_modifier
+			}
+			add_to_variable = { GRE_navy_max_range_factor_navy = 0.10 tooltip = navy_max_range_factor_tt }
+			add_to_variable = { GRE_shore_bombardment_bonus_navy = 0.15 tooltip = shore_bombardment_bonus_tt }
+			add_to_variable = { GRE_naval_damage_factor_navy = 0.10 tooltip = naval_damage_factor_tt }
+			add_to_variable = { GRE_industrial_capacity_dockyard_navy = 0.05 tooltip = industrial_capacity_dockyard_tt }
+		}
+
+		ai_will_do = { base = 10 }
+	}
+
+	focus = {
 		id = GRE_roussen_attack_craft
 		icon = arm_Reformador
 
@@ -1956,6 +2017,7 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus GRE_souda_bay_expansion"
+			add_ideas = GRE_port_modernization
 			144 = {
 				add_building_construction = {
 					type = dockyard
@@ -4219,6 +4281,418 @@ focus_tree = {
 				factor = 2
 				has_an_energy_deficit = yes
 			}
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = GRE_revive_merchant_fleet
+		icon = generic_ship2
+
+		x = 2
+		y = 6
+		relative_position_id = GRE_hellenic_economy
+
+		cost = 5
+
+		prerequisite = { focus = GRE_hellenic_economy }
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_revive_merchant_fleet"
+			add_ideas = GRE_merchant_fleet
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 5 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -5 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = GRE_modernize_ports
+		icon = christ_greece_port
+
+		x = -2
+		y = 1
+		relative_position_id = GRE_revive_merchant_fleet
+
+		cost = 7
+
+		prerequisite = { focus = GRE_revive_merchant_fleet }
+
+		search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_INDUSTRY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_modernize_ports"
+			add_ideas = GRE_transshipment_hub
+			increase_economic_growth = yes
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 6 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -6 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = GRE_maritime_services
+		icon = economic_it
+
+		x = 2
+		y = 1
+		relative_position_id = GRE_revive_merchant_fleet
+
+		cost = 7
+
+		prerequisite = { focus = GRE_revive_merchant_fleet }
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_maritime_services"
+			add_ideas = GRE_maritime_services_idea
+			increase_economic_growth = yes
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 6 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -6 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = GRE_global_shipping_power
+		icon = economic_prosperity2
+
+		x = 0
+		y = 2
+		relative_position_id = GRE_revive_merchant_fleet
+
+		cost = 8
+
+		prerequisite = { focus = GRE_modernize_ports }
+		prerequisite = { focus = GRE_maritime_services }
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_global_shipping_power"
+			increase_economic_growth = yes
+			custom_effect_tooltip = GRE_global_shipping_power_event_TT
+			country_event = { id = greece.640 days = 2 }
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = GRE_tourism_boom
+		icon = starttourismprojectscuba
+
+		x = 7
+		y = 6
+		relative_position_id = GRE_hellenic_economy
+
+		cost = 5
+
+		prerequisite = { focus = GRE_hellenic_economy }
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_tourism_boom"
+			add_ideas = GRE_tourism_industry
+			country_event = { id = greece.641 days = 3 }
+			custom_effect_tooltip = GRE_tourism_boom_event_TT
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 5 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -5 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = GRE_mass_tourism
+		icon = consumer_goods
+
+		x = -1
+		y = 1
+		relative_position_id = GRE_tourism_boom
+
+		cost = 6
+
+		prerequisite = { focus = GRE_tourism_boom }
+		mutually_exclusive = { focus = GRE_premium_tourism }
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_mass_tourism"
+			add_ideas = GRE_mass_tourism_idea
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = GRE_premium_tourism
+		icon = economic_prosperity
+
+		x = 1
+		y = 1
+		relative_position_id = GRE_tourism_boom
+
+		cost = 6
+
+		prerequisite = { focus = GRE_tourism_boom }
+		mutually_exclusive = { focus = GRE_mass_tourism }
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_premium_tourism"
+			add_ideas = GRE_premium_tourism_idea
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = GRE_diaspora_remittances
+		icon = generic_banks
+
+		x = -2
+		y = 6
+		relative_position_id = GRE_hellenic_economy
+
+		cost = 5
+
+		prerequisite = { focus = GRE_hellenic_economy }
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_diaspora_remittances"
+			add_ideas = GRE_remittance_inflows
+			country_event = { id = greece.642 days = 3 }
+			custom_effect_tooltip = GRE_diaspora_remittances_event_TT
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = GRE_reverse_brain_drain
+		icon = scientific_exchange
+
+		x = 0
+		y = 1
+		relative_position_id = GRE_diaspora_remittances
+
+		cost = 6
+
+		prerequisite = { focus = GRE_diaspora_remittances }
+
+		search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_RESEARCH }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_reverse_brain_drain"
+			add_ideas = GRE_returning_talent
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 6 }
+				GRE_defer_payment = yes
+			}
+			else = {
+				set_temp_variable = { treasury_change = -6 }
+				modify_treasury_effect = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = GRE_eu_cohesion_funds
+		icon = United_States_of_Europe
+
+		x = -6
+		y = 6
+		relative_position_id = GRE_hellenic_economy
+
+		cost = 5
+
+		prerequisite = { focus = GRE_hellenic_economy }
+
+		available = {
+			has_idea = EU_member
+		}
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_eu_cohesion_funds"
+			add_ideas = GRE_eu_structural_funds
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = GRE_recovery_resilience_facility
+		icon = economic_prosperity2
+
+		x = -1
+		y = 1
+		relative_position_id = GRE_eu_cohesion_funds
+
+		cost = 6
+
+		prerequisite = { focus = GRE_eu_cohesion_funds }
+
+		available = {
+			has_idea = EU_member
+		}
+
+		search_filters = { FOCUS_FILTER_ECONOMY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_recovery_resilience_facility"
+			add_ideas = GRE_eu_recovery_facility
+			increase_economic_growth = yes
+			country_event = { id = greece.643 days = 3 }
+			custom_effect_tooltip = GRE_recovery_facility_event_TT
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
+	}
+
+	focus = {
+		id = GRE_infrastructure_cofinancing
+		icon = focus_generic_improve_roads
+
+		x = 1
+		y = 1
+		relative_position_id = GRE_eu_cohesion_funds
+
+		cost = 7
+
+		prerequisite = { focus = GRE_eu_cohesion_funds }
+
+		available = {
+			has_idea = EU_member
+		}
+
+		search_filters = { FOCUS_FILTER_ECONOMY FOCUS_FILTER_INDUSTRY }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus GRE_infrastructure_cofinancing"
+			if = { limit = { has_country_flag = GRE_defer_payments_flag }
+				set_temp_variable = { skip_payment = 1 }
+				set_temp_variable = { debt_change = 7.5 }
+				GRE_defer_payment = yes
+			}
+			one_random_infrastructure = yes
+		}
+
+		ai_will_do = {
+			base = 5
 			modifier = {
 				factor = 0
 				has_active_mission = bankruptcy_incoming_collapse
@@ -8830,6 +9304,32 @@ focus_tree = {
 
 		ai_will_do = { base = 10 }
 	}
+	focus = {
+		id = GRE_strategic_autonomy
+		icon = neutrality
+
+		x = -6
+		y = 1
+		relative_position_id = GRE_foreign_relations
+
+		cost = 6.8
+
+		prerequisite = { focus = GRE_foreign_relations }
+		mutually_exclusive = { focus = GRE_eastern_alignment }
+		mutually_exclusive = { focus = GRE_western_alignment }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: GRE_strategic_autonomy"
+			add_ideas = GRE_strategic_autonomy_idea
+			custom_effect_tooltip = GRE_strategic_autonomy_event_TT
+			country_event = { id = greece.650 days = 3 }
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
 	focus = {
 		id = GRE_eastern_alignment
 		icon = eastern_alignment
