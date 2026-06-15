@@ -1362,6 +1362,144 @@ country_event = {
 	}
 }
 
+# Cyprus offered reunification under the Hellenic confederation
+country_event = {
+	id = greece.620
+	title = greece.620.t
+	desc = greece.620.d
+	picture = GFX_trade_agreement
+	is_triggered_only = yes
+
+	# Accept reunification
+	option = {
+		name = greece.620.a
+		log = "[GetDateText]: [This.GetName]: greece.620.a executed"
+		FROM = {
+			transfer_state = 145
+			add_state_core = 145
+		}
+		if = {
+			limit = { FROM = { owns_state = 145 owns_state = 146 } }
+			news_event = Turkey.88
+		}
+		ai_chance = {
+			base = 80
+		}
+	}
+
+	# Remain independent
+	option = {
+		name = greece.620.b
+		log = "[GetDateText]: [This.GetName]: greece.620.b executed"
+		add_opinion_modifier = { target = FROM modifier = small_decrease }
+		ai_chance = {
+			base = 20
+		}
+	}
+}
+
+# Northern Cyprus offered reunification under the Hellenic confederation
+country_event = {
+	id = greece.621
+	title = greece.621.t
+	desc = greece.621.d
+	picture = GFX_trade_agreement
+	is_triggered_only = yes
+
+	# Accept reunification
+	option = {
+		name = greece.621.a
+		log = "[GetDateText]: [This.GetName]: greece.621.a executed"
+		FROM = {
+			transfer_state = 146
+			add_state_core = 146
+		}
+		if = {
+			limit = { FROM = { owns_state = 145 owns_state = 146 } }
+			news_event = Turkey.88
+		}
+		ai_chance = {
+			base = 70
+		}
+	}
+
+	# Remain separate
+	option = {
+		name = greece.621.b
+		log = "[GetDateText]: [This.GetName]: greece.621.b executed"
+		add_opinion_modifier = { target = FROM modifier = small_decrease }
+		ai_chance = {
+			base = 30
+		}
+	}
+}
+
+# Greece petitions Turkey for support with its housing crisis
+country_event = {
+	id = greece.630
+	title = greece.630.t
+	desc = greece.630.d
+	picture = GFX_GRE_generic
+	is_triggered_only = yes
+
+	# Extend support
+	option = {
+		name = greece.630.a
+		log = "[GetDateText]: [This.GetName]: greece.630.a executed"
+		add_opinion_modifier = { target = FROM modifier = medium_increase }
+		FROM = {
+			add_opinion_modifier = { target = ROOT modifier = medium_increase }
+			country_event = { id = greece.631 days = 1 }
+		}
+		ai_chance = {
+			base = 6
+		}
+	}
+
+	# Decline to intervene
+	option = {
+		name = greece.630.b
+		log = "[GetDateText]: [This.GetName]: greece.630.b executed"
+		FROM = { country_event = { id = greece.632 days = 1 } }
+		ai_chance = {
+			base = 4
+		}
+	}
+}
+
+# Turkey extends housing support
+country_event = {
+	id = greece.631
+	title = greece.631.t
+	desc = greece.631.d
+	picture = GFX_GRE_generic
+	is_triggered_only = yes
+
+	option = {
+		name = greece.631.a
+		log = "[GetDateText]: [This.GetName]: greece.631.a executed"
+		modify_timed_idea = {
+			idea = GRE_homelessness_crisis_idea
+			days = -40
+		}
+		add_stability = 0.01
+	}
+}
+
+# Turkey declines to help
+country_event = {
+	id = greece.632
+	title = greece.632.t
+	desc = greece.632.d
+	picture = GFX_GRE_generic
+	is_triggered_only = yes
+
+	option = {
+		name = greece.632.a
+		log = "[GetDateText]: [This.GetName]: greece.632.a executed"
+	}
+}
+
 country_event = {
 	id = greece_military.01
 	title = greece_military.01.t
@@ -1506,6 +1644,10 @@ country_event = {
 
 		ai_chance = {
 			base = 1
+			modifier = {
+				factor = 3
+				has_opinion = { target = FROM value < -25 }
+			}
 		}
 	}
 
@@ -1523,6 +1665,14 @@ country_event = {
 
 		ai_chance = {
 			base = 100
+			modifier = {
+				factor = 2
+				has_opinion = { target = FROM value > 50 }
+			}
+			modifier = {
+				factor = 0.5
+				has_opinion = { target = FROM value < 0 }
+			}
 		}
 	}
 }
@@ -2661,7 +2811,6 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: greece.537.a executed"
 		add_opinion_modifier = { target = CHI modifier = declaration_of_friendship }
 		set_temp_variable = { percent_change = 5 }
-		set_temp_variable = { tag_index = GRE }
 		set_temp_variable = { influence_target = CHI }
 		change_influence_percentage = yes
 		add_to_variable = { GRE_eastern_alignment_score = 1 }
@@ -4245,10 +4394,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: greece.702.b executed"
 		set_temp_variable = { tension_change = 5 }
 		GRE_change_aegean_tension = yes
-		random_list = {
-			75 = { }
-			25 = { country_event = { id = greece.705 days = 5 } }
-		}
+		random = { chance = 25 country_event = { id = greece.705 days = 5 } }
 		hidden_effect = {
 			if = {
 				limit = { has_country_flag = GRE_assertive_patrols country_exists = TUR }
@@ -4306,10 +4452,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: greece.704.b executed"
 		set_temp_variable = { tension_change = 5 }
 		GRE_change_aegean_tension = yes
-		random_list = {
-			85 = { }
-			15 = { add_threat = 0.02 }
-		}
+		random = { chance = 15 add_threat = 0.02 }
 		ai_chance = { base = 50 }
 	}
 }
