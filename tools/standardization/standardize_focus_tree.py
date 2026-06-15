@@ -13,28 +13,7 @@ import time
 from datetime import datetime
 
 from common_utils import compact_icon, compact_search_filters
-
-
-def log_message(level: str, message: str, verbose: bool = False):
-    """Log a message with timestamp"""
-    if level == "DEBUG" and not verbose:
-        return
-
-    timestamp = datetime.now().strftime("%H:%M:%S")
-
-    colors = {
-        "SUCCESS": "\033[92m",  # Green
-        "INFO": "\033[94m",  # Blue
-        "DEBUG": "\033[90m",  # Gray
-        "WARNING": "\033[93m",  # Yellow
-        "ERROR": "\033[91m",  # Red
-    }
-    reset_color = "\033[0m"
-
-    color = colors.get(level, "")
-
-    formatted_message = f"{color}[{timestamp}] {level}: {message}{reset_color}"
-    print(formatted_message, file=sys.stderr)
+from shared_utils import compact_block, extract_block, log_message
 
 
 def is_empty_block(block_lines):
@@ -182,37 +161,6 @@ def extract_focus_properties(focus_lines):
     return props
 
 
-def extract_block(lines, start_index):
-    """Extract a multi-line block by counting braces"""
-    if start_index >= len(lines):
-        return [], start_index
-
-    block_lines = []
-    brace_count = 0
-    i = start_index
-
-    while i < len(lines):
-        line = lines[i]
-        block_lines.append(line)
-
-        line_no_comment = line.split("#")[
-            0
-        ]  # Strip inline comments before counting braces
-        brace_count += line_no_comment.count("{") - line_no_comment.count("}")
-
-        if brace_count == 0 and "{" in lines[start_index]:
-            # We've closed all braces, block is complete
-            i += 1
-            break
-        elif brace_count < 0:
-            # More closing than opening braces - malformed
-            break
-
-        i += 1
-
-    return block_lines, i  # Return the position AFTER the block (not i-1)
-
-
 def clean_block_lines(block_lines):
     """Remove trailing blank lines from a block and return cleaned lines"""
     if not block_lines:
@@ -222,20 +170,6 @@ def clean_block_lines(block_lines):
         block_lines.pop()
 
     return block_lines
-
-
-def compact_block(block_lines):
-    """Completely compact a block by removing all internal blank lines"""
-    if not block_lines:
-        return block_lines
-
-    compacted = []
-    for line in block_lines:
-        stripped = line.strip()
-        if stripped:
-            compacted.append(line.rstrip())
-
-    return compacted
 
 
 def _fix_log_id(line: str, focus_id: str) -> str:
@@ -293,7 +227,6 @@ def format_focus_offset_block(block_lines):
     lines = []
     lines.append("\t\toffset = {")
 
-    # Extract properties
     x_val = ""
     y_val = ""
     trigger_lines = []
@@ -317,7 +250,6 @@ def format_focus_offset_block(block_lines):
 
         i += 1
 
-    # Format output with 3-tab indentation for properties
     if x_val:
         lines.append(f"\t\t\t{x_val}")
     if y_val:
@@ -546,7 +478,6 @@ def format_shortcut_block(block_lines):
     lines = []
     lines.append("\tshortcut = {")
 
-    # Extract properties
     name = ""
     target = ""
     scroll_wheel_factor = ""
@@ -573,7 +504,6 @@ def format_shortcut_block(block_lines):
 
         i += 1
 
-    # Format output
     if name:
         lines.append(f"\t\t{name}")
     if target:
@@ -599,7 +529,6 @@ def format_inlay_window_block(block_lines):
     lines = []
     lines.append("\tinlay_window = {")
 
-    # Extract properties
     window_id = ""
     position_lines = []
     override_position_lines = []
@@ -626,7 +555,6 @@ def format_inlay_window_block(block_lines):
 
         i += 1
 
-    # Format output
     if window_id:
         lines.append(f"\t\t{window_id}")
 
@@ -653,7 +581,6 @@ def format_offset_block(block_lines):
     lines = []
     lines.append("\toffset = {")
 
-    # Extract properties
     x_val = ""
     y_val = ""
     trigger_lines = []
@@ -677,7 +604,6 @@ def format_offset_block(block_lines):
 
         i += 1
 
-    # Format output
     if x_val:
         lines.append(f"\t\t{x_val}")
     if y_val:
@@ -732,7 +658,6 @@ def format_initial_show_position_block(block_lines):
     lines = []
     lines.append("\tinitial_show_position = {")
 
-    # Extract properties
     x_val = ""
     y_val = ""
     focus_val = ""
@@ -772,18 +697,15 @@ def format_initial_show_position_block(block_lines):
 
         i += 1
 
-    # Format output - prefer single line if simple
+    # Prefer single-line output when the block has only simple coordinates.
     if focus_val and not x_val and not y_val and not offset_lines and not other_lines:
-        # Simple case: just focus reference
         return [f"\tinitial_show_position = {{ {focus_val} }}"]
 
     if x_val and y_val and not focus_val and not offset_lines and not other_lines:
-        # Simple case: just x/y coordinates
         x_num = x_val.split("=", 1)[1].strip()
         y_num = y_val.split("=", 1)[1].strip()
         return [f"\tinitial_show_position = {{ x = {x_num} y = {y_num} }}"]
 
-    # Multi-line format
     if x_val:
         lines.append(f"\t\t{x_val}")
     if y_val:
