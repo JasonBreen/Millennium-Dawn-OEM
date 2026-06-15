@@ -564,19 +564,18 @@ def _check_decision_allowed_dynamic(lines):
                             allowed_depth = dbl_code.count("{") - dbl_code.count("}")
                         elif in_allowed:
                             allowed_depth += dbl_code.count("{") - dbl_code.count("}")
-                            if _RE_DECISION_ALLOWED_DYNAMIC.search(dbl_code):
-                                trigger = _RE_DECISION_ALLOWED_DYNAMIC.search(
-                                    dbl_code
-                                ).group()
-                                if trigger == "original_tag" or trigger == "tag":
-                                    pass
-                                else:
-                                    issues.append(
-                                        (
-                                            cat_start + k + p + 1,
-                                            f"dynamic trigger '{trigger}' in decision allowed block -- allowed is evaluated once at game start; move to available",
-                                        )
+                        if in_allowed:
+                            m = _RE_DECISION_ALLOWED_DYNAMIC.search(dbl_code)
+                            if m:
+                                issues.append(
+                                    (
+                                        cat_start + k + p + 1,
+                                        f"dynamic trigger '{m.group()}' in decision allowed block -- allowed is evaluated once at game start; move to available",
                                     )
+                                )
+                            # A single-line allowed = { ... } opens and closes on the
+                            # same line; close it here so the following block (e.g.
+                            # available = { has_opinion ... }) is not scanned as allowed.
                             if allowed_depth <= 0:
                                 in_allowed = False
                     k = next_k

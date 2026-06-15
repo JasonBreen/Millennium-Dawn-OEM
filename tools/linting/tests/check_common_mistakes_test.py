@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from check_common_mistakes import (
     _check_check_var_ge_le,
     _check_consecutive_scope_blocks,
+    _check_decision_allowed_dynamic,
     _check_divide_variable_zero_guard,
     _check_duplicate_add_to_variable,
     _check_embargo_dlc_guard,
@@ -872,6 +873,63 @@ assert_finds(
     ],
     0,
     "tautological OR in comment not flagged",
+)
+
+
+# 10. Dynamic triggers in decision allowed blocks
+
+print("\n── Dynamic trigger in decision allowed block ──")
+
+# 10a. has_opinion directly inside allowed → flag
+assert_finds(
+    _check_decision_allowed_dynamic,
+    [
+        "GRE_decisions_category = {\n",
+        "\tGRE_some_decision = {\n",
+        "\t\tallowed = {\n",
+        "\t\t\thas_opinion = { target = CHI value > 0 }\n",
+        "\t\t}\n",
+        "\t\tcomplete_effect = { add_political_power = 10 }\n",
+        "\t}\n",
+        "}\n",
+    ],
+    1,
+    "has_opinion inside multi-line allowed flagged",
+)
+
+# 10b. Single-line allowed = { original_tag } followed by available with
+#      has_opinion → no flag (the bug: in_allowed bled into available)
+assert_finds(
+    _check_decision_allowed_dynamic,
+    [
+        "GRE_decisions_category = {\n",
+        "\tGRE_some_decision = {\n",
+        "\t\tallowed = { original_tag = GRE }\n",
+        "\t\tavailable = {\n",
+        "\t\t\tcountry_exists = CHI\n",
+        "\t\t\thas_opinion = { target = CHI value > 0 }\n",
+        "\t\t}\n",
+        "\t\tcomplete_effect = { add_political_power = 10 }\n",
+        "\t}\n",
+        "}\n",
+    ],
+    0,
+    "has_opinion in available after single-line allowed not flagged",
+)
+
+# 10c. Single-line allowed = { has_opinion } → still flag
+assert_finds(
+    _check_decision_allowed_dynamic,
+    [
+        "GRE_decisions_category = {\n",
+        "\tGRE_some_decision = {\n",
+        "\t\tallowed = { has_opinion = { target = CHI value > 0 } }\n",
+        "\t\tcomplete_effect = { add_political_power = 10 }\n",
+        "\t}\n",
+        "}\n",
+    ],
+    1,
+    "has_opinion in single-line allowed still flagged",
 )
 
 
