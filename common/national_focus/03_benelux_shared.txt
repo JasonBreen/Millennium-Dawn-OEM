@@ -7,9 +7,16 @@
 shared_focus = {
 	id = BNL_benelux_consultation
 	icon = x
-	x = 40
+	x = 106
 	y = 0
 	cost = 8
+
+	offset = {
+		trigger = { NOT = { original_tag = HOL } }
+		x = -46
+	}
+
+
 
 	search_filters = { FOCUS_FILTER_POLITICAL }
 
@@ -38,7 +45,7 @@ shared_focus = {
 	id = BNL_customs_union
 	icon = x
 	relative_position_id = BNL_benelux_consultation
-	x = -6
+	x = -5
 	y = 1
 	cost = 8
 
@@ -285,7 +292,7 @@ shared_focus = {
 	id = BNL_research_cooperation
 	icon = x
 	relative_position_id = BNL_benelux_consultation
-	x = 6
+	x = 2
 	y = 1
 	cost = 8
 
@@ -458,7 +465,7 @@ shared_focus = {
 	id = BNL_benelux_parliament
 	icon = x
 	relative_position_id = BNL_benelux_consultation
-	x = 0
+	x = -2
 	y = 1
 	cost = 10
 
@@ -686,10 +693,10 @@ shared_focus = {
 
 shared_focus = {
 	id = BNL_benelux_defence
-	icon = Benelux_Air_Defense_Treaty
+	icon = x
 
 	relative_position_id = BNL_benelux_consultation
-	x = 14
+	x = 9
 	y = 1
 
 	cost = 10
@@ -734,23 +741,32 @@ shared_focus = {
 
 	search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
-	available = { benelux_cooperation_trigger = yes }
+	available = {
+		BEL = {
+			exists = yes
+			NOT = { has_war_with = FROM }
+			has_opinion = { target = HOL value > 80 }
+		}
+		LUX = {
+			exists = yes
+			NOT = { has_war_with = FROM }
+			has_opinion = { target = HOL value > 80 }
+		}
+	}
 
-	joint_trigger = { is_benelux_country = yes }
+	bypass = {
+		OR = {
+			NOT = { country_exists = BEL }
+			NOT = { country_exists = LUX }
+		}
+	}
+
+	joint_trigger = { original_tag = HOL }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus BNL_benelux_air_policing"
-		if = {
-			limit = { NOT = { has_global_flag = BNL_benelux_air_policing_counted } }
-			set_global_flag = BNL_benelux_air_policing_counted
-			every_country = {
-				limit = { is_benelux_country = yes }
-				BNL_ensure_union_dynmod = yes
-				add_to_variable = { BNL_air_intercept_efficiency = 0.05 }
-			}
-		}
-		add_air_experience = 25
-		custom_effect_tooltip = BNL_benelux_air_policing_tt
+		BEL = { country_event = HOL_military.008 }
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
 	}
 
 	ai_will_do = { base = 1 }
@@ -770,23 +786,36 @@ shared_focus = {
 
 	search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
-	available = { benelux_cooperation_trigger = yes }
+	available = {
+		custom_trigger_tooltip = {
+			tooltip = BNL_qra_established_tt
+			has_country_flag = HOL_QRA_established
+		}
+		BEL = {
+			exists = yes
+			NOT = { has_war_with = FROM }
+			has_opinion = { target = HOL value > 80 }
+		}
+		LUX = {
+			exists = yes
+			NOT = { has_war_with = FROM }
+			has_opinion = { target = HOL value > 80 }
+		}
+	}
 
-	joint_trigger = { is_benelux_country = yes }
+	bypass = {
+		OR = {
+			NOT = { country_exists = BEL }
+			NOT = { country_exists = LUX }
+		}
+	}
+
+	joint_trigger = { original_tag = HOL }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus BNL_air_defence_command"
-		if = {
-			limit = { NOT = { has_global_flag = BNL_air_defence_command_counted } }
-			set_global_flag = BNL_air_defence_command_counted
-			every_country = {
-				limit = { is_benelux_country = yes }
-				BNL_ensure_union_dynmod = yes
-				add_to_variable = { BNL_air_intercept_efficiency = 0.05 }
-			}
-		}
-		add_air_experience = 25
-		custom_effect_tooltip = BNL_air_defence_command_tt
+		BEL = { country_event = HOL_military.015 }
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
 	}
 
 	ai_will_do = { base = 1 }
@@ -797,8 +826,8 @@ shared_focus = {
 	icon = Dutch_BNLC
 
 	x = 0
-	y = 1
-	relative_position_id = BNL_air_defence_command
+	y = 2
+	relative_position_id = BNL_benelux_air_policing
 
 	cost = 8
 
@@ -806,24 +835,36 @@ shared_focus = {
 
 	search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
-	available = { benelux_cooperation_trigger = yes }
+	available = {
+		custom_trigger_tooltip = {
+			tooltip = BNL_benecc_established_tt
+			has_country_flag = HOL_BENECC_established
+		}
+		BEL = {
+			exists = yes
+			NOT = { has_war_with = FROM }
+			has_opinion = { target = HOL value > 80 }
+		}
+		LUX = {
+			exists = yes
+			NOT = { has_war_with = FROM }
+			has_opinion = { target = HOL value > 80 }
+		}
+	}
 
-	joint_trigger = { is_benelux_country = yes }
+	bypass = {
+		OR = {
+			NOT = { country_exists = BEL }
+			NOT = { country_exists = LUX }
+		}
+	}
+
+	joint_trigger = { original_tag = HOL }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus BNL_binational_air_command"
-		if = {
-			limit = { NOT = { has_global_flag = BNL_binational_air_command_counted } }
-			set_global_flag = BNL_binational_air_command_counted
-			every_country = {
-				limit = { is_benelux_country = yes }
-				BNL_ensure_union_dynmod = yes
-				add_to_variable = { BNL_air_intercept_efficiency = 0.05 }
-				add_to_variable = { BNL_army_org_factor = 0.02 }
-			}
-		}
-		add_air_experience = 25
-		custom_effect_tooltip = BNL_binational_air_command_tt
+		BEL = { country_event = HOL_military.022 }
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
 	}
 
 	ai_will_do = { base = 1 }
@@ -843,23 +884,33 @@ shared_focus = {
 
 	search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
-	available = { benelux_cooperation_trigger = yes }
+	available = {
+		BEL = {
+			exists = yes
+			NOT = { has_war_with = FROM }
+			has_opinion = { target = HOL value > 80 }
+		}
+		LUX = {
+			exists = yes
+			NOT = { has_war_with = FROM }
+			has_opinion = { target = HOL value > 80 }
+		}
+	}
 
-	joint_trigger = { is_benelux_country = yes }
+	bypass = {
+		OR = {
+			NOT = { country_exists = BEL }
+			NOT = { country_exists = LUX }
+		}
+	}
+
+	joint_trigger = { original_tag = HOL }
 
 	completion_reward = {
 		log = "[GetDateText]: [Root.GetName]: Focus BNL_mrtt_fleet"
-		if = {
-			limit = { NOT = { has_global_flag = BNL_mrtt_fleet_counted } }
-			set_global_flag = BNL_mrtt_fleet_counted
-			every_country = {
-				limit = { is_benelux_country = yes }
-				BNL_ensure_union_dynmod = yes
-				add_to_variable = { BNL_production_factory_max_efficiency_factor = 0.03 }
-			}
-		}
-		add_air_experience = 25
-		custom_effect_tooltip = BNL_mrtt_fleet_tt
+		HOL = { country_event = { id = HOL_military.029 days = 1 } }
+		BEL = { country_event = { id = HOL_military.030 days = 1 } }
+		LUX = { country_event = { id = HOL_military.031 days = 1 } }
 	}
 
 	ai_will_do = { base = 1 }
@@ -867,15 +918,15 @@ shared_focus = {
 
 shared_focus = {
 	id = BNL_eatc
-	icon = Generic_Transport_Aircraft
+	icon = x
 
 	x = 0
-	y = 1
-	relative_position_id = BNL_mrtt_fleet
+	y = 2
+	relative_position_id = BNL_benelux_defence
 
 	cost = 8
 
-	prerequisite = { focus = BNL_mrtt_fleet }
+	prerequisite = { focus = BNL_benelux_defence }
 
 	search_filters = { FOCUS_FILTER_MILITARY_LAWS }
 
@@ -903,11 +954,11 @@ shared_focus = {
 
 shared_focus = {
 	id = BNL_belux_a400m
-	icon = Generic_Transport_Aircraft
+	icon = x
 
 	x = 0
-	y = 1
-	relative_position_id = BNL_eatc
+	y = 2
+	relative_position_id = BNL_mrtt_fleet
 
 	cost = 8
 
@@ -950,7 +1001,7 @@ shared_focus = {
 
 shared_focus = {
 	id = BNL_f35_cooperation
-	icon = Benelux_Air_Defense_Treaty
+	icon = x
 
 	x = 2
 	y = 1
@@ -997,7 +1048,7 @@ shared_focus = {
 
 shared_focus = {
 	id = BNL_benesam
-	icon = Dutch_Belgium_Fleet
+	icon = x
 
 	x = -4
 	y = 1
@@ -1044,7 +1095,7 @@ shared_focus = {
 
 shared_focus = {
 	id = BNL_admiral_benelux
-	icon = Dutch_Belgium_Fleet
+	icon = x
 
 	x = 0
 	y = 1
@@ -1091,11 +1142,11 @@ shared_focus = {
 
 shared_focus = {
 	id = BNL_vlissingen_class
-	icon = Dutch_Belgium_Fleet
+	icon = x
 
 	x = -1
-	y = 1
-	relative_position_id = BNL_admiral_benelux
+	y = 3
+	relative_position_id = BNL_benesam
 
 	cost = 8
 
@@ -1160,11 +1211,11 @@ shared_focus = {
 
 shared_focus = {
 	id = BNL_city_class
-	icon = Dutch_Belgium_Fleet
+	icon = x
 
 	x = 1
-	y = 1
-	relative_position_id = BNL_admiral_benelux
+	y = 3
+	relative_position_id = BNL_benesam
 
 	cost = 8
 
@@ -1229,11 +1280,11 @@ shared_focus = {
 
 shared_focus = {
 	id = BNL_aswf_frigate
-	icon = Dutch_Belgium_Fleet
+	icon = x
 
 	x = 0
 	y = 2
-	relative_position_id = BNL_admiral_benelux
+	relative_position_id = BNL_benesam
 
 	cost = 10
 
@@ -1276,11 +1327,11 @@ shared_focus = {
 
 shared_focus = {
 	id = BNL_para_school
-	icon = Benelux_Air_Defense_Treaty
+	icon = x
 
-	x = 2
-	y = 2
-	relative_position_id = BNL_benelux_defence
+	x = 0
+	y = 1
+	relative_position_id = BNL_f35_cooperation
 
 	cost = 8
 
@@ -1324,11 +1375,11 @@ shared_focus = {
 
 shared_focus = {
 	id = BNL_csomtg
-	icon = Dutch_Belgium_Fleet
+	icon = x
 
 	x = 0
-	y = 1
-	relative_position_id = BNL_para_school
+	y = 2
+	relative_position_id = BNL_f35_cooperation
 
 	cost = 8
 
