@@ -1629,6 +1629,10 @@ focus_tree = {
 
 		cost = 5
 
+		allow_branch = {
+			NOT = { has_country_flag = SAU_republic_of_arabia_declared }
+		}
+
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_royal_hub"
 		}
@@ -8329,6 +8333,706 @@ focus_tree = {
 		ai_will_do = { base = 1 }
 	}
 	#-
+	# Declare Republic of Arabia
+		focus = {
+		id = SAU_declare_republic_of_Arabia_1
+		icon = flames_of_rebellion
+
+		x = 92
+		y = 1
+
+		cost = 10
+		prerequisite = { focus = SAU_royal_hub }	
+		allow_branch = {
+			NOT = { has_country_flag = SAU_republic_of_arabia_declared }
+		}
+
+		available = {
+			no_jihadist_government = yes
+			custom_trigger_tooltip = {
+				tooltip = SAU_declare_republic_tt
+				NOT = { has_government = fascism }
+			}
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_declare_republic_of_Arabia_1"
+			custom_effect_tooltip = SAU_declare_republic_warning_tt
+			set_cosmetic_tag = SAU_republic_of_arabia
+			set_country_flag = SAU_republic_of_arabia_declared
+			remove_ideas = {
+				SAU_royal_ulema_alliance_neutral
+				birthplace_of_wahhabism
+				SAU_ailing_king
+				wahabi_ulema
+				saudi_royal_family
+				SAU_succession_instability
+			}
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+
+	#- ===== REPUBLIC OF ARABIA =====
+	# Republican alternative tree. Hidden until SAU_declare_republic_of_Arabia_1 sets
+	# SAU_republic_of_arabia_declared, which also hides the kings tree (SAU_royal_hub).
+	focus = {
+		id = SAU_republic_provisional_government
+		icon = constitution
+
+		x = 90
+		y = 0
+
+		cost = 10
+
+		allow_branch = {
+			has_country_flag = SAU_republic_of_arabia_declared
+		}
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_provisional_government"
+			add_political_power = 100
+			add_stability = 0.05
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+
+
+	# =========== Republic of Arabia, Event that Allowed all Parties and decrease the salafist outlooks. ====================
+	focus = {
+		id = SAU_republic_provisional_government_1
+		icon = constitution
+
+		x = 90
+		y = 1
+
+		cost = 10
+
+		allow_branch = {
+			has_country_flag = SAU_republic_of_arabia_declared
+		}	
+		prerequisite = { focus = SAU_republic_provisional_government }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_provisional_government_1"
+			add_popularity = { ideology = fascism popularity = -0.15 }
+			set_country_flag = SAU_parties_legalized
+			add_political_power = 75
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+		# =========== Republic of Arabia, Saudi Arabia Communist Party. ====================
+	focus = {
+		id = SAU_republic_provisional_government_2
+		icon = constitution
+
+		x = 70
+		y = 2
+
+		cost = 10
+
+		allow_branch = {
+			has_country_flag = SAU_republic_of_arabia_declared
+		}	
+		prerequisite = { focus = SAU_republic_provisional_government_1 }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_provisional_government_2"
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.25 }
+			set_temp_variable = { temp_outlook_increase = 0.25 }
+			add_relative_party_popularity = yes
+					if = {
+				limit = { NOT = { has_country_flag = SAU_communist_state_active } }
+				add_dynamic_modifier = { modifier = SAU_communist_state }
+				set_country_flag = SAU_communist_state_active
+			}
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	#=========== Hasmite Kingdom of Arabia, Hasmite House with constitutional monarchy ================
+	focus = {
+		id = SAU_republic_provisional_government_3
+		icon = constitution
+
+		x = 90
+		y = 2
+
+		cost = 10
+
+		allow_branch = {
+			has_country_flag = SAU_republic_of_arabia_declared
+		}	
+		prerequisite = { focus = SAU_republic_provisional_government_1 }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_provisional_government_3"
+			set_temp_variable = { party_index = 0 }
+			set_temp_variable = { party_popularity_increase = 0.25 }
+			set_temp_variable = { temp_outlook_increase = 0.25 }
+			add_relative_party_popularity = yes
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+
+	# =============== (Arab) Republic of Arabia, Ba'athist Party =================
+	focus = {
+		id = SAU_republic_provisional_government_4
+		icon = constitution
+
+		x = 110
+		y = 2
+
+		cost = 10
+
+		allow_branch = {
+			has_country_flag = SAU_republic_of_arabia_declared
+		}	
+		prerequisite = { focus = SAU_republic_provisional_government_1 }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_provisional_government_4"
+			set_temp_variable = { party_index = 21 }
+			set_temp_variable = { party_popularity_increase = 0.25 }
+			set_temp_variable = { temp_outlook_increase = 0.25 }
+			add_relative_party_popularity = yes
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	# ===== Islamic Republic of Arabia, Hardlne and Moderate Path =======
+	focus = {
+		id = SAU_republic_provisional_government_5
+		icon = constitution
+
+		x = 80
+		y = 2
+
+		cost = 10
+
+		allow_branch = {
+			has_country_flag = SAU_republic_of_arabia_declared
+		}	
+		prerequisite = { focus = SAU_republic_provisional_government_1 }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_provisional_government_5"
+			set_temp_variable = { party_index = 9 }
+			set_temp_variable = { party_popularity_increase = 0.15 }
+			set_temp_variable = { temp_outlook_increase = 0.15 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 8 }
+			set_temp_variable = { party_popularity_increase = 0.15 }
+			set_temp_variable = { temp_outlook_increase = 0.15 }
+			add_relative_party_popularity = yes
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	#===================== (Islamic) Republic of Araba, Muslim Brotherhood =============
+	focus = {
+		id = SAU_republic_provisional_government_6
+		icon = constitution
+
+		x = 100
+		y = 2
+
+		cost = 10
+
+		allow_branch = {
+			has_country_flag = SAU_republic_of_arabia_declared
+		}	
+		prerequisite = { focus = SAU_republic_provisional_government_1 }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_provisional_government_6"
+			set_temp_variable = { party_index = 12 }
+			set_temp_variable = { party_popularity_increase = 0.25 }
+			set_temp_variable = { temp_outlook_increase = 0.25 }
+			add_relative_party_popularity = yes
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+
+	#- ===== SAUDI COMMUNIST PARTY (CSU-style sub-tree, hangs off _2) =====
+	focus = {
+		id = SAU_com_nationalize_oil
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = -4
+		y = 1
+		prerequisite = { focus = SAU_republic_provisional_government_2 }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_nationalize_oil"
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.03 }
+			set_temp_variable = { temp_outlook_increase = 0.03 }
+			add_relative_party_popularity = yes
+			custom_effect_tooltip = SAU_com_nationalize_oil_tt
+			add_to_variable = { SAU_com_build = 0.03 }
+			add_to_variable = { SAU_com_factory = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_red_guard
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = -2
+		y = 1
+		prerequisite = { focus = SAU_republic_provisional_government_2 }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_red_guard"
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.03 }
+			set_temp_variable = { temp_outlook_increase = 0.03 }
+			add_relative_party_popularity = yes
+			custom_effect_tooltip = SAU_com_red_guard_tt
+			add_to_variable = { SAU_com_consc = 0.03 }
+			add_to_variable = { SAU_com_ws = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_dictatorship_proletariat
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 0
+		y = 1
+		prerequisite = { focus = SAU_republic_provisional_government_2 }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_dictatorship_proletariat"
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.03 }
+			set_temp_variable = { temp_outlook_increase = 0.03 }
+			add_relative_party_popularity = yes
+			custom_effect_tooltip = SAU_com_dictatorship_proletariat_tt
+			add_to_variable = { SAU_com_pp = 0.05 }
+			add_to_variable = { SAU_com_stab = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_command_economy
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 2
+		y = 1
+		prerequisite = { focus = SAU_republic_provisional_government_2 }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_command_economy"
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.03 }
+			set_temp_variable = { temp_outlook_increase = 0.03 }
+			add_relative_party_popularity = yes
+			custom_effect_tooltip = SAU_com_command_economy_tt
+			add_to_variable = { SAU_com_cg = -0.03 }
+			add_to_variable = { SAU_com_build = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_land_reform
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 4
+		y = 1
+		prerequisite = { focus = SAU_republic_provisional_government_2 }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_land_reform"
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.03 }
+			set_temp_variable = { temp_outlook_increase = 0.03 }
+			add_relative_party_popularity = yes
+			custom_effect_tooltip = SAU_com_land_reform_tt
+			add_to_variable = { SAU_com_stab = 0.03 }
+			add_to_variable = { SAU_com_cg = -0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_oil_workers_soviet
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = -5
+		y = 2
+		prerequisite = { focus = SAU_com_nationalize_oil }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_oil_workers_soviet"
+			custom_effect_tooltip = SAU_com_oil_workers_soviet_tt
+			add_to_variable = { SAU_com_factory = 0.02 }
+			add_to_variable = { SAU_com_pp = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_state_industrialization
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = -3
+		y = 2
+		prerequisite = { focus = SAU_com_nationalize_oil }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_state_industrialization"
+			custom_effect_tooltip = SAU_com_state_industrialization_tt
+			add_to_variable = { SAU_com_build = 0.04 }
+			add_to_variable = { SAU_com_factory = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_state_atheism
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = -1
+		y = 2
+		prerequisite = { focus = SAU_com_dictatorship_proletariat }
+		mutually_exclusive = { focus = SAU_com_progressive_islam }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_state_atheism"
+			custom_effect_tooltip = SAU_com_state_atheism_tt
+			add_to_variable = { SAU_com_pp = 0.03 }
+			add_to_variable = { SAU_com_ws = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_progressive_islam
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 1
+		y = 2
+		prerequisite = { focus = SAU_com_dictatorship_proletariat }
+		mutually_exclusive = { focus = SAU_com_state_atheism }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_progressive_islam"
+			custom_effect_tooltip = SAU_com_progressive_islam_tt
+			add_to_variable = { SAU_com_stab = 0.04 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_collectivization
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 3
+		y = 2
+		prerequisite = { focus = SAU_com_land_reform }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_collectivization"
+			custom_effect_tooltip = SAU_com_collectivization_tt
+			add_to_variable = { SAU_com_build = 0.02 }
+			add_to_variable = { SAU_com_cg = -0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_rural_literacy
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 5
+		y = 2
+		prerequisite = { focus = SAU_com_land_reform }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_rural_literacy"
+			custom_effect_tooltip = SAU_com_rural_literacy_tt
+			add_to_variable = { SAU_com_pp = 0.02 }
+			add_to_variable = { SAU_com_stab = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_proletarian_nation
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = -4
+		y = 3
+		prerequisite = { focus = SAU_com_oil_workers_soviet }
+		prerequisite = { focus = SAU_com_state_industrialization }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_proletarian_nation"
+			custom_effect_tooltip = SAU_com_proletarian_nation_tt
+			add_to_variable = { SAU_com_consc = 0.03 }
+			add_to_variable = { SAU_com_ws = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_new_arab_man
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 0
+		y = 3
+		prerequisite = { focus = SAU_com_state_atheism focus = SAU_com_progressive_islam }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_new_arab_man"
+			custom_effect_tooltip = SAU_com_new_arab_man_tt
+			add_to_variable = { SAU_com_pp = 0.03 }
+			add_to_variable = { SAU_com_stab = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_agrarian_revolution
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 4
+		y = 3
+		prerequisite = { focus = SAU_com_collectivization }
+		prerequisite = { focus = SAU_com_rural_literacy }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_agrarian_revolution"
+			custom_effect_tooltip = SAU_com_agrarian_revolution_tt
+			add_to_variable = { SAU_com_factory = 0.02 }
+			add_to_variable = { SAU_com_cg = -0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_womens_emancipation
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = -2
+		y = 4
+		prerequisite = { focus = SAU_com_proletarian_nation }
+		prerequisite = { focus = SAU_com_new_arab_man }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_womens_emancipation"
+			custom_effect_tooltip = SAU_com_womens_emancipation_tt
+			add_to_variable = { SAU_com_consc = 0.04 }
+			add_to_variable = { SAU_com_pp = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_vanguard_region
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 2
+		y = 4
+		prerequisite = { focus = SAU_com_agrarian_revolution }
+		prerequisite = { focus = SAU_com_new_arab_man }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_vanguard_region"
+			custom_effect_tooltip = SAU_com_vanguard_region_tt
+			add_to_variable = { SAU_com_ws = 0.03 }
+			add_to_variable = { SAU_com_pp = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_pan_arab_union
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = -3
+		y = 5
+		prerequisite = { focus = SAU_com_womens_emancipation }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_pan_arab_union"
+			custom_effect_tooltip = SAU_com_pan_arab_union_tt
+			add_to_variable = { SAU_com_pp = 0.02 }
+			add_to_variable = { SAU_com_stab = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_gulf_revolution
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = -1
+		y = 5
+		prerequisite = { focus = SAU_com_womens_emancipation }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_gulf_revolution"
+			custom_effect_tooltip = SAU_com_gulf_revolution_tt
+			add_to_variable = { SAU_com_ws = 0.03 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_moscow_alignment
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 1
+		y = 5
+		prerequisite = { focus = SAU_com_vanguard_region }
+		mutually_exclusive = { focus = SAU_com_non_aligned }
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_com_scp_only_tt
+				NOT = { is_in_array = { ruling_party = 19 } }
+			}
+		}
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_moscow_alignment"
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.10 }
+			set_temp_variable = { temp_outlook_increase = 0.10 }
+			add_relative_party_popularity = yes
+			add_dynamic_modifier = { modifier = SAU_scp_doctrine }
+			custom_effect_tooltip = SAU_com_moscow_alignment_tt
+			add_to_variable = { SAU_com_build = 0.03 }
+			add_to_variable = { SAU_com_factory = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_non_aligned
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 3
+		y = 5
+		prerequisite = { focus = SAU_com_vanguard_region }
+		mutually_exclusive = { focus = SAU_com_moscow_alignment }
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = SAU_com_nlf_only_tt
+				NOT = { is_in_array = { ruling_party = 4 } }
+			}
+		}
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_non_aligned"
+			set_temp_variable = { party_index = 19 }
+			set_temp_variable = { party_popularity_increase = 0.10 }
+			set_temp_variable = { temp_outlook_increase = 0.10 }
+			add_relative_party_popularity = yes
+			add_dynamic_modifier = { modifier = SAU_nlf_doctrine }
+			custom_effect_tooltip = SAU_com_non_aligned_tt
+			add_to_variable = { SAU_com_pp = 0.03 }
+			add_to_variable = { SAU_com_stab = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_peoples_republic
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 0
+		y = 6
+		prerequisite = { focus = SAU_com_pan_arab_union }
+		prerequisite = { focus = SAU_com_gulf_revolution }
+		prerequisite = { focus = SAU_com_moscow_alignment focus = SAU_com_non_aligned }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_peoples_republic"
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.1 }
+			set_temp_variable = { temp_outlook_increase = 0.1 }
+			add_relative_party_popularity = yes
+			set_cosmetic_tag = SAU_peoples_republic_of_arabia
+			set_country_flag = SAU_peoples_republic
+			custom_effect_tooltip = SAU_com_peoples_republic_tt
+			add_to_variable = { SAU_com_pp = 0.05 }
+			add_to_variable = { SAU_com_stab = 0.03 }
+			add_to_variable = { SAU_com_ws = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_arabian_comintern
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = -1
+		y = 7
+		prerequisite = { focus = SAU_com_peoples_republic }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_arabian_comintern"
+			custom_effect_tooltip = SAU_com_arabian_comintern_tt
+			add_to_variable = { SAU_com_ws = 0.03 }
+			add_to_variable = { SAU_com_pp = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+	focus = {
+		id = SAU_com_permanent_revolution
+		icon = constitution
+		cost = 5
+		relative_position_id = SAU_republic_provisional_government_2
+		x = 1
+		y = 7
+		prerequisite = { focus = SAU_com_peoples_republic }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_permanent_revolution"
+			custom_effect_tooltip = SAU_com_permanent_revolution_tt
+			add_to_variable = { SAU_com_consc = 0.03 }
+			add_to_variable = { SAU_com_ws = 0.02 }
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	# King Abdullah
 	focus = {
 		id = SAU_king_abdullah_era_01
 		icon = education_reform

@@ -3901,3 +3901,89 @@ SAU_crown_prince_category = {
 		}
 	}
 }
+
+SAU_spread_revolution_category = {
+
+	SAU_broadcast_revolution = {
+		icon = GFX_decision_generic_political_rally
+		cost = 50
+		days_re_enable = 30
+		fire_only_once = no
+
+		available = {
+			has_country_flag = SAU_peoples_republic
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_broadcast_revolution"
+			every_other_country = {
+				limit = {
+					is_in_array = { global.arabic_countries = THIS.id }
+					NOT = { has_government = communism }
+				}
+				add_popularity = { ideology = communism popularity = 0.03 }
+			}
+		}
+
+		ai_will_do = { base = 0 }
+	}
+
+	SAU_arm_arab_revolutionaries = {
+		icon = GFX_decision_generic_intelligence_operation
+		cost = 100
+		days_re_enable = 60
+		fire_only_once = no
+
+		available = {
+			has_country_flag = SAU_peoples_republic
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_arm_arab_revolutionaries"
+			every_other_country = {
+				limit = {
+					is_in_array = { global.arabic_countries = THIS.id }
+					NOT = { has_government = communism }
+				}
+				add_popularity = { ideology = communism popularity = 0.05 }
+				add_stability = -0.04
+			}
+		}
+
+		ai_will_do = { base = 0 }
+	}
+
+	SAU_found_arab_comintern = {
+		icon = GFX_decision_generic_nationalism
+		cost = 150
+		fire_only_once = yes
+
+		available = {
+			has_country_flag = SAU_peoples_republic
+			any_other_country = {
+				is_in_array = { global.arabic_countries = THIS.id }
+				has_government = communism
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision SAU_found_arab_comintern"
+			if = {
+				limit = { is_faction_leader = no }
+				create_faction = "Arab_Comintern"
+			}
+			every_other_country = {
+				limit = {
+					is_in_array = { global.arabic_countries = THIS.id }
+					has_government = communism
+					is_in_faction = no
+					NOT = { has_war_with = ROOT }
+				}
+				ROOT = { add_to_faction = PREV }
+			}
+			set_country_flag = SAU_arab_comintern_founded
+		}
+
+		ai_will_do = { base = 0 }
+	}
+}

@@ -187,13 +187,7 @@ SAU_resolve_unemployment = {
 SAU_update_hormuz_status = {
 	if = {
 		limit = {
-			country_exists = PER
-			PER = {
-				OR = {
-					has_war_with = USA
-					has_war_with = SAU
-				}
-			}
+			has_global_flag = HORMUZ_BLOCKED
 		}
 		if = {
 			limit = { NOT = { has_idea = SAU_strait_of_hormuz_closed } }
@@ -882,5 +876,42 @@ SAU_partition_yemen_effect = {
 			set_country_flag = yemen_partition_south
 		}
 		SAU = { give_guarantee = YEM }
+	}
+}
+
+# Sets the calling Gulf country's Strait of Hormuz status spirit, mirroring SAU's tiers:
+# closed when Iran actually blockades it (HORMUZ_BLOCKED) or is at war with the USA/SAU,
+# strained when Iran is otherwise at war, open in peace. Called weekly per Gulf country.
+update_gulf_hormuz_status = {
+	if = {
+		limit = {
+			has_global_flag = HORMUZ_BLOCKED
+		}
+		if = {
+			limit = { NOT = { has_idea = gulf_hormuz_closed } }
+			if = { limit = { has_idea = gulf_hormuz_open } remove_ideas = gulf_hormuz_open }
+			if = { limit = { has_idea = gulf_hormuz_strained } remove_ideas = gulf_hormuz_strained }
+			add_ideas = gulf_hormuz_closed
+		}
+	}
+	else_if = {
+		limit = {
+			country_exists = PER
+			PER = { has_war = yes }
+		}
+		if = { limit = { has_idea = gulf_hormuz_closed } remove_ideas = gulf_hormuz_closed }
+		if = { limit = { has_idea = gulf_hormuz_open } remove_ideas = gulf_hormuz_open }
+		if = {
+			limit = { NOT = { has_idea = gulf_hormuz_strained } }
+			add_ideas = gulf_hormuz_strained
+		}
+	}
+	else = {
+		if = { limit = { has_idea = gulf_hormuz_closed } remove_ideas = gulf_hormuz_closed }
+		if = { limit = { has_idea = gulf_hormuz_strained } remove_ideas = gulf_hormuz_strained }
+		if = {
+			limit = { NOT = { has_idea = gulf_hormuz_open } }
+			add_ideas = gulf_hormuz_open
+		}
 	}
 }

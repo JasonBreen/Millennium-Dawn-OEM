@@ -15,6 +15,17 @@ on_actions = {
 
 	on_monthly = {
 		effect = {
+			# One-time focus-tree reload once the Republic is declared, so the kings tree
+			# hides and the Republic branches appear without the player reloading the game.
+			if = {
+				limit = {
+					original_tag = SAU
+					has_country_flag = SAU_republic_of_arabia_declared
+					NOT = { has_country_flag = SAU_republic_tree_refreshed }
+				}
+				load_focus_tree = { tree = saudi_focus_tree keep_completed = yes }
+				set_country_flag = SAU_republic_tree_refreshed
+			}
 			if = {
 			limit = { tag = SAU }
 			SAU = {
@@ -234,6 +245,17 @@ if = {
 			if = {
 				limit = { original_tag = SAU }
 				SAU_update_hormuz_status = yes
+			}
+			if = {
+				limit = {
+					OR = {
+						original_tag = KUW
+						original_tag = UAE
+						original_tag = QAT
+						original_tag = BHR
+					}
+				}
+				update_gulf_hormuz_status = yes
 			}
 			if = {
 				limit = {
