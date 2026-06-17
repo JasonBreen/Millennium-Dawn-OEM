@@ -1218,26 +1218,89 @@ resolve_terror_attack = {
 }
 
 ira_resolve_terror_attack = {
-	set_temp_variable = { attack_chance = 100 }
-	subtract_from_temp_variable = { attack_chance = ct_defense_total }
-	subtract_from_temp_variable = { attack_chance = international_terror_org_intel^cur_attack_index }
-	clamp_temp_variable = { var = attack_chance min = 1 max = 100 }
+	if = {
+		limit = {
+			ENG = { country_exists = THIS }
+		}
 
-	random = {
-		chance = attack_chance
-		set_country_flag = { flag = global_attack_succeeded days = 2 value = 1 }
-		add_to_variable = { global.active_terror_org_vis_lvl^cur_attack_index = 5 }
-		subtract_from_variable = { global.active_terror_org_threat_lvl^cur_attack_index = 5 }
 		ENG = {
-			#Write some event on attacks
-			country_event = { id = arab_spring.0 days = 1 random_days = 30 }
+			set_temp_variable = { attack_chance_succeed = 100 }
+			set_temp_variable = { attack_defend_adjust = ct_defense_total }
+
+			set_temp_variable = { vis_reducer_number = global.active_terror_org_vis_lvl^cur_attack_index }
+			multiply_temp_variable = { vis_reducer_number = 0.5 }
+
+			subtract_from_temp_variable = { attack_chance_succeed = vis_reducer_number }
+
+			set_temp_variable = { intel_boost_number = international_terror_org_intel^cur_attack_index }
+			multiply_temp_variable = { intel_boost_number = 1.15 }
+
+			add_to_temp_variable = { attack_defend_adjust = intel_boost_number }
+
+			set_temp_variable = { sectarian_defense_penalty = ENG_north_irish_agitation }
+			multiply_temp_variable = { sectarian_defense_penalty = 0.3 }
+			subtract_from_temp_variable = { attack_defend_adjust = sectarian_defense_penalty }
+
+			subtract_from_temp_variable = { attack_chance_succeed = attack_defend_adjust }
+
+			set_temp_variable = { republicanism_attack_boost = ENG_north_irish_nationalists }
+			multiply_temp_variable = { republicanism_attack_boost = 0.25 }
+			add_to_temp_variable = { attack_chance_succeed = republicanism_attack_boost }
+
+			round_temp_variable = attack_chance_succeed
+
+			if = { limit = { is_debug = yes }
+				log = "[GetDateText]: IRA attack chance was: [?attack_chance_succeed] \n\nTL;DR boost from UK stuff: Bird Luvs Sheep uwu (sectarian penalty: [?ENG_north_irish_agitation], republicanism boost: [?ENG_north_irish_nationalists])"
+			}
+
+			clamp_temp_variable = {
+				var = attack_chance_succeed
+				min = 1
+				max = 100
+			}
+
+			random = {
+				chance = attack_chance_succeed
+				set_country_flag = { flag = global_attack_succeeded days = 2 value = 1 }
+				log = "[GetDateText]: [THIS.GetName] Was hit by an IRA terror attack"
+				add_to_variable = { global.active_terror_org_vis_lvl^cur_attack_index = 5 }
+				subtract_from_variable = { global.active_terror_org_threat_lvl^cur_attack_index = 5 }
+				set_variable = { attacking_org = cur_attack_index }
+				clamp_variable = {
+					var = global.active_terror_org_vis_lvl^cur_attack_index
+					min = 0
+					max = 100
+				}
+				clamp_variable = {
+					var = global.active_terror_org_threat_lvl^cur_attack_index
+					min = 0
+					max = 100
+				}
+				#No events 4 now 
+			}
+
+			if = {
+				limit = {
+					NOT = { has_country_flag = global_attack_succeeded }
+					check_variable = { international_terror_org_intel^cur_attack_index > 25 }
+				}
+				add_to_variable = { international_terror_org_temp_specific_intel^cur_attack_index = 5 }
+				add_to_variable = { global.active_terror_org_vis_lvl^cur_attack_index = 8 }
+				subtract_from_variable = { global.active_terror_org_threat_lvl^cur_attack_index = 10 }
+				set_variable = { attacking_org = cur_attack_index }
+				clamp_variable = {
+					var = global.active_terror_org_vis_lvl^cur_attack_index
+					min = 0
+					max = 100
+				}
+				clamp_variable = {
+					var = global.active_terror_org_threat_lvl^cur_attack_index
+					min = 0
+					max = 100
+				}
+				log = "[GetDateText]: [THIS.GetName] prevented an IRA terror attack"
+				#No events 4 now 
+			}
 		}
 	}
-	if = {
-		limit = { NOT = { has_country_flag = global_attack_succeeded } }
-		add_to_variable = { global.active_terror_org_vis_lvl^cur_attack_index = 8 }
-		subtract_from_variable = { global.active_terror_org_threat_lvl^cur_attack_index = 10 }
-	}
-	clamp_variable = { var = global.active_terror_org_vis_lvl^cur_attack_index min = 0 max = 100 }
-	clamp_variable = { var = global.active_terror_org_threat_lvl^cur_attack_index min = 0 max = 100 }
 }
