@@ -381,6 +381,40 @@ _IDEA_REF_GENEROUS = re.compile(
 _IDEA_REF_BLOCK = re.compile(r"\b(?:add_ideas|remove_ideas)\s*=\s*\{([^{}]*)\}")
 _WORD_TOKEN = re.compile(r"[A-Za-z0-9_.\-]+")
 
+# Meta-effect references build the idea name at runtime from a scope substitution,
+# e.g. `idea = tribute_idea_[ROOTTAG]` or `remove_ideas = foo_[THIS.GetTag]`. The
+# literal name (`tribute_idea_ABK`) is never written next to a keyword, so the
+# generous scan above only captures the static prefix before `[`. Record that
+# prefix under a sentinel so the unused check can treat any idea sharing it as
+# referenced. Only a non-empty prefix immediately followed by `[` qualifies, so
+# this stays precise (a literal `idea = foo` never matches `foobar`).
+_META_PREFIX_SENTINEL = "\x00meta:"
+_IDEA_REF_META = re.compile(
+    r"\b(?:has_idea|add_ideas|remove_ideas|add_idea|remove_idea|swap_idea"
+    r"|show_ideas_tooltip|idea)"
+    r"\s*=\s*([A-Za-z0-9_.\-]+)\[",
+    re.IGNORECASE,
+)
+
+# Dynamic-token ideas are applied at runtime via `add_ideas = var:<token>`, where
+# the literal name lives only in this registry and never next to an add_ideas
+# keyword. Treat any name registered here as referenced.
+_DYNAMIC_TOKEN_FILE = "common/synchronized_dynamic_tokens/MD_tokens.txt"
+_DYNAMIC_TOKEN_LINE = re.compile(r"^[A-Za-z0-9_.\-]+$")
+
+
+def _load_dynamic_token_names(mod_path: str) -> Set[str]:
+    """Return every token name registered in MD_tokens.txt (one bareword/line)."""
+    path = os.path.join(mod_path, _DYNAMIC_TOKEN_FILE)
+    text = FileOpener.open_text_file(path, lowercase=False, strip_comments_flag=True)
+    if not text:
+        return set()
+    return {
+        line.strip()
+        for line in text.splitlines()
+        if _DYNAMIC_TOKEN_LINE.match(line.strip())
+    }
+
 
 def _scan_idea_refs_for_unused(args: Tuple[str, str]) -> List[str]:
     """Pool worker: every idea name a file references, for the unused check.
@@ -401,6 +435,8 @@ def _scan_idea_refs_for_unused(args: Tuple[str, str]) -> List[str]:
         refs = set(_IDEA_REF_GENEROUS.findall(text))
         for m in _IDEA_REF_BLOCK.finditer(text):
             refs.update(_WORD_TOKEN.findall(m.group(1)))
+        for prefix in _IDEA_REF_META.findall(text):
+            refs.add(_META_PREFIX_SENTINEL + prefix)
         return sorted(refs)
 
     return disk_cache.per_file_cached_by_content(
@@ -987,9 +1023,19 @@ class Validator(BaseValidator):
         for sub in ref_lists:
             referenced.update(sub)
 
+        # Prefixes from meta-effect references (`idea = tribute_idea_[ROOTTAG]`).
+        # Any candidate whose name starts with one is built at runtime, not dead.
+        meta_prefixes = tuple(
+            ref[len(_META_PREFIX_SENTINEL) :]
+            for ref in referenced
+            if ref.startswith(_META_PREFIX_SENTINEL)
+        )
+
         findings: List[Issue] = []
         for name in sorted(candidates):
             if name in referenced:
+                continue
+            if name.startswith(meta_prefixes):
                 continue
             src = defining_file.get(name, "")
             findings.append(
