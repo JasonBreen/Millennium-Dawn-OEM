@@ -113,6 +113,7 @@ setup_all_orgs = {
 	add_to_array = { global.active_terror_orgs = 3 } # Lord's Resistance Army
 	add_to_array = { global.active_terror_orgs = 4 } # JEMAAH ISLAMIYAH
 	add_to_array = { global.active_terror_orgs = 5 } # Abu Sayyaf
+	add_to_array = { global.active_terror_orgs = 6 } # IRA
 
 	#This array tracks inactive global orgs
 	#These can come into existance via global events, national collapse, or failure to manage domestic organizations
@@ -233,6 +234,13 @@ set_starting_org_values = {
 				max = 100
 			}
 		}
+		# IRA starts regional since it's already a known org
+		else_if = {
+			limit = { check_variable = { i = 6 } }
+			add_to_array = { global.active_terror_org_reach = 1 }
+			add_to_array = { global.active_terror_org_regional_flag = 1 }
+			add_to_array = { global.active_terror_org_international_flag = 0 }
+		}
 		else = {
 			add_to_array = { global.active_terror_org_reach = 0 }
 			add_to_array = { global.active_terror_org_regional_flag = 0 }
@@ -246,6 +254,23 @@ set_starting_org_locations = {
 	#If you add starting terror orgs, you need to ENSURE all the arrays line up right
 	#Otherwise, all the system will break
 	#Damnit pdx, just give me arrays in arrays to make this easy *please*
+	add_to_temp_array = { ira_start = 7 }
+
+	set_temp_variable_to_random = {
+		var = start_spot
+		min = 0
+		max = 0
+		integer = yes
+	}
+
+	var:ira_start^start_spot = {
+		set_state_flag = is_regional_terror_base
+	}
+
+	add_to_array = { global.active_terror_hq = ira_start^start_spot }
+
+	#--------------#
+
 	add_to_temp_array = { alq_start = 415 }
 	add_to_temp_array = { alq_start = 1208 }
 	add_to_temp_array = { alq_start = 1207 }
@@ -1000,102 +1025,155 @@ select_attack_target = {
 
 	if = {
 		# Local orgs attack their host nation or a neighbor
-		limit = { check_variable = { org_reach = 0 } }
-
-		var:hq_state = {
-			every_neighbor_state = {
-				add_to_temp_array = { local_target_pool = controller }
+		limit = {
+			check_variable = { org_reach = 0 }
+			NOT = {
+				check_variable = { cur_attack_index = 6 }
 			}
 		}
 
 		if = {
-			limit = { check_variable = { local_target_pool^num > 0 } }
-			set_temp_variable = { max_pick = local_target_pool^num }
-			subtract_from_temp_variable = { max_pick = 1 }
-			set_temp_variable_to_random = {
-				var = target_pick
-				min = 0
-				max = max_pick
-				integer = yes
+			# Local orgs attack their host nation or a neighbor
+			limit = {
+				check_variable = { org_reach = 0 }
 			}
-			set_temp_variable = { chosen_target = local_target_pool^target_pick }
-			var:chosen_target = { resolve_terror_attack = yes }
+
+			var:hq_state = {
+				every_neighbor_state = {
+					add_to_temp_array = { local_target_pool = controller }
+				}
+			}
+
+			if = {
+				limit = { check_variable = { local_target_pool^num > 0 } }
+				set_temp_variable = { max_pick = local_target_pool^num }
+				subtract_from_temp_variable = { max_pick = 1 }
+				set_temp_variable_to_random = {
+					var = target_pick
+					min = 0
+					max = max_pick
+					integer = yes
+				}
+				set_temp_variable = { chosen_target = local_target_pool^target_pick }
+				var:chosen_target = { resolve_terror_attack = yes }
+			}
+			else = {
+				# Blow yourself up if island or no neighbors.
+				set_temp_variable = { chosen_target = global.active_terror_hq_country^cur_attack_index }
+				var:chosen_target = { resolve_terror_attack = yes }
+			}
 		}
+
+		else_if = {
+			# If a regional org, target a natio inside your region
+			limit = { check_variable = { org_reach = 1 } }
+
+			set_temp_variable = { org_region = global.active_terror_org_region^cur_attack_index }
+
+			if = {
+				limit = {
+					check_variable = { org_region = 0 }
+					check_variable = { global.european_nations^num > 0 }
+				}
+				set_temp_variable = { max_pick = global.european_nations^num }
+				subtract_from_temp_variable = { max_pick = 1 }
+				set_temp_variable_to_random = { var = target_pick min = 0 max = max_pick integer = yes }
+				set_temp_variable = { chosen_target = global.european_nations^target_pick }
+				var:chosen_target = { resolve_terror_attack = yes }
+			}
+			else_if = {
+				limit = {
+					check_variable = { org_region = 1 }
+					check_variable = { global.sub_saharan_nations^num > 0 }
+				}
+				set_temp_variable = { max_pick = global.sub_saharan_nations^num }
+				subtract_from_temp_variable = { max_pick = 1 }
+				set_temp_variable_to_random = { var = target_pick min = 0 max = max_pick integer = yes }
+				set_temp_variable = { chosen_target = global.sub_saharan_nations^target_pick }
+				var:chosen_target = { resolve_terror_attack = yes }
+			}
+			else_if = {
+				limit = {
+					check_variable = { org_region = 2 }
+					check_variable = { global.middle_eastern_nations^num > 0 }
+				}
+				set_temp_variable = { max_pick = global.middle_eastern_nations^num }
+				subtract_from_temp_variable = { max_pick = 1 }
+				set_temp_variable_to_random = { var = target_pick min = 0 max = max_pick integer = yes }
+				set_temp_variable = { chosen_target = global.middle_eastern_nations^target_pick }
+				var:chosen_target = { resolve_terror_attack = yes }
+			}
+			else_if = {
+				limit = {
+					check_variable = { org_region = 3 }
+					check_variable = { global.asian_nations^num > 0 }
+				}
+				set_temp_variable = { max_pick = global.asian_nations^num }
+				subtract_from_temp_variable = { max_pick = 1 }
+				set_temp_variable_to_random = { var = target_pick min = 0 max = max_pick integer = yes }
+				set_temp_variable = { chosen_target = global.asian_nations^target_pick }
+				var:chosen_target = { resolve_terror_attack = yes }
+			}
+			else = {
+				if = {
+					limit = { check_variable = { global.american_nations^num > 0 } }
+					set_temp_variable = { max_pick = global.american_nations^num }
+					subtract_from_temp_variable = { max_pick = 1 }
+					set_temp_variable_to_random = { var = target_pick min = 0 max = max_pick integer = yes }
+					set_temp_variable = { chosen_target = global.american_nations^target_pick }
+					var:chosen_target = { resolve_terror_attack = yes }
+				}
+			}
+		}
+
 		else = {
-			# Blow yourself up if island or no neighbors.
-			set_temp_variable = { chosen_target = global.active_terror_hq_country^cur_attack_index }
-			var:chosen_target = { resolve_terror_attack = yes }
+			#international orgs will focus their efforts on global powers
+			random_scope_in_array = {
+				array = global.majors
+
+				resolve_terror_attack = yes
+			}
 		}
 	}
 
 	else_if = {
-		# If a regional org, target a natio inside your region
-		limit = { check_variable = { org_reach = 1 } }
+		limit = { check_variable = { cur_attack_index = 6 } }
+		var:ENG = {
+			set_temp_variable = { attack_chance_succeed = 100 }
 
-		set_temp_variable = { org_region = global.active_terror_org_region^cur_attack_index }
+			set_temp_variable = { vis_reducer_number = global.active_terror_org_vis_lvl^cur_attack_index }
+			multiply_temp_variable = { vis_reducer_number = 0.5 }
+			subtract_from_temp_variable = { attack_chance_succeed = vis_reducer_number }
 
-		if = {
-			limit = {
-				check_variable = { org_region = 0 }
-				check_variable = { global.european_nations^num > 0 }
+			set_temp_variable = { intel_boost_number = international_terror_org_intel^cur_attack_index }
+			multiply_temp_variable = { intel_boost_number = 1.15 }
+			add_to_temp_variable = { intel_boost_number = ct_defense_total }
+			subtract_from_temp_variable = { attack_chance_succeed = intel_boost_number }
+
+			clamp_temp_variable = { var = attack_chance_succeed min = 1 max = 100 }
+			set_variable = { attacking_org = cur_attack_index }
+
+			random = {
+				chance = attack_chance_succeed
+				set_country_flag = { flag = global_attack_succeeded days = 2 value = 1 }
+				add_to_variable = { global.active_terror_org_vis_lvl^cur_attack_index = 5 }
+				subtract_from_variable = { global.active_terror_org_threat_lvl^cur_attack_index = 5 }
+				#country_event = { id = Event_todo.1 days = 1 random_days = 30 }
 			}
-			set_temp_variable = { max_pick = global.european_nations^num }
-			subtract_from_temp_variable = { max_pick = 1 }
-			set_temp_variable_to_random = { var = target_pick min = 0 max = max_pick integer = yes }
-			set_temp_variable = { chosen_target = global.european_nations^target_pick }
-			var:chosen_target = { resolve_terror_attack = yes }
-		}
-		else_if = {
-			limit = {
-				check_variable = { org_region = 1 }
-				check_variable = { global.sub_saharan_nations^num > 0 }
-			}
-			set_temp_variable = { max_pick = global.sub_saharan_nations^num }
-			subtract_from_temp_variable = { max_pick = 1 }
-			set_temp_variable_to_random = { var = target_pick min = 0 max = max_pick integer = yes }
-			set_temp_variable = { chosen_target = global.sub_saharan_nations^target_pick }
-			var:chosen_target = { resolve_terror_attack = yes }
-		}
-		else_if = {
-			limit = {
-				check_variable = { org_region = 2 }
-				check_variable = { global.middle_eastern_nations^num > 0 }
-			}
-			set_temp_variable = { max_pick = global.middle_eastern_nations^num }
-			subtract_from_temp_variable = { max_pick = 1 }
-			set_temp_variable_to_random = { var = target_pick min = 0 max = max_pick integer = yes }
-			set_temp_variable = { chosen_target = global.middle_eastern_nations^target_pick }
-			var:chosen_target = { resolve_terror_attack = yes }
-		}
-		else_if = {
-			limit = {
-				check_variable = { org_region = 3 }
-				check_variable = { global.asian_nations^num > 0 }
-			}
-			set_temp_variable = { max_pick = global.asian_nations^num }
-			subtract_from_temp_variable = { max_pick = 1 }
-			set_temp_variable_to_random = { var = target_pick min = 0 max = max_pick integer = yes }
-			set_temp_variable = { chosen_target = global.asian_nations^target_pick }
-			var:chosen_target = { resolve_terror_attack = yes }
-		}
-		else = {
+
 			if = {
-				limit = { check_variable = { global.american_nations^num > 0 } }
-				set_temp_variable = { max_pick = global.american_nations^num }
-				subtract_from_temp_variable = { max_pick = 1 }
-				set_temp_variable_to_random = { var = target_pick min = 0 max = max_pick integer = yes }
-				set_temp_variable = { chosen_target = global.american_nations^target_pick }
-				var:chosen_target = { resolve_terror_attack = yes }
+				limit = {
+					NOT = { has_country_flag = global_attack_succeeded }
+					check_variable = { international_terror_org_intel^cur_attack_index > 25 }
+				}
+				add_to_variable = { international_terror_org_temp_specific_intel^cur_attack_index = 5 }
+				add_to_variable = { global.active_terror_org_vis_lvl^cur_attack_index = 8 }
+				subtract_from_variable = { global.active_terror_org_threat_lvl^cur_attack_index = 10 }
+				#country_event = { id = Event_todo.2 days = 1 random_days = 30 }
 			}
-		}
-	}
 
-	else = {
-		#international orgs will focus their efforts on global powers
-		random_scope_in_array = {
-			array = global.majors
-
-			resolve_terror_attack = yes
+			clamp_variable = { var = global.active_terror_org_vis_lvl^cur_attack_index min = 0 max = 100 }
+			clamp_variable = { var = global.active_terror_org_threat_lvl^cur_attack_index min = 0 max = 100 }
 		}
 	}
 }
