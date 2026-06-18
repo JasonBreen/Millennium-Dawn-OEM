@@ -1,6 +1,39 @@
 # Hong Kong scripted effects
 # LegCo motion seat calculations, Railway/XRL motion outcomes
 
+#############################
+# Mainland Resource Supply
+#############################
+
+# Called from HKG scope. Grants Hong Kong the resource supply idea and draws the
+# same resources out of China's pool via the mirrored drain idea on CHI. No China,
+# no supply, the resources have to come from somewhere.
+HKG_start_mainland_resource_supply = {
+	if = {
+		limit = { country_exists = CHI }
+		if = {
+			limit = { NOT = { has_idea = HKG_mainland_resource_supply } }
+			add_ideas = HKG_mainland_resource_supply
+		}
+		CHI = {
+			if = {
+				limit = { NOT = { has_idea = CHI_hong_kong_resource_drain } }
+				add_ideas = CHI_hong_kong_resource_drain
+			}
+		}
+	}
+}
+
+# Called from HKG scope. Ends the supply and stops draining China. The drain idea
+# also self-cancels once HKG drops the supply, this is the immediate path.
+HKG_stop_mainland_resource_supply = {
+	remove_ideas = HKG_mainland_resource_supply
+	if = {
+		limit = { country_exists = CHI }
+		CHI = { remove_ideas = CHI_hong_kong_resource_drain }
+	}
+}
+
 #####################
 # LegCo Seat System
 #####################
