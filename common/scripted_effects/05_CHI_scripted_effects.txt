@@ -997,6 +997,43 @@ CHI_BRI_monthly_tick = {
 	}
 }
 
+### Russian arms dependency: re-evaluate tier from CHI_military_self_sufficiency. Idempotent, downgrade-only. ###
+CHI_evaluate_arms_dependency = {
+	clamp_variable = { var = CHI_military_self_sufficiency min = 0 max = 100 }
+
+	if = {
+		limit = { check_variable = { CHI_military_self_sufficiency > 99 } }
+		if = { limit = { has_idea = CHI_russian_arms_dependency } remove_ideas = CHI_russian_arms_dependency }
+		if = { limit = { has_idea = CHI_russian_arms_dependency_2 } remove_ideas = CHI_russian_arms_dependency_2 }
+		if = { limit = { has_idea = CHI_russian_arms_dependency_3 } remove_ideas = CHI_russian_arms_dependency_3 }
+		if = { limit = { has_idea = CHI_russian_arms_dependency_4 } remove_ideas = CHI_russian_arms_dependency_4 }
+	}
+	else_if = {
+		limit = { check_variable = { CHI_military_self_sufficiency > 74 } }
+		if = { limit = { has_idea = CHI_russian_arms_dependency } swap_ideas = { remove_idea = CHI_russian_arms_dependency add_idea = CHI_russian_arms_dependency_4 } }
+		else_if = { limit = { has_idea = CHI_russian_arms_dependency_2 } swap_ideas = { remove_idea = CHI_russian_arms_dependency_2 add_idea = CHI_russian_arms_dependency_4 } }
+		else_if = { limit = { has_idea = CHI_russian_arms_dependency_3 } swap_ideas = { remove_idea = CHI_russian_arms_dependency_3 add_idea = CHI_russian_arms_dependency_4 } }
+		else_if = { limit = { NOT = { has_idea = CHI_russian_arms_dependency_4 } } add_ideas = CHI_russian_arms_dependency_4 }
+	}
+	else_if = {
+		limit = { check_variable = { CHI_military_self_sufficiency > 49 } }
+		if = { limit = { has_idea = CHI_russian_arms_dependency } swap_ideas = { remove_idea = CHI_russian_arms_dependency add_idea = CHI_russian_arms_dependency_3 } }
+		else_if = { limit = { has_idea = CHI_russian_arms_dependency_2 } swap_ideas = { remove_idea = CHI_russian_arms_dependency_2 add_idea = CHI_russian_arms_dependency_3 } }
+		else_if = { limit = { NOT = { has_idea = CHI_russian_arms_dependency_3 } } add_ideas = CHI_russian_arms_dependency_3 }
+	}
+	else_if = {
+		limit = { check_variable = { CHI_military_self_sufficiency > 24 } }
+		if = { limit = { has_idea = CHI_russian_arms_dependency } swap_ideas = { remove_idea = CHI_russian_arms_dependency add_idea = CHI_russian_arms_dependency_2 } }
+		else_if = { limit = { NOT = { has_idea = CHI_russian_arms_dependency_2 } } add_ideas = CHI_russian_arms_dependency_2 }
+	}
+}
+
+# Caller sets a temp var: set_temp_variable = { arms_ss_gain = N } before invoking.
+CHI_add_arms_self_sufficiency = {
+	add_to_variable = { CHI_military_self_sufficiency = arms_ss_gain tooltip = CHI_military_self_sufficiency_tt }
+	CHI_evaluate_arms_dependency = yes
+}
+
 ### PLA Business Ventures - monthly tick for CHI ###
 # Called from on_monthly when CHI has has_completed_focus = CHI_the_poly_compromise
 # Income is continuous via additional_income_rate (calculate_additional_income_rate, 00_money_system.txt);
