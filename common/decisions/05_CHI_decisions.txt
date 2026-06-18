@@ -10887,3 +10887,318 @@ CHI_megaprojects = {
 		ai_will_do = { base = 2 }
 	}
 }
+
+CHI_space_program = {
+
+	# --- Program missions (non-selectable, success/fail at timeout) ---
+
+	CHI_shenzhou_mission = {
+		icon = GFX_decision_generic_research
+
+		days_mission_timeout = 150
+
+		fire_only_once = no
+
+		is_good = yes
+
+		selectable_mission = no
+
+		available = {
+			hidden_trigger = { always = no }
+		}
+
+		activation = {
+			has_completed_focus = CHI_shenzhou_program
+		}
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: Mission CHI_shenzhou_mission"
+			random_list = {
+				50 = {
+					modifier = { add = 25 check_variable = { CHI_space_launch_progress > 3 } }
+					set_country_flag = CHI_shenzhou_mission_done
+					clr_country_flag = CHI_shenzhou_mission_failed
+					air_experience = 10
+					unlock_decision_tooltip = CHI_launch_payload
+				}
+				50 = {
+					set_country_flag = CHI_shenzhou_mission_failed
+				}
+			}
+		}
+	}
+
+	CHI_tiangong_mission = {
+		icon = GFX_decision_generic_research
+
+		days_mission_timeout = 180
+
+		fire_only_once = no
+
+		is_good = yes
+
+		selectable_mission = no
+
+		available = {
+			hidden_trigger = { always = no }
+		}
+
+		activation = {
+			has_completed_focus = CHI_tiangong_station
+		}
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: Mission CHI_tiangong_mission"
+			random_list = {
+				50 = {
+					modifier = { add = 25 check_variable = { CHI_space_launch_progress > 3 } }
+					set_country_flag = CHI_tiangong_mission_done
+					clr_country_flag = CHI_tiangong_mission_failed
+					custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+					add_to_variable = { CHI_economy_production_speed_facility_factor = 0.05 tooltip = production_speed_facility_factor_tt }
+				}
+				50 = {
+					set_country_flag = CHI_tiangong_mission_failed
+				}
+			}
+		}
+	}
+
+	CHI_chang_e_mission = {
+		icon = GFX_decision_generic_research
+
+		days_mission_timeout = 180
+
+		fire_only_once = no
+
+		is_good = yes
+
+		selectable_mission = no
+
+		available = {
+			hidden_trigger = { always = no }
+		}
+
+		activation = {
+			has_completed_focus = CHI_change_lunar_exploration
+		}
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: Mission CHI_chang_e_mission"
+			random_list = {
+				50 = {
+					modifier = { add = 25 check_variable = { CHI_space_launch_progress > 3 } }
+					set_country_flag = CHI_chang_e_mission_done
+					clr_country_flag = CHI_chang_e_mission_failed
+					add_tech_bonus = { name = CHI_chang_e_mission bonus = 0.25 uses = 1 category = CAT_space }
+				}
+				50 = {
+					set_country_flag = CHI_chang_e_mission_failed
+				}
+			}
+		}
+	}
+
+	CHI_crewed_lunar_landing_mission = {
+		icon = GFX_decision_generic_research
+
+		days_mission_timeout = 365
+
+		fire_only_once = yes
+
+		is_good = yes
+
+		selectable_mission = no
+
+		available = {
+			hidden_trigger = { always = no }
+		}
+
+		activation = {
+			has_completed_focus = CHI_crewed_lunar_landing
+		}
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: Mission CHI_crewed_lunar_landing_mission"
+			country_event = { id = CHI_space_events.2 }
+			hidden_effect = {
+				country_event = { id = CHI_space_events.20 days = 30 }
+			}
+		}
+	}
+
+	CHI_asteroid_survey_mission = {
+		icon = GFX_decision_generic_research
+
+		days_mission_timeout = 365
+
+		fire_only_once = yes
+
+		is_good = yes
+
+		selectable_mission = no
+
+		available = {
+			hidden_trigger = { always = no }
+		}
+
+		activation = {
+			has_completed_focus = CHI_tianwen_interplanetary
+		}
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: Mission CHI_asteroid_survey_mission"
+			set_country_flag = CHI_asteroid_mining_unlocked
+			unlock_decision_tooltip = CHI_asteroid_mining_investment
+		}
+	}
+
+	# --- Repeatable launch cadence ---
+
+	CHI_launch_payload = {
+		icon = GFX_decision_generic_research
+
+		fire_only_once = no
+
+		cost = 25
+
+		days_remove = 90
+
+		available = {
+			has_country_flag = CHI_shenzhou_mission_done
+		}
+
+		visible = {
+			has_completed_focus = CHI_shenzhou_program
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_launch_payload"
+			air_experience = 5
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_launch_payload removed"
+			custom_effect_tooltip = CHI_launch_payload_progress_tt
+			add_to_variable = { CHI_space_launch_progress = 1 }
+			random = {
+				chance = 35
+				add_tech_bonus = { name = CHI_launch_payload bonus = 0.25 uses = 1 category = CAT_space }
+			}
+			set_temp_variable = { treasury_change = -25 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 3 }
+	}
+
+	# --- Retry decisions (re-run a failed program mission) ---
+
+	CHI_retry_shenzhou_mission = {
+		icon = GFX_decision_generic_research
+
+		fire_only_once = no
+
+		cost = 35
+
+		days_re_enable = 30
+
+		visible = {
+			has_country_flag = CHI_shenzhou_mission_failed
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_retry_shenzhou_mission"
+			clr_country_flag = CHI_shenzhou_mission_failed
+			activate_mission = CHI_shenzhou_mission
+			set_temp_variable = { treasury_change = -25 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_retry_tiangong_mission = {
+		icon = GFX_decision_generic_research
+
+		fire_only_once = no
+
+		cost = 35
+
+		days_re_enable = 30
+
+		visible = {
+			has_country_flag = CHI_tiangong_mission_failed
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_retry_tiangong_mission"
+			clr_country_flag = CHI_tiangong_mission_failed
+			activate_mission = CHI_tiangong_mission
+			set_temp_variable = { treasury_change = -25 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_retry_chang_e_mission = {
+		icon = GFX_decision_generic_research
+
+		fire_only_once = no
+
+		cost = 35
+
+		days_re_enable = 30
+
+		visible = {
+			has_country_flag = CHI_chang_e_mission_failed
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_retry_chang_e_mission"
+			clr_country_flag = CHI_chang_e_mission_failed
+			activate_mission = CHI_chang_e_mission
+			set_temp_variable = { treasury_change = -25 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	# --- Asteroid mining investment ---
+
+	CHI_asteroid_mining_investment = {
+		icon = GFX_decision_generic_research
+
+		fire_only_once = no
+
+		cost = 50
+
+		days_remove = 120
+
+		available = {
+			has_country_flag = CHI_asteroid_mining_unlocked
+			custom_trigger_tooltip = {
+				tooltip = CHI_asteroid_bonus_cap_tt
+				check_variable = { CHI_asteroid_bonus_count < 5 }
+			}
+		}
+
+		visible = {
+			has_country_flag = CHI_asteroid_mining_unlocked
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_asteroid_mining_investment"
+			random = {
+				chance = 60
+				CHI_unlock_random_asteroid_bonus = yes
+			}
+			set_temp_variable = { treasury_change = -50 }
+			modify_treasury_effect = yes
+		}
+
+		ai_will_do = { base = 2 }
+	}
+}

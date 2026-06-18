@@ -12132,12 +12132,11 @@ country_event = {
 		name = CHI_space_events.1.a
 		log = "[GetDateText]: [This.GetName]: CHI_space_events.1.a executed"
 		add_political_power = 25
-		country_event = { id = CHI_space_events.2 days = 5 }
 		ai_chance = { base = 10 }
 	}
 }
 
-# CHI_space_events.2 — Taikonauts on the Moon (fires on CHI 5 days after CHI_space_events.1)
+# CHI_space_events.2 — Taikonauts on the Moon (fired by CHI_crewed_lunar_landing_mission timeout)
 country_event = {
 	id = CHI_space_events.2
 	title = CHI_space_events.2.t
@@ -12159,6 +12158,153 @@ country_event = {
 		ai_chance = { base = 10 }
 	}
 }
+# CHI_space_events.10 — Lunar funding: satellite and tracking network (fired by CHI_change_lunar_exploration completion)
+country_event = {
+	id = CHI_space_events.10
+	title = CHI_space_events.10.t
+	desc = CHI_space_events.10.d
+	picture = GFX_the_wandering_earth
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_space_events.10.a
+		log = "[GetDateText]: [This.GetName]: CHI_space_events.10.a executed"
+		set_country_flag = CHI_lunar_satellite_invest
+		set_temp_variable = { treasury_change = gdp_per_capita }
+		multiply_temp_variable = { treasury_change = -0.10 }
+		modify_treasury_effect = yes
+		country_event = { id = CHI_space_events.11 days = 90 }
+		ai_chance = { base = 10 }
+	}
+
+	option = {
+		name = CHI_space_events.10.b
+		log = "[GetDateText]: [This.GetName]: CHI_space_events.10.b executed"
+		add_political_power = 25
+		country_event = { id = CHI_space_events.11 days = 90 }
+		ai_chance = { base = 5 }
+	}
+}
+
+# CHI_space_events.11 — Lunar funding: heavy-lift rocketry (Long March 10)
+country_event = {
+	id = CHI_space_events.11
+	title = CHI_space_events.11.t
+	desc = CHI_space_events.11.d
+	picture = GFX_the_wandering_earth
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_space_events.11.a
+		log = "[GetDateText]: [This.GetName]: CHI_space_events.11.a executed"
+		set_country_flag = CHI_lunar_rocketry_invest
+		set_temp_variable = { treasury_change = gdp_per_capita }
+		multiply_temp_variable = { treasury_change = -0.10 }
+		modify_treasury_effect = yes
+		country_event = { id = CHI_space_events.13 days = 180 }
+		ai_chance = { base = 10 }
+	}
+
+	option = {
+		name = CHI_space_events.11.b
+		log = "[GetDateText]: [This.GetName]: CHI_space_events.11.b executed"
+		add_political_power = 25
+		country_event = { id = CHI_space_events.12 days = 120 }
+		ai_chance = { base = 5 }
+	}
+}
+
+# CHI_space_events.12 — Lunar funding: the balanced path, steady cadence
+country_event = {
+	id = CHI_space_events.12
+	title = CHI_space_events.12.t
+	desc = CHI_space_events.12.d
+	picture = GFX_the_wandering_earth
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_space_events.12.a
+		log = "[GetDateText]: [This.GetName]: CHI_space_events.12.a executed"
+		country_event = { id = CHI_space_events.13 days = 180 }
+		ai_chance = { base = 10 }
+	}
+}
+
+# CHI_space_events.13 — Lunar funding payoff: investments mature (flavour/reward only, does not gate the capstone)
+country_event = {
+	id = CHI_space_events.13
+	title = CHI_space_events.13.t
+	desc = CHI_space_events.13.d
+	picture = GFX_CHI_landing
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_space_events.13.a
+		log = "[GetDateText]: [This.GetName]: CHI_space_events.13.a executed"
+		if = {
+			limit = { has_country_flag = CHI_lunar_satellite_invest }
+			custom_effect_tooltip = CHI_lunar_satellite_invest_tt
+			add_tech_bonus = {
+				name = CHI_space_events_lunar_satellite
+				bonus = 0.50
+				uses = 2
+				category = CAT_satellite
+			}
+		}
+		if = {
+			limit = { has_country_flag = CHI_lunar_rocketry_invest }
+			custom_effect_tooltip = CHI_lunar_rocketry_invest_tt
+			add_tech_bonus = {
+				name = CHI_space_events_lunar_rocketry
+				bonus = 0.50
+				uses = 2
+				category = CAT_missile
+			}
+		}
+		newline = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+		add_to_variable = { CHI_economy_research_speed_factor = 0.03 tooltip = research_speed_factor_tt }
+		ai_chance = { base = 10 }
+	}
+}
+
+# CHI_space_events.20 — Lunar Programme Legacy: choose the enduring dividend of the Moon landing
+country_event = {
+	id = CHI_space_events.20
+	title = CHI_space_events.20.t
+	desc = CHI_space_events.20.d
+	picture = GFX_CHI_landing
+	is_triggered_only = yes
+
+	option = {
+		name = CHI_space_events.20.a
+		log = "[GetDateText]: [This.GetName]: CHI_space_events.20.a executed"
+		add_ideas = CHI_lunar_legacy_political
+		ai_chance = { base = 10 }
+	}
+
+	option = {
+		name = CHI_space_events.20.b
+		log = "[GetDateText]: [This.GetName]: CHI_space_events.20.b executed"
+		add_ideas = CHI_lunar_legacy_industrial
+		ai_chance = { base = 10 }
+	}
+
+	option = {
+		name = CHI_space_events.20.c
+		log = "[GetDateText]: [This.GetName]: CHI_space_events.20.c executed"
+		add_ideas = CHI_lunar_legacy_research
+		ai_chance = { base = 10 }
+	}
+
+	option = {
+		name = CHI_space_events.20.e
+		log = "[GetDateText]: [This.GetName]: CHI_space_events.20.e executed"
+		add_ideas = CHI_lunar_legacy_military
+		ai_chance = { base = 10 }
+	}
+}
+
 country_event = {
 	id = CHI_political_events.8
 	title = CHI_political_events.8.t

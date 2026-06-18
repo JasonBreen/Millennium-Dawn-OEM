@@ -5782,7 +5782,7 @@ focus_tree = {
 	## Space branch - China Manned Space Program
 	focus = {
 		id = CHI_project_921
-		icon = x
+		icon = generic_space
 
 		x = 32
 		y = 1
@@ -5796,10 +5796,8 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_project_921"
-			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
-			add_to_variable = { CHI_economy_research_speed_factor = 0.03 tooltip = research_speed_factor_tt }
-			newline = yes
-			add_tech_bonus = { name = CHI_project_921 bonus = 0.25 uses = 1 category = CAT_space }
+			add_tech_bonus = { name = CHI_project_921 bonus = 0.25 uses = 2 category = CAT_space }
+			add_tech_bonus = { name = CHI_project_921 ahead_reduction = 5 uses = 1 category = CAT_space }
 			newline = yes
 			set_temp_variable = { treasury_change = -50 }
 			modify_treasury_effect = yes
@@ -5810,7 +5808,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_shenzhou_program
-		icon = x
+		icon = international_space_station
 
 		x = -2
 		y = 1
@@ -5827,6 +5825,7 @@ focus_tree = {
 			add_tech_bonus = { name = CHI_shenzhou_program bonus = 0.25 uses = 1 category = CAT_space }
 			newline = yes
 			air_experience = 10
+			activate_mission = CHI_shenzhou_mission
 			newline = yes
 			set_temp_variable = { treasury_change = -50 }
 			modify_treasury_effect = yes
@@ -5837,7 +5836,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_long_march_modernisation
-		icon = x
+		icon = focus_rocketry
 
 		x = 2
 		y = 1
@@ -5854,6 +5853,9 @@ focus_tree = {
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_defense_industry }
 			add_to_variable = { CHI_di_line_change_production_efficiency_factor = 0.10 tooltip = line_change_production_efficiency_factor_tt }
 			newline = yes
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+			add_to_variable = { CHI_economy_production_speed_facility_factor = 0.05 tooltip = production_speed_facility_factor_tt }
+			newline = yes
 			add_tech_bonus = { name = CHI_long_march_modernisation bonus = 0.25 uses = 1 category = CAT_missile }
 			newline = yes
 			set_temp_variable = { treasury_change = -50 }
@@ -5865,7 +5867,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_tiangong_station
-		icon = x
+		icon = spacex2
 
 		x = -2
 		y = 2
@@ -5875,6 +5877,10 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_shenzhou_program }
 
+		available = {
+			NOT = { has_active_mission = CHI_shenzhou_mission }
+		}
+
 		search_filters = { FOCUS_FILTER_SPACE FOCUS_FILTER_EXPENDITURE }
 
 		completion_reward = {
@@ -5883,6 +5889,7 @@ focus_tree = {
 			add_to_variable = { CHI_economy_production_speed_facility_factor = 0.05 tooltip = production_speed_facility_factor_tt }
 			newline = yes
 			add_tech_bonus = { name = CHI_tiangong_station bonus = 0.25 uses = 1 category = CAT_satellite }
+			activate_mission = CHI_tiangong_mission
 			newline = yes
 			set_temp_variable = { treasury_change = -100 }
 			modify_treasury_effect = yes
@@ -5893,7 +5900,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_commercial_launch_sector
-		icon = x
+		icon = spacex2
 
 		x = 2
 		y = 2
@@ -5909,6 +5916,7 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_commercial_launch_sector"
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_research_speed_factor = 0.03 tooltip = research_speed_factor_tt }
+			add_to_variable = { CHI_economy_production_speed_buildings_factor = 0.04 tooltip = production_speed_buildings_factor_tt }
 			newline = yes
 			add_political_power = 25
 			newline = yes
@@ -5921,7 +5929,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_change_lunar_exploration
-		icon = x
+		icon = space_combat_support_force
 
 		x = -2
 		y = 3
@@ -5931,6 +5939,14 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_tiangong_station }
 
+		available = {
+			NOT = { has_active_mission = CHI_tiangong_mission }
+			custom_trigger_tooltip = {
+				tooltip = CHI_space_launch_progress_tt
+				check_variable = { CHI_space_launch_progress > 3 }
+			}
+		}
+
 		search_filters = { FOCUS_FILTER_SPACE FOCUS_FILTER_EXPENDITURE }
 
 		completion_reward = {
@@ -5939,6 +5955,8 @@ focus_tree = {
 			add_to_variable = { CHI_economy_research_speed_factor = 0.03 tooltip = research_speed_factor_tt }
 			newline = yes
 			add_tech_bonus = { name = CHI_change_lunar_exploration ahead_reduction = 2 bonus = 0.25 uses = 1 category = CAT_space }
+			activate_mission = CHI_chang_e_mission
+			CHI = { country_event = { id = CHI_space_events.10 days = 30 } }
 			newline = yes
 			set_temp_variable = { treasury_change = -75 }
 			modify_treasury_effect = yes
@@ -5949,7 +5967,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_tianwen_interplanetary
-		icon = x
+		icon = orbit_moon
 
 		x = 2
 		y = 3
@@ -5963,8 +5981,12 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_tianwen_interplanetary"
+			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
+			add_to_variable = { CHI_economy_research_speed_factor = 0.04 tooltip = research_speed_factor_tt }
+			newline = yes
 			add_tech_bonus = { name = CHI_tianwen_interplanetary bonus = 0.25 uses = 1 category = CAT_satellite }
 			add_tech_bonus = { name = CHI_tianwen_interplanetary bonus = 0.25 uses = 1 category = CAT_space }
+			activate_mission = CHI_asteroid_survey_mission
 			newline = yes
 			set_temp_variable = { treasury_change = -75 }
 			modify_treasury_effect = yes
@@ -5975,7 +5997,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_lunar_sample_return
-		icon = x
+		icon = land_on_moon
 
 		x = -3
 		y = 4
@@ -5985,6 +6007,10 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_change_lunar_exploration }
 		mutually_exclusive = { focus = CHI_ilrs_lunar_base }
+
+		available = {
+			NOT = { has_active_mission = CHI_chang_e_mission }
+		}
 
 		search_filters = { FOCUS_FILTER_SPACE FOCUS_FILTER_EXPENDITURE }
 
@@ -6004,7 +6030,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_ilrs_lunar_base
-		icon = x
+		icon = moon_relax
 
 		x = -1
 		y = 4
@@ -6014,6 +6040,10 @@ focus_tree = {
 
 		prerequisite = { focus = CHI_change_lunar_exploration }
 		mutually_exclusive = { focus = CHI_lunar_sample_return }
+
+		available = {
+			NOT = { has_active_mission = CHI_chang_e_mission }
+		}
 
 		search_filters = { FOCUS_FILTER_SPACE FOCUS_FILTER_EXPENDITURE }
 
@@ -6034,7 +6064,7 @@ focus_tree = {
 
 	focus = {
 		id = CHI_crewed_lunar_landing
-		icon = x
+		icon = mars_base
 
 		x = 0
 		y = 5
@@ -6045,18 +6075,18 @@ focus_tree = {
 		prerequisite = { focus = CHI_lunar_sample_return focus = CHI_ilrs_lunar_base }
 		prerequisite = { focus = CHI_tianwen_interplanetary }
 
-		available = { date > 2028.1.1 }
+		available = {
+			has_country_flag = CHI_shenzhou_mission_done
+			has_country_flag = CHI_tiangong_mission_done
+			has_country_flag = CHI_chang_e_mission_done
+		}
 
 		search_filters = { FOCUS_FILTER_SPACE FOCUS_FILTER_EXPENDITURE }
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus CHI_crewed_lunar_landing"
-			CHI = { country_event = { id = CHI_space_events.1 days = 5 } }
-			custom_effect_tooltip = CHI_crewed_lunar_landing_event_tt
-			newline = yes
-			add_tech_bonus = { name = CHI_crewed_lunar_landing ahead_reduction = 3 bonus = 0.50 uses = 1 category = CAT_space }
-			newline = yes
-			add_ideas = space_efforts
+			country_event = { id = CHI_space_events.1 days = 5 }
+			activate_mission = CHI_crewed_lunar_landing_mission
 			newline = yes
 			set_temp_variable = { treasury_change = -150 }
 			modify_treasury_effect = yes
