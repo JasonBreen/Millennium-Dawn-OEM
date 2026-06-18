@@ -9324,6 +9324,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: Japan_economy.05.a executed"
 		remove_ideas = JAP_entrenched_demand_shortfall_idea_3
 		increase_economic_growth = yes
+		add_ideas = JAP_international_liberalization_service_sector_idea
 
 		ai_chance = {
 			base = 1
@@ -9344,6 +9345,10 @@ country_event = {
 		swap_ideas = {
 			remove_idea = JAP_banks_non_performing_loans_idea_1
 			add_idea = JAP_banks_non_performing_loans_idea_2
+		}
+		if = {
+			limit = { NOT = { has_idea = JAP_selective_bank_recapitalization_idea } }
+			add_ideas = JAP_selective_bank_recapitalization_idea
 		}
 
 		ai_chance = {
@@ -9366,6 +9371,16 @@ country_event = {
 			remove_idea = JAP_banks_non_performing_loans_idea_2
 			add_idea = JAP_banks_non_performing_loans_idea_3
 		}
+		if = {
+			limit = { has_idea = JAP_selective_bank_recapitalization_idea }
+			swap_ideas = {
+				remove_idea = JAP_selective_bank_recapitalization_idea
+				add_idea = JAP_conditional_bank_recapitalization_idea
+			}
+		}
+		else = {
+			add_ideas = JAP_conditional_bank_recapitalization_idea
+		}
 
 		ai_chance = {
 			base = 1
@@ -9384,6 +9399,15 @@ country_event = {
 		name = Japan_economy.08.a
 		log = "[GetDateText]: [This.GetName]: Japan_economy.08.a executed"
 		remove_ideas = JAP_banks_non_performing_loans_idea_3
+		if = {
+			limit = { has_idea = JAP_conditional_bank_recapitalization_idea }
+			remove_ideas = JAP_conditional_bank_recapitalization_idea
+		}
+		add_ideas = JAP_disposal_non_performing_loans_idea
+		add_timed_idea = {
+			idea = JAP_aftermath_of_disposal_non_performing_loans_idea
+			days = 730
+		}
 
 		ai_chance = {
 			base = 1
@@ -9404,6 +9428,10 @@ country_event = {
 		swap_ideas = {
 			remove_idea = JAP_corporate_excess_debt_idea_1
 			add_idea = JAP_corporate_excess_debt_idea_2
+		}
+		if = {
+			limit = { NOT = { has_idea = JAP_antitrust_merger_guidelines_idea } }
+			add_ideas = JAP_antitrust_merger_guidelines_idea
 		}
 
 		ai_chance = {
@@ -9475,6 +9503,7 @@ country_event = {
 		name = Japan_economy.12.b
 		log = "[GetDateText]: [This.GetName]: Japan_economy.12.b executed"
 		set_country_flag = JAP_wage_negotiations_strong_flag
+		set_country_flag = JAP_wage_negotiations_strong_path_taken
 		custom_effect_tooltip = Japan_economy.12_b_TT
 		set_temp_variable = { temp_opinion = -5 }
 		change_small_medium_business_owners_opinion = yes
@@ -9561,6 +9590,18 @@ country_event = {
 			JAP_demand_recovery_progress = 6
 		}
 		custom_effect_tooltip = JAP_demand_recovery_progress_up_6_tt
+		if = {
+			limit = { NOT = { has_idea = JAP_phased_increases_to_the_minimum_wage_idea } }
+			add_ideas = JAP_phased_increases_to_the_minimum_wage_idea
+		}
+		if = {
+			limit = {
+				has_country_flag = JAP_wage_negotiations_strong_path_taken
+				NOT = { has_idea = JAP_public_private_calls_wage_increases_idea }
+			}
+			add_ideas = JAP_public_private_calls_wage_increases_idea
+		}
+		clr_country_flag = JAP_wage_negotiations_strong_path_taken
 		hidden_effect = {
 			country_event = {
 				id = Japan_economy.16
@@ -9594,6 +9635,14 @@ country_event = {
 			JAP_demand_recovery_progress = 2
 		}
 		custom_effect_tooltip = JAP_demand_recovery_progress_up_2_tt
+		if = {
+			limit = { NOT = { has_idea = JAP_minimum_wage_adjustment_pains_idea } }
+			add_timed_idea = {
+				idea = JAP_minimum_wage_adjustment_pains_idea
+				days = 365
+			}
+		}
+		clr_country_flag = JAP_wage_negotiations_strong_path_taken
 		hidden_effect = {
 			country_event = {
 				id = Japan_economy.16
@@ -9791,6 +9840,13 @@ country_event = {
 			limit = { has_country_flag = JAP_dangerous_npl_stock_1_flag }
 			custom_effect_tooltip = JAP_dangerous_npl_stock_to_0_tt
 		}
+		if = {
+			limit = {
+				check_variable = { JAP_business_care > 1 }
+				NOT = { has_idea = JAP_aggressive_bad_loan_cleanup_idea }
+			}
+			add_ideas = JAP_aggressive_bad_loan_cleanup_idea
+		}
 		effect_tooltip = {
 			if = {
 				limit = { check_variable = { JAP_business_care = 0 } }
@@ -9850,6 +9906,10 @@ country_event = {
 		name = Japan_economy.25.a
 		log = "[GetDateText]: [This.GetName]: Japan_economy.25.a executed"
 		custom_effect_tooltip = JAP_banking_confidence_up_15_tt
+		if = {
+			limit = { NOT = { has_idea = JAP_public_capital_injection_banks_idea } }
+			add_ideas = JAP_public_capital_injection_banks_idea
+		}
 
 
 		ai_chance = {
@@ -9964,6 +10024,13 @@ country_event = {
 				bonus = 0.25
 				uses = 1
 			}
+		}
+		if = {
+			limit = {
+				check_variable = { JAP_corporate_restructuring_progress > 59 }
+				NOT = { has_idea = JAP_national_champion_mergers_idea }
+			}
+			add_ideas = JAP_national_champion_mergers_idea
 		}
 
 		ai_chance = {

@@ -132,8 +132,10 @@ SIN_government_of_singapore = {
 		visible = {
 			OR = {
 				has_idea = SIN_migrant_workers
+				has_idea = SIN_migrant_workers_restricted_one_idea
 				has_completed_focus = SIN_import_cheap_labour
 				has_completed_focus = SIN_encourage_migration
+				has_completed_focus = SIN_restrict_migration
 			}
 		}
 
@@ -156,6 +158,9 @@ SIN_government_of_singapore = {
 			}
 			else_if = { limit = { has_idea = SIN_migrant_workers_encouraged_two_idea }
 				remove_ideas = SIN_migrant_workers_encouraged_two_idea
+			}
+			else_if = { limit = { has_idea = SIN_migrant_workers_restricted_one_idea }
+				remove_ideas = SIN_migrant_workers_restricted_one_idea
 			}
 		}
 		ai_will_do = { base = 0 }
@@ -1535,5 +1540,199 @@ SIN_balance_of_power_category = {
 				has_active_mission = bankruptcy_incoming_collapse
 			}
 		}
+	}
+}
+
+#####################################
+## Singapore Manpower Policy Set ####
+#####################################
+SIN_manpower_policy_category = {
+	# ---- Conscription Ladder ---- #
+	SIN_adopt_conscription_expansion = {
+		icon = GFX_decision_fist
+
+		visible = {
+			NOT = { has_idea = SIN_conscription_expansion_1 }
+			NOT = { has_idea = SIN_conscription_expansion_2 }
+			NOT = { has_idea = SIN_conscription_expansion_3 }
+			NOT = { has_idea = SIN_volunteer_service_1 }
+			NOT = { has_idea = SIN_volunteer_service_2 }
+			NOT = { has_idea = SIN_volunteer_service_3 }
+		}
+		available = {
+			is_subject = no
+			has_war = no
+		}
+
+		cost = 75
+		days_remove = 60
+		days_re_enable = 30
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: decision SIN_adopt_conscription_expansion"
+			add_ideas = SIN_conscription_expansion_1
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SIN_expand_conscription = {
+		icon = GFX_decision_fist
+
+		visible = {
+			has_idea = SIN_conscription_expansion_1
+		}
+		available = {
+			is_subject = no
+			has_war = no
+		}
+
+		cost = 100
+		days_remove = 60
+		days_re_enable = 30
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: decision SIN_expand_conscription"
+			swap_ideas = {
+				remove_idea = SIN_conscription_expansion_1
+				add_idea = SIN_conscription_expansion_2
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SIN_maximize_conscription = {
+		icon = GFX_decision_fist
+
+		visible = {
+			has_idea = SIN_conscription_expansion_2
+		}
+		available = {
+			is_subject = no
+			has_war = no
+		}
+
+		cost = 125
+		days_remove = 60
+		days_re_enable = 30
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: decision SIN_maximize_conscription"
+			swap_ideas = {
+				remove_idea = SIN_conscription_expansion_2
+				add_idea = SIN_conscription_expansion_3
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	# ---- Volunteer Service Ladder ---- #
+	SIN_adopt_volunteer_service = {
+		icon = GFX_decision_fist
+
+		visible = {
+			NOT = { has_idea = SIN_volunteer_service_1 }
+			NOT = { has_idea = SIN_volunteer_service_2 }
+			NOT = { has_idea = SIN_volunteer_service_3 }
+			NOT = { has_idea = SIN_conscription_expansion_1 }
+			NOT = { has_idea = SIN_conscription_expansion_2 }
+			NOT = { has_idea = SIN_conscription_expansion_3 }
+		}
+		available = {
+			is_subject = no
+			has_war = no
+		}
+
+		cost = 75
+		days_remove = 60
+		days_re_enable = 30
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: decision SIN_adopt_volunteer_service"
+			add_ideas = SIN_volunteer_service_1
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SIN_expand_volunteer_service = {
+		icon = GFX_decision_fist
+
+		visible = {
+			has_idea = SIN_volunteer_service_1
+		}
+		available = {
+			is_subject = no
+			has_war = no
+		}
+
+		cost = 100
+		days_remove = 60
+		days_re_enable = 30
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: decision SIN_expand_volunteer_service"
+			swap_ideas = {
+				remove_idea = SIN_volunteer_service_1
+				add_idea = SIN_volunteer_service_2
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	SIN_professionalize_volunteer_service = {
+		icon = GFX_decision_fist
+
+		visible = {
+			has_idea = SIN_volunteer_service_2
+		}
+		available = {
+			is_subject = no
+			has_war = no
+		}
+
+		cost = 125
+		days_remove = 60
+		days_re_enable = 30
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: decision SIN_professionalize_volunteer_service"
+			swap_ideas = {
+				remove_idea = SIN_volunteer_service_2
+				add_idea = SIN_volunteer_service_3
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+
+	# ---- Power Projection Capstone ---- #
+	SIN_punch_above_our_weight = {
+		icon = GFX_decision_fist
+
+		visible = {
+			OR = {
+				has_idea = SIN_conscription_expansion_3
+				has_idea = SIN_volunteer_service_3
+			}
+			NOT = { has_idea = SIN_punching_above_our_weight_idea }
+		}
+		available = {
+			is_subject = no
+		}
+
+		cost = 150
+		days_remove = 90
+		days_re_enable = 30
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: decision SIN_punch_above_our_weight"
+			add_ideas = SIN_punching_above_our_weight_idea
+		}
+
+		ai_will_do = { base = 1 }
 	}
 }

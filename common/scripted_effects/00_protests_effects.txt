@@ -153,6 +153,8 @@ calculate_unrest_growth = {
 
 	clamp_variable = { var = protest_strength min = 0 max = 100 }
 
+	MD_protests_apply_economic_disruption = yes
+
 	# Display-only computations: only run when the player has the panel open.
 	if = { limit = { is_ai = no has_country_flag = open_protests_screen }
 		MD_protests_compute_drift_total = yes
@@ -161,6 +163,65 @@ calculate_unrest_growth = {
 	}
 
 	check_protest_trigger = yes
+}
+
+# Nationwide economic-disruption penalties scaled to protest strength bands.
+# easy pair at 50-74, hard pair at 75+, removed below 50 or when protests end.
+MD_protests_apply_economic_disruption = {
+	if = {
+		limit = {
+			has_country_flag = MD_protests_began
+			check_variable = { protest_strength > 74 }
+		}
+		if = {
+			limit = { has_idea = protest_construction_easy }
+			swap_ideas = { remove_idea = protest_construction_easy add_idea = protest_construction_hard }
+		}
+		else_if = {
+			limit = { NOT = { has_idea = protest_construction_hard } }
+			add_ideas = protest_construction_hard
+		}
+		if = {
+			limit = { has_idea = protest_production_easy }
+			swap_ideas = { remove_idea = protest_production_easy add_idea = protest_production_hard }
+		}
+		else_if = {
+			limit = { NOT = { has_idea = protest_production_hard } }
+			add_ideas = protest_production_hard
+		}
+	}
+	else_if = {
+		limit = {
+			has_country_flag = MD_protests_began
+			check_variable = { protest_strength > 49 }
+		}
+		if = {
+			limit = { has_idea = protest_construction_hard }
+			swap_ideas = { remove_idea = protest_construction_hard add_idea = protest_construction_easy }
+		}
+		else_if = {
+			limit = { NOT = { has_idea = protest_construction_easy } }
+			add_ideas = protest_construction_easy
+		}
+		if = {
+			limit = { has_idea = protest_production_hard }
+			swap_ideas = { remove_idea = protest_production_hard add_idea = protest_production_easy }
+		}
+		else_if = {
+			limit = { NOT = { has_idea = protest_production_easy } }
+			add_ideas = protest_production_easy
+		}
+	}
+	else = {
+		MD_protests_remove_economic_disruption = yes
+	}
+}
+
+MD_protests_remove_economic_disruption = {
+	if = { limit = { has_idea = protest_construction_easy } remove_ideas = protest_construction_easy }
+	if = { limit = { has_idea = protest_construction_hard } remove_ideas = protest_construction_hard }
+	if = { limit = { has_idea = protest_production_easy } remove_ideas = protest_production_easy }
+	if = { limit = { has_idea = protest_production_hard } remove_ideas = protest_production_hard }
 }
 
 MD_protests_calc_deterministic_drift = {
