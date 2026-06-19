@@ -12,16 +12,11 @@ focus_tree = {
 	continuous_focus_position = { x = 0 y = 1000 }
 
 
-	shortcut = {
-	}
-	shortcut = {
-	}
-	shortcut = {
-	}
-	shortcut = {
-	}
-	shortcut = {
-	}
+	shortcut = { name = SAU_economic_tree_shortcut    target = SAU_Saudi_Economic_Tree              scroll_wheel_factor = 0.80 }
+	shortcut = { name = SAU_foreign_tree_shortcut     target = SAU_Foregin_Affairs_Begin_Focus_Tree scroll_wheel_factor = 0.80 }
+	shortcut = { name = SAU_internal_tree_shortcut    target = SAU_internal_foregin_affairs          scroll_wheel_factor = 0.80 }
+	shortcut = { name = SAU_military_tree_shortcut    target = SAU_army_01                           scroll_wheel_factor = 0.80 }
+	shortcut = { name = SAU_succession_tree_shortcut  target = SAU_royal_hub                         scroll_wheel_factor = 0.80 }
 
 	focus = {
 		id = SAU_unif_gcc_council
@@ -8466,6 +8461,8 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_provisional_government"
 			add_political_power = 100
 			add_stability = 0.05
+			if = { limit = { has_idea = wahabi_ulema } remove_ideas = wahabi_ulema }
+			if = { limit = { has_idea = saudi_royal_family } remove_ideas = saudi_royal_family }
 		}
 
 		ai_will_do = {
@@ -8477,7 +8474,7 @@ focus_tree = {
 	# =========== Republic of Arabia, Event that Allowed all Parties and decrease the salafist outlooks. ====================
 	focus = {
 		id = SAU_republic_provisional_government_1
-		icon = constitution
+		icon = Election
 
 		x = 130
 		y = 1
@@ -8493,6 +8490,47 @@ focus_tree = {
 			add_popularity = { ideology = fascism popularity = -0.90 }
 			set_country_flag = SAU_parties_legalized
 			add_political_power = 75
+			hidden_effect = {
+			add_popularity = { ideology = democratic popularity = 0.10 }
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			add_popularity = { ideology = communism popularity = 0.10 }
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 19 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 9 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			set_temp_variable = { party_index = 8 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			add_popularity = { ideology = neutrality popularity = 0.10 }
+			set_temp_variable = { party_index = 12 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			add_popularity = { ideology = nationalist popularity = 0.10 }
+			set_temp_variable = { party_index = 21 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			}
+			custom_effect_tooltip = SAU_republic_first_election_tt
+			if = { limit = { has_government = democratic } set_politics = { ruling_party = democratic elections_allowed = yes } }
+			else_if = { limit = { has_government = communism } set_politics = { ruling_party = communism elections_allowed = yes } }
+			else = { set_politics = { ruling_party = neutrality elections_allowed = yes } }
+			hidden_effect = { country_event = { id = MD4_election.0 days = 1 } }
+			add_ideas = the_military
+			add_ideas = international_bankers
 		}
 
 		ai_will_do = {
@@ -8541,10 +8579,10 @@ focus_tree = {
 			factor = 1
 		}
 	}
-	#=========== Hasmite Kingdom of Arabia, Hasmite House with constitutional monarchy ================
+	#=========== Republic of Arabia, NDA ================
 	focus = {
 		id = SAU_republic_provisional_government_3
-		icon = constitution
+		icon = democracy
 
 		x = 130
 		y = 2
@@ -8565,6 +8603,75 @@ focus_tree = {
 			set_temp_variable = { party_popularity_increase = 0.05 }
 			set_temp_variable = { temp_outlook_increase = 0.05 }
 			add_relative_party_popularity = yes
+			if = {
+				limit = { NOT = { has_country_flag = SAU_nda_state_active } }
+				add_dynamic_modifier = { modifier = SAU_nda_state }
+				set_country_flag = SAU_nda_state_active
+			}
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	
+	focus = {
+		id = SAU_republic_nda_party_1
+		icon = democracy3
+
+		x = 125
+		y = 3
+		prerequisite = { focus = SAU_republic_provisional_government_3 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_1"
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			custom_effect_tooltip = SAU_nda_growth_pol_tt
+			add_political_power = 75
+			add_stability = 0.03
+			add_to_variable = { SAU_nda_pp = 0.03 }
+			add_to_variable = { SAU_nda_stab = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}	
+
+	focus = {
+		id = SAU_republic_nda_party_2
+		icon = democracy2
+
+		x = 130
+		y = 3
+		prerequisite = { focus = SAU_republic_provisional_government_3 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_2"
+			custom_effect_tooltip = SAU_nda_growth_pol_tt
+			add_political_power = 75
+			add_stability = 0.03
+			add_to_variable = { SAU_nda_pp = 0.03 }
+			add_to_variable = { SAU_nda_stab = 0.02 }
 		}
 
 		ai_will_do = {
@@ -8572,6 +8679,762 @@ focus_tree = {
 		}
 	}
 
+	focus = {
+		id = SAU_republic_nda_party_3
+		icon = democracy4
+
+		x = 135
+		y = 3
+		prerequisite = { focus = SAU_republic_provisional_government_3 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_3"
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			custom_effect_tooltip = SAU_nda_growth_pol_tt
+			add_political_power = 75
+			add_stability = 0.03
+			add_to_variable = { SAU_nda_pp = 0.03 }
+			add_to_variable = { SAU_nda_stab = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	focus = {
+		id = SAU_republic_nda_party_12
+		icon = focus_generic_industry_investment
+
+		x = 135
+		y = 4
+		prerequisite = { focus = SAU_republic_nda_party_3 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_12"
+			custom_effect_tooltip = SAU_nda_growth_eco_tt
+			add_political_power = 50
+			add_to_variable = { SAU_nda_factory = 0.03 }
+			add_to_variable = { SAU_nda_build = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+		focus = {
+		id = SAU_republic_nda_party_13
+		icon = Saudi
+
+		x = 134
+		y = 5
+		prerequisite = { focus = SAU_republic_nda_party_12 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_13"
+			custom_effect_tooltip = SAU_nda_growth_eco_tt
+			add_political_power = 50
+			add_to_variable = { SAU_nda_factory = 0.03 }
+			add_to_variable = { SAU_nda_build = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+
+	focus = {
+		id = SAU_republic_nda_party_14
+		icon = constitution
+
+		x = 136
+		y = 5
+		prerequisite = { focus = SAU_republic_nda_party_12 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_14"
+			custom_effect_tooltip = SAU_nda_growth_eco_tt
+			add_political_power = 50
+			add_to_variable = { SAU_nda_factory = 0.03 }
+			add_to_variable = { SAU_nda_build = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+
+	focus = {
+		id = SAU_republic_nda_party_15
+		icon = trade
+
+		x = 136
+		y = 6
+		prerequisite = { focus = SAU_republic_nda_party_14 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_15"
+			custom_effect_tooltip = SAU_nda_growth_eco_tt
+			add_political_power = 50
+			add_to_variable = { SAU_nda_factory = 0.03 }
+			add_to_variable = { SAU_nda_build = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+
+	focus = {
+		id = SAU_republic_nda_party_16
+		icon = focus_CHL_strengthen_the_central_bank
+
+		x = 136
+		y = 7
+		prerequisite = { focus = SAU_republic_nda_party_15 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_16"
+			custom_effect_tooltip = SAU_nda_growth_eco_tt
+			add_political_power = 50
+			add_to_variable = { SAU_nda_factory = 0.03 }
+			add_to_variable = { SAU_nda_build = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+
+	# Open more to the Western Culture without Join NATO
+	focus = {
+		id = SAU_republic_nda_party_4
+		icon = alg_judge
+
+		x = 132
+		y = 4
+		prerequisite = { focus = SAU_republic_nda_party_2 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_4"
+			custom_effect_tooltip = SAU_nda_growth_pol_tt
+			add_political_power = 75
+			add_stability = 0.03
+			add_to_variable = { SAU_nda_pp = 0.03 }
+			add_to_variable = { SAU_nda_stab = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	# Join NATO
+	focus = {
+		id = SAU_republic_nda_party_5
+		icon = Decentralization
+
+		x = 128
+		y = 4
+		prerequisite = { focus = SAU_republic_nda_party_2 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_5"
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			custom_effect_tooltip = SAU_nda_growth_pol_tt
+			add_political_power = 75
+			add_stability = 0.03
+			add_to_variable = { SAU_nda_pp = 0.03 }
+			add_to_variable = { SAU_nda_stab = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+
+	focus = {
+		id = SAU_republic_nda_party_7
+		icon = global_community
+
+		x = 128
+		y = 5
+		prerequisite = { focus = SAU_republic_nda_party_5 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_7"
+			custom_effect_tooltip = SAU_nda_growth_pol_tt
+			add_political_power = 75
+			add_stability = 0.03
+			add_to_variable = { SAU_nda_pp = 0.03 }
+			add_to_variable = { SAU_nda_stab = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	focus = {
+		id = SAU_republic_nda_party_8
+		icon = decentralized_economy
+
+		x = 132
+		y = 5
+		prerequisite = { focus = SAU_republic_nda_party_4 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_8"
+			custom_effect_tooltip = SAU_nda_growth_pol_tt
+			add_political_power = 75
+			add_stability = 0.03
+			add_to_variable = { SAU_nda_pp = 0.03 }
+			add_to_variable = { SAU_nda_stab = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	focus = {
+		id = SAU_republic_nda_party_9
+		icon = espionage2
+
+		x = 133
+		y = 6
+		prerequisite = { focus = SAU_republic_nda_party_8 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_9"
+			custom_effect_tooltip = SAU_nda_growth_pol_tt
+			add_political_power = 75
+			add_stability = 0.03
+			add_to_variable = { SAU_nda_pp = 0.03 }
+			add_to_variable = { SAU_nda_stab = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+		focus = {
+		id = SAU_republic_nda_party_10
+		icon = economic_community
+
+		x = 134
+		y = 7
+		prerequisite = { focus = SAU_republic_nda_party_9 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_10"
+			custom_effect_tooltip = SAU_nda_growth_eco_tt
+			add_political_power = 50
+			add_to_variable = { SAU_nda_factory = 0.03 }
+			add_to_variable = { SAU_nda_build = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	focus = {
+		id = SAU_republic_nda_party_11
+		icon = ano3
+
+		x = 135
+		y = 8
+		prerequisite = { focus = SAU_republic_nda_party_10 }
+		prerequisite = { focus = SAU_republic_nda_party_16 }
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_11"
+			custom_effect_tooltip = SAU_nda_growth_eco_tt
+			add_political_power = 50
+			add_to_variable = { SAU_nda_factory = 0.03 }
+			add_to_variable = { SAU_nda_build = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+
+		focus = {
+		id = SAU_republic_nda_party_17
+		icon = farming_sector
+
+		x = 131
+		y = 6
+		prerequisite = { focus = SAU_republic_nda_party_8 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_17"
+			custom_effect_tooltip = SAU_nda_growth_eco_tt
+			add_political_power = 50
+			add_to_variable = { SAU_nda_factory = 0.03 }
+			add_to_variable = { SAU_nda_build = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+			focus = {
+		id = SAU_republic_nda_party_18
+		icon = Generic_Woman
+
+		x = 129
+		y = 6
+		prerequisite = { focus = SAU_republic_nda_party_7 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_18"
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			custom_effect_tooltip = SAU_nda_growth_soc_tt
+			add_stability = 0.04
+			add_to_variable = { SAU_nda_stab = 0.03 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	focus = {
+		id = SAU_republic_nda_party_19
+		icon = ban_islamic_schools
+
+		x = 127
+		y = 6
+		prerequisite = { focus = SAU_republic_nda_party_7 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_19"
+			custom_effect_tooltip = SAU_nda_growth_soc_tt
+			add_stability = 0.04
+			add_to_variable = { SAU_nda_stab = 0.03 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	focus = {
+		id = SAU_republic_nda_party_20
+		icon = religious_partnership_catholic_sunni
+
+		x = 126
+		y = 7
+		prerequisite = { focus = SAU_republic_nda_party_19 }
+		prerequisite = { focus = SAU_republic_nda_party_24 }
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_20"
+			custom_effect_tooltip = SAU_nda_growth_soc_tt
+			add_stability = 0.04
+			add_to_variable = { SAU_nda_stab = 0.03 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+
+	focus = {
+		id = SAU_republic_nda_party_21
+		icon = focus_secular
+
+		x = 125
+		y = 8
+		prerequisite = { focus = SAU_republic_nda_party_20 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_21"
+			custom_effect_tooltip = SAU_nda_growth_soc_tt
+			add_stability = 0.04
+			add_to_variable = { SAU_nda_stab = 0.03 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	focus = {
+		id = SAU_republic_nda_party_22
+		icon = generic_embrace_agrarian_society
+
+		x = 125
+		y = 4
+		prerequisite = { focus = SAU_republic_nda_party_1 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_22"
+			custom_effect_tooltip = SAU_nda_growth_soc_tt
+			add_stability = 0.04
+			add_to_variable = { SAU_nda_stab = 0.03 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	focus = {
+		id = SAU_republic_nda_party_23
+		icon = labor_unions
+
+		x = 125
+		y = 5
+		prerequisite = { focus = SAU_republic_nda_party_22 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_23"
+			custom_effect_tooltip = SAU_nda_growth_soc_tt
+			add_stability = 0.04
+			add_to_variable = { SAU_nda_stab = 0.03 }
+			add_ideas = labour_unions
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+		focus = {
+		id = SAU_republic_nda_party_24
+		icon = politics_human_rights
+
+		x = 125
+		y = 6
+		prerequisite = { focus = SAU_republic_nda_party_23 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_24"
+			custom_effect_tooltip = SAU_nda_growth_soc_tt
+			add_stability = 0.04
+			add_to_variable = { SAU_nda_stab = 0.03 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+		focus = {
+		id = SAU_republic_nda_party_25
+		icon = arabian_peninsula
+
+		x = 130
+		y = 9
+		prerequisite = { focus = SAU_republic_nda_party_26 }
+		prerequisite = { focus = SAU_republic_nda_party_28 }
+		prerequisite = { focus = SAU_republic_nda_party_29 }
+		prerequisite = { focus = SAU_republic_nda_party_11 }
+		prerequisite = { focus = SAU_republic_nda_party_21 }	
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_25"
+			set_temp_variable = { party_index = 2 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			set_temp_variable = { temp_outlook_increase = 0.05 }
+			add_relative_party_popularity = yes
+			custom_effect_tooltip = SAU_nda_growth_for_tt
+			add_political_power = 75
+			add_to_variable = { SAU_nda_pp = 0.02 }
+			add_to_variable = { SAU_nda_research = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+			focus = {
+		id = SAU_republic_nda_party_26
+		icon = pearl_of_the_gulf
+
+		x = 130
+		y = 8
+		prerequisite = { focus = SAU_republic_nda_party_27 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_26"
+			custom_effect_tooltip = SAU_nda_growth_for_tt
+			add_political_power = 75
+			add_to_variable = { SAU_nda_pp = 0.02 }
+			add_to_variable = { SAU_nda_research = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+			focus = {
+		id = SAU_republic_nda_party_27
+		icon = world_citizen_focus
+
+		x = 130
+		y = 7
+		prerequisite = { focus = SAU_republic_nda_party_18 }
+		 prerequisite = { focus = SAU_republic_nda_party_17 }
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_27"
+			custom_effect_tooltip = SAU_nda_growth_for_tt
+			add_political_power = 75
+			add_to_variable = { SAU_nda_pp = 0.02 }
+			add_to_variable = { SAU_nda_research = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+			focus = {
+		id = SAU_republic_nda_party_28
+		icon = blue_democracy
+
+		x = 128
+		y = 8
+		prerequisite = { focus = SAU_republic_nda_party_27 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_28"
+			custom_effect_tooltip = SAU_nda_growth_for_tt
+			add_political_power = 75
+			add_to_variable = { SAU_nda_pp = 0.02 }
+			add_to_variable = { SAU_nda_research = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+			focus = {
+		id = SAU_republic_nda_party_29
+		icon = arabunion
+
+		x = 132
+		y = 8
+		prerequisite = { focus = SAU_republic_nda_party_27 }
+
+		cost = 10
+
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			western_liberals_are_in_power = yes
+		}
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_nda_party_29"
+			custom_effect_tooltip = SAU_nda_growth_for_tt
+			add_political_power = 75
+			add_to_variable = { SAU_nda_pp = 0.02 }
+			add_to_variable = { SAU_nda_research = 0.02 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
 	# =============== (Arab) Republic of Arabia, Ba'athist Party =================
 	focus = {
 		id = SAU_republic_provisional_government_4
@@ -9152,10 +10015,19 @@ focus_tree = {
 			}
 		}
 
-		
 		completion_reward = {
-			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_red_army_1"
-
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_red_guard_1"
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.03 }
+			set_temp_variable = { temp_outlook_increase = 0.03 }
+			add_relative_party_popularity = yes
+			custom_effect_tooltip = SAU_com_red_guard_1_tt
+			add_to_variable = { SAU_com_ws = 0.05 }
+			add_to_variable = { SAU_com_factory = 0.03 }
+			add_to_variable = { SAU_com_build = 0.02 }
+			army_experience = 50
+			add_equipment_to_stockpile = { type = infantry_equipment amount = 3000 producer = SAU }
+			add_war_support = 0.05
 		}
 
 		ai_will_do = { base = 1 }
@@ -9182,10 +10054,18 @@ focus_tree = {
 			}
 		}
 
-		
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_com_red_guard_2"
-
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.03 }
+			set_temp_variable = { temp_outlook_increase = 0.03 }
+			add_relative_party_popularity = yes
+			custom_effect_tooltip = SAU_com_red_guard_2_tt
+			add_to_variable = { SAU_com_ws = 0.05 }
+			add_to_variable = { SAU_com_consc = 0.05 }
+			add_manpower = 50000
+			add_war_support = 0.05
+			add_stability = 0.03
 		}
 
 		ai_will_do = { base = 1 }
