@@ -8461,6 +8461,19 @@ focus_tree = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_provisional_government"
 			add_political_power = 100
 			add_stability = 0.05
+			add_popularity = { ideology = fascism popularity = -0.90 }
+			set_temp_variable = { party_index = 10 }
+			set_temp_variable = { party_popularity_increase = -0.90 }
+			set_temp_variable = { temp_outlook_increase = -0.90 }
+			add_relative_party_popularity = yes
+			hidden_effect = {
+				set_partyall_allowed = yes
+				set_variable = { party_pop_array^11 = 0 } #Kingdom (House of Saud)
+				set_variable = { party_pop_array^12 = 0 } #Caliphate (Al-Qaeda)
+				set_country_flag = party11_banned
+				set_country_flag = party12_banned
+				recalculate_party = yes
+			}
 			if = { limit = { has_idea = wahabi_ulema } remove_ideas = wahabi_ulema }
 			if = { limit = { has_idea = saudi_royal_family } remove_ideas = saudi_royal_family }
 		}
@@ -8487,19 +8500,18 @@ focus_tree = {
 
 		completion_reward = {
 			log = "[GetDateText]: [Root.GetName]: Focus SAU_republic_provisional_government_1"
-			add_popularity = { ideology = fascism popularity = -0.90 }
 			set_country_flag = SAU_parties_legalized
 			add_political_power = 75
 			hidden_effect = {
 			add_popularity = { ideology = democratic popularity = 0.10 }
 			set_temp_variable = { party_index = 2 }
-			set_temp_variable = { party_popularity_increase = 0.05 }
-			set_temp_variable = { temp_outlook_increase = 0.05 }
+			set_temp_variable = { party_popularity_increase = 0.10 }
+			set_temp_variable = { temp_outlook_increase = 0.10 }
 			add_relative_party_popularity = yes
-			add_popularity = { ideology = communism popularity = 0.10 }
+			add_popularity = { ideology = communism popularity = 0.20 }
 			set_temp_variable = { party_index = 4 }
-			set_temp_variable = { party_popularity_increase = 0.05 }
-			set_temp_variable = { temp_outlook_increase = 0.05 }
+			set_temp_variable = { party_popularity_increase = 0.10 }
+			set_temp_variable = { temp_outlook_increase = 0.10 }
 			add_relative_party_popularity = yes
 			set_temp_variable = { party_index = 19 }
 			set_temp_variable = { party_popularity_increase = 0.05 }
@@ -8528,7 +8540,7 @@ focus_tree = {
 			if = { limit = { has_government = democratic } set_politics = { ruling_party = democratic elections_allowed = yes } }
 			else_if = { limit = { has_government = communism } set_politics = { ruling_party = communism elections_allowed = yes } }
 			else = { set_politics = { ruling_party = neutrality elections_allowed = yes } }
-			hidden_effect = { country_event = { id = MD4_election.0 days = 1 } }
+			hidden_effect = { country_event = { id = MD4_election_campaign.0 days = 1 } }
 			add_ideas = the_military
 			add_ideas = international_bankers
 		}
@@ -8572,6 +8584,8 @@ focus_tree = {
 				limit = { NOT = { has_country_flag = SAU_communist_state_active } }
 				add_dynamic_modifier = { modifier = SAU_communist_state }
 				set_country_flag = SAU_communist_state_active
+				remove_ideas = international_bankers
+				add_ideas = communist_cadres
 			}
 		}
 
@@ -8771,7 +8785,7 @@ focus_tree = {
 
 	focus = {
 		id = SAU_republic_nda_party_14
-		icon = constitution
+		icon = focus_generic_industry_investment
 
 		x = 136
 		y = 5
@@ -9200,6 +9214,8 @@ focus_tree = {
 			custom_effect_tooltip = SAU_nda_growth_soc_tt
 			add_stability = 0.04
 			add_to_variable = { SAU_nda_stab = 0.03 }
+			remove_ideas = sunni
+			add_ideas = pluralist
 		}
 
 		ai_will_do = {
@@ -9254,6 +9270,7 @@ focus_tree = {
 			custom_effect_tooltip = SAU_nda_growth_soc_tt
 			add_stability = 0.04
 			add_to_variable = { SAU_nda_stab = 0.03 }
+			remove_ideas = the_military
 			add_ideas = labour_unions
 		}
 
@@ -9511,7 +9528,7 @@ focus_tree = {
 	#===================== (Islamic) Republic of Araba, Muslim Brotherhood =============
 	focus = {
 		id = SAU_republic_provisional_government_6
-		icon = constitution
+		icon = muslim_brotherhood_egy
 
 		x = 140
 		y = 2
@@ -9538,7 +9555,448 @@ focus_tree = {
 			factor = 1
 		}
 	}
-	#- ===== SAUDI COMMUNIST PARTY (CSU-style sub-tree, hangs off _2) =====
+		focus = {
+		id = SAU_AlShura_party_1
+		icon = islam_laws
+
+		x = 138
+		y = 3
+
+		cost = 10
+
+		prerequisite = {focus = SAU_republic_provisional_government_6 }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_1"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+			focus = {
+		id = SAU_AlShura_party_2
+		icon = islamist_gov
+
+		x = 140
+		y = 3
+
+		cost = 10
+
+		prerequisite = { focus = SAU_republic_provisional_government_6}
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_2"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+			focus = {
+		id = SAU_AlShura_party_3
+		icon = islamist_gov2
+
+		x = 142
+		y = 3
+
+		cost = 10
+
+		prerequisite = {focus = SAU_republic_provisional_government_6 }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_3"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+			focus = {
+		id = SAU_AlShura_party_4
+		icon = muslim_arab_world
+
+		x = 139
+		y = 4
+
+		cost = 10
+
+		prerequisite = {focus = SAU_republic_provisional_government_6 }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_4"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+			focus = {
+		id = SAU_AlShura_party_5
+		icon = muslim_women
+
+		x = 141
+		y = 4
+
+		cost = 10
+
+		prerequisite = {focus = SAU_republic_provisional_government_6 }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_5"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+			focus = {
+		id = SAU_AlShura_party_6
+		icon = ummah
+
+		x = 138
+		y = 5
+
+		cost = 10
+
+		prerequisite = { focus = SAU_AlShura_party_4 }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_6"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+			focus = {
+		id = SAU_AlShura_party_8
+		icon = Sunni_Focus
+
+		x = 140
+		y = 5
+
+		cost = 10
+
+		prerequisite = { focus = SAU_AlShura_party_2 }
+		prerequisite = { focus = SAU_AlShura_party_4 }
+		prerequisite = { focus = SAU_AlShura_party_5 }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_8"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+			focus = {
+		id = SAU_AlShura_party_7
+		icon = sharia_law
+
+		x = 142
+		y = 5
+
+		cost = 10
+
+		prerequisite = { focus = SAU_AlShura_party_5 }
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_7"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+
+	focus = {
+		id = SAU_AlShura_party_9
+		icon = islamic_militia_01
+
+		x = 140
+		y = 6
+
+		cost = 10
+
+		prerequisite = { }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+		prerequisite = { focus = SAU_AlShura_party_8 }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_9"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+				focus = {
+		id = SAU_AlShura_party_10
+		icon = islamic_focus_01
+
+		x = 142
+		y = 6
+
+		cost = 10
+
+		prerequisite = { }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+		prerequisite = { focus = SAU_AlShura_party_7 }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_10"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+		focus = {
+		id = SAU_AlShura_party_11
+		icon = islamic_militia_03
+
+		x = 138
+		y = 6
+
+		cost = 10
+
+		prerequisite = { }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+		prerequisite = { focus = SAU_AlShura_party_6 }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_11"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+				focus = {
+		id = SAU_AlShura_party_12
+		icon = aid_quran
+
+		x = 141
+		y = 7
+
+		cost = 10
+
+		prerequisite = { }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+		prerequisite = { focus = SAU_AlShura_party_10 }
+		prerequisite = { focus = SAU_AlShura_party_9 }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_12"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+				focus = {
+		id = SAU_AlShura_party_13
+		icon = anti_catholicism
+
+		x = 139
+		y = 7
+
+		cost = 10
+
+		prerequisite = { }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+		prerequisite = { focus = SAU_AlShura_party_11 }
+		prerequisite = { focus = SAU_AlShura_party_9 }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_13"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+				focus = {
+		id = SAU_AlShura_party_14
+		icon = caliphate
+
+		x = 140
+		y = 8
+
+		cost = 10
+
+		prerequisite = { }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+		prerequisite = { focus = SAU_AlShura_party_12 }
+		prerequisite = { focus = SAU_AlShura_party_13 }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_14"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+			add_to_variable = { SAU_iam_consc = 0.05}
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	focus = {
+		id = SAU_AlShura_party_15
+		icon = sunni_government
+
+		x = 140
+		y = 9
+
+		cost = 10
+
+		prerequisite = { }
+
+		search_filters = { FOCUS_FILTER_POLITICAL }
+
+		available = {
+			neutrality_neutral_muslim_brotherhood_are_in_power = yes
+		}
+		prerequisite = { focus = SAU_AlShura_party_14 }
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SAU_AlShura_party_15"
+			custom_effect_tooltip = SAU_iam_growth_tt
+			add_to_variable = { SAU_iam_pp = 0.02 }
+			add_to_variable = { SAU_iam_stab = 0.01 }
+			add_to_variable = { SAU_iam_ws = 0.01 }
+			custom_effect_tooltip = SAU_iam_capstone_tt
+		}
+
+		ai_will_do = {
+			factor = 1
+		}
+	}
+	#- ===== SAUDI COMMUNIST PARTY () =====
 	focus = {
 		id = SAU_com_nationalize_oil
 		icon = five_year_plan
@@ -9731,6 +10189,8 @@ focus_tree = {
 			custom_effect_tooltip = SAU_com_state_atheism_tt
 			add_to_variable = { SAU_com_pp = 0.03 }
 			add_to_variable = { SAU_com_ws = 0.02 }
+			remove_ideas = sunni
+			add_ideas = pluralist
 		}
 
 		ai_will_do = { base = 1 }
@@ -16894,6 +17354,8 @@ focus_tree = {
 			add_to_variable = { SAU_rep_shia_ws = 0.05 }
 			add_to_variable = { SAU_rep_shia_recruit = 0.03 }
 			add_to_variable = { SAU_rep_shia_build = 0.03 }
+			remove_ideas = international_bankers
+			add_ideas = the_ulema
 		}
 
 		ai_will_do = { base = 1 }
@@ -16960,6 +17422,8 @@ focus_tree = {
 			add_political_power = 100
 			custom_effect_tooltip = SAU_rep_shia_growth_tt
 			add_to_variable = { SAU_rep_shia_pp = 0.02 }
+			remove_ideas = the_military
+			add_ideas = iranian_quds_force
 		}
 
 		ai_will_do = { base = 1 }
