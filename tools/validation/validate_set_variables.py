@@ -5,6 +5,7 @@ Two passes: extract all `set_variable = X` targets, then scan the whole mod
 for `\\bX\\b` references and report vars whose net refs (refs minus sets) is
 zero. Both passes are multiprocessed and disk-cached via `disk_cache`.
 """
+
 import glob
 import hashlib
 import os
@@ -360,7 +361,16 @@ class Validator(BaseValidator):
                 recursive=True,
             )
         )
-        files_to_scan = txt_files + yml_files
+        # Scripted-GUI properties read variables via [?THIS.var|C0] interpolation
+        # in interface/*.gui. A variable referenced only from a GUI file (common
+        # for display-only vars backing a text/progressbar element) has zero .txt
+        # refs and was wrongly reported unused — scan .gui too.
+        gui_files = list(
+            glob.iglob(
+                os.path.join(scan_root, "interface", "**", "*.gui"), recursive=True
+            )
+        )
+        files_to_scan = txt_files + yml_files + gui_files
 
         # Partition into bare names and global.-dotted names (lowercased -> orig
         # case). A scoped read like THIS.foo stores/reads bare `foo`; a global.X
@@ -380,20 +390,13 @@ class Validator(BaseValidator):
         var_ref_counts = {var: 0 for var in cleaned_vars}
         dynamic_patterns: set = set()
         if files_to_scan and (bare_map or dotted_map):
-            if self.workers == 1:
-                _pass2_init(self.mod_path, bare_map, dotted_map, namespace)
-                all_file_counts = [
-                    count_all_variables_in_file(f) for f in files_to_scan
-                ]
-            else:
-                with Pool(
-                    processes=self.workers,
-                    initializer=_pass2_init,
-                    initargs=(self.mod_path, bare_map, dotted_map, namespace),
-                ) as p:
-                    all_file_counts = p.map(
-                        count_all_variables_in_file, files_to_scan, chunksize=20
-                    )
+            all_file_counts = self._pool_map_init(
+                count_all_variables_in_file,
+                files_to_scan,
+                _pass2_init,
+                (self.mod_path, bare_map, dotted_map, namespace),
+                chunksize=20,
+            )
             for file_counts, file_patterns in all_file_counts:
                 for var, count in file_counts.items():
                     var_ref_counts[var] = var_ref_counts.get(var, 0) + count
