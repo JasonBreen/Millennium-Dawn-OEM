@@ -4005,25 +4005,22 @@ SAU_spread_revolution_category = {
 
 	SAU_communist_seize_power = {
 		icon = GFX_decision_generic_form_nation
-		state_target = yes
+		target_array = global.arabic_countries
 		target_root_trigger = { has_country_flag = SAU_peoples_republic }
 		target_trigger = {
 			FROM = {
-				is_capital = yes
-				owner = {
-					OR = { original_tag = EGY original_tag = SYR original_tag = IRQ original_tag = JOR original_tag = LEB original_tag = LBA original_tag = YEM original_tag = SUD original_tag = TUN original_tag = ALG original_tag = MOR original_tag = KUW original_tag = UAE original_tag = QAT original_tag = BHR original_tag = OMA }
-					NOT = { has_war_with = ROOT }
-					NOT = { is_in_faction_with = ROOT }
-					NOT = { has_civil_war = yes }
-					NOT = { emerging_communist_state_are_in_power = yes }
-					NOT = { neutrality_neutral_communism_are_in_power = yes }
-				}
+				OR = { original_tag = EGY original_tag = SYR original_tag = IRQ original_tag = JOR original_tag = LEB original_tag = LBA original_tag = YEM original_tag = SUD original_tag = TUN original_tag = ALG original_tag = MOR original_tag = KUW original_tag = UAE original_tag = QAT original_tag = BHR original_tag = OMA }
+				NOT = { has_war_with = ROOT }
+				NOT = { is_in_faction_with = ROOT }
+				NOT = { has_civil_war = yes }
+				NOT = { emerging_communist_state_are_in_power = yes }
+				NOT = { neutrality_neutral_communism_are_in_power = yes }
 			}
 		}
 		available = {
 			custom_trigger_tooltip = {
 				tooltip = SAU_communist_seize_available_tt
-				FROM = { owner = { check_variable = { party_pop_array^4 > 0.3 } } }
+				FROM = { check_variable = { party_pop_array^4 > 0.3 } }
 			}
 		}
 		cost = 200
@@ -4031,7 +4028,7 @@ SAU_spread_revolution_category = {
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision SAU_communist_seize_power"
 			add_threat = 0.10
-			FROM = { owner = {
+			FROM = {
 				if = {
 					limit = { check_variable = { party_pop_array^4 > 0.5 } }
 					set_temp_variable = { party_index = 4 }
@@ -4051,25 +4048,22 @@ SAU_spread_revolution_category = {
 					add_relative_party_popularity = yes
 					start_civil_war = { ideology = communism size = 0.5 }
 				}
-			} }
+			}
 		}
 		ai_will_do = { base = 0 }
 	}
 
 	SAU_communist_invite_to_comintern = {
 		icon = GFX_decision_generic_form_nation
-		state_target = yes
+		target_array = global.arabic_countries
 		target_root_trigger = { has_country_flag = SAU_peoples_republic }
 		target_trigger = {
 			FROM = {
-				is_capital = yes
-				owner = {
-					OR = { original_tag = EGY original_tag = SYR original_tag = IRQ original_tag = JOR original_tag = LEB original_tag = LBA original_tag = YEM original_tag = SUD original_tag = TUN original_tag = ALG original_tag = MOR original_tag = KUW original_tag = UAE original_tag = QAT original_tag = BHR original_tag = OMA }
-					OR = { emerging_communist_state_are_in_power = yes neutrality_neutral_communism_are_in_power = yes }
-					NOT = { is_in_faction_with = ROOT }
-					NOT = { has_war_with = ROOT }
-					NOT = { has_civil_war = yes }
-				}
+				OR = { original_tag = EGY original_tag = SYR original_tag = IRQ original_tag = JOR original_tag = LEB original_tag = LBA original_tag = YEM original_tag = SUD original_tag = TUN original_tag = ALG original_tag = MOR original_tag = KUW original_tag = UAE original_tag = QAT original_tag = BHR original_tag = OMA }
+				OR = { emerging_communist_state_are_in_power = yes neutrality_neutral_communism_are_in_power = yes }
+				NOT = { is_in_faction_with = ROOT }
+				NOT = { has_war_with = ROOT }
+				NOT = { has_civil_war = yes }
 			}
 		}
 		cost = 50
@@ -4077,7 +4071,7 @@ SAU_spread_revolution_category = {
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision SAU_communist_invite_to_comintern"
 			custom_effect_tooltip = SAU_communist_invite_tt
-			FROM = { owner = { save_event_target_as = SAU_faction_invite_target } }
+			FROM = { save_event_target_as = SAU_faction_invite_target }
 			event_target:SAU_faction_invite_target = { country_event = { id = SAU_events.109 days = 1 } }
 		}
 		ai_will_do = { base = 0 }
@@ -4171,149 +4165,6 @@ SAU_export_shia_revolution_category = {
 			}
 		}
 
-		ai_will_do = { base = 0 }
-	}
-}
-
-SAU_baath_revolution_category = {
-
-	SAU_baath_broadcast = {
-		icon = GFX_decision_generic_political_rally
-		cost = 50
-		days_remove = 30
-		days_re_enable = 1
-		fire_only_once = no
-		available = { has_country_flag = SAU_baath_state_active }
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision SAU_baath_broadcast"
-		}
-		remove_effect = {
-			add_threat = 0.02
-			every_other_country = {
-				limit = { OR = { original_tag = EGY original_tag = SYR original_tag = IRQ original_tag = JOR original_tag = LEB original_tag = LBA original_tag = YEM original_tag = SUD original_tag = TUN original_tag = ALG original_tag = MOR original_tag = KUW original_tag = UAE original_tag = QAT original_tag = BHR original_tag = OMA } NOT = { has_war_with = ROOT } }
-				add_popularity = { ideology = nationalist popularity = 0.03 }
-				set_temp_variable = { party_index = 21 }
-				set_temp_variable = { party_popularity_increase = 0.02 }
-				set_temp_variable = { temp_outlook_increase = 0.02 }
-				add_relative_party_popularity = yes
-			}
-		}
-		ai_will_do = { base = 0 }
-	}
-
-	SAU_baath_arm = {
-		icon = GFX_decision_generic_intelligence_operation
-		cost = 100
-		days_remove = 30
-		days_re_enable = 1
-		fire_only_once = no
-		available = { 
-			has_country_flag = SAU_baath_state_active
-			has_completed_focus = SAU_arab_republic_of_arabia_10
-		 }
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision SAU_baath_arm"
-		}
-		remove_effect = {
-			add_threat = 0.05
-			every_other_country = {
-				limit = { OR = { original_tag = EGY original_tag = SYR original_tag = IRQ original_tag = JOR original_tag = LEB original_tag = LBA original_tag = YEM original_tag = SUD original_tag = TUN original_tag = ALG original_tag = MOR original_tag = KUW original_tag = UAE original_tag = QAT original_tag = BHR original_tag = OMA } NOT = { has_war_with = ROOT } }
-				add_popularity = { ideology = nationalist popularity = 0.05 }
-				set_temp_variable = { party_index = 21 }
-				set_temp_variable = { party_popularity_increase = 0.04 }
-				set_temp_variable = { temp_outlook_increase = 0.04 }
-				add_relative_party_popularity = yes
-				add_stability = -0.04
-			}
-		}
-		ai_will_do = { base = 0 }
-	}
-
-	SAU_baath_seize_power = {
-		icon = GFX_decision_generic_form_nation
-		state_target = yes
-		target_root_trigger = { 
-			has_country_flag = SAU_baath_state_active
-		 }
-		target_trigger = {
-			FROM = {
-				is_capital = yes
-				owner = {
-					OR = { original_tag = EGY original_tag = SYR original_tag = IRQ original_tag = JOR original_tag = LEB original_tag = LBA original_tag = YEM original_tag = SUD original_tag = TUN original_tag = ALG original_tag = MOR original_tag = KUW original_tag = UAE original_tag = QAT original_tag = BHR original_tag = OMA }
-					NOT = { has_war_with = ROOT }
-					NOT = { is_in_faction_with = ROOT }
-					NOT = { has_civil_war = yes }
-					NOT = { nationalist_fascist_are_in_power = yes }
-					NOT = { nationalist_military_junta_are_in_power = yes }
-				}
-			}
-		}
-		available = {
-			has_completed_focus = SAU_arab_republic_of_arabia_10
-			custom_trigger_tooltip = {
-				tooltip = SAU_baath_seize_available_tt
-				FROM = { owner = { check_variable = { party_pop_array^21 > 0.3 } } }
-			}
-		}
-		cost = 200
-		fire_only_once = no
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision SAU_baath_seize_power"
-			add_threat = 0.10
-			FROM = {
-				owner = {
-					if = {
-						limit = { check_variable = { party_pop_array^21 > 0.5 } }
-						set_temp_variable = { party_index = 21 }
-						set_temp_variable = { party_popularity_increase = 0.5 }
-						set_temp_variable = { temp_outlook_increase = 0.5 }
-						add_relative_party_popularity = yes
-							set_temp_variable = { rul_party_temp = 21 }
-							set_temp_variable = { disable_elections = 1 }
-							change_ruling_party_effect = yes
-					}
-					else = {
-						set_temp_variable = { party_index = 21 }
-						set_temp_variable = { party_popularity_increase = 0.35 }
-						set_temp_variable = { temp_outlook_increase = 0.35 }
-						add_relative_party_popularity = yes
-						start_civil_war = {
-							ideology = nationalist
-							size = 0.5
-						}
-					}
-				}
-			}
-		}
-		ai_will_do = { base = 0 }
-	}
-
-	SAU_baath_invite_to_union = {
-		icon = GFX_decision_generic_form_nation
-		state_target = yes
-		target_root_trigger = {
-			has_completed_focus = SAU_arab_republic_of_arabia_10
-		}
-		target_trigger = {
-			FROM = {
-				is_capital = yes
-				owner = {
-					OR = { original_tag = EGY original_tag = SYR original_tag = IRQ original_tag = JOR original_tag = LEB original_tag = LBA original_tag = YEM original_tag = SUD original_tag = TUN original_tag = ALG original_tag = MOR original_tag = KUW original_tag = UAE original_tag = QAT original_tag = BHR original_tag = OMA }
-					OR = { nationalist_fascist_are_in_power = yes nationalist_military_junta_are_in_power = yes }
-					NOT = { is_in_faction_with = ROOT }
-					NOT = { has_war_with = ROOT }
-					NOT = { has_civil_war = yes }
-				}
-			}
-		}
-		cost = 50
-		fire_only_once = no
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision SAU_baath_invite_to_union"
-			custom_effect_tooltip = SAU_baath_invite_tt
-			FROM = { owner = { save_event_target_as = SAU_faction_invite_target } }
-			event_target:SAU_faction_invite_target = { country_event = { id = SAU_events.108 days = 1 } }
-		}
 		ai_will_do = { base = 0 }
 	}
 }
