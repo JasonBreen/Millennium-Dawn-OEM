@@ -247,7 +247,7 @@ calculate_tax_gain = {
 			# Overall productivity
 			multiply = {
 				value = overall_productivity
-				multiply = 0.001
+				divide = global.productivity_center
 			}
 		}
 	}
@@ -4427,10 +4427,14 @@ update_state_variables = {
 			multiply_temp_variable = { var = temp_pop value = 0.01 } # 100 in hundred thousands
 			add_to_variable = { PREV.population_total = temp_pop } # Population Total is in hundreds of thousands
 
-			set_temp_variable = { productivity_temp_state_var = productivity_state_var }
-			multiply_temp_variable = { productivity_temp_state_var = 0.001 }
-			multiply_temp_variable = { productivity_temp_state_var = temp_pop }
-			add_to_variable = { PREV.overall_productivity = productivity_temp_state_var }
+			add_to_variable = {
+				var = PREV.overall_productivity
+				value = {
+					value = productivity_state_var
+					multiply = 0.001
+					multiply = { value = state_population_k multiply = 0.01 }
+				}
+			}
 
 			productivity_growth_controlled_display_effect = yes
 		}
@@ -5257,9 +5261,13 @@ calculate_gdp = {
 	clamp_variable = { var = healthcare_gdp_percent min = 0 max = 1 }
 
 	# Overall productivity grows over time (on_monthly) and with techs and its the main source of economic growth for developed countries
-	set_temp_variable = { productivity_calculations_var = overall_productivity }
-	multiply_temp_variable = { productivity_calculations_var = 0.001 }
-	multiply_variable = { gdp_total = productivity_calculations_var }
+	multiply_variable = {
+		var = gdp_total
+		value = {
+			value = overall_productivity
+			divide = global.productivity_center
+		}
+	}
 
 	#sets a minimum gdp
 	clamp_variable = { var = gdp_total min = 0.1 }
