@@ -14,29 +14,11 @@ is_socialist_block = {
 }
 
 EU_voting_decision_result_trigger = {
-	check_variable = { global.EU_pop_ratio_yes > 0.65 }
-	set_temp_variable = { total_eu_members = global.EU_active_vote_yes }
-	add_to_temp_variable = { total_eu_members = global.EU_active_vote_no }
-	set_temp_variable = { vote_numbers = global.EU_active_vote_yes }
-	divide_temp_variable = { vote_numbers = total_eu_members }
-	check_variable = { vote_numbers > 0.55 }
-}
-
-### EU_mff ###
-
-focus_EU_mff_draft = {
-	any_of_scopes = {
-		array = global.EU_member
-		has_country_flag = EU_mff_draft
-	}
-}
-
-### EU_budget ###
-
-focus_EU_budget_draft = {
-	any_of_scopes = {
-		array = global.EU_member
-		has_country_flag = EU_budget_draft
+	check_expr = { value = global.EU_pop_ratio_yes greater_than = { value = 0.65 } }
+	check_expr = {
+		value = global.EU_active_vote_yes
+		divide = global.EU_member^num
+		greater_than = { value = 0.55 }
 	}
 }
 
