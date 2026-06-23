@@ -373,12 +373,18 @@ def _scan_idea_refs(text: str) -> List[str]:
 # Generous reference scan for the unused-idea check: any keyword that can name
 # an idea, plus block forms. Over-matching is safe here — it only marks more
 # ideas as "used", which makes the unused report conservative (fewer false
-# positives). `idea =` catches add_timed_idea/modify_timed_idea blocks.
+# positives). `idea =` catches add_timed_idea/modify_timed_idea blocks;
+# `show_ideas_tooltip =` catches display-only "fake" idea references. IGNORECASE
+# so case-variant grants like `add_Ideas = X` (valid in-game) are still counted.
 _IDEA_REF_GENEROUS = re.compile(
-    r"\b(?:has_idea|add_ideas|remove_ideas|add_idea|remove_idea|swap_idea|idea)"
-    r"\s*=\s*([A-Za-z0-9_.\-]+)"
+    r"\b(?:has_idea|add_ideas|remove_ideas|add_idea|remove_idea|swap_idea"
+    r"|show_ideas_tooltip|idea)"
+    r"\s*=\s*([A-Za-z0-9_.\-]+)",
+    re.IGNORECASE,
 )
-_IDEA_REF_BLOCK = re.compile(r"\b(?:add_ideas|remove_ideas)\s*=\s*\{([^{}]*)\}")
+_IDEA_REF_BLOCK = re.compile(
+    r"\b(?:add_ideas|remove_ideas)\s*=\s*\{([^{}]*)\}", re.IGNORECASE
+)
 _WORD_TOKEN = re.compile(r"[A-Za-z0-9_.\-]+")
 
 # Meta-effect references build the idea name at runtime from a scope substitution,
@@ -1022,6 +1028,7 @@ class Validator(BaseValidator):
         referenced: Set[str] = set()
         for sub in ref_lists:
             referenced.update(sub)
+        referenced.update(_load_dynamic_token_names(self.mod_path))
 
         # Prefixes from meta-effect references (`idea = tribute_idea_[ROOTTAG]`).
         # Any candidate whose name starts with one is built at runtime, not dead.

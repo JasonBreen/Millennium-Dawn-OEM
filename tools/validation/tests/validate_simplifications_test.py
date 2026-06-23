@@ -9,6 +9,7 @@ under OR / random_list / count_triggers, and never for non-deterministic
 from validate_simplifications import (
     _find_count_collapsible,
     _find_empty_trigger_blocks,
+    _find_government_match,
     _find_mergeable,
     _find_scope_expansion,
     _find_two_bucket_random,
@@ -34,6 +35,22 @@ def _count(text):
 
 def _empty(text):
     return [kw for _, kw in _find_empty_trigger_blocks(strip_comments(text))]
+
+
+def _gov(text):
+    return [rep for _, rep in _find_government_match(strip_comments(text))]
+
+
+def _all_five(target, scoped_tmpl):
+    """Build an exhaustive 5-clause OR. *scoped_tmpl* formats one clause's
+    scoped side given the ideology, e.g. '{t} = {{ has_government = {i} }}'."""
+    clauses = "\n".join(
+        "  AND = {{ has_government = {i}  {s} }}".format(
+            i=i, s=scoped_tmpl.format(t=target, i=i)
+        )
+        for i in ("democratic", "communism", "fascism", "neutrality", "nationalist")
+    )
+    return "OR = {{\n{c}\n}}\n".format(c=clauses)
 
 
 # --- scope-merge: positive cases -------------------------------------------
