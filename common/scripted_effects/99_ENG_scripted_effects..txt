@@ -1290,3 +1290,128 @@ ENG_run_agendas = {
 		}
 	}
 }
+#-------# Oil Control Great Game #-------#
+update_oil_ring_effect = {
+	if = {
+		limit = { check_variable = { oil_ring_source = 1 } }
+		set_variable = { oil_ring_frame = ENG_AZE_oil_control_percent }
+	}
+	else_if = {
+		limit = { check_variable = { oil_ring_source = 2 } }
+		set_variable = { oil_ring_frame = ENG_RUS_oil_control_percent }
+	}
+	else = {
+		#In case one of you niggers fucks it
+		set_variable = { oil_ring_source = 1 }
+		set_variable = { oil_ring_frame = ENG_AZE_oil_control_percent }
+	}
+
+	multiply_variable = { oil_ring_frame = 10 }
+
+	if = {
+		limit = { check_variable = { oil_ring_frame > 1000 } }
+		set_variable = { oil_ring_frame = 1000 }
+	}
+	if = {
+		limit = { check_variable = { oil_ring_frame < 0 } }
+		set_variable = { oil_ring_frame = 0 }
+	}
+
+	if = {
+		limit = { check_variable = { oil_ring_dirty = 0 } }
+		set_variable = { oil_ring_dirty = 1 }
+	}
+	else = {
+		set_variable = { oil_ring_dirty = 0 }
+	}
+}
+
+ENG_cycle_oil_ring_source_effect = {
+	if = {
+		limit = { check_variable = { oil_ring_source = 1 } }
+		set_variable = { oil_ring_source = 2 }
+	}
+	else = {
+		set_variable = { oil_ring_source = 1 }
+	}
+
+	update_oil_ring_effect = yes
+}
+
+modify_ENG_AZE_oil_control_effect = {
+	if = {
+		limit = { NOT = { has_variable = ENG_AZE_oil_control_amount } }
+		set_variable = { ENG_AZE_oil_control_amount = 0 }
+	}
+
+	add_to_variable = { ENG_AZE_oil_control_amount = ENG_oil_control_change }
+
+	if = {
+		limit = { check_variable = { ENG_AZE_oil_control_amount > 100 } }
+		set_variable = { ENG_AZE_oil_control_amount = 100 }
+	}
+	if = {
+		limit = { check_variable = { ENG_AZE_oil_control_amount < 0 } }
+		set_variable = { ENG_AZE_oil_control_amount = 0 }
+	}
+
+	set_variable = { ENG_AZE_oil_control_percent = ENG_AZE_oil_control_amount }
+	update_oil_ring_effect = yes
+}
+
+modify_ENG_RUS_oil_control_effect = {
+	if = {
+		limit = { NOT = { has_variable = ENG_RUS_oil_control_amount } }
+		set_variable = { ENG_RUS_oil_control_amount = 0 }
+	}
+
+	add_to_variable = { ENG_RUS_oil_control_amount = ENG_oil_control_change }
+
+	if = {
+		limit = { check_variable = { ENG_RUS_oil_control_amount > 100 } }
+		set_variable = { ENG_RUS_oil_control_amount = 100 }
+	}
+	if = {
+		limit = { check_variable = { ENG_RUS_oil_control_amount < 0 } }
+		set_variable = { ENG_RUS_oil_control_amount = 0 }
+	}
+
+	set_variable = { ENG_RUS_oil_control_percent = ENG_RUS_oil_control_amount }
+	update_oil_ring_effect = yes
+}
+
+ENG_initial_oil_amount_effect = {
+	set_variable = { ENG_AZE_oil_control_amount  = 0 }
+	set_variable = { ENG_AZE_oil_control_percent = 0 }
+	set_variable = { ENG_RUS_oil_control_amount  = 0 }
+	set_variable = { ENG_RUS_oil_control_percent = 0 }
+	set_variable = { oil_ring_source = 1 }
+	set_variable = { oil_ring_frame = 0 }
+	set_variable = { oil_ring_dirty = 0 }
+}
+
+ENG_init_oil_ring_setup = {
+	ENG_initial_oil_amount_effect = yes
+	set_temp_variable = { ENG_oil_control_change = 40 }
+	modify_ENG_AZE_oil_control_effect = yes
+	set_temp_variable = { ENG_oil_control_change = 20 }
+	modify_ENG_RUS_oil_control_effect = yes
+}
+
+TST_AZE_neg_12 = {
+	set_temp_variable = { ENG_oil_control_change = -12 }
+	modify_ENG_AZE_oil_control_effect = yes
+}
+TST_AZE_pos_15 = {
+	set_temp_variable = { ENG_oil_control_change = 15 }
+	modify_ENG_AZE_oil_control_effect = yes
+}
+TST_RUS_neg_12 = {
+	set_temp_variable = { ENG_oil_control_change = -12 }
+	modify_ENG_RUS_oil_control_effect = yes
+}
+TST_RUS_pos_15 = {
+	set_temp_variable = { ENG_oil_control_change = 15 }
+	modify_ENG_RUS_oil_control_effect = yes
+}
+#-------------------------------#

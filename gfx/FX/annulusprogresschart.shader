@@ -68,45 +68,56 @@ VertexShader =
 
 PixelShader =
 {
-    MainCode PixelColor
-    [[
-        
-        float4 main( VS_OUTPUT v ) : PDX_COLOR
-        {
-            float2 uv = v.vTexCoord0 - 0.5f;
-            float dist = length(uv);
-            float outerRadius = 0.5f;
-            float innerRadius = 0.3f;
-            float aaWidth = 0.01f;
+	MainCode PixelColor
+	[[
+		
+		float4 main( VS_OUTPUT v ) : PDX_COLOR
+		{
+			float2 uv = v.vTexCoord0 - 0.5f;
+			float dist = length(uv);
+			float outerRadius = 0.5f;
+			float innerRadius = 0.3f;
+			float aaWidth = 0.02f;
 
-            // Maska pierścienia z AA (zamiast discard)
-            float maskOuter = smoothstep(outerRadius, outerRadius - aaWidth, dist);
-            float maskInner = smoothstep(innerRadius, innerRadius + aaWidth, dist);
-            float ringMask = maskOuter * maskInner;
+			// Ring mask with smooth AA on both edges
+			float maskOuter = smoothstep(outerRadius, outerRadius - aaWidth, dist);
+			float maskInner = smoothstep(innerRadius, innerRadius + aaWidth, dist);
+			float ringMask  = maskOuter * maskInner;
+			ringMask        = ringMask * ringMask; // squared for extra softness
 
-            if (ringMask <= 0.0f) discard;
+			// Angle (0 = top, clockwise)
+			float angle = atan2(uv.y, -uv.x) - 1.5707963268f;
+			if (angle < 0.0f) angle += 6.283185307f;
 
-            // Kąt (0 = góra, rośnie zgodnie z ruchem wskazówek)
-            float angle = atan2(uv.y, -uv.x) - 1.5707963268f;
-            if (angle < 0.0f) angle += 6.283185307f;
+			float progress = CurrentState * 6.283185307f;
 
-            float progress = CurrentState * 6.283185307f;
+			float4 col;
+			if (angle < progress)
+			{
+				col = vFirstColor;
 
-            float4 col;
-            if (angle < progress)
-            {
-                col = vFirstColor;
-            }
-            else
-            {
-                col = vSecondColor;
-            }
+				float gradT = clamp(angle / (progress + 0.001f), 0.0f, 1.0f);
+				col.rgb    *= lerp(0.45f, 1.0f, gradT);
+			}
+			else
+			{
+				col = vSecondColor;
+			}
 
-            col.a *= ringMask;
-            return col;
-        }
-        
-    ]]
+			float bevelBright = smoothstep(0.0f, 1.0f, ringDepth);
+			float bevel       = lerp(-0.08f, 0.10f, bevelBright);
+			col.rgb          += bevel;
+
+			 // Inner shadow — stronger, tighter falloff
+			float innerShadow  = 1.0f - smoothstep(0.0f, 0.28f, ringDepth);
+			innerShadow        = innerShadow * innerShadow * innerShadow;
+			col.rgb  
+
+			col.a *= ringMask;
+			return col;
+		}
+		
+	]]
 }
 
 
