@@ -8878,6 +8878,135 @@ CHI_public_housing_construction = {
 	}
 }
 
+CHI_water_shortage_category = {
+
+	CHI_water_conservation_project = {
+		icon = GFX_decision_generic_construction
+
+		state_target = yes
+		on_map_mode = map_only
+
+		target_root_trigger = {
+			original_tag = CHI
+			OR = {
+				has_idea = CHI_water_shortage
+				has_idea = CHI_water_shortage_2
+				has_idea = CHI_water_shortage_3
+				has_idea = CHI_water_shortage_4
+			}
+		}
+
+		target_trigger = {
+			FROM = {
+				is_owned_and_controlled_by = ROOT
+				OR = {
+					state = 547 state = 548 state = 549 state = 434 state = 544
+					state = 435 state = 567 state = 558 state = 559 state = 560
+					state = 1072 state = 556 state = 592
+				}
+				NOT = { has_state_flag = CHI_water_project_done }
+				NOT = { has_state_flag = CHI_water_project_in_progress }
+			}
+		}
+
+		days_remove = 180
+
+		available = { check_variable = { treasury > 8 } }
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_water_conservation_project in [FROM.GetName] started"
+			FROM = { set_state_flag = CHI_water_project_in_progress }
+			set_temp_variable = { treasury_change = -8 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_water_conservation_project in [FROM.GetName] completed"
+			FROM = {
+				clr_state_flag = CHI_water_project_in_progress
+				set_state_flag = CHI_water_project_done
+				add_extra_state_shared_building_slots = 1
+				add_building_construction = { type = agriculture_district level = 1 instant_build = yes }
+			}
+			CHI_add_water_project_progress = yes
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_drip_irrigation_rollout = {
+		icon = GFX_decision_generic_construction
+
+		visible = { has_completed_focus = CHI_hybrid_rice_super_program }
+
+		available = { check_variable = { treasury > 15 } }
+
+		fire_only_once = yes
+		days_remove = 300
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_drip_irrigation_rollout started"
+			set_temp_variable = { treasury_change = -15 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_drip_irrigation_rollout completed"
+			CHI_add_water_project_progress = yes
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_anti_desertification_belt = {
+		icon = GFX_decision_generic_construction
+
+		visible = { has_completed_focus = CHI_grain_for_green_program }
+
+		available = { check_variable = { treasury > 15 } }
+
+		fire_only_once = yes
+		days_remove = 300
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_anti_desertification_belt started"
+			set_temp_variable = { treasury_change = -15 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_anti_desertification_belt completed"
+			CHI_add_water_project_progress = yes
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	CHI_urban_water_recycling = {
+		icon = GFX_decision_generic_construction
+
+		visible = { has_completed_focus = CHI_beijing_action_plan_green_olympics }
+
+		available = { check_variable = { treasury > 15 } }
+
+		fire_only_once = yes
+		days_remove = 300
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_urban_water_recycling started"
+			set_temp_variable = { treasury_change = -15 }
+			modify_treasury_effect = yes
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision CHI_urban_water_recycling completed"
+			CHI_add_water_project_progress = yes
+		}
+
+		ai_will_do = { base = 5 }
+	}
+}
+
 CHI_railway_improvement = {
 
 	CHI_railway_north_upgrade = {
@@ -10263,6 +10392,7 @@ CHI_megaprojects = {
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_agricolture_productivity_modifier = 0.04 tooltip = agricolture_productivity_modifier_tt }
 			set_country_flag = CHI_snwt_eastern_done
+			CHI_add_water_project_progress = yes
 			CHI_snwt_capstone_check = yes
 		}
 
@@ -10321,6 +10451,7 @@ CHI_megaprojects = {
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_production_speed_agriculture_district_factor = 0.05 tooltip = production_speed_agriculture_district_factor_tt }
 			set_country_flag = CHI_snwt_central_done
+			CHI_add_water_project_progress = yes
 			CHI_snwt_capstone_check = yes
 		}
 
@@ -10376,6 +10507,7 @@ CHI_megaprojects = {
 			custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 			add_to_variable = { CHI_economy_agricolture_productivity_modifier = 0.04 tooltip = agricolture_productivity_modifier_tt }
 			set_country_flag = CHI_snwt_western_done
+			CHI_add_water_project_progress = yes
 			CHI_snwt_capstone_check = yes
 		}
 

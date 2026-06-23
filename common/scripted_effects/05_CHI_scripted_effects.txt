@@ -1268,6 +1268,74 @@ CHI_evaluate_semiconductor_boycott = {
 	}
 }
 
+CHI_add_water_project_progress = {
+	add_to_variable = { var = CHI_water_projects_completed value = 1 }
+	clamp_variable = { var = CHI_water_projects_completed min = 0 max = 20 }
+	custom_effect_tooltip = CHI_water_project_progress_tt
+	CHI_evaluate_water_shortage = yes
+}
+
+CHI_evaluate_water_shortage = {
+	if = {
+		limit = {
+			has_idea = CHI_water_shortage
+			check_variable = { CHI_water_projects_completed > 4 }
+		}
+		if = {
+			limit = { check_variable = { CHI_water_projects_completed > 19 } }
+			remove_ideas = CHI_water_shortage
+		}
+		else_if = {
+			limit = { check_variable = { CHI_water_projects_completed > 14 } }
+			swap_ideas = { remove_idea = CHI_water_shortage add_idea = CHI_water_shortage_4 }
+		}
+		else_if = {
+			limit = { check_variable = { CHI_water_projects_completed > 9 } }
+			swap_ideas = { remove_idea = CHI_water_shortage add_idea = CHI_water_shortage_3 }
+		}
+		else = {
+			swap_ideas = { remove_idea = CHI_water_shortage add_idea = CHI_water_shortage_2 }
+		}
+	}
+	else_if = {
+		limit = {
+			has_idea = CHI_water_shortage_2
+			check_variable = { CHI_water_projects_completed > 9 }
+		}
+		if = {
+			limit = { check_variable = { CHI_water_projects_completed > 19 } }
+			remove_ideas = CHI_water_shortage_2
+		}
+		else_if = {
+			limit = { check_variable = { CHI_water_projects_completed > 14 } }
+			swap_ideas = { remove_idea = CHI_water_shortage_2 add_idea = CHI_water_shortage_4 }
+		}
+		else = {
+			swap_ideas = { remove_idea = CHI_water_shortage_2 add_idea = CHI_water_shortage_3 }
+		}
+	}
+	else_if = {
+		limit = {
+			has_idea = CHI_water_shortage_3
+			check_variable = { CHI_water_projects_completed > 14 }
+		}
+		if = {
+			limit = { check_variable = { CHI_water_projects_completed > 19 } }
+			remove_ideas = CHI_water_shortage_3
+		}
+		else = {
+			swap_ideas = { remove_idea = CHI_water_shortage_3 add_idea = CHI_water_shortage_4 }
+		}
+	}
+	else_if = {
+		limit = {
+			has_idea = CHI_water_shortage_4
+			check_variable = { CHI_water_projects_completed > 19 }
+		}
+		remove_ideas = CHI_water_shortage_4
+	}
+}
+
 # Fires once all three South-North Water Transfer routes are complete; grants the capstone bonus.
 CHI_snwt_capstone_check = {
 	if = {
@@ -1281,6 +1349,7 @@ CHI_snwt_capstone_check = {
 		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = CHI_economy_modifier }
 		add_to_variable = { CHI_economy_pop_energy_use_multiplier = -0.04 tooltip = pop_energy_use_multiplier_tt }
 		add_to_variable = { CHI_economy_agricolture_productivity_modifier = 0.04 tooltip = agricolture_productivity_modifier_tt }
+		CHI_add_water_project_progress = yes
 	}
 }
 
