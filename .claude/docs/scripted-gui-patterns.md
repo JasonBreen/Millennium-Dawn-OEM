@@ -10,7 +10,7 @@ When a catalog has N similar entries (votes, MIO unlocks, member states), replac
 
 ### Backing array
 
-Holds integer entry IDs (1..N), not tokens. EU votes use the vote ID directly; MIO catalog uses 1..23 mapped to a parallel `global.mio_catalog_all_tokens` master array.
+Holds integer entry IDs (1..N), not tokens. EU votes use the vote ID directly; MIO catalog uses 1..23 mapped to a parallel `global.mio_catalog_all_tokens` master array. Because the IDs are 1-based but `add_to_array` is 0-based, the token array reserves a never-read index-0 slot so `array^v` lines up (otherwise every `^v` lookup is shifted by one — the cause of issue #1955).
 
 ```
 add_to_array = { mio_catalog_visible_array = 1 }
@@ -97,11 +97,11 @@ instantTextboxType = {
 
 ### When the dispatcher explodes — gridbox over an array of scopes
 
-The single-`v` dispatcher only scales in **one** dimension. The moment the display is an **entity × category matrix** — and especially when the entity axis is a *runtime-variable set* — branch count becomes N×M and the dispatcher is the wrong tool.
+The single-`v` dispatcher only scales in **one** dimension. The moment the display is an **entity × category matrix** — and especially when the entity axis is a _runtime-variable set_ — branch count becomes N×M and the dispatcher is the wrong tool.
 
 The EU Parliament member breakdown was the cautionary case: "which countries hold seats in political group N, and how many" is `tags × 24 groups`. It had been built as **1,536 `TAG_party_N_PG` `defined_text` blocks + 1,536 backing loc strings**, concatenated into 24 per-group tokens and shown in a hover tooltip (tooltips can't host a gridbox, which forced the concatenation). Every new EU member meant hand-writing 24 more blocks + 24 loc keys + editing 24 concatenations.
 
-The fix is to stop enumerating and **render from data**: a `gridboxType` over a backing array of **scope objects** (not integer IDs), with `change_scope = yes` so each row scopes *into* the country and reads generic getters. No per-entity loc, no per-entity GUI.
+The fix is to stop enumerating and **render from data**: a `gridboxType` over a backing array of **scope objects** (not integer IDs), with `change_scope = yes` so each row scopes _into_ the country and reads generic getters. No per-entity loc, no per-entity GUI.
 
 ```
 # Effect: rebuild the array for the selected category (loops the member array)
@@ -155,17 +155,16 @@ The payoff test for a data-driven display: **adding one more entity should requi
 
 EU parliament reference implementation:
 
-| Piece                          | Location                                                                  |
-| ------------------------------ | ------------------------------------------------------------------------- |
-| Populate effect                | `EU_select_party_members` — `common/scripted_effects/99_eu_scripted_effects.txt` |
-| Selector + open handler        | `eu_view_party_N_members_click` — `common/scripted_guis/01_european_union_guis.txt` |
-| Gridbox scripted_gui           | `eu_party_member_detail_gui` — same file                                  |
-| Window + entry container       | `eu_party_member_detail_container` / `eu_party_member_detail` — `interface/eu.gui` |
-| Per-scope data                 | `THIS.MEP_party_0..23`, `THIS.MEP_Total`; aggregates `global.MEP_PG_party_N` |
-| Entity set                     | `global.EU_member`                                                        |
+| Piece                    | Location                                                                            |
+| ------------------------ | ----------------------------------------------------------------------------------- |
+| Populate effect          | `EU_select_party_members` — `common/scripted_effects/99_eu_scripted_effects.txt`    |
+| Selector + open handler  | `eu_view_party_N_members_click` — `common/scripted_guis/01_european_union_guis.txt` |
+| Gridbox scripted_gui     | `eu_party_member_detail_gui` — same file                                            |
+| Window + entry container | `eu_party_member_detail_container` / `eu_party_member_detail` — `interface/eu.gui`  |
+| Per-scope data           | `THIS.MEP_party_0..23`, `THIS.MEP_Total`; aggregates `global.MEP_PG_party_N`        |
+| Entity set               | `global.EU_member`                                                                  |
 
 ---
-
 
 ## Dirty variable — MD standard
 

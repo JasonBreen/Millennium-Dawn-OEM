@@ -91,18 +91,17 @@ NOT = { has_idea = bar }
 
 ## NOR is not a valid trigger
 
-`NOR` is **not** a HOI4 trigger keyword — it is Norway's country tag. `NOR = { ... }` opens a country scope for Norway, not a logical NOR block. Express "none of these" as separate `NOT` blocks or `NOT = { OR = { ... } }`:
-
-```
-# Wrong — this scopes into Norway, not a logical NOR
-NOR = { has_government = democratic has_idea = social_05 }
+`NOR` is **not** a HOI4 trigger keyword. Express "none of these" as separate `NOT` blocks or `NOT = { OR = { ... } }`:
 
 # Correct — separate NOT blocks
+
 NOT = { has_government = democratic }
 NOT = { has_idea = social_05 }
 
 # Also correct — NOT wrapping an OR
+
 NOT = { OR = { has_government = democratic has_idea = social_05 } }
+
 ```
 
 ## Use `random` over two-bucket `random_list`
@@ -110,11 +109,15 @@ NOT = { OR = { has_government = democratic has_idea = social_05 } }
 A `random_list` with two buckets where one is empty is a Bernoulli trial in the wrong syntax. Collapse it:
 
 ```
+
 # Heavier — placeholder bucket
+
 random_list = { 50 = { add_to_variable = { my_counter = 1 } } 50 = {} }
 
 # Lighter — direct probability roll
+
 random = { chance = 50 add_to_variable = { my_counter = 1 } }
+
 ```
 
 Three+ buckets, or two non-empty buckets with different effects, must stay as `random_list`. See `.claude/docs/simplification-patterns.md` for edge cases.
@@ -124,8 +127,11 @@ Three+ buckets, or two non-empty buckets with different effects, must stay as `r
 An `OR` block inside an `ai_will_do modifier` that covers all possible values of a trigger is always true and does nothing:
 
 ```
+
 # Wrong — OR(yes, no) is always true; modifier fires unconditionally
+
 modifier = { add = 1 OR = { is_historical_focus_on = yes is_historical_focus_on = no } }
+
 ```
 
 Remove the entire modifier block and fold the `add` amount into `base = N`. If a real condition was intended (e.g., add only when historical focus is on), write it without the tautological OR.
@@ -135,12 +141,16 @@ Remove the entire modifier block and fold the `add` amount into `base = N`. If a
 Multiple conditions in a trigger block are implicitly AND-ed. Never wrap them in redundant `AND = { }`:
 
 ```
+
 # Wrong — redundant AND wrapper
+
 trigger = { AND = { A B C } }
 
 # Correct — implicit AND
+
 trigger = { A B C }
-```
+
+````
 
 Applies to `trigger`, `limit`, `visible`, `available`, `activation`, `cancel_trigger`, and all other trigger contexts.
 
@@ -150,7 +160,7 @@ Invalid modifier names compile silently and do nothing — the game logs "Unknow
 
 ```bash
 grep -r "modifier_name_here" common/ideas/*.txt common/national_focus/*.txt | head -3
-```
+````
 
 No results means the name is wrong. Check the wiki or copy the exact spelling from a similar modifier in the codebase.
 
