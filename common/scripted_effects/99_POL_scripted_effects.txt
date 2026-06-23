@@ -325,112 +325,6 @@ sre_navy_reforming = {
 	}
 }
 
-# Increases land army - increases buffs from spirits
-sre_army_reforming = {
-	if = {
-		limit = { has_idea = POL_outdated_army_idea }
-
-		swap_ideas = {
-			remove_idea = POL_outdated_army_idea
-			add_idea = POL_beginning_of_army_reorganisation_idea
-		}
-	}
-	else_if = {
-		limit = { has_idea = POL_beginning_of_army_reorganisation_idea }
-
-		swap_ideas = {
-			remove_idea = POL_beginning_of_army_reorganisation_idea
-			add_idea = POL_disciplined_army_idea
-		}
-	}
-	else_if = {
-		limit = { has_idea = POL_disciplined_army_idea }
-
-		swap_ideas = {
-			remove_idea = POL_disciplined_army_idea
-			add_idea = POL_modern_military_forces_idea
-		}
-	}
-	else_if = {
-		limit = { has_idea = POL_modern_military_forces_idea }
-
-		swap_ideas = {
-			remove_idea = POL_modern_military_forces_idea
-			add_idea = POL_polskie_sily_zbrojne_idea
-		}
-	}
-}
-
-sre_air_reforming = {
-	if = {
-		limit = { has_idea = POL_soviet_era_air_idea }
-
-		swap_ideas = {
-			remove_idea = POL_soviet_era_air_idea
-			add_idea = POL_change_of_air_doctrine_idea
-		}
-	}
-	else_if = {
-		limit = { has_idea = POL_change_of_air_doctrine_idea }
-
-		swap_ideas = {
-			remove_idea = POL_change_of_air_doctrine_idea
-			add_idea = POL_new_pilot_training_idea
-		}
-	}
-	else_if = {
-		limit = { has_idea = POL_new_pilot_training_idea }
-
-		swap_ideas = {
-			remove_idea = POL_new_pilot_training_idea
-			add_idea = POL_contemporary_plane_systems_idea
-		}
-	}
-	else_if = {
-		limit = { has_idea = POL_contemporary_plane_systems_idea }
-
-		swap_ideas = {
-			remove_idea = POL_contemporary_plane_systems_idea
-			add_idea = POL_polskie_sily_powietrzne_idea
-		}
-	}
-}
-
-sre_navy_reforming = {
-	if = {
-		limit = { has_idea = POL_token_fleet_idea }
-
-		swap_ideas = {
-			remove_idea = POL_token_fleet_idea
-			add_idea = POL_increased_production_of_ships_idea
-		}
-	}
-	else_if = {
-		limit = { has_idea = POL_increased_production_of_ships_idea }
-
-		swap_ideas = {
-			remove_idea = POL_increased_production_of_ships_idea
-			add_idea = POL_baltic_fleet_idea
-		}
-	}
-	else_if = {
-		limit = { has_idea = POL_baltic_fleet_idea }
-
-		swap_ideas = {
-			remove_idea = POL_baltic_fleet_idea
-			add_idea = POL_preparing_for_deep_waters_idea
-		}
-	}
-	else_if = {
-		limit = { has_idea = POL_preparing_for_deep_waters_idea }
-
-		swap_ideas = {
-			remove_idea = POL_preparing_for_deep_waters_idea
-			add_idea = POL_polska_pancerna_flota_idea
-		}
-	}
-}
-
 # UPR effects
 sre_walesa_opposition_idea = {
 	if = {
@@ -547,11 +441,12 @@ sre_polish_ukrainian_war_idea = {
 		}
 	}
 	else_if = {
-		limit = { has_idea = POL_polish_ukrainian_war5_idea }
-
-		POL = {
-			country_event = poland.38
+		limit = {
+			has_idea = POL_polish_ukrainian_war5_idea
+			has_power_balance = { id = POL_korwin_win_bop }
 		}
+
+		POL = { country_event = poland.38 }
 	}
 }
 # Checks if all quotas are met. If they are - buffs, else - debuffs
@@ -559,21 +454,11 @@ sre_check_if_met_quotas = {
 	set_temp_variable = { met_quotas = 1 }
 	if = {
 		limit = {
-			check_variable = { POL.machine_tools_current < POL.machine_tools_req }
-		}
-
-		set_temp_variable = { met_quotas = 0 }
-	}
-	else_if = {
-		limit = {
-			check_variable = { POL.heavy_machinery_current < POL.heavy_machinery_req }
-		}
-
-		set_temp_variable = { met_quotas = 0 }
-	}
-	else_if = {
-		limit = {
-			check_variable = { POL.industrial_materials_current < POL.industrial_materials_req }
+			OR = {
+				check_variable = { POL.machine_tools_current < POL.machine_tools_req }
+				check_variable = { POL.heavy_machinery_current < POL.heavy_machinery_req }
+				check_variable = { POL.industrial_materials_current < POL.industrial_materials_req }
+			}
 		}
 
 		set_temp_variable = { met_quotas = 0 }
@@ -715,6 +600,10 @@ sre_fourth_power = {
 			remove_idea = POL_the_fourth_power3_idea
 			add_idea = POL_the_fourth_power4_idea
 		}
+	}
+	else = {
+		add_ideas = POL_the_fourth_power_idea
+		custom_effect_tooltip = POL_the_fourth_power_idea_TT
 	}
 }
 
@@ -1328,8 +1217,18 @@ sre_foreign_influence_spirit = {
 			add_idea = POL_country_of_peace4_idea
 		}
 	}
+	else_if = {
+		limit = {
+			has_idea = POL_country_of_peace4_idea
+		}
+		swap_ideas = {
+			remove_idea = POL_country_of_peace4_idea
+			add_idea = POL_country_of_peace5_idea
+		}
+	}
 	else = {
-		add_ideas = POL_country_of_peace5_idea
+		add_stability = -0.05
+		add_war_support = 0.05
 	}
 }
 
@@ -1386,7 +1285,7 @@ sre_grand_council_decrease = {
 		limit = {
 			has_idea = POL_grand_council2_idea
 		}
-		remove_ideas = POL_grand_council1_idea
+		remove_ideas = POL_grand_council2_idea
 	}
 	else_if = {
 		limit = {
@@ -1536,5 +1435,14 @@ sre_pol_six_year_plan_exceed = {
 	}
 	else = {
 		add_ideas = POL_six_year_plan_exceed
+	}
+}
+
+POL_gui_dirty_update = {
+	if = { limit = { check_variable = { POL_gui_dirty_var < 200 } }
+		add_to_variable = { POL_gui_dirty_var = 1 }
+	}
+	else = {
+		set_variable = { POL_gui_dirty_var = 1 }
 	}
 }

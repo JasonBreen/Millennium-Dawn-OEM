@@ -15,12 +15,7 @@ country_event = {
 	option = {
 		name = azeev.1.a
 		log = "[GetDateText]: [This.GetName]: azeev.1.a executed"
-		set_temp_variable = { arg1 = global.CONST_karabakh_tension_change_medium }
-		karabakh_change_tension = yes
-		set_temp_variable = { arg1 = global.CONST_karabakh_readiness_change_medium }
-		karabakh_change_readiness = yes
-		custom_effect_tooltip = AZE_increase_readiness_tt
-		custom_effect_tooltip = AZE_increase_tension_tt
+		# TODO: Do something here with this for the former Karabkh mechanic
 
 		add_war_support = -0.1
 		add_stability = -0.1
@@ -74,7 +69,7 @@ country_event = {
 		AZE = {
 			country_event = azeev.16
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons_type
 				amount = 2000
 			}
 			add_equipment_to_stockpile = {
@@ -82,11 +77,11 @@ country_event = {
 				amount = 100
 			}
 			add_equipment_to_stockpile = {
-				type = cnc_equipment
+				type = cnc_equipment_type
 				amount = 200
 			}
 			add_equipment_to_stockpile = {
-				type = util_vehicle_equipment
+				type = util_vehicle_type
 				amount = 400
 			}
 		}
@@ -102,7 +97,7 @@ country_event = {
 		AZE = {
 			country_event = azeev.16
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons_type
 				amount = 4000
 			}
 			add_equipment_to_stockpile = {
@@ -110,11 +105,11 @@ country_event = {
 				amount = 200
 			}
 			add_equipment_to_stockpile = {
-				type = cnc_equipment
+				type = cnc_equipment_type
 				amount = 400
 			}
 			add_equipment_to_stockpile = {
-				type = util_vehicle_equipment
+				type = util_vehicle_type
 				amount = 800
 			}
 		}
@@ -138,8 +133,6 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: azeev.3.a executed"
 		TUR = {
 			set_temp_variable = { percent_change = 7 }
-			set_temp_variable = { tag_index = ROOT.id }
-			set_temp_variable = { influence_target = THIS.id }
 			change_influence_percentage = yes
 		}
 
@@ -152,8 +145,6 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: azeev.3.b executed"
 		SOV = {
 			set_temp_variable = { percent_change = 7 }
-			set_temp_variable = { tag_index = ROOT.id }
-			set_temp_variable = { influence_target = THIS.id }
 			change_influence_percentage = yes
 		}
 
@@ -166,8 +157,6 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: azeev.3.c executed"
 		PER = {
 			set_temp_variable = { percent_change = 7 }
-			set_temp_variable = { tag_index = ROOT.id }
-			set_temp_variable = { influence_target = THIS.id }
 			change_influence_percentage = yes
 		}
 
@@ -297,7 +286,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: azeev.7.a executed"
 		AZE = {
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons_type
 				amount = 4000
 			}
 			add_equipment_to_stockpile = {
@@ -305,11 +294,11 @@ country_event = {
 				amount = 200
 			}
 			add_equipment_to_stockpile = {
-				type = cnc_equipment
+				type = cnc_equipment_type
 				amount = 400
 			}
 			add_equipment_to_stockpile = {
-				type = util_vehicle_equipment
+				type = util_vehicle_type
 				amount = 800
 			}
 		}
@@ -400,19 +389,8 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: azeev.11.a executed"
 		set_country_flag = Aze_hunta_possible
 		hidden_effect = {
-			clear_array = ruling_party
-			clear_array = gov_coalition_array
-			add_to_array = { ruling_party = 22 }
-			update_government_coalition_strength = yes
-			update_party_name = yes
-			set_coalition_drift = yes
-			set_ruling_leader = yes
-			set_leader = yes
-		}
-
-		set_politics = {
-			ruling_party = nationalist
-			elections_allowed = yes
+			set_temp_variable = { rul_party_temp = 22 }
+			change_ruling_party_effect = yes
 		}
 
 		set_temp_variable = { party_index = 5 }
@@ -440,15 +418,13 @@ news_event = {
 		name = aze_news.1.a
 		trigger = {
 			NOT = {
-				has_nationalist_goverment = yes
+				has_nationalist_government = yes
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: aze_news.1.a executed"
 	}
 	option = {
 		name = aze_news.1.b
-		trigger = { has_nationalist_goverment = yes }
-		log = "[GetDateText]: [This.GetName]: aze_news.1.b executed"
+		trigger = { has_nationalist_government = yes }
 	}
 }
 

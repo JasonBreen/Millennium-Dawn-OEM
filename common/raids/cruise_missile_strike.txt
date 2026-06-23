@@ -1,0 +1,1556 @@
+types = {
+	#Cruise missile strike on airbases, radars, AA
+	offensive_counter_air_strike = {
+		days_to_prepare = 15
+		days_re_enable = 180
+
+		category = military_resource_raids
+
+		command_power = 20 # command power allocation cost
+
+		arrow = {
+			type = air
+		}
+
+		# Specific Target is visible
+		show_target = {
+			raid_show_target_opinion_hostile = yes
+			var:target_state = {
+				OR = {
+					air_base > 0
+					radar_station > 0
+					anti_air_building > 0
+				}
+			}
+		}
+
+		# Can prepare
+		available = {
+			raid_target_eligible = yes
+			OR = {
+				has_war_with = FROM
+				hidden_trigger = {
+					has_country_flag = promised_retaliation_against@FROM
+				}
+				AND = {
+					has_opinion = {
+						target = FROM
+						value < -50
+					}
+					has_political_power > 99
+				}
+			}
+		}
+		unit_requirements = {
+			equipment = {
+				type = { tactical_bomber cas strategic_bomber guided_missile_equipment ballistic_missile_equipment hypersonic_missile_equipment }
+				amount = { min = 10 }
+			}
+		}
+
+		launch_sound = raid_launch_marine
+		target_icon = GFX_other_target_icon
+
+		target_type = {
+			building = {
+				type = air_base
+			}
+			building = {
+				type = radar_station
+			}
+			building = {
+				type = anti_air_building
+			}
+		}
+
+		starting_point = {
+			types = { rocket_site submarine carrier air_base }
+		}
+
+		success_factors = {
+			success = {
+				base = 0.20
+				air_agility = {
+					reference = 200
+					weight = 0.5 # At 0 agility, the modifier will have negative effect.
+					start_weight = -0.5 # The modifier will scale linearly, meaning at 50 agility, the modifier will be 0.
+				}
+				reliability = {
+					reference = 1
+					weight = 0.1
+					start_weight = -0.1
+				}
+				air_defence = {
+					reference = 125
+					weight = 0.4
+					start_weight = -0.4
+				}
+				air_superiority = {
+					reference = 1
+					weight = 0.1
+					start_weight = -0.10
+				}
+				### Target Modifiers
+				anti_air = {
+					reference = 5
+					weight = -0.25
+				}
+				radar = {
+					reference = 1
+					weight = -0.15
+				}
+				interception = {
+					reference = 100 # More than 500 fighters won't really make any difference
+					weight = -0.2
+				}
+				intel = {
+					weight = 0.5
+					start_weight = -0.1
+					start_reference = 0
+					reference = 100
+				}
+			}
+			critical = {
+				base = 0.05
+			}
+			disaster = {
+				base = 0.25
+			}
+		}
+
+		success_levels = {
+			failure = {
+				actor_effects = {
+					set_temp_variable = { raid_pp_loss = -100 }
+					apply_raid_failure_losses = yes
+				}
+				victim_effects = {
+					send_raid_event_to_victim = yes
+				}
+			}
+			limited_success = {
+				victim_effects = {
+					send_raid_event_to_victim = yes
+
+					var:target_state = {
+						set_temp_variable = { ROOT.aa_tgt = THIS.building_level@anti_air_building }
+						set_temp_variable = { ROOT.radar_tgt = THIS.building_level@radar_station }
+						set_temp_variable = { ROOT.airbase_tgt = THIS.building_level@air_base }
+					}
+					calculate_aa_defense_value = yes
+					set_temp_variable = { building_damage_by_missile = 1.25 }
+
+					set_temp_variable = { raid_damage_mult = 50 }
+					apply_raid_building_damage_limited = yes
+
+					set_temp_variable = { damage_split = 0 }
+
+					if = {
+						limit = {
+							check_variable = { aa_tgt > 0 }
+						}
+						add_to_temp_variable = { damage_split = 1 }
+					}
+
+					if = {
+						limit = {
+							check_variable = { radar_tgt > 0 }
+						}
+						add_to_temp_variable = { damage_split = 1 }
+					}
+
+					if = {
+						limit = {
+							check_variable = { airbase_tgt > 0 }
+						}
+						add_to_temp_variable = { damage_split = 1 }
+					}
+
+					if = {
+						limit = {
+							check_variable = { damage_split > 1 }
+						}
+						divide_temp_variable = { building_damage_by_missile = damage_split }
+					}
+
+					set_temp_variable = { max_clamp = aa_tgt }
+					add_to_temp_variable = { max_clamp = radar_tgt }
+					add_to_temp_variable = { max_clamp = airbase_tgt }
+
+					clamp_temp_variable = {
+						var = building_damage_by_missile
+						min = 0
+						max = max_clamp
+					}
+
+					if = { limit = { check_variable = { building_damage_by_missile < 1 } } set_temp_variable = { building_damage_by_missile = 1.25 } }
+
+					var:target_state = {
+						if = { limit = { anti_air_building > 0 }
+							meta_effect = {
+								text = {
+									damage_building = {
+										type = anti_air_building
+										damage = [DAM]
+									}
+								}
+								DAM = "[?building_damage_by_missile]"
+							}
+						}
+						if = { limit = { radar_station > 0 }
+							meta_effect = {
+								text = {
+									damage_building = {
+										type = radar_station
+										damage = [DAM]
+									}
+								}
+								DAM = "[?building_damage_by_missile]"
+							}
+						}
+						if = { limit = { air_base > 0 }
+							meta_effect = {
+								text = {
+									damage_building = {
+										type = air_base
+										damage = [DAM]
+									}
+								}
+								DAM = "[?building_damage_by_missile]"
+							}
+						}
+					}
+				}
+				actor_effects = {
+					set_temp_variable = { raid_pp_loss = -100 }
+					apply_raid_limited_success_losses = yes
+				}
+			}
+			success = {
+				victim_effects = {
+					send_raid_event_to_victim = yes
+
+					var:target_state = {
+						set_temp_variable = { ROOT.aa_tgt = THIS.building_level@anti_air_building }
+						set_temp_variable = { ROOT.radar_tgt = THIS.building_level@radar_station }
+						set_temp_variable = { ROOT.airbase_tgt = THIS.building_level@air_base }
+					}
+					calculate_aa_defense_value = yes
+					set_temp_variable = { building_damage_by_missile = 1.25 }
+
+					set_temp_variable = { raid_damage_mult = 50 }
+					apply_raid_building_damage_success = yes
+
+					set_temp_variable = { damage_split = 0 }
+
+					if = {
+						limit = {
+							check_variable = { aa_tgt > 0 }
+						}
+						add_to_temp_variable = { damage_split = 1 }
+					}
+
+					if = {
+						limit = {
+							check_variable = { radar_tgt > 0 }
+						}
+						add_to_temp_variable = { damage_split = 1 }
+					}
+
+					if = {
+						limit = {
+							check_variable = { airbase_tgt > 0 }
+						}
+						add_to_temp_variable = { damage_split = 1 }
+					}
+
+					if = {
+						limit = {
+							check_variable = { damage_split > 1 }
+						}
+						divide_temp_variable = { building_damage_by_missile = damage_split }
+					}
+
+					set_temp_variable = { max_clamp = aa_tgt }
+					add_to_temp_variable = { max_clamp = radar_tgt }
+					add_to_temp_variable = { max_clamp = airbase_tgt }
+
+					clamp_temp_variable = {
+						var = building_damage_by_missile
+						min = 0
+						max = max_clamp
+					}
+
+					if = { limit = { check_variable = { building_damage_by_missile < 1 } } set_temp_variable = { building_damage_by_missile = 1.25 } }
+
+					var:target_state = {
+						if = { limit = { anti_air_building > 0 }
+							meta_effect = {
+								text = {
+									damage_building = {
+										type = anti_air_building
+										damage = [DAM]
+									}
+								}
+								DAM = "[?building_damage_by_missile]"
+							}
+						}
+						if = { limit = { radar_station > 0 }
+							meta_effect = {
+								text = {
+									damage_building = {
+										type = radar_station
+										damage = [DAM]
+									}
+								}
+								DAM = "[?building_damage_by_missile]"
+							}
+						}
+						if = { limit = { air_base > 0 }
+							meta_effect = {
+								text = {
+									damage_building = {
+										type = air_base
+										damage = [DAM]
+									}
+								}
+								DAM = "[?building_damage_by_missile]"
+							}
+						}
+					}
+				}
+				actor_effects = {
+					set_temp_variable = { raid_pp_loss = -100 }
+					apply_raid_success_losses = yes
+				}
+			}
+			critical_success = {
+				victim_effects = {
+					send_raid_event_to_victim = yes
+
+					var:target_state = {
+						set_temp_variable = { ROOT.aa_tgt = THIS.building_level@anti_air_building }
+						set_temp_variable = { ROOT.radar_tgt = THIS.building_level@radar_station }
+						set_temp_variable = { ROOT.airbase_tgt = THIS.building_level@air_base }
+					}
+					calculate_aa_defense_value = yes
+					set_temp_variable = { building_damage_by_missile = 1.25 }
+
+					set_temp_variable = { raid_damage_mult = 50 }
+					apply_raid_building_damage_critical = yes
+
+					set_temp_variable = { damage_split = 0 }
+
+					if = {
+						limit = {
+							check_variable = { aa_tgt > 0 }
+						}
+						add_to_temp_variable = { damage_split = 1 }
+					}
+
+					if = {
+						limit = {
+							check_variable = { radar_tgt > 0 }
+						}
+						add_to_temp_variable = { damage_split = 1 }
+					}
+
+					if = {
+						limit = {
+							check_variable = { airbase_tgt > 0 }
+						}
+						add_to_temp_variable = { damage_split = 1 }
+					}
+
+					if = {
+						limit = {
+							check_variable = { damage_split > 1 }
+						}
+						divide_temp_variable = { building_damage_by_missile = damage_split }
+					}
+
+					set_temp_variable = { max_clamp = aa_tgt }
+					add_to_temp_variable = { max_clamp = radar_tgt }
+					add_to_temp_variable = { max_clamp = airbase_tgt }
+
+					clamp_temp_variable = {
+						var = building_damage_by_missile
+						min = 0
+						max = max_clamp
+					}
+
+					if = { limit = { check_variable = { building_damage_by_missile < 1 } } set_temp_variable = { building_damage_by_missile = 1.25 } }
+
+					var:target_state = {
+						if = { limit = { anti_air_building > 0 }
+							meta_effect = {
+								text = {
+									damage_building = {
+										type = anti_air_building
+										damage = [DAM]
+									}
+								}
+								DAM = "[?building_damage_by_missile]"
+							}
+						}
+						if = { limit = { radar_station > 0 }
+							meta_effect = {
+								text = {
+									damage_building = {
+										type = radar_station
+										damage = [DAM]
+									}
+								}
+								DAM = "[?building_damage_by_missile]"
+							}
+						}
+						if = { limit = { air_base > 0 }
+							meta_effect = {
+								text = {
+									damage_building = {
+										type = air_base
+										damage = [DAM]
+									}
+								}
+								DAM = "[?building_damage_by_missile]"
+							}
+						}
+					}
+				}
+				actor_effects = {
+					set_temp_variable = { raid_pp_loss = -100 }
+					apply_raid_critical_success_losses = yes
+				}
+			}
+		}
+		ai_will_do = {
+			base = 0
+			modifier = {
+				add = 5
+				has_opinion = {
+					target = FROM
+					value < -75
+				}
+			}
+			modifier = {
+				add = 5
+				has_opinion = {
+					target = FROM
+					value < -100
+				}
+			}
+			modifier = {
+				add = 5
+				has_opinion = {
+					target = FROM
+					value < -50
+				}
+			}
+			modifier = {
+				add = 5
+				var:target_state = {
+					air_base > 4
+				}
+			}
+			modifier = {
+				add = -10
+				has_government = FROM
+			}
+			modifier = {
+				factor = 2
+				OR = {
+					has_idea = super_power
+					has_idea = great_power
+					has_idea = large_power
+				}
+			}
+			modifier = {
+				factor = 2
+				strength_ratio = {
+					tag = FROM
+					ratio > 1.5
+				}
+				NOT = { has_war_with = FROM }
+			}
+			modifier = {
+				factor = 0
+				threat < 0.10
+				raid_skip_target_non_hostile_no_retaliation = yes
+			}
+			modifier = {
+				factor = 0
+				strength_ratio = {
+					tag = FROM
+					ratio < 0.5
+				}
+				NOT = { has_war_with = FROM }
+			}
+			modifier = {
+				factor = 0.05
+				OR = {
+					has_government = democratic
+					has_government = neutrality
+					has_elections = yes
+				}
+				FROM = { has_added_tension_amount < 5 }
+			}
+			modifier = {
+				 # Don't target anyone who is not a potential enemy
+				 factor = 0
+				 NOT = { has_country_flag = promised_retaliation_against@FROM }
+				 NOT = {
+				 	is_in_array = {
+				 		array = potential_and_current_enemies
+				 		value = FROM  # Target country
+				 	}
+				 }
+			}
+			modifier = {
+				factor = 0
+				date < 2001.1.1
+				raid_skip_target_non_hostile_no_retaliation = yes
+			}
+			modifier = {
+				NOT = {
+					has_country_flag = promised_retaliation_against@FROM
+				}
+				factor = 0
+				FROM = {
+					OR = {
+						has_idea = NATO_member
+						has_idea = CSTO_member
+						has_idea = EU_member
+						has_idea = faction_resistance_axis_member
+					}
+				}
+			}
+			# Alliance gate — back off when target is in a faction and our alliance ratio is weak (<0.7)
+			modifier = {
+				factor = 0
+				raid_alliance_unfavorable = yes
+			}
+			# Doctrinal reach gate — isolation/local_security/limited interventionism can't reach.
+			# Bypassed by the rule_raid_doctrine_reach game rule.
+			modifier = {
+				factor = 0
+				raid_intervention_doctrine_reach_block = yes
+			}
+			# Major-power target dampener — AI minors are 4× less likely to raid super/great powers while at peace.
+			modifier = {
+				factor = 0.25
+				raid_skip_target_non_hostile_no_retaliation = yes
+				FROM = {
+					OR = { has_idea = super_power has_idea = great_power }
+				}
+				NOT = { OR = { has_idea = super_power has_idea = great_power } }
+			}
+			modifier = {
+				has_country_flag = promised_retaliation_against@FROM
+				factor = 100
+			}
+			modifier = {
+				has_country_flag = conceded_to@FROM
+				factor = 0
+			}
+			modifier = {
+				factor = 0
+				is_ally_with = FROM
+				raid_skip_target_non_hostile_no_retaliation = yes
+			}
+			modifier = {
+				# Don't raid nations we have influence in
+				factor = 0
+				raid_skip_target_non_hostile_no_retaliation = yes
+				FROM = { is_influencer = yes }
+			}
+			modifier = {
+				# Don't raid if heavily in debt
+				factor = 0
+				raid_skip_target_non_hostile_no_retaliation = yes
+				check_variable = { debt_ratio > 0.25 }
+			}
+			modifier = {
+				# Less likely to raid if somewhat in debt
+				factor = 0.25
+				NOT = { has_war_with = FROM }
+				check_variable = { debt_ratio > 0.15 }
+			}
+			modifier = {
+				factor = 0
+				OR = {
+					FROM = { is_subject_of = ROOT }
+					is_subject_of = FROM
+				}
+			}
+		}
+	}
+	#Anti-Missile Strikes
+	anti_missile_strikes = {
+		days_to_prepare = 15
+		days_re_enable = 180
+
+		category = military_resource_raids
+
+		command_power = 20 # command power allocation cost
+
+		arrow = {
+			type = air
+		}
+
+		# Specific Target is visible
+		show_target = {
+			raid_show_target_opinion_hostile = yes
+			var:target_state = {
+				rocket_site > 0
+			}
+		}
+
+		# Can prepare
+		available = {
+			raid_target_eligible = yes
+			OR = {
+				has_war_with = FROM
+				hidden_trigger = {
+					has_country_flag = promised_retaliation_against@FROM
+				}
+				AND = {
+					has_opinion = {
+						target = FROM
+						value < -50
+					}
+					has_political_power > 99
+				}
+			}
+		}
+		unit_requirements = {
+			equipment = {
+				type = { tactical_bomber cas strategic_bomber guided_missile_equipment ballistic_missile_equipment hypersonic_missile_equipment }
+				amount = { min = 10 }
+			}
+		}
+
+		launch_sound = raid_launch_marine
+		target_icon = GFX_other_target_icon
+
+		target_type = {
+			building = {
+				type = rocket_site
+			}
+		}
+
+		starting_point = {
+			types = { rocket_site submarine carrier air_base }
+		}
+
+		success_factors = {
+			success = {
+				base = 0.20
+				air_agility = {
+					reference = 200
+					weight = 0.5
+					start_weight = -0.5
+				}
+				reliability = {
+					reference = 1
+					weight = 0.3
+					start_weight = -0.1
+				}
+				air_defence = {
+					reference = 150
+					weight = 0.2
+					start_weight = -0.2
+				}
+				air_superiority = {
+					reference = 1
+					weight = 0.1
+					start_weight = -0.10
+				}
+				### Target Modifiers
+				anti_air = {
+					reference = 5
+					weight = -0.25
+				}
+				radar = {
+					reference = 1
+					weight = -0.15
+				}
+				interception = {
+					reference = 100 # More than 500 fighters won't really make any difference
+					weight = -0.2
+				}
+				intel = {
+					weight = 0.5
+					start_reference = 10
+					reference = 100
+				}
+			}
+			critical = {
+				base = 0.05
+			}
+			disaster = {
+				base = 0.25
+			}
+		}
+
+		success_levels = {
+			failure = {
+				actor_effects = {
+					set_temp_variable = { raid_pp_loss = -100 }
+					apply_raid_failure_losses = yes
+				}
+				victim_effects = {
+					send_raid_event_to_victim = yes
+				}
+			}
+			limited_success = {
+				victim_effects = {
+					send_raid_event_to_victim = yes
+
+					var:target_state = {
+						set_temp_variable = { ROOT.aa_defense = THIS.non_damaged_building_level@anti_air_building }
+						set_temp_variable = { ROOT.radar_mult = THIS.non_damaged_building_level@radar_station }
+						set_temp_variable = { ROOT.rocket_mult = THIS.non_damaged_building_level@rocket_site }
+						set_temp_variable = { ROOT.rocket_site_tgt = THIS.building_level@rocket_site }
+					}
+
+					add_to_temp_variable = { radar_mult = 0.5 }
+					multiply_temp_variable = { aa_defense = radar_mult }
+					multiply_temp_variable = { rocket_mult = radar_mult }
+
+					if = {
+						limit = {
+							NOT = { check_variable = { rocket_mult = 0 } }
+						}
+						#rocket site defence is more effective due to being the target
+						multiply_temp_variable = { rocket_mult = 1.5 }
+						multiply_temp_variable = { aa_defense = rocket_mult }
+
+						if = {
+							limit = {
+								check_variable = { aa_defense = 0 }
+							}
+							add_to_temp_variable = { aa_defense = rocket_mult }
+						}
+					}
+					set_temp_variable = { building_damage_by_missile = 1.25 }
+
+					set_temp_variable = { raid_damage_mult = 50 }
+					apply_raid_building_damage_limited = yes
+
+					clamp_temp_variable = {
+						var = building_damage_by_missile
+						max = rocket_site_tgt
+					}
+
+					if = { limit = { check_variable = { building_damage_by_missile < 1 } } set_temp_variable = { building_damage_by_missile = 1.25 } }
+
+					var:target_state = {
+						if = { limit = { rocket_site > 0 }
+							meta_effect = {
+								text = {
+									damage_building = {
+										type = rocket_site
+										damage = [DAM]
+									}
+								}
+								DAM = "[?building_damage_by_missile]"
+							}
+						}
+					}
+				}
+				actor_effects = {
+					set_temp_variable = { raid_pp_loss = -100 }
+					apply_raid_limited_success_losses = yes
+				}
+			}
+			success = {
+				victim_effects = {
+					send_raid_event_to_victim = yes
+
+					var:target_state = {
+						set_temp_variable = { ROOT.rocket_site_tgt = THIS.building_level@rocket_site }
+					}
+					calculate_aa_defense_value = yes
+					set_temp_variable = { building_damage_by_missile = 1.25 }
+
+					set_temp_variable = { raid_damage_mult = 50 }
+					apply_raid_building_damage_success = yes
+
+					clamp_temp_variable = {
+						var = building_damage_by_missile
+						max = rocket_site_tgt
+					}
+
+					if = { limit = { check_variable = { building_damage_by_missile < 1 } } set_temp_variable = { building_damage_by_missile = 1.25 } }
+
+					var:target_state = {
+						if = { limit = { rocket_site > 0 }
+							meta_effect = {
+								text = {
+									damage_building = {
+										type = rocket_site
+										damage = [DAM]
+									}
+								}
+								DAM = "[?building_damage_by_missile]"
+							}
+						}
+					}
+				}
+				actor_effects = {
+					set_temp_variable = { raid_pp_loss = -100 }
+					apply_raid_success_losses = yes
+				}
+			}
+			critical_success = {
+				victim_effects = {
+					send_raid_event_to_victim = yes
+
+					var:target_state = {
+						set_temp_variable = { ROOT.rocket_site_tgt = THIS.building_level@rocket_site }
+					}
+					calculate_aa_defense_value = yes
+					set_temp_variable = { building_damage_by_missile = 1.25 }
+
+					set_temp_variable = { raid_damage_mult = 50 }
+					apply_raid_building_damage_critical = yes
+
+					clamp_temp_variable = {
+						var = building_damage_by_missile
+						max = rocket_site_tgt
+					}
+
+					if = { limit = { check_variable = { building_damage_by_missile < 1 } } set_temp_variable = { building_damage_by_missile = 1.25 } }
+
+					var:target_state = {
+						if = { limit = { rocket_site > 0 }
+							meta_effect = {
+								text = {
+									damage_building = {
+										type = rocket_site
+										damage = [DAM]
+									}
+								}
+								DAM = "[?building_damage_by_missile]"
+							}
+						}
+					}
+				}
+				actor_effects = {
+					set_temp_variable = { raid_pp_loss = -100 }
+					apply_raid_critical_success_losses = yes
+				}
+			}
+		}
+		ai_will_do = {
+			base = 0
+			modifier = {
+				add = 5
+				has_opinion = {
+					target = FROM
+					value < -75
+				}
+			}
+			modifier = {
+				add = 5
+				has_opinion = {
+					target = FROM
+					value < -100
+				}
+			}
+			modifier = {
+				add = 5
+				has_opinion = {
+					target = FROM
+					value < -50
+				}
+			}
+			modifier = {
+				add = -10
+				has_government = FROM
+			}
+			modifier = {
+				factor = 2
+				var:target_state = {
+					rocket_site > 4
+				}
+			}
+			modifier = {
+				factor = 2
+				OR = {
+					has_idea = super_power
+					has_idea = large_power
+					has_idea = great_power
+				}
+			}
+			modifier = {
+				factor = 2
+				strength_ratio = {
+					tag = FROM
+					ratio > 1.5
+				}
+				NOT = { has_war_with = FROM }
+			}
+			modifier = {
+				factor = 0
+				threat < 0.10
+				raid_skip_target_non_hostile_no_retaliation = yes
+			}
+			modifier = {
+				factor = 0.05
+				OR = {
+					has_government = democratic
+					has_government = neutrality
+					has_elections = yes
+				}
+				FROM = { has_added_tension_amount < 5 }
+			}
+			modifier = {
+				factor = 0
+				var:target_state = {
+					rocket_site < 4
+				}
+			}
+			modifier = {
+				factor = 0
+				strength_ratio = {
+					tag = FROM
+					ratio < 0.75
+				}
+				NOT = { has_war_with = FROM }
+			}
+			modifier = {
+				# Don't target anyone who is not a potential enemy
+				factor = 0
+				NOT = { has_country_flag = promised_retaliation_against@FROM }
+				NOT = {
+					is_in_array = {
+						array = potential_and_current_enemies
+						value = FROM  # Target country
+					}
+				}
+			}
+			modifier = {
+				factor = 0
+				has_war = yes
+				raid_skip_target_non_hostile_no_retaliation = yes
+			}
+			modifier = {
+				factor = 0
+				tag = USA
+				FROM = {
+					tag = IRQ
+				}
+				date < 2004.1.1
+				NOT = { has_country_flag = promised_retaliation_against@FROM }
+			}
+			modifier = {
+				factor = 0
+				date < 2001.1.1
+				raid_skip_target_non_hostile_no_retaliation = yes
+			}
+			modifier = {
+				NOT = {
+					has_country_flag = promised_retaliation_against@FROM
+				}
+				factor = 0
+				FROM = {
+					OR = {
+						has_idea = NATO_member
+						has_idea = CSTO_member
+						has_idea = EU_member
+						has_idea = faction_resistance_axis_member
+					}
+				}
+			}
+			# Alliance gate — back off when target is in a faction and our alliance ratio is weak (<0.7)
+			modifier = {
+				factor = 0
+				raid_alliance_unfavorable = yes
+			}
+			# Doctrinal reach gate — isolation/local_security/limited interventionism can't reach.
+			# Bypassed by the rule_raid_doctrine_reach game rule.
+			modifier = {
+				factor = 0
+				raid_intervention_doctrine_reach_block = yes
+			}
+			# Major-power target dampener — AI minors are 4× less likely to raid super/great powers while at peace.
+			modifier = {
+				factor = 0.25
+				raid_skip_target_non_hostile_no_retaliation = yes
+				FROM = {
+					OR = { has_idea = super_power has_idea = great_power }
+				}
+				NOT = { OR = { has_idea = super_power has_idea = great_power } }
+			}
+			modifier = {
+				has_country_flag = promised_retaliation_against@FROM
+				factor = 100
+			}
+			modifier = {
+				has_country_flag = conceded_to@FROM
+				factor = 0
+			}
+			modifier = {
+				factor = 0
+				is_ally_with = FROM
+				raid_skip_target_non_hostile_no_retaliation = yes
+			}
+			modifier = {
+				# Don't raid nations we have influence in
+				factor = 0
+				raid_skip_target_non_hostile_no_retaliation = yes
+				FROM = { is_influencer = yes }
+			}
+			modifier = {
+				# Don't raid if heavily in debt
+				factor = 0
+				raid_skip_target_non_hostile_no_retaliation = yes
+				check_variable = { debt_ratio > 0.25 }
+			}
+			modifier = {
+				# Less likely to raid if somewhat in debt
+				factor = 0.25
+				NOT = { has_war_with = FROM }
+				check_variable = { debt_ratio > 0.15 }
+			}
+			modifier = {
+				factor = 0
+				OR = {
+					FROM = { is_subject_of = ROOT }
+					is_subject_of = FROM
+				}
+			}
+		}
+	}
+	#Dispersed strike on divisions in a single state
+	#TODO: Add political power cost
+	divisions_cruise_missile_strike = {
+		days_to_prepare = 10 #10
+		days_re_enable = 270 #270
+
+		category = military_resource_raids
+
+		command_power = 20 # command power allocation cost
+
+		arrow = {
+			type = air
+		}
+
+		available = {
+			raid_target_eligible = yes
+		}
+
+		# Visible if the target is at war with someone else and we have either doctrine reach
+		# plus opinion < -50, or a direct war/wargoal of our own. Restricted to states with
+		# enemy divisions because the raid only damages units in-state.
+		show_target = {
+			OR = {
+				has_war_with = FROM
+				has_wargoal_against = FROM
+				AND = {
+					FROM = { has_war = yes }
+					has_opinion = {
+						target = FROM
+						value < -50
+					}
+					raid_show_target_intervention_check = yes
+				}
+			}
+			FROM = {
+				divisions_in_state = {
+					size > 0
+					state = var:target_state
+				}
+			}
+		}
+
+		launchable = {
+			OR = {
+				has_political_power > 99
+				has_war_with = FROM
+			}
+		}
+
+		launch_sound = raid_launch_marine
+		target_icon = GFX_other_target_icon
+
+		target_type = {
+			state = {
+				always = yes
+			}
+		}
+
+		unit_requirements = {
+			equipment = {
+				type = { guided_missile_equipment ballistic_missile_equipment hypersonic_missile_equipment }
+				amount = { min = 10 }
+			}
+		}
+
+		starting_point = {
+			types = { rocket_site submarine }
+		}
+
+		success_factors = {
+			success = {
+				base = 0.20
+				air_agility = {
+					reference = 200
+					weight = 0.5
+					start_weight = -0.5
+				}
+				reliability = {
+					reference = 1
+					weight = 0.3
+					start_weight = -0.1
+				}
+				air_defence = {
+					reference = 250
+					weight = 0.2
+					start_weight = -0.2
+				}
+				air_superiority = {
+					reference = 1
+					weight = 0.1
+					start_weight = -0.10
+				}
+				### Target Modifiers
+				anti_air = {
+					reference = 5
+					weight = -0.25
+				}
+				radar = {
+					reference = 1
+					weight = -0.15
+				}
+				interception = {
+					reference = 100 # More than 500 fighters won't really make any difference
+					weight = -0.2
+				}
+				intel = {
+					weight = 0.5
+					start_weight = -0.1
+					start_reference = 10
+					reference = 100
+				}
+			}
+			critical = {
+				base = 0.05
+			}
+			disaster = {
+				base = 0.25
+			}
+		}
+
+		success_levels = {
+			failure = {
+				victim_effects = {
+					send_raid_event_to_victim = yes
+				}
+			}
+			limited_success = {
+				victim_effects = {
+					send_raid_event_to_victim = yes
+
+					calculate_aa_defense_value = yes
+
+					set_temp_variable = { missile_damage_to_unit = 3 }
+
+					set_temp_variable_to_random = {
+						var = missile_luck_mod
+						min = 0.4
+						max = 0.6
+					}
+
+					multiply_temp_variable = { missile_damage_to_unit = missile_luck_mod }
+
+					if = {
+						limit = {
+							NOT = { check_variable = { aa_defense = 0 } }
+						}
+						divide_temp_variable = { missile_damage_to_unit = aa_defense }
+					}
+
+					var:victim_country = {
+						set_country_flag = {
+							flag = cruise_missile_striked
+							days = 1
+							value = 1
+						}
+						set_temp_variable = { ROOT.num_divs_targeted = THIS.num_armies_in_state@var:ROOT.target_state }
+					}
+
+					set_temp_variable = { missile_damage_spread = 150 }
+					divide_temp_variable = { missile_damage_spread = num_divs_targeted }
+
+					multiply_temp_variable = { missile_damage_to_unit = missile_damage_spread }
+
+					set_temp_variable = { str_dam = missile_damage_to_unit }
+					multiply_temp_variable = { str_dam = 0.4 }
+					subtract_from_temp_variable = { missile_damage_to_unit = str_dam }
+
+					#Test using OWNER = var:ROOT.victim_country
+					var:target_state = {
+						meta_effect = {
+							text = {
+								damage_units = {
+									state = THIS
+									limit = { has_country_flag = cruise_missile_striked }
+									org_damage = [ORG]
+									str_damage = [STR]
+									ratio = no
+									army = yes
+									navy = no
+								}
+							}
+							ORG = "[?missile_damage_to_unit]"
+							STR = "[?str_dam]"
+						}
+					}
+					custom_effect_tooltip = {
+						localization_key = damage_to_units_tt
+						ORG = 25
+						STR = 15
+					}
+				}
+			}
+			success = {
+				victim_effects = {
+					send_raid_event_to_victim = yes
+
+					calculate_aa_defense_value = yes
+
+					set_temp_variable = { missile_damage_to_unit = 3 }
+
+					set_temp_variable_to_random = {
+						var = missile_luck_mod
+						min = 0.4
+						max = 0.6
+					}
+
+					multiply_temp_variable = { missile_damage_to_unit = missile_luck_mod }
+
+					if = {
+						limit = {
+							NOT = { check_variable = { aa_defense = 0 } }
+						}
+						divide_temp_variable = { missile_damage_to_unit = aa_defense }
+					}
+
+					var:victim_country = {
+						set_country_flag = {
+							flag = cruise_missile_striked
+							days = 1
+							value = 1
+						}
+						set_temp_variable = { ROOT.num_divs_targeted = THIS.num_armies_in_state@var:ROOT.target_state }
+					}
+
+					log = "[?num_divs_targeted] number of targeted divisions"
+
+					set_temp_variable = { missile_damage_spread = 150 }
+					divide_temp_variable = { missile_damage_spread = num_divs_targeted }
+
+					multiply_temp_variable = { missile_damage_to_unit = missile_damage_spread }
+
+					set_temp_variable = { str_dam = missile_damage_to_unit }
+					multiply_temp_variable = { str_dam = 0.4 }
+					subtract_from_temp_variable = { missile_damage_to_unit = str_dam }
+
+					log = "[?str_dam] STR Damage, [?missile_damage_to_unit] ORG Damage"
+
+					#Test using OWNER = var:ROOT.victim_country
+					var:target_state = {
+						meta_effect = {
+							text = {
+								damage_units = {
+									state = THIS
+									limit = { has_country_flag = cruise_missile_striked }
+									org_damage = [ORG]
+									str_damage = [STR]
+									ratio = no
+									army = yes
+									navy = no
+								}
+							}
+							ORG = "[?missile_damage_to_unit]"
+							STR = "[?str_dam]"
+						}
+					}
+					custom_effect_tooltip = {
+						localization_key = damage_to_units_tt
+						ORG = 25
+						STR = 15
+					}
+				}
+			}
+			critical_success = {
+				victim_effects = {
+					send_raid_event_to_victim = yes
+
+					calculate_aa_defense_value = yes
+
+					set_temp_variable = { missile_damage_to_unit = 3 }
+
+					set_temp_variable_to_random = {
+						var = missile_luck_mod
+						min = 0.4
+						max = 0.6
+					}
+
+					multiply_temp_variable = { missile_damage_to_unit = missile_luck_mod }
+
+					if = {
+						limit = {
+							NOT = { check_variable = { aa_defense = 0 } }
+						}
+						divide_temp_variable = { missile_damage_to_unit = aa_defense }
+					}
+
+					var:victim_country = {
+						set_country_flag = {
+							flag = cruise_missile_striked
+							days = 1
+							value = 1
+						}
+						set_temp_variable = { ROOT.num_divs_targeted = THIS.num_armies_in_state@var:ROOT.target_state }
+					}
+
+					log = "[?num_divs_targeted] number of targeted divisions"
+
+					set_temp_variable = { missile_damage_spread = 150 }
+					divide_temp_variable = { missile_damage_spread = num_divs_targeted }
+
+					multiply_temp_variable = { missile_damage_to_unit = missile_damage_spread }
+
+					set_temp_variable = { str_dam = missile_damage_to_unit }
+					multiply_temp_variable = { str_dam = 0.4 }
+					subtract_from_temp_variable = { missile_damage_to_unit = str_dam }
+
+					log = "[?str_dam] STR Damage, [?missile_damage_to_unit] ORG Damage"
+
+					#Test using OWNER = var:ROOT.victim_country
+					var:target_state = {
+						meta_effect = {
+							text = {
+								damage_units = {
+									state = THIS
+									limit = { has_country_flag = cruise_missile_striked }
+									org_damage = [ORG]
+									str_damage = [STR]
+									ratio = no
+									army = yes
+									navy = no
+								}
+							}
+							ORG = "[?missile_damage_to_unit]"
+							STR = "[?str_dam]"
+						}
+					}
+					custom_effect_tooltip = {
+						localization_key = damage_to_units_tt
+						ORG = 25
+						STR = 15
+					}
+				}
+			}
+		}
+		#Setup AI will do
+		#AI will do this raid when at war, and when trying to break into a strategic region, or as part of a naval invasion
+		#So do this when naval invasion in state is going on
+		ai_will_do = {
+			base = 0
+			modifier = {
+				add = 5
+				has_opinion = {
+					target = FROM
+					value < -75
+				}
+			}
+			modifier = {
+				add = 5
+				has_opinion = {
+					target = FROM
+					value < -100
+				}
+			}
+			modifier = {
+				add = 5
+				has_opinion = {
+					target = FROM
+					value < -50
+				}
+			}
+			modifier = {
+				add = -10
+				has_government = FROM
+			}
+			modifier = {
+				factor = 3
+				FROM = {
+					divisions_in_state = {
+						size > 20
+						state = var:target_state
+					}
+				}
+			}
+			modifier = {
+				factor = 5
+				has_naval_invasion_against_state = {
+					state = var:target_state
+					preparation > 0.5
+				}
+			}
+			modifier = {
+				factor = 2
+				OR = {
+					has_idea = super_power
+					has_idea = large_power
+					has_idea = great_power
+				}
+			}
+			modifier = {
+				factor = 2
+				strength_ratio = {
+					tag = FROM
+					ratio > 1.5
+				}
+				NOT = { has_war_with = FROM }
+			}
+			modifier = {
+				factor = 0
+				threat < 0.10
+				raid_skip_target_non_hostile_no_retaliation = yes
+			}
+			modifier = {
+				factor = 0
+				strength_ratio = {
+					tag = FROM
+					ratio < 0.75
+				}
+				NOT = { has_war_with = FROM }
+			}
+			modifier = {
+				factor = 0
+				FROM = {
+					divisions_in_state = {
+						size < 15
+						state = var:target_state
+					}
+				}
+			}
+			modifier = {
+				# Don't target anyone who is not a potential enemy
+				factor = 0
+				NOT = { has_country_flag = promised_retaliation_against@FROM }
+				NOT = {
+					is_in_array = {
+						array = potential_and_current_enemies
+						value = FROM  # Target country
+					}
+				}
+			}
+			modifier = {
+				factor = 0
+				has_war = yes
+				raid_skip_target_non_hostile_no_retaliation = yes
+			}
+			modifier = {
+				factor = 0
+				tag = USA
+				FROM = {
+					tag = IRQ
+				}
+				date < 2004.1.1
+				NOT = { has_country_flag = promised_retaliation_against@FROM }
+			}
+			modifier = {
+				factor = 0
+				date < 2001.1.1
+				raid_skip_target_non_hostile_no_retaliation = yes
+			}
+			modifier = {
+				factor = 0.05
+				OR = {
+					has_government = democratic
+					has_government = neutrality
+					has_elections = yes
+				}
+				FROM = { has_added_tension_amount < 5 }
+			}
+			modifier = {
+				NOT = {
+					has_country_flag = promised_retaliation_against@FROM
+				}
+				factor = 0
+				FROM = {
+					OR = {
+						has_idea = NATO_member
+						has_idea = CSTO_member
+						has_idea = EU_member
+						has_idea = faction_resistance_axis_member
+					}
+				}
+			}
+			# Alliance gate — back off when target is in a faction and our alliance ratio is weak (<0.7)
+			modifier = {
+				factor = 0
+				raid_alliance_unfavorable = yes
+			}
+			# Doctrinal reach gate — isolation/local_security/limited interventionism can't reach.
+			# Bypassed by the rule_raid_doctrine_reach game rule.
+			modifier = {
+				factor = 0
+				raid_intervention_doctrine_reach_block = yes
+			}
+			# Major-power target dampener — AI minors are 4× less likely to raid super/great powers while at peace.
+			modifier = {
+				factor = 0.25
+				raid_skip_target_non_hostile_no_retaliation = yes
+				FROM = {
+					OR = { has_idea = super_power has_idea = great_power }
+				}
+				NOT = { OR = { has_idea = super_power has_idea = great_power } }
+			}
+			modifier = {
+				has_country_flag = promised_retaliation_against@FROM
+				factor = 100
+			}
+			modifier = {
+				has_country_flag = conceded_to@FROM
+				factor = 0
+			}
+			modifier = {
+				factor = 0
+				is_ally_with = FROM
+				raid_skip_target_non_hostile_no_retaliation = yes
+			}
+			modifier = {
+				# Don't raid nations we have influence in
+				factor = 0
+				raid_skip_target_non_hostile_no_retaliation = yes
+				FROM = { is_influencer = yes }
+			}
+			modifier = {
+				# Don't raid if heavily in debt
+				factor = 0
+				raid_skip_target_non_hostile_no_retaliation = yes
+				check_variable = { debt_ratio > 0.25 }
+			}
+			modifier = {
+				# Less likely to raid if somewhat in debt
+				factor = 0.25
+				NOT = { has_war_with = FROM }
+				check_variable = { debt_ratio > 0.15 }
+			}
+			modifier = {
+				factor = 0
+				OR = {
+					FROM = { is_subject_of = ROOT }
+					is_subject_of = FROM
+				}
+			}
+		}
+	}
+}

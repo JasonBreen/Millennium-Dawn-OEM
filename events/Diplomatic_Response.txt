@@ -1,6 +1,7 @@
-﻿add_namespace = diplomatic_response
+add_namespace = diplomatic_response
+add_namespace = annex_game_rule
 
-#FROM accepts!
+# FROM accepts!
 country_event = {
 	id = diplomatic_response.1
 	title = diplomatic_response.1.t
@@ -15,7 +16,7 @@ country_event = {
 	}
 }
 
-#FROM rejects!
+# FROM rejects!
 country_event = {
 	id = diplomatic_response.2
 	title = diplomatic_response.2.t
@@ -41,7 +42,7 @@ country_event = {
 	}
 }
 
-#FROM bows to our will!
+# FROM bows to our will!
 country_event = {
 	id = diplomatic_response.3
 	title = diplomatic_response.3.t
@@ -56,17 +57,121 @@ country_event = {
 	}
 }
 
-#FROM defies us!
+# FROM defies us!
 country_event = {
-	id = diplomatic_response.4
-	title = diplomatic_response.4.t
-	desc = diplomatic_response.4.d
-	picture = GFX_political_deal
-
+	id = annex_game_rule.1
 	is_triggered_only = yes
+	hidden = yes
+	immediate = {
+		log = "[GetDateText]: [ROOT.GetName]: event annex_game_rule.1"
+		every_country = {
+			limit = {
+				original_tag = ROOT
+			}
+			country_event = annex_game_rule.2
+		}
+	}
+}
 
-	option = {	#Well, too bad.
-		name = diplomatic_response.4.o1
-		log = "[GetDateText]: [This.GetName]: diplomatic_response.4.o1 executed"
+country_event = {
+	id = annex_game_rule.2
+	is_triggered_only = yes
+	hidden = yes
+	immediate = {
+		log = "[GetDateText]: [ROOT.GetName]: event annex_game_rule.2"
+		every_country = {
+			limit = {
+				original_tag = ROOT
+			}
+			every_owned_state = {
+				transfer_state_to = ROOT
+			}
+		}
+	}
+}
+
+country_event = {
+	id = annex_game_rule.3
+	is_triggered_only = yes
+	hidden = yes
+	immediate = {
+		log = "[GetDateText]: [ROOT.GetName]: event annex_game_rule.3"
+		every_country = {
+			limit = {
+				original_tag = ROOT
+			}
+		}
+		every_country = {
+			limit = {
+				original_tag = ROOT
+				overlord = {
+					has_idea = super_power
+				}
+			}
+			country_event = {
+				id = annex_game_rule.2
+				days = 1
+			}
+		}
+		every_country = {
+			limit = {
+				original_tag = ROOT
+				overlord = {
+					has_idea = great_power
+				}
+			}
+			country_event = {
+				id = annex_game_rule.2
+				days = 3
+			}
+		}
+		every_country = {
+			limit = {
+				original_tag = ROOT
+				overlord = {
+					has_idea = large_power
+				}
+			}
+			country_event = {
+				id = annex_game_rule.2
+				days = 6
+			}
+		}
+		every_country = {
+			limit = {
+				original_tag = ROOT
+				overlord = {
+					has_idea = regional_power
+				}
+			}
+			country_event = {
+				id = annex_game_rule.2
+				days = 9
+			}
+		}
+		every_country = {
+			limit = {
+				original_tag = ROOT
+				overlord = {
+					has_idea = minor_power
+				}
+			}
+			country_event = {
+				id = annex_game_rule.2
+				days = 12
+			}
+		}
+		every_country = {
+			limit = {
+				original_tag = ROOT
+				overlord = {
+					has_idea = non_power
+				}
+			}
+			country_event = {
+				id = annex_game_rule.2
+				days = 15
+			}
+		}
 	}
 }

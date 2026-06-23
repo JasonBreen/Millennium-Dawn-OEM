@@ -1,13 +1,21 @@
-#Based
+# SOV AI Strategies
+SOV_we_want_the_ak12_early = {
+	allowed = { original_tag = SOV }
+	enable = {
+		country_exists = SOV
+		date > 2012.1.1
+		NOT = { has_tech = infantry_weapons_6 }
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = research_tech id = infantry_weapons_6 value = 100 }
+}
 SOV_sick_bastard = {
 	allowed = { original_tag = SOV }
 	enable = {
-		original_tag = SOV
 		num_divisions < 25
 	}
-	abort = {
-		num_divisions > 24
-	}
+	abort_when_not_enabled = yes
 	ai_strategy = { type = role_ratio id = L_Inf value = 1000 }
 }
 SOV_area_priority = {
@@ -25,19 +33,64 @@ SOV_area_priority = {
 	ai_strategy = { type = area_priority id = middle_east value = 150 }
 	ai_strategy = { type = area_priority id = africa value = 50 }
 }
-SOV_use_decisions = {
+SOV_defend_moscow = { #If Moscow region is part of a theater, this theater has priority for units
 	allowed = { original_tag = SOV }
 	enable = { always = yes }
 	abort_when_not_enabled = yes
-	ai_strategy = { type = pp_spend_priority id = decision value = 30000 }
+
+	ai_strategy = {
+		type = theatre_distribution_demand_increase
+		id = 665 #state ID
+		value = 20
+	}
 }
-SOV_debuff_decisions = {
+SOV_support_SAZ = {
 	allowed = { original_tag = SOV }
-	enable = { NOT = { country_exists = BLR } }
+	enable = { has_country_flag = PER_SAZ_rebellion }
 	abort_when_not_enabled = yes
-	ai_strategy = { type = pp_spend_priority id = decision value = -30000 }
+
+	ai_strategy = { type = befriend id = "SAZ" value = 20 }
+	ai_strategy = { type = protect id = "SAZ" value = 20 }
+	ai_strategy = { type = influence id = "SAZ" value = 20 }
+	ai_strategy = { type = support id = "SAZ" value = 20 }
+	ai_strategy = { type = send_volunteers_desire id = "SAZ" value = 200 }
+	ai_strategy = { type = befriend id = "PER" value = -100 }
+	ai_strategy = { type = conquer id = "PER" value = 50 }
+	ai_strategy = { type = invade id = "PER" value = 50 }
+	ai_strategy = { type = protect id = "PER" value = -100 }
+	ai_strategy = { type = antagonize id = "PER" value = 100 }
+	ai_strategy = { type = alliance id = "PER" value = -200 }
+	ai_strategy = { type = support id = "PER" value = -100 }
+	ai_strategy = { type = contain id = "PER" value = 100 }
 }
-#Political
+
+SOV_support_IRI = {
+	allowed = { original_tag = SOV }
+	enable = {
+		any_country_with_original_tag = {
+			original_tag_to_check = PER
+			has_country_flag = PER_akhoond_flag
+			has_war_with = PER
+		}
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = befriend id = "IRI" value = 20 }
+	ai_strategy = { type = protect id = "IRI" value = 20 }
+	ai_strategy = { type = influence id = "IRI" value = 20 }
+	ai_strategy = { type = support id = "IRI" value = 20 }
+	ai_strategy = { type = send_volunteers_desire id = "IRI" value = 5000 }
+	ai_strategy = { type = befriend id = "IRI" value = -100 }
+	ai_strategy = { type = conquer id = "IRI" value = 50 }
+	ai_strategy = { type = invade id = "IRI" value = 50 }
+	ai_strategy = { type = protect id = "IRI" value = -100 }
+	ai_strategy = { type = antagonize id = "IRI" value = 100 }
+	ai_strategy = { type = alliance id = "IRI" value = -200 }
+	ai_strategy = { type = support id = "IRI" value = -100 }
+	ai_strategy = { type = contain id = "IRI" value = 100 }
+}
+#POLITICAL
+#HELP ABKHAZIA
 SOV_recognize_ABK = {
 	allowed = { original_tag = SOV }
 	enable = { country_exists = ABK }
@@ -46,16 +99,7 @@ SOV_recognize_ABK = {
 	ai_strategy = { type = befriend id = "ABK" value = 50 }
 	ai_strategy = { type = influence id = "ABK" value = 50 }
 }
-SOV_support_HOR = {
-	allowed = { original_tag = SOV }
-	enable = { country_exists = HOR }
-	abort_when_not_enabled = yes
-
-	ai_strategy = { type = befriend id = "HOR" value = 50 }
-	ai_strategy = { type = protect id = "HOR" value = 50 }
-	ai_strategy = { type = influence id = "HOR" value = 50 }
-	ai_strategy = { type = support id = "HOR" value = 50 }
-}
+#DONT LIKE GEORGIA
 SOV_dislike_GEO = {
 	allowed = { original_tag = SOV }
 	enable = {
@@ -67,74 +111,171 @@ SOV_dislike_GEO = {
 	ai_strategy = { type = protect id = "SOO" value = 50 }
 	ai_strategy = { type = protect id = "ABK" value = 50 }
 }
-SOV_influence_UKR = {
+#AGGRESIVE IF UKRAINE HAVE NATIONALISTS GOVERNMENT
+SOV_attack_UKR = {
 	allowed = { original_tag = SOV }
 	enable = {
+		SOV = {
+			NOT = {
+				has_government = democratic
+			}
+		}
 		NOT = { is_in_faction_with = UKR }
+		UKR = {
+			nationalist_fascist_are_in_power = yes
+		}
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = { type = contain id = "UKR" value = 50 }
-	ai_strategy = { type = antagonize id = "UKR" value = 25 }
+	ai_strategy = { type = contain id = "UKR" value = 220 }
+	ai_strategy = { type = antagonize id = "UKR" value = 225 }
 }
+#HELP UKRAINE IF UKRAINE HAVE VITRENKO
+SOV_help_UKR = {
+	allowed = { original_tag = SOV }
+	enable = {
+		NOT = { has_war_with = UKR }
+		SOV = {
+			NOT = {
+				has_government = democratic
+			}
+		}
+		UKR = {
+			OR = {
+				emerging_autocracy_are_in_power = yes
+				AND = {
+					has_country_flag = UKR_vitrenko_power
+					nationalist_monarchists_are_in_power = yes
+				}
+			}
+		}
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = befriend id = "UKR" value = 100 }
+	ai_strategy = { type = support id = "UKR" value = 200 }
+	ai_strategy = { type = send_volunteers_desire id = "UKR" value = 1000 }
+}
+#HELP UKRAINIAN COMMIES
+SOV_help_commi_ukr = {
+	allowed = { original_tag = SOV }
+	enable = {
+		NOT = { has_war_with = UKR }
+		emerging_communist_state_are_in_power = yes
+		UKR = {
+			OR = {
+				emerging_communist_state_are_in_power = yes
+				neutrality_neutral_social_are_in_power = yes
+			}
+		}
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = befriend id = "UKR" value = 100 }
+	ai_strategy = { type = support id = "UKR" value = 200 }
+	ai_strategy = { type = send_volunteers_desire id = "UKR" value = 1000 }
+}
+#DEFENCE TRANSNISTRIA WITH PEACEKEEPERS
+SOV_support_pmr_14_army = {
+	allowed = { original_tag = SOV }
+	enable = {
+		PMR = {
+			has_idea = PMR_14_army
+			has_war = yes
+		}
+	}
+	abort_when_not_enabled = yes
+	ai_strategy = { type = send_volunteers_desire id = "PMR" value = 1500 }
+	ai_strategy = { type = befriend id = "PMR" value = 50 }
+	ai_strategy = { type = support id = "PMR" value = 50 }
+	ai_strategy = { type = send_lend_lease_desire id = "PMR" value = 100 }
+}
+#HELP DONETSK
 SOV_influence_DPR = {
 	allowed = { original_tag = SOV }
 	enable = {
+		country_exists = DPR
 		NOT = { has_war_with = DPR }
+		DPR = {
+			is_subject = no
+		}
 	}
 	abort_when_not_enabled = yes
 	ai_strategy = { type = befriend id = "DPR" value = 100 }
 	ai_strategy = { type = support id = "DPR" value = 500 }
 	ai_strategy = { type = send_volunteers_desire id = "DPR" value = 1000 }
 }
+#HELP LUGANSK
 SOV_influence_LPR = {
 	allowed = { original_tag = SOV }
 	enable = {
-		NOT = { has_war_with = LPR }
+		country_exists = LPR
+		NOT = {
+			has_war_with = LPR
+		}
+		LPR = {
+			is_subject = no
+		}
 	}
 	abort_when_not_enabled = yes
 	ai_strategy = { type = befriend id = "LPR" value = 100 }
 	ai_strategy = { type = support id = "LPR" value = 500 }
 	ai_strategy = { type = send_volunteers_desire id = "LPR" value = 1000 }
 }
+#HELP KHARKIV
 SOV_influence_HPR = {
 	allowed = { original_tag = SOV }
 	enable = {
+		country_exists = HPR
 		NOT = { has_war_with = HPR }
+		HPR = {
+			is_subject = no
+		}
 	}
 	abort_when_not_enabled = yes
 	ai_strategy = { type = befriend id = "HPR" value = 150 }
 	ai_strategy = { type = support id = "HPR" value = 1000 }
 	ai_strategy = { type = send_volunteers_desire id = "HPR" value = 1000 }
-	ai_strategy = { type = befriend id = "OPR" value = 100 }
-	ai_strategy = { type = support id = "OPR" value = 500 }
-	ai_strategy = { type = send_volunteers_desire id = "OPR" value = 1000 }
 }
+#HELP ODESSA
 SOV_influence_OPR = {
 	allowed = { original_tag = SOV }
 	enable = {
-		NOT = { has_war_with = HPR }
+		country_exists = OPR
+		NOT = {
+			has_war_with = OPR
+		}
+		OPR = {
+			is_subject = no
+		}
 	}
 	abort_when_not_enabled = yes
 	ai_strategy = { type = befriend id = "OPR" value = 100 }
 	ai_strategy = { type = support id = "OPR" value = 500 }
 	ai_strategy = { type = send_volunteers_desire id = "OPR" value = 1000 }
 }
-SOV_influence_MLR = {
+#PARTNERSHIP TREATY WITH NORTH KOREA
+SOV_influence_NKO = {
 	allowed = { original_tag = SOV }
 	enable = {
-		NOT = { has_war_with = MLR }
+		has_idea = NKO_korean_russian_friendship
 	}
 	abort_when_not_enabled = yes
-
-	ai_strategy = { type = befriend id = "MLR" value = 100 }
-	ai_strategy = { type = support id = "MLR" value = 500 }
-	ai_strategy = { type = send_volunteers_desire id = "MLR" value = 1000 }
+	ai_strategy = { type = befriend id = "NKO" value = 500 }
+	ai_strategy = { type = support id = "NKO" value = 500 }
+	ai_strategy = { type = protect id = "NKO" value = 500 }
+	ai_strategy = { type = send_volunteers_desire id = "NKO" value = 1000 }
 }
+#HELP SIRYA
 SOV_support_SYR = {
 	allowed = { original_tag = SOV }
 	enable = {
-		NOT = { has_war_with = SYR }
+		NOT = {
+			has_war_with = SYR
+		}
+		SYR = {
+			is_subject = no
+		}
 	}
 	abort_when_not_enabled = yes
 
@@ -143,6 +284,7 @@ SOV_support_SYR = {
 	ai_strategy = { type = support id = "SYR" value = 200 }
 	ai_strategy = { type = send_volunteers_desire id = "SYR" value = 200 }
 }
+#ANTI USA
 SOV_rival_USA = {
 	allowed = { original_tag = SOV }
 	enable = {
@@ -154,6 +296,7 @@ SOV_rival_USA = {
 	ai_strategy = { type = alliance id = "USA" value = -200 }
 	ai_strategy = { type = support id = "USA" value = -200 }
 }
+#FRIENSHIP WITH GULF COUNTRIES
 SOV_befriend_gulf = {
 	allowed = { original_tag = SOV }
 	enable = {
@@ -168,19 +311,14 @@ SOV_befriend_gulf = {
 	ai_strategy = { type = befriend id = "QAT" value = 50 }
 	ai_strategy = { type = alliance id = "QAT" value = 50 }
 }
+#HELP BOTSWANA
 SOV_supply_botswana = {
 	allowed = { original_tag = SOV }
 
 	enable = {
-		original_tag = SOV
 		BOT = { has_completed_focus = BOT_buy_gunships }
 	}
-	abort = {
-		OR = {
-			has_war_with = BOT
-			BOT = { is_in_faction_with = USA }
-		}
-	}
+	abort_when_not_enabled = yes
 	ai_strategy = { type = befriend id = "BOT" value = 15 }
 	ai_strategy = { type = support id = "BOT" value = 15 }
 }
@@ -205,7 +343,6 @@ SOV_default_naval_breakdown = {
 SOV_chi_chinese_dominance = {
 	allowed = { original_tag = SOV }
 	enable = {
-		original_tag = SOV
 		CHI = { has_completed_focus = CHI_Chinese_Dominance }
 	}
 	abort_when_not_enabled = yes
@@ -222,15 +359,18 @@ SOV_chi_chinese_dominance = {
 SOV_territorial_demands = {
 	allowed = { original_tag = SOV }
 	enable = {
-		original_tag = SOV
 		SOV = { has_completed_focus = SOV_territorial_demands }
+		OR = {
+			emerging_communist_state_are_in_power = yes
+			neutrality_neutral_communism_are_in_power = yes
+		}
 	}
 	abort_when_not_enabled = yes
 
 	ai_strategy = { type = conquer id = "UKR" value = 100 }
 	ai_strategy = { type = conquer id = "PMR" value = 100 }
 	ai_strategy = { type = conquer id = "MLV" value = 100 }
-	ai_strategy = {	type = conquer id = "NKR" value = 100 }
+	ai_strategy = { type = conquer id = "NKR" value = 100 }
 	ai_strategy = { type = conquer id = "TRK" value = 100 }
 	ai_strategy = { type = conquer id = "KAZ" value = 100 }
 	ai_strategy = { type = conquer id = "UZB" value = 100 }
@@ -249,7 +389,6 @@ SOV_territorial_demands = {
 SOV_CHI_territorial_demands = {
 	allowed = { original_tag = CHI }
 	enable = {
-		original_tag = CHI
 		SOV = { has_completed_focus = SOV_territorial_demands }
 	}
 	abort_when_not_enabled = yes
@@ -265,7 +404,7 @@ SOV_CHI_territorial_demands = {
 
 
 SOV_defeat_the_blockade = {
-	allowed = { tag = SOV }
+	allowed = { original_tag = SOV }
 	enable = {
 		has_war_with = USA
 		alliance_naval_strength_ratio < 1.0 #If you are less then 100% relative strength keep the blockade defense
@@ -284,327 +423,218 @@ SOV_defeat_the_blockade = {
 	}
 }
 
-### Hippie :)
-# Belarus
-SOV_cancel_war_BLR = {
+#NATIONALIST POLICY
+#HELP IRAQ IF THEY HAVE RUSSIAN MILITARY BASE
+SOV_help_iraq_nationalist_war_jirik = {
 	allowed = { original_tag = SOV }
 	enable = {
-		date < 2016.1.1
-		BLR = {
-			country_exists = BLR
+		country_exists = IRQ
+		OR = {
+			nationalist_monarchists_are_in_power = yes
+			nationalist_right_wing_populists_are_in_power = yes
+		}
+		IRQ = {
+			has_idea = SOV_IRQ_base
+		}
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = send_volunteers_desire id = "IRQ" value = 500 }
+}
+#HELP LIBYA IF THEY HAVE RUSSIAN MILITARY BASE
+SOV_help_lybia_gaddafi_war_jirik = {
+	allowed = { original_tag = SOV }
+	enable = {
+		country_exists = LBA
+		OR = {
+			nationalist_monarchists_are_in_power = yes
+			nationalist_right_wing_populists_are_in_power = yes
+		}
+		LBA = { has_idea = SOV_LBA_base }
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = send_volunteers_desire id = "LBA" value = 500 }
+}
+#HELP ARMENIA WITH WAR AGAINST AZERBAIJAN OR TURKEY
+SOV_help_armenia_nationalist_war_with_aze_or_tur_jirik = {
+	allowed = { original_tag = SOV }
+	enable = {
+		country_exists = ARM
+		OR = {
+			nationalist_monarchists_are_in_power = yes
+			nationalist_right_wing_populists_are_in_power = yes
+		}
+		ARM = {
 			OR = {
-				strength_ratio = {
-					tag = BLR
-					ratio > 1
-				}
-				has_idea = NATO_member
+				has_war_with = AZE
+				has_war_with = TUR
+			}
+			NOT = { has_war_with = SOV }
+			has_government = nationalist
+		}
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = befriend id = "ARM" value = 150 }
+	ai_strategy = { type = support id = "ARM" value = 100 }
+	ai_strategy = { type = send_volunteers_desire id = "ARM" value = 300 }
+}
+#HELP GREECE WITH WAR AGAINST TURKEY
+SOV_help_greece_nationalist_war_with_tur_jirik = {
+	allowed = { original_tag = SOV }
+	enable = {
+		country_exists = GRE
+		OR = {
+			nationalist_monarchists_are_in_power = yes
+			nationalist_right_wing_populists_are_in_power = yes
+		}
+		GRE = {
+			has_war_with = TUR
+			NOT = { has_war_with = SOV }
+			has_government = nationalist
+		}
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = befriend id = "GRE" value = 150 }
+	ai_strategy = { type = support id = "GRE" value = 100 }
+	ai_strategy = { type = send_volunteers_desire id = "GRE" value = 200 }
+}
+#HELP SERBIA IN WAR
+SOV_help_serbia_not_liberals_war_with_jirik = {
+	allowed = { original_tag = SOV }
+	enable = {
+		country_exists = SER
+		has_war = no
+		OR = {
+			nationalist_monarchists_are_in_power = yes
+			nationalist_right_wing_populists_are_in_power = yes
+		}
+		SER = {
+			has_war = yes
+			NOT = { has_war_with = SOV }
+			NOT = { has_government = democratic }
+			NOT = { has_government = neutrality }
+		}
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = befriend id = "SER" value = 150 }
+	ai_strategy = { type = support id = "SER" value = 100 }
+	ai_strategy = { type = send_volunteers_desire id = "SER" value = 200 }
+}
+
+###DONT ATTACK - Avoid starting new wars if already fighting NATO/EU/Western-aligned countries
+SOV_avoid_starting_wars = {
+	allowed = { original_tag = SOV }
+	enable = {
+		has_war = yes
+		any_enemy_country = {
+			OR = {
 				has_idea = EU_member
-				is_in_faction_with = GER
+				has_idea = NATO_member
 				is_in_faction_with = USA
+				is_in_faction_with = GER
 			}
 		}
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = {
-		type = declare_war
-		id = BLR
-		value = -4000
-	}
-}
-#Ukraine
-SOV_cancel_war_UKR = {
-	allowed = { original_tag = SOV }
-	enable = {
-		date < 2016.1.1
-		UKR = {
-			country_exists = UKR
-			OR = {
-				strength_ratio = {
-					tag = UKR
-					ratio > 1
-				}
-				has_idea = NATO_member
-				has_idea = EU_member
-				is_in_faction_with = GER
-				is_in_faction_with = USA
-			}
-		}
-	}
-	abort_when_not_enabled = yes
-	ai_strategy = {
-		type = declare_war
-		id = UKR
-		value = -4000
-	}
-}
-# Estonia
-SOV_cancel_war_EST = {
-	allowed = { original_tag = SOV }
-	enable = {
-		date < 2016.1.1
-		EST = {
-			country_exists = EST
-			OR = {
-				strength_ratio = {
-					tag = EST
-					ratio > 1
-				}
-				has_idea = NATO_member
-				has_idea = EU_member
-				is_in_faction_with = GER
-				is_in_faction_with = USA
-			}
-		}
-	}
-	abort_when_not_enabled = yes
-
-	ai_strategy = {
-		type = declare_war
-		id = EST
-		value = -4000
-	}
-}
-#Latvia
-SOV_cancel_war_LAT = {
-	allowed = { original_tag = SOV }
-	enable = {
-		date < 2016.1.1
-		LAT = {
-			country_exists = LAT
-			OR = {
-				strength_ratio = {
-					tag = LAT
-					ratio > 1
-				}
-				has_idea = NATO_member
-				has_idea = EU_member
-				is_in_faction_with = GER
-				is_in_faction_with = USA
-			}
-		}
-	}
-	abort_when_not_enabled = yes
-
-	ai_strategy = {
-		type = declare_war
-		id = LAT
-		value = -4000
-	}
+	ai_strategy = { type = avoid_starting_wars value = -200 }
 }
 
-#Litva
-SOV_cancel_war_LIT = {
-	allowed = { original_tag = SOV }
-	enable = {
-		date < 2016.1.1
-		LIT = {
-			country_exists = LIT
-			OR = {
-				strength_ratio = {
-					tag = LIT
-					ratio > 1
-				}
-				has_idea = NATO_member
-				has_idea = EU_member
-				is_in_faction_with = GER
-				is_in_faction_with = USA
-			}
-		}
-	}
-	abort_when_not_enabled = yes
-
-	ai_strategy = {
-		type = declare_war
-		id = LIT
-		value = -4000
-	}
-}
-
-#Azerbaijan
+#Azerbaijan - unique: guaranteed by Turkey
 SOV_cancel_war_AZE = {
 	allowed = { original_tag = SOV }
 	enable = {
-		date < 2016.1.1
-		AZE = {
-			country_exists = AZE
-			OR = {
-				strength_ratio = {
-					tag = AZE
-					ratio > 1
-				}
-				is_guaranteed_by = TUR
-			}
-		}
+		has_war = yes
+		country_exists = AZE
+		AZE = { is_guaranteed_by = TUR }
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = {
-		type = declare_war
-		id = AZE
-		value = -4000
-	}
+	ai_strategy = { type = declare_war id = "AZE" value = -4000 }
 }
-
-#Kazakhstan
-SOV_cancel_war_KAZ = {
+#Central Asia & North Korea - unique: guaranteed by China
+SOV_cancel_war_chi_guaranteed = {
 	allowed = { original_tag = SOV }
 	enable = {
-		date < 2016.1.1
-		KAZ = {
-			country_exists = KAZ
-			OR = {
-				strength_ratio = {
-					tag = KAZ
-					ratio > 1
-				}
-				is_guaranteed_by = CHI
-			}
+		has_war = yes
+		OR = {
+			KAZ = { is_guaranteed_by = CHI }
+			UZB = { is_guaranteed_by = CHI }
+			TRK = { is_guaranteed_by = CHI }
+			TAJ = { is_guaranteed_by = CHI }
+			KYR = { is_guaranteed_by = CHI }
+			NKO = { is_guaranteed_by = CHI }
 		}
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = {
-		type = declare_war
-		id = KAZ
-		value = -4000
-	}
+	ai_strategy = { type = declare_war id = "KAZ" value = -4000 }
+	ai_strategy = { type = declare_war id = "UZB" value = -4000 }
+	ai_strategy = { type = declare_war id = "TRK" value = -4000 }
+	ai_strategy = { type = declare_war id = "TAJ" value = -4000 }
+	ai_strategy = { type = declare_war id = "KYR" value = -4000 }
+	ai_strategy = { type = declare_war id = "NKO" value = -4000 }
 }
-
-#Uzbekistan
-SOV_cancel_war_UZB = {
+#Israel War cancel
+SOV_cancel_war_ISR = {
 	allowed = { original_tag = SOV }
 	enable = {
-		date < 2012.1.1
-		UZB = {
-			country_exists = UZB
+		country_exists = ISR
+		has_war = yes
+		ISR = {
 			OR = {
-				strength_ratio = {
-					tag = UZB
-					ratio > 1
-				}
-				is_guaranteed_by = CHI
+				NOT = { is_neighbor_of = SOV }
+				NOT = { SYR = { is_subject_of = SOV } }
 			}
 		}
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = {
-		type = declare_war
-		id = UZB
-		value = -4000
-	}
+	ai_strategy = { type = declare_war id = "ISR" value = -4000 }
 }
-
-#Turkmenistan
-SOV_cancel_war_TRK = {
+#Egypt War cancel
+SOV_cancel_war_EGY = {
 	allowed = { original_tag = SOV }
 	enable = {
-		date < 2012.1.1
-		TRK = {
-			country_exists = TRK
+		country_exists = EGY
+		has_war = yes
+		EGY = {
 			OR = {
-				strength_ratio = {
-					tag = TRK
-					ratio > 1
-				}
-				is_guaranteed_by = CHI
+				NOT = { is_neighbor_of = SOV }
+				NOT = { ISR = { is_subject_of = SOV } }
 			}
 		}
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = {
-		type = declare_war
-		id = TRK
-		value = -4000
-	}
+	ai_strategy = { type = declare_war id = "EGY" value = -4000 }
 }
-
-#Tajikistan
-SOV_cancel_war_TAJ = {
+#Yugoslavia - avoid if not neighbor
+SOV_cancel_war_SER = {
 	allowed = { original_tag = SOV }
 	enable = {
-		date < 2012.1.1
-		TAJ = {
-			country_exists = TAJ
-			OR = {
-				strength_ratio = {
-					tag = TAJ
-					ratio > 1
-				}
-				is_guaranteed_by = CHI
-			}
+		country_exists = SER
+		has_war = yes
+		SER = {
+			NOT = { is_neighbor_of = SOV }
 		}
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = {
-		type = declare_war
-		id = TAJ
-		value = -4000
-	}
-}
-
-#Kyrgyzstan
-SOV_cancel_war_KYR = {
-	allowed = { original_tag = SOV }
-	enable = {
-		date < 2012.1.1
-		KYR = {
-			country_exists = KYR
-			OR = {
-				strength_ratio = {
-					tag = KYR
-					ratio > 1
-				}
-				is_guaranteed_by = CHI
-			}
-		}
-	}
-	abort_when_not_enabled = yes
-
-	ai_strategy = {
-		type = declare_war
-		id = KYR
-		value = -4000
-	}
-}
-
-#North Korea
-SOV_cancel_war_NKO = {
-	allowed = { original_tag = SOV }
-	enable = {
-		date < 2012.1.1
-		NKO = {
-			country_exists = NKO
-			OR = {
-				strength_ratio = {
-					tag = NKO
-					ratio > 1
-				}
-				is_guaranteed_by = CHI
-			}
-		}
-	}
-	abort_when_not_enabled = yes
-
-	ai_strategy = {
-		type = declare_war
-		id = NKO
-		value = -4000
-	}
+	ai_strategy = { type = declare_war id = "SER" value = -4000 }
 }
 
 #stockpile
 SOV_air_space_force_breakdown_nonBBA = {
 	allowed = {
 		original_tag = SOV
-		NOT = {
-			has_dlc = "By Blood Alone"
-		}
+		NOT = { has_dlc = "By Blood Alone" }
 	}
-	enable = { original_tag = SOV }
+	enable = { always = yes }
 	abort_when_not_enabled = yes
 	##Air Unit Factors
 	#Fighters
@@ -613,6 +643,9 @@ SOV_air_space_force_breakdown_nonBBA = {
 	#CAS
 	ai_strategy = { type = unit_ratio id = cas value = 50 }
 	ai_strategy = { type = equipment_production_factor id = cas value = 25 }
+	#Interceptor
+	ai_strategy = { type = unit_ratio id = interceptor value = 30 }
+	ai_strategy = { type = equipment_production_factor id = interceptor value = 20 }
 	#Tac Bomber
 	ai_strategy = { type = unit_ratio id = tactical_bomber value = 10 }
 	ai_strategy = { type = equipment_production_factor id = tactical_bomber value = 1 }
@@ -625,23 +658,25 @@ SOV_air_space_force_breakdown_nonBBA = {
 	#UAV
 	ai_strategy = { type = unit_ratio id = scout_plane value = 1 }
 	ai_strategy = { type = equipment_production_factor id = scout_plane value = 1 }
+	#Suicide/Drones
+	ai_strategy = { type = unit_ratio id = suicide value = 5 }
+	ai_strategy = { type = equipment_production_factor id = suicide value = 5 }
 
-	ai_strategy = { type = equipment_variant_production_factor id = AS_Fighter_equipment value = 700 }
-	ai_strategy = { type = equipment_variant_production_factor id = Strike_fighter_equipment value = 10 }
-	ai_strategy = { type = equipment_variant_production_factor id = L_Strike_fighter_equipment value = 1 }
-	ai_strategy = { type = equipment_variant_production_factor id = CV_L_Strike_fighter_equipment value = 1 }
-	ai_strategy = { type = equipment_variant_production_factor id = MR_Fighter_equipment value = 100 }
-	ai_strategy = { type = equipment_variant_production_factor id = CV_MR_Fighter_equipment value = 10 }
-	ai_strategy = { type = equipment_variant_production_factor id = CAS_equipment value = 400 }
-	ai_strategy = { type = equipment_variant_production_factor id = strategic_bomber_equipment value = 80 }
-	ai_strategy = { type = equipment_variant_production_factor id = transport_plane_equipment value = 10 }
-	ai_strategy = { type = equipment_variant_production_factor id = attack_helicopter_hull value = 10 }
-	ai_strategy = { type = equipment_variant_production_factor id = Air_UAV_equipment value = 100 }
-	ai_strategy = { type = equipment_variant_production_factor id = nav_plane_equipment value = 100 }
-	ai_strategy = { type = equipment_variant_production_factor id = awacs_equipment value = 50 }
-	ai_strategy = { type = equipment_variant_production_factor id = cv_awacs_equipment value = 1 }
+	ai_strategy = { type = equipment_variant_production_factor id = medium_plane_fighter_airframe value = 700 }
+	ai_strategy = { type = equipment_variant_production_factor id = medium_plane_airframe value = 10 }
+	ai_strategy = { type = equipment_variant_production_factor id = small_plane_strike_airframe value = 1 }
+	ai_strategy = { type = equipment_variant_production_factor id = cv_small_plane_strike_airframe value = 1 }
+	ai_strategy = { type = equipment_variant_production_factor id = medium_plane_airframe value = 100 }
+	ai_strategy = { type = equipment_variant_production_factor id = cv_medium_plane_airframe value = 10 }
+	ai_strategy = { type = equipment_variant_production_factor id = medium_plane_cas_airframe value = 400 }
+	ai_strategy = { type = equipment_variant_production_factor id = large_plane_airframe value = 80 }
+	ai_strategy = { type = equipment_variant_production_factor id = large_plane_air_transport_airframe value = 10 }
+	ai_strategy = { type = equipment_variant_production_factor id = heavy_tank_chassis value = 10 }
+	ai_strategy = { type = equipment_variant_production_factor id = small_plane_suicide_airframe value = 100 }
+	ai_strategy = { type = equipment_variant_production_factor id = large_plane_maritime_patrol_airframe value = 100 }
+	ai_strategy = { type = equipment_variant_production_factor id = large_plane_awacs_airframe value = 50 }
+	ai_strategy = { type = equipment_variant_production_factor id = cv_medium_plane_scout_airframe value = 1 }
 
-	#ai_strategy = { type = equipment_production_min_factories id = fighter value = 4 }
 	ai_strategy = { type = equipment_production_min_factories id = cas value = 2 }
 	ai_strategy = { type = equipment_production_min_factories id = strategic_bomber value = 4 }
 	ai_strategy = { type = equipment_production_min_factories id = naval_bomber value = 4 } #Welcome to coastal waters, girl
@@ -652,7 +687,7 @@ SOV_air_space_force_breakdown_BBA = {
 		original_tag = SOV
 		has_dlc = "By Blood Alone"
 	}
-	enable = { original_tag = SOV }
+	enable = { always = yes }
 	abort_when_not_enabled = yes
 
 	ai_strategy = { type = equipment_variant_production_factor id = small_plane_airframe value = -100 }
@@ -660,8 +695,6 @@ SOV_air_space_force_breakdown_BBA = {
 	ai_strategy = { type = equipment_variant_production_factor id = small_plane_cas_airframe value = -100 }
 	ai_strategy = { type = equipment_variant_production_factor id = small_plane_naval_bomber_airframe value = -100 }
 	ai_strategy = { type = equipment_variant_production_factor id = small_plane_suicide_airframe value = -25 }
-	ai_strategy = { type = equipment_variant_production_factor id = medium_plane_airframe value = 0 }
-	ai_strategy = { type = equipment_variant_production_factor id = medium_plane_fighter_airframe value = 0 }
 	ai_strategy = { type = equipment_variant_production_factor id = medium_plane_cas_airframe value = -75 }
 	ai_strategy = { type = equipment_variant_production_factor id = medium_plane_maritime_patrol_airframe value = -90 }
 	ai_strategy = { type = equipment_variant_production_factor id = medium_plane_suicide_airframe value = -75 }
@@ -688,36 +721,30 @@ SOV_air_space_force_breakdown_BBA = {
 SOV_dont_build_transport_helicopter = {
 	allowed = { original_tag = SOV }
 	enable = {
-		original_tag = SOV
-		has_equipment = { transport_helicopter_equipment > 800 }
+		has_equipment = { heavy_tank_amphibious_chassis > 800 }
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = { type = equipment_variant_production_factor id = transport_helicopter_equipment value = -500 }
+	ai_strategy = { type = equipment_variant_production_factor id = heavy_tank_amphibious_chassis value = -500 }
 }
 
 SOV_build_transport_helicopter = {
 	allowed = { original_tag = SOV }
 	enable = {
-		original_tag = SOV
-		has_equipment = { transport_helicopter_equipment < 100 }
+		has_equipment = { heavy_tank_amphibious_chassis < 100 }
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = { type = equipment_variant_production_factor id = transport_helicopter_equipment value = 10 }
-	ai_strategy = { type = save_equipment id = transport_helicopter_equipment value = 100 }
+	ai_strategy = { type = equipment_variant_production_factor id = heavy_tank_amphibious_chassis value = 10 }
+	ai_strategy = { type = save_equipment id = heavy_tank_amphibious_chassis value = 100 }
 }
 
 #Professional Army
 SOV_army_focus = {
-	allowed = { tag = SOV }
-	enable = { original_tag = SOV }
+	allowed = { original_tag = SOV }
+	enable = { always = yes }
 	abort_when_not_enabled = yes
 
-	ai_strategy = { type = role_ratio id = L_Inf value = 0 }
-	ai_strategy = { type = role_ratio id = Militia value = 0 } #No militias for Russa AI
-	ai_strategy = { type = role_ratio id = infantry value = 0 }
-	ai_strategy = { type = role_ratio id = garrison value = 0 }
 	ai_strategy = { type = role_ratio id = armor value = 38 }
 	ai_strategy = { type = role_ratio id = marines value = 10 }
 	ai_strategy = { type = role_ratio id = apc_mechanized value = 20 }
@@ -728,53 +755,52 @@ SOV_army_focus = {
 }
 
 #NAVY
-
 SOV_strike_force_america = { #USA var
-	allowed = { tag = SOV }
+	allowed = { original_tag = SOV }
 	enable = {
 		NOT = { any_home_area_neighbor_country = { has_war_with = ROOT } }
 		any_enemy_country = {
 			capital_scope = {
-					is_on_continent = north_america
+				is_on_continent = north_america
 			}
 		}
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = { type = strike_force_home_base id = 79 } #Sea of Japan
-	ai_strategy = { type = strike_force_home_base id = 87 } #Sea of Okhotsk
-	ai_strategy = { type = strike_force_home_base id = 88 } #Bering Sea
-	ai_strategy = { type = strike_force_home_base id = 89 } #Western Seaboart
-	ai_strategy = { type = strike_force_home_base id = 96 } #North Emperor Chain
-	ai_strategy = { type = strike_force_home_base id = 95 } #West Emperor Chain
-	ai_strategy = { type = strike_force_home_base id = 94 } #Mariana Region
-	ai_strategy = { type = strike_force_home_base id = 171 } #Gulf of Alaska
-	ai_strategy = { type = strike_force_home_base id = 111 } #North Central Pacific
+	# ai_strategy = { type = strike_force_home_base id = 79 } #Sea of Japan
+	# ai_strategy = { type = strike_force_home_base id = 87 } #Sea of Okhotsk
+	# ai_strategy = { type = strike_force_home_base id = 88 } #Bering Sea
+	# ai_strategy = { type = strike_force_home_base id = 89 } #Western Seaboart
+	# ai_strategy = { type = strike_force_home_base id = 96 } #North Emperor Chain
+	# ai_strategy = { type = strike_force_home_base id = 95 } #West Emperor Chain
+	# ai_strategy = { type = strike_force_home_base id = 94 } #Mariana Region
+	# ai_strategy = { type = strike_force_home_base id = 171 } #Gulf of Alaska
+	# ai_strategy = { type = strike_force_home_base id = 111 } #North Central Pacific
 	ai_strategy = { type = area_priority id = pacific value = 50 }
 	ai_strategy = { type = area_priority id = north_america value = 150 }
 	ai_strategy = { type = area_priority id = oceania value = 40 }
-	ai_strategy = { type = naval_avoid_region id = 89 value = 1000 } #Western Seaboart
-	ai_strategy = { type = naval_avoid_region id = 107 value = 1000 } #Western Canal Zone
-	ai_strategy = { type = naval_avoid_region id = 84 value = 1000 } #Bismark Sea
-	ai_strategy = { type = naval_avoid_region id = 97 value = 1000 } #Eastern Micronesia
-	ai_strategy = { type = naval_avoid_region id = 53 value = 1000 } #Carribean Sea
-	ai_strategy = { type = naval_mission_threshold id = MISSION_CONVOY_RAIDING value = -100 }
-	ai_strategy = { type = naval_convoy_raid_region id = 44 value = 1000 } #Denmark Strait
-	ai_strategy = { type = naval_convoy_raid_region id = 49 value = 1000 } #Nord Atlantic Ridge
-	ai_strategy = { type = naval_convoy_raid_region id = 51 value = 1000 } #Mid Atlantic Gap
-	ai_strategy = { type = naval_convoy_raid_region id = 58 value = 1000 } #Central Atlantic Gap
-	ai_strategy = { type = naval_convoy_raid_region id = 106 value = 1000 } #Mexican Coast
-	ai_strategy = { type = naval_convoy_raid_region id = 88 value = 1000 } #Bering Sea
-	ai_strategy = { type = naval_convoy_raid_region id = 96 value = 1000 } #North Emperor Chain
-	ai_strategy = { type = naval_convoy_raid_region id = 95 value = 1000 } #West Emperor Chain
-	ai_strategy = { type = naval_convoy_raid_region id = 105 value = 1000 } #Hawaii Ridge
-	ai_strategy = { type = naval_convoy_raid_region id = 108 value = 1000 } #Soutch American Coast
-	ai_strategy = { type = naval_convoy_raid_region id = 61 value = 1000 } #Carp Verde Plain
+	# ai_strategy = { type = naval_avoid_region id = 89 value = 1000 } #Western Seaboart
+	# ai_strategy = { type = naval_avoid_region id = 107 value = 1000 } #Western Canal Zone
+	# ai_strategy = { type = naval_avoid_region id = 84 value = 1000 } #Bismark Sea
+	# ai_strategy = { type = naval_avoid_region id = 97 value = 1000 } #Eastern Micronesia
+	# ai_strategy = { type = naval_avoid_region id = 53 value = 1000 } #Carribean Sea
+	# ai_strategy = { type = naval_mission_threshold id = MISSION_CONVOY_RAIDING value = -100 }
+	# ai_strategy = { type = naval_convoy_raid_region id = 44 value = 1000 } #Denmark Strait
+	# ai_strategy = { type = naval_convoy_raid_region id = 49 value = 1000 } #Nord Atlantic Ridge
+	# ai_strategy = { type = naval_convoy_raid_region id = 51 value = 1000 } #Mid Atlantic Gap
+	# ai_strategy = { type = naval_convoy_raid_region id = 58 value = 1000 } #Central Atlantic Gap
+	# ai_strategy = { type = naval_convoy_raid_region id = 106 value = 1000 } #Mexican Coast
+	# ai_strategy = { type = naval_convoy_raid_region id = 88 value = 1000 } #Bering Sea
+	# ai_strategy = { type = naval_convoy_raid_region id = 96 value = 1000 } #North Emperor Chain
+	# ai_strategy = { type = naval_convoy_raid_region id = 95 value = 1000 } #West Emperor Chain
+	# ai_strategy = { type = naval_convoy_raid_region id = 105 value = 1000 } #Hawaii Ridge
+	# ai_strategy = { type = naval_convoy_raid_region id = 108 value = 1000 } #Soutch American Coast
+	# ai_strategy = { type = naval_convoy_raid_region id = 61 value = 1000 } #Carp Verde Plain
 
 }
 
 SOV_strike_force_europe = { #Europe var
-	allowed = { tag = SOV }
+	allowed = { original_tag = SOV }
 	enable = {
 		NOT = { any_home_area_neighbor_country = { has_war_with = ROOT } }
 		any_enemy_country = {
@@ -785,34 +811,34 @@ SOV_strike_force_europe = { #Europe var
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = { type = strike_force_home_base id = 9 } #Baltic Sea
-	ai_strategy = { type = strike_force_home_base id = 46 } #Barents Sea
-	ai_strategy = { type = strike_force_home_base id = 198 } #Norwegian Coast
-	ai_strategy = { type = strike_force_home_base id = 16 } #Notch Sea
-	ai_strategy = { type = strike_force_home_base id = 30 } #Black Sea
-	ai_strategy = { type = strike_force_home_base id = 68 } #Western Mediterranean Sea
-	ai_strategy = { type = strike_force_home_base id = 29 } #Central Mediterranean Sea
+	# ai_strategy = { type = strike_force_home_base id = 9 } #Baltic Sea
+	# ai_strategy = { type = strike_force_home_base id = 46 } #Barents Sea
+	# ai_strategy = { type = strike_force_home_base id = 198 } #Norwegian Coast
+	# ai_strategy = { type = strike_force_home_base id = 16 } #Notch Sea
+	# ai_strategy = { type = strike_force_home_base id = 30 } #Black Sea
+	# ai_strategy = { type = strike_force_home_base id = 68 } #Western Mediterranean Sea
+	# ai_strategy = { type = strike_force_home_base id = 29 } #Central Mediterranean Sea
 	ai_strategy = { type = area_priority id = europe value = 50 }
 	ai_strategy = { type = area_priority id = middle_east value = 40 }
 	ai_strategy = { type = area_priority id = oceania value = 40 }
-	ai_strategy = { type = naval_avoid_region id = 196 value = 1000 } #Danish Straits
-	ai_strategy = { type = naval_avoid_region id = 46 value = 1000 } #Barents Sea
-	ai_strategy = { type = naval_avoid_region id = 18 value = 1000 } #English Channels
-	ai_strategy = { type = naval_avoid_region id = 43 value = 1000 } #Western Approaches
-	ai_strategy = { type = naval_convoy_raid_region id = 204 value = 1000 } #Defend
-	ai_strategy = { type = naval_convoy_raid_region id = 9 value = 1000 } #Baltic Sea
-	ai_strategy = { type = naval_convoy_raid_region id = 46 value = 1000 } #Barents Sea
-	ai_strategy = { type = naval_convoy_raid_region id = 30 value = 1000 } #Black Sea
-	ai_strategy = { type = naval_convoy_raid_region id = 47 value = 1000 } #Liberian Coast
-	ai_strategy = { type = naval_convoy_raid_region id = 48 value = 1000 } #African Coast
-	ai_strategy = { type = naval_convoy_raid_region id = 49 value = 1000 } #Nord Atlantic Ridge
-	ai_strategy = { type = naval_convoy_raid_region id = 44 value = 1000 } #Denmark Strait
-	ai_strategy = { type = naval_convoy_raid_region id = 61 value = 1000 } #Carp Verde Plain
+	# ai_strategy = { type = naval_avoid_region id = 196 value = 1000 } #Danish Straits
+	# ai_strategy = { type = naval_avoid_region id = 46 value = 1000 } #Barents Sea
+	# ai_strategy = { type = naval_avoid_region id = 18 value = 1000 } #English Channels
+	# ai_strategy = { type = naval_avoid_region id = 43 value = 1000 } #Western Approaches
+	# ai_strategy = { type = naval_convoy_raid_region id = 204 value = 1000 } #Defend
+	# ai_strategy = { type = naval_convoy_raid_region id = 9 value = 1000 } #Baltic Sea
+	# ai_strategy = { type = naval_convoy_raid_region id = 46 value = 1000 } #Barents Sea
+	# ai_strategy = { type = naval_convoy_raid_region id = 30 value = 1000 } #Black Sea
+	# ai_strategy = { type = naval_convoy_raid_region id = 47 value = 1000 } #Liberian Coast
+	# ai_strategy = { type = naval_convoy_raid_region id = 48 value = 1000 } #African Coast
+	# ai_strategy = { type = naval_convoy_raid_region id = 49 value = 1000 } #Nord Atlantic Ridge
+	# ai_strategy = { type = naval_convoy_raid_region id = 44 value = 1000 } #Denmark Strait
+	# ai_strategy = { type = naval_convoy_raid_region id = 61 value = 1000 } #Carp Verde Plain
 
 }
 
 SOV_strike_force_asia = { #Asia var
-	allowed = { tag = SOV }
+	allowed = { original_tag = SOV }
 	enable = {
 		NOT = { any_home_area_neighbor_country = { has_war_with = ROOT } }
 		any_enemy_country = {
@@ -823,33 +849,33 @@ SOV_strike_force_asia = { #Asia var
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = { type = strike_force_home_base id = 76 } #East China Sea
-	ai_strategy = { type = strike_force_home_base id = 79 } #Sea of Japan
-	ai_strategy = { type = strike_force_home_base id = 193 } #Taiwan Strait
-	ai_strategy = { type = strike_force_home_base id = 200 } #Paracel Sea
-	ai_strategy = { type = strike_force_home_base id = 104 } #Arabian Sea
-	ai_strategy = { type = strike_force_home_base id = 203 } #Laccadive Sea
-	ai_strategy = { type = strike_force_home_base id = 101 } #Bay of Bengal
+	# ai_strategy = { type = strike_force_home_base id = 76 } #East China Sea
+	# ai_strategy = { type = strike_force_home_base id = 79 } #Sea of Japan
+	# ai_strategy = { type = strike_force_home_base id = 193 } #Taiwan Strait
+	# ai_strategy = { type = strike_force_home_base id = 200 } #Paracel Sea
+	# ai_strategy = { type = strike_force_home_base id = 104 } #Arabian Sea
+	# ai_strategy = { type = strike_force_home_base id = 203 } #Laccadive Sea
+	# ai_strategy = { type = strike_force_home_base id = 101 } #Bay of Bengal
 	ai_strategy = { type = area_priority id = asia value = 50 }
 	ai_strategy = { type = area_priority id = middle_east value = 40 }
-	ai_strategy = { type = naval_avoid_region id = 100 value = 1000 } #Red Sea
-	ai_strategy = { type = naval_convoy_raid_region id = 201 value = 1000 } #Vietnamese Coast
-	ai_strategy = { type = naval_convoy_raid_region id = 75 value = 1000 } #Soutch China Sea
-	ai_strategy = { type = naval_convoy_raid_region id = 160 value = 1000 } #Philippines
-	ai_strategy = { type = naval_convoy_raid_region id = 78 value = 1000 } #Philippine Sea
-	ai_strategy = { type = naval_convoy_raid_region id = 94 value = 1000 } #mariana Region
-	ai_strategy = { type = naval_convoy_raid_region id = 90 value = 1000 } #Coast of Japan
-	ai_strategy = { type = naval_convoy_raid_region id = 79 value = 1000 } #Sea of Japan
-	ai_strategy = { type = naval_convoy_raid_region id = 204 value = 1000 } #Gulf of Aden
-	ai_strategy = { type = naval_convoy_raid_region id = 104 value = 1000 } #Arabian Sea
-	ai_strategy = { type = naval_convoy_raid_region id = 203 value = 1000 } #Laccadive Sea
-	ai_strategy = { type = naval_convoy_raid_region id = 71 value = 1000 } #East Indian Ocean
-	ai_strategy = { type = naval_convoy_raid_region id = 202 value = 1000 } #Andaman Sea
+	# ai_strategy = { type = naval_avoid_region id = 100 value = 1000 } #Red Sea
+	# ai_strategy = { type = naval_convoy_raid_region id = 201 value = 1000 } #Vietnamese Coast
+	# ai_strategy = { type = naval_convoy_raid_region id = 75 value = 1000 } #Soutch China Sea
+	# ai_strategy = { type = naval_convoy_raid_region id = 160 value = 1000 } #Philippines
+	# ai_strategy = { type = naval_convoy_raid_region id = 78 value = 1000 } #Philippine Sea
+	# ai_strategy = { type = naval_convoy_raid_region id = 94 value = 1000 } #mariana Region
+	# ai_strategy = { type = naval_convoy_raid_region id = 90 value = 1000 } #Coast of Japan
+	# ai_strategy = { type = naval_convoy_raid_region id = 79 value = 1000 } #Sea of Japan
+	# ai_strategy = { type = naval_convoy_raid_region id = 204 value = 1000 } #Gulf of Aden
+	# ai_strategy = { type = naval_convoy_raid_region id = 104 value = 1000 } #Arabian Sea
+	# ai_strategy = { type = naval_convoy_raid_region id = 203 value = 1000 } #Laccadive Sea
+	# ai_strategy = { type = naval_convoy_raid_region id = 71 value = 1000 } #East Indian Ocean
+	# ai_strategy = { type = naval_convoy_raid_region id = 202 value = 1000 } #Andaman Sea
 
 }
 
 SOV_strike_force_africa = { #Africa var
-	allowed = { tag = SOV }
+	allowed = { original_tag = SOV }
 	enable = {
 		NOT = { any_home_area_neighbor_country = { has_war_with = ROOT } }
 		any_enemy_country = {
@@ -860,27 +886,27 @@ SOV_strike_force_africa = { #Africa var
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = { type = strike_force_home_base id = 61 } #Carp Verde Plain
-	ai_strategy = { type = strike_force_home_base id = 62 } #Gulf of Guinea
-	ai_strategy = { type = strike_force_home_base id = 206 } #Skeletan Coast
-	ai_strategy = { type = strike_force_home_base id = 103 } #Mozambique Channel
-	ai_strategy = { type = strike_force_home_base id = 102 } #East African Coast
-	ai_strategy = { type = strike_force_home_base id = 48 } #African Coast
-	ai_strategy = { type = strike_force_home_base id = 204 } #Gulf of Aden
-	ai_strategy = { type = strike_force_home_base id = 100 } #Red Sea
+	# ai_strategy = { type = strike_force_home_base id = 61 } #Carp Verde Plain
+	# ai_strategy = { type = strike_force_home_base id = 62 } #Gulf of Guinea
+	# ai_strategy = { type = strike_force_home_base id = 206 } #Skeletan Coast
+	# ai_strategy = { type = strike_force_home_base id = 103 } #Mozambique Channel
+	# ai_strategy = { type = strike_force_home_base id = 102 } #East African Coast
+	# ai_strategy = { type = strike_force_home_base id = 48 } #African Coast
+	# ai_strategy = { type = strike_force_home_base id = 204 } #Gulf of Aden
+	# ai_strategy = { type = strike_force_home_base id = 100 } #Red Sea
 	ai_strategy = { type = area_priority id = africa value = 50 }
 	ai_strategy = { type = area_priority id = middle_east value = 40 }
-	ai_strategy = { type = naval_convoy_raid_region id = 61 value = 1000 } #Carp Verde Plain
-	ai_strategy = { type = naval_convoy_raid_region id = 62 value = 1000 } #Gulf of Guinea
-	ai_strategy = { type = naval_convoy_raid_region id = 48 value = 1000 } #African Coast
-	ai_strategy = { type = naval_convoy_raid_region id = 206 value = 1000 } #Skeletan Coast
-	ai_strategy = { type = naval_convoy_raid_region id = 65 value = 1000 } #Cape of Africa
-	ai_strategy = { type = naval_convoy_raid_region id = 103 value = 1000 } #Mozambique Channel
-	ai_strategy = { type = naval_convoy_raid_region id = 102 value = 1000 } #East African Coast
-	ai_strategy = { type = naval_convoy_raid_region id = 100 value = 1000 } #Red Sea
-
+	# ai_strategy = { type = naval_convoy_raid_region id = 61 value = 1000 } #Carp Verde Plain
+	# ai_strategy = { type = naval_convoy_raid_region id = 62 value = 1000 } #Gulf of Guinea
+	# ai_strategy = { type = naval_convoy_raid_region id = 48 value = 1000 } #African Coast
+	# ai_strategy = { type = naval_convoy_raid_region id = 206 value = 1000 } #Skeletan Coast
+	# ai_strategy = { type = naval_convoy_raid_region id = 65 value = 1000 } #Cape of Africa
+	# ai_strategy = { type = naval_convoy_raid_region id = 103 value = 1000 } #Mozambique Channel
+	# ai_strategy = { type = naval_convoy_raid_region id = 102 value = 1000 } #East African Coast
+	# ai_strategy = { type = naval_convoy_raid_region id = 100 value = 1000 } #Red Sea
 }
-
+#CHINA POLICY
+#Alliance with China
 SOV_alliance_with_china = {
 	allowed = { original_tag = SOV }
 	enable = {
@@ -893,6 +919,111 @@ SOV_alliance_with_china = {
 	ai_strategy = { type = befriend id = "CHI" value = 50 }
 	ai_strategy = { type = support id = "CHI" value = 50 }
 	ai_strategy = { type = alliance id = "CHI" value = 50 }
+}
+#No more border army with friendly China
+SOV_reduce_china_border_garrison = {
+	allowed = { original_tag = SOV }
+	enable = {
+		OR = {
+			NOT = {
+				country_exists = CHI
+			}
+			NOT = {
+				has_war_with = CHI
+			}
+		}
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = {
+		type = front_unit_request
+		tag = CHI
+		value = -250
+	}
+}
+#More Border Army With Enemy China
+SOV_war_with_china = {
+	allowed = { original_tag = SOV }
+	enable = {
+		has_war_with = CHI
+	}
+	abort_when_not_enabled = yes
+	ai_strategy = {
+		type = front_unit_request
+		tag = CHI
+		value = 250
+	}
+}
+#MONGOLIA POLICY
+#No more border army with neutral Mongolia
+SOV_reduce_finland_border_mongolia = {
+	allowed = { original_tag = SOV }
+	enable = {
+		OR = {
+			NOT = {
+				country_exists = MON
+			}
+			NOT = {
+				has_war_with = MON
+			}
+		}
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = {
+		type = front_unit_request
+		tag = MON
+		value = -250
+	}
+}
+#More Border Army With Enemy Mongolia
+SOV_war_with_mongolia = {
+	allowed = { original_tag = SOV }
+	enable = {
+		has_war_with = MON
+	}
+	abort_when_not_enabled = yes
+	ai_strategy = {
+		type = front_unit_request
+		tag = MON
+		value = 250
+	}
+}
+#FINLAND POLICY
+#No more border army with neutral FInland
+SOV_reduce_finland_border_garrison = {
+	allowed = { original_tag = SOV }
+	enable = {
+		OR = {
+			NOT = {
+				country_exists = FIN
+			}
+			NOT = {
+				has_war_with = FIN
+			}
+		}
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = {
+		type = front_unit_request
+		tag = FIN
+		value = -200
+	}
+}
+
+#More Border Army With Enemy Finland
+SOV_war_with_finland = {
+	allowed = { original_tag = SOV }
+	enable = {
+		has_war_with = FIN
+	}
+	abort_when_not_enabled = yes
+	ai_strategy = {
+		type = front_unit_request
+		tag = FIN
+		value = 500
+	}
 }
 
 SOV_alliance_with_india = {
@@ -923,36 +1054,6 @@ SOV_approach_iran = {
 	ai_strategy = { type = alliance id = "PER" value = 50 }
 }
 
-SOV_support_serbia = {
-	allowed = { original_tag = SOV }
-	enable = {
-		country_exists = SER
-		NOT = { has_war_with = SER }
-		has_completed_focus = SOV_support_serbia
-	}
-	abort_when_not_enabled = yes
-
-	ai_strategy = { type = befriend id = "SER" value = 50 }
-	ai_strategy = { type = support id = "SER" value = 50 }
-	ai_strategy = { type = alliance id = "SER" value = 50 }
-}
-
-SOV_fifth_international_alliance = {
-	enable = {
-		SOV = { has_idea = faction_fifth_international_member }
-		OR = {
-			is_in_array = { ruling_party = 4 }
-			is_in_array = { ruling_party = 19 }
-		}
-		has_country_flag = joined_the_fifth_international
-	}
-	abort_when_not_enabled = yes
-
-	ai_strategy = { type = alliance id = "SOV" value = 100 }
-	ai_strategy = { type = befriend id = "SOV" value = 50 }
-	ai_strategy = { type = support id = "SOV" value = 50 }
-}
-
 SOV_accepted_to_join_csto = {
 	allowed = { NOT = { original_tag = SOV } }
 	enable = {
@@ -969,8 +1070,10 @@ SOV_checnya_salafit = {
 	allowed = { original_tag = SOV }
 	enable = {
 		country_exists = CHE
-		CHE = { NOT = { is_subject_of = SOV } }
-		CHE = { salafist_caliphate_are_in_power = yes }
+		CHE = {
+			NOT = { is_subject_of = SOV }
+			salafist_caliphate_are_in_power = yes
+		}
 	}
 	abort_when_not_enabled = yes
 
@@ -980,10 +1083,7 @@ SOV_checnya_salafit = {
 SOV_peacekeepers_in_serbia = {
 	allowed = { original_tag = SOV }
 	enable = {
-		original_tag = SOV
-		SOV = {
-			has_war = no
-		}
+		has_war = no
 		SER = {
 			has_war_with = KOS
 			has_idea = SER_rus_peacekeepers
@@ -1003,4 +1103,90 @@ SOV_RSK_WAR = {
 	abort_when_not_enabled = yes
 	ai_strategy = { type = send_volunteers_desire id = "RSK" value = 1000 }
 	ai_strategy = { type = send_lend_lease_desire id = "RSK" value = 400 }
+}
+
+
+#CIVIL WAR IN AMERICA - RUSSIA
+SOV_alaska_help = {
+	allowed = { original_tag = SOV }
+	enable = {
+		country_exists = ASK
+		has_war = no
+		OR = {
+			has_government = nationalist
+			emerging_reactionaries_are_in_power = yes
+		}
+	}
+	abort_when_not_enabled = yes
+	ai_strategy = { type = send_volunteers_desire id = "ASK" value = 1000 }
+	ai_strategy = { type = send_lend_lease_desire id = "ASK" value = 400 }
+}
+SOV_texas_help = {
+	allowed = { original_tag = SOV }
+	enable = {
+		country_exists = TEX
+		has_war = no
+		OR = {
+			has_government = nationalist
+			emerging_reactionaries_are_in_power = yes
+		}
+	}
+	abort_when_not_enabled = yes
+	ai_strategy = { type = send_volunteers_desire id = "TEX" value = 1000 }
+	ai_strategy = { type = send_lend_lease_desire id = "TEX" value = 400 }
+}
+SOV_free_states_america_help = {
+	allowed = { original_tag = SOV }
+	enable = {
+		country_exists = USB
+		has_war = no
+		has_government = democratic
+	}
+	abort_when_not_enabled = yes
+	ai_strategy = { type = send_volunteers_desire id = "USB" value = 1000 }
+	ai_strategy = { type = send_lend_lease_desire id = "USB" value = 400 }
+}
+SOV_confederate_states_america_help = {
+	allowed = { original_tag = SOV }
+	enable = {
+		country_exists = CSA
+		has_war = no
+		OR = {
+			emerging_communist_state_are_in_power = yes
+			neutrality_neutral_communism_are_in_power = yes
+		}
+	}
+	abort_when_not_enabled = yes
+	ai_strategy = { type = send_volunteers_desire id = "CSA" value = 1000 }
+	ai_strategy = { type = send_lend_lease_desire id = "CSA" value = 400 }
+}
+
+SOV_moldova_moves_in_on_PMR = {
+	allowed = { original_tag = SOV }
+	enable = {
+		MLV = { has_war_with = PMR }
+		has_relation_modifier = {
+			target = PMR
+			modifier = generic_increased_military_support
+		}
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = {
+		type = send_volunteers_desire
+		id = "PMR"
+		value = 500
+	}
+}
+
+SOV_has_a_non_aggression_pact_che = {
+	allowed = { original_tag = SOV }
+	enable = {
+		has_non_aggression_pact_with = CHE
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = befriend id = "CHE" value = 100 }
+	ai_strategy = { type = support id = "CHE" value = 100 }
+	ai_strategy = { type = alliance id = "CHE" value = 150 }
 }

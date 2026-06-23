@@ -26,6 +26,10 @@ country_event = {
 			idea = CES_education_focus_idea
 			days = 1825
 		}
+
+		ai_chance = {
+			base = 1
+		}
 	}
 
 	option = {
@@ -35,6 +39,14 @@ country_event = {
 			idea = CES_industry_focus_idea
 			days = 1825
 		}
+
+		ai_chance = {
+			base = 1
+			modifier = {
+				factor = 5
+				num_of_civilian_factories < 5
+			}
+		}
 	}
 
 	option = {
@@ -43,6 +55,10 @@ country_event = {
 		add_timed_idea = {
 			idea = CES_social_focus_idea
 			days = 1825
+		}
+
+		ai_chance = {
+			base = 1
 		}
 	}
 }
@@ -59,18 +75,12 @@ country_event = {
 		name = centrasiaev.2.a
 		log = "[GetDateText]: [This.GetName]: centrasiaev.2.a executed"
 		KAZ = {
+			set_temp_variable = { skip_payment = 1 }
 			one_random_industrial_complex = yes
-			hidden_effect = {
-				set_temp_variable = { treasury_change = 7.5 }
-				modify_treasury_effect = yes
-			}
 		}
-		hidden_effect = {
-			set_temp_variable = { treasury_change = -7.5 }
-			modify_treasury_effect = yes
-		}
+		set_temp_variable = { treasury_change = -7.5 }
+		modify_treasury_effect = yes
 		set_temp_variable = { percent_change = 5 }
-		set_temp_variable = { tag_index = ROOT }
 		set_temp_variable = { influence_target = FROM }
 		change_influence_percentage = yes
 	}
@@ -93,21 +103,12 @@ country_event = {
 		name = centrasiaev.3.a
 		log = "[GetDateText]: [This.GetName]: centrasiaev.3.a executed"
 		UZB = {
-			random_owned_state = {
-				add_building_construction = {
-					type = industrial_complex
-					level = 1
-					instant_build = yes
-				}
-				add_extra_state_shared_building_slots = 1
-			}
+			set_temp_variable = { skip_payment = 1 }
+			one_random_industrial_complex = yes
 		}
-		hidden_effect = {
-			set_temp_variable = { treasury_change = -7.5 }
-			modify_treasury_effect = yes
-		}
+		set_temp_variable = { treasury_change = -7.5 }
+		modify_treasury_effect = yes
 		set_temp_variable = { percent_change = 5 }
-		set_temp_variable = { tag_index = ROOT }
 		set_temp_variable = { influence_target = UZB }
 		change_influence_percentage = yes
 	}
@@ -130,18 +131,12 @@ country_event = {
 		name = centrasiaev.4.a
 		log = "[GetDateText]: [This.GetName]: centrasiaev.4.a executed"
 		KYR = {
+			set_temp_variable = { skip_payment = 1 }
 			one_random_industrial_complex = yes
-			hidden_effect = {
-				set_temp_variable = { treasury_change = 7.5 }
-				modify_treasury_effect = yes
-			}
 		}
-		hidden_effect = {
-			set_temp_variable = { treasury_change = -7.5 }
-			modify_treasury_effect = yes
-		}
+		set_temp_variable = { treasury_change = -7.5 }
+		modify_treasury_effect = yes
 		set_temp_variable = { percent_change = 5 }
-		set_temp_variable = { tag_index = ROOT }
 		set_temp_variable = { influence_target = FROM }
 		change_influence_percentage = yes
 	}
@@ -152,8 +147,7 @@ country_event = {
 	}
 }
 
-###Nationalists events
-
+# Nationalists events
 country_event = {
 	id = nationalists.1
 	title = nationalists.1.t
@@ -221,7 +215,6 @@ news_event = {
 
 	option = {
 		name = nationalists.3.a
-		log = "[GetDateText]: [This.GetName]: nationalists.3.a executed"
 	}
 }
 country_event = {
@@ -258,13 +251,6 @@ country_event = {
 		}
 		else_if = {
 			limit = {
-				original_tag = TAJ
-			}
-			remove_ideas = TAJ_narcotraffic_3
-			add_ideas = CES_controlled_narcotraffic_idea
-		}
-		else_if = {
-			limit = {
 				has_country_flag = no_narcotraffic
 			}
 			clr_country_flag = no_narcotraffic
@@ -283,7 +269,6 @@ news_event = {
 
 	option = {
 		name = nationalists.4.a
-		log = "[GetDateText]: [This.GetName]: nationalists.4.a executed"
 	}
 }
 
@@ -394,66 +379,112 @@ country_event = {
 	}
 }
 
+# Russian Debt Negotiations
+# INFO: This event is triggered by the focus "Russian Debt Negotiations" and is sent to Russia from the Central Asian focus tree
 country_event = {
 	id = centrasiaev.8
 	title = centrasiaev.8.t
 	desc = centrasiaev.8.d
 	is_triggered_only = yes
 	picture = GFX_paris_convention
+
 	option = {
 		name = centrasiaev.8.a
 		log = "[GetDateText]: [This.GetName]: centrasiaev.8.a executed"
-		ai_chance = { base = 1 }
 		set_temp_variable = { percent_change = 5 }
 		set_temp_variable = { tag_index = SOV }
 		set_temp_variable = { influence_target = FROM }
 		change_influence_percentage = yes
 		FROM = {
-			set_temp_variable = {
-				debt_change = -12
-			}
+			set_temp_variable = { debt_change = -12 }
+			modify_debt_effect = yes
 			country_event = {
 				id = centrasiaev.10
 				days = 1
 			}
 		}
+
+		ai_chance = {
+			base = 1
+			modifier = {
+				add = 10
+				FROM = { is_subject_of = SOV }
+			}
+			modifier = {
+				add = 10
+				FROM = { is_in_faction_with = SOV }
+			}
+			modifier = {
+				add = 10
+				has_opinion = {
+					target = FROM
+					value > 50
+				}
+			}
+		}
 	}
+
 	option = {
 		name = centrasiaev.8.b
 		log = "[GetDateText]: [This.GetName]: centrasiaev.8.b executed"
-		ai_chance = { base = 1 }
-		hidden_effect = {
-			FROM = {
-				country_event = {
-					id = centrasiaev.9
-					days = 1
+
+		FROM = {
+			country_event = {
+				id = centrasiaev.9
+				days = 1
+			}
+		}
+		ai_chance = {
+			base = 1
+			modifier = {
+				add = 15
+				has_opinion = {
+					target = FROM
+					value < -25
+				}
+			}
+			modifier = {
+				add = 15
+				has_opinion = {
+					target = FROM
+					value < -50
 				}
 			}
 		}
 	}
 }
 
+# Russia Refused the Debt Renegotiations
 country_event = {
 	id = centrasiaev.9
 	title = centrasiaev.9.t
 	desc = centrasiaev.9.d
 	is_triggered_only = yes
 	picture = GFX_paris_convention
+
 	option = {
 		name = centrasiaev.9.a
 		log = "[GetDateText]: [This.GetName]: centrasiaev.9.a executed"
+		custom_effect_tooltip = they_refused_lowering_our_debt_tt
 	}
 }
 
+# Russia Accepted the Debt Renegotiations
 country_event = {
 	id = centrasiaev.10
 	title = centrasiaev.10.t
 	desc = centrasiaev.10.d
 	is_triggered_only = yes
 	picture = GFX_paris_convention
+
 	option = {
 		name = centrasiaev.10.a
 		log = "[GetDateText]: [This.GetName]: centrasiaev.10.a executed"
+		custom_effect_tooltip = they_lowered_our_debt_tt
+		effect_tooltip = {
+			set_temp_variable = { debt_change = -12 }
+			modify_debt_effect = yes
+		}
 	}
 }
 
@@ -463,11 +494,13 @@ country_event = {
 	desc = centrasiaev.11.d
 	is_triggered_only = yes
 	picture = GFX_eventpic_mdmosjap_jap_election
+
 	option = {
 		name = centrasiaev.11.a
 		log = "[GetDateText]: [This.GetName]: centrasiaev.11.a executed"
 		add_ideas = CES_family_in_politics
 	}
+
 	option = {
 		name = centrasiaev.11.b
 		log = "[GetDateText]: [This.GetName]: centrasiaev.11.a executed"
@@ -481,16 +514,19 @@ country_event = {
 	desc = centrasiaev.12.d
 	is_triggered_only = yes
 	picture = GFX_eventpic_mdmosjap_jap_election
+
 	option = {
 		name = centrasiaev.12.a
 		log = "[GetDateText]: [This.GetName]: centrasiaev.12.a executed"
 		country_event = corruption.1
 	}
+
 	option = {
 		name = centrasiaev.12.b
 		log = "[GetDateText]: [This.GetName]: centrasiaev.12.b executed"
 		country_event = corruption.2
 	}
+
 	option = {
 		name = centrasiaev.12.c
 		log = "[GetDateText]: [This.GetName]: centrasiaev.12.c executed"
@@ -571,6 +607,9 @@ country_event = {
 		name = jihad.2.b
 		log = "[GetDateText]: [This.GetName]: jihad.2.b executed"
 		ROOT = {
+			set_temp_variable = { wargoal_on = TAL }
+			set_temp_variable = { wargoal_type = 2 }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = annex_everything
 				target = TAL
@@ -601,6 +640,9 @@ country_event = {
 		name = jihad.3.b
 		log = "[GetDateText]: [This.GetName]: jihad.3.b executed"
 		FROM = {
+			set_temp_variable = { wargoal_on = TAL }
+			set_temp_variable = { wargoal_type = 2 }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = annex_everything
 				target = TAL
@@ -783,7 +825,6 @@ country_event = {
 		ai_chance = { base = 1 }
 
 		set_temp_variable = { percent_change = 3 }
-		set_temp_variable = { tag_index = ROOT }
 		set_temp_variable = { influence_target = FROM }
 		change_influence_percentage = yes
 	}
@@ -801,7 +842,6 @@ country_event = {
 		ai_chance = { base = 1 }
 
 		set_temp_variable = { percent_change = -3 }
-		set_temp_variable = { tag_index = ROOT }
 		set_temp_variable = { influence_target = FROM }
 		change_influence_percentage = yes
 	}
@@ -964,7 +1004,6 @@ country_event = { #Historical 2022
 		country_event = { id = centralkaz.7 days = 1 }
 
 		add_political_power = -100
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -992,14 +1031,17 @@ country_event = { #Historical 2022
 				add_relative_party_popularity = yes
 
 				hidden_effect = {
-					add_to_variable = { party_pop_array^21 = 0.05 }
-					recalculate_party = yes
+					set_temp_variable = { temp_outlook_increase = 0 }
+					set_temp_variable = { party_index = 21 }
+					set_temp_variable = { party_popularity_increase = 0.05 }
+					add_relative_party_popularity = yes
 					add_popularity = {
 						ideology = democratic
 						popularity = 0.05
 					}
-					add_to_variable = { party_pop_array^4 = 0.05 }
-					recalculate_party = yes
+					set_temp_variable = { party_index = 4 }
+					set_temp_variable = { party_popularity_increase = 0.05 }
+					add_relative_party_popularity = yes
 				}
 				hold_election = KAZ
 			}
@@ -1014,14 +1056,17 @@ country_event = { #Historical 2022
 				add_relative_party_popularity = yes
 
 				hidden_effect = {
-					add_to_variable = { party_pop_array^21 = 0.05 }
-					recalculate_party = yes
+					set_temp_variable = { temp_outlook_increase = 0 }
+					set_temp_variable = { party_index = 21 }
+					set_temp_variable = { party_popularity_increase = 0.05 }
+					add_relative_party_popularity = yes
 					add_popularity = {
 						ideology = nationalist
 						popularity = 0.05
 					}
-					add_to_variable = { party_pop_array^4 = 0.05 }
-					recalculate_party = yes
+					set_temp_variable = { party_index = 4 }
+					set_temp_variable = { party_popularity_increase = 0.05 }
+					add_relative_party_popularity = yes
 				}
 				hold_election = KAZ
 			}
@@ -1037,7 +1082,8 @@ country_event = { #Historical 2022
 	}
 }
 
-country_event = { #Historical 2022
+# Historical 2022
+country_event = {
 	id = centralkaz.7
 	title = centralkaz.7.t
 	desc = centralkaz.7.d
@@ -1048,18 +1094,14 @@ country_event = { #Historical 2022
 		name = centralkaz.7.a
 		log = "[GetDateText]: [This.GetName]: centralkaz.7.a executed"
 
-		every_country = {
+		every_other_country = {
 			limit = {
 				has_idea = CSTO_member
-				NOT = {
-					tag = KAZ
-				}
 			}
 			country_event = { id = centralkaz.8 days = 1 }
 		}
 
 		add_political_power = -100
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -1083,14 +1125,17 @@ country_event = { #Historical 2022
 				add_relative_party_popularity = yes
 
 				hidden_effect = {
-					add_to_variable = { party_pop_array^21 = 0.05 }
-					recalculate_party = yes
+					set_temp_variable = { temp_outlook_increase = 0 }
+					set_temp_variable = { party_index = 21 }
+					set_temp_variable = { party_popularity_increase = 0.05 }
+					add_relative_party_popularity = yes
 					add_popularity = {
 						ideology = democratic
 						popularity = 0.05
 					}
-					add_to_variable = { party_pop_array^4 = 0.05 }
-					recalculate_party = yes
+					set_temp_variable = { party_index = 4 }
+					set_temp_variable = { party_popularity_increase = 0.05 }
+					add_relative_party_popularity = yes
 				}
 				hold_election = KAZ
 			}
@@ -1105,14 +1150,17 @@ country_event = { #Historical 2022
 				add_relative_party_popularity = yes
 
 				hidden_effect = {
-					add_to_variable = { party_pop_array^21 = 0.05 }
-					recalculate_party = yes
+					set_temp_variable = { temp_outlook_increase = 0 }
+					set_temp_variable = { party_index = 21 }
+					set_temp_variable = { party_popularity_increase = 0.05 }
+					add_relative_party_popularity = yes
 					add_popularity = {
 						ideology = nationalist
 						popularity = 0.05
 					}
-					add_to_variable = { party_pop_array^4 = 0.05 }
-					recalculate_party = yes
+					set_temp_variable = { party_index = 4 }
+					set_temp_variable = { party_popularity_increase = 0.05 }
+					add_relative_party_popularity = yes
 				}
 				hold_election = KAZ
 			}
@@ -1320,7 +1368,6 @@ country_event = { #Historical 2005
 			add_manpower = -102
 		}
 		add_political_power = -100
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -1342,14 +1389,17 @@ country_event = { #Historical 2005
 		add_relative_party_popularity = yes
 
 		hidden_effect = {
-			add_to_variable = { party_pop_array^21 = 0.05 }
-			recalculate_party = yes
+			set_temp_variable = { temp_outlook_increase = 0 }
+			set_temp_variable = { party_index = 21 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			add_relative_party_popularity = yes
 			add_popularity = {
 				ideology = democratic
 				popularity = 0.05
 			}
-			add_to_variable = { party_pop_array^4 = 0.05 }
-			recalculate_party = yes
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			add_relative_party_popularity = yes
 		}
 		hold_election = UZB
 
@@ -1380,7 +1430,6 @@ country_event = { #Historical 2005
 			add_manpower = -85
 		}
 		add_political_power = -100
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -1402,14 +1451,17 @@ country_event = { #Historical 2005
 		add_relative_party_popularity = yes
 
 		hidden_effect = {
-			add_to_variable = { party_pop_array^21 = 0.05 }
-			recalculate_party = yes
+			set_temp_variable = { temp_outlook_increase = 0 }
+			set_temp_variable = { party_index = 21 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			add_relative_party_popularity = yes
 			add_popularity = {
 				ideology = democratic
 				popularity = 0.05
 			}
-			add_to_variable = { party_pop_array^4 = 0.05 }
-			recalculate_party = yes
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			add_relative_party_popularity = yes
 		}
 		hold_election = UZB
 
@@ -1559,7 +1611,6 @@ country_event = { #Historical 2002
 
 		add_political_power = 50
 
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -1573,7 +1624,6 @@ country_event = { #Historical 2002
 
 		add_stability = 0.05
 
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = 0.05 }
 		set_temp_variable = { temp_outlook_increase = 0.05 }
 		add_relative_party_popularity = yes
@@ -1622,7 +1672,6 @@ country_event = { #Historical 2005
 		country_event = { id = centralkyr.9 days = 3 }
 
 		add_political_power = -100
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -1638,7 +1687,6 @@ country_event = { #Historical 2005
 		country_event = { id = centralkyr.26 days = 3 }
 
 		add_political_power = -300
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.1 }
 		set_temp_variable = { temp_outlook_increase = -0.1 }
 		add_relative_party_popularity = yes
@@ -1663,7 +1711,6 @@ country_event = { #Historical 2005
 			add_manpower = -11
 		}
 		add_political_power = -500
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.2 }
 		set_temp_variable = { temp_outlook_increase = -0.2 }
 		add_relative_party_popularity = yes
@@ -1692,14 +1739,17 @@ country_event = { #Historical 2005
 		add_relative_party_popularity = yes
 
 		hidden_effect = {
-			add_to_variable = { party_pop_array^21 = 0.05 }
-			recalculate_party = yes
+			set_temp_variable = { temp_outlook_increase = 0 }
+			set_temp_variable = { party_index = 21 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			add_relative_party_popularity = yes
 			add_popularity = {
 				ideology = democratic
 				popularity = 0.05
 			}
-			add_to_variable = { party_pop_array^4 = 0.05 }
-			recalculate_party = yes
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			add_relative_party_popularity = yes
 		}
 		hold_election = KYR
 
@@ -1727,7 +1777,6 @@ country_event = { #Historical 2005
 		country_event = { id = centralkyr.10 days = 3 }
 
 		add_political_power = -50
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -1751,7 +1800,6 @@ country_event = { #Historical 2005
 		country_event = { id = centralkyr.11 days = 3 }
 
 		add_political_power = -50
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -1775,7 +1823,6 @@ country_event = { #Historical 2005
 		country_event = { id = centralkyr.12 days = 3 }
 
 		add_political_power = -50
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -1799,7 +1846,6 @@ country_event = { #Historical 2005
 		country_event = { id = centralkyr.13 days = 30 }
 
 		add_political_power = -50
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -1820,31 +1866,18 @@ country_event = { #Historical 2005
 		name = centralkyr.13.a
 		log = "[GetDateText]: [This.GetName]: centralkyr.13.a executed"
 
-		hidden_effect = {
-			clear_array = ruling_party
-			clear_array = gov_coalition_array
-			add_to_array = { ruling_party = 7 }
-			update_government_coalition_strength = yes
-			update_party_name = yes
-			set_coalition_drift = yes
-			meta_effect = {
-			text = {
-				set_country_flag = [META_SET_RULING_PARTY]
-			}
-			META_SET_RULING_PARTY = "[meta_set_ruling_leader]"
+		if = {
+			limit = { NOT = { is_in_array = { ruling_party = 7 } } }
+			set_temp_variable = { rul_party_temp = 7 }
+			set_temp_variable = { disable_elections = 0 }
+			change_ruling_party_effect = yes
 		}
-		set_leader = yes
-		}
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		add_popularity = {
-			ideology = communism
-			popularity = 0.15
-		}
-		add_to_variable = { party_pop_array^7 = 0.15 }
-		recalculate_party = yes
+
+		set_temp_variable = { party_index = 7 }
+		set_temp_variable = { party_popularity_increase = 0.10 }
+		set_temp_variable = { temp_outlook_increase = 0.10 }
+		add_relative_party_popularity = yes
+
 		create_country_leader = {
 			name = "Kurmanbek Bakiyev"
 			desc = ""
@@ -1878,7 +1911,6 @@ country_event = { #Historical 2010
 			add_manpower = -29
 		}
 		add_political_power = -100
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -1894,7 +1926,6 @@ country_event = { #Historical 2010
 		country_event = { id = centralkyr.26 days = 3 }
 
 		add_political_power = -300
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.1 }
 		set_temp_variable = { temp_outlook_increase = -0.1 }
 		add_relative_party_popularity = yes
@@ -1919,7 +1950,6 @@ country_event = { #Historical 2010
 			add_manpower = -321
 		}
 		add_political_power = -500
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.2 }
 		set_temp_variable = { temp_outlook_increase = -0.2 }
 		add_relative_party_popularity = yes
@@ -1948,14 +1978,17 @@ country_event = { #Historical 2010
 		add_relative_party_popularity = yes
 
 		hidden_effect = {
-			add_to_variable = { party_pop_array^21 = 0.05 }
-			recalculate_party = yes
+			set_temp_variable = { temp_outlook_increase = 0 }
+			set_temp_variable = { party_index = 21 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			add_relative_party_popularity = yes
 			add_popularity = {
 				ideology = democratic
 				popularity = 0.05
 			}
-			add_to_variable = { party_pop_array^4 = 0.05 }
-			recalculate_party = yes
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			add_relative_party_popularity = yes
 		}
 		hold_election = KYR
 
@@ -1986,7 +2019,6 @@ country_event = { #Historical 2010
 			add_manpower = -29
 		}
 		add_political_power = -50
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -2013,7 +2045,6 @@ country_event = { #Historical 2010
 			add_manpower = -29
 		}
 		add_political_power = -50
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -2037,7 +2068,6 @@ country_event = { #Historical 2010
 		country_event = { id = centralkyr.18 days = 3 }
 
 		add_political_power = -50
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -2061,7 +2091,6 @@ country_event = { #Historical 2010
 		country_event = { id = centralkyr.19 days = 30 }
 
 		add_political_power = -50
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -2084,31 +2113,18 @@ country_event = { #Historical 2010
 
 		country_event = { id = centralkyr.20 days = 60 }
 
-		hidden_effect = {
-			clear_array = ruling_party
-			clear_array = gov_coalition_array
-			add_to_array = { ruling_party = 2 }
-			update_government_coalition_strength = yes
-			update_party_name = yes
-			set_coalition_drift = yes
-			meta_effect = {
-			text = {
-				set_country_flag = [META_SET_RULING_PARTY]
-			}
-			META_SET_RULING_PARTY = "[meta_set_ruling_leader]"
+		if = {
+			limit = { NOT = { is_in_array = { ruling_party = 2 } } }
+			set_temp_variable = { rul_party_temp = 2 }
+			set_temp_variable = { disable_elections = 0 }
+			change_ruling_party_effect = yes
 		}
-		set_leader = yes
-		}
-		set_politics = {
-			ruling_party = democratic
-			elections_allowed = yes
-		}
-		add_popularity = {
-			ideology = democratic
-			popularity = 0.15
-		}
-		add_to_variable = { party_pop_array^2 = 0.15 }
-		recalculate_party = yes
+
+		set_temp_variable = { party_index = 2 }
+		set_temp_variable = { party_popularity_increase = 0.10 }
+		set_temp_variable = { temp_outlook_increase = 0.10 }
+		add_relative_party_popularity = yes
+
 		create_country_leader = {
 			name = "Roza Otunbayeva"
 			desc = ""
@@ -2129,34 +2145,20 @@ country_event = { #Historical 2010
 		name = centralkyr.19.b
 		log = "[GetDateText]: [This.GetName]: centralkyr.19.b executed"
 
-		hidden_effect = {
-			clear_array = ruling_party
-			clear_array = gov_coalition_array
-			add_to_array = { ruling_party = 2 }
-			update_government_coalition_strength = yes
-			update_party_name = yes
-			set_coalition_drift = yes
-			meta_effect = {
-			text = {
-				set_country_flag = [META_SET_RULING_PARTY]
-			}
-			META_SET_RULING_PARTY = "[meta_set_ruling_leader]"
+		if = {
+			limit = { NOT = { is_in_array = { ruling_party = 2 } } }
+			set_temp_variable = { rul_party_temp = 2 }
+			set_temp_variable = { disable_elections = 0 }
+			change_ruling_party_effect = yes
 		}
-		set_leader = yes
-		}
-		set_politics = {
-			ruling_party = democratic
-			elections_allowed = yes
-		}
-		add_popularity = {
-			ideology = democratic
-			popularity = 0.15
-		}
-		add_to_variable = { party_pop_array^2 = 0.15 }
-		recalculate_party = yes
+
+		set_temp_variable = { party_index = 2 }
+		set_temp_variable = { party_popularity_increase = 0.10 }
+		set_temp_variable = { temp_outlook_increase = 0.10 }
+		add_relative_party_popularity = yes
+
 		create_country_leader = {
 			name = "Roza Otunbayeva"
-			desc = ""
 			picture = "roza_otunbayeva.dds"
 			expire = "2050.1.1"
 			ideology = socialism
@@ -2188,34 +2190,20 @@ country_event = { #Historical 2010
 		name = centralkyr.20.a
 		log = "[GetDateText]: [This.GetName]: centralkyr.20.a executed"
 
-		hidden_effect = {
-			clear_array = ruling_party
-			clear_array = gov_coalition_array
-			add_to_array = { ruling_party = 3 }
-			update_government_coalition_strength = yes
-			update_party_name = yes
-			set_coalition_drift = yes
-			meta_effect = {
-			text = {
-				set_country_flag = [META_SET_RULING_PARTY]
-			}
-			META_SET_RULING_PARTY = "[meta_set_ruling_leader]"
+		if = {
+			limit = { NOT = { is_in_array = { ruling_party = 3 } } }
+			set_temp_variable = { rul_party_temp = 3 }
+			set_temp_variable = { disable_elections = 0 }
+			change_ruling_party_effect = yes
 		}
-		set_leader = yes
-		}
-		set_politics = {
-			ruling_party = democratic
-			elections_allowed = yes
-		}
-		add_popularity = {
-			ideology = democratic
-			popularity = 0.15
-		}
-		add_to_variable = { party_pop_array^3 = 0.15 }
-		recalculate_party = yes
+
+		set_temp_variable = { party_index = 3 }
+		set_temp_variable = { party_popularity_increase = 0.10 }
+		set_temp_variable = { temp_outlook_increase = 0.10 }
+		add_relative_party_popularity = yes
+
 		create_country_leader = {
 			name = "Almazbek Atambayev"
-			desc = ""
 			picture = "almazbek_atambayev.dds"
 			expire = "2050.1.1"
 			ideology = socialism
@@ -2246,7 +2234,6 @@ country_event = { #Historical 2020
 			add_manpower = -1
 		}
 		add_political_power = -100
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -2262,7 +2249,6 @@ country_event = { #Historical 2020
 		country_event = { id = centralkyr.26 days = 3 }
 
 		add_political_power = -300
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.1 }
 		set_temp_variable = { temp_outlook_increase = -0.1 }
 		add_relative_party_popularity = yes
@@ -2287,7 +2273,6 @@ country_event = { #Historical 2020
 			add_manpower = -23
 		}
 		add_political_power = -500
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.2 }
 		set_temp_variable = { temp_outlook_increase = -0.2 }
 		add_relative_party_popularity = yes
@@ -2316,14 +2301,17 @@ country_event = { #Historical 2020
 		add_relative_party_popularity = yes
 
 		hidden_effect = {
-			add_to_variable = { party_pop_array^21 = 0.05 }
-			recalculate_party = yes
+			set_temp_variable = { temp_outlook_increase = 0 }
+			set_temp_variable = { party_index = 21 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			add_relative_party_popularity = yes
 			add_popularity = {
 				ideology = democratic
 				popularity = 0.05
 			}
-			add_to_variable = { party_pop_array^4 = 0.05 }
-			recalculate_party = yes
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.05 }
+			add_relative_party_popularity = yes
 		}
 		hold_election = KYR
 
@@ -2351,7 +2339,6 @@ country_event = { #Historical 2020
 		country_event = { id = centralkyr.23 days = 3 }
 
 		add_political_power = -50
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -2375,7 +2362,6 @@ country_event = { #Historical 2020
 		country_event = { id = centralkyr.24 days = 3 }
 
 		add_political_power = -50
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -2399,7 +2385,6 @@ country_event = { #Historical 2020
 		country_event = { id = centralkyr.25 days = 3 }
 
 		add_political_power = -50
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.05 }
 		set_temp_variable = { temp_outlook_increase = -0.05 }
 		add_relative_party_popularity = yes
@@ -2420,34 +2405,20 @@ country_event = { #Historical 2020
 		name = centralkyr.25.a
 		log = "[GetDateText]: [This.GetName]: centralkyr.25.a executed"
 
-		hidden_effect = {
-			clear_array = ruling_party
-			clear_array = gov_coalition_array
-			add_to_array = { ruling_party = 14 }
-			update_government_coalition_strength = yes
-			update_party_name = yes
-			set_coalition_drift = yes
-			meta_effect = {
-			text = {
-				set_country_flag = [META_SET_RULING_PARTY]
-			}
-			META_SET_RULING_PARTY = "[meta_set_ruling_leader]"
+		if = {
+			limit = { NOT = { is_in_array = { ruling_party = 14 } } }
+			set_temp_variable = { rul_party_temp = 14 }
+			set_temp_variable = { disable_elections = 0 }
+			change_ruling_party_effect = yes
 		}
-		set_leader = yes
-		}
-		set_politics = {
-			ruling_party = neutrality
-			elections_allowed = yes
-		}
-		add_popularity = {
-			ideology = neutrality
-			popularity = 0.15
-		}
-		add_to_variable = { party_pop_array^14 = 0.15 }
-		recalculate_party = yes
+
+		set_temp_variable = { party_index = 14 }
+		set_temp_variable = { party_popularity_increase = 0.10 }
+		set_temp_variable = { temp_outlook_increase = 0.10 }
+		add_relative_party_popularity = yes
+
 		create_country_leader = {
 			name = "Sadyr Zhaparov"
-			desc = ""
 			picture = "sadyr_zhaparov.dds"
 			expire = "2050.1.1"
 			ideology = Neutral_conservatism
@@ -2496,35 +2467,17 @@ country_event = {
 	option = {
 		name = centralkyr.28.a
 		log = "[GetDateText]: [This.GetName]: centralkyr.28.a executed"
+		set_temp_variable = { rul_party_temp = 3 }
+		set_temp_variable = { disable_elections = 0 }
+		change_ruling_party_effect = yes
 
-		hidden_effect = {
-			clear_array = ruling_party
-			clear_array = gov_coalition_array
-			add_to_array = { ruling_party = 3 }
-			update_government_coalition_strength = yes
-			update_party_name = yes
-			set_coalition_drift = yes
-			meta_effect = {
-			text = {
-				set_country_flag = [META_SET_RULING_PARTY]
-			}
-			META_SET_RULING_PARTY = "[meta_set_ruling_leader]"
-		}
-		set_leader = yes
-		}
-		set_politics = {
-			ruling_party = democratic
-			elections_allowed = yes
-		}
-		add_popularity = {
-			ideology = democratic
-			popularity = 0.15
-		}
-		add_to_variable = { party_pop_array^3 = 0.15 }
-		recalculate_party = yes
+		set_temp_variable = { party_index = 3 }
+		set_temp_variable = { party_popularity_increase = 0.15 }
+		set_temp_variable = { temp_outlook_increase = 0.15 }
+		add_relative_party_popularity = yes
+
 		create_country_leader = {
 			name = "Sooronbay Jeenbekov"
-			desc = ""
 			picture = "sooronbay_jeenbekov.dds"
 			expire = "2050.1.1"
 			ideology = socialism
@@ -3028,5 +2981,29 @@ country_event = {
 	option = {
 		name = centralkaz.3518.a
 		log = "[GetDateText]: [This.GetName]: centralkaz.3518.a executed"
+	}
+}
+
+country_event = {
+	id = centralkaz.3519
+	title = centralkaz.3519.t
+	desc = centralkaz.3519.d
+	is_triggered_only = yes
+	picture = GFX_paris_convention
+	option = {
+		name = centralkaz.3519.a
+		log = "[GetDateText]: [This.GetName]: centralkaz.3519.a executed"
+		if = {
+			limit = { KAZ = { is_ai = yes } }
+			fuck_ai_central_asia_passive = yes
+		}
+		if = {
+			limit = { KYR = { is_ai = yes } }
+			fuck_ai_central_asia_passive = yes
+		}
+		if = {
+			limit = { UZB = { is_ai = yes } }
+			fuck_ai_central_asia_passive = yes
+		}
 	}
 }

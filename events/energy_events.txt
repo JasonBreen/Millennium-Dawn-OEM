@@ -1,132 +1,5 @@
 add_namespace = energy
 
-# Purchase Event Chains
-country_event = {
-	id = energy.1
-	title = energy.1.t
-	desc = energy.1.d
-	picture = GFX_nuclear_power_plant
-	is_triggered_only = yes
-
-	option = { #accept to sell
-		name = energy.1.a
-		log = "[GetDateText]: [This.GetName]: energy.1.a executed"
-		set_temp_variable = { change_resource = -500 }
-		change_reactor_grade_material_effect = yes
-		set_temp_variable = { treasury_change = 2 }
-		modify_treasury_effect = yes
-		var:purchaser_tag_reactor = {
-			set_temp_variable = { change_resource = 500 }
-			change_reactor_grade_material_effect = yes
-			set_temp_variable = { treasury_change = -2 }
-			modify_treasury_effect = yes
-			country_event = energy.2
-		}
-
-		ai_chance = {
-			factor = 5
-			modifier = {
-				factor = 2
-				check_variable = { var_nuke_nuclear_reactor_prod > nuclear_fuel_consumption }
-			}
-			modifier = {
-				factor = 2
-				var:purchase_tag_reactor = {
-					has_opinion = {
-						target = PREV
-						value > 100
-					}
-				}
-			}
-			modifier = {
-				factor = 2
-				var:purchase_tag_reactor = {
-					has_opinion = {
-						target = PREV
-						value > 150
-					}
-				}
-			}
-			modifier = {
-				factor = 2
-				var:purchase_tag_reactor = {
-					has_opinion = {
-						target = PREV
-						value > 200
-					}
-				}
-			}
-			modifier = {
-				factor = 0
-				var:purchaser_tag_reactor = {
-					has_war_with = PREV
-				}
-			}
-		}
-	}
-	option = { #refuse to sell
-		name = energy.1.b
-		log = "[GetDateText]: [This.GetName]: energy.1.b executed"
-		var:purchaser_tag_reactor = {
-			country_event = energy.3
-		}
-
-		ai_chance = {
-			factor = 0
-			modifier = {
-				add = 10
-				var:purchaser_tag_reactor = {
-					has_war_with = PREV
-				}
-			}
-		}
-	}
-}
-
-country_event = {
-	id = energy.2
-	title = energy.2.t
-	desc = energy.2.d
-	picture = GFX_nuclear_power_plant_accept
-	is_triggered_only = yes
-
-	option = {
-		name = energy.2.a
-		log = "[GetDateText]: [This.GetName]: energy.2.a executed"
-		effect_tooltip = {
-			FROM = {
-				set_temp_variable = { change_resource = -500 }
-				change_reactor_grade_material_effect = yes
-				set_temp_variable = { treasury_change = 2 }
-				modify_treasury_effect = yes
-			}
-			set_temp_variable = { change_resource = 500 }
-			change_reactor_grade_material_effect = yes
-			set_temp_variable = { treasury_change = -2 }
-			modify_treasury_effect = yes
-		}
-		hidden_effect = {
-			FROM = {
-				clear_variable = purchaser_tag_reactor
-				clr_country_flag = currently_considering_an_offer
-			}
-		}
-	}
-}
-
-country_event = {
-	id = energy.3
-	title = energy.3.t
-	desc = energy.3.d
-	is_triggered_only = yes
-
-	option = {
-		name = energy.3.a
-		log = "[GetDateText]: [This.GetName]: energy.3.a executed"
-
-	}
-}
-
 # Cease Construction Demand
 country_event = {
 	id = energy.4
@@ -143,11 +16,20 @@ country_event = {
 		}
 
 		ai_chance = {
-			factor = 5
+			base = 5
 			modifier = {
 				factor = 10
 				original_tag = USA
 				check_variable = { new_enrichment_country = PER.id }
+			}
+			modifier = {
+				factor = 2
+				has_added_tension_amount > 5
+			}
+			# Try to avoid nations at war from building nuclear weapons
+			modifier = {
+				factor = 1.5
+				has_war = yes
 			}
 		}
 	}
@@ -161,10 +43,43 @@ country_event = {
 		}
 
 		ai_chance = {
-			factor = 10
+			base = 10
 			modifier = {
 				factor = 2
 				is_historical_focus_on = yes
+				FROM = {
+					OR = {
+						original_tag = FRA
+						original_tag = ARG
+						original_tag = BRA
+						original_tag = GER
+						original_tag = RAJ
+						original_tag = JAP
+						original_tag = HOL
+						original_tag = PAK
+						original_tag = ENG
+						original_tag = NKO
+						original_tag = USA
+					}
+				}
+			}
+			modifier = {
+				factor = 1.25
+				has_government = FROM
+			}
+			modifier = {
+				factor = 1.25
+				FROM = {
+					OR = {
+						is_in_array = { influence_array^0 = PREV }
+						is_in_array = { influence_array^1 = PREV }
+						is_in_array = { influence_array^2 = PREV }
+						is_in_array = { influence_array^3 = PREV }
+						is_in_array = { influence_array^4 = PREV }
+						is_in_array = { influence_array^5 = PREV }
+						is_in_array = { influence_array^6 = PREV }
+					}
+				}
 			}
 			modifier = {
 				factor = 0
@@ -173,9 +88,19 @@ country_event = {
 			}
 			modifier = {
 				factor = 0
-				has_opinion = {
-					target = FROM
-					value < -40
+				has_opinion = { target = FROM value < -25 }
+			}
+			modifier = {
+				factor = 0
+				var:new_enrichment_country = {
+					OR = {
+						is_justifying_wargoal_against = PREV
+						PREV = {
+							any_allied_country = {
+								FROM = { is_justifying_wargoal_against = PREV }
+							}
+						}
+					}
 				}
 			}
 		}
@@ -193,14 +118,14 @@ country_event = {
 	option = {
 		name = energy.5.a
 		log = "[GetDateText]: [This.GetName]: energy.5.a executed"
-		remove_mission = energy_building_enrichment_facilities
+		#remove_mission = energy_building_enrichment_facilities
 		add_opinion_modifier = { target = FROM modifier = canceled_our_enrichment_facility_construction }
 		FROM = {
 			country_event = { id = energy.6 days = 3 }
 		}
 
 		ai_chance = {
-			factor = 10
+			base = 10
 		}
 	}
 
@@ -216,7 +141,7 @@ country_event = {
 		}
 
 		ai_chance = {
-			factor = 0
+			base = 0
 		}
 	}
 
@@ -229,6 +154,9 @@ country_event = {
 
 		effect_tooltip = {
 			FROM = {
+				set_temp_variable = { wargoal_on = PREV }
+				set_temp_variable = { wargoal_type = 1 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					type = topple_government
 					target = PREV
@@ -240,7 +168,7 @@ country_event = {
 		}
 
 		ai_chance = {
-			factor = 0
+			base = 0
 		}
 	}
 }
@@ -257,7 +185,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: energy.6.a executed"
 		effect_tooltip = {
 			FROM = {
-				remove_mission = energy_building_enrichment_facilities
+				#remove_mission = energy_building_enrichment_facilities
 			}
 		}
 		hidden_effect = {
@@ -301,6 +229,9 @@ country_event = {
 			add_opinion_modifier = { target = FROM modifier = ignored_our_request_to_cease }
 			reverse_add_opinion_modifier = { target = FROM modifier = ignored_our_request_to_cease }
 		}
+		set_temp_variable = { wargoal_on = FROM }
+		set_temp_variable = { wargoal_type = 1 }
+		add_threat_from_wargoal_effect = yes
 		create_wargoal = {
 			type = topple_government
 			target = FROM

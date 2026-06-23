@@ -1,15 +1,24 @@
-﻿capital = 209
+capital = 209
 2000.1.1 = {
-	#oob = "HAM_2000"
+	set_variable = { currency_strength = 0.65 }
+	set_oob = "HAM_2000"
+	set_cosmetic_tag = HAM_democratic
+	set_variable = { gdp_per_capita = 4.521 }
 
 	add_ideas = {
-		#pop_050
-		systematic_corruption
+		partially_privatized_healthcare
+		balanced_protections
+		standard_maintenance
+		us_dollar
+		light_regulations
 
+		corruption_level_06
 		sunni
 		fast_growth
-		Non_State_Actor
-		israeli_blockade
+		#israeli_blockade
+		PAL_closing_gates_all_open
+		non_state_actor
+		lacks_international_recognition
 		large_refugee_population
 		defence_06
 		edu_02
@@ -17,37 +26,55 @@
 		social_01
 		bureau_05
 		police_05
+		conservative_society
 		youth_radicalization
 		al_jazeera_allowed
-		iranian_aid
+		#iranian_aid
 		volunteer_army
 		volunteer_women
 		the_ulema
 		the_military
 		iranian_quds_force
-		#hybrid
 		officer_basic_training
 	}
 
+	if = {
+		limit = {
+			is_ai = yes
+		}
+		set_country_flag = gu_gaza_select
+		set_country_flag = gu_westbank_select
+		set_country_flag = gu_mainisr_select
+	}
+
+	give_military_access = ISR
+
 	set_technology = {
-		legacy_doctrines = 1
+
 		infantry_mass_assault = 1
 		#For templates
-		infantry_weapons = 1
-		command_control_equipment = 1
+		infantry_weapons_1 = 1
+		cnc_equipment_1 = 1
 		Anti_tank_0 = 1
 
 		basic_computing = 1
 		integrated_circuit = 1
 		computing1 = 1
-		decryption1 = 1
-		encryption1 = 1
 		radar = 1
 		internet1 = 1 	#1G
 		fuel_silos = 1
 	}
+
+	if = {
+		limit = { NOT = { has_dlc = "La Resistance" } }
+		set_technology = {
+			decryption1 = 1
+			encryption1 = 1
+		}
+	}
 	if = {
 		limit = { has_dlc = "No Step Back" }
+
 		set_technology = {
 			nsb_Anti_Air_0 = 1
 		}
@@ -61,6 +88,17 @@
 	set_variable = { var = treasury value = 3 }
 	set_variable = { var = corporate_tax_rate value = 20 }
 	set_variable = { var = population_tax_rate value = 20 }
+
+	209 = { add_dynamic_modifier = { modifier = israeli_settlements } }
+
+	set_rule = { units_deployed_to_overlord = no }
+
+	#Islamism
+	set_variable = { social_conservatism_government = 65 }
+	set_variable = { social_conservatism_society = 65 }
+
+	#UAR
+	add_to_array = { global.arabic_countries = THIS }	#From is_arabic_nation trigger
 
 	#Influence system
 	init_influence = yes
@@ -76,18 +114,18 @@
 	add_to_array = { influence_array_val = 1.5 }
 	add_to_array = { influence_array = SAU.id }
 	add_to_array = { influence_array_val = 0.8 }
-	startup_influence = yes
+	sort_influence = yes
 
 	set_popularities = {
-		democratic = 0.0
-		communism = 0.0
-		fascism = 0.0
-		neutrality = 100.0
+		democratic = 48.0
+		communism = 6.0
+		fascism = 11.0
+		neutrality = 35.0
 		nationalist = 0.0
 	}
 	set_politics = {
-		ruling_party = neutrality
-		last_election = "2000.1.1"
+		ruling_party = democratic
+		last_election = "1996.1.20"
 		election_frequency = 60
 		elections_allowed = no
 	}
@@ -95,25 +133,25 @@
 	start_politics_input = yes
 
 	### Party Popularities
-	set_variable = { party_pop_array^0 = 0 } #Western_Autocracy
-	set_variable = { party_pop_array^1 = 0 } #conservatism
+	set_variable = { party_pop_array^0 = 0.15 } #Western_Autocracy
+	set_variable = { party_pop_array^1 = 0.08 } #conservatism
 	set_variable = { party_pop_array^2 = 0 } #liberalism
-	set_variable = { party_pop_array^3 = 0 } #socialism
-	set_variable = { party_pop_array^4 = 0 } #Communist-State
+	set_variable = { party_pop_array^3 = 0.1 } #socialism
+	set_variable = { party_pop_array^4 = 0.06 } #Communist-State
 	set_variable = { party_pop_array^5 = 0 } #anarchist_communism
 	set_variable = { party_pop_array^6 = 0 } #Conservative
 	set_variable = { party_pop_array^7 = 0 } #Autocracy
 	set_variable = { party_pop_array^8 = 0 } #Mod_Vilayat_e_Faqih
 	set_variable = { party_pop_array^9 = 0 } #Vilayat_e_Faqih
-	set_variable = { party_pop_array^10 = 0 } #Kingdom
-	set_variable = { party_pop_array^11 = 0 } #Caliphate
-	set_variable = { party_pop_array^12 = 1.0 } #Neutral_Muslim_Brotherhood
+	set_variable = { party_pop_array^10 = 0.08 } #Kingdom
+	set_variable = { party_pop_array^11 = 0.03 } #Caliphate
+	set_variable = { party_pop_array^12 = 0.10 } #Neutral_Muslim_Brotherhood
 	set_variable = { party_pop_array^13 = 0 } #Neutral_Autocracy
 	set_variable = { party_pop_array^14 = 0 } #Neutral_conservatism
 	set_variable = { party_pop_array^15 = 0 } #oligarchism
 	set_variable = { party_pop_array^16 = 0 } #Neutral_Libertarian
 	set_variable = { party_pop_array^17 = 0 } #Neutral_green
-	set_variable = { party_pop_array^18 = 0 } #neutral_Social
+	set_variable = { party_pop_array^18 = 0.4 } #neutral_Social
 	set_variable = { party_pop_array^19 = 0 } #Neutral_Communism
 	set_variable = { party_pop_array^20 = 0 } #Nat_Populism
 	set_variable = { party_pop_array^21 = 0 } #Nat_Fascism
@@ -121,124 +159,69 @@
 	set_variable = { party_pop_array^23 = 0 } #Monarchist
 
 	### Ruling Party
-	add_to_array = { ruling_party = 12 }
+	add_to_array = { ruling_party = 0 }
 
 	startup_politics = yes
 
+	create_country_leader = {
+		name = "Mohammed Dahlan"
+		picture = "gfx/leaders/PAL/mohammed_dahlan.dds"
+		expire = "2077.3.7"
+		ideology = Western_Autocracy
+		traits = {
+			western_Western_Autocracy
+			rational
+			cautious
+		}
+	}
+
 	set_variable = { var = corporate_tax_rate value = 15 }
 	set_variable = { var = population_tax_rate value = 15 }
+	set_variable = { overall_productivity = 643 }
 
 	recruit_character = HAM_khaled_mashal
 	recruit_character = HAM_wafai_sultan
 	recruit_character = HAM_mitri_shomali
 	recruit_character = HAM_aali_raheb
 	recruit_character = HAM_ashfaq_kanafani
-}
 
-2017.1.1 = {
-	capital = 209
-	oob = "HAM_2017"
+	# Relation Starting Configuration (moved from on_startup)
+	add_opinion_modifier = { target = CUB modifier = sanctions }
+	add_relation_modifier = { target = USA modifier = USA_World_Economical_Relations }
+	add_relation_modifier = { target = SOV modifier = SOV_World_Economical_Relations }
+	add_relation_modifier = { target = CHI modifier = CHI_World_Economical_Relations }
+	add_relation_modifier = { target = FRA modifier = FRA_World_Economical_Relations }
+	add_relation_modifier = { target = GER modifier = GER_World_Economical_Relations }
+	add_relation_modifier = { target = ENG modifier = ENG_World_Economical_Relations }
+	add_relation_modifier = { target = SPR modifier = SPR_World_Economical_Relations }
+	add_relation_modifier = { target = ITA modifier = ITA_World_Economical_Relations }
+	add_relation_modifier = { target = UKR modifier = UKR_World_Economical_Relations }
+	add_relation_modifier = { target = ISR modifier = ISR_World_Economical_Relations }
+	add_opinion_modifier = { target = TTP modifier = AlQaida_Are_Terrorists }
+	add_opinion_modifier = { target = TTP modifier = AlQaida_Are_Terrorists_Trade }
+	add_opinion_modifier = { target = TAL modifier = Taliban_Are_Terrorists }
+	add_opinion_modifier = { target = TAL modifier = Taliban_Are_Terrorists_Trade }
+	add_opinion_modifier = { target = ALG modifier = arab_league_relations }
+	add_opinion_modifier = { target = BHR modifier = arab_league_relations }
+	add_opinion_modifier = { target = COM modifier = arab_league_relations }
+	add_opinion_modifier = { target = DJI modifier = arab_league_relations }
+	add_opinion_modifier = { target = EGY modifier = arab_league_relations }
+	add_opinion_modifier = { target = IRQ modifier = arab_league_relations }
+	add_opinion_modifier = { target = JOR modifier = arab_league_relations }
+	add_opinion_modifier = { target = KUW modifier = arab_league_relations }
+	add_opinion_modifier = { target = LEB modifier = arab_league_relations }
+	add_opinion_modifier = { target = LBA modifier = arab_league_relations }
+	add_opinion_modifier = { target = MAU modifier = arab_league_relations }
+	add_opinion_modifier = { target = MOR modifier = arab_league_relations }
+	add_opinion_modifier = { target = OMA modifier = arab_league_relations }
+	add_opinion_modifier = { target = PAL modifier = arab_league_relations }
+	add_opinion_modifier = { target = QAT modifier = arab_league_relations }
+	add_opinion_modifier = { target = SAU modifier = arab_league_relations }
+	add_opinion_modifier = { target = SOM modifier = arab_league_relations }
+	add_opinion_modifier = { target = SUD modifier = arab_league_relations }
+	add_opinion_modifier = { target = SYR modifier = arab_league_relations }
+	add_opinion_modifier = { target = TUN modifier = arab_league_relations }
+	add_opinion_modifier = { target = UAE modifier = arab_league_relations }
+	add_opinion_modifier = { target = YEM modifier = arab_league_relations }
 
-	# Starting tech
-	set_technology = {
-		microprocessors = 1
-		computing2 = 1
-		decryption2 = 1
-		encryption2 = 1
-		computing3 = 1
-		decryption3 = 1
-		encryption3 = 1
-		computing4 = 1
-		decryption4 = 1
-		encryption4 = 1
-		neural_networks_revival = 1
-		data_mining = 1
-		industrial_electrospun_polymeric_nanofibers = 1
-		stereolitography = 1
-		DNA_fingerprinting = 1
-		modern_gmo = 1
-		gene_therapy = 1
-		internet2 = 1 #2G
-		construction1 = 1
-		excavation1 = 1
-	}
-
-	add_ideas = {
-		systematic_corruption
-		sunni
-		fast_growth
-		defence_06
-		edu_02
-		health_04
-		social_01
-		bureau_05
-		police_05
-		youth_radicalization
-		al_jazeera_allowed
-		iranian_aid
-		volunteer_army
-		volunteer_women
-		the_ulema
-		the_military
-		iranian_quds_force
-	}
-
-	add_opinion_modifier = { target = ISR modifier = HAM_ISR_Occupation }
-
-	set_popularities = {
-		democratic = 0.0
-		communism = 0.0
-		fascism = 0.0
-		neutrality = 100.0
-		nationalist = 0.0
-	}
-	set_politics = {
-
-		ruling_party = neutrality
-		last_election = "2012.3.25"
-		election_frequency = 60
-		elections_allowed = no
-	}
-
-	start_politics_input = yes
-
-	### Party Popularities
-	set_variable = { party_pop_array^0 = 0 } #Western_Autocracy
-	set_variable = { party_pop_array^1 = 0 } #conservatism
-	set_variable = { party_pop_array^2 = 0 } #liberalism
-	set_variable = { party_pop_array^3 = 0 } #socialism
-	set_variable = { party_pop_array^4 = 0 } #Communist-State
-	set_variable = { party_pop_array^5 = 0 } #anarchist_communism
-	set_variable = { party_pop_array^6 = 0 } #Conservative
-	set_variable = { party_pop_array^7 = 0 } #Autocracy
-	set_variable = { party_pop_array^8 = 0 } #Mod_Vilayat_e_Faqih
-	set_variable = { party_pop_array^9 = 0 } #Vilayat_e_Faqih
-	set_variable = { party_pop_array^10 = 0 } #Kingdom
-	set_variable = { party_pop_array^11 = 0 } #Caliphate
-	set_variable = { party_pop_array^12 = 1.0 } #Neutral_Muslim_Brotherhood
-	set_variable = { party_pop_array^13 = 0 } #Neutral_Autocracy
-	set_variable = { party_pop_array^14 = 0 } #Neutral_conservatism
-	set_variable = { party_pop_array^15 = 0 } #oligarchism
-	set_variable = { party_pop_array^16 = 0 } #Neutral_Libertarian
-	set_variable = { party_pop_array^17 = 0 } #Neutral_green
-	set_variable = { party_pop_array^18 = 0 } #neutral_Social
-	set_variable = { party_pop_array^19 = 0 } #Neutral_Communism
-	set_variable = { party_pop_array^20 = 0 } #Nat_Populism
-	set_variable = { party_pop_array^21 = 0 } #Nat_Fascism
-	set_variable = { party_pop_array^22 = 0 } #Nat_Autocracy
-	set_variable = { party_pop_array^23 = 0 } #Monarchist
-
-	### Ruling Party
-	add_to_array = { ruling_party = 12 }
-
-	startup_politics = yes
-
-	create_country_leader = {
-		name = "Khaled Mashal"
-		picture = "Khaled_Mashal.dds"
-		ideology = Neutral_Muslim_Brotherhood
-		traits = {
-			neutrality_Neutral_Muslim_Brotherhood
-		}
-	}
 }

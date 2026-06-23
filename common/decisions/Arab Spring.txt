@@ -1,4 +1,32 @@
 arab_spring_category = {
+	hide_arab_spring_monthly_change_factors = {
+		icon = GFX_decision_generic_civil_support
+
+		visible = {
+			NOT = { has_country_flag = AS_hide_monthly_arab_spring_protest_change }
+		}
+
+		complete_effect = {
+			set_country_flag = AS_hide_monthly_arab_spring_protest_change
+		}
+
+		ai_will_do = { base = 0 }
+	}
+
+	show_arab_spring_monthly_change_factors = {
+		icon = GFX_decision_generic_civil_support
+
+		visible = {
+			has_country_flag = AS_hide_monthly_arab_spring_protest_change
+		}
+
+		complete_effect = {
+			clr_country_flag = AS_hide_monthly_arab_spring_protest_change
+		}
+
+		ai_will_do = { base = 0 }
+	}
+
 	arab_spring_encourage_supporters = {
 		icon = GFX_decision_generic_civil_support
 
@@ -11,44 +39,53 @@ arab_spring_category = {
 		fixed_random_seed = no
 
 		complete_effect = {
+			log = "[GetDateText]: [This.GetName]: decision arab_spring_encourage_supporters executed"
 			set_temp_variable = { treasury_change = -0.5 }
 			modify_treasury_effect = yes
-			log = "[GetDateText]: [This.GetName]: decision arab_spring_encourage_supporters executed"
 		}
 
 		days_remove = 7
 
 		remove_effect = {
+			log = "[GetDateText]: [This.GetName]: decision remove arab_spring_encourage_supporters executed"
 			hidden_effect = {
-				random_list = {
-					75 = {
-					}
-					25 = {
+				if = {
+					limit = { check_variable = { arab_spring > 75 } }
+					random = {
+						chance = 100
 						set_country_flag = arab_spring_civilian_clashes
-						modifier = {
-							factor = 2
-							check_variable = { arab_spring > 50 }
-						}
-						modifier = {
-							factor = 2
-							check_variable = { arab_spring > 75 }
-						}
+					}
+				}
+				else_if = {
+					limit = { check_variable = { arab_spring > 50 } }
+					random = {
+						chance = 50
+						set_country_flag = arab_spring_civilian_clashes
+					}
+				}
+				else = {
+					random = {
+						chance = 25
+						set_country_flag = arab_spring_civilian_clashes
 					}
 				}
 			}
-			country_event = { id = arab_spring.6 }
-			custom_effect_tooltip = slight_weaken_protests_tt
-			subtract_from_variable = { arab_spring = 10 }
+			country_event = arab_spring.6
+			set_temp_variable = { temp_strength = -40 }
+			change_arab_spring_strength = yes
 			custom_effect_tooltip = clashes_fatalities_tt
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 
 	arab_spring_request_crackdown = {
 		icon = GFX_decision_generic_tank
+
+		days_remove = 21
+		cost = 50
 
 		visible = {
 			has_country_flag = arab_spring_active
@@ -56,24 +93,18 @@ arab_spring_category = {
 			NOT = { has_country_flag = gcc_dominant_member }
 		}
 
-		cost = 25
-
-		days_remove = 2
-
-		complete_effect = {
-
-			log = "[GetDateText]: [This.GetName]: decision arab_spring_request_crackdown executed"
-		}
-
 		remove_effect = {
-			random_country = {
+			log = "[GetDateText]: [This.GetName]: decision arab_spring_request_crackdown executed"
+			# FIXME: Tooltip here
+			random_scope_in_array = {
+				array = global.gcc_member_state
 				limit = { has_country_flag = gcc_dominant_member }
-				country_event = { id = arab_spring.19 }
+				country_event = arab_spring.19
 			}
 		}
 
 		ai_will_do = {
-			factor = 0
+			base = 0
 			modifier = {
 				add = 100
 				check_variable = { arab_spring > 100 }
@@ -94,21 +125,22 @@ arab_spring_category = {
 		days_remove = 2
 
 		complete_effect = {
+			log = "[GetDateText]: [This.GetName]: decision arab_spring_deploy_the_military executed"
 			set_temp_variable = { temp_opinion = -5 }
 			change_the_military_opinion = yes
-			log = "[GetDateText]: [This.GetName]: decision arab_spring_deploy_the_military executed"
 		}
 
 		remove_effect = {
-			custom_effect_tooltip = significantly_weaken_protests_tt
-			subtract_from_variable = { arab_spring = 20 }
+			log = "[GetDateText]: [This.GetName]: decision arab_spring_deploy_the_military remove executed"
+			set_temp_variable = { temp_strength = -40 }
+			change_arab_spring_strength = yes
 			set_country_flag = arab_spring_military_deployed
 			custom_effect_tooltip = mutiny_possibility_tt
 			custom_effect_tooltip = clashes_fatalities_tt
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 
@@ -126,16 +158,14 @@ arab_spring_category = {
 
 		fire_only_once = yes
 
-		complete_effect = {
-			log = "[GetDateText]: [This.GetName]: decision arab_spring_deploy_the_military executed"
-		}
-
 		remove_effect = {
-			custom_effect_tooltip = significantly_strengthen_protests_tt
-			add_to_variable = { arab_spring = 20 }
+			log = "[GetDateText]: [This.GetName]: decision arab_spring_deploy_the_military executed"
+			set_temp_variable = { temp_strength = 15 }
+			change_arab_spring_strength = yes
 			clr_country_flag = arab_spring_military_deployed
 			custom_effect_tooltip = arab_spring_return_to_barracks_tt
 		}
+		ai_will_do = { base = 0 }
 	}
 
 	arab_spring_reshuffle_government = {
@@ -152,16 +182,17 @@ arab_spring_category = {
 		fixed_random_seed = no
 
 		remove_effect = {
-			custom_effect_tooltip = slight_weaken_protests_tt
-			subtract_from_variable = { arab_spring = 10 }
+			log = "[GetDateText]: [This.GetName]: decision arab_spring_deploy_the_military executed"
+			set_temp_variable = { temp_strength = -50 }
+			change_arab_spring_strength = yes
 			if = {
 				limit = { check_variable = { arab_spring < 26 } }
 				random_list = {
 					60 = {
-						country_event = { id = arab_spring.9 }
+						country_event = arab_spring.9
 					}
 					40 = {
-						country_event = { id = arab_spring.10 }
+						country_event = arab_spring.10
 					}
 				}
 			}
@@ -172,10 +203,10 @@ arab_spring_category = {
 				}
 				random_list = {
 					50 = {
-						country_event = { id = arab_spring.9 }
+						country_event = arab_spring.9
 					}
 					50 = {
-						country_event = { id = arab_spring.10 }
+						country_event = arab_spring.10
 					}
 				}
 			}
@@ -183,17 +214,17 @@ arab_spring_category = {
 				limit = { check_variable = { arab_spring > 65 } }
 				random_list = {
 					40 = {
-						country_event = { id = arab_spring.9 }
+						country_event = arab_spring.9
 					}
 					60 = {
-						country_event = { id = arab_spring.10 }
+						country_event = arab_spring.10
 					}
 				}
 			}
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 
@@ -204,7 +235,7 @@ arab_spring_category = {
 			has_country_flag = arab_spring_active
 		}
 
-		cost = 150
+		cost = 100
 
 		fire_only_once = yes
 
@@ -212,18 +243,19 @@ arab_spring_category = {
 
 		fixed_random_seed = no
 
-		complete_effect = {
+		remove_effect = {
+			log = "[GetDateText]: [This.GetName]: decision arab_spring_amend_the_constitution executed"
 			add_ideas = constitutional_reform
-			custom_effect_tooltip = significantly_weaken_protests_tt
-			subtract_from_variable = { arab_spring = 20 }
+			set_temp_variable = { temp_strength = -100 }
+			change_arab_spring_strength = yes
 			if = {
 				limit = { check_variable = { arab_spring < 26 } }
 				random_list = {
 					75 = {
-						country_event = { id = arab_spring.9 }
+						country_event = arab_spring.9
 					}
 					25 = {
-						country_event = { id = arab_spring.10 }
+						country_event = arab_spring.10
 					}
 				}
 			}
@@ -234,10 +266,10 @@ arab_spring_category = {
 				}
 				random_list = {
 					60 = {
-						country_event = { id = arab_spring.9 }
+						country_event = arab_spring.9
 					}
 					40 = {
-						country_event = { id = arab_spring.10 }
+						country_event = arab_spring.10
 					}
 				}
 			}
@@ -245,34 +277,32 @@ arab_spring_category = {
 				limit = { check_variable = { arab_spring > 65 } }
 				random_list = {
 					50 = {
-						country_event = { id = arab_spring.9 }
+						country_event = arab_spring.9
 					}
 					50 = {
-						country_event = { id = arab_spring.10 }
+						country_event = arab_spring.10
 					}
 				}
 			}
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 
-	arab_spring_protests_1 = { #for trigger nation
-
-		allowed = {
-		}
+	# For Trigger Nation
+	arab_spring_protests_1 = {
 
 		icon = GFX_decision_revolt
 
 		is_good = no
 
-		days_mission_timeout = 30
+		days_mission_timeout = 60
 
 		activation = {
 			has_country_flag = arab_spring_active
-			NOT = { has_global_flag = global_arab_spring }
+			NOT = { has_global_flag = global_arab_spring_started }
 		}
 
 		fire_only_once = yes
@@ -280,66 +310,69 @@ arab_spring_category = {
 		available = {
 			custom_trigger_tooltip = {
 				tooltip = arab_spring_ended_tt
-				check_variable = { arab_spring < 1 }
+				check_variable = { arab_spring < 200 }
 			}
 		}
 
 		timeout_effect = {
+			log = "[GetDateText]: [This.GetName]: decision arab_spring_protests_1 timeout executed"
 			clr_country_flag = arab_spring_active
-			if = {
-				limit = { check_variable = { arab_spring > 65 } }
-				country_event = { id = arab_spring.11 }
+			if = { limit = { check_variable = { arab_spring > 65 } }
+				country_event = { id = arab_spring.11 random_days = 7 random_hours = 18 }
 			}
 			else = {
-				add_political_power = -300
+				add_political_power = -150
 			}
 		}
 
 		complete_effect = {
+			log = "[GetDateText]: [This.GetName]: decision arab_spring_protests_1 complete executed"
 			clr_country_flag = arab_spring_active
+			country_event = { id = arab_spring.18 random_hours = 18 }
 		}
 	}
 
-	arab_spring_protests_2 = { #for other nations
-
-		allowed = {
-		}
-
+	# For Other Nations
+	arab_spring_protests_2 = {
 		icon = GFX_decision_revolt
 
 		is_good = no
 
 		days_mission_timeout = 90
-
-		activation = {
-			has_country_flag = arab_spring_active
-			has_global_flag = global_arab_spring
-		}
-
 		fire_only_once = yes
 
+		activation = {
+			has_global_flag = global_arab_spring_started
+			NOT = { has_country_flag = AS_arab_spring_completed }
+
+			# Global Arab Spring has started... our own protests can begin
+			check_variable = { arab_spring > 199 }
+			NOT = { neutrality_neutral_muslim_brotherhood_are_in_power = yes }
+			has_war = no
+		}
 		available = {
 			custom_trigger_tooltip = {
 				tooltip = arab_spring_ended_tt
-				check_variable = { arab_spring < 1 }
+				check_variable = { arab_spring < 200 }
 			}
 		}
 
 		timeout_effect = {
+			log = "[GetDateText]: [This.GetName]: decision arab_spring_protests_2 timeout executed"
 			clr_country_flag = arab_spring_active
-			if = {
-				limit = { check_variable = { arab_spring > 99 } }
-				country_event = { id = arab_spring.11 }
+			if = { limit = { check_variable = { arab_spring > 99 } }
+				country_event = { id = arab_spring.11 random_days = 7 random_hours = 18 }
 			}
 			else = {
-				add_political_power = -300
-				country_event = { id = arab_spring.18 }
+				add_political_power = -150
+				country_event = { id = arab_spring.18 random_days = 7 random_hours = 18 }
 			}
 		}
 
 		complete_effect = {
+			log = "[GetDateText]: [This.GetName]: decision arab_spring_protests_2 complete executed"
 			clr_country_flag = arab_spring_active
-			country_event = { id = arab_spring.18 }
+			country_event = arab_spring.18
 		}
 	}
 }

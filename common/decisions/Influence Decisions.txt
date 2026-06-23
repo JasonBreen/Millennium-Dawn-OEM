@@ -1,43 +1,189 @@
-influence_desicions = {
-	hidden_ai_influence_decision = {
-		icon = GFX_decision_reportdis_button
-		cost = 25
-		days_remove = 40
-		days_re_enable = 15
-		visible = { is_ai = yes }
-		available = { check_variable = { influence_array^0 > 0 } }
-		remove_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision hidden_ai_influence_decision"
-			set_temp_variable = { percent_change = 5 }
-			change_domestic_influence_percentage = yes
+influence_decisions = {
+	# Custom Decisions
+	rebellion_in_azerbaijan = {
+		allowed = {
+			OR = {
+				original_tag = SOV
+				original_tag = TUR
+				original_tag = AZE
+			}
+		}
+		icon = GFX_decision_generic_civil_support
+		fire_only_once = yes
+
+		visible = {
+			407 = {
+				is_owned_and_controlled_by = PER
+				has_dynamic_modifier = {
+					modifier = PER_azeri_separatism
+				}
+			}
+			NOT = {
+				country_exists = SAZ
+			}
 		}
 
-		ai_will_do = {
-			factor = 5
-			modifier = {
-				factor = 5
-				check_variable = { domestic_influence_amount < 80 }
+		available = {
+			has_equipment = { infantry_weapons_type > 9999 }
+			has_equipment = { util_vehicle_type > 4999 }
+			PER = {
+				influence_higher_20 = yes
 			}
-			modifier = {
-				factor = 2
-				check_variable = { domestic_influence_amount < 60 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision rebellion_in_azerbaijan"
+			custom_effect_tooltip = PER_SAZ_rebel_TT
+			PER_SAZ_independence = yes
+		}
+		ai_will_do = { base = 0 }
+	}
+	rebellion_in_balochistan = {
+		allowed = {
+			OR = {
+				original_tag = SAU
+				original_tag = PAK
 			}
-			modifier = {
-				factor = 2
-				check_variable = { domestic_influence_amount < 40 }
+		}
+		icon = GFX_decision_generic_civil_support
+		fire_only_once = yes
+
+		visible = {
+			401 = {
+				is_owned_and_controlled_by = PER
+				has_dynamic_modifier = {
+					modifier = PER_baloch_separatism
+				}
 			}
-			modifier = {
-				factor = 2
-				check_variable = { domestic_influence_amount < 20 }
+			NOT = {
+				country_exists = BLC
+				has_country_flag = SAU_be_nice_to_iran
 			}
-			modifier = {
-				factor = 2
-				check_variable = { domestic_influence_amount < 10 }
+		}
+
+		available = {
+			has_equipment = { infantry_weapons_type > 9999 }
+			has_equipment = { util_vehicle_type > 4999 }
+			PER = {
+				influence_higher_20 = yes
 			}
-			modifier = {
-				factor = 0
-				check_variable = { domestic_influence_amount > 90 }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision rebellion_in_balochistan"
+			custom_effect_tooltip = PER_BLC_rebel_TT
+			PER_BLC_independence = yes
+		}
+		ai_will_do = { base = 0 }
+	}
+	rebellion_in_kurdistan = {
+		allowed = {
+			OR = {
+				original_tag = ISR
+				original_tag = USA
 			}
+		}
+		icon = GFX_decision_generic_civil_support
+		fire_only_once = yes
+
+		visible = {
+			OR = {
+				408 = {
+					is_owned_and_controlled_by = PER
+					has_dynamic_modifier = {
+						modifier = PER_kurd_separatism
+					}
+				}
+				979 = {
+					is_owned_and_controlled_by = PER
+					has_dynamic_modifier = {
+						modifier = PER_kurd_separatism
+					}
+				}
+				1139 = {
+					is_owned_and_controlled_by = PER
+					has_dynamic_modifier = {
+						modifier = PER_kurd_separatism
+					}
+				}
+			}
+			NOT = {
+				country_exists = BLC
+				has_country_flag = USA_iranian_friendship
+			}
+		}
+
+		available = {
+			has_equipment = { infantry_weapons_type > 9999 }
+			has_equipment = { util_vehicle_type > 4999 }
+			PER = {
+				influence_higher_20 = yes
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision rebellion_in_kurdistan"
+			custom_effect_tooltip = PER_IKR_rebel_TT
+			PER_IKR_independence = yes
+		}
+		ai_will_do = { base = 0 }
+	}
+	rebellion_in_arabistan = {
+		allowed = { original_tag = SAU }
+		icon = GFX_decision_generic_civil_support
+		fire_only_once = yes
+
+		visible = {
+			399 = {
+				is_owned_and_controlled_by = PER
+				has_dynamic_modifier = {
+					modifier = PER_ahvaz_separatism
+				}
+			}
+			NOT = {
+				country_exists = ARA
+				has_country_flag = SAU_be_nice_to_iran
+			}
+		}
+
+		available = {
+			has_equipment = { infantry_weapons_type > 9999 }
+			has_equipment = { util_vehicle_type > 4999 }
+			PER = {
+				influence_higher_20 = yes
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision rebellion_in_arabistan"
+			custom_effect_tooltip = PER_ARA_rebel_TT
+			PER_ARA_independence = yes
+		}
+		ai_will_do = { base = 0 }
+	}
+	# Generic (Global) Decisions
+	disable_raid_notification_decision = {
+		icon = GFX_decision_reportdis_button
+		visible = {
+			is_ai = no
+			NOT = { has_country_flag = disable_raid_notification }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision disable_raid_notification_decision"
+			set_country_flag = disable_raid_notification
+		}
+	}
+	enable_raid_notification_decision = {
+		icon = GFX_decision_reportagr_button
+		visible = {
+			is_ai = no
+			has_country_flag = disable_raid_notification
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision enable_raid_notification_decision"
+			clr_country_flag = disable_raid_notification
 		}
 	}
 	disable_auto_influence_notification_decision = {
@@ -64,94 +210,153 @@ influence_desicions = {
 			clr_country_flag = disable_auto_influence_notification
 		}
 	}
-
-	combat_foreign_influence = {
-		icon = GFX_decision_combatinfl_button
-		cost = 100
-		days_remove = 45
-		days_re_enable = 45
-
-		available = {
-			custom_trigger_tooltip = {
-				tooltip = has_foreign_influence
-				check_variable = { influence_array^0 > 0 }
-			}
+	hide_foreign_influencer_modifier_decision = {
+		icon = GFX_decision_reportdis_button
+		visible = {
+			is_ai = no
+			NOT = { has_country_flag = hide_foreign_influence_modifiers }
 		}
-		remove_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision combat_foreign_influence"
-			set_temp_variable = { percent_change = 4 }
-			change_domestic_influence_percentage = yes
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision hide_foreign_influencer_modifier_decision"
+			set_country_flag = hide_foreign_influence_modifiers
+		}
+	}
+	show_foreign_influencer_modifier_decision = {
+		icon = GFX_decision_reportagr_button
+		visible = {
+			is_ai = no
+			has_country_flag = hide_foreign_influence_modifiers
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision show_foreign_influencer_modifier_decision"
+			clr_country_flag = hide_foreign_influence_modifiers
 		}
 	}
 
-	propaganda_campaign_decision = {
-		icon = GFX_decision_inlfpropaganda_button
-		cost = 100
-		days_remove = 100
-		days_re_enable = 30
+	combat_foreign_influence = {
+		icon = GFX_decision_combatinfl_button
 
+		cost = 100
+
+		days_re_enable = 100
+
+		visible = {
+			NOT = { check_variable = { influence_array^0 = 0 } }
+		}
 		available = {
 			custom_trigger_tooltip = {
 				tooltip = has_foreign_influence
 				check_variable = { influence_array^0 > 0 }
 			}
-			NOT = {
-				has_decision = combat_biggest_influencer_decision
-				has_decision = combat_second_influencer_decision
-				has_decision = combat_third_influencer_decision
-			}
 		}
-		modifier = {
-			political_power_factor = -0.25
-			nationalist_drift = 0.10
-		}
+
 		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision propaganda_campaign_decision"
-			custom_effect_tooltip = propaganda_campaign_costs_tt
-		}
-		remove_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision propaganda_campaign_decision"
-			add_stability = -0.05
-			set_temp_variable = { percent_change = 10 }
+			log = "[GetDateText]: [Root.GetName]: Decision combat_foreign_influence"
+			set_temp_variable = { percent_change = 2.5 }
 			change_domestic_influence_percentage = yes
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 5
 			modifier = {
-				factor = 2
-				check_variable = { domestic_influence_amount < 30 }
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 60 }
 			}
 			modifier = {
-				factor = 2
-				check_variable = { domestic_influence_amount < 15 }
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 40 }
 			}
 			modifier = {
-				factor = 0
-				NOT = {
-					has_government = communism
-					has_government = nationalist
-					has_government = fascism
-				}
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 20 }
 			}
 			modifier = {
-				factor = 1.25
-				has_government = communism
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 10 }
 			}
 			modifier = {
-				factor = 1.75
+				factor = 0.75
+				has_idea = NATO_member
 				OR = {
-					has_government = nationalist
-					has_government = fascism
+					var:influence_array^0 = { has_idea = NATO_member }
+					var:influence_array^1 = { has_idea = NATO_member }
+					var:influence_array^2 = { has_idea = NATO_member }
+				}
+				NOT = {
+					var:influence_array^0 = {
+						OR = {
+							original_tag = SOV
+							original_tag = CHI
+						}
+					}
+					var:influence_array^1 = {
+						OR = {
+							original_tag = SOV
+							original_tag = CHI
+						}
+					}
+					var:influence_array^2 = {
+						OR = {
+							original_tag = SOV
+							original_tag = CHI
+						}
+					}
 				}
 			}
 			modifier = {
-				factor = 0.5
-				is_ai = yes
+				factor = 0.75
+				has_idea = EU_member
+				any_of_scopes = {
+					array = influence_array
+					has_idea = EU_member
+				}
+				NOT = {
+					any_of_scopes = {
+						array = influence_array
+						OR = {
+							AND = {
+								original_tag = SOV
+								NOT = { SOV = { has_idea = EU_member } }
+							}
+							original_tag = CHI
+						}
+					}
+				}
+			}
+			modifier = {
+				factor = 0.85
+				var:influence_array^0 = {
+					ROOT = {
+						has_opinion = {
+							target = PREV
+							value > 99
+						}
+					}
+				}
+			}
+			modifier = {
+				factor = 0.75
+				var:influence_array^0 = {
+					ROOT = {
+						has_opinion = {
+							target = PREV
+							value > 149
+						}
+					}
+				}
+			}
+			modifier = {
+				factor = 0.25
+				check_variable = { interest_rate > 8 }
 			}
 			modifier = {
 				factor = 0
-				check_variable = { domestic_influence_amount > 59.999 }
+				OR = {
+					check_variable = { interest_rate > 12 }
+					check_variable = { domestic_influence_amount > 69 }
+				}
 			}
 		}
 	}
@@ -164,17 +369,15 @@ influence_desicions = {
 
 		visible = {
 			check_variable = { influence_array^0 > 0 }
+			NOT = { check_variable = { influence_array^0 = ROOT.id } }
 		}
 		available = {
 			custom_trigger_tooltip = {
 				tooltip = has_foreign_influence
 				check_variable = { influence_array^0 > 0 }
 			}
-			NOT = {
-				has_decision = propaganda_campaign_decision
-				has_decision = combat_second_influencer_decision
-				has_decision = combat_third_influencer_decision
-			}
+			NOT = { has_decision = combat_second_influencer_decision }
+			NOT = { has_decision = combat_third_influencer_decision }
 		}
 		complete_effect = {
 			set_variable = { combat_big_influencer = influence_array^0 }
@@ -189,35 +392,26 @@ influence_desicions = {
 			}
 			else = {
 				set_temp_variable = { percent_change = -5 }
-				set_temp_variable = { tag_index = var:combat_big_influencer }
-				set_temp_variable = { influence_target = THIS.id }
-				change_influence_percentage = yes
+				set_temp_variable = { influencer_index = 0 }
+				change_current_influencer_index_percentage = yes
 			}
 
 			clear_variable = combat_big_influencer
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = { #Reduce down to nothing if you have high relations.
 				factor = 0.15
-				var:FROM.influence_array^0 = {
+				var:influence_array^0 = {
 					ROOT = {
 						has_opinion = { target = PREV value > 49 }
 					}
 				}
 			}
 			modifier = {
-				factor = 1.0
-				var:FROM.influence_array^0 = {
-					ROOT = {
-						has_opinion = { target = PREV value < 50 }
-					}
-				}
-			}
-			modifier = {
 				factor = 1.25
-				var:FROM.influence_array^0 = {
+				var:influence_array^0 = {
 					ROOT = {
 						has_opinion = { target = PREV value < 25 }
 					}
@@ -225,7 +419,7 @@ influence_desicions = {
 			}
 			modifier = {
 				factor = 1.50
-				var:FROM.influence_array^0 = {
+				var:influence_array^0 = {
 					ROOT = {
 						has_opinion = { target = PREV value < 15 }
 					}
@@ -233,7 +427,7 @@ influence_desicions = {
 			}
 			modifier = {
 				factor = 1.75
-				var:FROM.influence_array^0 = {
+				var:influence_array^0 = {
 					ROOT = {
 						has_opinion = { target = PREV value < 0 }
 					}
@@ -241,7 +435,7 @@ influence_desicions = {
 			}
 			modifier = {
 				factor = 2.0
-				var:FROM.influence_array^0 = {
+				var:influence_array^0 = {
 					ROOT = {
 						has_opinion = { target = PREV value < -20 }
 					}
@@ -249,17 +443,28 @@ influence_desicions = {
 			}
 			modifier = {
 				factor = 2.5
-				var:FROM.influence_array^0 = {
+				var:influence_array^0 = {
 					ROOT = {
 						has_opinion = { target = PREV value < -50 }
 					}
 				}
 			}
-			#Domestic Influence Calculation
+			#Escalate as domestic influence collapses
 			modifier = {
-				set_temp_variable = { domestic_influence_amount_tmp = domestic_influence_amount }
-				divide_temp_variable = { domestic_influence_amount_tmp = 10 }
-				factor = domestic_influence_amount_tmp
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 60 }
+			}
+			modifier = {
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 40 }
+			}
+			modifier = {
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 20 }
+			}
+			modifier = {
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 10 }
 			}
 			#Should be more worthwhile if they have a high rate
 			modifier = {
@@ -274,6 +479,48 @@ influence_desicions = {
 				factor = 5
 				check_variable = { influence_array_val^0 > 49.999 }
 			}
+			#Don't aggressively de-influence same-bloc allies
+			modifier = {
+				factor = 0.75
+				has_idea = NATO_member
+				var:influence_array^0 = { has_idea = NATO_member }
+				NOT = {
+					var:influence_array^0 = {
+						OR = {
+							original_tag = SOV
+							original_tag = CHI
+						}
+					}
+				}
+			}
+			modifier = {
+				factor = 0.75
+				has_idea = EU_member
+				var:influence_array^0 = { has_idea = EU_member }
+				NOT = {
+					var:influence_array^0 = {
+						OR = {
+							AND = {
+								original_tag = SOV
+								NOT = { SOV = { has_idea = EU_member } }
+							}
+							original_tag = CHI
+						}
+					}
+				}
+			}
+			#Financial guards
+			modifier = {
+				factor = 0.25
+				check_variable = { interest_rate > 8 }
+			}
+			modifier = {
+				factor = 0
+				OR = {
+					check_variable = { interest_rate > 12 }
+					check_variable = { domestic_influence_amount > 69 }
+				}
+			}
 		}
 	}
 
@@ -285,17 +532,15 @@ influence_desicions = {
 
 		visible = {
 			check_variable = { influence_array^1 > 0 }
+			NOT = { check_variable = { influence_array^1 = ROOT.id } }
 		}
 		available = {
 			custom_trigger_tooltip = {
 				tooltip = has_foreign_influence
 				check_variable = { influence_array^0 > 0 }
 			}
-			NOT = {
-				has_decision = combat_biggest_influencer_decision
-				has_decision = propaganda_campaign_decision
-				has_decision = combat_third_influencer_decision
-			}
+			NOT = { has_decision = combat_biggest_influencer_decision }
+			NOT = { has_decision = combat_third_influencer_decision }
 		}
 		complete_effect = {
 			set_variable = { combat_second_big_influencer = influence_array^1 }
@@ -310,9 +555,8 @@ influence_desicions = {
 			}
 			else = {
 				set_temp_variable = { percent_change = -5 }
-				set_temp_variable = { tag_index = var:combat_second_big_influencer }
-				set_temp_variable = { influence_target = THIS.id }
-				change_influence_percentage = yes
+				set_temp_variable = { influencer_index = 1 }
+				change_current_influencer_index_percentage = yes
 			}
 
 			clear_variable = combat_second_big_influencer
@@ -320,26 +564,18 @@ influence_desicions = {
 
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = { #Reduce down to nothing if you have high relations.
 				factor = 0.15
-				var:FROM.influence_array^1 = {
+				var:influence_array^1 = {
 					ROOT = {
 						has_opinion = { target = PREV value > 49 }
 					}
 				}
 			}
 			modifier = {
-				factor = 1.0
-				var:FROM.influence_array^1 = {
-					ROOT = {
-						has_opinion = { target = PREV value < 50 }
-					}
-				}
-			}
-			modifier = {
 				factor = 1.25
-				var:FROM.influence_array^1 = {
+				var:influence_array^1 = {
 					ROOT = {
 						has_opinion = { target = PREV value < 25 }
 					}
@@ -347,7 +583,7 @@ influence_desicions = {
 			}
 			modifier = {
 				factor = 1.50
-				var:FROM.influence_array^1 = {
+				var:influence_array^1 = {
 					ROOT = {
 						has_opinion = { target = PREV value < 15 }
 					}
@@ -355,7 +591,7 @@ influence_desicions = {
 			}
 			modifier = {
 				factor = 1.75
-				var:FROM.influence_array^1 = {
+				var:influence_array^1 = {
 					ROOT = {
 						has_opinion = { target = PREV value < 0 }
 					}
@@ -363,7 +599,7 @@ influence_desicions = {
 			}
 			modifier = {
 				factor = 2.0
-				var:FROM.influence_array^1 = {
+				var:influence_array^1 = {
 					ROOT = {
 						has_opinion = { target = PREV value < -20 }
 					}
@@ -371,17 +607,28 @@ influence_desicions = {
 			}
 			modifier = {
 				factor = 2.5
-				var:FROM.influence_array^1 = {
+				var:influence_array^1 = {
 					ROOT = {
 						has_opinion = { target = PREV value < -50 }
 					}
 				}
 			}
-			#Domestic Influence Calculation
+			#Escalate as domestic influence collapses
 			modifier = {
-				set_temp_variable = { domestic_influence_amount_tmp = domestic_influence_amount }
-				divide_temp_variable = { domestic_influence_amount_tmp = 10 }
-				factor = domestic_influence_amount_tmp
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 60 }
+			}
+			modifier = {
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 40 }
+			}
+			modifier = {
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 20 }
+			}
+			modifier = {
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 10 }
 			}
 			#Should be more worthwhile if they have a high rate
 			modifier = {
@@ -394,7 +641,49 @@ influence_desicions = {
 			}
 			modifier = {
 				factor = 5
-				check_variable = { influence_array_val^1 > 39.999 }
+				check_variable = { influence_array_val^1 > 49.999 }
+			}
+			#Don't aggressively de-influence same-bloc allies
+			modifier = {
+				factor = 0.75
+				has_idea = NATO_member
+				var:influence_array^1 = { has_idea = NATO_member }
+				NOT = {
+					var:influence_array^1 = {
+						OR = {
+							original_tag = SOV
+							original_tag = CHI
+						}
+					}
+				}
+			}
+			modifier = {
+				factor = 0.75
+				has_idea = EU_member
+				var:influence_array^1 = { has_idea = EU_member }
+				NOT = {
+					var:influence_array^1 = {
+						OR = {
+							AND = {
+								original_tag = SOV
+								NOT = { SOV = { has_idea = EU_member } }
+							}
+							original_tag = CHI
+						}
+					}
+				}
+			}
+			#Financial guards
+			modifier = {
+				factor = 0.25
+				check_variable = { interest_rate > 8 }
+			}
+			modifier = {
+				factor = 0
+				OR = {
+					check_variable = { interest_rate > 12 }
+					check_variable = { domestic_influence_amount > 69 }
+				}
 			}
 		}
 	}
@@ -407,17 +696,15 @@ influence_desicions = {
 
 		visible = {
 			check_variable = { influence_array^2 > 0 }
+			NOT = { check_variable = { influence_array^2 = ROOT.id } }
 		}
 		available = {
 			custom_trigger_tooltip = {
 				tooltip = has_foreign_influence
 				check_variable = { influence_array^0 > 0 }
 			}
-			NOT = {
-				has_decision = combat_biggest_influencer_decision
-				has_decision = propaganda_campaign_decision
-				has_decision = combat_second_influencer_decision
-			}
+			NOT = { has_decision = combat_biggest_influencer_decision }
+			NOT = { has_decision = combat_second_influencer_decision }
 		}
 		complete_effect = {
 			set_variable = { combat_third_big_influencer = influence_array^2 }
@@ -432,49 +719,79 @@ influence_desicions = {
 			}
 			else = {
 				set_temp_variable = { percent_change = -5 }
-				set_temp_variable = { tag_index = var:combat_third_big_influencer }
-				set_temp_variable = { influence_target = THIS.id }
-				change_influence_percentage = yes
+				set_temp_variable = { influencer_index = 2 }
+				change_current_influencer_index_percentage = yes
 			}
 
 			clear_variable = combat_third_big_influencer
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = { #Reduce down to nothing if you have high relations.
 				factor = 0.15
-				var:FROM.influence_array^2 = { ROOT = { has_opinion = { target = PREV value > 49 } } }
-			}
-			modifier = {
-				factor = 1.0
-				var:FROM.influence_array^2 = { ROOT = { has_opinion = { target = PREV value < 50 } } }
+				var:influence_array^2 = {
+					ROOT = {
+						has_opinion = { target = PREV value > 49 }
+					}
+				}
 			}
 			modifier = {
 				factor = 1.25
-				var:FROM.influence_array^2 = { ROOT = { has_opinion = { target = PREV value < 25 } } }
+				var:influence_array^2 = {
+					ROOT = {
+						has_opinion = { target = PREV value < 25 }
+					}
+				}
 			}
 			modifier = {
 				factor = 1.50
-				var:FROM.influence_array^2 = { ROOT = { has_opinion = { target = PREV value < 15 } } }
+				var:influence_array^2 = {
+					ROOT = {
+						has_opinion = { target = PREV value < 15 }
+					}
+				}
 			}
 			modifier = {
 				factor = 1.75
-				var:FROM.influence_array^2 = { ROOT = { has_opinion = { target = PREV value < 0 } } }
+				var:influence_array^2 = {
+					ROOT = {
+						has_opinion = { target = PREV value < 0 }
+					}
+				}
 			}
 			modifier = {
 				factor = 2.0
-				var:FROM.influence_array^2 = { ROOT = { has_opinion = { target = PREV value < -20 } } }
+				var:influence_array^2 = {
+					ROOT = {
+						has_opinion = { target = PREV value < -20 }
+					}
+				}
 			}
 			modifier = {
 				factor = 2.5
-				var:FROM.influence_array^2 = { ROOT = { has_opinion = { target = PREV value < -50 } } }
+				var:influence_array^2 = {
+					ROOT = {
+						has_opinion = { target = PREV value < -50 }
+					}
+				}
 			}
-			#Domestic Influence Calculation
+			#Escalate as domestic influence collapses
 			modifier = {
-				set_temp_variable = { domestic_influence_amount_tmp = domestic_influence_amount }
-				divide_temp_variable = { domestic_influence_amount_tmp = 10 }
-				factor = domestic_influence_amount_tmp
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 60 }
+			}
+			modifier = {
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 40 }
+			}
+			modifier = {
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 20 }
+			}
+			modifier = {
+				factor = 1.5
+				check_variable = { domestic_influence_amount < 10 }
 			}
 			#Should be more worthwhile if they have a high rate
 			modifier = {
@@ -485,6 +802,52 @@ influence_desicions = {
 				factor = 4
 				check_variable = { influence_array_val^2 > 29.999 }
 			}
+			modifier = {
+				factor = 5
+				check_variable = { influence_array_val^2 > 49.999 }
+			}
+			#Don't aggressively de-influence same-bloc allies
+			modifier = {
+				factor = 0.75
+				has_idea = NATO_member
+				var:influence_array^2 = { has_idea = NATO_member }
+				NOT = {
+					var:influence_array^2 = {
+						OR = {
+							original_tag = SOV
+							original_tag = CHI
+						}
+					}
+				}
+			}
+			modifier = {
+				factor = 0.75
+				has_idea = EU_member
+				var:influence_array^2 = { has_idea = EU_member }
+				NOT = {
+					var:influence_array^2 = {
+						OR = {
+							AND = {
+								original_tag = SOV
+								NOT = { SOV = { has_idea = EU_member } }
+							}
+							original_tag = CHI
+						}
+					}
+				}
+			}
+			#Financial guards
+			modifier = {
+				factor = 0.25
+				check_variable = { interest_rate > 8 }
+			}
+			modifier = {
+				factor = 0
+				OR = {
+					check_variable = { interest_rate > 12 }
+					check_variable = { domestic_influence_amount > 69 }
+				}
+			}
 		}
 	}
 
@@ -494,20 +857,32 @@ influence_desicions = {
 		days_remove = 30
 		days_re_enable = 15
 
-		target_root_trigger = {
-			num_subjects > 0
-		}
-
-		visible = {
+		target_array = subjects
+		target_trigger = {
 			FROM = {
 				is_subject_of = ROOT
-				NOT = { has_autonomy_state = autonomy_special_administrative_region_HKG
-						has_autonomy_state = autonomy_special_administrative_region_MAC
-						has_autonomy_state = autonomy_special_administrative_region_TAI
-						has_autonomy_state = autonomy_special_administrative_region_TIB
-						has_autonomy_state = autonomy_special_administrative_region_ETK
-						has_autonomy_state = autonomy_special_administrative_region_MON	}
+				NOT = {
+					has_autonomy_state = autonomy_special_administrative_region_HKG
+					has_autonomy_state = autonomy_special_administrative_region_MAC
+					has_autonomy_state = autonomy_special_administrative_region_TAI
+					has_autonomy_state = autonomy_special_administrative_region_TIB
+					has_autonomy_state = autonomy_special_administrative_region_ETK
+					has_autonomy_state = autonomy_special_administrative_region_MON
+					has_autonomy_state = autonomy_warsaw
+					has_autonomy_state = autonomy_state_rf
+					has_autonomy_state = autonomy_republic_rf
+					has_autonomy_state = autonomy_kray_rf
+					has_autonomy_state = autonomy_oblast_rf
+					has_autonomy_state = autonomy_okrug_rf
+					has_autonomy_state = autonomy_governorate_rf
+					has_autonomy_state = autonomy_pmc_wagner
+					has_autonomy_state = autonomy_state_cis
+				}
 			}
+		}
+
+		target_root_trigger = {
+			num_subjects > 0
 		}
 
 		available = {
@@ -516,30 +891,84 @@ influence_desicions = {
 			}
 		}
 
-		target_array = subjects
-
 		remove_effect = {
 			log = "[GetDateText]: [This.GetName]: decision influence_for_autonomy_decision executed"
 			set_temp_variable = { percent_change = -5 }
-			set_temp_variable = { tag_index = ROOT.id }
 			set_temp_variable = { influence_target = FROM.id }
 			change_influence_percentage = yes
 			FROM = {
 				add_autonomy_ratio = {
-					value = -0.08
+					value = -0.12
 					localization = influence_for_autonomy_decision_autonomy
 				}
 			}
 		}
 
 		ai_will_do = {
-			factor = 0
+			base = 0
 			modifier = {
 				add = 15
 				FROM = {
 					check_variable = { domestic_influence_amount > 20 }
 				}
 			}
+		}
+	}
+
+	SOV_separatism_for_autonomy_decision = {
+		fixed_random_seed = no
+		icon = GFX_decision_SOV_puppetdown_button
+		cost = 35
+		days_remove = 30
+		days_re_enable = 15
+
+		target_array = subjects
+		target_trigger = {
+			FROM = {
+				is_subject_of = ROOT
+				SUB_is_active_rf_lesser_subject = yes
+			}
+		}
+
+		target_root_trigger = {
+			num_subjects > 0
+		}
+
+		available = {
+			FROM = {
+				influence_higher_5 = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [This.GetName]: decision SOV_separatism_for_autonomy_decision executed"
+			set_temp_variable = { percent_change = -1 }
+			set_temp_variable = { influence_target = FROM.id }
+			change_influence_percentage = yes
+			FROM = {
+				random_list = {
+					30 = {
+						set_temp_variable = { modify_subjectinped = -1 }
+						modify_subjectinped_support = yes
+					}
+					30 = {
+						set_temp_variable = { modify_subjectinped = -2 }
+						modify_subjectinped_support = yes
+					}
+					30 = {
+						set_temp_variable = { modify_subjectinped = -3 }
+						modify_subjectinped_support = yes
+					}
+					10 = {
+						set_temp_variable = { modify_subjectinped = -4 }
+						modify_subjectinped_support = yes
+					}
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 1
 		}
 	}
 }

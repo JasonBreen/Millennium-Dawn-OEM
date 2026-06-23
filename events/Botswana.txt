@@ -1,4 +1,4 @@
-﻿add_namespace = Botswana_pulse
+add_namespace = Botswana_pulse
 add_namespace = Botswana_events
 add_namespace = Botswana_news_events
 
@@ -69,17 +69,9 @@ country_event = {
 				is_in_array = { ruling_party = 14 }
 				check_variable = { party_pop_array^16 > party_pop_array^14 }
 			}
-			clear_array = ruling_party
-			clear_array = gov_coalition_array
-			add_to_array = { ruling_party = 16 }
-			add_to_array = { gov_coalition_array = 14 }
-			hidden_effect = {
-				update_party_name = yes
-				set_coalition_drift = yes
-				update_government_coalition_strength = yes
-			}
-			set_ruling_leader = yes
-			set_leader = yes
+			set_temp_variable = { rul_party_temp = 16 }
+			set_temp_variable = { col_one = 14 }
+			change_ruling_party_effect = yes
 			set_variable = { current_term = 1 }
 			custom_effect_tooltip = BOT_BDP_B_dominant
 		}
@@ -89,17 +81,9 @@ country_event = {
 				is_in_array = { ruling_party = 16 }
 				check_variable = { party_pop_array^14 > party_pop_array^16 }
 			}
-			clear_array = ruling_party
-			clear_array = gov_coalition_array
-			add_to_array = { ruling_party = 14 }
-			add_to_array = { gov_coalition_array = 16 }
-			hidden_effect = {
-				update_party_name = yes
-				set_coalition_drift = yes
-				update_government_coalition_strength = yes
-			}
-			set_ruling_leader = yes
-			set_leader = yes
+			set_temp_variable = { rul_party_temp = 14 }
+			set_temp_variable = { col_one = 16 }
+			change_ruling_party_effect = yes
 			set_variable = { current_term = 1 }
 			custom_effect_tooltip = BOT_BDP_A_dominant
 		}
@@ -139,13 +123,8 @@ country_event = {
 			limit = {
 				is_in_array = { ruling_party = 16 }
 			}
-			clear_array = ruling_party
-			add_to_array = { ruling_party = 14 }
-			hidden_effect = {
-				update_party_name = yes
-				set_coalition_drift = yes
-				update_government_coalition_strength = yes
-			}
+			set_temp_variable = { rul_party_temp = 14 }
+			change_ruling_party_effect = yes
 		}
 		custom_effect_tooltip = BDP_split_tt
 		set_country_flag = BDP_split
@@ -168,6 +147,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.6.a executed"
 		name = Botswana_pulse.6.a
 		set_country_flag = UDC_formed
+		set_country_flag = BCP_joined_UDC
 		custom_effect_tooltip = BOT_UDC_formed
 		set_variable = { western_change = 0 }
 		set_variable = { emerging_change = 0 }
@@ -254,6 +234,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.7.a executed"
 		name = Botswana_pulse.7.a
 		clr_country_flag = UDC_formed
+		clr_country_flag = BCP_joined_UDC
 		set_variable = { western_change = 0 }
 		set_variable = { emerging_change = 0 }
 		set_variable = { neutrality_change = 0 }
@@ -343,18 +324,16 @@ country_event = {
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.8.a executed"
 		name = Botswana_pulse.8.a
-		BOT_boost_BWF = yes
 		ai_chance = {
-			factor = 80
+			base = 80
 		}
+		BOT_boost_BWF = yes
 	}
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.8.b executed"
 		name = Botswana_pulse.8.b
-		BOT_boost_BDP_A = yes
-		add_political_power = -50
 		ai_chance = {
-			factor = 20
+			base = 20
 			modifier = {
 				factor = 0
 				OR = {
@@ -367,6 +346,8 @@ country_event = {
 				}
 			}
 		}
+		BOT_boost_BDP_A = yes
+		add_political_power = -50
 	}
 }
 
@@ -417,7 +398,6 @@ country_event = {
 			has_idea = BOT_ancestral_land_conflict
 			has_idea = BOT_ancestral_land_conflict_escalated
 		}
-		has_start_date < 2001.1.1
 	}
 
 	mean_time_to_happen = {
@@ -488,16 +468,8 @@ country_event = {
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.12.a executed"
 		name = Botswana_pulse.12.a
-		set_temp_variable = { temp_opinion = 5 }
-		change_fossil_fuel_industry_opinion = yes
-		change_industrial_conglomerates_opinion = yes
-		change_small_medium_business_owners_opinion = yes
-		set_temp_variable = { temp_opinion = -5 }
-		change_farmers_opinion = yes
-		change_labour_unions_opinion = yes
-		BOT_boost_BDP_A = yes
 		ai_chance = {
-			factor = 80
+			base = 80
 			modifier = {
 				factor = 0
 				has_country_flag = BOT_POLITICAL_RAINBOW_PATH
@@ -510,20 +482,20 @@ country_event = {
 				}
 			}
 		}
+		set_temp_variable = { temp_opinion = 5 }
+		change_fossil_fuel_industry_opinion = yes
+		change_industrial_conglomerates_opinion = yes
+		change_small_medium_business_owners_opinion = yes
+		set_temp_variable = { temp_opinion = -5 }
+		change_farmers_opinion = yes
+		change_labour_unions_opinion = yes
+		BOT_boost_BDP_A = yes
 	}
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.13.a executed"
 		name = Botswana_pulse.12.b
-		set_temp_variable = { temp_opinion = -5 }
-		change_fossil_fuel_industry_opinion = yes
-		change_industrial_conglomerates_opinion = yes
-		change_small_medium_business_owners_opinion = yes
-		set_temp_variable = { temp_opinion = 5 }
-		change_farmers_opinion = yes
-		change_labour_unions_opinion = yes
-		BOT_boost_ISBO = yes
 		ai_chance = {
-			factor = 20
+			base = 20
 			modifier = {
 				factor = 0
 				OR = {
@@ -539,6 +511,14 @@ country_event = {
 				}
 			}
 		}
+		set_temp_variable = { temp_opinion = -5 }
+		change_fossil_fuel_industry_opinion = yes
+		change_industrial_conglomerates_opinion = yes
+		change_small_medium_business_owners_opinion = yes
+		set_temp_variable = { temp_opinion = 5 }
+		change_farmers_opinion = yes
+		change_labour_unions_opinion = yes
+		BOT_boost_ISBO = yes
 	}
 }
 
@@ -553,7 +533,7 @@ country_event = {
 	is_triggered_only = yes
 
 	trigger = {
-		has_start_date < 2001.1.1
+		original_tag = BOT
 	}
 
 	fire_only_once = yes
@@ -584,7 +564,6 @@ country_event = {
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.14.a executed"
 		name = Botswana_pulse.14.a
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.025 }
 		set_temp_variable = { temp_outlook_increase = -0.025 }
 		add_relative_party_popularity = yes
@@ -614,7 +593,7 @@ country_event = {
 	is_triggered_only = yes
 
 	trigger = {
-		has_start_date < 2001.1.1
+		original_tag = BOT
 	}
 
 	fire_only_once = yes
@@ -622,24 +601,24 @@ country_event = {
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.15.a executed"
 		name = Botswana_pulse.15.a
-		decrease_economic_growth = yes
 		ai_chance = {
-			factor = 90
+			base = 90
 		}
+		decrease_economic_growth = yes
 	}
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.15.b executed"
 		name = Botswana_pulse.15.b
-		set_temp_variable = { arg_popularity = -0.025 }
-		add_ruling_outlook_popularity = yes
-		set_country_flag = BOT_air_crash_ignored
 		ai_chance = {
-			factor = 10
+			base = 10
 			modifier = {
 				factor = 0
 				is_historical_focus_on = yes
 			}
 		}
+		set_temp_variable = { arg_popularity = -0.025 }
+		add_ruling_outlook_popularity = yes
+		set_country_flag = BOT_air_crash_ignored
 	}
 
 }
@@ -661,20 +640,20 @@ country_event = {
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.16.a executed"
 		name = Botswana_pulse.16.a
+		ai_chance = {
+			base = 90
+		}
 		decrease_economic_growth = yes
 		clr_country_flag = BOT_air_crash_ignored
-		ai_chance = {
-			factor = 90
-		}
 	}
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.16.b executed"
 		name = Botswana_pulse.16.b
+		ai_chance = {
+			base = 10
+		}
 		set_temp_variable = { arg_popularity = -0.025 }
 		add_ruling_outlook_popularity = yes
-		ai_chance = {
-			factor = 10
-		}
 	}
 
 }
@@ -692,29 +671,27 @@ country_event = {
 	fire_only_once = yes
 
 	trigger = {
-		has_start_date < 2001.1.1
+		original_tag = BOT
 	}
 
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.17.a executed"
 		name = Botswana_pulse.17.a
-		BOT_boost_BDP_B = yes
-		BOT_boost_BNF = yes
 		ai_chance = {
-			factor = 80
+			base = 80
 			modifier = {
 				factor = 0
 				has_country_flag = BOT_KGOSIKGOLO_PATH
 			}
 		}
+		BOT_boost_BDP_B = yes
+		BOT_boost_BNF = yes
 	}
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.17.b executed"
 		name = Botswana_pulse.17.b
-		BOT_boost_BDP_A = yes
-		BOT_boost_digkosi = yes
 		ai_chance = {
-			factor = 20
+			base = 20
 			modifier = {
 				factor = 0
 				has_country_flag = BOT_POLITICAL_RAINBOW_PATH
@@ -724,6 +701,8 @@ country_event = {
 				is_historical_focus_on = yes
 			}
 		}
+		BOT_boost_BDP_A = yes
+		BOT_boost_digkosi = yes
 	}
 
 }
@@ -752,13 +731,14 @@ country_event = {
 	fire_only_once = yes
 
 	trigger = {
-		has_start_date < 2001.1.1
+		original_tag = BOT
 		NOT = { check_variable = { Neutral_Libertarian_leader < 2 } }
 	}
 
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.18.a executed"
 		name = Botswana_pulse.18.a
+		set_country_flag = BOT_Motswaledi_dead
 		set_temp_variable = { party_index = 16 }
 		set_temp_variable = { party_popularity_increase = -0.02 }
 		add_relative_party_popularity = yes
@@ -779,7 +759,7 @@ country_event = {
 	fire_only_once = yes
 
 	trigger = {
-		has_start_date < 2001.1.1
+		original_tag = BOT
 	}
 
 	option = {
@@ -826,14 +806,12 @@ country_event = {
 	is_triggered_only = yes
 
 	trigger = {
-		NOT = {
-			has_idea = BOT_coal_focused_energy_self_sufficient
-			has_idea = BOT_coal_focused_energy_small_profit
-			has_idea = BOT_coal_focused_energy_rich
-			has_idea = BOT_renewable_focused_energy_self_sufficient
-			has_idea = BOT_renewable_focused_energy_small_profit
-			has_idea = BOT_renewable_focused_energy_rich
-		}
+		NOT = { has_idea = BOT_coal_focused_energy_self_sufficient }
+		NOT = { has_idea = BOT_coal_focused_energy_small_profit }
+		NOT = { has_idea = BOT_coal_focused_energy_rich }
+		NOT = { has_idea = BOT_renewable_focused_energy_self_sufficient }
+		NOT = { has_idea = BOT_renewable_focused_energy_small_profit }
+		NOT = { has_idea = BOT_renewable_focused_energy_rich }
 	}
 
 	option = {
@@ -857,7 +835,7 @@ country_event = {
 	fire_only_once = yes
 
 	trigger = {
-		has_start_date < 2001.1.1
+		original_tag = BOT
 	}
 
 	mean_time_to_happen = {
@@ -886,12 +864,8 @@ country_event = {
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.22.a executed"
 		name = Botswana_pulse.22.a
-		set_temp_variable = { treasury_change = -1 }
-		modify_treasury_effect = yes
-		BOT_boost_BDP_B = yes
-		BOT_boost_ISBO = yes
 		ai_chance = {
-			factor = 20
+			base = 20
 			modifier = {
 				factor = 4.5
 				OR = {
@@ -904,14 +878,16 @@ country_event = {
 				is_historical_focus_on = yes
 			}
 		}
+		set_temp_variable = { treasury_change = -1 }
+		modify_treasury_effect = yes
+		BOT_boost_BDP_B = yes
+		BOT_boost_ISBO = yes
 	}
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.22.b executed"
 		name = Botswana_pulse.22.b
-		add_political_power = -50
-		BOT_boost_BDP_A = yes
 		ai_chance = {
-			factor = 80
+			base = 80
 			modifier = {
 				factor = 0
 				has_country_flag = BOT_POLITICAL_RAINBOW_PATH
@@ -924,6 +900,8 @@ country_event = {
 				}
 			}
 		}
+		add_political_power = -50
+		BOT_boost_BDP_A = yes
 	}
 
 }
@@ -955,12 +933,8 @@ country_event = {
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.23.a executed"
 		name = Botswana_pulse.23.a
-		set_temp_variable = { temp_opinion = -5 }
-		change_landowners_opinion = yes
-		BOT_boost_BDP_B = yes
-		BOT_boost_BPP = yes
 		ai_chance = {
-			factor = 80
+			base = 80
 			modifier = {
 				factor = 0
 				OR = {
@@ -969,15 +943,16 @@ country_event = {
 				}
 			}
 		}
+		set_temp_variable = { temp_opinion = -5 }
+		change_landowners_opinion = yes
+		BOT_boost_BDP_B = yes
+		BOT_boost_BPP = yes
 	}
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_pulse.23.b executed"
 		name = Botswana_pulse.23.b
-		set_temp_variable = { temp_opinion = 5 }
-		change_landowners_opinion = yes
-		BOT_boost_digkosi = yes
 		ai_chance = {
-			factor = 20
+			base = 20
 			modifier = {
 				factor = 0
 				has_country_flag = BOT_POLITICAL_RAINBOW_PATH
@@ -987,6 +962,9 @@ country_event = {
 				is_historical_focus_on = yes
 			}
 		}
+		set_temp_variable = { temp_opinion = 5 }
+		change_landowners_opinion = yes
+		BOT_boost_digkosi = yes
 	}
 
 }
@@ -1009,19 +987,18 @@ country_event = {
 			NOT = { has_war_with = SWE }
 			SWE = { has_tech = MR_Fighter3 }
 		}
+		ai_chance = {
+			base = 25
+		}
 		set_temp_variable = { treasury_change = -15 }
 		modify_treasury_effect = yes
 		set_temp_variable = { percent_change = 3 }
 		set_temp_variable = { tag_index = SWE.id }
-		set_temp_variable = { influence_target = THIS.id }
 		change_influence_percentage = yes
 		add_equipment_to_stockpile = {
 			type = MR_Fighter3
 			amount = 12
 			producer = SWE
-		}
-		ai_chance = {
-			factor = 25
 		}
 	}
 	option = {
@@ -1032,23 +1009,18 @@ country_event = {
 			NOT = { has_war_with = USA }
 			USA = { has_tech = MR_Fighter3 }
 		}
+		ai_chance = {
+			base = 25
+		}
 		set_temp_variable = { treasury_change = -15 }
 		modify_treasury_effect = yes
 		set_temp_variable = { percent_change = 3 }
 		set_temp_variable = { tag_index = USA.id }
-		set_temp_variable = { influence_target = THIS.id }
 		change_influence_percentage = yes
 		add_equipment_to_stockpile = {
 			type = MR_Fighter3
 			amount = 12
 			producer = USA
-		}
-		ai_chance = {
-			factor = 25
-			modifier = {
-				factor = 0
-				is_historical_focus_on = yes
-			}
 		}
 	}
 	option = {
@@ -1059,23 +1031,18 @@ country_event = {
 			NOT = { has_war_with = CHI }
 			CHI = { has_tech = MR_Fighter3 }
 		}
+		ai_chance = {
+			base = 25
+		}
 		set_temp_variable = { treasury_change = -15 }
 		modify_treasury_effect = yes
 		set_temp_variable = { percent_change = 3 }
 		set_temp_variable = { tag_index = CHI.id }
-		set_temp_variable = { influence_target = THIS.id }
 		change_influence_percentage = yes
 		add_equipment_to_stockpile = {
 			type = MR_Fighter3
 			amount = 12
 			producer = CHI
-		}
-		ai_chance = {
-			factor = 25
-			modifier = {
-				factor = 0
-				is_historical_focus_on = yes
-			}
 		}
 	}
 	option = {
@@ -1086,23 +1053,18 @@ country_event = {
 			NOT = { has_war_with = ENG }
 			ENG = { has_tech = MR_Fighter3 }
 		}
+		ai_chance = {
+			base = 25
+		}
 		set_temp_variable = { treasury_change = -15 }
 		modify_treasury_effect = yes
 		set_temp_variable = { percent_change = 2 }
 		set_temp_variable = { tag_index = ENG.id }
-		set_temp_variable = { influence_target = THIS.id }
 		change_influence_percentage = yes
 		add_equipment_to_stockpile = {
 			type = MR_Fighter3
 			amount = 12
 			producer = ENG
-		}
-		ai_chance = {
-			factor = 25
-			modifier = {
-				factor = 0
-				is_historical_focus_on = yes
-			}
 		}
 	}
 }
@@ -1120,6 +1082,9 @@ country_event = {
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_events.2.a executed"
 		name = Botswana_events.2.a
+		ai_chance = {
+			base = 100
+		}
 		set_temp_variable = { treasury_change = -6 }
 		modify_treasury_effect = yes
 		if = {
@@ -1142,12 +1107,8 @@ country_event = {
 		}
 		set_temp_variable = { percent_change = 2 }
 		set_temp_variable = { tag_index = FROM.id }
-		set_temp_variable = { influence_target = THIS.id }
 		change_influence_percentage = yes
 		FROM = { country_event = { id = Botswana_events.3 hours = 3 } }
-		ai_chance = {
-			factor = 100
-		}
 	}
 	option = {
 		log = "[GetDateText]: [This.GetName]: Botswana_events.2.b executed"
@@ -1193,7 +1154,6 @@ country_event = {
 		}
 		set_temp_variable = { percent_change = 2 }
 		set_temp_variable = { tag_index = FROM.id }
-		set_temp_variable = { influence_target = THIS.id }
 		change_influence_percentage = yes
 	}
 }
@@ -1247,18 +1207,116 @@ country_event = {
 	}
 }
 
+#Buy new fighters
+country_event = {
+	id = Botswana_events.7
+	title = Botswana_events.7.t
+	desc = Botswana_events.7.desc
+
+	picture = GFX_ace_promoted
+
+	is_triggered_only = yes
+
+	option = {
+		log = "[GetDateText]: [This.GetName]: Botswana_events.7.a executed"
+		name = Botswana_events.7.a
+		trigger = {
+			country_exists = SWE
+			NOT = { has_war_with = SWE }
+			SWE = { has_design_based_on = small_plane_strike_airframe }
+		}
+		ai_chance = {
+			base = 25
+		}
+		set_temp_variable = { treasury_change = -15 }
+		modify_treasury_effect = yes
+		set_temp_variable = { percent_change = 3 }
+		set_temp_variable = { tag_index = SWE.id }
+		change_influence_percentage = yes
+		add_equipment_to_stockpile = {
+			type = small_plane_strike_airframe
+			amount = 12
+			producer = SWE
+		}
+	}
+	option = {
+		log = "[GetDateText]: [This.GetName]: Botswana_events.7.b executed"
+		name = Botswana_events.7.b
+		trigger = {
+			country_exists = USA
+			NOT = { has_war_with = USA }
+			USA = { has_design_based_on = small_plane_strike_airframe }
+		}
+		ai_chance = {
+			base = 25
+		}
+		set_temp_variable = { treasury_change = -15 }
+		modify_treasury_effect = yes
+		set_temp_variable = { percent_change = 3 }
+		set_temp_variable = { tag_index = USA.id }
+		change_influence_percentage = yes
+		add_equipment_to_stockpile = {
+			type = small_plane_strike_airframe
+			amount = 12
+			producer = USA
+		}
+	}
+	option = {
+		log = "[GetDateText]: [This.GetName]: Botswana_events.7.c executed"
+		name = Botswana_events.7.c
+		trigger = {
+			country_exists = CHI
+			NOT = { has_war_with = CHI }
+			CHI = { has_design_based_on = small_plane_strike_airframe }
+		}
+		ai_chance = {
+			base = 25
+		}
+		set_temp_variable = { treasury_change = -15 }
+		modify_treasury_effect = yes
+		set_temp_variable = { percent_change = 3 }
+		set_temp_variable = { tag_index = CHI.id }
+		change_influence_percentage = yes
+		add_equipment_to_stockpile = {
+			type = small_plane_strike_airframe
+			amount = 12
+			producer = CHI
+		}
+	}
+	option = {
+		log = "[GetDateText]: [This.GetName]: Botswana_events.7.d executed"
+		name = Botswana_events.7.d
+		trigger = {
+			country_exists = ENG
+			NOT = { has_war_with = ENG }
+			ENG = { has_design_based_on = small_plane_strike_airframe }
+		}
+		ai_chance = {
+			base = 25
+		}
+		set_temp_variable = { treasury_change = -15 }
+		modify_treasury_effect = yes
+		set_temp_variable = { percent_change = 2 }
+		set_temp_variable = { tag_index = ENG.id }
+		change_influence_percentage = yes
+		add_equipment_to_stockpile = {
+			type = small_plane_strike_airframe
+			amount = 12
+			producer = ENG
+		}
+	}
+}
+
 #Peacekeepers to Zimbabwe
 news_event = {
 	id = Botswana_news_events.1
 	title = Botswana_news_events.1.t
 	desc = Botswana_news_events.1.desc
-
 	picture = GFX_news_ZIM_robert_mugabe
-
 	is_triggered_only = yes
+	major = yes
 
 	option = {
-		log = "[GetDateText]: [This.GetName]: Botswana_news_events.1.a executed"
 		name = Botswana_news_events.1.a
 	}
 }
@@ -1268,13 +1326,11 @@ news_event = {
 	id = Botswana_news_events.2
 	title = Botswana_news_events.2.t
 	desc = Botswana_news_events.2.desc
-
 	picture = GFX_news_BOT_kgosikgolo_crowned
-
 	is_triggered_only = yes
+	major = yes
 
 	option = {
-		log = "[GetDateText]: [This.GetName]: Botswana_events.2.a executed"
 		name = Botswana_news_events.2.a
 	}
 }
@@ -1284,13 +1340,11 @@ news_event = {
 	id = Botswana_news_events.3
 	title = Botswana_news_events.3.t
 	desc = Botswana_news_events.3.desc
-
 	picture = GFX_news_BOT_unite_bushmen
-
 	is_triggered_only = yes
+	major = yes
 
 	option = {
-		log = "[GetDateText]: [This.GetName]: Botswana_events.3.a executed"
 		name = Botswana_news_events.3.a
 	}
 }

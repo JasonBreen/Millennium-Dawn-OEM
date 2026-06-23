@@ -1,70 +1,41 @@
-﻿##########################
-#  Islamic State Events  #
-##########################
-
 add_namespace = isis
 add_namespace = isisNews
 
-# Remove Idea Cybercaliphate
-news_event = {
-	id = isis.1
-	title = isis.1.t
-	desc = isis.1.d
-	picture = GFX_SYR_tahrir_al_sham
-	is_triggered_only = yes
-
-	major = yes
-	fire_only_once = yes
-
-	trigger = {
-		NOT = { country_exists = ISI }
-	}
-
-	option = {
-		name = isis.1.a
-		log = "[GetDateText]: [This.GetName]: isis.1.a executed"
-			if = { limit = { has_idea = cybercaliphate } remove_ideas = { cybercaliphate }
-		}
-	}
-}
-#Infiltrate Tahrir al-Sham
+# Infiltrate Tahrir al-Sham
 country_event = {
 	id = isis.2
 	title = isis.2.t
 	desc = isis.2.d
 	picture = GFX_SYR_tahrir_al_sham
-
-	fire_only_once = yes
-
-	mean_time_to_happen = {
-		days = 60
-	}
-
+	is_triggered_only = yes
 	trigger = {
-		tag = ISI
-		date > 2017.2.1
+		original_tag = ISI
+		NOT = { has_country_flag = ISI_infiltrated_al_nusra }
 		ISI = {
 			is_neighbor_of = NUS
 			NOT = { has_war_with = NUS }
 			surrender_progress < 0.6
-			}
+		}
 		NUS = {
 			surrender_progress < 0.5
-			}
+		}
+	}
+
+	immediate = {
+		set_country_flag = ISI_infiltrated_al_nusra
 	}
 
 	#Do it
 	option = {
 		name = isis.2.a
 		log = "[GetDateText]: [This.GetName]: isis.2.a executed"
-		ai_chance = { factor = 100 }
+		ai_chance = { base = 100 }
 		random_list = {
 			70 = {
 				ISI = { country_event = { days = 28 id = isis.4 } }
 				hidden_effect = {
 					NUS = { country_event = { days = 30 id = isis.3 } }
-					}
-
+				}
 			}
 			30 = {
 				custom_effect_tooltip = isis.2.a_tt
@@ -72,17 +43,18 @@ country_event = {
 			}
 		}
 	}
-	#avoid provokations
+
+	# Avoid Provocations
 	option = {
 		name = isis.2.b
 		log = "[GetDateText]: [This.GetName]: isis.2.b executed"
 		ai_chance = {
-			factor = 0
-			}
+			base = 0
+		}
 	}
 }
 
-#Defections from Tahrir al-Sham
+# Defections from Tahrir al-Sham
 country_event = {
 	id = isis.3
 	title = isis.3.t
@@ -100,7 +72,7 @@ country_event = {
 	option = {
 		name = isis.3.a
 		log = "[GetDateText]: [This.GetName]: isis.3.a executed"
-		ai_chance = { factor = 50 }
+		ai_chance = { base = 50 }
 		effect_tooltip = {
 			declare_war_on = { target = ISI type = annex_everything }
 		}
@@ -110,10 +82,10 @@ country_event = {
 	option = {
 		name = isis.3.b
 		log = "[GetDateText]: [This.GetName]: isis.3.b executed"
-		ai_chance = { factor = 50 }
+		ai_chance = { base = 50 }
 		hidden_effect = {
-					ISI = { country_event = { days = 7 id = isis.5 } }
-					}
+			ISI = { country_event = { days = 7 id = isis.5 } }
+		}
 	}
 }
 
@@ -158,7 +130,7 @@ country_event = {
 	option = {
 		name = isis.5.a
 		log = "[GetDateText]: [This.GetName]: isis.5.a executed"
-		ai_chance = { factor = 70 }
+		ai_chance = { base = 70 }
 		effect_tooltip = {
 			declare_war_on = { target = NUS type = annex_everything }
 		}
@@ -168,198 +140,60 @@ country_event = {
 	option = {
 		name = isis.5.b
 		log = "[GetDateText]: [This.GetName]: isis.5.b executed"
-		ai_chance = { factor = 30 }
+		ai_chance = { base = 30 }
 	}
 }
 
-#ISIS is alive, but Tahrir al Sham is close to defeat
-#Makes Tahrir al Sham defect to ISIS
+# ISIS is alive, but Tahrir al Sham is close to defeat
+# Makes Tahrir al Sham defect to ISIS
 country_event = {
 	id = isis.6
 	title = isis.6.t
 	desc = isis.6.d
 	picture = GFX_SYR_tahrir_al_sham
-
-	mean_time_to_happen = {
-		days = 2
-	}
-
+	is_triggered_only = yes
 	trigger = {
 		tag = ISI
 		country_exists = ISI
 		country_exists = NUS
-		NOT = { has_country_flag = new_ISIS }
 		NUS = { is_ai = yes }
 		ISI = {
 			surrender_progress < 0.7
-			}
+		}
 		NUS = {
 			surrender_progress > 0.5
-			}
+		}
+		NOT = { has_country_flag = ISI_annexed_al_nusra }
 	}
 
 	option = {
 		name = isis.6.a
 		log = "[GetDateText]: [This.GetName]: isis.6.a executed"
-		ai_chance = { factor = 100 }
+		set_country_flag = ISI_annexed_al_nusra
+
 		annex_country = { target = NUS transfer_troops = yes }
 		hidden_effect = { news_event = { id = isisNews.1 hours = 6 } }
+
+		ai_chance = {
+			base = 100
+		}
 	}
 }
 
-#ISIS annexes Tahrir al Sham
+# ISIS annexes Tahrir al Sham
 news_event = {
 	id = isisNews.1
 	title = isisNews.1.t
 	desc = isisNews.1.d
 	picture = GFX_news_rise_of_taliban
-
-	major = yes
-
 	is_triggered_only = yes
+	major = yes
 
 	option = {
 		name = isisNews.1.a
-		log = "[GetDateText]: [This.GetName]: isisNews.1.a executed"
 	}
 }
 
-### US Airstrikes ###
-
-#Hidden event for selection
-#Kills random commander. If already killed, no effect
-#Needs proofing for cases where ISIS is defeated but reappears
-#Now done through operations
-
-#country_event = {
-	# id = isis.7
-	#immediate = { log = "[GetDateText]: [Root.GetName]: event isis.7" }
-
-	#hidden = yes
-
-	#mean_time_to_happen = {
-		#days = 100
-	#}
-
-	#trigger = {
-		#tag = ISI
-		#country_exists = ISI
-		#NOT = { has_country_flag = new_ISIS }
-
-	#}
-
-	#option = {
-		#name = isis.7.a
-		#log = "[GetDateText]: [This.GetName]: isis.7.a executed"
-		#ai_chance = { factor = 100 }
-		#random_list = {
-				#8 = {
-					#if = { limit = { has_unit_leader = 1301 }
-						#hidden_effect = {
-							#remove_unit_leader = 1301
-							#news_event = { id = isisNews.1301 hours = 6 }
-								#	}
-						# }
-				#	}
-			#	7 = {
-				#	if = { limit = { has_unit_leader = 1302 }
-					#	hidden_effect = {
-					#		remove_unit_leader = 1302
-					#		news_event = { id = isisNews.1302 hours = 6 }
-							#		}
-						# }
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1303 }
-						#hidden_effect = {
-							#remove_unit_leader = 1303
-							#news_event = { id = isisNews.1303 hours = 6 }
-									#}
-						 #}
-					#}
-				#7 = {
-					#if = { limit = { has_unit_leader = 1304 }
-						#hidden_effect = {
-							#remove_unit_leader = 1304
-							#news_event = { id = isisNews.1304 hours = 6 }
-								#	}
-						 #}
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1305 }
-						#hidden_effect = {
-							#remove_unit_leader = 1305
-							#news_event = { id = isisNews.1305 hours = 6 }
-									#}
-						# }
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1306 }
-						#hidden_effect = {
-							#remove_unit_leader = 1306
-							#news_event = { id = isisNews.1306 hours = 6 }
-									#}
-						# }
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1307 }
-				#		hidden_effect = {
-							#remove_unit_leader = 1307
-							#news_event = { id = isisNews.1307 hours = 6 }
-									#}
-						 #}
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1308 }
-						#hidden_effect = {
-							#remove_unit_leader = 1308
-							#news_event = { id = isisNews.1308 hours = 6 }
-									#}
-						 #}
-					#}
-				#7 = {
-					#if = { limit = { has_unit_leader = 1309 }
-						#hidden_effect = {
-							#remove_unit_leader = 1309
-							#news_event = { id = isisNews.1309 hours = 6 }
-								#	}
-						# }
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1310 }
-						#hidden_effect = {
-							#remove_unit_leader = 1310
-							#news_event = { id = isisNews.1310 hours = 6 }
-								#	}
-						#3 }
-				#	}
-				#8 = {
-				#	if = { limit = { has_unit_leader = 1311 }
-						#hidden_effect = {
-						#	remove_unit_leader = 1311
-						#	news_event = { id = isisNews.1311 hours = 6 }
-							#		}
-						# }
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1312 }
-						#hidden_effect = {
-							#remove_unit_leader = 1312
-							#news_event = { id = isisNews.1312 hours = 6 }
-									#}
-						 #}
-					#}
-				#7 = {
-					#if = { limit = { has_unit_leader = 1313 }
-						#hidden_effect = {
-							#remove_unit_leader = 1313
-							#news_event = { id = isisNews.1313 hours = 6 }
-						#}
-					#}
-				#}
-			#}
-		#}
-	#}
 
 ### Newsevents ###
 
@@ -367,7 +201,7 @@ news_event = {
 	id = isisNews.1301
 	title = {
 		text = isisNews.1301.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1301.t
@@ -375,7 +209,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1301.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1301.d
@@ -398,7 +232,6 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -406,7 +239,7 @@ news_event = {
 	id = isisNews.1302
 	title = {
 		text = isisNews.1302.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1302.t
@@ -414,7 +247,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1302.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1302.d
@@ -437,7 +270,6 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -445,7 +277,7 @@ news_event = {
 	id = isisNews.1303
 	title = {
 		text = isisNews.1303.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1303.t
@@ -453,7 +285,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1303.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1303.d
@@ -476,7 +308,6 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -484,7 +315,7 @@ news_event = {
 	id = isisNews.1304
 	title = {
 		text = isisNews.1304.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1304.t
@@ -492,7 +323,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1304.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1304.d
@@ -515,7 +346,6 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -523,7 +353,7 @@ news_event = {
 	id = isisNews.1305
 	title = {
 		text = isisNews.1305.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1305.t
@@ -531,7 +361,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1305.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1305.d
@@ -554,7 +384,6 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -562,7 +391,7 @@ news_event = {
 	id = isisNews.1306
 	title = {
 		text = isisNews.1306.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1306.t
@@ -570,7 +399,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1306.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1306.d
@@ -593,7 +422,6 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -601,7 +429,7 @@ news_event = {
 	id = isisNews.1307
 	title = {
 		text = isisNews.1307.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1307.t
@@ -609,7 +437,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1307.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1307.d
@@ -632,7 +460,6 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -640,7 +467,7 @@ news_event = {
 	id = isisNews.1308
 	title = {
 		text = isisNews.1308.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1308.t
@@ -648,7 +475,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1308.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1308.d
@@ -671,7 +498,6 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -679,7 +505,7 @@ news_event = {
 	id = isisNews.1309
 	title = {
 		text = isisNews.1309.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1309.t
@@ -687,7 +513,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1309.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1309.d
@@ -710,7 +536,6 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -718,7 +543,7 @@ news_event = {
 	id = isisNews.1310
 	title = {
 		text = isisNews.1310.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1310.t
@@ -726,7 +551,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1310.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1310.d
@@ -749,7 +574,6 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -757,7 +581,7 @@ news_event = {
 	id = isisNews.1311
 	title = {
 		text = isisNews.1311.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1311.t
@@ -765,7 +589,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1311.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1311.d
@@ -788,7 +612,6 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -796,7 +619,7 @@ news_event = {
 	id = isisNews.1312
 	title = {
 		text = isisNews.1312.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1312.t
@@ -804,7 +627,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1312.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1312.d
@@ -827,7 +650,6 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -835,7 +657,7 @@ news_event = {
 	id = isisNews.1313
 	title = {
 		text = isisNews.1313.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.1313.t
@@ -843,7 +665,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.1313.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.1313.d
@@ -866,145 +688,9 @@ news_event = {
 	}
 	option = {
 		name = isis.1301.a
-		log = "[GetDateText]: [This.GetName]: isis.1301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
-
-### Russian Airstrike ###
-### Same as american but a bit less frequent
-
-#country_event = {
-	#id = isis.8
-	#immediate = { log = "[GetDateText]: [Root.GetName]: event isis.8" }
-	#title = isis.8.t
-	#desc = isis.8.d
-	#picture = GFX_Tahrir_Al_Sham
-
-	#hidden = yes
-
-	#mean_time_to_happen = {
-		#days = 180
-	#}
-
-	#trigger = {
-	#	tag = ISI
-		#country_exists = ISI
-		#NOT = { has_country_flag = new_ISIS }
-#	}
-
-#	option = {
-		#name = isis.8.a
-		#log = "[GetDateText]: [This.GetName]: isis.8.a executed"
-	#	ai_chance = { factor = 100 }
-		#random_list = {
-			#	8 = {
-					#if = { limit = { has_unit_leader = 1301 }
-						#hidden_effect = {
-						#	remove_unit_leader = 1301
-						#	news_event = { id = isisNews.11301 hours = 6 }
-							#		}
-						# }
-					#}
-				#7 = {
-					#if = { limit = { has_unit_leader = 1302 }
-						#hidden_effect = {
-							#remove_unit_leader = 1302
-							#news_event = { id = isisNews.11302 hours = 6 }
-							#		}
-						# }
-					#}
-				#8 = {
-				#	if = { limit = { has_unit_leader = 1303 }
-						#hidden_effect = {
-							#remove_unit_leader = 1303
-							#news_event = { id = isisNews.11303 hours = 6 }
-								#	}
-						# }
-					#}
-				#7 = {
-					#if = { limit = { has_unit_leader = 1304 }
-					#	hidden_effect = {
-							#remove_unit_leader = 1304
-							#news_event = { id = isisNews.11304 hours = 6 }
-									#}
-						# }
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1305 }
-						#hidden_effect = {
-							#remove_unit_leader = 1305
-							#news_event = { id = isisNews.11305 hours = 6 }
-									#}
-						 #}
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1306 }
-						#hidden_effect = {
-						#	remove_unit_leader = 1306
-							#news_event = { id = isisNews.11306 hours = 6 }
-									#}
-						 #}
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1307 }
-						#hidden_effect = {
-							#remove_unit_leader = 1307
-							#news_event = { id = isisNews.11307 hours = 6 }
-								#	}
-						 #}
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1308 }
-						#hidden_effect = {
-							#remove_unit_leader = 1308
-							#news_event = { id = isisNews.11308 hours = 6 }
-								#	}
-						# }
-					#}
-				#7 = {
-				#	if = { limit = { has_unit_leader = 1309 }
-						#hidden_effect = {
-							#remove_unit_leader = 1309
-							#news_event = { id = isisNews.11309 hours = 6 }
-									#}
-						# }
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1310 }
-						#hidden_effect = {
-							#remove_unit_leader = 1310
-							#news_event = { id = isisNews.11310 hours = 6 }
-								#	}
-						# }
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1311 }
-						#hidden_effect = {
-							#remove_unit_leader = 1311
-							#news_event = { id = isisNews.11311 hours = 6 }
-								#	}
-						# }
-					#}
-				#8 = {
-					#if = { limit = { has_unit_leader = 1312 }
-						#hidden_effect = {
-							#remove_unit_leader = 1312
-							#news_event = { id = isisNews.11312 hours = 6 }
-								#	}
-						 #}
-					#}
-				#7 = {
-					#if = { limit = { has_unit_leader = 1313 }
-						#hidden_effect = {
-						#	remove_unit_leader = 1313
-							#news_event = { id = isisNews.11313 hours = 6 }
-								#	}
-						 #}
-				#	}
-		#}
-	#}
-#}
 
 ### Newsevents ###
 
@@ -1012,7 +698,7 @@ news_event = {
 	id = isisNews.11301
 	title = {
 		text = isisNews.11301.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11301.t
@@ -1020,7 +706,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11301.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11301.d
@@ -1034,7 +720,7 @@ news_event = {
 	option = {
 		name = isisNews.11301.a
 		log = "[GetDateText]: [This.GetName]: isisNews.11301.a executed"
-		trigger = { NOT = { TAG = ISI }
+		trigger = { NOT = { original_tag = ISI }
 		}
 		if = { limit = { original_tag = SOV }
 			air_experience = 5
@@ -1043,15 +729,14 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
-		trigger = { TAG = ISI }
+		trigger = { original_tag = ISI }
 	}
 }
 news_event = {
 	id = isisNews.11302
 	title = {
 		text = isisNews.11302.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11302.t
@@ -1059,7 +744,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11302.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11302.d
@@ -1082,7 +767,6 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -1090,7 +774,7 @@ news_event = {
 	id = isisNews.11303
 	title = {
 		text = isisNews.11303.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11303.t
@@ -1098,7 +782,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11303.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11303.d
@@ -1121,7 +805,6 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -1129,7 +812,7 @@ news_event = {
 	id = isisNews.11304
 	title = {
 		text = isisNews.11304.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11304.t
@@ -1137,7 +820,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11304.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11304.d
@@ -1160,16 +843,14 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
 news_event = {
 	id = isisNews.11305
-	immediate = { log = "[GetDateText]: [Root.GetName]: event isisNews.11305" }
 	title = {
 		text = isisNews.11305.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11305.t
@@ -1177,7 +858,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11305.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11305.d
@@ -1200,7 +881,6 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -1208,7 +888,7 @@ news_event = {
 	id = isisNews.11306
 	title = {
 		text = isisNews.11306.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11306.t
@@ -1216,7 +896,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11306.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11306.d
@@ -1239,7 +919,6 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -1247,7 +926,7 @@ news_event = {
 	id = isisNews.11307
 	title = {
 		text = isisNews.11307.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11307.t
@@ -1255,7 +934,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11307.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11307.d
@@ -1278,7 +957,6 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -1286,7 +964,7 @@ news_event = {
 	id = isisNews.11308
 	title = {
 		text = isisNews.11308.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11308.t
@@ -1294,7 +972,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11308.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11308.d
@@ -1317,7 +995,6 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -1325,7 +1002,7 @@ news_event = {
 	id = isisNews.11309
 	title = {
 		text = isisNews.11309.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11309.t
@@ -1333,7 +1010,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11309.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11309.d
@@ -1356,7 +1033,6 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -1364,7 +1040,7 @@ news_event = {
 	id = isisNews.11310
 	title = {
 		text = isisNews.11310.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11310.t
@@ -1372,7 +1048,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11310.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11310.d
@@ -1395,7 +1071,6 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -1403,7 +1078,7 @@ news_event = {
 	id = isisNews.11311
 	title = {
 		text = isisNews.11311.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11311.t
@@ -1411,7 +1086,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11311.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11311.d
@@ -1434,7 +1109,6 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -1442,7 +1116,7 @@ news_event = {
 	id = isisNews.11312
 	title = {
 		text = isisNews.11312.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11312.t
@@ -1450,7 +1124,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11312.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11312.d
@@ -1473,7 +1147,6 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
@@ -1481,7 +1154,7 @@ news_event = {
 	id = isisNews.11313
 	title = {
 		text = isisNews.11313.t
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	title = {
 		text = isis.11313.t
@@ -1489,7 +1162,7 @@ news_event = {
 	}
 	desc = {
 		text = isisNews.11313.d
-		trigger = { not = { tag = ISI } }
+		trigger = { NOT = { tag = ISI } }
 	}
 	desc = {
 		text = isis.11313.d
@@ -1512,8 +1185,6 @@ news_event = {
 	}
 	option = {
 		name = isis.11301.a
-		log = "[GetDateText]: [This.GetName]: isis.11301.a executed"
 		trigger = { TAG = ISI }
 	}
 }
-

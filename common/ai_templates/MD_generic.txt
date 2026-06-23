@@ -1,29 +1,9 @@
 # Author(s): AngriestBird, Simone
 # Improved by KyCb(rockon)
-##############################
-##Compendium of Combat Width
-#Militia Battalion - 3 CW 			#Motorized Airborne Infantry - 4 CW
-#Motorized Militia Battalion - 4 CW #Mechanized Airborne Infantry - 4 CW
-#Light Infantry - 3 CW				#Armored Airborne Infantry - 4 CW
-#Motorized Infantry - 4 CW			#Marine Light Infantry - 3 CW
-#Mechanized Infantry - 4 CW			#Motorized Marine Infantry - 4 CW
-#Armored Infantry - 4 CW			#Mechanized Marine Infantry - 4 CW
-#Airborne Light Infantry - 3 CW		#Armored Marine Infantry - 4 CW
-#Light Air Assault Infantry - 3 CW	#Armored Air Assault Infantry - 4 CW
-#Special Forces - 3 CW				#Tank Battalion - 4 CW
-#Artillery - 3 CW					#SP Arty - 3 CW
-#SP AA - 4 CW
-#Companies - Support Companies
-#Tank Company - 2 CW				#Light Recon - 1 CW
-#Motorized Recon - 2 CW				#Mechanized Company - 2 CW
-#Armored Recon - 2 CW				#Armored Recce - 2 CW
-#Light Engineer - 1 CW				#Heavy Engineer - 2 CW
-#Artillery BAttery - 1 CW			#SP Arty - 2 CW
-#SP AA - 2 CWf
-############################
+
 #garrison
 garrison_generic = {
-	roles = { garrison }
+	role = garrison
 	upgrade_prio = {
 		factor = 0
 		modifier = {
@@ -31,7 +11,6 @@ garrison_generic = {
 			ai_has_role_template = garrison
 		}
 	}
-	match_to_count = 0.5
 
 	Militia_garrison = {
 		reinforce_prio = 0
@@ -50,14 +29,8 @@ garrison_generic = {
 				}
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = {
-				factor = 2
-				num_of_military_factories < 3
-			}
-			modifier = {
-				factor = 0
+		enable = {
+			NOT = {
 				OR = {
 					num_of_military_factories > 10
 					is_major = yes
@@ -75,26 +48,23 @@ garrison_generic = {
 					tag = RAJ
 					tag = PAK
 					tag = UKR
+					tag = ALN
 				}
 			}
-		}
-
-		target_width = 12
-		width_weight = 1
-		column_swap_factor = 0.5
-
-		target_template = {
-			weight = 0.9
-			match_value = 9000.0
-
-			regiments = { #12 Combat Width
-				Militia_Bat = 4 #
+			NOT = { original_tag = ZOM }
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
 		}
 
-		allowed_types = {
-			Militia_Bat
+		target_template = {
+			regiments = {
+				Militia_Bat = 4
+			}
 		}
+
+		target_min_match = 0.5
 	}
 
 	L_Inf_gar = {
@@ -112,14 +82,8 @@ garrison_generic = {
 				num_of_military_factories < 5
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = {
-				factor = 2
-				num_of_military_factories > 6
-			}
-			modifier = {
-				factor = 0
+		enable = {
+			NOT = {
 				OR = {
 					num_of_military_factories > 20
 					is_major = yes
@@ -136,31 +100,29 @@ garrison_generic = {
 					tag = POR
 					tag = RAJ
 					tag = PAK
+					tag = ALN
 				}
 			}
+			NOT = { original_tag = ZOM }
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
 		}
-		target_width = 18.0
-		width_weight = 1
-		column_swap_factor = 0.5
+
+		target_min_match = 0.5
 
 		target_template = {
-			weight = 0.9
-			match_value = 9000.0
-
 			regiments = {
 				L_Inf_Bat = 6
 			}
 		}
-
-		allowed_types = {
-			L_Inf_Bat
-		}
 	}
 }
 
-#light Militia Divisions
+#Militia
 Militia_generic = {
-	roles = { Militia }
+	role = Militia
 	upgrade_prio = {
 		factor = 1
 		modifier = {
@@ -172,7 +134,6 @@ Militia_generic = {
 			has_civil_war = no
 		}
 	}
-	match_to_count = 0.6
 
 	Militia_generic = {
 		reinforce_prio = 0
@@ -189,51 +150,37 @@ Militia_generic = {
 					num_of_military_factories > 3
 					is_major = yes
 					has_idea = NATO_member
-					has_idea = sco_member
+					is_sco = yes
 				}
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = {
-				add = 1
-				num_of_military_factories < 4
-			}
-			modifier = {
-				factor = 2
-				has_civil_war = yes
-			}
-			modifier = {
-				factor = 0
+		enable = {
+			NOT = {
 				OR = {
 					has_war = no
 					num_of_military_factories > 3
 					is_major = yes
 					has_idea = NATO_member
-					has_idea = sco_member
+					is_sco = yes
+					tag = ALN
 				}
 			}
-		}
-
-		target_width = 15
-		width_weight = 1
-		column_swap_factor = 0.5
-
-		target_template = {
-			weight = 0.9
-			match_value = 9000.0
-
-			regiments = { #15 CW
-				Militia_Bat = 5
+			NOT = { original_tag = ZOM }
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
 		}
 
-		allowed_types = {
-			Militia_Bat
-		}
+		target_min_match = 0.6
 
+		target_template = {
+			regiments = {
+				Militia_Bat = 12
+			}
+		}
 	}
-	militia_brigade = {
+	militia_artillery_brigade = {
 		reinforce_prio = 0
 		upgrade_prio = {
 			factor = 1
@@ -252,53 +199,42 @@ Militia_generic = {
 					num_of_military_factories > 9
 					is_major = yes
 					has_idea = NATO_member
-					has_idea = sco_member
+					is_sco = yes
 				}
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = {
-				add = 1
-				num_of_military_factories < 5
-			}
-			modifier = {
-				factor = 2
-				has_civil_war = yes
-			}
-			modifier = {
-				factor = 0
+		enable = {
+			NOT = { original_tag = ZOM }
+			NOT = {
 				OR = {
-					has_war = no
-					num_of_military_factories > 9
-					is_major = yes
 					has_idea = NATO_member
-					has_idea = sco_member
+					tag = ALN
 				}
+			}
+			is_major = no
+			is_sco = no
+			OR = {
+				has_war = yes
+				num_of_military_factories < 10
+			}
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
 		}
 
-		target_width = 29
-		width_weight = 1
-		column_swap_factor = 0.5
+		target_min_match = 0.6
 
 		target_template = {
-			weight = 0.9
-			match_value = 9000.0
-
 			regiments = {
-				Militia_Bat = 9
+				Militia_Bat = 6
+				Arty_Bat = 5
 			}
 			support = {
-				L_Recce_Comp = 1
 				L_Engi_Comp = 1
+				L_Recce_Comp = 1
+				Arty_Battery = 1
 			}
-		}
-
-		allowed_types = {
-			Militia_Bat
-			L_Recce_Comp
-			L_Engi_Comp
 		}
 	}
 	Mot_Militia_generic = {
@@ -316,57 +252,47 @@ Militia_generic = {
 					has_war = no
 					is_major = yes
 					has_idea = NATO_member
-					has_idea = sco_member
+					is_sco = yes
 				}
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = {
-				add = 15
-				has_civil_war = yes
-			}
-			modifier = {
-				factor = 0
+		enable = {
+			NOT = { original_tag = ZOM }
+			NOT = {
 				OR = {
 					num_of_military_factories > 7
 					has_war = no
 					is_major = yes
 					has_idea = NATO_member
-					has_idea = sco_member
+					is_sco = yes
+					tag = ALN
 				}
 			}
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
 		}
 
-		target_width = 30
-		width_weight = 1
-		column_swap_factor = 0.5
+		target_min_match = 0.6
 
 		target_template = {
-			weight = 0.9
-			match_value = 5000.0
-
 			regiments = {
-				Mot_Militia_Bat = 7 #7*4 + 2(Mot_Recce_Comp) = 30
+				Mot_Militia_Bat = 8
 			}
 			support = {
-				Mot_Recce_Comp = 1 #2
+				combat_service_support_company = 1
+				H_Engi_Comp = 1
+				Arty_Battery = 1
 			}
-			#Total Combat Width = 30
 		}
-
-		allowed_types = {
-			Mot_Militia_Bat
-			Mot_Recce_Comp
-		}
-
 	}
 }
 
-#Light Divisions
+#Light Infantry
 L_Inf_generic = {
-	roles = { L_Inf }
-	upgrade_prio = { #These should be used extremely sparingly
+	role = L_Inf
+	upgrade_prio = {
 		factor = 1.8
 		modifier = {
 			factor = 150
@@ -374,9 +300,8 @@ L_Inf_generic = {
 		}
 	}
 
-	match_to_count = 0.5
-
 	L_Inf_brigade = {
+		reinforce_prio = 0
 		upgrade_prio = {
 			factor = 1
 			modifier = {
@@ -396,68 +321,43 @@ L_Inf_generic = {
 				add = -10
 				OR = {
 					num_of_military_factories > 7
-					has_equipment = { Inf_equipment < 100 }
+					has_equipment = { infantry_weapons_type < 100 }
 					is_major = yes
 				}
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = {
-				factor = 2
-				num_of_military_factories < 7
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories < 8
+			is_major = no
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
-			modifier = {
-				factor = 4
-				OR = {
-					has_equipment = { apc_hull < 1 }
-					has_equipment = { ifv_hull < 1 }
-				}
-			}
-			modifier = {
-				factor = 2
-				has_equipment = { Inf_equipment > 4500 }
-			}
-			modifier = {
-				factor = 0
-				OR = {
-					num_of_military_factories > 7
-					has_equipment = { Inf_equipment < 100 }
-					is_major = yes
-				}
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		reinforce_prio = 0
-		target_width = 30
-		width_weight = 1
-		column_swap_factor = 0.5
+		target_min_match = 0.5
 
 		target_template = {
-			weight = 0.9
-			match_value = 5000.0
-
 			regiments = {
-				L_Inf_Bat = 6
-				Arty_Bat = 3
+				L_Inf_Bat = 11
+			}
+			regimental_support = {
+				AT_company = 3
+				Arty_Battery = 3
 			}
 			support = {
-				L_Recce_Comp = 1
-				L_Engi_Comp = 1
 				combat_service_support_company = 1
+				H_Engi_Comp = 1
 			}
-		}
-
-		allowed_types = {
-			L_Inf_Bat
-			Arty_Bat
-			L_Engi_Comp
-			L_Recce_Comp
-			combat_service_support_company
 		}
 	}
 
-	L_Inf_division = {
+	L_Inf_artillery_brigade = {
+		reinforce_prio = 0
 		upgrade_prio = {
 			factor = 1
 			modifier = {
@@ -476,7 +376,7 @@ L_Inf_generic = {
 			modifier = {
 				add = -10
 				OR = {
-					has_equipment = { Inf_equipment < 100 }
+					has_equipment = { infantry_weapons_type < 100 }
 					num_of_military_factories > 15
 					num_of_military_factories < 7
 					AND = {
@@ -486,67 +386,55 @@ L_Inf_generic = {
 				}
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = {
-				factor = 2
-				has_equipment = { Inf_equipment > 4500 }
-			}
-			modifier = {
-				factor = 0
-				OR = {
-					has_equipment = { Inf_equipment < 100 }
-					num_of_military_factories > 15
-					num_of_military_factories < 7
-					AND = {
-						surrender_progress < 0.50
-						is_major = yes
-					}
+		enable = {
+			NOT = { original_tag = ZOM }
+			OR = {
+				AND = {
+					num_of_military_factories < 16
+					num_of_military_factories > 6
 				}
+				AND = {
+					surrender_progress < 0.50
+					is_major = yes
+				}
+			}
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		target_width = 40
-		width_weight = 1
-		column_swap_factor = 0.5
-		reinforce_prio = 0
+		target_min_match = 0.5
 
 		target_template = {
-			weight = 0.9
-			match_value = 6000.0
 			regiments = {
-				L_Inf_Bat = 9
-				Arty_Bat = 3
+				L_Inf_Bat = 6
+				Arty_Bat = 5
+			}
+			regimental_support = {
+				AT_company = 3
+				Weapons_company = 3
 			}
 			support = {
-				Arty_Battery = 1
-				L_Recce_Comp = 1
-				L_Engi_Comp = 1
+				Mot_Recce_Comp = 1
 				combat_service_support_company = 1
 			}
-		}
-
-		allowed_types = {
-			L_Inf_Bat
-			Arty_Bat
-			Arty_Battery
-			L_Recce_Comp
-			L_Engi_Comp
-			combat_service_support_company
 		}
 	}
 }
 
 #Light Marines
 marines_generic = {
-	roles = { marines }
+	role = marines
 	upgrade_prio = {
 		factor = 0.9
 	}
 
-	match_to_count = 0.8
-
 	light_marine_brigades = {
+		reinforce_prio = 2
 		upgrade_prio = {
 			factor = 1
 			modifier = {
@@ -558,55 +446,88 @@ marines_generic = {
 				num_of_naval_factories < 1
 			}
 		}
-		production_prio = {
-			factor = 1.5
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories < 5
+			num_of_naval_factories > 0
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
+			}
+		}
+
+		target_min_match = 0.8
+
+		target_template = {
+			regiments = {
+				L_Marine_Bat = 11
+			}
+			regimental_support = {
+				AT_company = 3
+				Arty_Battery = 3
+			}
+			support = {
+				combat_service_support_company = 1
+				H_Engi_Comp = 1
+			}
+		}
+	}
+	marine_commando_division = {
+		reinforce_prio = 2
+		upgrade_prio = {
+			factor = 2
 			modifier = {
 				factor = 0
-				num_of_military_factories > 5
+				OR = {
+					has_idea = minor_power
+					has_idea = non_power
+					num_of_military_factories < 15
+				}
 			}
 			modifier = {
 				factor = 0
 				num_of_naval_factories < 1
 			}
 		}
-
-		target_width = 31
-		width_weight = 1
-		column_swap_factor = 0.5
-
-		target_template = {
-			weight = 0.9
-			match_value = 8000.0
-
-			regiments = {
-				L_Marine_Bat = 6
-				Arty_Bat = 3
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_naval_factories > 0
+			num_of_military_factories > 14
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
-			support = {
-				L_Recce_Comp = 1
-				L_Engi_Comp = 1
-				SP_AA_Battery = 1
-				combat_service_support_company = 1
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		allowed_types = {
-			L_Marine_Bat
-			SP_Arty_Bat
-			L_Recce_Comp
-			L_Engi_Comp
-			Arty_Bat
-			SP_AA_Battery
-			combat_service_support_company
+		target_min_match = 0.8
+
+		target_template = {
+			regiments = {
+				L_Marine_Cdo_Bat = 15
+			}
+			regimental_support = {
+				AT_company = 3
+				Arty_Battery = 3
+			}
+			support = {
+				combat_service_support_company = 1
+				H_Engi_Comp = 1
+				L_Ranger_Recce_Comp = 1
+				armor_Comp = 1
+				attack_helo_comp = 1
+			}
 		}
 	}
 	mot_marines_brigades = {
+		reinforce_prio = 2
 		upgrade_prio = {
-			factor = 0.5
-			modifier = {
-				factor = 0
-				num_of_military_factories > 9
-			}
+			factor = 2
 			modifier = {
 				factor = 0
 				num_of_naval_factories < 1
@@ -616,131 +537,149 @@ marines_generic = {
 				num_of_military_factories < 6
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = {
-				factor = 0
-				num_of_military_factories > 9
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 5
+			num_of_naval_factories > 0
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
-			modifier = {
-				factor = 0
-				num_of_naval_factories < 1
-			}
-			modifier = {
-				factor = 0
-				num_of_military_factories < 6
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		target_width = 30
-		width_weight = 1
-		column_swap_factor = 0.5
+		replace_at_match = 0.8
+		replace_with = mot_marines_division
+		can_upgrade_in_field = { always = yes }
+		target_min_match = 0.5
 
 		target_template = {
-			weight = 0.9
-			match_value = 9000.0
-
 			regiments = {
-				Mot_Marine_Bat = 6
+				Mot_Marine_Bat = 8
+			}
+			regimental_support = {
+				Mot_AT_company = 2
+				Arty_Battery = 2
 			}
 			support = {
 				H_Engi_Comp = 1
-				Mot_Recce_Comp = 1
+				combat_service_support_company = 1
 				Arty_Battery = 1
-				combat_service_support_company = 1
 			}
-		}
-
-		allowed_types = {
-			Mot_Marine_Bat
-			Arty_Bat
-			H_Engi_Comp
-			Mot_Recce_Comp
-			Arty_Battery
-			combat_service_support_company
 		}
 	}
-	meh_marines_division_maj = {
-		upgrade_prio = {
-			factor = 2
-			modifier = {
-				factor = 0
-				OR = {
-					has_idea = minor_power
-					has_idea = non_power
-					#has_equipment = { apc_hull < 1 }
-					num_of_military_factories < 12
-				}
-			}
-			modifier = {
-				factor = 0
-				num_of_naval_factories < 1
-			}
-		}
-		production_prio = {
-			factor = 2
-			modifier = {
-				factor = 0
-				num_of_naval_factories < 1
-			}
-			modifier = { #Use Regular APCs if you have over 2k
-				factor = 5
-				has_equipment = { apc_hull > 2000 }
-			}
-			modifier = { #If Major Ignore Brigades
-				factor = 5
-				OR = {
-					is_major = yes
-					has_idea = superpower
-				}
-			}
-			modifier = {
-				factor = 0
-				OR = {
-					has_idea = minor_power
-					has_idea = non_power
-					#has_equipment = { apc_hull < 1 }
-					num_of_military_factories < 12
-				}
-			}
-		}
-
-		target_width = 44
-		width_weight = 1
-		column_swap_factor = 0.5
-
-		target_template = {
-			weight = 0.9
-			match_value = 9000
-			regiments = {
-				Mech_Marine_Bat = 6
-				armor_Bat = 2
-				SP_Arty_Bat = 2
-			}
-			support = {
-				Mech_Recce_Comp = 1
-				H_Engi_Comp = 1
-				SP_AA_Battery = 1
-				combat_service_support_company = 1
-			}
-		}
-
-		allowed_types = {
-			Mech_Marine_Bat
-			armor_Bat
-			SP_Arty_Bat
-			SP_AA_Bat
-			armor_Recce_Comp
-			Mech_Recce_Comp
-			H_Engi_Comp
-			SP_AA_Battery
-			helicopter_combat_service_support
-			combat_service_support_company
-		}
-	}
-	armored_marines_division = {
+	mot_marines_division = {
+		reinforce_prio = 2
 		upgrade_prio = {
 			factor = 1
+			modifier = {
+				factor = 0
+				OR = {
+					has_idea = minor_power
+					has_idea = non_power
+					num_of_military_factories < 12
+				}
+			}
+			modifier = {
+				factor = 0
+				num_of_naval_factories < 1
+			}
+		}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_naval_factories > 0
+			num_of_military_factories > 11
+			num_of_military_factories < 25
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
+			}
+		}
+
+		target_min_match = 0.7
+
+		target_template = {
+			regiments = {
+				Mot_Marine_Bat = 12
+				armor_Bat = 4
+			}
+			regimental_support = {
+				Heavy_mortar_company = 2
+				Weapons_company = 2
+			}
+			support = {
+				combat_service_support_company = 1
+				SP_AA_Battery = 1
+				attack_helo_comp = 1
+			}
+		}
+	}
+	mech_marines_brigade = {
+		reinforce_prio = 2
+		upgrade_prio = {
+			factor = 1
+			modifier = {
+				factor = 2
+				num_of_military_factories > 11
+			}
+			modifier = {
+				factor = 0
+				num_of_military_factories > 20
+			}
+			modifier = {
+				factor = 0
+				num_of_military_factories < 10
+			}
+			modifier = {
+				factor = 0
+				num_of_naval_factories < 1
+			}
+		}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_naval_factories > 0
+			num_of_military_factories > 9
+			num_of_military_factories < 21
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
+			}
+		}
+
+		target_min_match = 0.8
+
+		target_template = {
+			regiments = {
+				Mech_Marine_Bat = 8
+			}
+			regimental_support = {
+				Heavy_mortar_company = 2
+				Weapons_company = 2
+			}
+			support = {
+				H_Engi_Comp = 1
+				combat_service_support_company = 1
+				SP_AA_Battery = 1
+				attack_helo_comp = 1
+			}
+		}
+	}
+	armored_marines_brigade = {
+		reinforce_prio = 2
+		upgrade_prio = {
+			factor = 1
+			modifier = {
+				factor = 2
+				num_of_military_factories > 19
+			}
 			modifier = {
 				factor = 0
 				num_of_military_factories < 15
@@ -750,233 +689,217 @@ marines_generic = {
 				num_of_naval_factories < 1
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = {
-				factor = 0
-				OR = {
-					num_of_military_factories < 15
-					#has_equipment = { ifv_hull < 1 }
-				}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_naval_factories > 0
+			num_of_military_factories > 14
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
-			modifier = {
-				factor = 0
-				num_of_naval_factories < 1
-			}
-			modifier = {
-				factor = 10
-				OR = {
-					tag = USA
-					tag = CHI
-					tag = SOV
-					tag = RAJ
-					tag = GER
-				}
-			}
-			modifier = {
-				factor = 5
-				OR = {
-					tag = ITA
-					tag = SPR
-					tag = POR
-					tag = ENG
-					tag = FRA
-					tag = TUR
-					tag = EGY
-					tag = BRA
-				}
-			}
-			modifier = { #Use IFVs if you have less than 4k
-				factor = 2
-				has_equipment = { apc_hull < 4000 }
-			}
-			modifier = { #Use IFVs if you have a surplus
-				factor = 5
-				has_equipment = { ifv_hull > 4000 }
-			}
-			modifier = { #50% more likely
-				factor = 1.50
-				OR = {
-					has_idea = great_power
-					has_idea = large_power
-				}
-			}
-			modifier = { #
-				factor = 5
-				OR = {
-					is_major = yes
-					has_idea = superpower
-				}
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		target_width = 44
-		width_weight = 1
-		column_swap_factor = 0.5
+		target_min_match = 0.8
 
 		target_template = {
-			weight = 0.9
-			match_value = 8000.0
-
 			regiments = {
-				Arm_Marine_Bat = 6
-				armor_Bat = 2
-				SP_Arty_Bat = 2
+				Arm_Marine_Bat = 8
+			}
+			regimental_support = {
+				Heavy_mortar_company = 2
+				Weapons_company = 2
 			}
 			support = {
-				Arm_Recce_Comp = 1
 				H_Engi_Comp = 1
-				SP_AA_Battery = 1
 				combat_service_support_company = 1
+				SP_AA_Battery = 1
+				attack_helo_comp = 1
 			}
-		}
-
-		allowed_types = {
-			Arm_Marine_Bat
-			Arm_Recce_Comp
-			H_Engi_Comp
-			Arty_Battery
-			combat_service_support_company
-			armor_Bat
-			SP_Arty_Bat
-			SP_AA_Battery
 		}
 	}
 }
 
 #Special Forces
 Special_Forces_generic = {
-	roles = { Special_Forces }
+	role = Special_Forces
 	upgrade_prio = {
 		factor = 1.2
 	}
 
-	match_to_count = 0.6
-
 	Special_Forces_generic = {
+		reinforce_prio = 2
 		upgrade_prio = {
-			factor = 1
-			modifier = {
-				factor = 0
-				OR = {
-					num_of_military_factories < 5
-					num_of_military_factories > 10
-				}
-			}
-		}
-		production_prio = {
 			factor = 2
 			modifier = {
 				factor = 0
-				OR = {
-					num_of_military_factories < 5
-					num_of_military_factories > 10
-				}
+				num_of_military_factories < 5
+			}
+		}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 4
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		reinforce_prio = 2
-
-		target_width = 30
-		width_weight = 1
-		column_swap_factor = 0.5
+		replace_at_match = 0.8
+		replace_with = special_forces_division
+		can_upgrade_in_field = { always = yes }
+		target_min_match = 0.4
 
 		target_template = {
-			weight = 0.9
-			match_value = 9000.0
-
 			regiments = {
-				Special_Forces = 6
-				Arty_Bat = 3
+				Special_Forces = 7
+			}
+			regimental_support = {
+				AT_company = 2
+				Weapons_company = 2
 			}
 			support = {
-				L_Recce_Comp = 1
-				L_Engi_Comp = 1
 				combat_service_support_company = 1
 			}
-		}
-
-		allowed_types = {
-			Special_Forces
-			Arty_Bat
-			L_Engi_Comp
-			L_Recce_Comp
-			Arty_Battery
-			combat_service_support_company
 		}
 	}
 
 	special_forces_division = {
-		upgrade_prio = {
-			factor = 4
-			modifier = {
-				factor = 0
-				OR = {
-					has_idea = minor_power
-					has_idea = non_power
-					num_of_military_factories < 10
-				}
-			}
-		}
-		production_prio = {
-			factor = 4
-			modifier = {
-				factor = 0
-				OR = {
-					has_idea = minor_power
-					has_idea = non_power
-					num_of_military_factories < 10
-				}
-			}
-		}
-
 		reinforce_prio = 2
+		upgrade_prio = {
+			factor = 1
+			modifier = {
+				factor = 0
+				OR = {
+					has_idea = minor_power
+					has_idea = non_power
+					num_of_military_factories < 10
+				}
+			}
+		}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 10
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
+			}
+		}
 
-		target_width = 44
-		width_weight = 1
-		column_swap_factor = 0.5
+		target_min_match = 0.6
 
 		target_template = {
-			weight = 60
-			match_value = 9000.0
 			regiments = {
-				Special_Forces = 8
-				SP_Arty_Bat = 3
-				SP_AA_Bat = 1
+				Special_Forces = 12
+			}
+			regimental_support = {
+				AT_company = 3
+				Weapons_company = 3
 			}
 			support = {
-				Arm_Recce_Comp = 1
 				combat_service_support_company = 1
 				H_Engi_Comp = 1
+				L_Ranger_Recce_Comp = 1
 				armor_Comp = 1
-				SP_Arty_Battery = 1
+				attack_helo_comp = 1
 			}
-		}
-
-		allowed_types = {
-			Special_Forces
-			SP_Arty_Bat
-			SP_AA_Bat
-			Arm_Recce_Comp
-			helicopter_combat_service_support
-			H_Engi_Comp
-			armor_Comp
-			SP_Arty_Battery
-			combat_service_support_company
 		}
 	}
 }
 
-#Speed Helicopter Paratroopers
+#Air Assault Helicopters
 Air_heli_generic = {
-	roles = { Air_helicopters }
+	role = Air_helicopters
 	upgrade_prio = {
 		factor = 1
+		modifier = {
+			factor = 1.5
+			num_of_military_factories > 20
+		}
 	}
 
-	match_to_count = 0.6
+	air_assault_brigade = {
+		reinforce_prio = 2
+		upgrade_prio = {
+			factor = 2
+			modifier = {
+				factor = 0
+				num_of_military_factories < 8
+			}
+		}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 7
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
+			}
+		}
 
-	Arm_Air_assault_brigade = {
+		replace_at_match = 0.8
+		replace_with = air_assault_division
+		can_upgrade_in_field = { always = yes }
+		target_min_match = 0.5
+
+		target_template = {
+			regiments = {
+				L_Air_assault_Bat = 12
+			}
+		}
+	}
+
+	air_assault_division = {
+		reinforce_prio = 2
+		upgrade_prio = {
+			factor = 1
+			modifier = {
+				factor = 0
+				num_of_military_factories < 15
+			}
+		}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 14
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
+			}
+		}
+
+		target_min_match = 0.6
+
+		target_template = {
+			regiments = {
+				L_Air_assault_Bat = 20
+			}
+			regimental_support = {
+				AT_company = 3
+				Weapons_company = 3
+			}
+			support = {
+				helicopter_combat_service_support = 1
+				air_assault_Arty_Battery = 1
+				attack_helo_comp = 1
+			}
+		}
+	}
+
+	attack_helicopter_brigade = {
+		reinforce_prio = 2
 		upgrade_prio = {
 			factor = 1
 			modifier = {
@@ -984,92 +907,44 @@ Air_heli_generic = {
 				num_of_military_factories < 21
 			}
 		}
-		production_prio = {
-			factor = 0.1
-			modifier = {
-				factor = 0
-				num_of_military_factories < 21
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 20
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		target_width = 29
-		width_weight = 1
-		column_swap_factor = 0.5
+		target_min_match = 0.6
 
 		target_template = {
-			weight = 0.9
-			match_value = 9000.0
-
 			regiments = {
-				Arm_Air_assault_Bat = 6
-				attack_helo_bat = 2
+				attack_helo_bat = 8
+				L_Air_assault_Bat = 6
+			}
+			regimental_support = {
+				Heavy_mortar_company = 3
+				Weapons_company = 3
 			}
 			support = {
 				helicopter_combat_service_support = 1
+				air_assault_Arty_Battery = 1
+				attack_helo_comp = 1
 			}
 		}
-
-		allowed_types = {
-			Arm_Air_assault_Bat
-			L_Air_assault_Bat
-			attack_helo_bat
-			helicopter_combat_service_support
-		}
 	}
-
-	# Arm_Air_assault_generic = {
-	# 	upgrade_prio = {
-	# 		factor = 1
-	# 		modifier = {
-	# 			factor = 0
-	# 			num_of_military_factories < 19
-	# 		}
-	# 	}
-	# 	production_prio = {
-	# 		factor = 1
-	# 		modifier = {
-	# 			factor = 0
-	# 			num_of_military_factories < 19
-	# 		}
-	# 	}
-
-	# 	target_width = 40
-	# 	width_weight = 1
-	# 	column_swap_factor = 0.5
-
-	# 	target_template = {
-	# 		weight = 0.9
-	# 		match_value = 9000.0
-
-	# 		regiments = {
-	# 			Arm_Air_assault_Bat = 9
-	# 		}
-	# 		support = {
-	# 			H_Engi_Comp = 1
-	# 			helicopter_combat_service_support = 1
-	# 			SP_AA_Battery = 1
-	# 		}
-	# 	}
-
-	# 	allowed_types = {
-	# 		Arm_Air_assault_Bat
-	# 		Arm_Recce_Comp
-	# 		H_Engi_Comp
-	# 		combat_service_support_company
-	# 		SP_AA_Battery
-	# 		Arty_Bat
-	# 		armor_Comp
-	# 	}
-	# }
 }
 
 #Mech Paratroopers
 Air_mech_generic = {
-	roles = { Air_mech }
+	role = Air_mech
 	upgrade_prio = {
 		factor = 0.6
 	}
-	match_to_count = 0.6
 
 	Air_Mech_generic = {
 		upgrade_prio = {
@@ -1082,54 +957,33 @@ Air_mech_generic = {
 				}
 			}
 		}
-		production_prio = {
-			factor = 2
-			modifier = { #Use Regular APCs if you have over 2k
-				factor = 5
-				has_equipment = { apc_hull > 2000 }
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories < 16
+			num_of_military_factories > 9
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
-			modifier = {
-				factor = 0
-				OR = {
-					num_of_military_factories > 15
-					num_of_military_factories < 10
-				}
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		target_width = 34
-		width_weight = 1
-		column_swap_factor = 0.5
+		target_min_match = 0.6
 
 		target_template = {
-			weight = 0.9
-			match_value = 9000.0
-
 			regiments = {
-				Mech_Air_Inf_Bat = 6
-				Arty_Bat = 2
+				Mech_Air_Inf_Bat = 9
 			}
-			support = {
-				H_Engi_Comp = 1
-				SP_AA_battery = 1
-				helicopter_combat_service_support = 1
+			regimental_support = {
+				Heavy_mortar_company = 3
+				Weapons_company = 3
 			}
-		}
-
-		allowed_types = {
-			Mech_Air_Inf_Bat
-			SP_AA_Bat
-			Arty_Bat
-			armor_Recce_Comp
-			H_Engi_Comp
-			Arty_Battery
-			combat_service_support_company
-			helicopter_combat_service_support
-			SP_AA_battery
 		}
 	}
 
-	Air_Mech_division = {
+	Air_Arm_generic = {
 		upgrade_prio = {
 			factor = 1
 			modifier = {
@@ -1137,67 +991,48 @@ Air_mech_generic = {
 				OR = {
 					has_idea = minor_power
 					has_idea = non_power
-					num_of_military_factories < 15
-					num_of_military_factories > 20
+					num_of_military_factories < 16
 				}
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = {
-				factor = 0
-				OR = {
-					has_idea = minor_power
-					has_idea = non_power
-					num_of_military_factories > 20
-					num_of_military_factories < 15
-				}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 15
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		target_width = 44
-		width_weight = 1
-		column_swap_factor = 0.5
+		target_min_match = 0.6
 
 		target_template = {
-			weight = 0.9
-			match_value = 9000.00
 			regiments = {
-				Arty_Bat = 4
-				Arm_Air_Inf_Bat = 6
+				Arm_Air_Inf_Bat = 9
 			}
-			support = {
-				armor_Recce_Comp = 1
-				H_Engi_Comp = 1
-				SP_AA_Battery = 1
-				helicopter_combat_service_support = 1
-				armor_Comp = 1
+			regimental_support = {
+				Heavy_mortar_company = 3
+				Weapons_company = 3
 			}
-		}
-
-		allowed_types = {
-			Mech_Air_Inf_Bat
-			Arm_Air_Inf_Bat
-			SP_AA_Bat
-			Arty_Bat
-			Arm_Air_assault_Bat
-			armor_Recce_Comp
-			H_Engi_Comp
-			Arty_Battery
-			helicopter_combat_service_support
-			armor_Comp
-			SP_AA_Battery
 		}
 	}
 }
 
-#this is related to AI Motorized Brigade
+#Motorized Infantry
 infantry_generic = {
-	roles = { infantry }
+	role = infantry
 	upgrade_prio = {
-		factor = 0.7
+		factor = 1.2
+		modifier = {
+			factor = 1.5
+			num_of_military_factories > 7
+			num_of_military_factories < 16
+		}
 	}
-	match_to_count = 0.6
+
 	infantry_generic = {
 		upgrade_prio = {
 			factor = 1
@@ -1206,44 +1041,37 @@ infantry_generic = {
 				num_of_military_factories > 7
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = {
-				factor = 0
-				num_of_military_factories > 7
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories < 8
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		target_width = 30
-		width_weight = 2
-		column_swap_factor = 0.5
+		target_min_match = 0.6
 
 		target_template = {
-			weight = 0.9
-			match_value = 9000.0
-
 			regiments = {
-				Mot_Inf_Bat = 6
+				Mot_Inf_Bat = 8
+			}
+			regimental_support = {
+				Mot_AT_company = 2
+				Weapons_company = 2
 			}
 			support = {
-				Mot_Recce_Comp = 1
 				H_Engi_Comp = 1
 				combat_service_support_company = 1
 				Arty_Battery = 1
 			}
 		}
-
-		allowed_types = {
-			Mot_Inf_Bat
-			Arty_Bat
-			Mot_Recce_Comp
-			H_Engi_Comp
-			combat_service_support_company
-			Arty_Battery
-		}
 	}
 
-	infantry_division = {
+	infantry_artillery_brigade = {
 		upgrade_prio = {
 			factor = 1.5
 			modifier = {
@@ -1254,121 +1082,86 @@ infantry_generic = {
 				}
 			}
 		}
-		production_prio = {
-			factor = 1.5
-			modifier = {
-				factor = 0
-				OR = {
-					num_of_military_factories < 8
-					num_of_military_factories > 15
-				}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 7
+			num_of_military_factories < 16
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		target_width = 45
-		width_weight = 1
-		column_swap_factor = 0.5
+		target_min_match = 0.6
 
 		target_template = {
-			weight = 0.9
-			match_value = 10000.0
-
 			regiments = {
-				Mot_Inf_Bat = 6
-				Arty_Bat = 4
+				Mot_Inf_Bat = 4
+				Arty_Bat = 5
+			}
+			regimental_support = {
+				Mot_AT_company = 2
+				Weapons_company = 2
 			}
 			support = {
+				combat_service_support_company = 1
 				Mot_Recce_Comp = 1
 				H_Engi_Comp = 1
-				armor_Comp = 1
-				combat_service_support_company = 1
-				SP_AA_Battery = 1
 			}
-		}
-
-		allowed_types = {
-			Mot_Inf_Bat
-			H_Engi_Comp
-			Mot_Recce_Comp
-			Arty_Battery
-			Arty_Bat
-			armor_Comp
-			combat_service_support_company
-			SP_AA_Battery
 		}
 	}
 }
 
-#Mechanized Generic - Related to APC
+#Mechanized Generic - Related to APC (SP Rocket Arty)
 APC_generic = {
-	roles = { apc_mechanized }
+	role = apc_mechanized
 	upgrade_prio = {
 		factor = 1
 	}
 
-	match_to_count = 0.7
-
 	mechanized_generic = {
 		upgrade_prio = {
-			factor = 1
-			modifier = { #Ignore if you don't have the APCS
+			factor = 2
+			modifier = {
 				factor = 0
-				num_of_military_factories > 15
+				num_of_military_factories < 8
 			}
 		}
-		production_prio = {
-			factor = 1 #Base
-			modifier = { #Use Regular APCs if you have over 2k
-				factor = 2
-				has_equipment = { apc_hull > 600 }
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 7
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
-			modifier = { #Use Regular APCs if you have less than 4k IFVs
-				factor = 2
-				has_equipment = { ifv_hull < 500 }
-			}
-			modifier = { #Half as likely
-				factor = 0.50
-				OR = {
-					has_idea = great_power
-					has_idea = large_power
-				}
-			}
-			modifier = { #Ignore if you don't have the APCS
-				factor = 0
-				num_of_military_factories > 15
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		target_width = 36
-		width_weight = 1
-		column_swap_factor = 0.5
+		replace_at_match = 0.8
+		replace_with = mechanized_divisions
+		can_upgrade_in_field = { always = yes }
+		target_min_match = 0.5
 
 		target_template = {
-			weight = 0.9
-			match_value = 5000.0
-
 			regiments = {
-				Mech_Inf_Bat = 4
-				armor_Bat = 2
-				SP_Arty_Bat = 2
+				Mech_Inf_Bat = 6
+				SP_R_Arty_Bat = 2
+			}
+			regimental_support = {
+				Heavy_mortar_company = 2
+				Weapons_company = 2
 			}
 			support = {
-				H_Engi_Comp = 1
 				Mech_Recce_Comp = 1
-				SP_AA_Battery = 1
+				H_Engi_Comp = 1
 				combat_service_support_company = 1
+				SP_AA_Battery = 1
 			}
-		}
-
-		allowed_types = {
-			Mech_Inf_Bat
-			armor_Bat
-			SP_Arty_Bat
-			SP_AA_Bat
-			H_Engi_Comp
-			SP_AA_Battery
-			Mech_Recce_Comp
-			combat_service_support_company
 		}
 	}
 
@@ -1384,45 +1177,81 @@ APC_generic = {
 				}
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = { #Use Regular APCs if you have over 2k
-				factor = 2
-				has_equipment = { apc_hull > 2000 }
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 14
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
-			modifier = { #Use Regular APCs if you have less than 4k IFVs
-				factor = 2
-				has_equipment = { ifv_hull < 2000 }
-			}
-			modifier = { #If Major Ignore Brigades
-				factor = 2
-				OR = {
-					is_major = yes
-					has_idea = superpower
-				}
-			}
-			modifier = {
-				factor = 0
-				OR = {
-					has_idea = minor_power
-					has_idea = non_power
-					num_of_military_factories < 15
-				}
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		target_width = 47
-		width_weight = 1
-		column_swap_factor = 0.5
+		target_min_match = 0.7
 
 		target_template = {
-			weight = 0.9 #Should get the AI to build units since its a bigger weight
-			match_value = 10000.0
-
 			regiments = {
-				Mech_Inf_Bat = 6
-				armor_Bat = 2
-				SP_Arty_Bat = 3
+				Mech_Inf_Bat = 10
+				SP_R_Arty_Bat = 6
+			}
+			regimental_support = {
+				Heavy_mortar_company = 2
+				Weapons_company = 2
+				Combat_engineer_company = 2
+			}
+			support = {
+				Mech_Recce_Comp = 1
+				H_Engi_Comp = 1
+				combat_service_support_company = 1
+				SP_AA_Battery = 1
+				armor_Comp = 1
+			}
+		}
+	}
+}
+
+#Mechanized Generic - Related to IFV (SP Arty)
+IFV_generic = {
+	role = ifv_mechanized
+	upgrade_prio = {
+		factor = 1
+	}
+
+	ifv_infantry_generic = {
+		upgrade_prio = {
+			factor = 2
+			modifier = {
+				factor = 0
+				num_of_military_factories < 10
+			}
+		}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 9
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
+			}
+		}
+
+		replace_at_match = 0.8
+		replace_with = ifv_infantry_divisions
+		can_upgrade_in_field = { always = yes }
+		target_min_match = 0.5
+
+		target_template = {
+			regiments = {
+				Arm_Inf_Bat = 6
+				SP_Arty_Bat = 2
+			}
+			regimental_support = {
+				Heavy_mortar_company = 2
+				Weapons_company = 2
 			}
 			support = {
 				Mech_Recce_Comp = 1
@@ -1430,100 +1259,6 @@ APC_generic = {
 				combat_service_support_company = 1
 				SP_AA_Battery = 1
 			}
-		}
-
-		allowed_types = {
-			Mech_Inf_Bat
-			SP_AA_Bat
-			SP_Arty_Bat
-			armor_Comp
-			armor_Bat
-			Mech_Recce_Comp
-			H_Engi_Comp
-			combat_service_support_company
-			L_Recce_Comp
-			SP_AA_Battery
-		}
-	}
-}
-
-#Mechanized Generic - Related to IFV
-IFV_generic = {
-	roles = { ifv_mechanized }
-	upgrade_prio = {
-		factor = 1
-	}
-
-	match_to_count = 0.7
-
-	ifv_infantry_generic = {
-		upgrade_prio = {
-			factor = 1
-			modifier = {
-				factor = 0
-				num_of_military_factories > 15
-			}
-		}
-		production_prio = {
-			factor = 1
-			modifier = { #Use IFVs if you have less than 4k
-				factor = 2
-				has_equipment = { apc_hull < 1000 }
-			}
-			modifier = { #Use IFVs if you have a surplus
-				factor = 2
-				has_equipment = { ifv_hull > 1000 }
-			}
-			modifier = { #50% more likely
-				factor = 1.50
-				OR = {
-					has_idea = great_power
-					has_idea = large_power
-				}
-			}
-			modifier = {
-				factor = 2
-				OR = {
-					is_major = yes
-					has_idea = superpower
-				}
-			}
-			modifier = {
-				factor = 0
-				num_of_military_factories > 15
-			}
-		}
-
-		target_width = 36
-		width_weight = 1
-		column_swap_factor = 0.5
-
-		target_template = {
-			weight = 0.9
-			match_value = 6000.0
-
-			regiments = {
-				Arm_Inf_Bat = 4
-				armor_Bat = 2
-				SP_Arty_Bat = 2
-			}
-			support = {
-				H_Engi_Comp = 1
-				Arm_Recce_Comp = 1
-				SP_AA_Battery = 1
-				combat_service_support_company = 1
-			}
-		}
-
-		allowed_types = {
-			Arm_Inf_Bat
-			armor_Bat
-			SP_Arty_Bat
-			SP_AA_Bat
-			H_Engi_Comp
-			Arm_Recce_Comp
-			combat_service_support_company
-			SP_AA_Battery
 		}
 	}
 
@@ -1550,173 +1285,145 @@ IFV_generic = {
 				}
 			}
 		}
-		production_prio = {
-			factor = 1
-			modifier = {
-				factor = 10
-				OR = {
-					tag = USA
-					tag = CHI
-					tag = SOV
-					tag = RAJ
-					tag = GER
-				}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 15
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
-			modifier = {
-				factor = 5
-				OR = {
-					tag = ITA
-					tag = SPR
-					tag = POR
-					tag = ENG
-					tag = FRA
-					tag = TUR
-					tag = EGY
-					tag = BRA
-				}
-			}
-			modifier = { #Use IFVs if you have less than 4k
-				factor = 2
-				has_equipment = { apc_hull < 2000 }
-			}
-			modifier = { #Use IFVs if you have a surplus
-				factor = 2
-				has_equipment = { ifv_hull > 2000 }
-			}
-			modifier = { #If Major Ignore Brigades
-				factor = 2.5
-				OR = {
-					is_major = yes
-					has_idea = superpower
-				}
-			}
-			modifier = {
-				factor = 0
-				OR = {
-					has_idea = minor_power
-					has_idea = non_power
-					num_of_military_factories < 15
-				}
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		target_width = 47
-		width_weight = 1
-		column_swap_factor = 0.5
+		target_min_match = 0.7
 
 		target_template = {
-			weight = 0.9
-			match_value = 12000.0
-
 			regiments = {
-				Arm_Inf_Bat = 6
-				armor_Bat = 2
-				SP_Arty_Bat = 3
+				Arm_Inf_Bat = 10
+				SP_Arty_Bat = 6
+			}
+			regimental_support = {
+				Heavy_mortar_company = 3
+				Weapons_company = 3
 			}
 			support = {
-				Arm_Recce_Comp = 1
+				Mech_Recce_Comp = 1
 				H_Engi_Comp = 1
 				combat_service_support_company = 1
 				SP_AA_Battery = 1
+				armor_Comp = 1
 			}
-		}
-
-		allowed_types = {
-			Arm_Inf_Bat
-			armor_Bat
-			SP_AA_Bat
-			SP_Arty_Bat
-			Arm_Recce_Comp
-			H_Engi_Comp
-			combat_service_support_company
-			L_Recce_Comp
-			SP_AA_Battery
 		}
 	}
 }
 
 #Armored Generic
 armor_generic = {
-	# AI will try to have one template per role
-	roles = { armor }
+	role = armor
 
-	# MTTH block that decides the 'importance' of the role template compared to other role templates for spending experience on improving
 	upgrade_prio = { factor = 1.2 }
 
-	# Decides how much the a division template should fulfill one of the templates within the role template in order to count as one
-	match_to_count = 0.5
-
 	armor_generic = {
-		# MTTH block that determines how likely the AI is to upgrade
+		reinforce_prio = 2
 		upgrade_prio = {
 			factor = 1
 			modifier = {
-				factor = 0
-				OR = {
-					tag = USA
-					tag = CHI
-					tag = SOV
-					num_of_military_factories > 20
-					num_of_military_factories < 12
-				}
+				factor = 2
+				num_of_military_factories > 14
 			}
-		}
-		# Determines the Production importance similar to above
-		production_prio = {
-			factor = 1
 			modifier = {
 				factor = 0
 				OR = {
-					tag = USA
-					tag = CHI
-					tag = SOV
 					num_of_military_factories > 20
-					num_of_military_factories < 12
+					num_of_military_factories < 15
 				}
 			}
 		}
-
-		# target_width is the targeted combat width for this design
-		target_width = 39
-		# width_weight determines how much the AI is willing to deviate from the target width
-		width_weight = 1
-		# assigns a likelihood for the AI to swap entire columns to meet targeted designs
-		column_swap_factor = 0.5
-
-		# The actual template is designed here
-		target_template = {
-			# How much the AI should aim to have this template
-			weight = 0.9
-			# value that decides its worth to the AI
-			match_value = 9000.0
-
-			# I don't need to explain this
-			regiments = {
-				armor_Bat = 4
-				Arm_Inf_Bat = 3
-				SP_AA_Battery = 1
-				SP_Arty_Bat = 2
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 14
+			num_of_military_factories < 21
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
-			support = {
-				H_Engi_Comp = 1
-				combat_service_support_company = 1
-				armor_Recce_Comp = 1
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		# Only THESE unit types in this role
-		allowed_types = {
-			armor_Bat
-			Arm_Inf_Bat
-			SP_AA_Battery
-			H_Engi_Comp
-			combat_service_support_company
-			armor_Recce_Comp
-			SP_Arty_Bat
+		target_min_match = 0.5
+
+		target_template = {
+			regiments = {
+				armor_Bat = 10
+				Arm_Inf_Bat = 4
+			}
+			regimental_support = {
+				SP_Arty_Battery = 2
+				Arm_Recce_Comp = 2
+				Combat_engineer_company = 1
+				Weapons_company = 1
+			}
+			support = {
+				armor_Comp = 1
+				H_Engi_Comp = 1
+				SP_AA_Battery = 1
+				combat_service_support_company = 1
+			}
+		}
+	}
+
+	light_armor_division = {
+		reinforce_prio = 2
+		upgrade_prio = {
+			factor = 1.5
+			modifier = {
+				factor = 0
+				OR = {
+					num_of_military_factories > 15
+					num_of_military_factories < 8
+				}
+			}
+		}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 7
+			num_of_military_factories < 16
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
+			}
+			NOT = {
+				tag = ALN
+			}
+		}
+
+		target_min_match = 0.5
+
+		target_template = {
+			regiments = {
+				L_arm_Bat = 10
+				Mech_Inf_Bat = 6
+			}
+			regimental_support = {
+				SP_Arty_Battery = 2
+				Arm_Recce_Comp = 2
+				Combat_engineer_company = 1
+				Weapons_company = 1
+			}
+			support = {
+				SP_AA_Battery = 1
+				combat_service_support_company = 1
+				attack_helo_comp = 1
+			}
 		}
 	}
 
 	armor_division = {
+		reinforce_prio = 2
 		upgrade_prio = {
 			factor = 1
 			modifier = {
@@ -1732,70 +1439,89 @@ armor_generic = {
 				num_of_military_factories < 20
 			}
 		}
-		production_prio = {
-			factor = 2
-			modifier = {
-				factor = 1.5
-				OR = {
-					#BRICS
-					#tag = SOV
-					tag = CHI
-					tag = BRA
-					tag = SAF
-					tag = RAJ
-					#G7
-					tag = GER
-					tag = FRA
-					tag = ITA
-					tag = CAN
-					tag = USA
-					tag = ITA
-					tag = JAP
-				}
+		enable = {
+			NOT = { original_tag = ZOM }
+			num_of_military_factories > 20
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = no
 			}
-			modifier = {
-				factor = 4
-				#Russian Tanks - it's really tanks army
-				tag = SOV
-			}
-			modifier = {
-				factor = 0
-				num_of_military_factories < 20
+			NOT = {
+				tag = ALN
 			}
 		}
 
-		target_width = 62
-		width_weight = 1
-		column_swap_factor = 0.5
+		target_min_match = 0.5
 
 		target_template = {
-			weight = 0.9
-			match_value = 8000.0
-
 			regiments = {
-				armor_Bat = 6
-				Arm_Inf_Bat = 6
-				SP_Arty_Bat = 2
-				SP_AA_Bat = 1
+				armor_Bat = 10
+				Arm_Inf_Bat = 4
+			}
+			regimental_support = {
+				Combat_engineer_company = 3
+				Weapons_company = 3
 			}
 			support = {
-				Arm_Recce_Comp = 1
+				armor_Comp = 1
 				H_Engi_Comp = 1
-				combat_service_support_company = 1
 				SP_AA_Battery = 1
+				combat_service_support_company = 1
+			}
+		}
+	}
+}
+
+hq_generic = {
+	role = hq_role
+
+	upgrade_prio = {
+		base = 1
+	}
+
+	hq_default = {
+		upgrade_prio = {
+			base = 1
+			modifier = {
+				factor = 0
+				num_of_military_factories > 20
 			}
 		}
 
-		allowed_types = {
-			armor_Bat
-			Arm_Inf_Bat
-			SP_Arty_Bat
-			SP_AA_Bat
-			Arm_Recce_Comp
-			H_Engi_Comp
-			combat_service_support_company
-			SP_AA_Battery
-			SP_Arty_Bat
+		target_template = {
+			support = {
+				hq_support_company = 1
+				hq_engineer = 1
+				hq_maintenance = 1
+			}
+
+			regiments = {
+				hq_Mot_Inf_Bat = 2
+			}
+		}
+	}
+
+	hq_advanced = {
+		upgrade_prio = {
+			base = 1
+			modifier = {
+				factor = 0
+				num_of_military_factories < 21
+			}
+		}
+
+		target_template = {
+			support = {
+				hq_support_company = 1
+				hq_engineer = 1
+				hq_maintenance = 1
+				hq_armor = 1
+				hq_air_liaison = 1
+			}
+
+			regiments = {
+				hq_Mech_Inf_Bat = 3
+			}
 		}
 	}
 }

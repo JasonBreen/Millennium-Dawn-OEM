@@ -2,29 +2,9 @@
 # Costs are integrated within this function
 # Author(s): Angriest Bird
 one_random_arms_factory = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = arms_factory
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = arms_factory
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 1
 		add_extra_state_shared_building_slots = 1
 		add_building_construction = {
 			type = arms_factory
@@ -32,9 +12,10 @@ one_random_arms_factory = {
 			instant_build = yes
 		}
 	}
-
-	set_temp_variable = { treasury_change = -7.5 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -7.5 }
+		modify_treasury_effect = yes
+	}
 }
 one_state_arms_factory = {
 	if = {
@@ -54,29 +35,9 @@ one_state_arms_factory = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = arms_factory
-						size > 0
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = arms_factory
-										size > 0
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { free_shared_building_slots = yes }
+				random_select_amount = 1
 				add_extra_state_shared_building_slots = 1
 				add_building_construction = {
 					type = arms_factory
@@ -87,44 +48,29 @@ one_state_arms_factory = {
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -7.5 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -7.5 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 two_random_arms_factory = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = arms_factory
-				size > 1
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = arms_factory
-								size > 1
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_extra_state_shared_building_slots = 2
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 2
+		add_extra_state_shared_building_slots = 1
 		add_building_construction = {
 			type = arms_factory
-			level = 2
+			level = 1
 			instant_build = yes
 		}
 	}
-
-	set_temp_variable = { treasury_change = -15 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -15 }
+		modify_treasury_effect = yes
+	}
 }
 two_state_arms_factory = {
 	if = {
@@ -144,96 +90,31 @@ two_state_arms_factory = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = arms_factory
-						size > 1
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = arms_factory
-										size > 1
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
-				add_extra_state_shared_building_slots = 2
+			every_controlled_state = {
+				limit = { free_shared_building_slots = yes }
+				random_select_amount = 2
+				add_extra_state_shared_building_slots = 1
 				add_building_construction = {
 					type = arms_factory
-					level = 2
+					level = 1
 					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -15 }
-	modify_treasury_effect = yes
-}
-three_random_arms_factory = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = arms_factory
-				size > 1
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = arms_factory
-								size > 1
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_extra_state_shared_building_slots = 2
-		add_building_construction = {
-			type = arms_factory
-			level = 2
-			instant_build = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -15 }
+			modify_treasury_effect = yes
 		}
 	}
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = arms_factory
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = arms_factory
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+}
+
+three_random_arms_factory = {
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 3
 		add_extra_state_shared_building_slots = 1
 		add_building_construction = {
 			type = arms_factory
@@ -241,9 +122,10 @@ three_random_arms_factory = {
 			instant_build = yes
 		}
 	}
-
-	set_temp_variable = { treasury_change = -22.5 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -22.5 }
+		modify_treasury_effect = yes
+	}
 }
 three_state_arms_factory = {
 	if = {
@@ -263,106 +145,42 @@ three_state_arms_factory = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = arms_factory
-						size > 2
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = arms_factory
-										size > 2
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
-				add_extra_state_shared_building_slots = 3
+			every_controlled_state = {
+				limit = { free_shared_building_slots = yes }
+				random_select_amount = 3
+				add_extra_state_shared_building_slots = 1
 				add_building_construction = {
 					type = arms_factory
-					level = 3
+					level = 1
 					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -22.5 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -22.5 }
+			modify_treasury_effect = yes
+		}
+	}
 }
-four_random_arms_factory = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = arms_factory
-				size > 1
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = arms_factory
-								size > 1
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_extra_state_shared_building_slots = 2
-		add_building_construction = {
-			type = arms_factory
-			level = 2
-			instant_build = yes
-		}
-	}
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = arms_factory
-				size > 1
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = arms_factory
-								size > 1
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_extra_state_shared_building_slots = 2
-		add_building_construction = {
-			type = arms_factory
-			level = 2
-			instant_build = yes
-		}
-	}
 
-	set_temp_variable = { treasury_change = -30 }
-	modify_treasury_effect = yes
+four_random_arms_factory = {
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 4
+		add_extra_state_shared_building_slots = 1
+		add_building_construction = {
+			type = arms_factory
+			level = 1
+			instant_build = yes
+		}
+	}
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -30 }
+		modify_treasury_effect = yes
+	}
 }
 four_state_arms_factory = {
 	if = {
@@ -382,66 +200,30 @@ four_state_arms_factory = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = arms_factory
-						size > 3
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = arms_factory
-										size > 3
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
-				add_extra_state_shared_building_slots = 4
+			every_controlled_state = {
+				limit = { free_shared_building_slots = yes }
+				random_select_amount = 4
+				add_extra_state_shared_building_slots = 1
 				add_building_construction = {
 					type = arms_factory
-					level = 4
+					level = 1
 					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -30 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -30 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 one_random_industrial_complex = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = industrial_complex
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = industrial_complex
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 1
 		add_extra_state_shared_building_slots = 1
 		add_building_construction = {
 			type = industrial_complex
@@ -449,9 +231,10 @@ one_random_industrial_complex = {
 			instant_build = yes
 		}
 	}
-
-	set_temp_variable = { treasury_change = -7.5 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -7.5 }
+		modify_treasury_effect = yes
+	}
 }
 one_state_industrial_complex = {
 	if = {
@@ -471,29 +254,9 @@ one_state_industrial_complex = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = industrial_complex
-						size > 0
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = industrial_complex
-										size > 0
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { free_shared_building_slots = yes }
+				random_select_amount = 1
 				add_extra_state_shared_building_slots = 1
 				add_building_construction = {
 					type = industrial_complex
@@ -501,46 +264,32 @@ one_state_industrial_complex = {
 					instant_build = yes
 				}
 			}
+			custom_effect_tooltip = no_building_construction_TT
 		}
-		custom_effect_tooltip = no_building_construction_TT
 	}
-	set_temp_variable = { treasury_change = -7.5 }
-	modify_treasury_effect = yes
-}
-two_random_industrial_complex = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = industrial_complex
-				size > 1
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = industrial_complex
-								size > 1
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -7.5 }
+			modify_treasury_effect = yes
 		}
-		add_extra_state_shared_building_slots = 2
+	}
+}
+
+two_random_industrial_complex = {
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 2
+		add_extra_state_shared_building_slots = 1
 		add_building_construction = {
 			type = industrial_complex
-			level = 2
+			level = 1
 			instant_build = yes
 		}
 	}
-
-	set_temp_variable = { treasury_change = -15 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -15 }
+		modify_treasury_effect = yes
+	}
 }
 two_state_industrial_complex = {
 	if = {
@@ -560,96 +309,31 @@ two_state_industrial_complex = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = industrial_complex
-						size > 1
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = industrial_complex
-										size > 1
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
-				add_extra_state_shared_building_slots = 2
+			every_controlled_state = {
+				limit = { free_shared_building_slots = yes }
+				random_select_amount = 2
+				add_extra_state_shared_building_slots = 1
 				add_building_construction = {
 					type = industrial_complex
-					level = 2
+					level = 1
 					instant_build = yes
 				}
 			}
+			custom_effect_tooltip = no_building_construction_TT
 		}
-		custom_effect_tooltip = no_building_construction_TT
 	}
-	set_temp_variable = { treasury_change = -15 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -15 }
+			modify_treasury_effect = yes
+		}
+	}
 }
+
 three_random_industrial_complex = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = industrial_complex
-				size > 1
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = industrial_complex
-								size > 1
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_extra_state_shared_building_slots = 2
-		add_building_construction = {
-			type = industrial_complex
-			level = 2
-			instant_build = yes
-		}
-	}
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = industrial_complex
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = industrial_complex
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 3
 		add_extra_state_shared_building_slots = 1
 		add_building_construction = {
 			type = industrial_complex
@@ -657,9 +341,10 @@ three_random_industrial_complex = {
 			instant_build = yes
 		}
 	}
-
-	set_temp_variable = { treasury_change = -22.5 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -22.5 }
+		modify_treasury_effect = yes
+	}
 }
 three_state_industrial_complex = {
 	if = {
@@ -679,106 +364,42 @@ three_state_industrial_complex = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = industrial_complex
-						size > 2
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = industrial_complex
-										size > 2
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
-				add_extra_state_shared_building_slots = 3
+			every_controlled_state = {
+				limit = { free_shared_building_slots = yes }
+				random_select_amount = 3
+				add_extra_state_shared_building_slots = 1
 				add_building_construction = {
 					type = industrial_complex
-					level = 3
+					level = 1
 					instant_build = yes
 				}
 			}
+			custom_effect_tooltip = no_building_construction_TT
 		}
-		custom_effect_tooltip = no_building_construction_TT
 	}
-	set_temp_variable = { treasury_change = -22.5 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -22.5 }
+			modify_treasury_effect = yes
+		}
+	}
 }
-four_random_industrial_complex = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = industrial_complex
-				size > 1
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = industrial_complex
-								size > 1
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_extra_state_shared_building_slots = 2
-		add_building_construction = {
-			type = industrial_complex
-			level = 2
-			instant_build = yes
-		}
-	}
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = industrial_complex
-				size > 1
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = industrial_complex
-								size > 1
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_extra_state_shared_building_slots = 2
-		add_building_construction = {
-			type = industrial_complex
-			level = 2
-			instant_build = yes
-		}
-	}
 
-	set_temp_variable = { treasury_change = -30 }
-	modify_treasury_effect = yes
+four_random_industrial_complex = {
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 4
+		add_extra_state_shared_building_slots = 1
+		add_building_construction = {
+			type = industrial_complex
+			level = 1
+			instant_build = yes
+		}
+	}
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -30 }
+		modify_treasury_effect = yes
+	}
 }
 four_state_industrial_complex = {
 	if = {
@@ -798,66 +419,30 @@ four_state_industrial_complex = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = industrial_complex
-						size > 3
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = industrial_complex
-										size > 3
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
-				add_extra_state_shared_building_slots = 4
+			every_controlled_state = {
+				limit = { free_shared_building_slots = yes }
+				random_select_amount = 4
+				add_extra_state_shared_building_slots = 1
 				add_building_construction = {
 					type = industrial_complex
-					level = 4
+					level = 1
 					instant_build = yes
 				}
 			}
+			custom_effect_tooltip = no_building_construction_TT
 		}
-		custom_effect_tooltip = no_building_construction_TT
 	}
-	set_temp_variable = { treasury_change = -30 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -30 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 one_random_infrastructure = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = infrastructure
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = infrastructure
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { infrastructure_random_build_loc = yes }
+		random_select_amount = 1
 		add_building_construction = {
 			type = infrastructure
 			level = 1
@@ -865,8 +450,10 @@ one_random_infrastructure = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -3.5 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -3.5 }
+		modify_treasury_effect = yes
+	}
 }
 one_state_infrastructure = {
 	if = {
@@ -874,7 +461,6 @@ one_state_infrastructure = {
 			free_building_slots = {
 				building = infrastructure
 				size > 0
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -885,29 +471,9 @@ one_state_infrastructure = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = infrastructure
-						size > 0
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = infrastructure
-										size > 0
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { infrastructure_random_build_loc = yes }
+				random_select_amount = 1
 				add_building_construction = {
 					type = infrastructure
 					level = 1
@@ -917,70 +483,28 @@ one_state_infrastructure = {
 		}
 		custom_effect_tooltip = no_building_construction_TT
 	}
-	set_temp_variable = { treasury_change = -3.5 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -3.5 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 two_random_infrastructure = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = infrastructure
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = infrastructure
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { infrastructure_random_build_loc = yes }
+		random_select_amount = 2
 		add_building_construction = {
 			type = infrastructure
 			level = 1
 			instant_build = yes
 		}
 	}
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = infrastructure
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = infrastructure
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_building_construction = {
-			type = infrastructure
-			level = 1
-			instant_build = yes
-		}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -7 }
+		modify_treasury_effect = yes
 	}
-	set_temp_variable = { treasury_change = -7 }
-	modify_treasury_effect = yes
 }
 two_state_infrastructure = {
 	if = {
@@ -988,7 +512,6 @@ two_state_infrastructure = {
 			free_building_slots = {
 				building = infrastructure
 				size > 1
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -999,131 +522,40 @@ two_state_infrastructure = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = infrastructure
-						size > 1
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = infrastructure
-										size > 1
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { infrastructure_random_build_loc = yes }
+				random_select_amount = 2
 				add_building_construction = {
 					type = infrastructure
-					level = 2
+					level = 1
 					instant_build = yes
 				}
 			}
 		}
 		custom_effect_tooltip = no_building_construction_TT
 	}
-	set_temp_variable = { treasury_change = -7 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -7 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 three_random_infrastructure = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = infrastructure
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = infrastructure
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { infrastructure_random_build_loc = yes }
+		random_select_amount = 3
 		add_building_construction = {
 			type = infrastructure
 			level = 1
 			instant_build = yes
 		}
 	}
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = infrastructure
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = infrastructure
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_building_construction = {
-			type = infrastructure
-			level = 1
-			instant_build = yes
-		}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -10.5 }
+		modify_treasury_effect = yes
 	}
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = infrastructure
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = infrastructure
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_building_construction = {
-			type = infrastructure
-			level = 1
-			instant_build = yes
-		}
-	}
-	set_temp_variable = { treasury_change = -10.5 }
-	modify_treasury_effect = yes
 }
 three_state_infrastructure = {
 	if = {
@@ -1131,7 +563,6 @@ three_state_infrastructure = {
 			free_building_slots = {
 				building = infrastructure
 				size > 2
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -1142,138 +573,40 @@ three_state_infrastructure = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = infrastructure
-						size > 2
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = infrastructure
-										size > 2
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
-
+			every_controlled_state = {
+				limit = { infrastructure_random_build_loc = yes }
+				random_select_amount = 3
 				add_building_construction = {
 					type = infrastructure
-					level = 3
+					level = 1
 					instant_build = yes
 				}
 			}
 		}
 		custom_effect_tooltip = no_building_construction_TT
 	}
-	set_temp_variable = { treasury_change = -10.5 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -10.5 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 one_random_dockyard = {
-	if = {
-		limit = {
-			NOT = {
-				any_owned_state = {
-					dockyard > 0
-					free_building_slots = {
-						building = dockyard
-						size > 2
-						include_locked = yes
-					}
-				}
-			}
-			any_owned_state = {
-				is_coastal = yes
-			}
-		}
-		random_owned_controlled_state = {
-			limit = {
-				is_coastal = yes
-				free_building_slots = {
-					building = dockyard
-					size > 2
-					include_locked = yes
-				}
-			}
-			add_extra_state_shared_building_slots = 1
-			add_building_construction = {
-				type = dockyard
-				level = 1
-				instant_build = yes
-			}
+	every_controlled_state = {
+		limit = { dockyard_random_build_loc = yes }
+		random_select_amount = 1
+		add_extra_state_shared_building_slots = 1
+		add_building_construction = {
+			type = dockyard
+			level = 1
+			instant_build = yes
 		}
 	}
-	if = {
-		limit = {
-			NOT = { has_country_flag = naval_effort_built }
-			any_owned_state = {
-				dockyard > 0
-				free_building_slots = {
-					building = dockyard
-					size > 1
-					include_locked = yes
-				}
-			}
-		}
-		random_owned_controlled_state = {
-			limit = {
-				dockyard > 0
-				free_building_slots = {
-					building = dockyard
-					size > 1
-					include_locked = yes
-				}
-			}
-			add_extra_state_shared_building_slots = 1
-			add_building_construction = {
-				type = dockyard
-				level = 1
-				instant_build = yes
-			}
-		}
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -7.5 }
+		modify_treasury_effect = yes
 	}
-	if = {
-		limit = {
-			NOT = { has_country_flag = naval_effort_built }
-			NOT = {
-				any_owned_state = {
-					free_building_slots = {
-						building = dockyard
-						size > 1
-						include_locked = yes
-					}
-				}
-			}
-		}
-		random_state = {
-			limit = {
-				controller = { tag = ROOT }
-				free_building_slots = {
-					building = dockyard
-					size > 1
-					include_locked = yes
-				}
-			}
-			add_extra_state_shared_building_slots = 1
-			add_building_construction = {
-				type = dockyard
-				level = 1
-				instant_build = yes
-			}
-		}
-	}
-
-	set_temp_variable = { treasury_change = -7.5 }
-	modify_treasury_effect = yes
 }
 one_state_dockyard = {
 	if = {
@@ -1294,201 +627,41 @@ one_state_dockyard = {
 	}
 	else = {
 		ROOT = {
-			if = {
-				limit = {
-					NOT = {
-						any_owned_state = {
-							dockyard > 0
-							free_building_slots = {
-								building = dockyard
-								size > 2
-								include_locked = yes
-							}
-						}
-					}
-					any_owned_state = {
-						is_coastal = yes
-					}
-				}
-				random_owned_controlled_state = {
-					limit = {
-						is_coastal = yes
-						free_building_slots = {
-							building = dockyard
-							size > 2
-							include_locked = yes
-						}
-					}
-					add_extra_state_shared_building_slots = 1
-					add_building_construction = {
-						type = dockyard
-						level = 1
-						instant_build = yes
-					}
-				}
-			}
-			if = {
-				limit = {
-					NOT = { has_country_flag = naval_effort_built }
-					any_owned_state = {
-						dockyard > 0
-						free_building_slots = {
-							building = dockyard
-							size > 1
-							include_locked = yes
-						}
-					}
-				}
-				random_owned_controlled_state = {
-					limit = {
-						dockyard > 0
-						free_building_slots = {
-							building = dockyard
-							size > 1
-							include_locked = yes
-						}
-					}
-					add_extra_state_shared_building_slots = 1
-					add_building_construction = {
-						type = dockyard
-						level = 1
-						instant_build = yes
-					}
-				}
-			}
-			if = {
-				limit = {
-					NOT = { has_country_flag = naval_effort_built }
-					NOT = {
-						any_owned_state = {
-							free_building_slots = {
-								building = dockyard
-								size > 1
-								include_locked = yes
-							}
-						}
-					}
-				}
-				random_state = {
-					limit = {
-						controller = { tag = ROOT }
-						free_building_slots = {
-							building = dockyard
-							size > 1
-							include_locked = yes
-						}
-					}
-					add_extra_state_shared_building_slots = 1
-					add_building_construction = {
-						type = dockyard
-						level = 1
-						instant_build = yes
-					}
+			every_controlled_state = {
+				limit = { dockyard_random_build_loc = yes }
+				random_select_amount = 1
+				add_extra_state_shared_building_slots = 1
+				add_building_construction = {
+					type = dockyard
+					level = 1
+					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -7.5 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -7.5 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 two_random_dockyards = {
-	if = {
-		limit = {
-			NOT = {
-				any_owned_state = {
-					dockyard > 0
-					free_building_slots = {
-						building = dockyard
-						size > 2
-						include_locked = yes
-					}
-				}
-			}
-			any_owned_state = {
-				is_coastal = yes
-			}
-		}
-		random_owned_controlled_state = {
-			limit = {
-				is_coastal = yes
-				free_building_slots = {
-					building = dockyard
-					size > 2
-					include_locked = yes
-				}
-			}
-			add_extra_state_shared_building_slots = 2
-			add_building_construction = {
-				type = dockyard
-				level = 2
-				instant_build = yes
-			}
-		}
-		set_country_flag = naval_effort_built
-	}
-	if = {
-		limit = {
-			NOT = { has_country_flag = naval_effort_built }
-			any_owned_state = {
-				dockyard > 0
-				free_building_slots = {
-					building = dockyard
-					size > 2
-					include_locked = yes
-				}
-			}
-		}
-		random_owned_controlled_state = {
-			limit = {
-				dockyard > 0
-				free_building_slots = {
-					building = dockyard
-					size > 2
-					include_locked = yes
-				}
-			}
-			add_extra_state_shared_building_slots = 2
-			add_building_construction = {
-				type = dockyard
-				level = 2
-				instant_build = yes
-			}
-		}
-		set_country_flag = naval_effort_built
-	}
-	if = {
-		limit = {
-			NOT = { has_country_flag = naval_effort_built }
-			NOT = {
-				any_owned_state = {
-					free_building_slots = {
-						building = dockyard
-						size > 2
-						include_locked = yes
-					}
-				}
-			}
-		}
-		random_state = {
-			limit = {
-				controller = { tag = ROOT }
-				free_building_slots = {
-					building = dockyard
-					size > 2
-					include_locked = yes
-				}
-			}
-			add_extra_state_shared_building_slots = 2
-			add_building_construction = {
-				type = dockyard
-				level = 2
-				instant_build = yes
-			}
+	every_controlled_state = {
+		limit = { dockyard_random_build_loc = yes }
+		random_select_amount = 2
+		add_extra_state_shared_building_slots = 1
+		add_building_construction = {
+			type = dockyard
+			level = 1
+			instant_build = yes
 		}
 	}
-	set_temp_variable = { treasury_change = -15 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -15 }
+		modify_treasury_effect = yes
+	}
 }
 two_state_dockyards = {
 	if = {
@@ -1509,132 +682,31 @@ two_state_dockyards = {
 	}
 	else = {
 		ROOT = {
-			if = {
-				limit = {
-					NOT = {
-						any_owned_state = {
-							dockyard > 0
-							free_building_slots = {
-								building = dockyard
-								size > 2
-								include_locked = yes
-							}
-						}
-					}
-					any_owned_state = {
-						is_coastal = yes
-					}
-				}
-				random_owned_controlled_state = {
-					limit = {
-						is_coastal = yes
-						free_building_slots = {
-							building = dockyard
-							size > 2
-							include_locked = yes
-						}
-					}
-					add_extra_state_shared_building_slots = 2
-					add_building_construction = {
-						type = dockyard
-						level = 2
-						instant_build = yes
-					}
-				}
-				set_country_flag = naval_effort_built
-			}
-			if = {
-				limit = {
-					NOT = { has_country_flag = naval_effort_built }
-					any_owned_state = {
-						dockyard > 0
-						free_building_slots = {
-							building = dockyard
-							size > 2
-							include_locked = yes
-						}
-					}
-				}
-				random_owned_controlled_state = {
-					limit = {
-						dockyard > 0
-						free_building_slots = {
-							building = dockyard
-							size > 2
-							include_locked = yes
-						}
-					}
-					add_extra_state_shared_building_slots = 2
-					add_building_construction = {
-						type = dockyard
-						level = 2
-						instant_build = yes
-					}
-				}
-				set_country_flag = naval_effort_built
-			}
-			if = {
-				limit = {
-					NOT = { has_country_flag = naval_effort_built }
-					NOT = {
-						any_owned_state = {
-							free_building_slots = {
-								building = dockyard
-								size > 2
-								include_locked = yes
-							}
-						}
-					}
-				}
-				random_state = {
-					limit = {
-						controller = { tag = ROOT }
-						free_building_slots = {
-							building = dockyard
-							size > 2
-							include_locked = yes
-						}
-					}
-					add_extra_state_shared_building_slots = 2
-					add_building_construction = {
-						type = dockyard
-						level = 2
-						instant_build = yes
-					}
+			every_controlled_state = {
+				limit = { dockyard_random_build_loc = yes }
+				random_select_amount = 2
+				add_extra_state_shared_building_slots = 1
+				add_building_construction = {
+					type = dockyard
+					level = 1
+					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -15 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -15 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 one_office_construction = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = offices
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = offices
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 1
 		add_extra_state_shared_building_slots = 1
 		add_building_construction = {
 			type = offices
@@ -1648,8 +720,10 @@ one_office_construction = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -12 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -12 }
+		modify_treasury_effect = yes
+	}
 }
 one_state_office_construction = {
 	if = {
@@ -1674,30 +748,9 @@ one_state_office_construction = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = offices
-						size > 0
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = offices
-										size > 0
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
-
+			every_controlled_state = {
+				limit = { free_shared_building_slots = yes }
+				random_select_amount = 1
 				add_extra_state_shared_building_slots = 1
 				add_building_construction = {
 					type = offices
@@ -1713,38 +766,21 @@ one_state_office_construction = {
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -12 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -12 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 two_office_construction = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = offices
-				size > 1
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = offices
-								size > 1
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-
-		add_extra_state_shared_building_slots = 2
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 2
+		add_extra_state_shared_building_slots = 1
 		add_building_construction = {
 			type = offices
-			level = 2
+			level = 1
 			instant_build = yes
 		}
 		add_building_construction = {
@@ -1754,8 +790,10 @@ two_office_construction = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -24 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -24 }
+		modify_treasury_effect = yes
+	}
 }
 two_state_office_construction = {
 	if = {
@@ -1780,34 +818,13 @@ two_state_office_construction = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = offices
-						size > 1
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = offices
-										size > 1
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
-
-				add_extra_state_shared_building_slots = 2
+			every_controlled_state = {
+				limit = { free_shared_building_slots = yes }
+				random_select_amount = 2
+				add_extra_state_shared_building_slots = 1
 				add_building_construction = {
 					type = offices
-					level = 2
+					level = 1
 					instant_build = yes
 				}
 				add_building_construction = {
@@ -1819,69 +836,18 @@ two_state_office_construction = {
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -24 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -24 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 three_office_construction = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = offices
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = offices
-								size > 1
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_extra_state_shared_building_slots = 2
-		add_building_construction = {
-			type = offices
-			level = 2
-			instant_build = yes
-		}
-		add_building_construction = {
-			type = fossil_powerplant
-			level = 1
-			instant_build = yes
-		}
-	}
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = offices
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = offices
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 3
 		add_extra_state_shared_building_slots = 1
 		add_building_construction = {
 			type = offices
@@ -1895,8 +861,10 @@ three_office_construction = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -36 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -36 }
+		modify_treasury_effect = yes
+	}
 }
 three_state_office_construction = {
 	if = {
@@ -1921,83 +889,46 @@ three_state_office_construction = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = offices
-						size > 1
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = offices
-										size > 2
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
-
-				add_extra_state_shared_building_slots = 3
+			every_controlled_state = {
+				limit = { free_shared_building_slots = yes }
+				random_select_amount = 3
+				add_extra_state_shared_building_slots = 1
 				add_building_construction = {
 					type = offices
-					level = 3
+					level = 1
 					instant_build = yes
 				}
 				add_building_construction = {
 					type = fossil_powerplant
-					level = 2
+					level = 1
 					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -36 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -36 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 one_random_nuclear_reactor = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = nuclear_reactor
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = nuclear_reactor
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_extra_state_shared_building_slots = 1
+	every_controlled_state = {
+		limit = { nuclear_reactor_random_build_loc = yes }
+		random_select_amount = 1
 		add_building_construction = {
 			type = nuclear_reactor
 			level = 1
 			instant_build = yes
 		}
 	}
-
-	set_temp_variable = { treasury_change = -9.00 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -9.00 }
+		modify_treasury_effect = yes
+	}
 }
 one_state_nuclear_reactor = {
 	if = {
@@ -2005,7 +936,6 @@ one_state_nuclear_reactor = {
 			free_building_slots = {
 				building = nuclear_reactor
 				size > 0
-				include_locked = yes
 			}
 		}
 		add_extra_state_shared_building_slots = 1
@@ -2017,30 +947,9 @@ one_state_nuclear_reactor = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = nuclear_reactor
-						size > 0
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = nuclear_reactor
-										size > 0
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
-				add_extra_state_shared_building_slots = 1
+			every_controlled_state = {
+				limit = { nuclear_reactor_random_build_loc = yes }
+				random_select_amount = 1
 				add_building_construction = {
 					type = nuclear_reactor
 					level = 1
@@ -2050,151 +959,50 @@ one_state_nuclear_reactor = {
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -9.00 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -9.00 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 two_random_nuclear_reactor = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = nuclear_reactor
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = nuclear_reactor
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_extra_state_shared_building_slots = 1
+	every_controlled_state = {
+		limit = { nuclear_reactor_random_build_loc = yes }
+		random_select_amount = 2
 		add_building_construction = {
 			type = nuclear_reactor
 			level = 1
 			instant_build = yes
 		}
 	}
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = nuclear_reactor
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = nuclear_reactor
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_extra_state_shared_building_slots = 1
-		add_building_construction = {
-			type = nuclear_reactor
-			level = 1
-			instant_build = yes
-		}
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -18.00 }
+		modify_treasury_effect = yes
 	}
-
-	set_temp_variable = { treasury_change = -18.00 }
-	modify_treasury_effect = yes
 }
-
-one_random_synthetic_refinery = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = synthetic_refinery
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = synthetic_refinery
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_building_construction = {
-			type = synthetic_refinery
-			level = 1
-			instant_build = yes
-		}
-	}
-
-	set_temp_variable = { treasury_change = -8.50 }
-	modify_treasury_effect = yes
-}
-one_state_synthetic_refinery = {
+two_state_nuclear_reactor = {
 	if = {
 		limit = {
 			free_building_slots = {
-				building = synthetic_refinery
-				size > 0
-				include_locked = yes
+				building = nuclear_reactor
+				size > 1
 			}
 		}
+		add_extra_state_shared_building_slots = 2
 		add_building_construction = {
-			type = synthetic_refinery
-			level = 1
+			type = nuclear_reactor
+			level = 2
 			instant_build = yes
 		}
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = synthetic_refinery
-						size > 0
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = synthetic_refinery
-										size > 0
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { nuclear_reactor_random_build_loc = yes }
+				random_select_amount = 2
 				add_building_construction = {
-					type = synthetic_refinery
+					type = nuclear_reactor
 					level = 1
 					instant_build = yes
 				}
@@ -2202,300 +1010,262 @@ one_state_synthetic_refinery = {
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -8.50 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -18.00 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
-
-
-two_random_synthetic_refinery = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = synthetic_refinery
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = synthetic_refinery
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+one_random_synthetic_refinery = {
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 1
 		add_building_construction = {
 			type = synthetic_refinery
 			level = 1
 			instant_build = yes
 		}
+		add_extra_state_shared_building_slots = 1
 	}
 
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = synthetic_refinery
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = synthetic_refinery
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -6.0 }
+		modify_treasury_effect = yes
+	}
+}
+
+one_random_microchip_plant = {
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 1
 		add_building_construction = {
-			type = synthetic_refinery
+			type = microchip_plant
+			level = 1
+			instant_build = yes
+		}
+		add_extra_state_shared_building_slots = 1
+	}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -10.5 }
+		modify_treasury_effect = yes
+	}
+}
+one_random_energy_infrastructure = {
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 1
+		add_building_construction = {
+			type = energy_infrastructure
+			level = 1
+			instant_build = yes
+		}
+		add_extra_state_shared_building_slots = 1
+	}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -6.5 }
+		modify_treasury_effect = yes
+	}
+}
+one_random_industrial_infrastructure = {
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 1
+		add_building_construction = {
+			type = industrial_infrastructure
+			level = 1
+			instant_build = yes
+		}
+		add_extra_state_shared_building_slots = 1
+	}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -6.5 }
+		modify_treasury_effect = yes
+	}
+}
+
+one_random_composite_plant = {
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 1
+		add_building_construction = {
+			type = composite_plant
+			level = 1
+			instant_build = yes
+		}
+		add_extra_state_shared_building_slots = 1
+	}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -8.5 }
+		modify_treasury_effect = yes
+	}
+}
+one_random_renewable_energy_infra = {
+	every_controlled_state = {
+		limit = { renewable_energy_infra_random_build_loc = yes }
+		random_select_amount = 1
+		add_building_construction = {
+			type = renewable_energy_infra
 			level = 1
 			instant_build = yes
 		}
 	}
 
-	set_temp_variable = { treasury_change = -17 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -8.50 }
+		modify_treasury_effect = yes
+	}
 }
-two_state_synthetic_refinery = {
+one_state_renewable_energy_infra = {
 	if = {
 		limit = {
 			free_building_slots = {
-				building = synthetic_refinery
-				size > 1
-				include_locked = yes
+				building = renewable_energy_infra
+				size > 0
 			}
 		}
 		add_building_construction = {
-			type = synthetic_refinery
+			type = renewable_energy_infra
+			level = 1
+			instant_build = yes
+		}
+	}
+	else = {
+		ROOT = {
+			every_controlled_state = {
+				limit = { renewable_energy_infra_random_build_loc = yes }
+				random_select_amount = 1
+				add_building_construction = {
+					type = renewable_energy_infra
+					level = 1
+					instant_build = yes
+				}
+			}
+			custom_effect_tooltip = no_building_construction_TT
+		}
+	}
+
+	CONTROLLER = {
+		set_temp_variable = { treasury_change = -8.50 }
+		modify_treasury_effect = yes
+	}
+}
+
+two_random_renewable_energy_infra = {
+	every_controlled_state = {
+		limit = { renewable_energy_infra_random_build_loc = yes }
+		random_select_amount = 2
+		add_building_construction = {
+			type = renewable_energy_infra
+			level = 1
+			instant_build = yes
+		}
+	}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -17 }
+		modify_treasury_effect = yes
+	}
+}
+two_state_renewable_energy_infra = {
+	if = {
+		limit = {
+			free_building_slots = {
+				building = renewable_energy_infra
+				size > 1
+			}
+		}
+		add_building_construction = {
+			type = renewable_energy_infra
 			level = 2
 			instant_build = yes
 		}
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = synthetic_refinery
-						size > 1
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = synthetic_refinery
-										size > 1
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { renewable_energy_infra_random_build_loc = yes }
+				random_select_amount = 2
 				add_building_construction = {
-					type = synthetic_refinery
-					level = 2
+					type = renewable_energy_infra
+					level = 1
 					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -17 }
-	modify_treasury_effect = yes
+
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -3 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
-three_random_synthetic_refinery = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = synthetic_refinery
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = synthetic_refinery
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+three_random_renewable_energy_infra = {
+	every_controlled_state = {
+		limit = { renewable_energy_infra_random_build_loc = yes }
+		random_select_amount = 3
 		add_building_construction = {
-			type = synthetic_refinery
+			type = renewable_energy_infra
 			level = 1
 			instant_build = yes
 		}
 	}
 
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = synthetic_refinery
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = synthetic_refinery
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_building_construction = {
-			type = synthetic_refinery
-			level = 1
-			instant_build = yes
-		}
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -25.50 }
+		modify_treasury_effect = yes
 	}
-
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = synthetic_refinery
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = synthetic_refinery
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_building_construction = {
-			type = synthetic_refinery
-			level = 1
-			instant_build = yes
-		}
-	}
-
-	set_temp_variable = { treasury_change = -25.50 }
-	modify_treasury_effect = yes
 }
-three_state_synthetic_refinery = {
+three_state_renewable_energy_infra = {
 	if = {
 		limit = {
 			free_building_slots = {
-				building = synthetic_refinery
+				building = renewable_energy_infra
 				size > 2
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
-			type = synthetic_refinery
+			type = renewable_energy_infra
 			level = 3
 			instant_build = yes
 		}
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = synthetic_refinery
-						size > 2
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = synthetic_refinery
-										size > 2
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { renewable_energy_infra_random_build_loc = yes }
+				random_select_amount = 3
 				add_building_construction = {
-					type = synthetic_refinery
-					level = 3
+					type = renewable_energy_infra
+					level = 1
 					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -25.5 }
-	modify_treasury_effect = yes
+
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -25.5 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 one_air_base = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = air_base
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = air_base
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { air_base_random_build_loc = yes }
+		random_select_amount = 1
 		add_building_construction = {
 			type = air_base
 			level = 1
@@ -2503,8 +1273,10 @@ one_air_base = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -2.5 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -2.5 }
+		modify_treasury_effect = yes
+	}
 }
 
 one_state_air_base = {
@@ -2513,7 +1285,6 @@ one_state_air_base = {
 			free_building_slots = {
 				building = air_base
 				size > 0
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -2524,29 +1295,9 @@ one_state_air_base = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = air_base
-						size > 0
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = air_base
-										size > 0
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { air_base_random_build_loc = yes }
+				random_select_amount = 1
 				add_building_construction = {
 					type = air_base
 					level = 1
@@ -2556,34 +1307,19 @@ one_state_air_base = {
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -2.5 }
-	modify_treasury_effect = yes
+
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -3 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 two_air_base = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = air_base
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = air_base
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { air_base_random_build_loc = yes }
+		random_select_amount = 2
 		add_building_construction = {
 			type = air_base
 			level = 1
@@ -2591,46 +1327,18 @@ two_air_base = {
 		}
 	}
 
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = air_base
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = air_base
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_building_construction = {
-			type = air_base
-			level = 1
-			instant_build = yes
-		}
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -5 }
+		modify_treasury_effect = yes
 	}
-
-	set_temp_variable = { treasury_change = -5 }
-	modify_treasury_effect = yes
 }
+
 two_state_air_base = {
 	if = {
 		limit = {
 			free_building_slots = {
 				building = air_base
 				size > 1
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -2641,66 +1349,31 @@ two_state_air_base = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = air_base
-						size > 1
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = air_base
-										size > 1
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { air_base_random_build_loc = yes }
+				random_select_amount = 2
 				add_building_construction = {
 					type = air_base
-					level = 2
+					level = 1
 					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -5 }
-	modify_treasury_effect = yes
+
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -5 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 one_radar_station = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = radar_station
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = radar_station
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { radar_station_random_build_loc = yes }
+		random_select_amount = 1
 		add_building_construction = {
 			type = radar_station
 			level = 1
@@ -2708,16 +1381,18 @@ one_radar_station = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -1.75 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -1.75 }
+		modify_treasury_effect = yes
+	}
 }
+
 one_state_radar_station = {
 	if = {
 		limit = {
 			free_building_slots = {
 				building = radar_station
 				size > 0
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -2728,29 +1403,9 @@ one_state_radar_station = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = radar_station
-						size > 0
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = radar_station
-										size > 0
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { radar_station_random_build_loc = yes }
+				random_select_amount = 1
 				add_building_construction = {
 					type = radar_station
 					level = 1
@@ -2760,62 +1415,19 @@ one_state_radar_station = {
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -1.75 }
-	modify_treasury_effect = yes
-}
-two_radar_station = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = radar_station
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = radar_station
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_building_construction = {
-			type = radar_station
-			level = 1
-			instant_build = yes
+
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -1.75 }
+			modify_treasury_effect = yes
 		}
 	}
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = radar_station
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = radar_station
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+}
+
+two_radar_station = {
+	every_controlled_state = {
+		limit = { radar_station_random_build_loc = yes }
+		random_select_amount = 2
 		add_building_construction = {
 			type = radar_station
 			level = 1
@@ -2823,16 +1435,18 @@ two_radar_station = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -3.5 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -3.5 }
+		modify_treasury_effect = yes
+	}
 }
+
 two_state_radar_station = {
 	if = {
 		limit = {
 			free_building_slots = {
 				building = radar_station
 				size > 1
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -2843,66 +1457,31 @@ two_state_radar_station = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = radar_station
-						size > 1
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = radar_station
-										size > 1
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { radar_station_random_build_loc = yes }
+				random_select_amount = 2
 				add_building_construction = {
 					type = radar_station
-					level = 2
+					level = 1
 					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -3.5 }
-	modify_treasury_effect = yes
+
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -3.5 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 one_anti_air = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = anti_air_building
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = anti_air_building
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { anti_air_random_build_loc = yes }
+		random_select_amount = 1
 		add_building_construction = {
 			type = anti_air_building
 			level = 1
@@ -2910,16 +1489,18 @@ one_anti_air = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -3.25 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -3.25 }
+		modify_treasury_effect = yes
+	}
 }
+
 one_state_anti_air = {
 	if = {
 		limit = {
 			free_building_slots = {
 				building = anti_air_building
 				size > 0
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -2930,29 +1511,9 @@ one_state_anti_air = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = anti_air_building
-						size > 0
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = anti_air_building
-										size > 0
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { anti_air_random_build_loc = yes }
+				random_select_amount = 1
 				add_building_construction = {
 					type = anti_air_building
 					level = 1
@@ -2962,34 +1523,19 @@ one_state_anti_air = {
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -3.25 }
-	modify_treasury_effect = yes
+
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -3.25 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 two_anti_air = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = anti_air_building
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = anti_air_building
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { anti_air_random_build_loc = yes }
+		random_select_amount = 2
 		add_building_construction = {
 			type = anti_air_building
 			level = 1
@@ -2997,46 +1543,18 @@ two_anti_air = {
 		}
 	}
 
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = anti_air_building
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = anti_air_building
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_building_construction = {
-			type = anti_air_building
-			level = 1
-			instant_build = yes
-		}
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -6.5 }
+		modify_treasury_effect = yes
 	}
-
-	set_temp_variable = { treasury_change = -6.5 }
-	modify_treasury_effect = yes
 }
+
 two_state_anti_air = {
 	if = {
 		limit = {
 			free_building_slots = {
 				building = anti_air_building
 				size > 1
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -3047,66 +1565,31 @@ two_state_anti_air = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = anti_air_building
-						size > 1
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = anti_air_building
-										size > 1
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { anti_air_random_build_loc = yes }
+				random_select_amount = 2
 				add_building_construction = {
 					type = anti_air_building
-					level = 2
+					level = 1
 					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -6.5 }
-	modify_treasury_effect = yes
+
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -6.5 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 one_random_network_infrastructure = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = internet_station
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = internet_station
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { network_infrastructure_random_build_loc = yes }
+		random_select_amount = 1
 		add_building_construction = {
 			type = internet_station
 			level = 1
@@ -3114,16 +1597,18 @@ one_random_network_infrastructure = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -3 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -3 }
+		modify_treasury_effect = yes
+	}
 }
+
 one_state_network_infrastructure = {
 	if = {
 		limit = {
 			free_building_slots = {
 				building = internet_station
 				size > 0
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -3134,29 +1619,9 @@ one_state_network_infrastructure = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = internet_station
-						size > 0
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = internet_station
-										size > 0
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { network_infrastructure_random_build_loc = yes }
+				random_select_amount = 1
 				add_building_construction = {
 					type = internet_station
 					level = 1
@@ -3166,63 +1631,19 @@ one_state_network_infrastructure = {
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -3 }
-	modify_treasury_effect = yes
+
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -3 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 two_random_network_infrastructure = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = internet_station
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = internet_station
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_building_construction = {
-			type = internet_station
-			level = 1
-			instant_build = yes
-		}
-	}
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = internet_station
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = internet_station
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { network_infrastructure_random_build_loc = yes }
+		random_select_amount = 2
 		add_building_construction = {
 			type = internet_station
 			level = 1
@@ -3230,16 +1651,18 @@ two_random_network_infrastructure = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -6 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -6 }
+		modify_treasury_effect = yes
+	}
 }
+
 two_state_network_infrastructure = {
 	if = {
 		limit = {
 			free_building_slots = {
 				building = internet_station
 				size > 1
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -3250,66 +1673,31 @@ two_state_network_infrastructure = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = internet_station
-						size > 1
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = internet_station
-										size > 1
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { network_infrastructure_random_build_loc = yes }
+				random_select_amount = 2
 				add_building_construction = {
 					type = internet_station
-					level = 2
+					level = 1
 					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -3 }
-	modify_treasury_effect = yes
+
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -3 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 one_fuel_reserve = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = fuel_silo
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = fuel_silo
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { fuel_reserve_random_build_loc = yes }
+		random_select_amount = 1
 		add_building_construction = {
 			type = fuel_silo
 			level = 1
@@ -3317,16 +1705,18 @@ one_fuel_reserve = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -3 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -3 }
+		modify_treasury_effect = yes
+	}
 }
+
 one_state_fuel_reserve = {
 	if = {
 		limit = {
 			free_building_slots = {
 				building = fuel_silo
 				size > 0
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -3337,29 +1727,9 @@ one_state_fuel_reserve = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = fuel_silo
-						size > 0
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = fuel_silo
-										size > 0
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { fuel_reserve_random_build_loc = yes }
+				random_select_amount = 1
 				add_building_construction = {
 					type = fuel_silo
 					level = 1
@@ -3369,63 +1739,19 @@ one_state_fuel_reserve = {
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -3 }
-	modify_treasury_effect = yes
+
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -3 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 two_fuel_reserve = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = fuel_silo
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = fuel_silo
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
-		add_building_construction = {
-			type = fuel_silo
-			level = 1
-			instant_build = yes
-		}
-	}
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = fuel_silo
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = fuel_silo
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { fuel_reserve_random_build_loc = yes }
+		random_select_amount = 2
 		add_building_construction = {
 			type = fuel_silo
 			level = 1
@@ -3433,16 +1759,18 @@ two_fuel_reserve = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -6 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -6 }
+		modify_treasury_effect = yes
+	}
 }
+
 two_state_fuel_reserve = {
 	if = {
 		limit = {
 			free_building_slots = {
 				building = fuel_silo
 				size > 1
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -3453,66 +1781,31 @@ two_state_fuel_reserve = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = fuel_silo
-						size > 1
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = fuel_silo
-										size > 1
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { fuel_reserve_random_build_loc = yes }
+				random_select_amount = 2
 				add_building_construction = {
 					type = fuel_silo
-					level = 2
+					level = 1
 					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -6 }
-	modify_treasury_effect = yes
+
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -6 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
 one_random_fossil_fuel_powerplant = {
-	random_owned_controlled_state = {
-		limit = {
-			free_building_slots = {
-				building = fossil_powerplant
-				size > 0
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = fossil_powerplant
-								size > 0
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
-				}
-			}
-		}
+	every_controlled_state = {
+		limit = { fossil_powerplant_random_build_loc = yes }
+		random_select_amount = 1
 		add_building_construction = {
 			type = fossil_powerplant
 			level = 1
@@ -3520,8 +1813,10 @@ one_random_fossil_fuel_powerplant = {
 		}
 	}
 
-	set_temp_variable = { treasury_change = -3.25 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -3.25 }
+		modify_treasury_effect = yes
+	}
 }
 one_state_fossil_fuel_powerplant = {
 	if = {
@@ -3529,7 +1824,6 @@ one_state_fossil_fuel_powerplant = {
 			free_building_slots = {
 				building = fossil_powerplant
 				size > 0
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -3540,29 +1834,9 @@ one_state_fossil_fuel_powerplant = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = fossil_powerplant
-						size > 0
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = fossil_powerplant
-										size > 0
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { fossil_powerplant_random_build_loc = yes }
+				random_select_amount = 1
 				add_building_construction = {
 					type = fossil_powerplant
 					level = 1
@@ -3572,43 +1846,96 @@ one_state_fossil_fuel_powerplant = {
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -3.25 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -3.25 }
+			modify_treasury_effect = yes
+		}
+	}
 }
 
-two_random_fossil_fuel_powerplant = {
-	random_owned_controlled_state = {
+one_random_factory_energy_check = {
+	if = {
 		limit = {
-			free_building_slots = {
-				building = fossil_powerplant
-				size > 1
-				include_locked = yes
-			}
-			OR = {
-				is_in_home_area = yes
-				NOT = {
-					owner = {
-						any_owned_state = {
-							free_building_slots = {
-								building = fossil_powerplant
-								size > 1
-								include_locked = yes
-							}
-							is_in_home_area = yes
-						}
-					}
+			check_variable = { unfulfilled_energy_demand_var < -0.049 }
+			NOT = {
+				OR = {
+					has_idea = some_additional_consumption_spirit
+					has_idea = heavy_power_restrictions_spirit
 				}
 			}
 		}
+
+		every_controlled_state = {
+			limit = { fossil_powerplant_random_build_loc = yes }
+			random_select_amount = 1
+			add_building_construction = {
+				type = fossil_powerplant
+				level = 1
+				instant_build = yes
+			}
+		}
+	}
+	one_random_industrial_complex = yes
+}
+one_state_factory_energy_check = {
+	if = {
+		limit = {
+			check_variable = { unfulfilled_energy_demand_var < -0.049 }
+			NOT = {
+				OR = {
+					has_idea = some_additional_consumption_spirit
+					has_idea = heavy_power_restrictions_spirit
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				free_building_slots = {
+					building = fossil_powerplant
+					size > 0
+				}
+			}
+			add_building_construction = {
+				type = fossil_powerplant
+				level = 1
+				instant_build = yes
+			}
+		}
+		else = {
+			ROOT = {
+				every_controlled_state = {
+					limit = { fossil_powerplant_random_build_loc = yes }
+					random_select_amount = 1
+					add_building_construction = {
+						type = fossil_powerplant
+						level = 1
+						instant_build = yes
+					}
+				}
+				custom_effect_tooltip = no_building_construction_TT
+			}
+		}
+	}
+	one_state_industrial_complex = yes
+}
+
+two_random_fossil_fuel_powerplant = {
+	every_controlled_state = {
+		limit = { fossil_powerplant_random_build_loc = yes }
+		random_select_amount = 2
 		add_building_construction = {
 			type = fossil_powerplant
-			level = 2
+			level = 1
 			instant_build = yes
 		}
 	}
 
-	set_temp_variable = { treasury_change = -6.5 }
-	modify_treasury_effect = yes
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -6.5 }
+		modify_treasury_effect = yes
+	}
 }
 two_state_fossil_fuel_powerplant = {
 	if = {
@@ -3616,7 +1943,6 @@ two_state_fossil_fuel_powerplant = {
 			free_building_slots = {
 				building = fossil_powerplant
 				size > 1
-				include_locked = yes
 			}
 		}
 		add_building_construction = {
@@ -3627,40 +1953,98 @@ two_state_fossil_fuel_powerplant = {
 	}
 	else = {
 		ROOT = {
-			random_owned_controlled_state = {
-				limit = {
-					free_building_slots = {
-						building = fossil_powerplant
-						size > 1
-						include_locked = yes
-					}
-					OR = {
-						is_in_home_area = yes
-						NOT = {
-							owner = {
-								any_owned_state = {
-									free_building_slots = {
-										building = fossil_powerplant
-										size > 1
-										include_locked = yes
-									}
-									is_in_home_area = yes
-								}
-							}
-						}
-					}
-				}
+			every_controlled_state = {
+				limit = { fossil_powerplant_random_build_loc = yes }
+				random_select_amount = 2
 				add_building_construction = {
 					type = fossil_powerplant
-					level = 2
+					level = 1
 					instant_build = yes
 				}
 			}
 			custom_effect_tooltip = no_building_construction_TT
 		}
 	}
-	set_temp_variable = { treasury_change = -6.5 }
-	modify_treasury_effect = yes
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -3.75 }
+			modify_treasury_effect = yes
+		}
+	}
+}
+
+one_random_agriculture_district = {
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 1
+		add_extra_state_shared_building_slots = 1
+		add_building_construction = {
+			type = agriculture_district
+			level = 1
+			instant_build = yes
+		}
+	}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -3.75 }
+		modify_treasury_effect = yes
+	}
+}
+
+one_state_agriculture_district = {
+	if = {
+		limit = {
+			free_building_slots = {
+				building = agriculture_district
+				size > 0
+				include_locked = yes
+			}
+		}
+		add_extra_state_shared_building_slots = 1
+		add_building_construction = {
+			type = agriculture_district
+			level = 1
+			instant_build = yes
+		}
+	}
+	else = {
+		ROOT = {
+			every_controlled_state = {
+				limit = { free_shared_building_slots = yes }
+				random_select_amount = 1
+				add_extra_state_shared_building_slots = 1
+				add_building_construction = {
+					type = agriculture_district
+					level = 1
+					instant_build = yes
+				}
+			}
+		}
+	}
+	CONTROLLER = {
+		if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+			set_temp_variable = { treasury_change = -3.75 }
+			modify_treasury_effect = yes
+		}
+	}
+}
+
+two_random_agriculture_district = {
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 2
+		add_extra_state_shared_building_slots = 1
+		add_building_construction = {
+			type = agriculture_district
+			level = 1
+			instant_build = yes
+		}
+	}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -7.5 }
+		modify_treasury_effect = yes
+	}
 }
 
 increase_HIV_prevalence = {
@@ -3733,7 +2117,7 @@ decrease_HIV_prevalence = {
 	}
 }
 
-SF_marine_modern_demoliton_effect = { #When changing this, update the research tooltip
+SF_marine_modern_demolition_effect = { #When changing this, update the research tooltip
 	damage_building = {
 		type = coastal_bunker
 		damage = 3
@@ -3795,5 +2179,392 @@ SF_PARA_combat_effect = { #When changing this, update the research tooltip
 		flag = para_drop_effect
 		value = 1
 		days = 30
+	}
+}
+one_random_arms_factory_free = {
+	every_controlled_state = {
+		limit = { free_shared_building_slots = yes }
+		random_select_amount = 1
+		add_extra_state_shared_building_slots = 1
+		add_building_construction = {
+			type = arms_factory
+			level = 1
+			instant_build = yes
+		}
+	}
+}
+
+one_random_land_facility = {
+	random_owned_controlled_state = {
+		limit = {
+			can_construct_building = land_facility
+		}
+		construct_building_in_random_province = {
+			land_facility = 1
+		}
+	}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -15 }
+		modify_treasury_effect = yes
+	}
+}
+
+one_random_naval_facility = {
+	random_owned_controlled_state = {
+		limit = {
+			can_construct_building = naval_facility
+		}
+		construct_building_in_random_province = {
+			naval_facility = 1
+		}
+	}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -15 }
+		modify_treasury_effect = yes
+	}
+}
+
+one_random_air_facility = {
+	random_owned_controlled_state = {
+		limit = {
+			can_construct_building = air_facility
+		}
+		construct_building_in_random_province = {
+			air_facility = 1
+		}
+	}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -15 }
+		modify_treasury_effect = yes
+	}
+}
+
+one_random_nuclear_facility = {
+	random_owned_controlled_state = {
+		limit = {
+			can_construct_building = nuclear_facility
+		}
+		construct_building_in_random_province = {
+			nuclear_facility = 1
+		}
+	}
+
+	if = { limit = { NOT = { check_variable = { skip_payment = 1 } } }
+		set_temp_variable = { treasury_change = -15 }
+		modify_treasury_effect = yes
+	}
+}
+
+# Ingame Startup Effect
+# Purpose: Effect that sets up released nations to ensure functionality with all of MDs systems
+# Parameters:
+# Null
+ingame_startup_nations_effect = {
+	hidden_effect = {
+		setup_employment_variables = yes
+		set_variable = { gdpc_converging_var = PREV.gdpc_converging_var }
+		inherit_technology = PREV
+		if = {
+			limit = {
+				NOT = { has_variable = domestic_influence_amount }
+			}
+			set_variable = { domestic_influence_amount = 100 }
+		}
+		if = {
+			limit = { NOT = { has_variable = corporate_tax_rate } }
+			set_variable = { var = corporate_tax_rate value = 20 }
+		}
+		if = {
+			limit = { NOT = { has_variable = population_tax_rate } }
+			set_variable = { var = population_tax_rate value = 20 }
+		}
+		add_dynamic_modifier = { modifier = civilian_microchip_consumption_modifier }
+		add_dynamic_modifier = { modifier = inflation_dynamic_modifier }
+		calculate_influence_percentage = yes #set alignment drifts from influence
+		startup_politics = yes
+		ingame_update_setup = yes	 #money system
+		setup_init_factions = yes	 #flags for int. factions
+		set_law_vars = yes	 #vars for change laws secondary effects
+		update_neighbors_effects = yes # Updates Neighbor Effects
+		economic_cycle_drift_popularity = yes #drift from neighbor
+		init_auto_influence_array = yes
+		ingame_init_investment_system = yes
+		research_slot_init_for_country = yes
+		calculate_expected_spending = yes
+		setup_missile_configuration_effect = yes
+		microchip_startup = yes
+		add_country_to_power_ranking = yes
+		# Released nations skip on_startup, so enroll them in the counter-terror staggered
+		# cycle. That cycle is also what re-applies each nation's power ranking idea every
+		# quarter, so without this their Power Status idea would freeze at its release value.
+		# counter_terror_nation_startup appends to per-country arrays, so only run it for a
+		# nation that has not been set up yet (empty CT intel array = never initialised).
+		if = {
+			limit = { NOT = { check_variable = { international_terror_org_intel^num > 0 } } }
+			counter_terror_nation_startup = yes
+			add_on_creation = yes
+		}
+	}
+}
+
+# Civil War Replication Effect
+# Purpose:
+civil_war_replication_effect = {
+	set_temp_variable = { nation_to_copy_from = PREV.id }
+	replicate_configure_politics = yes
+
+	#VARIABLES
+	set_variable = { var = corporate_tax_rate value = PREV.corporate_tax_rate }
+	set_variable = { var = population_tax_rate value = PREV.population_tax_rate }
+	set_variable = { treasury = PREV.treasury }
+
+	#don't get values of original yet - REMINDER -> add it on_civil_war_end
+	set_variable = { debt = 0 }
+	set_variable = { int_investments = 0 }
+
+	#influence
+	set_variable = { domestic_influence_amount = PREV.domestic_influence_amount }
+	#just copy all
+	for_loop_effect = {
+		end = PREV.influence_array^num
+		value = v
+
+		if = {
+			limit = { NOT = { is_in_array = { influence_array = PREV.influence_array^v } } }
+			add_to_array = { influence_array = PREV.influence_array^v }
+			add_to_array = { influence_array_val = PREV.influence_array_val^v }
+		}
+	}
+	recalculate_influence = yes
+
+	#GAME VARIABLES
+	add_political_power = PREV.political_power
+	add_political_power = 400 #bonus
+
+	#LAWS
+	set_variable = { gdp_per_capita = PREV.gdp_per_capita }
+
+	# Copy Internal Factions
+	set_temp_variable = { nation_to_copy_from = PREV }
+	copy_internal_factions = yes
+
+	#copy leader throughput
+	set_temp_variable = { nation_to_copy_from = PREV }
+	copy_subideolgy_leader_throughput = yes
+
+	calculate_influence_percentage = yes #set alignment drifts from influence
+	ingame_update_setup = yes	 #money system
+	setup_init_factions = yes	 #flags for int. factions
+	set_law_vars = yes	 #vars for change laws secondary effects
+	update_neighbors_effects = yes # Updates Neighbor Effects
+	economic_cycle_drift_popularity = yes #drift from neighbor
+	init_auto_influence_array = yes
+	ingame_init_investment_system = yes
+	research_slot_init_for_country = yes
+	calculate_expected_spending = yes
+	setup_missile_configuration_effect = yes
+
+	mb_refresh_relations_effect = yes
+}
+
+#####################################
+### emergency_factory_conversion ####
+#####################################
+
+#This is going to give misleading and ugly tooltips. Making it nice will take effort. TODO_WTT_CD make nice or ignore and remove comment. Easiest solution is just making a custom tooltip that says "5 civilian factories will be converted to military factories" and ignore telling the player the states where it will happen.
+
+replace_civ_with_arms_factories = {
+	every_controlled_state = {
+		limit = {
+			is_owned_by = ROOT
+			is_fully_controlled_by = ROOT
+			industrial_complex > 0
+		}
+		random_select_amount = 5
+		remove_building = {
+			type = industrial_complex
+			level = 1
+		}
+		add_building_construction = {
+			type = arms_factory
+			level = 1
+			instant_build = yes
+		}
+	}
+}
+
+#Country scope
+ROOT_inherit_current_scope_wars_effect = {
+	custom_effect_tooltip = ROOT_inherit_current_scope_wars_effect
+	hidden_effect = {
+		every_country = {
+			limit = {
+				has_defensive_war_with = PREV
+			}
+			ROOT = { declare_war_on = { target = PREV type = annex_everything } }
+		}
+		every_country = {
+			limit = {
+				has_offensive_war_with = PREV
+			}
+			declare_war_on = { target = ROOT type = annex_everything }
+		}
+	}
+}
+
+clear_sabotaged_resources_if_necesary = {
+	if = {
+		limit = {
+			NOT = {
+				has_dynamic_modifier = {
+					modifier = sabotaged_resources
+				}
+			}
+		}
+
+		clear_variable = sabotaged_oil
+		clear_variable = sabotaged_aluminium
+		clear_variable = sabotaged_rubber
+		clear_variable = sabotaged_tungsten
+		clear_variable = sabotaged_steel
+		clear_variable = sabotaged_chromium
+	}
+}
+
+set_continent_nation_flag = {
+	if = {
+		limit = { is_in_europe = yes }
+		set_country_flag = european_nation_flag
+	}
+	else_if = {
+		limit = { is_in_africa = yes }
+		set_country_flag = african_nation_flag
+	}
+	else_if = {
+		limit = { is_in_the_middle_east = yes }
+		set_country_flag = middle_east_nation_flag
+	}
+	else_if = {
+		limit = {
+			OR = {
+				is_in_asia = yes
+				is_in_oceania = yes
+			}
+		}
+		set_country_flag = asian_nation_flag
+	}
+	else_if = {
+		limit = { is_in_the_americas = yes }
+		set_country_flag = american_nation_flag
+	}
+}
+
+# wargoal_by = wargoal FROM
+# wargoal_on = country on which wargoal is placed
+# wargoal_type = 0 - puppet/default, 1 - liberate/change government, 2 - conquer
+add_threat_from_wargoal_effect = {
+	if = {
+		limit = { check_variable = { wargoal_by = 0 } }
+	}
+
+	set_temp_variable = { temp_threat = 5 }
+	if = {
+		limit = {
+			var:wargoal_by = { has_idea = non_power }
+		}
+
+		add_to_temp_variable = { temp_threat = -2 }
+	}
+	else_if = {
+		limit = {
+			var:wargoal_by = { has_idea = minor_power }
+		}
+
+		add_to_temp_variable = { temp_threat = -1 }
+	}
+	else_if = {
+		limit = {
+			var:wargoal_by = { has_idea = large_power }
+		}
+
+		add_to_temp_variable = { temp_threat = 1 }
+	}
+	else_if = {
+		limit = {
+			var:wargoal_by = { has_idea = great_power }
+		}
+
+		add_to_temp_variable = { temp_threat = 2 }
+	}
+	else_if = {
+		limit = {
+			var:wargoal_by = { has_idea = super_power }
+		}
+
+		add_to_temp_variable = { temp_threat = 3 }
+	}
+
+	if = {
+		limit = {
+			var:wargoal_on = { has_idea = non_power }
+		}
+
+		add_to_temp_variable = { temp_threat = -2 }
+	}
+	else_if = {
+		limit = {
+			var:wargoal_on = { has_idea = minor_power }
+		}
+
+		add_to_temp_variable = { temp_threat = -1 }
+	}
+	else_if = {
+		limit = {
+			var:wargoal_on = { has_idea = large_power }
+		}
+
+		add_to_temp_variable = { temp_threat = 1 }
+	}
+	else_if = {
+		limit = {
+			var:wargoal_on = { has_idea = great_power }
+		}
+
+		add_to_temp_variable = { temp_threat = 2 }
+	}
+	else_if = {
+		limit = {
+			var:wargoal_on = { has_idea = super_power }
+		}
+
+		add_to_temp_variable = { temp_threat = 3 }
+	}
+
+	if = {
+		limit = {
+			check_variable = { wargoal_type = 1 }
+		}
+
+		multiply_temp_variable = { temp_threat = 0.5 }
+	}
+	else_if = {
+		limit = {
+			check_variable = { wargoal_type = 2 }
+		}
+
+		multiply_temp_variable = { temp_threat = 2 }
+	}
+
+	clamp_temp_variable = {
+		var = temp_threat
+		min = 1
+		max = 10
+	}
+
+	var:wargoal_by = {
+		add_threat = temp_threat
 	}
 }

@@ -1,34 +1,225 @@
 on_actions = {
 	on_weekly_SOV = {
 		effect = {
-			#Third Chechen Prepare
 			if = {
 				limit = {
-					NOT = { SOV = { has_country_flag = che_kto_start } }
+					has_full_control_of_state = 1118
+					NOT = { has_idea = landmark_ICBMsiloyasny_hidden }
 				}
-				set_country_flag = che_kto_start
-				set_temp_variable = { modify_radicalche = 70 }
-				modify_radicalche_support = yes
-				hidden_effect = {
+				add_ideas = landmark_ICBMsiloyasny_hidden
+			}
+			else_if = {
+				limit = {
+					NOT = { has_full_control_of_state = 1118 }
+					has_idea = landmark_ICBMsiloyasny_hidden
+				}
+				remove_ideas = landmark_ICBMsiloyasny_hidden
+			}
+
+			for_each_loop = {
+				array = SOV.subjects
+				value = v
+				index = i
+				var:v = {
 					if = {
-						limit = { SOV = { is_ai = yes } }
-						country_event = { id = sov_other.39 days = 50 }
+						limit = {
+							exists = yes
+							SUB_is_rf_subject = yes
+						}
+						if = {
+							limit = { NOT = { has_idea = CHE_republic_rf } }
+							add_ideas = CHE_republic_rf
+						}
+						if = {
+							limit = {
+								SOV = { has_country_flag = SOV_united_russia }
+								NOT = { has_country_flag = SUB_united_russia }
+							}
+							set_country_flag = SUB_united_russia
+						}
+						set_temp_variable = { modify_subjectavtoritet = 2 }
+						modify_subjectavtoritet_support = yes
 					}
-					SOV = { country_event = { id = sov_other.26 days = 220 } }
 				}
+			}
+
+			if = {
+				limit = {
+					SOV = { has_idea = faction_warsaw_pact_idea }
+					GER = { has_country_flag = raskol }
+					any_of_scopes = {
+						array = GER.enemies
+						NOT = { has_country_flag = WP_escaped }
+						has_autonomy_state = autonomy_warsaw
+						has_country_flag = GDR_test
+					}
+					NOT = { has_country_flag = reistablish_frg_raskol }
+				}
+				set_country_flag = reistablish_frg_raskol
+				SOV = { country_event = sov_warsaw_pact.17 }
 			}
 		}
 	}
+	on_monthly_SOV = {
+		random_events = {
+			1000 = 0
 
-	on_monthly = {
+			100 = sov_economic.28
+			150 = sov_economic.24
+			100 = sov_economic.23
+			100 = sov_economic.22
+			150 = sov_economic.27
+		}
 		effect = {
+			every_subject_country = {
+				limit = { SUB_is_soviet_sphere_subject = yes }
+				SOV_subject_taxation_payment = yes
+			}
 			if = {
 				limit = {
+					NOT = { has_country_flag = SOV_loss_dissoultion }
 					has_war = yes
 					surrender_progress > 0.8
 				}
-
+				set_country_flag = SOV_loss_dissoultion
 				country_event = { id = sov_dissolution.1 days = 1 }
+			}
+			#Capitalisation Companies
+			if = {
+				limit = {
+					OR = {
+						NOT = {
+							OR = {
+								emerging_communist_state_are_in_power = yes
+								neutrality_neutral_communism_are_in_power = yes
+								AND = {
+									nationalist_monarchists_are_in_power = yes
+									nationalist_fascist_are_in_coalition = yes
+									has_completed_focus = SOV_nationalize
+								}
+								AND = {
+									nationalist_right_wing_populists_are_in_power = yes
+									nationalist_fascist_are_in_coalition = yes
+									has_completed_focus = SOV_nationalize
+								}
+								AND = {
+									nationalist_fascist_are_in_power = yes
+									has_completed_focus = SOV_nazbols_natiolalize
+								}
+								AND = {
+									nationalist_monarchists_are_in_power = yes
+									nationalist_fascist_are_in_coalition = yes
+									has_completed_focus = SOV_nazbols_natiolalize
+								}
+								AND = {
+									nationalist_right_wing_populists_are_in_power = yes
+									nationalist_fascist_are_in_coalition = yes
+									has_completed_focus = SOV_nazbols_natiolalize
+								}
+								AND = {
+									nationalist_right_wing_populists_are_in_power = yes
+									has_completed_focus = SOV_nationalize
+								}
+								AND = {
+									nationalist_monarchists_are_in_power = yes
+									has_completed_focus = SOV_nationalize
+								}
+							}
+						}
+						is_subject = no
+						has_country_flag = SOV_stop_moex
+					}
+				}
+				#Gazprom Capitalisation
+				if = {
+					limit = {
+						has_completed_focus = SOV_economic_reform_gazprom
+					}
+					capitalisation_gazprom_calculate = yes
+					capitalisation_gazprom_change_positive = yes
+					capitalisation_gazprom_change_negative = yes
+				}
+				#Rosneft Capitalisation
+				if = {
+					limit = {
+						has_completed_focus = SOV_economic_use_yukos
+					}
+					capitalisation_rosneft_calculate = yes
+					capitalisation_rosneft_change_positive = yes
+					capitalisation_rosneft_change_negative = yes
+				}
+				#Sberbank Capitalisation
+				if = {
+					limit = {
+						has_completed_focus = SOV_economic_destiny_sber
+					}
+					capitalisation_sberbank_calculate = yes
+					capitalisation_sberbank_change_positive = yes
+					capitalisation_sberbank_change_negative = yes
+				}
+				#MTS Capitalisation
+				if = {
+					limit = {
+						has_completed_focus = SOV_economic_mts
+					}
+					capitalisation_mts_calculate = yes
+					capitalisation_mts_change_positive = yes
+					capitalisation_mts_change_negative = yes
+				}
+				#VTB Capitalisation
+				if = {
+					limit = {
+						has_completed_focus = SOV_economic_vtb
+					}
+					capitalisation_vtb_calculate = yes
+					capitalisation_vtb_change_positive = yes
+					capitalisation_vtb_change_negative = yes
+				}
+				#ALROSA Capitalisation
+				if = {
+					limit = {
+						has_completed_focus = SOV_economic_alrosa
+					}
+					capitalisation_alrosa_calculate = yes
+					capitalisation_alrosa_change_positive = yes
+					capitalisation_alrosa_change_negative = yes
+				}
+			}
+			#SEPARATIST UPDATE
+			if = {
+				limit = { is_ai = no }
+				SUB_update_separatism_stability = yes
+				SUB_update_separatism_rebellion = yes
+			}
+		}
+	}
+	# Deferred handoff for Warsaw Pact coup decisions. The coup decision flags the
+	# target with SOV_warsaw_pact_pending_puppet and stores the overlord's id so the
+	# overlord can puppet the country only after the communist side wins the civil
+	# war. This avoids creating an unwinnable mid-civil-war puppet relationship.
+	on_civil_war_end = {
+		effect = {
+			if = {
+				limit = {
+					has_country_flag = SOV_warsaw_pact_pending_puppet
+				}
+				ROOT = {
+					clr_country_flag = SOV_warsaw_pact_pending_puppet
+					news_event = {
+						hours = 1
+						id = sov_warsaw_pact.4
+					}
+					var:SOV_warsaw_pact_overlord_id = {
+						set_autonomy = {
+							target = PREV
+							autonomy_state = autonomy_warsaw
+							end_wars = no
+							end_civil_wars = yes
+						}
+						country_event = sov_warsaw_pact.5
+					}
+					clear_variable = SOV_warsaw_pact_overlord_id
+				}
 			}
 		}
 	}

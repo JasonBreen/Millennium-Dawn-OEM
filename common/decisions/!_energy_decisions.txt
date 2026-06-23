@@ -1,143 +1,51 @@
 decision_category_energy = {
-	energy_building_enrichment_facilities = {
+	energy_building_battery_parks = {
 		icon = GFX_decision_energy_build_button
 		allowed = { always = no }
 		available = { always = yes }
 
-		days_mission_timeout = ROOT.enrichment_facility_time
+		days_mission_timeout = ROOT.battery_park_time
 		fire_only_once = no
 		selectable_mission = yes
+		is_good = yes
 
 		timeout_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision energy_building_enrichment_facilities"
-			if = { limit = { has_country_flag = single_enrichment_facility }
+			log = "[GetDateText]: [Root.GetName]: Decision energy_building_battery_parks"
+			if = { limit = { has_country_flag = single_battery_park }
 				set_temp_variable = { temp_change = 1 }
-				build_enrichment_facilities_effect = yes
+				build_battery_park_effect = yes
 			}
 			else = {
 				set_temp_variable = { temp_change = 3 }
-				build_enrichment_facilities_effect = yes
+				build_battery_park_effect = yes
 			}
 		}
 		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision energy_building_enrichment_facilities"
-			clear_variable = ROOT.enrichment_facility_time
-			clr_country_flag = build_three_enrichment_facility
-			clr_country_flag = single_enrichment_facility
+			log = "[GetDateText]: [Root.GetName]: Decision energy_building_battery_parks"
+			clear_variable = ROOT.battery_park_time
+			clr_country_flag = single_battery_park
 		}
+
+		ai_will_do = { base = 0 }
 	}
 
-	block_all_reactor_grade_purchases = {
-		icon = GFX_decision_energy_buycancel_button
-		allowed = { always = yes }
+	energy_automatic_fuel_purchase = {
+		icon = GFX_decision_energy_build_button
+		allowed = { always = no }
+		available = { always = yes }
 
-		visible = {
-			NOT = { has_country_flag = not_accepting_new_energy_offers }
-			has_enrichment_facilities = yes
+		days_mission_timeout = 28
+		fire_only_once = no
+		selectable_mission = yes
+		is_good = yes
+
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision energy_building_battery_parks"
+			buy_fuel_from_the_market_effect = yes
+			activate_mission = energy_automatic_fuel_purchase
+			set_country_flag = { flag = recently_bought_fuel value = 1 days = 28 }
 		}
 
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision block_all_reactor_grade_purchases"
-			set_country_flag = not_accepting_new_energy_offers
-		}
-	}
-
-	unblock_all_reactor_grade_purchases = {
-		icon = GFX_decision_energy_buyagree_button
-		allowed = { always = yes }
-
-		visible = {
-			has_country_flag = not_accepting_new_energy_offers
-			has_enrichment_facilities = yes
-		}
-
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision unblock_all_reactor_grade_purchases"
-			clr_country_flag = not_accepting_new_energy_offers
-		}
-	}
-
-	energy_buy_reactor_grade_material = {
-		icon = GFX_decision_energy_buy_button
-		allowed = { always = yes }
-		visible = {
-			FROM = {
-				NOT = { has_war_with = ROOT }
-				NOT = {
-					any_allied_country = {
-						has_war_with = ROOT
-					}
-				}
-				NOT = { has_country_flag = not_accepting_new_energy_offers }
-			}
-		}
-		available = {
-			ROOT = {
-				has_nuclear_reactors = yes
-			}
-			FROM = {
-				has_enrichment_facilities = yes
-				has_reactor_material_stockpile = yes
-				NOT = { has_country_flag = currently_considering_an_offer }
-			}
-		}
-		days_remove = 90
-		days_re_enable = 90
-		target_array = global.enrichment_countries
-
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision energy_buy_reactor_grade_material"
-			FROM = {
-				set_country_flag = currently_considering_an_offer
-				set_variable = { purchaser_tag_reactor = PREV.id }
-				country_event = energy.1
-			}
-		}
-
-		ai_will_do = {
-			factor = 1
-			# Buy Fuel if you're short
-			modifier = {
-				factor = 5
-				ROOT = { check_variable = { var_reactor_material_stockpile < 2500 } }
-			}
-			modifier = {
-				factor = 2
-				FROM = { is_in_faction_with = ROOT }
-			}
-			modifier = {
-				factor = 2
-				ROOT = { has_idea = NATO_member }
-				FROM = { has_idea = NATO_member }
-			}
-			modifier = {
-				factor = 1.5
-				ROOT = {
-					has_opinion = {
-						value > 100
-						target = FROM
-					}
-				}
-			}
-			# Don't rely on people you hate or doomsday stockpile nuclear fuel
-			modifier = {
-				factor = 0
-				FROM = {
-					has_opinion = {
-						target = ROOT
-						value < 75
-					}
-				}
-			}
-			# Do not buy more reactor grade if you can sustain more than 10 weeks of nuclear fuel consumption
-			modifier = {
-				factor = 0
-				ROOT = {
-					set_temp_variable = { nuclear_fuel_consumption_tmp = nuclear_fuel_consumption }
-					multiply_temp_variable = { nuclear_fuel_consumption_tmp = 10 }
-					check_variable = { var_reactor_material_stockpile > nuclear_fuel_consumption_tmp }
-				}
-			}
-		}
+		ai_will_do = { base = 0 }
 	}
 }

@@ -2,16 +2,6 @@ ideas = {
 	country = {
 		#European Union
 		EU_member = {
-			picture = european_union_member
-			on_add = {
-				log = "[GetDateText]: [Root.GetName]: add idea EU_member"
-				add_to_array = { global.EU_member = THIS }
-			}
-			on_remove = {
-				log = "[GetDateText]: [Root.GetName]: remove idea EU_member"
-				remove_from_array = { global.EU_member = THIS }
-			}
-
 			allowed = {
 				OR = {
 					original_tag = POR
@@ -27,9 +17,8 @@ ideas = {
 					original_tag = AUS
 					original_tag = DEN
 					original_tag = ITA
-					original_tag = NOR
+					original_tag = NRY
 					original_tag = MLT
-					#original_tag = CZE
 					original_tag = POL
 					original_tag = SWE
 					original_tag = SLV
@@ -37,11 +26,8 @@ ideas = {
 					original_tag = HUN
 					original_tag = CRO
 					original_tag = BOS
-					#original_tag = YUG
 					original_tag = SER
-					#original_tag = MTN
 					original_tag = ALB
-					#original_tag = MCD
 					original_tag = GRE
 					original_tag = BUL
 					original_tag = TUR
@@ -51,60 +37,47 @@ ideas = {
 					original_tag = LIT
 					original_tag = BLR
 					original_tag = UKR
-					#original_tag = MOL
 					original_tag = ROM
 					original_tag = CYP
 				}
 			}
+			picture = european_union_member
+			on_add = {
+				log = "[GetDateText]: [Root.GetName]: add idea EU_member"
+				add_to_array = { global.EU_member = THIS }
+				EU_adopt_passed_laws = yes
+			}
+			on_remove = {
+				log = "[GetDateText]: [Root.GetName]: remove idea EU_member"
+				remove_from_array = { global.EU_member = THIS }
+
+				# Clear EU Configuration as a Safety Measure
+				set_country_flag = EUU_do_not_remove_eu_idea
+				leaving_EU = yes
+				clr_country_flag = EUU_do_not_remove_eu_idea
+			}
 
 			modifier = {
+				democratic_drift = 0.05
+				neutrality_drift = 0.03
 				political_power_factor = -0.2
 				war_support_factor = -0.05
-				trade_opinion_factor = 0.1
-				stability_factor = 0.03
-				consumer_goods_factor = -0.03
+				trade_opinion_factor = 0.15
+				stability_factor = 0.05
+				consumer_goods_factor = -0.05
 			}
 		}
-		un_member = {
-			on_add = { log = "[GetDateText]: [Root.GetName]: add idea un_member" }
 
-			modifier = {
-				political_power_gain = 0.25
-			}
-		}
-		the_euro = {
-			on_add = { log = "[GetDateText]: [Root.GetName]: add idea the_euro" }
-			picture = the_euro
-
-			allowed = { always = no }
-			allowed_civil_war = { always = yes }
-			cancel = {
-				#please add here exception for some countries like Andorra, San Marino, Vatican, Monaco if you need this.
-				NOT = { has_idea = EU_member }
-				# Disabled if not in the EU
-				has_global_flag = GAME_RULE_eu_disabled
-			}
-
-			modifier = {
-				economic_cycles_cost_factor = 0.5
-				trade_opinion_factor = 0.2
-				consumer_goods_factor = -0.01
-				interest_rate_multiplier_modifier = -2
-				econ_cycle_upg_cost_multiplier_modifier = 0.50
-			}
-		}
 		#The permanent members of the United Nations Security Council
 		p5_member = {
-			on_add = { log = "[GetDateText]: [Root.GetName]: add idea p5_member" }
+			on_add = {
+				add_to_array = { global.p5_sc_members = THIS }
+				add_to_array = { global.security_council_members = THIS }
+			}
 
-			allowed = {
-				OR = {
-					tag = USA
-					tag = ENG
-					tag = SOV
-					tag = CHI
-					tag = FRA
-				}
+			on_remove = {
+				remove_from_array = { global.p5_sc_members = THIS }
+				remove_from_array = { global.security_council_members = THIS }
 			}
 
 			modifier = {
@@ -113,8 +86,6 @@ ideas = {
 		}
 		#Group of Seven
 		g7_member = {
-			on_add = { log = "[GetDateText]: [Root.GetName]: add idea g7_member" }
-
 			allowed = {
 				OR = {
 					original_tag = USA
@@ -132,38 +103,121 @@ ideas = {
 				#stability_factor = -0.05
 			}
 		}
-		#Commonwealth
-		commonwealth_of_nations_member = {
-			on_add = { log = "[GetDateText]: [Root.GetName]: add idea commonwealth_of_nations_member" }
-			picture = commonwealth_member
-			allowed = {
-				always = no
-			}
-			modifier = {
-				political_power_gain = 0.05
-				justify_war_goal_time = 0.15
-			}
-		}
 		#GUAM Organization
 		idea_GUAM_member_state = {
-			on_add = { log = "[GetDateText]: [Root.GetName]: add idea idea_GUAM_member_state" }
 			picture = GUAM
-			allowed = { always = no }
 			modifier = {
-				political_power_factor = 0.15
+				political_power_factor = 0.03
 				trade_opinion_factor = 0.10
 				stability_factor = 0.05
 			}
 		}
 		idea_GUAM_member_state_2 = {
-			on_add = { log = "[GetDateText]: [Root.GetName]: add idea idea_GUAM_member_state_2" }
 			picture = GUAM
-			allowed = { always = no }
 			modifier = {
-				political_power_factor = 0.20
+				political_power_factor = 0.05
 				trade_opinion_factor = 0.20
-				war_support_factor = 0.05
 				stability_factor = 0.05
+			}
+		}
+		#Commonwealth of Independent States
+		CIS_member_state_idea = {
+
+			picture = CIS_member_idea
+			modifier = {
+				custom_modifier_tooltip = CIS_all_spirits_idea_tt
+			}
+			cancel = {
+				OR = {
+					has_government = nationalist
+					has_government = fascism
+					has_war_with = SOV
+					NOT = {
+						SOV = {
+							has_idea = CIS_member_state_idea
+						}
+					}
+				}
+			}
+		}
+	}
+	hidden_ideas = {
+		CIS_united_anti_air_idea = {
+
+			picture = CIS_member_idea
+			modifier = {
+				supply_combat_penalties_on_core_factor = -0.03
+				army_core_attack_factor = 0.01
+				army_core_defence_factor = 0.02
+			}
+			cancel = {
+				NOT = {
+					has_idea = CIS_member_state_idea
+				}
+			}
+		}
+		CIS_anti_terror_idea = {
+
+			picture = CIS_member_idea
+			modifier = {
+				fascism_drift = -0.01
+				stability_factor = 0.01
+			}
+			cancel = {
+				NOT = {
+					has_idea = CIS_member_state_idea
+				}
+			}
+		}
+		CIS_bank_idea = {
+
+			picture = CIS_member_idea
+			modifier = {
+				econ_cycle_upg_cost_multiplier_modifier = -0.02
+				trade_opinion_factor = 0.10
+			}
+			cancel = {
+				NOT = {
+					has_idea = CIS_member_state_idea
+				}
+			}
+		}
+		CIS_council_leaders_idea = {
+
+			picture = CIS_member_idea
+			modifier = {
+				political_power_factor = 0.05
+			}
+			cancel = {
+				NOT = {
+					has_idea = CIS_member_state_idea
+				}
+			}
+		}
+		CIS_confederation_member_idea = {
+
+			picture = CIS_member_idea
+			cancel = {
+				OR = {
+					NOT = {
+						has_idea = CIS_member_state_idea
+					}
+					SOV = {
+						NOT = {
+							has_government = democratic
+						}
+					}
+				}
+			}
+			on_remove = {
+				SOV = {
+					country_event = { id = sov_liberals.21 days = 1 }
+					release_puppet = ROOT
+					set_autonomy = {
+						target = ROOT
+						autonomy_state = autonomy_free
+					}
+				}
 			}
 		}
 	}

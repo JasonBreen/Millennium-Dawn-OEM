@@ -1,12 +1,105 @@
-# Author(s): Deflinok
-# Last Modified August 1st, 2022
-add_namespace = belarus_union
+# Author(s): LordBogdanoff
+# Last Modified January 9, 2022
 add_namespace = belarus_another
 add_namespace = belarus_ukraine
 add_namespace = belarus_LTB
 add_namespace = belarus_export
 add_namespace = belarus_character
 add_namespace = belarus_azot
+add_namespace = belarus_politics
+add_namespace = belarus_md
+
+# Economy
+country_event = {
+	id = belarus_md.1
+	title = belarus_md.1.t
+	desc = belarus_md.1.d
+
+	is_triggered_only = yes
+
+	option = {
+		name = belarus_md.1.a
+		log = "[GetDateText]: [This.GetName]:belarus_md.1.a executed"
+		add_timed_idea = {
+			idea = BLR_agricultural_shock
+			days = 365
+		}
+		remove_ideas = BLR_agriculture
+		ai_chance = {
+			base = 10
+		}
+	}
+}
+
+country_event = {
+	id = belarus_md.2
+	title = belarus_md.2.t
+	desc = belarus_md.2.d
+
+	is_triggered_only = yes
+
+	option = {
+		name = belarus_md.2.a
+		log = "[GetDateText]: [This.GetName]:belarus_md.2.a executed"
+		704 = {
+			add_extra_state_shared_building_slots = 1
+			add_building_construction = {
+				type = industrial_complex
+				level = 1
+			}
+		}
+		newline = yes
+		set_temp_variable = { temp_productivity_change = 45 }
+		704 = { state_flat_productivity_change_effect = yes }
+		newline = yes
+		set_temp_variable = { treasury_change = -8.50 }
+		modify_treasury_effect = yes
+		newline = yes
+		set_temp_variable = { temp_opinion = -5 }
+		change_farmers_opinion = yes
+		ai_chance = {
+			base = 10
+		}
+	}
+	option = {
+		name = belarus_md.2.b
+		log = "[GetDateText]: [This.GetName]:belarus_md.2.b executed"
+		set_temp_variable = { temp_productivity_change = -15 }
+		704 = { state_flat_productivity_change_effect = yes }
+		newline = yes
+		set_temp_variable = { int_investment_change = 85.00 }
+		modify_international_investment_effect = yes
+		newline = yes
+		set_temp_variable = { party_popularity_increase = 0.05 }
+		set_temp_variable = { temp_outlook_increase = 0.05 }
+		add_relative_party_popularity = yes
+		ai_chance = {
+			base = 10
+		}
+	}
+}
+
+country_event = {
+	id = belarus_md.3
+	title = belarus_md.3.t
+	desc = belarus_md.3.d
+
+	is_triggered_only = yes
+
+	option = {
+		name = belarus_md.3.a
+		log = "[GetDateText]: [This.GetName]:belarus_md.3.a executed"
+		add_stability = -0.05
+		newline = yes
+		add_timed_idea = {
+			idea = BLR_disease_amongst_livestock
+			days = 365
+		}
+		ai_chance = {
+			base = 10
+		}
+	}
+}
 
 #Lukashenko era
 country_event = {
@@ -63,10 +156,6 @@ country_event = {
 			if = { limit = { NOT = { is_in_array = { ruling_party = 2 } } }
 				set_temp_variable = { rul_party_temp = 2 }
 				change_ruling_party_effect = yes
-				set_politics = {
-					ruling_party = democratic
-					elections_allowed = yes
-				}
 			}
 			set_temp_variable = { party_index = 2 }
 			set_temp_variable = { party_popularity_increase = 0.5 }
@@ -98,10 +187,6 @@ country_event = {
 			if = { limit = { NOT = { is_in_array = { ruling_party = 1 } } }
 				set_temp_variable = { rul_party_temp = 1 }
 				change_ruling_party_effect = yes
-				set_politics = {
-					ruling_party = democratic
-					elections_allowed = yes
-				}
 			}
 				set_temp_variable = { party_index = 1 }
 				set_temp_variable = { party_popularity_increase = 0.50 }
@@ -138,202 +223,6 @@ country_event = {
 		name = belarus_character.5.a
 		log = "[GetDateText]: [This.GetName]: belarus_character.5.a executed"
 		add_stability = 0.01
-	}
-}
-
-#We are Union state
-country_event = {
-	id = belarus_union.9
-	title = belarus_union.9.t
-	desc = belarus_union.9.d
-	picture = GFX_union_state
-
-	is_triggered_only = yes
-
-	option = {
-		name = belarus_union.9.a
-		log = "[GetDateText]: [This.GetName]: belarus_union.9.a executed"
-	}
-}
-#We are not Union state
-country_event = {
-	id = belarus_union.10
-	title = belarus_union.10.t
-	desc = belarus_union.10.d
-	picture = GFX_union_state
-
-	is_triggered_only = yes
-
-	option = {
-		name = belarus_union.10.a
-		log = "[GetDateText]: [This.GetName]: belarus_union.10.a executed"
-	}
-}
-#Union state We
-country_event = {
-	id = belarus_union.11
-	title = belarus_union.11.t
-	desc = belarus_union.11.d
-	picture = GFX_union_state
-
-	is_triggered_only = yes
-
-	option = {
-		name = belarus_union.11.a
-		log = "[GetDateText]: [This.GetName]: belarus_union.11.a executed"
-		SOV = { country_event = belarus_union.12 }
-		hidden_effect = {
-		set_temp_variable = { percent_change = -18 }
-		set_temp_variable = { tag_index = SOV }
-		set_temp_variable = { influence_target = BLR }
-		change_influence_percentage = yes	
-		SOV = {
-			set_autonomy = {
-				target = BLR
-				autonomy_state = autonomy_union_state
-			}
-		}
-		if = {
-			limit = {
-				has_government = communism
-				SOV = { has_government = communism }
-			}	
-			set_temp_variable = { percent_change = -22.2 }
-			set_temp_variable = { tag_index = SOV }
-			set_temp_variable = { influence_target = BLR }
-			change_influence_percentage = yes
-		}
-		if = {
-			limit = {
-				has_government = communism
-				SOV = { NOT = { has_government = communism } }
-			}	
-			set_temp_variable = { percent_change = -22.2 }
-			set_temp_variable = { tag_index = SOV }
-			set_temp_variable = { influence_target = BLR }
-			change_influence_percentage = yes
-		}
-		if = {
-			limit = {
-				has_government = democratic
-				SOV = { has_government = democratic }
-			}	
-			set_temp_variable = { percent_change = -22.2 }
-			set_temp_variable = { tag_index = SOV }
-			set_temp_variable = { influence_target = BLR }
-			change_influence_percentage = yes
-		}
-		if = {
-			limit = {
-				has_government = democratic
-				SOV = { NOT = { has_government = democratic } }
-			}	
-			BLR = {
-				start_civil_war = {
-					ideology = democratic
-					size = 0.5
-					capital = 111
-					states = { 625 474 113 626 112 115 116 }
-				}
-			}
-			SOV = {
-			}
-			set_temp_variable = { percent_change = -22.2 }
-			set_temp_variable = { tag_index = SOV }
-			set_temp_variable = { influence_target = BLR }
-			change_influence_percentage = yes
-		}
-		if = {
-			limit = {
-				has_government = neutrality
-				SOV = { has_government = neutrality }
-			}	
-			set_temp_variable = { percent_change = -22.2 }
-			set_temp_variable = { tag_index = SOV }
-			set_temp_variable = { influence_target = BLR }
-			change_influence_percentage = yes
-		}
-		if = {
-			limit = {
-				has_government = neutrality
-				SOV = { NOT = { has_government = neutrality } }
-			}	
-			BLR = {
-				start_civil_war = {
-					ideology = neutrality
-					size = 0.5
-					capital = 111
-					states = { 625 474 113 626 112 115 116 }
-				}
-			}
-			set_temp_variable = { percent_change = -22.2 }
-			set_temp_variable = { tag_index = SOV }
-			set_temp_variable = { influence_target = BLR }
-			change_influence_percentage = yes
-		}
-		if = {
-			limit = {
-				has_government = nationalist
-				SOV = { has_government = nationalist }
-			}	
-			set_temp_variable = { percent_change = -22.2 }
-			set_temp_variable = { tag_index = SOV }
-			set_temp_variable = { influence_target = BLR }
-			change_influence_percentage = yes
-		}
-		if = {
-			limit = {
-				has_government = nationalist
-				SOV = { NOT = { has_government = nationalist } }
-			}	
-			BLR = {
-				start_civil_war = {
-					ideology = nationalist
-					size = 0.5
-					capital = 111
-					states = { 625 474 113 626 112 115 116 }
-				}
-			}
-			set_temp_variable = { percent_change = -22.2 }
-			set_temp_variable = { tag_index = SOV }
-			set_temp_variable = { influence_target = BLR }
-			change_influence_percentage = yes
-		}
-		}
-	}
-	option = {
-		name = belarus_union.11.b
-		log = "[GetDateText]: [This.GetName]: belarus_union.11.b executed"
-		SOV = { country_event = belarus_union.13 }
-	}
-}
-#They are Union state
-country_event = {
-	id = belarus_union.12
-	title = belarus_union.12.t
-	desc = belarus_union.12.d
-	picture = GFX_union_state
-
-	is_triggered_only = yes
-
-	option = {
-		name = belarus_union.12.a
-		log = "[GetDateText]: [This.GetName]: belarus_union.12.a executed"
-	}
-}
-#They are not Union state
-country_event = {
-	id = belarus_union.13
-	title = belarus_union.13.t
-	desc = belarus_union.13.d
-	picture = GFX_union_state
-
-	is_triggered_only = yes
-
-	option = {
-		name = belarus_union.13.a
-		log = "[GetDateText]: [This.GetName]: belarus_union.13.a executed"
-		SOV = { add_opinion_modifier = { target = BLR modifier = betrayed_our_cause } }
 	}
 }
 #We need investments
@@ -417,7 +306,6 @@ country_event = {
 	option = {
 		name = belarus_ukraine.1.a
 		log = "[GetDateText]: [This.GetName]: belarus_ukraine.1.a executed"
-		custom_effect_tooltip = BLR_brigade_kastus_TT
 		hidden_effect = {
 		division_template = {
 			name = "Kastus Kalinovsky Regiment"
@@ -433,7 +321,7 @@ country_event = {
 			limit = { ROOT = { has_full_control_of_state = PREV } }
 			prioritize = { 699 }
 			create_unit = {
-				division = "name = \"Kastus Kalinovsky Regiment\" division_template = \"Kastus Kalinovsky Regiment\" start_experience_base = 1.0"
+				division = "name = \"Kastus Kalinovsky Regiment\" division_template = \"Kastus Kalinovsky Regiment\" start_experience_factor = 1.0"
 				owner = UKR
 			}
 		}
@@ -475,7 +363,6 @@ country_event = {
 		set_temp_variable = { tag_index = BLR }
 		set_temp_variable = { influence_target = LPR }
 		change_influence_percentage = yes
-		custom_effect_tooltip = BLR_brigade_novorossia_TT
 		hidden_effect = {
 		LPR = {
 		division_template = {
@@ -492,7 +379,7 @@ country_event = {
 			limit = { ROOT = { has_full_control_of_state = PREV } }
 			prioritize = { 1075 }
 			create_unit = {
-				division = "name = \"The Rokosovsky Battalion\" division_template = \"Volunteer Battalion\" start_experience_base = 1.0"
+				division = "name = \"The Rokosovsky Battalion\" division_template = \"Volunteer Battalion\" start_experience_factor = 1.0"
 				owner = LPR
 			}
 		}
@@ -567,20 +454,21 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: belarus_export.2.a executed"
 		create_equipment_variant = {
 			name = "T-72BM1"
-			type = mbt_hull_1
+			type = medium_tank_chassis_1
 			parent_version = 0
 			modules = {
 				main_armament_slot = tank_medium_cannon_2
+				ammunition_load_slot = mixed_main_ammo_2
 				turret_type_slot = tank_soviet_turret
-				suspension_type_slot = tank_torsion_bar_suspension
+				suspension_type_slot = tank_torsion_bar_suspension_medium
 				armor_type_slot = tank_composite_armor_gen2
 				engine_type_slot = tank_diesel_engine_gen3
 				reload_type_slot = automatic_loading
 				special_type_slot_1 = smoke_launchers
-				special_type_slot_2 = additional_machine_guns
+				special_type_slot_2 = empty
 				special_type_slot_3 = smoothbore_atgm_gen2
 				special_type_slot_4 = tank_battlestation_2
-				special_type_slot_5 = reactive_armor_gen1
+				special_type_slot_6 = reactive_armor_gen1
 			}
 			upgrades = {
 				tank_nsb_armor_upgrade = 2
@@ -588,7 +476,7 @@ country_event = {
 			icon = "GFX_SOV_MBT_2"
 		}
 		add_equipment_to_stockpile = {
-			type = mbt_hull_1
+			type = medium_tank_chassis_1
 			producer = SOV
 			variant_name = "T-72BM1"
 			amount = 2
@@ -610,23 +498,26 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: belarus_export.3.a executed"
 		create_equipment_variant = {
 			name = "BM-21 BelGrad"
-			type = spart_hull_0
+			type = medium_tank_artillery_chassis_0
 			parent_version = 0
 			modules = {
-				arty_main_armament_slot = art_small_rocket_gen1
-				chassis_type_slot = chassis_truck_gen0
+				main_armament_slot = art_med_rocket_gen1
+				turret_type_slot = tank_base_tank_turret
+				reload_type_slot = eight_missile_pack
+				ammunition_load_slot = artillery_medium_ammo_1
+				suspension_type_slot = tank_wheeled_suspension_medium
 				engine_type_slot = afv_gasoline_engine_gen2
-				conversion_type_slot = empty
-				special_type_slot_1 = fire_ammo_rocket_small_gen1
-				special_type_slot_4 = art_battlestation_gen1
+
+				special_type_slot_1 = fire_ammo_1
+				special_type_slot_4 = tank_battlestation_1
 			}
 			upgrades = {
-				art_nsb_fire_upgrade = 1
+				tank_nsb_fire_upgrade = 1
 			}
-			icon = "GFX_spart_hull_0_t_r"
+			icon = "GFX_medium_tank_artillery_chassis_0_t_r"
 		}
 		add_equipment_to_stockpile = {
-			type = spart_hull_0
+			type = medium_tank_artillery_chassis_0
 			variant_name = "BM-21 BelGrad"
 			amount = 10
 		}
@@ -647,31 +538,33 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: belarus_export.4.a executed"
 		create_equipment_variant = {
 			name = "B-200 «Polonez»"
-			type = spart_hull_1
+			type = medium_tank_artillery_chassis_1
 			parent_version = 0
 			modules = {
-				arty_main_armament_slot = art_big_rocket_gen1
-				chassis_type_slot = chassis_truck_gen0
+				main_armament_slot = art_med_rocket_gen1
+				turret_type_slot = tank_base_tank_turret
+				reload_type_slot = eight_missile_pack
+				ammunition_load_slot = artillery_medium_ammo_1
+				suspension_type_slot = tank_wheeled_suspension_medium
 				engine_type_slot = tank_diesel_engine_gen3
-				conversion_type_slot = empty
-				special_type_slot_1 = mine_rocket_big_gen2
-				special_type_slot_2 = cluster_ammo_rocket_big_gen2
-				special_type_slot_3 = heat_ammo_rocket_big_gen2
-				special_type_slot_4 = art_battlestation_gen3
+
+				special_type_slot_1 = mine_ammo_2
+				special_type_slot_2 = cluster_ammo_2
+				special_type_slot_3 = heat_ammo_2
+				special_type_slot_4 = tank_battlestation_3
 			}
 			upgrades = {
-				art_nsb_fire_upgrade = 1
+				tank_nsb_fire_upgrade = 1
 			}
-			icon = "GFX_spart_hull_2_t_r"
+			icon = "GFX_medium_tank_artillery_chassis_2_t_r"
 		}
 		add_equipment_to_stockpile = {
-			type = spart_hull_1
+			type = medium_tank_artillery_chassis_1
 			variant_name = "B-200 «Polonez»"
 			amount = 6
 		}
 	}
 }
-
 
 #Export MTZ
 country_event = {
@@ -701,7 +594,7 @@ country_event = {
 			modifier = trade_mission
 		}
 		BLR = {
-			clr_country_flag = BLR_peding_offer
+			clr_country_flag = BLR_pending_offer
 			country_event = { id = belarus_export.7	days = 1 }
 		}
 		ai_chance = {
@@ -721,7 +614,7 @@ country_event = {
 		name = belarus_export.6.b
 		log = "[GetDateText]: [This.GetName]: belarus_export.6.b executed"
 		BLR = {
-			clr_country_flag = BLR_peding_offer
+			clr_country_flag = BLR_pending_offer
 			country_event = { id = belarus_export.8	days = 1 }
 		}
 		ai_chance = {
@@ -744,7 +637,7 @@ country_event = {
 	option = {
 		name = belarus_export.7.a
 		log = "[GetDateText]: [This.GetName]: belarus_export.7.a executed"
-		set_temp_variable = { treasury_change = 0.35 }
+		set_temp_variable = { treasury_change = 0.75 }
 		modify_treasury_effect = yes
 		set_temp_variable = { modify_tracktors = -1000 }
 		modify_tracktors_support = yes
@@ -931,10 +824,10 @@ country_event = {
 		set_temp_variable = { treasury_change = 2 }
 		modify_treasury_effect = yes
 		add_tech_bonus = {
-			name = Cat_L_AT
+			name = CAT_l_at
 			bonus = 0.5
 			uses = 1
-			category = Cat_L_AT
+			category = CAT_l_at
 		}
 	}
 }
@@ -1141,7 +1034,7 @@ country_event = {
 			name = BLR_kobra_k
 			bonus = 0.55
 			uses = 1
-			category = Cat_APC
+			category = CAT_apc
 		}
 		BLR = {
 			country_event = { id = belarus_export.23 days = 1 }
@@ -1188,7 +1081,7 @@ country_event = {
 			name = BLR_kobra_k
 			bonus = 0.55
 			uses = 1
-			category = Cat_APC
+			category = CAT_apc
 		}
 
 	}
@@ -1222,7 +1115,7 @@ country_event = {
 		name = belarus_export.25.a
 		log = "[GetDateText]: [This.GetName]: belarus_export.25.a executed"
 		add_equipment_to_stockpile = {
-			type = spart_hull_1
+			type = medium_tank_artillery_chassis_1
 			variant_name = "B-200 «Polonez»"
 			amount = 20
 			producer = BLR
@@ -1377,7 +1270,6 @@ country_event = {
 	title = belarus_another.2.t
 	desc = belarus_another.2.d
 
-
 	fire_only_once = yes
 	is_triggered_only = yes
 
@@ -1447,7 +1339,7 @@ country_event = {
 		add_stability = 0.1
 		set_temp_variable = { modify_batka = 5 }
 		modify_batka_support = yes
-		remove_ideas = BLR_decree_number_3
+		remove_ideas = BLR_Batka_policy1
 	}
 }
 #Cult Bat'ka
@@ -1530,11 +1422,9 @@ country_event = {
 				has_global_flag = BLR_DEMOCRATIC_PATH
 			}
 		}
-		every_country = {
+		every_other_country = {
 			limit = {
-				OR = {
-					has_idea = EU_member
-					}
+				has_idea = EU_member
 			}
 			add_opinion_modifier = { target = BLR modifier = supports_us }
 		}
@@ -1547,12 +1437,9 @@ country_event = {
 	option = {
 		name = belarus_another.8.b
 		log = "[GetDateText]: [This.GetName]: belarus_another.8.b executed"
-		every_country = {
+		every_other_country = {
 			limit = {
-				OR = {
-					has_idea = EU_member
-
-				}
+				has_idea = EU_member
 			}
 			add_opinion_modifier = { target = BLR modifier = recent_actions_negative }
 		}
@@ -1624,7 +1511,22 @@ country_event = {
 	option = {
 		name = belarus_another.10.a
 		log = "[GetDateText]: [This.GetName]: belarus_another.10.a executed"
-		set_country_flag = BLR_wagner_free_flag
+
+		every_other_country = {
+			limit = {
+				has_idea = EU_member
+			}
+			add_opinion_modifier = { target = BLR modifier = recent_actions_negative }
+		}
+		add_opinion_modifier = {
+			modifier = recent_actions_positive
+			target = SOV
+		}
+		reverse_add_opinion_modifier = {
+			modifier = recent_actions_positive
+			target = SOV
+		}
+
 		ai_chance = {
 			base = 20
 			modifier = {
@@ -1636,39 +1538,17 @@ country_event = {
 				is_historical_focus_on = yes
 			}
 		}
-		every_country = {
-			limit = {
-				OR = {
-					has_idea = EU_member
-				}
-			}
-		add_opinion_modifier = { target = BLR modifier = recent_actions_negative }
-		}
-		set_temp_variable = { modify_union_state = 3 }
-		modify_union_state_support = yes
-		add_opinion_modifier = {
-			modifier = recent_actions_positive
-			target = SOV
-		}
-		reverse_add_opinion_modifier = {
-			modifier = recent_actions_positive
-			target = SOV
-		}
-
 	}
+
 	option = {
 		name = belarus_another.10.b
 		log = "[GetDateText]: [This.GetName]: belarus_another.10.b executed"
-		every_country = {
+		every_other_country = {
 			limit = {
-				OR = {
-					has_idea = EU_member
-				}
+				has_idea = EU_member
 			}
-		add_opinion_modifier = { target = BLR modifier = recent_actions_positive }
+			add_opinion_modifier = { target = BLR modifier = recent_actions_positive }
 		}
-		set_temp_variable = { modify_union_state = -3 }
-		modify_union_state_support = yes
 		set_temp_variable = { percent_change = 5 }
 		change_domestic_influence_percentage = yes
 		add_opinion_modifier = {
@@ -1692,13 +1572,13 @@ country_event = {
 		name = belarus_another.11.a
 		log = "[GetDateText]: [This.GetName]: belarus_another.11.a executed"
 		hidden_effect = {
-		VTB = { transfer_state = 1094 }
-		VTB = {
-			declare_war_on = {
-			target = BLR
-			type = liberate_wargoal
+			VTB = {
+				transfer_state = 1094
+				declare_war_on = {
+					target = BLR
+					type = liberate_wargoal
+				}
 			}
-		}
 		}
 	 }
 }
@@ -1713,11 +1593,11 @@ country_event = {
 		name = belarus_another.45.a
 		log = "[GetDateText]: [This.GetName]: belarus_another.45.a executed"
 		hidden_effect = {
-			VTB = { transfer_state = 1094 }
 			VTB = {
+				transfer_state = 1094
 				declare_war_on = {
-				target = BLR
-				type = liberate_wargoal
+					target = BLR
+					type = liberate_wargoal
 				}
 			}
 		}
@@ -1741,8 +1621,6 @@ country_event = {
 				has_global_flag = BLR_FOLLOW_UNION_STATE
 			}
 		}
-		set_temp_variable = { modify_union_state = 3 }
-		modify_union_state_support = yes
 		add_stability = -0.05
 		add_political_power = -100
 		set_temp_variable = { party_index = 22 }
@@ -1764,8 +1642,6 @@ country_event = {
 			}
 		}
 		retire_character = BLR_igor_azarenok
-		set_temp_variable = { modify_union_state = -3 }
-		modify_union_state_support = yes
 		add_stability = 0.05
 		add_political_power = 100
 	}
@@ -1782,7 +1658,6 @@ country_event = {
 	option = {
 		name = belarus_another.14.a
 		log = "[GetDateText]: [This.GetName]: belarus_another.14.a executed"
-		set_country_flag = BLR_tikhanovsky_was_arrested_flag
 		add_stability = -0.04
 		set_temp_variable = { modify_batka = -3 }
 		modify_batka_support = yes
@@ -1837,7 +1712,6 @@ country_event = {
 	is_triggered_only = yes
 	fire_only_once = yes
 
-
 	option = {
 		name = belarus_another.16.a
 		log = "[GetDateText]: [This.GetName]: belarus_another.16.a executed"
@@ -1874,8 +1748,6 @@ country_event = {
 
 }
 
-
-
 #Venezuela Military with Belarus
 country_event = {
 	id = belarus_another.17
@@ -1891,13 +1763,14 @@ country_event = {
 		set_temp_variable = { percent_change = 3.5 }
 		set_temp_variable = { tag_index = BLR }
 		set_temp_variable = { influence_target = VEN }
+		change_influence_percentage = yes
 		875 = {
 			add_building_construction = {
 				type = anti_air_building
 				level = 1
 				instant_build = yes
 		}
-	  }
+	 }
 	}
 }
 
@@ -1927,6 +1800,9 @@ country_event = {
 		name = belarus_another.18.b
 		log = "[GetDateText]: [This.GetName]: belarus_another.18.b executed"
 		BLR = {
+			set_temp_variable = { wargoal_on = LAT }
+			set_temp_variable = { wargoal_type = 2 }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 			target = LAT
 			type = annex_everything
@@ -1963,38 +1839,6 @@ country_event = {
 				add = 10
 			}
 		}
-		hidden_effect = {
-		if = {
-			limit = {
-				has_country_flag = BLR_silesian_help_flag
-			}
-		SIL = {
-			country_event = { id = belarus_another.22	days = 1 }
-		}
-		SIL = { transfer_state = 115 }
-		SIL = { add_state_core = 115 }
-		country_event = diplomatic_response.1
-			if = {
-				limit = {
-					has_global_flag = GAME_RULE_allow_colored_puppets
-				}
-				set_autonomy = {
-					target = SIL
-					autonomy_state = autonomy_satellite_state_colored
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-			else = {
-				set_autonomy = {
-					target = SIL
-					autonomy_state = autonomy_satellite_state
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-		}
-	}
 		country_event = { id = belarus_another.20  days = 1 }
 		if = {
 			limit = {
@@ -2025,12 +1869,12 @@ country_event = {
 		name = belarus_another.19.b
 		log = "[GetDateText]: [This.GetName]: belarus_another.19.b executed"
 		BLR = {
-			country_event = { id = belarus_another.21	days = 1 }
+			country_event = { id = belarus_another.21 days = 1 }
 		}
 	}
 }
 
-#Start Civil war in Poland
+#They Agree
 country_event = {
 	id = belarus_another.20
 	title = belarus_another.20.t
@@ -2041,18 +1885,8 @@ country_event = {
 	option = {
 		name = belarus_another.20.a
 		log = "[GetDateText]: [This.GetName]: belarus_another.20.a executed"
-		hidden_effect = {
-			start_civil_war = {
-				ideology = democratic
-				size = 0.5
-				capital = 111
-				states = { 625 474 113 626 112 115 116 }
-				}
-			}
-
 	}
 }
-
 #Poland Refuse Union state
 country_event = {
 	id = belarus_another.21
@@ -2070,34 +1904,40 @@ country_event = {
 		POL = {
 			start_civil_war = {
 				ideology = nationalist
-				size = 0.2
-				capital = 114
-				states = { 1014 114 }
+				size = 0.1
+				capital = 1014
+				states = { 1014 }
 			}
 		}
+		add_political_power = -550
+		decrease_economic_growth = yes
 		hidden_effect = {
 			BLR = {
+				set_temp_variable = { wargoal_on = POL }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
 				create_wargoal = {
 					target = POL
 					type = annex_everything
-					  }
-				}
-				POL = {
-					create_wargoal = {
-						target = BLR
-						type = annex_everything
 					}
 				}
+			POL = {
+				set_temp_variable = { wargoal_on = BLR }
+				set_temp_variable = { wargoal_type = 2 }
+				add_threat_from_wargoal_effect = yes
+				create_wargoal = {
+					target = BLR
+				type = annex_everything
+				}
+			}
 			if = {
 				limit = {
 					has_country_flag = BLR_silesian_help_flag
 				}
-			SIL = {
-					country_event = { id = belarus_another.22	days = 1 }
-			}
-			SIL = { transfer_state = 115 }
-			SIL = { add_state_core = 115 }
-			country_event = diplomatic_response.1
+				SIL = { country_event = { id = belarus_another.22 days = 1 }
+						transfer_state = 115
+						transfer_state = 626 }
+				country_event = diplomatic_response.1
 			if = {
 				limit = {
 					has_global_flag = GAME_RULE_allow_colored_puppets
@@ -2117,16 +1957,15 @@ country_event = {
 					end_civil_wars = no
 				}
 			}
-			}
 			POL = {
 				declare_war_on = {
 				target = SIL
 				type = annex_everything
+				}
 			}
-		 }
-
+			}
+		}
 	}
-}
 	option = {
 		ai_chance = {
 			base = 45
@@ -2163,7 +2002,7 @@ country_event = {
 			limit = { ROOT = { has_full_control_of_state = PREV } }
 			prioritize = { 115 }
 			create_unit = {
-				division = "name = \"Silesian Militia\" division_template = \"Silesian Militia\" start_experience_base = 0.1"
+				division = "name = \"Silesian Militia\" division_template = \"Silesian Militia\" start_experience_factor = 0.1"
 				owner = SIL
 			}
 		}
@@ -2171,7 +2010,7 @@ country_event = {
 			limit = { ROOT = { has_full_control_of_state = PREV } }
 			prioritize = { 115 }
 			create_unit = {
-				division = "name = \"Silesian Militia\" division_template = \"Silesian Militia\" start_experience_base = 0.1"
+				division = "name = \"Silesian Militia\" division_template = \"Silesian Militia\" start_experience_factor = 0.1"
 				owner = SIL
 			}
 		}
@@ -2242,13 +2081,13 @@ country_event = {
 		set_temp_variable = { influence_target = IRQ }
 		change_influence_percentage = yes
 		add_equipment_to_stockpile = {
-			type = infantry_weapons
+			type = infantry_weapons_1
 			amount = -1000
 			producer = BLR
 		}
 		IRQ = {
 			add_equipment_to_stockpile = {
-				type = infantry_weapons
+				type = infantry_weapons_1
 				amount = 1000
 				producer = BLR
 			}
@@ -2301,8 +2140,6 @@ country_event = {
 		change_the_clergy_opinion = yes
 		set_temp_variable = { modify_batka = 6 }
 		modify_batka_support = yes
-		set_temp_variable = { modify_union_state = -3 }
-		modify_union_state_support = yes
 
 		if = {
 			limit = {
@@ -2328,8 +2165,6 @@ country_event = {
 				is_historical_focus_on = yes
 			}
 		}
-		set_temp_variable = { modify_union_state = 3 }
-		modify_union_state_support = yes
 		set_temp_variable = { temp_opinion = -8 }
 		change_the_clergy_opinion = yes
 		add_opinion_modifier = {
@@ -2343,7 +2178,6 @@ country_event = {
 	}
 
 }
-
 
 #Union of Poles
 country_event = {
@@ -2369,7 +2203,6 @@ country_event = {
 			target = POL
 			modifier = recent_actions_negative
 		}
-
 	}
 	option = {
 		name = belarus_another.28.b
@@ -2448,8 +2281,6 @@ country_event = {
 		set_temp_variable = { tag_index = SOV }
 		set_temp_variable = { influence_target = BLR }
 		change_influence_percentage = yes
-		set_temp_variable = { modify_union_state = -3 }
-		modify_union_state_support = yes
 		set_temp_variable = { modify_batka = 3 }
 		modify_batka_support = yes
 		set_temp_variable = { party_index = 6 }
@@ -2493,8 +2324,6 @@ country_event = {
 		set_temp_variable = { party_popularity_increase = -0.020 }
 		set_temp_variable = { temp_outlook_increase = -0.020 }
 		add_relative_party_popularity = yes
-		set_temp_variable = { modify_union_state = 5 }
-		modify_union_state_support = yes
 		add_opinion_modifier = {
 			modifier = recent_actions_positive
 			target = SOV
@@ -2505,7 +2334,6 @@ country_event = {
 		}
 	}
 }
-
 
 #Poland Taler
 country_event = {
@@ -2521,17 +2349,18 @@ country_event = {
 		ai_chance = {
 			base = 55
 		}
-		set_temp_variable = { percent_change = 7.20 }
+		set_temp_variable = { percent_change = 4.20 }
 		set_temp_variable = { tag_index = BLR }
 		set_temp_variable = { influence_target = POL }
 		change_influence_percentage = yes
+		set_temp_variable = { percent_change = 4.20 }
+		set_temp_variable = { tag_index = POL }
+		set_temp_variable = { influence_target = BLR }
+		change_influence_percentage = yes
 		add_stability = -0.04
-		add_ideas = BLR_taler
-		BLR = {
-		add_ideas = BLR_taler
-
+		decrease_economic_growth = yes
 	}
-}
+
 	option = {
 		ai_chance = {
 			base = 45
@@ -2541,10 +2370,10 @@ country_event = {
 		set_temp_variable = { percent_change = -3.20 }
 		set_temp_variable = { tag_index = BLR }
 		set_temp_variable = { influence_target = POL }
+		change_influence_percentage = yes
 		add_stability = 0.02
 	}
-  }
-
+}
 
 #Intermaruim Ukraine
 country_event = {
@@ -2565,21 +2394,21 @@ country_event = {
 			NATO_leave = yes
 		}
 		if = {
-			limit = { is_in_faction = yes NOT = { original_tag = UKR } }
+			limit = { is_in_faction = yes NOT = { original_tag = ROOT } }
 			leave_faction = yes
 		}
 		BLR = {
-		create_faction = BLR_intermarium_faction
+			create_faction_from_template = faction_template_intermarium_faction
+			add_to_faction = ROOT
 		}
-		BLR = { add_to_faction = UKR }
 	}
 	option = {
-		ai_chance = {
-			base = 45
-		}
 		name = belarus_another.35.b
 		log = "[GetDateText]: [This.GetName]: belarus_another.35.b executed"
 
+		ai_chance = {
+			base = 45
+		}
 	}
 }
 
@@ -2597,7 +2426,7 @@ country_event = {
 		ai_chance = {
 			base = 55
 		}
-		BLR = { country_event = { id = belarus_another.37 days = 1 }  }
+		BLR = { country_event = { id = belarus_another.37 days = 1 } }
 		}
 	option = {
 		ai_chance = {
@@ -2888,6 +2717,9 @@ country_event = {
 	option = {
 		name = belarus_another.41.a
 		log = "[GetDateText]: [This.GetName]: belarus_another.41.a executed"
+		set_temp_variable = { wargoal_on = LIT }
+		set_temp_variable = { wargoal_type = 2 }
+		add_threat_from_wargoal_effect = yes
 		create_wargoal = {
 			target = LIT
 			type = annex_everything
@@ -2984,9 +2816,7 @@ country_event = {
 		ai_chance = {
 			base = 150
 			modifier = {
-				OR = {
-					has_global_flag = BLR_POST_LUKA_DEFAULT_PATH
-				}
+				has_global_flag = BLR_POST_LUKA_DEFAULT_PATH
 				add = 10
 			}
 		}
@@ -3011,6 +2841,7 @@ country_event = {
 			set_temp_variable = { percent_change = -12.26 }
 			set_temp_variable = { tag_index = SOV }
 			set_temp_variable = { influence_target = BLR }
+			change_influence_percentage = yes
 			add_popularity = {
 				ideology = communism
 				popularity = -0.40
@@ -3019,10 +2850,6 @@ country_event = {
 			if = { limit = { NOT = { is_in_array = { ruling_party = 2 } } }
 				set_temp_variable = { rul_party_temp = 2 }
 				change_ruling_party_effect = yes
-				set_politics = {
-					ruling_party = democratic
-					elections_allowed = yes
-				}
 			}
 			set_temp_variable = { party_index = 2 }
 			set_temp_variable = { party_popularity_increase = 0.50 }
@@ -3039,126 +2866,7 @@ country_event = {
 		}
 	}
 }
-country_event = {
-	id = belarus_another.46 #Warsaw
-	title = belarus_another.46.t
-	desc = belarus_another.46.d
-	picture = GFX_wagner_event
-	is_triggered_only = yes
 
-	fire_only_once = yes
-
-
-	option = { # Shiiiiiiet
-		name = belarus_another.46.a
-		log = "[GetDateText]: [This.GetName]: belarus_another.46.a executed"
-		set_country_flag = wagner_warsaw
-	delete_unit_template_and_units = {
-		division_template = "Wagner Light Unit"
-		disband = yes
-		}
-	delete_unit_template_and_units = {
-		division_template = "Wagner Group PMC"
-		disband = yes
-	}
-	delete_unit_template_and_units = {
-		division_template = "Wagner Tank Unit"
-		disband = yes
-	}
-
-	WAG = { transfer_state = 1014 }
-	WAG = { country_event = belarus_another.47 }
-	WAG = {
-		set_country_flag = wagner_warsaw
-		load_focus_tree = wagner_focus
-		declare_war_on = {
-			target = POL
-			type = annex_everything
-		}
-	add_manpower = 5000
-	}
-	}
-}
-
-	country_event = {
-		id = belarus_another.47
-		title = belarus_another.47.t
-		desc = belarus_another.47.d
-		picture = GFX_wagner_event3
-		is_triggered_only = yes
-
-		fire_only_once = yes
-
-		option = { # Shiiiiiiet
-			name = belarus_another.47.a
-			log = "[GetDateText]: [This.GetName]: belarus_another.47.a executed"
-			set_temp_variable = { party_index = 22 }
-			set_temp_variable = { party_popularity_increase = 0.3 }
-			set_temp_variable = { temp_outlook_increase = 0.3 }
-			add_relative_party_popularity = yes
-			division_template = {
-				name = "Wagner Light Unit"
-				is_locked = yes
-				regiments = {
-					L_Inf_Bat = { x = 0 y = 0 }
-					L_Inf_Bat = { x = 0 y = 1 }
-					L_Inf_Bat = { x = 0 y = 2 }
-					L_Inf_Bat = { x = 0 y = 3 }
-					Arty_Bat = { x = 0 y = 4 }
-					L_Inf_Bat = { x = 1 y = 0 }
-					L_Inf_Bat = { x = 1 y = 1 }
-					L_Inf_Bat = { x = 1 y = 2 }
-					L_Inf_Bat = { x = 1 y = 3 }
-					Arty_Bat = { x = 1 y = 4 }
-				}
-				support = {
-					L_Recce_Comp = { x = 0 y = 0 }
-					L_Engi_Comp = { x = 0 y = 1 }
-				}
-				priority = 2
-			}
-			WAG_army_forces = yes
-			if = {
-				limit = { BLR = { has_idea = SOV_wagner_pmc_idea } }
-				BLR = { remove_ideas = SOV_wagner_pmc_idea }
-				add_ideas = SOV_wagner_pmc_idea
-			}
-			if = {
-				limit = { BLR = { has_idea = SOV_wagner_pmc_training_idea } }
-				BLR = { remove_ideas = SOV_wagner_pmc_training_idea }
-				add_ideas = SOV_wagner_pmc_training_idea
-			}
-			if = {
-				limit = { BLR = { has_idea = SOV_wagner_pmc_intel_idea } }
-				BLR = { remove_ideas = SOV_wagner_pmc_intel_idea }
-				add_ideas = SOV_wagner_pmc_intel_idea
-			}
-			if = {
-				limit = { BLR = { has_idea = SOV_wagner_pmc_tanks_idea } }
-				BLR = { remove_ideas = SOV_wagner_pmc_tanks_idea }
-				add_ideas = SOV_wagner_pmc_tanks_idea
-			}
-			if = {
-				limit = { BLR = { has_idea = SOV_wagner_pmc_invan_idea } }
-				BLR = { remove_ideas = SOV_wagner_pmc_invan_idea }
-				add_ideas = SOV_wagner_pmc_invan_idea
-			}
-			if = {
-				limit = { BLR = { has_idea = SOV_wagner_pmc_air_idea } }
-				BLR = { remove_ideas = SOV_wagner_pmc_air_idea }
-				add_ideas = SOV_wagner_pmc_air_idea
-			}
-			if = {
-				limit = { BLR = { has_idea = SOV_wagner_pmc_drone_idea } }
-				BLR = { remove_ideas = SOV_wagner_pmc_drone_idea }
-				add_ideas = SOV_wagner_pmc_drone_idea
-			}
-			if = {
-				limit = { BLR = { has_idea = full_ratnik_conversion } }
-				add_ideas = full_ratnik_conversion
-			}
-		}
-	}
 	country_event = {
 		id = belarus_another.48
 		title = belarus_another.48.t
@@ -3196,112 +2904,34 @@ country_event = {
 
 		fire_only_once = yes
 
-
 		option = { # Shiiiiiiet
 			name = belarus_another.49.a
 			log = "[GetDateText]: [This.GetName]: belarus_another.49.a executed"
-			set_country_flag = wagner_vilnus
 			delete_unit_template_and_units = {
-						division_template = "Wagner Light Unit"
-						disband = yes
-				}
-				delete_unit_template_and_units = {
-						division_template = "Wagner Group PMC"
-						disband = yes
-				}
-				delete_unit_template_and_units = {
-						division_template = "Wagner Tank Unit"
-						disband = yes
-				}
-
-		WAG = { transfer_state = 110 }
-		WAG = { country_event = belarus_another.47 }
-		WAG = {
-			set_country_flag = wagner_vilnus
-			load_focus_tree = wagner_focus
-			declare_war_on = {
-				target = LIT
-				type = annex_everything
+				division_template = "Wagner Light Unit"
+				disband = yes
 			}
-			add_manpower = 5000
+			delete_unit_template_and_units = {
+				division_template = "Wagner Group PMC"
+				disband = yes
 			}
+			delete_unit_template_and_units = {
+				division_template = "Wagner Tank Unit"
+				disband = yes
 			}
-		}
 
-
-
-	country_event = {
-		id = belarus_another.50
-		title = belarus_another.50.t
-		desc = belarus_another.50.d
-		picture = GFX_CHI_generic
-		is_triggered_only = yes
-
-		fire_only_once = yes
-
-
-		option = { # Shiiiiiiet
-			name = belarus_another.50.a
-			log = "[GetDateText]: [This.GetName]: belarus_another.50.a executed"
-			custom_effect_tooltip = BLR_sar_chi_TT
-			hidden_effect = {
-			BLR = { country_event = { id = belarus_another.51 days = 1 } }
-			BLR = {
-				recalculate_party = yes
-				add_ideas = Non_State_Actor
-				if = {
-					limit = { NOT = { is_in_array = { ruling_party = 4 } } }
-					set_temp_variable = { rul_party_temp = 4 }
-					change_ruling_party_effect = yes
-					set_politics = {
-						ruling_party = communism
-						elections_allowed = yes
-					}
+			WAG = {
+				transfer_state = 110
+				country_event = belarus_another.47
+				declare_war_on = {
+					target = LIT
+					type = annex_everything
 				}
-				set_temp_variable = { party_index = 6 }
-				set_temp_variable = { party_popularity_increase = -0.35 }
-				add_relative_party_popularity = yes
-				set_temp_variable = { party_index = 4 }
-				set_temp_variable = { party_popularity_increase = 0.25 }
-				set_temp_variable = { temp_outlook_increase = 0.25 }
-				add_relative_party_popularity = yes
-
-				create_country_leader = {
-					name = "Alexander Luka-shen-ko"
-					picture = "Alexander_Lukas.dds"
-					ideology = Communist-State
-					traits = {
-						emerging_Communist-State political_dancer likeable  rational
-					}
-				}
-				add_ideas = Basic_Law_BLR
-				add_ideas = One_Country_Two_Systems_BLR
-				set_cosmetic_tag = BLR_SAR_Communism
-				clr_country_flag = dynamic_flag
-			}
-		}
-		CHI = {
-			set_autonomy = {
-				target = BLR
-				autonomy_state = autonomy_special_administrative_region_BLR
+				add_manpower = 5000
 			}
 		}
 	}
-	 }
 
-	country_event = {
-		id = belarus_another.51
-		title = belarus_another.51.t
-		desc = belarus_another.51.d
-		picture = GFX_CHI_generic
-		is_triggered_only = yes
-		fire_only_once = yes
-		option = { # Shiiiiiiet
-			name = belarus_another.51.a
-			log = "[GetDateText]: [This.GetName]: belarus_another.51.a executed"
-			custom_effect_tooltip = BLR_sar_blr_TT
-		}
-	}
 	#Jeans Revolution
 	country_event = {
 		id = belarus_another.52
@@ -3353,7 +2983,6 @@ country_event = {
 
 		fire_only_once = yes
 
-
 		option = { # Limonov
 			name = belarus_another.53.a
 			log = "[GetDateText]: [This.GetName]: belarus_another.53.a executed"
@@ -3376,7 +3005,6 @@ country_event = {
 		is_triggered_only = yes
 
 		fire_only_once = yes
-
 
 		option = {
 			name = belarus_another.54.a
@@ -3489,16 +3117,16 @@ country_event = {
 					start_civil_war = {
 						ideology = democratic
 						size = 0.3
-						capital = 111
-						states = { 625 474 113 626 112 115 116 }
+						capital = 702
+						states = { 702 1093 }
 					}
 				}
 				30 = {
 					start_civil_war = {
 						ideology = nationalist
 						size = 0.3
-						capital = 111
-						states = { 625 474 113 626 112 115 116 }
+						capital = 702
+						states = { 702 1093 }
 					}
 				}
 			}
@@ -3513,72 +3141,31 @@ country_event = {
 			hidden_effect = {
 				random_list = {
 					70 = {
+
 						if = {
 							limit = { NOT = { is_in_array = { ruling_party = 2 } } }
-							hidden_effect = {
-								clear_array = ruling_party
-								clear_array = gov_coalition_array
-								add_to_array = { ruling_party = 2 }
-								update_government_coalition_strength = yes
-								update_party_name = yes
-								set_coalition_drift = yes
-								meta_effect = {
-									text = {
-										set_country_flag = [META_SET_RULING_PARTY]
-									}
-									META_SET_RULING_PARTY = "[meta_set_ruling_leader]"
-								}
-								set_leader = yes
-							}
-							set_politics = {
-								ruling_party = democratic
-								elections_allowed = yes
-							}
-							add_popularity = {
-								ideology = democratic
-								popularity = 0.35
-							}
-							add_popularity = {
-								ideology = communism
-								popularity = -0.45
-							}
-							add_to_variable = { party_pop_array^2 = 0.37 }
-							recalculate_party = yes
+							set_temp_variable = { rul_party_temp = 2 }
+							set_temp_variable = { disable_elections = 0 }
+							change_ruling_party_effect = yes
 						}
+
+						set_temp_variable = { party_index = 2 }
+						set_temp_variable = { party_popularity_increase = 0.10 }
+						set_temp_variable = { temp_outlook_increase = 0.10 }
+						add_relative_party_popularity = yes
 					}
 					30 = {
 						if = {
 							limit = { NOT = { is_in_array = { ruling_party = 20 } } }
-							hidden_effect = {
-								clear_array = ruling_party
-								clear_array = gov_coalition_array
-								add_to_array = { ruling_party = 20 }
-								update_government_coalition_strength = yes
-								update_party_name = yes
-								set_coalition_drift = yes
-								meta_effect = {
-									text = {
-										set_country_flag = [META_SET_RULING_PARTY]
-									}
-									META_SET_RULING_PARTY = "[meta_set_ruling_leader]"
-								}
-								set_leader = yes
-							}
-							set_politics = {
-								ruling_party = nationalist
-								elections_allowed = yes
-							}
-							add_popularity = {
-								ideology = nationalist
-								popularity = 0.35
-							}
-							add_popularity = {
-								ideology = communism
-								popularity = -0.45
-							}
-							add_to_variable = { party_pop_array^20 = 0.37 }
-							recalculate_party = yes
+							set_temp_variable = { rul_party_temp = 20 }
+							set_temp_variable = { disable_elections = 0 }
+							change_ruling_party_effect = yes
 						}
+
+						set_temp_variable = { party_index = 20 }
+						set_temp_variable = { party_popularity_increase = 0.10 }
+						set_temp_variable = { temp_outlook_increase = 0.10 }
+						add_relative_party_popularity = yes
 					}
 				}
 			}
@@ -3604,8 +3191,6 @@ country_event = {
 			set_temp_variable = { tag_index = SOV }
 			set_temp_variable = { influence_target = BLR }
 			change_influence_percentage = yes
-			set_temp_variable = { modify_union_state = 4 }
-			modify_union_state_support = yes
 			ai_chance = {
 				base = 100
 			}
@@ -3618,8 +3203,6 @@ country_event = {
 			set_temp_variable = { tag_index = SOV }
 			set_temp_variable = { influence_target = BLR }
 			change_influence_percentage = yes
-			set_temp_variable = { modify_union_state = -4 }
-			modify_union_state_support = yes
 			ai_chance = {
 				base = 0
 			}
@@ -3667,13 +3250,11 @@ country_event = {
 			log = "[GetDateText]: [This.GetName]: belarus_another.62.a executed"
 			ai_chance = { base = 100 }
 			BLR = { country_event = { id = belarus_another.63 days = 1 } }
-			add_ideas = BLR_kal_with
+			add_ideas = SOV_kal_with
 			set_temp_variable = { percent_change = 1 }
 			set_temp_variable = { tag_index = SOV }
 			set_temp_variable = { influence_target = BLR }
 			change_influence_percentage = yes
-			set_temp_variable = { modify_union_state = 2 }
-			modify_union_state_support = yes
 		}
 		option = {
 			name = belarus_another.62.b
@@ -3697,8 +3278,6 @@ country_event = {
 			set_temp_variable = { tag_index = SOV }
 			set_temp_variable = { influence_target = BLR }
 			change_influence_percentage = yes
-			set_temp_variable = { modify_union_state = 2 }
-			modify_union_state_support = yes
 		}
 	}
 	#They Destroy Kal
@@ -3712,91 +3291,20 @@ country_event = {
 		option = {
 			name = belarus_another.64.a
 			log = "[GetDateText]: [This.GetName]: belarus_another.64.a executed"
-			SOV = { remove_ideas = BLR_kal_with }
+			SOV = { remove_ideas = SOV_kal_with }
+			BLR = {
+				if = {
+					limit = { has_idea = BLR_kal_with }
+					swap_ideas = {
+						remove_idea = BLR_kal_with
+						add_idea = BLR_kal_without
+					}
+				}
+			}
 			set_temp_variable = { percent_change = -2 }
 			set_temp_variable = { tag_index = SOV }
 			set_temp_variable = { influence_target = BLR }
 			change_influence_percentage = yes
-			set_temp_variable = { modify_union_state = -4 }
-			modify_union_state_support = yes
-		}
-	}
-	#Change Regime
-	country_event = {
-		id = belarus_another.65
-		title = belarus_another.65.t
-		desc = belarus_another.65.d
-		is_triggered_only = yes
-		fire_only_once = yes
-		option = {
-			name = belarus_another.65.a
-			log = "[GetDateText]: [This.GetName]: belarus_another.65.a executed"
-			random_list = {
-				30 = {
-					BLR = {
-						batka_deleted = yes
-						add_popularity = {
-							ideology = communism
-							popularity = -0.10
-						}
-						recalculate_party = yes
-						if = { limit = { NOT = { is_in_array = { ruling_party = 15 } } }
-							set_temp_variable = { rul_party_temp = 15 }
-							change_ruling_party_effect = yes
-							set_politics = {
-								ruling_party = neutrality
-								elections_allowed = yes
-							}
-						}
-						set_temp_variable = { party_index = 15 }
-						set_temp_variable = { party_popularity_increase = 0.20 }
-						set_temp_variable = { temp_outlook_increase = 0.26 }
-						add_relative_party_popularity = yes
-						set_temp_variable = { percent_change = 5.2 }
-						set_temp_variable = { tag_index = SOV }
-						set_temp_variable = { influence_target = BLR }
-						change_influence_percentage = yes
-					}
-				}
-				30 = {
-					BLR = {
-						set_cosmetic_tag = BLR_limonka
-						clr_country_flag = dynamic_flag
-						batka_deleted = yes
-						add_popularity = {
-							ideology = communism
-							popularity = -0.10
-						}
-						recalculate_party = yes
-						if = { limit = { NOT = { is_in_array = { ruling_party = 15 } } }
-							set_temp_variable = { rul_party_temp = 21 }
-							change_ruling_party_effect = yes
-							set_politics = {
-								ruling_party = nationalist
-								elections_allowed = yes
-							}
-						}
-						set_temp_variable = { party_index = 21 }
-						set_temp_variable = { party_popularity_increase = 0.20 }
-						set_temp_variable = { temp_outlook_increase = 0.26 }
-						add_relative_party_popularity = yes
-						set_temp_variable = { percent_change = 5.2 }
-						set_temp_variable = { tag_index = SOV }
-						set_temp_variable = { influence_target = BLR }
-						change_influence_percentage = yes
-					}
-				}
-				30 = {
-					BLR = {
-						set_temp_variable = { percent_change = -15.2 }
-						set_temp_variable = { tag_index = SOV }
-						set_temp_variable = { influence_target = BLR }
-						change_influence_percentage = yes
-						set_temp_variable = { modify_union_state = -35 }
-						modify_union_state_support = yes
-					}
-				}
-			}
 		}
 	}
 
@@ -3891,6 +3399,141 @@ country_event = {
 
 		ai_chance = {
 			base = 1
+		}
+	}
+}
+country_event = {
+	id = belarus_politics.1
+	title = belarus_politics.1.t
+	desc = belarus_politics.1.d
+	picture = GFX_belarus_supreme_council
+	is_triggered_only = yes
+
+	option = {
+		name = belarus_politics.1.a
+		log = "[GetDateText]: [This.GetName]: belarus_politics.1.a executed"
+		custom_effect_tooltip = BLR_batka_krut_TT
+		hidden_effect = {
+			set_country_flag = BLR_white_rus
+			set_partyall_banned = yes
+			set_temp_variable = { party_index = 4 }
+			unban_party_scripted_call = yes
+			set_temp_variable = { party_index = 5 }
+			unban_party_scripted_call = yes
+			set_temp_variable = { party_index = 6 }
+			unban_party_scripted_call = yes
+			set_temp_variable = { party_index = 15 }
+			unban_party_scripted_call = yes
+			set_temp_variable = { party_index = 22 }
+			unban_party_scripted_call = yes
+			set_temp_variable = { add_col_one = 4 }
+			add_coalition_members_effect = yes
+			set_temp_variable = { add_col_one = 5 }
+			add_coalition_members_effect = yes
+			set_temp_variable = { add_col_one = 15 }
+			add_coalition_members_effect = yes
+		}
+		set_temp_variable = { party_index = 6 }
+		set_temp_variable = { party_popularity_increase = 0.10 }
+		set_temp_variable = { temp_outlook_increase = 0.10 }
+		add_relative_party_popularity = yes
+		ai_chance = {
+			base = 10
+		}
+	}
+	option = {
+		name = belarus_politics.1.b
+		log = "[GetDateText]: [This.GetName]: belarus_politics.1.b executed"
+		add_stability = -0.05
+		add_political_power = -150
+		ai_chance = {
+			base = 1
+		}
+	}
+}
+
+# Baltic Revolution - Notification Events
+country_event = {
+	id = belarus_LTB.1
+	title = belarus_LTB.1.t
+	desc = belarus_LTB.1.d
+
+	is_triggered_only = yes
+
+	option = {
+		name = belarus_LTB.1.a
+		log = "[GetDateText]: [This.GetName]: belarus_LTB.1.a executed"
+		add_stability = -0.01
+		ai_chance = {
+			base = 10
+		}
+	}
+}
+
+country_event = {
+	id = belarus_LTB.2
+	title = belarus_LTB.2.t
+	desc = belarus_LTB.2.d
+
+	is_triggered_only = yes
+
+	option = {
+		name = belarus_LTB.2.a
+		log = "[GetDateText]: [This.GetName]: belarus_LTB.2.a executed"
+		ai_chance = {
+			base = 10
+		}
+	}
+}
+
+country_event = {
+	id = belarus_LTB.3
+	title = belarus_LTB.3.t
+	desc = belarus_LTB.3.d
+
+	is_triggered_only = yes
+
+	option = {
+		name = belarus_LTB.3.a
+		log = "[GetDateText]: [This.GetName]: belarus_LTB.3.a executed"
+		add_stability = -0.01
+		army_experience = -10
+		ai_chance = {
+			base = 10
+		}
+	}
+}
+
+country_event = {
+	id = belarus_LTB.4
+	title = belarus_LTB.4.t
+	desc = belarus_LTB.4.d
+
+	is_triggered_only = yes
+
+	option = {
+		name = belarus_LTB.4.a
+		log = "[GetDateText]: [This.GetName]: belarus_LTB.4.a executed"
+		add_stability = -0.02
+		add_political_power = -50
+		ai_chance = {
+			base = 10
+		}
+	}
+}
+
+country_event = {
+	id = belarus_LTB.5
+	title = belarus_LTB.5.t
+	desc = belarus_LTB.5.d
+
+	is_triggered_only = yes
+
+	option = {
+		name = belarus_LTB.5.a
+		log = "[GetDateText]: [This.GetName]: belarus_LTB.5.a executed"
+		ai_chance = {
+			base = 10
 		}
 	}
 }

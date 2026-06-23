@@ -1,4 +1,4 @@
-﻿add_namespace = poland
+add_namespace = poland
 add_namespace = poland_news
 add_namespace = poland_influence
 add_namespace = poland_border_conflict
@@ -110,7 +110,6 @@ country_event = {
 		set_temp_variable = { party_index = 3 }
 		set_temp_variable = { party_popularity_increase = 0.20 }
 		add_relative_party_popularity = yes
-
 
 		ai_chance = { base = 40 }
 	}
@@ -249,7 +248,6 @@ country_event = {
 		set_temp_variable = { party_popularity_increase = -0.20 }
 		add_relative_party_popularity = yes
 
-
 		ai_chance = { base = 10 }
 	}
 }
@@ -284,19 +282,8 @@ country_event = {
 		if = {
 			limit = { NOT = { is_in_array = { ruling_party = 4 } } }
 			hidden_effect = {
-				clear_array = ruling_party
-				clear_array = gov_coalition_array
-				add_to_array = { ruling_party = 4 }
-				update_government_coalition_strength = yes
-				update_party_name = yes
-				set_coalition_drift = yes
-				set_ruling_leader = yes
-				set_leader = yes
-			}
-
-			set_politics = {
-				ruling_party = communism
-				elections_allowed = yes
+				set_temp_variable = { rul_party_temp = 4 }
+				change_ruling_party_effect = yes
 			}
 
 			set_temp_variable = { party_index = 4 }
@@ -326,21 +313,9 @@ country_event = {
 		if = {
 			limit = { NOT = { is_in_array = { ruling_party = 5 } } }
 			hidden_effect = {
-				clear_array = ruling_party
-				clear_array = gov_coalition_array
-				add_to_array = { ruling_party = 5 }
-				update_government_coalition_strength = yes
-				update_party_name = yes
-				set_coalition_drift = yes
-				set_ruling_leader = yes
-				set_leader = yes
+				set_temp_variable = { rul_party_temp = 5 }
+				change_ruling_party_effect = yes
 			}
-
-			set_politics = {
-				ruling_party = communism
-				elections_allowed = yes
-			}
-
 
 			set_temp_variable = { party_index = 5 }
 			set_temp_variable = { party_popularity_increase = 0.075 }
@@ -442,8 +417,8 @@ country_event = {
 				target = GER
 				modifier = POL_germany_refuses
 			}
+			country_event = poland.17
 		}
-		POL = { country_event = { id = poland.17 } }
 	}
 
 	option = {
@@ -460,7 +435,7 @@ country_event = {
 		}
 		set_temp_variable = { treasury_change = -10 }
 		modify_treasury_effect = yes
-		POL = { country_event = { id = poland.18 } }
+		POL = { country_event = poland.18 }
 	}
 }
 
@@ -679,7 +654,7 @@ country_event = {
 			limit = { has_dlc = "No Step Back" }
 
 			add_equipment_to_stockpile = {
-				type = mbt_hull_1
+				type = medium_tank_chassis_1
 				amount = 30
 				variant_name = "K2 PL"
 			}
@@ -687,7 +662,7 @@ country_event = {
 			modify_treasury_effect = yes
 			POL = {
 				add_equipment_to_stockpile = {
-					type = mbt_hull_1
+					type = medium_tank_chassis_1
 					amount = -30
 					variant_name = "K2 PL"
 				}
@@ -887,6 +862,8 @@ country_event = {
 		add_stability = 0.05
 		sre_home_defence_idea = yes
 		POL = {
+			set_temp_variable = { wargoal_on = UKR }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = UKR
@@ -1090,6 +1067,8 @@ country_event = {
 		add_war_support = 0.15
 		sre_home_defence_idea = yes
 		POL = {
+			set_temp_variable = { wargoal_on = UKR }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = UKR
@@ -1307,6 +1286,8 @@ country_event = {
 		add_war_support = 0.25
 		sre_home_defence_idea = yes
 		POL = {
+			set_temp_variable = { wargoal_on = UKR }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = UKR
@@ -1624,6 +1605,8 @@ country_event = {
 		add_war_support = 0.25
 		sre_home_defence_idea = yes
 		POL = {
+			set_temp_variable = { wargoal_on = UKR }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = UKR
@@ -1631,6 +1614,8 @@ country_event = {
 			country_event = poland.37
 		}
 		SOV = {
+			set_temp_variable = { wargoal_on = UKR }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = UKR
@@ -1770,14 +1755,13 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: poland.38.a executed"
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
 
 		add_political_power = 150
 		add_war_support = 0.25
 		add_stability = 0.2
-
 
 		ai_chance = {
 			base = 99
@@ -1788,7 +1772,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: poland.38.b executed"
 		trigger = {
 			NOT = {
-				tag = UKR
+				original_tag = UKR
 			}
 		}
 
@@ -1823,7 +1807,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: poland.38.c executed"
 		trigger = {
 			NOT = {
-				tag = UKR
+				original_tag = UKR
 			}
 		}
 
@@ -1843,12 +1827,6 @@ country_event = {
 			}
 			set_temp_variable = { rul_party_temp = 14 }
 			change_ruling_party_effect = yes
-			hidden_effect = {
-				set_politics = {
-					ruling_party = neutrality
-					elections_allowed = yes
-				}
-			}
 			keep_political_leader = yes
 			keep_political_party_members = yes
 			create_country_leader = { ### test
@@ -1874,22 +1852,18 @@ country_event = {
 	title = poland.39.t
 	desc = poland.39.d
 	picture = GFX_politics_salafism
-
-	fire_only_once = yes
+	is_triggered_only = yes
 
 	trigger = {
-		AND = {
-			tag = POL
-			POL = {
-				AND = {
-					has_war_with = UKR
-					controls_state = 701
-					controls_state = 700
-					NOT = {
-						has_completed_focus = POL_access_to_the_black_sea
-					}
-				}
-			}
+		has_war_with = UKR
+		controls_state = 701
+		controls_state = 700
+		NOT = {
+			has_completed_focus = POL_access_to_the_black_sea
+		}
+		nationalist_monarchists_are_in_power = yes
+		UKR = {
+			is_in_faction = no
 		}
 	}
 
@@ -1897,7 +1871,7 @@ country_event = {
 		name = poland.39.a
 		log = "[GetDateText]: [This.GetName]: poland.39.a executed"
 		trigger = {
-			tag = POL
+			original_tag = POL
 		}
 
 		add_political_power = 50
@@ -1907,7 +1881,6 @@ country_event = {
 			country_event = poland.40
 		}
 
-
 		ai_chance = {
 			base = 99
 		}
@@ -1916,15 +1889,17 @@ country_event = {
 		name = poland.39.b
 		log = "[GetDateText]: [This.GetName]: poland.39.b executed"
 		trigger = {
-			tag = POL
+			original_tag  = POL
 		}
 
 		add_war_support = -0.05
 		every_neighbor_country = {
 			limit = {
 				NOT = {
-					tag = BLR
-					tag = SOV
+					OR = {
+						original_tag  = BLR
+						original_tag  = SOV
+					}
 				}
 			}
 			reverse_add_opinion_modifier = { target = POL modifier = POL_goes_too_far }
@@ -1968,13 +1943,13 @@ country_event = {
 		name = poland.40.a
 		log = "[GetDateText]: [This.GetName]: poland.40.a executed"
 		trigger = {
-			tag = UKR
+			original_tag  = UKR
 		}
 
 		add_political_power = 50
 		add_stability = 0.05
 		white_peace = {
-			tag = POL
+			tag  = POL
 			message = POL_ukraine_peace2_TT
 		}
 
@@ -1995,7 +1970,7 @@ country_event = {
 		name = poland.40.b
 		log = "[GetDateText]: [This.GetName]: poland.40.b executed"
 		trigger = {
-			tag = UKR
+			original_tag  = UKR
 		}
 
 		add_political_power = 50
@@ -2024,7 +1999,7 @@ country_event = {
 		name = poland.41.a
 		log = "[GetDateText]: [This.GetName]: poland.41.a executed"
 		trigger = {
-			tag = UKR
+			original_tag  = UKR
 		}
 
 		add_stability = -0.05
@@ -2048,7 +2023,7 @@ country_event = {
 		name = poland.42.a
 		log = "[GetDateText]: [This.GetName]: poland.42.a executed"
 		trigger = {
-			tag = POL
+			original_tag  = POL
 		}
 
 		add_stability = -0.05
@@ -2075,25 +2050,21 @@ country_event = {
 	title = poland.43.t
 	desc = poland.43.d
 	picture = GFX_politics_salafism
-
-	fire_only_once = yes
+	is_triggered_only = yes
 
 	trigger = {
-		AND = {
-			tag = POL
-			POL = {
-				AND = {
-					has_war_with = UKR
-					controls_state = 335
-					controls_state = 699
-					controls_state = 695
-					controls_state = 333
-					has_completed_focus = POL_access_to_the_black_sea
-					NOT = {
-						has_completed_focus = POL_end_of_the_ukrainian_regime
-					}
-				}
-			}
+		has_war_with = UKR
+		controls_state = 335
+		controls_state = 699
+		controls_state = 695
+		controls_state = 333
+		has_completed_focus = POL_access_to_the_black_sea
+		NOT = {
+			has_completed_focus = POL_end_of_the_ukrainian_regime
+		}
+		nationalist_monarchists_are_in_power = yes
+		UKR = {
+			is_in_faction = no
 		}
 	}
 
@@ -2101,7 +2072,7 @@ country_event = {
 		name = poland.43.a
 		log = "[GetDateText]: [This.GetName]: poland.43.a executed"
 		trigger = {
-			tag = POL
+			original_tag = POL
 		}
 
 		add_political_power = 50
@@ -2111,7 +2082,6 @@ country_event = {
 			country_event = poland.44
 		}
 
-
 		ai_chance = {
 			base = 99
 		}
@@ -2120,15 +2090,17 @@ country_event = {
 		name = poland.43.b
 		log = "[GetDateText]: [This.GetName]: poland.43.b executed"
 		trigger = {
-			tag = POL
+			original_tag = POL
 		}
 
 		add_war_support = -0.05
 		every_neighbor_country = {
 			limit = {
 				NOT = {
-					tag = BLR
-					tag = SOV
+					OR = {
+						original_tag = BLR
+						original_tag = SOV
+					}
 				}
 			}
 			reverse_add_opinion_modifier = { target = POL modifier = POL_goes_too_far }
@@ -2171,7 +2143,7 @@ country_event = {
 		name = poland.44.a
 		log = "[GetDateText]: [This.GetName]: poland.44.a executed"
 		trigger = {
-			tag = UKR
+			original_tag = UKR
 		}
 
 		add_political_power = 50
@@ -2204,7 +2176,7 @@ country_event = {
 		name = poland.44.b
 		log = "[GetDateText]: [This.GetName]: poland.44.b executed"
 		trigger = {
-			tag = UKR
+			original_tag = UKR
 		}
 
 		add_political_power = 50
@@ -2233,7 +2205,7 @@ country_event = {
 		name = poland.45.a
 		log = "[GetDateText]: [This.GetName]: poland.45.a executed"
 		trigger = {
-			tag = POL
+			original_tag = POL
 		}
 
 		add_stability = -0.05
@@ -2266,7 +2238,7 @@ country_event = {
 		name = poland.46.a
 		log = "[GetDateText]: [This.GetName]: poland.46.a executed"
 		trigger = {
-			tag = UKR
+			original_tag = UKR
 		}
 
 		add_stability = -0.05
@@ -2290,7 +2262,7 @@ country_event = {
 		name = poland.47.a
 		log = "[GetDateText]: [This.GetName]: poland.47.a executed"
 		trigger = {
-			tag = UKR
+			original_tag = UKR
 		}
 
 		set_temp_variable = { percent_change = -4 }
@@ -2306,7 +2278,7 @@ country_event = {
 		name = poland.47.b
 		log = "[GetDateText]: [This.GetName]: poland.47.b executed"
 		trigger = {
-			tag = SOV
+			original_tag = SOV
 		}
 
 		add_opinion_modifier = {
@@ -2332,7 +2304,7 @@ country_event = {
 		name = poland.48.a
 		log = "[GetDateText]: [This.GetName]: poland.48.a executed"
 		trigger = {
-			tag = UKR
+			original_tag = UKR
 		}
 
 		add_political_power = 100
@@ -2387,7 +2359,7 @@ country_event = {
 		name = poland.48.b
 		log = "[GetDateText]: [This.GetName]: poland.48.b executed"
 		trigger = {
-			tag = UKR
+			original_tag = UKR
 		}
 
 		POL = {
@@ -2449,7 +2421,7 @@ country_event = {
 		name = poland.49.a
 		log = "[GetDateText]: [This.GetName]: poland.49.a executed"
 		trigger = {
-			tag = POL
+			original_tag = POL
 		}
 
 		add_political_power = -50
@@ -2473,7 +2445,7 @@ country_event = {
 		name = poland.50.a
 		log = "[GetDateText]: [This.GetName]: poland.50.a executed"
 		trigger = {
-			tag = POL
+			original_tag = POL
 		}
 
 		add_political_power = 50
@@ -2516,35 +2488,35 @@ country_event = {
 					target = POL
 					value > 100
 				}
-				factor = 95
+				add = 50
 			}
 			modifier = {
 				has_opinion = {
 					target = POL
 					value > 75
 				}
-				factor = 80
+				add = 35
 			}
 			modifier = {
 				has_opinion = {
 					target = POL
 					value > 50
 				}
-				factor = 70
+				add = 15
 			}
 			modifier = {
 				has_opinion = {
 					target = POL
 					value > 25
 				}
-				factor = 50
+				add = -25
 			}
 			modifier = {
 				has_opinion = {
 					target = POL
 					value < 25
 				}
-				factor = 35
+				add = -50
 			}
 		}
 	}
@@ -2554,6 +2526,8 @@ country_event = {
 
 		add_political_power = -25
 		POL = {
+			set_temp_variable = { wargoal_on = UKR }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = UKR
@@ -2561,6 +2535,8 @@ country_event = {
 			country_event = poland.37
 		}
 		SOV = {
+			set_temp_variable = { wargoal_on = UKR }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = UKR
@@ -2576,35 +2552,35 @@ country_event = {
 					target = POL
 					value > 100
 				}
-				factor = 5
+				add = -50
 			}
 			modifier = {
 				has_opinion = {
 					target = POL
 					value > 75
 				}
-				factor = 20
+				add = -35
 			}
 			modifier = {
 				has_opinion = {
 					target = POL
 					value > 50
 				}
-				factor = 30
+				add = -15
 			}
 			modifier = {
 				has_opinion = {
 					target = POL
 					value > 25
 				}
-				factor = 50
+				add = 25
 			}
 			modifier = {
 				has_opinion = {
 					target = POL
 					value < 25
 				}
-				factor = 65
+				add = 50
 			}
 		}
 	}
@@ -2743,7 +2719,7 @@ country_event = {
 		name = poland.53.a
 		log = "[GetDateText]: [This.GetName]: poland.53.a executed"
 		trigger = {
-			tag = POL
+			original_tag = POL
 		}
 
 		add_political_power = -50
@@ -2898,7 +2874,7 @@ country_event = {
 		name = poland.55.a
 		log = "[GetDateText]: [This.GetName]: poland.55.a executed"
 		trigger = {
-			tag = UKR
+			original_tag = UKR
 		}
 
 		add_political_power = 50
@@ -2920,7 +2896,7 @@ country_event = {
 		name = poland.55.b
 		log = "[GetDateText]: [This.GetName]: poland.55.b executed"
 		trigger = {
-			tag = UKR
+			original_tag = UKR
 		}
 
 		hidden_effect = {
@@ -2928,8 +2904,9 @@ country_event = {
 		}
 		add_political_power = -150
 		add_stability = -0.05
-		every_country = {
-			limit = { has_idea = NATO_member }
+		for_each_scope_loop = {
+			array = global.nato_members
+			tooltip = TT_ALL_NATO_MEMBER_NATIONS_GAIN
 			add_opinion_modifier = {
 				target = UKR
 				modifier = POL_ukraine_refuses_alliance
@@ -3331,10 +3308,8 @@ country_event = {
 		name = poland.62.a
 		log = "[GetDateText]: [This.GetName]: poland.62.a executed"
 
-		every_country = {
-			limit = {
-				has_idea = NATO_member
-			}
+		for_each_scope_loop = {
+			array = global.nato_members
 			add_opinion_modifier = {
 				target = POL
 				modifier = POL_poland_starts_cooperation_with_russia
@@ -3521,8 +3496,8 @@ country_event = {
 				target = GER
 				modifier = POL_russia_refuses
 			}
+			country_event = poland.68
 		}
-		POL = { country_event = { id = poland.68 } }
 	}
 
 	option = {
@@ -3536,10 +3511,10 @@ country_event = {
 				target = GER
 				modifier = POL_russia_accepts
 			}
+			country_event = poland.69
 		}
 		set_temp_variable = { treasury_change = -10 }
 		modify_treasury_effect = yes
-		POL = { country_event = { id = poland.69 } }
 	}
 }
 
@@ -3650,7 +3625,10 @@ country_event = {
 
 		add_stability = -0.05
 		add_political_power = 50
-		send_embargo = SOV
+		if = {
+			limit = { has_dlc = "By Blood Alone" }
+			send_embargo = SOV
+		}
 	}
 
 	option = {
@@ -3697,7 +3675,10 @@ country_event = {
 
 		add_stability = -0.05
 		add_political_power = 50
-		send_embargo = SOV
+		if = {
+			limit = { has_dlc = "By Blood Alone" }
+			send_embargo = SOV
+		}
 		add_ideas = POL_anti_russia_coalition_member_idea
 		reverse_add_opinion_modifier = {
 			target = SOV
@@ -4058,13 +4039,8 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: poland.87.a executed"
 		ai_chance = { base = 100 }
 		set_temp_variable = { rul_party_temp = 4 }
+		set_temp_variable = { disable_elections = 1 }
 		change_ruling_party_effect = yes
-		hidden_effect = {
-			set_politics = {
-				ruling_party = communism
-				elections_allowed = no
-			}
-		}
 		set_temp_variable = { party_index = 4 }
 		set_temp_variable = { party_popularity_increase = 0.5 }
 		set_temp_variable = { temp_outlook_increase = 0.1 }
@@ -4252,13 +4228,12 @@ country_event = {
 	option = {
 		name = poland.96.a
 		log = "[GetDateText]: [This.GetName]: poland.96.a executed"
-		add_popularity = {
-			ideology = communism
-			popularity = 0.1
-		}
+		set_temp_variable = { party_index = 4 }
+		set_temp_variable = { party_popularity_increase = 0.1 }
+		set_temp_variable = { temp_outlook_increase = 0.1 }
+		add_relative_party_popularity = yes
+		set_temp_variable = { skip_payment = 1 }
 		one_random_industrial_complex = yes
-		set_temp_variable = { treasury_change = 7.5 }
-		modify_treasury_effect = yes
 		add_political_power = -75
 		POL = {
 			set_temp_variable = { treasury_change = -7.5 }
@@ -4285,13 +4260,12 @@ country_event = {
 	option = {
 		name = poland.97.a
 		log = "[GetDateText]: [This.GetName]: poland.97.a executed"
-		add_popularity = {
-			ideology = communism
-			popularity = 0.1
-		}
+		set_temp_variable = { party_index = 4 }
+		set_temp_variable = { party_popularity_increase = 0.1 }
+		set_temp_variable = { temp_outlook_increase = 0.1 }
+		add_relative_party_popularity = yes
+		set_temp_variable = { skip_payment = 1 }
 		one_random_industrial_complex = yes
-		set_temp_variable = { treasury_change = 7.5 }
-		modify_treasury_effect = yes
 		add_political_power = -75
 		POL = {
 			set_temp_variable = { treasury_change = -7.5 }
@@ -4343,8 +4317,7 @@ country_event = {
 	title = poland.100.t
 	desc = poland.100.d
 	picture = GFX_stock_market
-
-	fire_only_once = yes
+	is_triggered_only = yes
 
 	trigger = {
 		has_country_flag = POL_stay_outside_the_eu_flag
@@ -4354,7 +4327,7 @@ country_event = {
 	option = {
 		name = poland.100.a
 		log = "[GetDateText]: [This.GetName]: poland.100.a executed"
-		remove_ideas = EU_member
+		leaving_EU = yes
 		ai_chance = { base = 100 }
 	}
 }
@@ -4366,7 +4339,6 @@ country_event = {
 	picture = GFX_anaconda_16_event
 
 	is_triggered_only = yes
-	major = yes
 
 	option = {
 		name = poland.101.a
@@ -4391,21 +4363,6 @@ country_event = {
 	}
 }
 
-#country_event = {
-#	id = poland.103
-#	title = poland.103.t
-#	desc = poland.103.d
-#	picture = GFX_POL_generic
-#
-#	fire_only_once = yes
-#	is_triggered_only = yes
-#
-#	option = {
-#		name = poland.103.a
-#		log = "[GetDateText]: [This.GetName]: poland.103.a executed"
-#	}
-#}
-
 country_event = {
 	id = poland.104
 	title = poland.104.t
@@ -4427,25 +4384,26 @@ country_event = {
 	id = poland.105
 	title = poland.105.t
 	desc = poland.105.d
-	picture = GFX_csr2
+	picture = GFX_politics_communist_dream
 
-	fire_only_once = yes
 	is_triggered_only = yes
 
 	option = {
 		name = poland.105.a
 		log = "[GetDateText]: [This.GetName]: poland.105.a executed"
-		CZE = {
+		var:POL.POL_faction_invite = {
 			country_event = poland.106
 		}
-		ai_chance = { base = 100 }
+		clear_variable = POL.faction_invite
+		ai_chance = { base = 90 }
 	}
 	option = {
 		name = poland.105.b
 		log = "[GetDateText]: [This.GetName]: poland.105.b executed"
-		CZE = {
+		var:POL.POL_faction_invite = {
 			country_event = poland.107
 		}
+		clear_variable = POL.faction_invite
 		ai_chance = { base = 10 }
 	}
 }
@@ -4454,21 +4412,27 @@ country_event = {
 	id = poland.106
 	title = poland.106.t
 	desc = poland.106.d
-	picture = GFX_csr2
+	picture = GFX_politics_communist_dream
 
-	fire_only_once = yes
 	is_triggered_only = yes
 
 	option = {
 		name = poland.106.a
 		log = "[GetDateText]: [This.GetName]: poland.106.a executed"
-		NATO_leave = yes
+		if = {
+			limit = {
+				has_idea = NATO_member
+			}
+			NATO_leave = yes
+		}
 		set_politics = {
 			ruling_party = communism
 			elections_allowed = yes
 		}
 		POL = {
-			add_to_faction = CZE
+			add_to_faction = ROOT
+			add_faction_initiative = 1
+			POL_gui_dirty_update = yes
 		}
 		add_ideas = REP_member
 		ai_chance = {
@@ -4493,28 +4457,33 @@ country_event = {
 	id = poland.107
 	title = poland.107.t
 	desc = poland.107.d
-	picture = GFX_csr2
+	picture = GFX_politics_communist_dream
 
-	fire_only_once = yes
 	is_triggered_only = yes
 
 	option = {
 		name = poland.107.a
 		log = "[GetDateText]: [This.GetName]: poland.107.a executed"
-		NATO_leave = yes
+		if = {
+			limit = {
+				has_idea = NATO_member
+			}
+			NATO_leave = yes
+		}
 		set_politics = {
 			ruling_party = communism
 			elections_allowed = yes
 		}
 		add_ideas = REP_member
 		POL = {
-			add_to_faction = CZE
+			add_to_faction = ROOT
+			add_faction_initiative = 1
 			if = {
 				limit = {
 					has_global_flag = GAME_RULE_allow_colored_puppets
 				}
 				set_autonomy = {
-					target = CZE
+					target = ROOT
 					autonomy_state = autonomy_satellite_state_colored
 					end_wars = no
 					end_civil_wars = no
@@ -4522,12 +4491,13 @@ country_event = {
 			}
 			else = {
 				set_autonomy = {
-					target = CZE
+					target = ROOT
 					autonomy_state = autonomy_satellite_state
 					end_wars = no
 					end_civil_wars = no
 				}
 			}
+			POL_gui_dirty_update = yes
 		}
 		ai_chance = {
 			base = 95
@@ -4539,255 +4509,7 @@ country_event = {
 		add_political_power = 120
 		add_popularity = {
 			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 5
-		}
-	}
-}
-
-country_event = {
-	id = poland.108
-	title = poland.108.t
-	desc = poland.108.d
-	picture = GFX_volby_slo
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.108.a
-		log = "[GetDateText]: [This.GetName]: poland.108.a executed"
-		SLO = {
-			country_event = poland.109
-		}
-		ai_chance = { base = 100 }
-	}
-	option = {
-		name = poland.108.b
-		log = "[GetDateText]: [This.GetName]: poland.108.b executed"
-		SLO = {
-			country_event = poland.110
-		}
-		ai_chance = { base = 10 }
-	}
-}
-
-country_event = {
-	id = poland.109
-	title = poland.109.t
-	desc = poland.109.d
-	picture = GFX_volby_slo
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.109.a
-		log = "[GetDateText]: [This.GetName]: poland.109.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		POL = {
-			add_to_faction = SLO
-		}
-		add_ideas = REP_member
-		ai_chance = {
-			base = 100
-		}
-	}
-	option = {
-		name = poland.109.b
-		log = "[GetDateText]: [This.GetName]: poland.109.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-country_event = {
-	id = poland.110
-	title = poland.110.t
-	desc = poland.110.d
-	picture = GFX_volby_slo
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.110.a
-		log = "[GetDateText]: [This.GetName]: poland.110.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		add_ideas = REP_member
-		POL = {
-			add_to_faction = SLO
-			if = {
-				limit = {
-					has_global_flag = GAME_RULE_allow_colored_puppets
-				}
-				set_autonomy = {
-					target = SLO
-					autonomy_state = autonomy_satellite_state_colored
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-			else = {
-				set_autonomy = {
-					target = SLO
-					autonomy_state = autonomy_satellite_state
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-		}
-		ai_chance = {
-			base = 95
-		}
-	}
-	option = {
-		name = poland.110.b
-		log = "[GetDateText]: [This.GetName]: poland.110.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 5
-		}
-	}
-}
-
-country_event = {
-	id = poland.111
-	title = poland.111.t
-	desc = poland.111.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.111.a
-		log = "[GetDateText]: [This.GetName]: poland.111.a executed"
-		HUN = {
-			country_event = poland.112
-		}
-		ai_chance = { base = 100 }
-	}
-	option = {
-		name = poland.111.b
-		log = "[GetDateText]: [This.GetName]: poland.111.b executed"
-		HUN = {
-			country_event = poland.113
-		}
-		ai_chance = { base = 10 }
-	}
-}
-
-country_event = {
-	id = poland.112
-	title = poland.112.t
-	desc = poland.112.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.112.a
-		log = "[GetDateText]: [This.GetName]: poland.112.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		POL = {
-			add_to_faction = HUN
-		}
-		add_ideas = REP_member
-		ai_chance = {
-			base = 100
-		}
-	}
-	option = {
-		name = poland.112.b
-		log = "[GetDateText]: [This.GetName]: poland.112.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-country_event = {
-	id = poland.113
-	title = poland.113.t
-	desc = poland.113.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.113.a
-		log = "[GetDateText]: [This.GetName]: poland.113.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		add_ideas = REP_member
-		POL = {
-			add_to_faction = HUN
-			if = {
-				limit = {
-					has_global_flag = GAME_RULE_allow_colored_puppets
-				}
-				set_autonomy = {
-					target = HUN
-					autonomy_state = autonomy_satellite_state_colored
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-			else = {
-				set_autonomy = {
-					target = HUN
-					autonomy_state = autonomy_satellite_state
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-		}
-		ai_chance = {
-			base = 95
-		}
-	}
-	option = {
-		name = poland.113.b
-		log = "[GetDateText]: [This.GetName]: poland.113.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
+			popularity = -0.30
 		}
 		ai_chance = {
 			base = 5
@@ -4801,32 +4523,71 @@ country_event = {
 	desc = poland.114.d
 	picture = GFX_broken_infrastructure
 
-	fire_only_once = yes
 	is_triggered_only = yes
 
 	option = {
 		name = poland.114.a
 		log = "[GetDateText]: [This.GetName]: poland.114.a executed"
-		build_railway = {
-			level = 1
-			build_only_on_allied = no
-			fallback = yes
-			path = { 6281 327 3320 9404 9438 9374 }
-			start_province = 6281
-			target_province = 9374
+		if = {
+			limit = {
+				original_tag  = LIT
+			}
+			build_railway = {
+				level = 1
+				build_only_on_allied = no
+				fallback = yes
+				path = { 6281 11312 6296 9438 9374 }
+				start_province = 6281
+				target_province = 9374
+			}
+			POL = {
+				set_country_flag = POL_lithuania_railway_built
+			}
+		}
+		if = {
+			limit = {
+				original_tag  = LAT
+			}
+			build_railway = {
+				level = 1
+				build_only_on_allied = no
+				fallback = yes
+				path = { 265 9340 9240 9317 }
+				start_province = 265
+				target_province = 9317
+			}
+			POL = {
+				set_country_flag = POL_latvian_railway_built
+			}
+		}
+		if = {
+			limit = {
+				original_tag  = EST
+			}
+			build_railway = {
+				level = 1
+				build_only_on_allied = no
+				fallback = yes
+				path = { 11291 496 3152 }
+				start_province = 265
+				target_province = 9317
+			}
+			POL = {
+				set_country_flag = POL_estonian_railway_built
+			}
 		}
 		POL = {
 			set_temp_variable = { treasury_change = -0.12 }
 			modify_treasury_effect = yes
 			country_event = poland.117
 		}
-		add_popularity = {
-			ideology = communism
-			popularity = 0.08
-		}
+		set_temp_variable = { party_index = 4 }
+		set_temp_variable = { party_popularity_increase = 0.08 }
+		set_temp_variable = { temp_outlook_increase = 0.08 }
+		add_relative_party_popularity = yes
 		set_temp_variable = { percent_change = 5 }
 		set_temp_variable = { tag_index = POL }
-		set_temp_variable = { influence_target = LIT }
+		set_temp_variable = { influence_target = ROOT }
 		change_influence_percentage = yes
 		ai_chance = { base = 100 }
 	}
@@ -4834,101 +4595,9 @@ country_event = {
 		name = poland.114.b
 		log = "[GetDateText]: [This.GetName]: poland.114.b executed"
 		ai_chance = { base = 10 }
-		add_political_power = 100
+		add_political_power = 50
 		POL = {
 			country_event = poland.118
-		}
-	}
-}
-
-country_event = {
-	id = poland.115
-	title = poland.115.t
-	desc = poland.115.d
-	picture = GFX_broken_infrastructure
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.115.a
-		log = "[GetDateText]: [This.GetName]: poland.115.a executed"
-		build_railway = {
-			level = 1
-			build_only_on_allied = no
-			fallback = yes
-			path = { 265 14532 9240 9317 }
-			start_province = 265
-			target_province = 9317
-		}
-		POL = {
-			set_temp_variable = { treasury_change = -0.12 }
-			modify_treasury_effect = yes
-			country_event = poland.119
-		}
-		add_popularity = {
-			ideology = communism
-			popularity = 0.08
-		}
-		set_temp_variable = { percent_change = 5 }
-		set_temp_variable = { tag_index = POL }
-		set_temp_variable = { influence_target = LAT }
-		change_influence_percentage = yes
-		ai_chance = { base = 100 }
-	}
-	option = {
-		name = poland.115.b
-		log = "[GetDateText]: [This.GetName]: poland.115.b executed"
-		ai_chance = { base = 10 }
-		add_political_power = 100
-		POL = {
-			country_event = poland.120
-		}
-	}
-}
-
-country_event = {
-	id = poland.116
-	title = poland.116.t
-	desc = poland.116.d
-	picture = GFX_broken_infrastructure
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.116.a
-		log = "[GetDateText]: [This.GetName]: poland.116.a executed"
-		build_railway = {
-			level = 1
-			build_only_on_allied = no
-			fallback = yes
-			path = { 11291 308 496 3152 }
-			start_province = 265
-			target_province = 9317
-		}
-		POL = {
-			set_temp_variable = { treasury_change = -0.12 }
-			modify_treasury_effect = yes
-			country_event = poland.121
-		}
-		add_popularity = {
-			ideology = communism
-			popularity = 0.08
-		}
-		set_temp_variable = { percent_change = 5 }
-		set_temp_variable = { tag_index = POL }
-		set_temp_variable = { influence_target = EST }
-		change_influence_percentage = yes
-		ai_chance = { base = 100 }
-	}
-	option = {
-		name = poland.116.b
-		log = "[GetDateText]: [This.GetName]: poland.116.b executed"
-		ai_chance = { base = 10 }
-		add_political_power = 100
-		POL = {
-			country_event = poland.122
 		}
 	}
 }
@@ -4939,7 +4608,6 @@ country_event = {
 	desc = poland.117.d
 	picture = GFX_message_signing
 
-	fire_only_once = yes
 	is_triggered_only = yes
 
 	option = {
@@ -4956,7 +4624,6 @@ country_event = {
 	desc = poland.118.d
 	picture = GFX_treaty_rejected
 
-	fire_only_once = yes
 	is_triggered_only = yes
 
 	option = {
@@ -4968,993 +4635,34 @@ country_event = {
 }
 
 country_event = {
-	id = poland.119
-	title = poland.119.t
-	desc = poland.119.d
-	picture = GFX_message_signing
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.119.a
-		log = "[GetDateText]: [This.GetName]: poland.119.a executed"
-		add_political_power = 50
-		ai_chance = { base = 100 }
-	}
-}
-
-country_event = {
-	id = poland.120
-	title = poland.120.t
-	desc = poland.120.d
-	picture = GFX_treaty_rejected
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.120.a
-		log = "[GetDateText]: [This.GetName]: poland.120.a executed"
-		add_political_power = -50
-		ai_chance = { base = 100 }
-	}
-}
-
-country_event = {
-	id = poland.121
-	title = poland.121.t
-	desc = poland.121.d
-	picture = GFX_message_signing
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.121.a
-		log = "[GetDateText]: [This.GetName]: poland.121.a executed"
-		add_political_power = 50
-		ai_chance = { base = 100 }
-	}
-}
-
-country_event = {
-	id = poland.122
-	title = poland.122.t
-	desc = poland.122.d
-	picture = GFX_treaty_rejected
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.122.a
-		log = "[GetDateText]: [This.GetName]: poland.122.a executed"
-		add_political_power = -50
-		ai_chance = { base = 100 }
-	}
-}
-
-country_event = {
-	id = poland.123
-	title = poland.123.t
-	desc = poland.123.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.123.a
-		log = "[GetDateText]: [This.GetName]: poland.123.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		add_ideas = REP_member
-		POL = {
-			add_to_faction = LIT
-			if = {
-				limit = {
-					has_global_flag = GAME_RULE_allow_colored_puppets
-				}
-				set_autonomy = {
-					target = LIT
-					autonomy_state = autonomy_satellite_state_colored
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-			else = {
-				set_autonomy = {
-					target = LIT
-					autonomy_state = autonomy_satellite_state
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-		}
-		ai_chance = {
-			base = 95
-		}
-	}
-	option = {
-		name = poland.123.b
-		log = "[GetDateText]: [This.GetName]: poland.123.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 5
-		}
-	}
-}
-
-country_event = {
-	id = poland.124
-	title = poland.124.t
-	desc = poland.124.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.124.a
-		log = "[GetDateText]: [This.GetName]: poland.124.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		add_ideas = REP_member
-		POL = {
-			add_to_faction = LAT
-			if = {
-				limit = {
-					has_global_flag = GAME_RULE_allow_colored_puppets
-				}
-				set_autonomy = {
-					target = LAT
-					autonomy_state = autonomy_satellite_state_colored
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-			else = {
-				set_autonomy = {
-					target = LAT
-					autonomy_state = autonomy_satellite_state
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-		}
-		ai_chance = {
-			base = 95
-		}
-	}
-	option = {
-		name = poland.124.b
-		log = "[GetDateText]: [This.GetName]: poland.124.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 5
-		}
-	}
-}
-
-country_event = {
-	id = poland.125
-	title = poland.125.t
-	desc = poland.125.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.125.a
-		log = "[GetDateText]: [This.GetName]: poland.125.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		add_ideas = REP_member
-		POL = {
-			add_to_faction = EST
-			if = {
-				limit = {
-					has_global_flag = GAME_RULE_allow_colored_puppets
-				}
-				set_autonomy = {
-					target = EST
-					autonomy_state = autonomy_satellite_state_colored
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-			else = {
-				set_autonomy = {
-					target = EST
-					autonomy_state = autonomy_satellite_state
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-		}
-		ai_chance = {
-			base = 95
-		}
-	}
-	option = {
-		name = poland.125.b
-		log = "[GetDateText]: [This.GetName]: poland.125.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 5
-		}
-	}
-}
-
-country_event = {
-	id = poland.126
-	title = poland.126.t
-	desc = poland.126.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.126.a
-		log = "[GetDateText]: [This.GetName]: poland.126.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		POL = {
-			add_to_faction = LIT
-		}
-		add_ideas = REP_member
-		ai_chance = {
-			base = 100
-		}
-	}
-	option = {
-		name = poland.126.b
-		log = "[GetDateText]: [This.GetName]: poland.126.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-country_event = {
-	id = poland.127
-	title = poland.127.t
-	desc = poland.127.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.127.a
-		log = "[GetDateText]: [This.GetName]: poland.127.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		POL = {
-			add_to_faction = LAT
-		}
-		add_ideas = REP_member
-		ai_chance = {
-			base = 100
-		}
-	}
-	option = {
-		name = poland.127.b
-		log = "[GetDateText]: [This.GetName]: poland.127.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-country_event = {
-	id = poland.128
-	title = poland.128.t
-	desc = poland.128.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.128.a
-		log = "[GetDateText]: [This.GetName]: poland.128.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		POL = {
-			add_to_faction = EST
-		}
-		add_ideas = REP_member
-		ai_chance = {
-			base = 100
-		}
-	}
-	option = {
-		name = poland.128.b
-		log = "[GetDateText]: [This.GetName]: poland.128.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-country_event = {
-	id = poland.129
-	title = poland.129.t
-	desc = poland.129.d
-	picture = GFX_plc_proposal
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.129.a
-		log = "[GetDateText]: [This.GetName]: poland.129.a executed"
-		LIT = {
-			country_event = poland.126
-		}
-		ai_chance = { base = 100 }
-	}
-	option = {
-		name = poland.129.b
-		log = "[GetDateText]: [This.GetName]: poland.129.b executed"
-		LIT = {
-			country_event = poland.123
-		}
-		ai_chance = { base = 10 }
-	}
-}
-
-country_event = {
-	id = poland.130
-	title = poland.130.t
-	desc = poland.130.d
-	picture = GFX_politics_communist_dream
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.130.a
-		log = "[GetDateText]: [This.GetName]: poland.130.a executed"
-		LAT = {
-			country_event = poland.127
-		}
-		ai_chance = { base = 100 }
-	}
-	option = {
-		name = poland.130.b
-		log = "[GetDateText]: [This.GetName]: poland.130.b executed"
-		LAT = {
-			country_event = poland.124
-		}
-		ai_chance = { base = 10 }
-	}
-}
-
-country_event = {
-	id = poland.131
-	title = poland.131.t
-	desc = poland.131.d
-	picture = GFX_EST_LocalElections
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.131.a
-		log = "[GetDateText]: [This.GetName]: poland.131.a executed"
-		EST = {
-			country_event = poland.128
-		}
-		ai_chance = { base = 100 }
-	}
-	option = {
-		name = poland.131.b
-		log = "[GetDateText]: [This.GetName]: poland.131.b executed"
-		EST = {
-			country_event = poland.125
-		}
-		ai_chance = { base = 10 }
-	}
-}
-
-country_event = {
-	id = poland.132
-	title = poland.132.t
-	desc = poland.132.d
-	picture = GFX_ROM_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.132.a
-		log = "[GetDateText]: [This.GetName]: poland.132.a executed"
-		ROM = {
-			country_event = poland.134
-		}
-		ai_chance = { base = 100 }
-	}
-	option = {
-		name = poland.132.b
-		log = "[GetDateText]: [This.GetName]: poland.132.b executed"
-		ROM = {
-			country_event = poland.135
-		}
-		ai_chance = { base = 10 }
-	}
-}
-
-country_event = {
-	id = poland.133
-	title = poland.133.t
-	desc = poland.133.d
-	picture = GFX_communism
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.133.a
-		log = "[GetDateText]: [This.GetName]: poland.133.a executed"
-		BUL = {
-			country_event = poland.136
-		}
-		ai_chance = { base = 100 }
-	}
-	option = {
-		name = poland.133.b
-		log = "[GetDateText]: [This.GetName]: poland.133.b executed"
-		BUL = {
-			country_event = poland.137
-		}
-		ai_chance = { base = 10 }
-	}
-}
-
-country_event = {
-	id = poland.134
-	title = poland.134.t
-	desc = poland.134.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.134.a
-		log = "[GetDateText]: [This.GetName]: poland.134.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		POL = {
-			add_to_faction = ROM
-		}
-		add_ideas = REP_member
-		ai_chance = {
-			base = 100
-		}
-	}
-	option = {
-		name = poland.134.b
-		log = "[GetDateText]: [This.GetName]: poland.134.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-country_event = {
-	id = poland.135
-	title = poland.135.t
-	desc = poland.135.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.135.a
-		log = "[GetDateText]: [This.GetName]: poland.135.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		add_ideas = REP_member
-		POL = {
-			add_to_faction = ROM
-			if = {
-				limit = {
-					has_global_flag = GAME_RULE_allow_colored_puppets
-				}
-				set_autonomy = {
-					target = ROM
-					autonomy_state = autonomy_satellite_state_colored
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-			else = {
-				set_autonomy = {
-					target = ROM
-					autonomy_state = autonomy_satellite_state
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-		}
-		ai_chance = {
-			base = 95
-		}
-	}
-	option = {
-		name = poland.135.b
-		log = "[GetDateText]: [This.GetName]: poland.135.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 5
-		}
-	}
-}
-
-country_event = {
-	id = poland.136
-	title = poland.136.t
-	desc = poland.136.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.136.a
-		log = "[GetDateText]: [This.GetName]: poland.136.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		POL = {
-			add_to_faction = BUL
-		}
-		add_ideas = REP_member
-		ai_chance = {
-			base = 100
-		}
-	}
-	option = {
-		name = poland.136.b
-		log = "[GetDateText]: [This.GetName]: poland.136.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-country_event = {
-	id = poland.137
-	title = poland.137.t
-	desc = poland.137.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.137.a
-		log = "[GetDateText]: [This.GetName]: poland.137.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		add_ideas = REP_member
-		POL = {
-			add_to_faction = BUL
-			if = {
-				limit = {
-					has_global_flag = GAME_RULE_allow_colored_puppets
-				}
-				set_autonomy = {
-					target = BUL
-					autonomy_state = autonomy_satellite_state_colored
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-			else = {
-				set_autonomy = {
-					target = BUL
-					autonomy_state = autonomy_satellite_state
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-		}
-		ai_chance = {
-			base = 95
-		}
-	}
-	option = {
-		name = poland.137.b
-		log = "[GetDateText]: [This.GetName]: poland.137.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 5
-		}
-	}
-}
-
-country_event = {
-	id = poland.138
-	title = poland.138.t
-	desc = poland.138.d
-	picture = GFX_communism
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.138.a
-		log = "[GetDateText]: [This.GetName]: poland.138.a executed"
-		SWE = {
-			country_event = poland.140
-		}
-		ai_chance = { base = 100 }
-	}
-	option = {
-		name = poland.138.b
-		log = "[GetDateText]: [This.GetName]: poland.138.b executed"
-		SWE = {
-			country_event = poland.141
-		}
-		ai_chance = { base = 10 }
-	}
-}
-
-country_event = {
-	id = poland.139
-	title = poland.139.t
-	desc = poland.139.d
-	picture = GFX_finnish_flag
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.139.a
-		log = "[GetDateText]: [This.GetName]: poland.139.a executed"
-		FIN = {
-			country_event = poland.142
-		}
-		ai_chance = { base = 100 }
-	}
-	option = {
-		name = poland.139.b
-		log = "[GetDateText]: [This.GetName]: poland.139.b executed"
-		FIN = {
-			country_event = poland.143
-		}
-		ai_chance = { base = 10 }
-	}
-}
-
-country_event = {
-	id = poland.140
-	title = poland.140.t
-	desc = poland.140.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.140.a
-		log = "[GetDateText]: [This.GetName]: poland.140.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		POL = {
-			add_to_faction = SWE
-		}
-		add_ideas = REP_member
-		ai_chance = {
-			base = 100
-		}
-	}
-	option = {
-		name = poland.140.b
-		log = "[GetDateText]: [This.GetName]: poland.140.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-country_event = {
-	id = poland.141
-	title = poland.141.t
-	desc = poland.141.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.141.a
-		log = "[GetDateText]: [This.GetName]: poland.141.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		add_ideas = REP_member
-		POL = {
-			add_to_faction = SWE
-			if = {
-				limit = {
-					has_global_flag = GAME_RULE_allow_colored_puppets
-				}
-				set_autonomy = {
-					target = SWE
-					autonomy_state = autonomy_satellite_state_colored
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-			else = {
-				set_autonomy = {
-					target = SWE
-					autonomy_state = autonomy_satellite_state
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-		}
-		ai_chance = {
-			base = 95
-		}
-	}
-	option = {
-		name = poland.141.b
-		log = "[GetDateText]: [This.GetName]: poland.141.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 5
-		}
-	}
-}
-
-country_event = {
-	id = poland.142
-	title = poland.142.t
-	desc = poland.142.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.142.a
-		log = "[GetDateText]: [This.GetName]: poland.142.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		POL = {
-			add_to_faction = FIN
-		}
-		add_ideas = REP_member
-		ai_chance = {
-			base = 100
-		}
-	}
-	option = {
-		name = poland.142.b
-		log = "[GetDateText]: [This.GetName]: poland.142.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-country_event = {
-	id = poland.143
-	title = poland.143.t
-	desc = poland.143.d
-	picture = GFX_POL_generic
-
-	fire_only_once = yes
-	is_triggered_only = yes
-
-	option = {
-		name = poland.143.a
-		log = "[GetDateText]: [This.GetName]: poland.143.a executed"
-		NATO_leave = yes
-		set_politics = {
-			ruling_party = communism
-			elections_allowed = yes
-		}
-		add_ideas = REP_member
-		POL = {
-			add_to_faction = FIN
-			if = {
-				limit = {
-					has_global_flag = GAME_RULE_allow_colored_puppets
-				}
-				set_autonomy = {
-					target = FIN
-					autonomy_state = autonomy_satellite_state_colored
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-			else = {
-				set_autonomy = {
-					target = FIN
-					autonomy_state = autonomy_satellite_state
-					end_wars = no
-					end_civil_wars = no
-				}
-			}
-		}
-		ai_chance = {
-			base = 95
-		}
-	}
-	option = {
-		name = poland.143.b
-		log = "[GetDateText]: [This.GetName]: poland.143.b executed"
-		add_political_power = 120
-		add_popularity = {
-			ideology = communism
-			popularity = -0.45
-		}
-		ai_chance = {
-			base = 5
-		}
-	}
-}
-
-country_event = {
 	id = poland.144
 	title = poland.144.t
 	desc = poland.144.d
 	picture = GFX_politics_communist_dream
 
-	trigger = {
-		original_tag = POL
-		has_country_flag = POL_start_visegrad_plans_flag
-		NOT = {
-			AND = {
-				OR = {
-					CZE = { is_in_faction_with = POL }
-					CZE = { is_subject_of = POL }
-				}
-				OR = {
-					SLO = { is_in_faction_with = POL }
-					SLO = { is_subject_of = POL }
-				}
-				OR = {
-					HUN = { is_in_faction_with = POL }
-					HUN = { is_subject_of = POL }
-				}
-			}
-		}
-	}
-
-	mean_time_to_happen = {
-		months = 1
-		years = 1
-	}
+	fire_only_once = yes
+	is_triggered_only = yes
 
 	option = {
 		name = poland.144.a
 		log = "[GetDateText]: [This.GetName]: poland.144.a executed"
 		CZE = {
-			add_popularity = {
-				ideology = communism
-				popularity = 0.06
-			}
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.06 }
+			set_temp_variable = { temp_outlook_increase = 0.06 }
+			add_relative_party_popularity = yes
 		}
 		SLO = {
-			add_popularity = {
-				ideology = communism
-				popularity = 0.06
-			}
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.06 }
+			set_temp_variable = { temp_outlook_increase = 0.06 }
+			add_relative_party_popularity = yes
 		}
 		HUN = {
-			add_popularity = {
-				ideology = communism
-				popularity = 0.06
-			}
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.06 }
+			set_temp_variable = { temp_outlook_increase = 0.06 }
+			add_relative_party_popularity = yes
 		}
 		ai_chance = {
 			base = 100
@@ -5968,52 +4676,29 @@ country_event = {
 	desc = poland.145.d
 	picture = GFX_politics_communist_dream
 
-	trigger = {
-		original_tag = POL
-		has_country_flag = POL_start_baltic_plans_flag
-		NOT = {
-			AND = {
-				OR = {
-					LIT = { is_in_faction_with = POL }
-					LIT = { is_subject_of = POL }
-				}
-				OR = {
-					LAT = { is_in_faction_with = POL }
-					LAT = { is_subject_of = POL }
-				}
-				OR = {
-					EST = { is_in_faction_with = POL }
-					EST = { is_subject_of = POL }
-				}
-			}
-		}
-	}
-
-	mean_time_to_happen = {
-		months = 1
-		years = 1
-	}
+	fire_only_once = yes
+	is_triggered_only = yes
 
 	option = {
 		name = poland.145.a
 		log = "[GetDateText]: [This.GetName]: poland.145.a executed"
 		LIT = {
-			add_popularity = {
-				ideology = communism
-				popularity = 0.06
-			}
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.06 }
+			set_temp_variable = { temp_outlook_increase = 0.06 }
+			add_relative_party_popularity = yes
 		}
 		LAT = {
-			add_popularity = {
-				ideology = communism
-				popularity = 0.06
-			}
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.06 }
+			set_temp_variable = { temp_outlook_increase = 0.06 }
+			add_relative_party_popularity = yes
 		}
 		EST = {
-			add_popularity = {
-				ideology = communism
-				popularity = 0.06
-			}
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.06 }
+			set_temp_variable = { temp_outlook_increase = 0.06 }
+			add_relative_party_popularity = yes
 		}
 		ai_chance = {
 			base = 100
@@ -6027,42 +4712,23 @@ country_event = {
 	desc = poland.146.d
 	picture = GFX_politics_communist_dream
 
-	trigger = {
-		original_tag = POL
-		has_country_flag = POL_start_balkan_plans_flag
-		NOT = {
-			AND = {
-				OR = {
-					ROM = { is_in_faction_with = POL }
-					ROM = { is_subject_of = POL }
-				}
-				OR = {
-					BUL = { is_in_faction_with = POL }
-					BUL = { is_subject_of = POL }
-				}
-			}
-		}
-	}
-
-	mean_time_to_happen = {
-		months = 1
-		years = 1
-	}
+	fire_only_once = yes
+	is_triggered_only = yes
 
 	option = {
 		name = poland.146.a
 		log = "[GetDateText]: [This.GetName]: poland.146.a executed"
 		ROM = {
-			add_popularity = {
-				ideology = communism
-				popularity = 0.06
-			}
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.06 }
+			set_temp_variable = { temp_outlook_increase = 0.06 }
+			add_relative_party_popularity = yes
 		}
 		BUL = {
-			add_popularity = {
-				ideology = communism
-				popularity = 0.06
-			}
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.06 }
+			set_temp_variable = { temp_outlook_increase = 0.06 }
+			add_relative_party_popularity = yes
 		}
 		ai_chance = {
 			base = 100
@@ -6076,42 +4742,23 @@ country_event = {
 	desc = poland.147.d
 	picture = GFX_politics_communist_dream
 
-	trigger = {
-		original_tag = POL
-		has_country_flag = POL_start_scandinavia_plans_flag
-		NOT = {
-			AND = {
-				OR = {
-					SWE = { is_in_faction_with = POL }
-					SWE = { is_subject_of = POL }
-				}
-				OR = {
-					FIN = { is_in_faction_with = POL }
-					FIN = { is_subject_of = POL }
-				}
-			}
-		}
-	}
-
-	mean_time_to_happen = {
-		months = 2
-		years = 6
-	}
+	fire_only_once = yes
+	is_triggered_only = yes
 
 	option = {
 		name = poland.147.a
 		log = "[GetDateText]: [This.GetName]: poland.147.a executed"
 		SWE = {
-			add_popularity = {
-				ideology = communism
-				popularity = 0.06
-			}
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.06 }
+			set_temp_variable = { temp_outlook_increase = 0.06 }
+			add_relative_party_popularity = yes
 		}
 		FIN = {
-			add_popularity = {
-				ideology = communism
-				popularity = 0.06
-			}
+			set_temp_variable = { party_index = 4 }
+			set_temp_variable = { party_popularity_increase = 0.06 }
+			set_temp_variable = { temp_outlook_increase = 0.06 }
+			add_relative_party_popularity = yes
 		}
 		ai_chance = {
 			base = 100
@@ -6124,16 +4771,9 @@ country_event = {
 	title = poland.148.t
 	desc = poland.148.d
 	picture = GFX_Pokuscenie_nkr_2000
+
 	fire_only_once = yes
-
-	trigger = {
-		original_tag = POL
-		has_completed_focus = POL_military_state
-	}
-
-	mean_time_to_happen = {
-		months = 8
-	}
+	is_triggered_only = yes
 
 	option = {
 		name = poland.148.a
@@ -6153,17 +4793,9 @@ country_event = {
 	title = poland.149.t
 	desc = poland.149.d
 	picture = GFX_Pokuscenie_nkr_2000
+
 	fire_only_once = yes
-
-	trigger = {
-		original_tag = POL
-		has_country_flag = POL_first_assassination
-		has_completed_focus = POL_watch_for_enemies_of_the_revolution
-	}
-
-	mean_time_to_happen = {
-		months = 6
-	}
+	is_triggered_only = yes
 
 	option = {
 		name = poland.149.a
@@ -6184,34 +4816,12 @@ country_event = {
 	desc = poland.150.d
 	picture = GFX_generic_factory
 
-	trigger = {
-		original_tag = POL
-		NOT = {
-			has_country_flag = POL_economy_event_happened
-			has_idea = POL_balanced_economy_workers_idea
-		}
-		has_completed_focus = POL_introduce_the_new_order
-	}
-
-	mean_time_to_happen = {
-		years = 1
-		modifier = {
-			factor = 5.5
-			has_idea = POL_balanced_economy_workers_idea
-		}
-		modifier = {
-			factor = 2.5
-			OR = {
-				has_idea = POL_balanced_economy_administration_idea
-				has_idea = POL_balanced_economy_companies_idea
-			}
-		}
-	}
+	is_triggered_only = yes
 
 	option = {
 		name = poland.150.a
 		log = "[GetDateText]: [This.GetName]: poland.150.a executed"
-		set_country_flag = { flag = POL_economy_event_happened days = 30 }
+		set_country_flag = { flag = POL_economy_event_happened days = 90 value = 1 }
 		sre_economy_situation_change_to_workers = yes
 		ai_chance = {
 			base = 100
@@ -6233,34 +4843,12 @@ country_event = {
 	desc = poland.151.d
 	picture = GFX_political_deal
 
-	trigger = {
-		original_tag = POL
-		NOT = {
-			has_country_flag = POL_economy_event_happened
-			has_idea = POL_balanced_economy_administration_idea
-		}
-		has_completed_focus = POL_introduce_the_new_order
-	}
-
-	mean_time_to_happen = {
-		years = 1
-		modifier = {
-			factor = 5.5
-			has_idea = POL_balanced_economy_administration_idea
-		}
-		modifier = {
-			factor = 2.5
-			OR = {
-				has_idea = POL_balanced_economy_workers_idea
-				has_idea = POL_balanced_economy_companies_idea
-			}
-		}
-	}
+	is_triggered_only = yes
 
 	option = {
 		name = poland.151.a
 		log = "[GetDateText]: [This.GetName]: poland.151.a executed"
-		set_country_flag = { flag = POL_economy_event_happened days = 30 }
+		set_country_flag = { flag = POL_economy_event_happened days = 30 value = 1 }
 		sre_economy_situation_change_to_administration = yes
 		ai_chance = {
 			base = 100
@@ -6282,34 +4870,12 @@ country_event = {
 	desc = poland.152.d
 	picture = GFX_political_deal
 
-	trigger = {
-		original_tag = POL
-		NOT = {
-			has_country_flag = POL_economy_event_happened
-			has_idea = POL_balanced_economy_companies_idea
-		}
-		has_completed_focus = POL_introduce_the_new_order
-	}
-
-	mean_time_to_happen = {
-		years = 1
-		modifier = {
-			factor = 5.5
-			has_idea = POL_balanced_economy_companies_idea
-		}
-		modifier = {
-			factor = 2.5
-			OR = {
-				has_idea = POL_balanced_economy_workers_idea
-				has_idea = POL_balanced_economy_administration_idea
-			}
-		}
-	}
+	is_triggered_only = yes
 
 	option = {
 		name = poland.152.a
 		log = "[GetDateText]: [This.GetName]: poland.152.a executed"
-		set_country_flag = { flag = POL_economy_event_happened days = 30 }
+		set_country_flag = { flag = POL_economy_event_happened days = 30 value = 1 }
 		sre_economy_situation_change_to_companies = yes
 		ai_chance = {
 			base = 100
@@ -6395,16 +4961,9 @@ country_event = {
 	title = poland.156.t
 	desc = poland.156.d
 	picture = GFX_polish_nationalists2
+
 	fire_only_once = yes
-
-	trigger = {
-		has_country_flag = POL_revolt_country_flag
-	}
-
-	mean_time_to_happen = {
-		days = 15
-		months = 1
-	}
+	is_triggered_only = yes
 
 	option = {
 		name = poland.156.a
@@ -6430,6 +4989,8 @@ country_event = {
 	title = poland.157.t
 	desc = poland.157.d
 	picture = GFX_polish_nationalists2
+
+	fire_only_once = yes
 	is_triggered_only = yes
 
 	option = {
@@ -6453,16 +5014,9 @@ country_event = {
 	title = poland.158.t
 	desc = poland.158.d
 	picture = GFX_polish_nationalists2
+
 	fire_only_once = yes
-
-	trigger = {
-		has_country_flag = POL_revolt_country2_flag
-	}
-
-	mean_time_to_happen = {
-		days = 25
-		months = 2
-	}
+	is_triggered_only = yes
 
 	option = {
 		name = poland.158.a
@@ -6493,6 +5047,8 @@ country_event = {
 	title = poland.159.t
 	desc = poland.159.d
 	picture = GFX_internal_conflict
+
+	fire_only_once = yes
 	is_triggered_only = yes
 
 	option = {
@@ -6536,16 +5092,9 @@ country_event = {
 	title = poland.160.t
 	desc = poland.160.d
 	picture = GFX_polish_nationalists2
+
 	fire_only_once = yes
-
-	trigger = {
-		has_country_flag = POL_revolt_country_flag
-		controls_state = 628
-	}
-
-	mean_time_to_happen = {
-		months = 3
-	}
+	is_triggered_only = yes
 
 	option = {
 		name = poland.160.a
@@ -6569,6 +5118,8 @@ country_event = {
 	title = poland.161.t
 	desc = poland.161.d
 	picture = GFX_pol_election_event
+
+	fire_only_once = yes
 	is_triggered_only = yes
 
 	option = {
@@ -6588,17 +5139,18 @@ country_event = {
 	title = poland.162.t
 	desc = poland.162.d
 	picture = GFX_pol_election_event
+
 	is_triggered_only = yes
 
 	option = {
 		name = poland.162.a
 		log = "[GetDateText]: [This.GetName]: poland.162.a executed"
 		trigger = {
-			tag = GER
+			original_tag = GER
 		}
 		add_political_power = 100
 		send_equipment = {
-			equipment = infantry_weapons3
+			equipment = infantry_weapons_4
 			amount = 300
 			target = POL
 		}
@@ -6610,7 +5162,7 @@ country_event = {
 		name = poland.162.aa
 		log = "[GetDateText]: [This.GetName]: poland.162.aa executed"
 		trigger = {
-			tag = GER
+			original_tag = GER
 		}
 		ai_chance = {
 			base = 25
@@ -6621,11 +5173,11 @@ country_event = {
 		name = poland.162.b
 		log = "[GetDateText]: [This.GetName]: poland.162.b executed"
 		trigger = {
-			tag = ITA
+			original_tag = ITA
 		}
 		add_political_power = 100
 		send_equipment = {
-			equipment = infantry_weapons3
+			equipment = infantry_weapons_4
 			amount = 300
 			target = POL
 		}
@@ -6637,7 +5189,7 @@ country_event = {
 		name = poland.162.bb
 		log = "[GetDateText]: [This.GetName]: poland.162.bb executed"
 		trigger = {
-			tag = ITA
+			original_tag = ITA
 		}
 		ai_chance = {
 			base = 50
@@ -6648,11 +5200,11 @@ country_event = {
 		name = poland.162.c
 		log = "[GetDateText]: [This.GetName]: poland.162.c executed"
 		trigger = {
-			tag = CZE
+			original_tag = CZE
 		}
 		add_political_power = 100
 		send_equipment = {
-			equipment = infantry_weapons3
+			equipment = infantry_weapons_4
 			amount = 300
 			target = POL
 		}
@@ -6664,7 +5216,7 @@ country_event = {
 		name = poland.162.cc
 		log = "[GetDateText]: [This.GetName]: poland.162.cc executed"
 		trigger = {
-			tag = CZE
+			original_tag = CZE
 		}
 		ai_chance = {
 			base = 10
@@ -6675,11 +5227,11 @@ country_event = {
 		name = poland.162.dd
 		log = "[GetDateText]: [This.GetName]: poland.162.dd executed"
 		trigger = {
-			tag = SLO
+			original_tag = SLO
 		}
 		add_political_power = 100
 		send_equipment = {
-			equipment = infantry_weapons3
+			equipment = infantry_weapons_4
 			amount = 300
 			target = POL
 		}
@@ -6691,7 +5243,7 @@ country_event = {
 		name = poland.162.ddd
 		log = "[GetDateText]: [This.GetName]: poland.162.ddd executed"
 		trigger = {
-			tag = SLO
+			original_tag = SLO
 		}
 		ai_chance = {
 			base = 20
@@ -6702,11 +5254,11 @@ country_event = {
 		name = poland.162.e
 		log = "[GetDateText]: [This.GetName]: poland.162.e executed"
 		trigger = {
-			tag = FRA
+			original_tag = FRA
 		}
 		add_political_power = 100
 		send_equipment = {
-			equipment = infantry_weapons3
+			equipment = infantry_weapons_4
 			amount = 300
 			target = POL
 		}
@@ -6718,7 +5270,7 @@ country_event = {
 		name = poland.162.ee
 		log = "[GetDateText]: [This.GetName]: poland.162.ee executed"
 		trigger = {
-			tag = FRA
+			original_tag = FRA
 		}
 		ai_chance = {
 			base = 50
@@ -6729,11 +5281,11 @@ country_event = {
 		name = poland.162.f
 		log = "[GetDateText]: [This.GetName]: poland.162.f executed"
 		trigger = {
-			tag = ENG
+			original_tag = ENG
 		}
 		add_political_power = 100
 		send_equipment = {
-			equipment = infantry_weapons3
+			equipment = infantry_weapons_4
 			amount = 300
 			target = POL
 		}
@@ -6745,7 +5297,7 @@ country_event = {
 		name = poland.162.ff
 		log = "[GetDateText]: [This.GetName]: poland.162.ff executed"
 		trigger = {
-			tag = ENG
+			original_tag = ENG
 		}
 		ai_chance = {
 			base = 70
@@ -6756,11 +5308,11 @@ country_event = {
 		name = poland.162.g
 		log = "[GetDateText]: [This.GetName]: poland.162.g executed"
 		trigger = {
-			tag = USA
+			original_tag = USA
 		}
 		add_political_power = 100
 		send_equipment = {
-			equipment = infantry_weapons3
+			equipment = infantry_weapons_4
 			amount = 300
 			target = POL
 		}
@@ -6772,7 +5324,7 @@ country_event = {
 		name = poland.162.gg
 		log = "[GetDateText]: [This.GetName]: poland.162.gg executed"
 		trigger = {
-			tag = USA
+			original_tag = USA
 		}
 		ai_chance = {
 			base = 30
@@ -6785,18 +5337,9 @@ country_event = {
 	title = poland.163.t
 	desc = poland.163.d
 	picture = GFX_election_rally
+
 	fire_only_once = yes
-
-	trigger = {
-		has_completed_focus = POL_betray_the_communists
-		NOT = {
-			has_civil_war = yes
-		}
-	}
-
-	mean_time_to_happen = {
-		days = 1
-	}
+	is_triggered_only = yes
 
 	option = {
 		name = poland.163.a
@@ -6819,6 +5362,7 @@ country_event = {
 	title = poland.164.t
 	desc = poland.164.d
 	picture = GFX_stock_market
+
 	is_triggered_only = yes
 
 	option = {
@@ -6847,6 +5391,7 @@ country_event = {
 	title = poland.165.t
 	desc = poland.165.d
 	picture = GFX_declined_offer_no
+
 	is_triggered_only = yes
 
 	option = {
@@ -6864,7 +5409,7 @@ country_event = {
 	title = poland.166.t
 	desc = poland.166.d
 	picture = GFX_handshake_black
-	fire_only_once = yes
+	is_triggered_only = yes
 
 	trigger = {
 		check_variable = {
@@ -6875,7 +5420,7 @@ country_event = {
 	option = {
 		name = poland.166.a
 		log = "[GetDateText]: [This.GetName]: poland.166.a executed"
-		add_ideas = the_euro
+		joining_the_euro = yes
 		ai_chance = {
 			base = 90
 		}
@@ -6887,8 +5432,10 @@ country_event = {
 	title = poland.167.t
 	desc = poland.167.d
 	picture = GFX_handshake_black
+
 	fire_only_once = yes
 	is_triggered_only = yes
+
 	option = {
 		name = poland.167.a
 		log = "[GetDateText]: [This.GetName]: poland.167.a executed"
@@ -6913,18 +5460,9 @@ country_event = {
 	title = poland.168.t
 	desc = poland.168.d
 	picture = GFX_pol_election_event
+
 	fire_only_once = yes
-
-	trigger = {
-		has_country_flag = POL_communism_uprising_again_activation
-		NOT = {
-			has_civil_war = yes
-		}
-	}
-
-	mean_time_to_happen = {
-		months = 3
-	}
+	is_triggered_only = yes
 
 	option = {
 		name = poland.168.a
@@ -6944,6 +5482,7 @@ country_event = {
 	title = poland.169.t
 	desc = poland.169.d
 	picture = GFX_pol_election_event
+
 	is_triggered_only = yes
 
 	option = {
@@ -6971,8 +5510,8 @@ country_event = {
 				target = SOV
 				modifier = POL_russia_refuses
 			}
+			country_event = poland.171
 		}
-		POL = { country_event = { id = poland.171 } }
 	}
 
 	option = {
@@ -6986,10 +5525,10 @@ country_event = {
 				target = SOV
 				modifier = POL_russia_accepts
 			}
+			country_event = poland.172
 		}
 		set_temp_variable = { treasury_change = -10 }
 		modify_treasury_effect = yes
-		POL = { country_event = { id = poland.172 } }
 	}
 }
 
@@ -7096,23 +5635,23 @@ news_event = {
 		name = poland_news.2.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = SOV
+				OR = {
+					original_tag = POL
+					original_tag = SOV
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.2.a executed"
 	}
 
 	option = {
 		name = poland_news.2.b
-		trigger = { tag = POL }
-		hidden_effect = { kill_country_leader = yes }
 		log = "[GetDateText]: [This.GetName]: poland_news.2.b executed"
+		trigger = { original_tag = POL }
+		hidden_effect = { kill_country_leader = yes }
 	}
 	option = {
 		name = poland_news.2.c
-		trigger = { tag = SOV }
-		log = "[GetDateText]: [This.GetName]: poland_news.2.c executed"
+		trigger = { original_tag = SOV }
 	}
 }
 
@@ -7130,21 +5669,20 @@ news_event = {
 		name = poland_news.3.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = SOV
+				OR = {
+					original_tag = POL
+					original_tag = SOV
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.3.a executed"
 	}
 	option = {
 		name = poland_news.3.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.3.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.3.c
-		trigger = { tag = SOV }
-		log = "[GetDateText]: [This.GetName]: poland_news.3.c executed"
+		trigger = { original_tag = SOV }
 	}
 }
 
@@ -7162,15 +5700,13 @@ news_event = {
 		name = poland_news.4.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.4.a executed"
 	}
 	option = {
 		name = poland_news.4.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.4.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -7188,15 +5724,13 @@ news_event = {
 		name = poland_news.5.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.5.a executed"
 	}
 	option = {
 		name = poland_news.5.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.5.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -7213,16 +5747,16 @@ news_event = {
 		name = poland_news.6.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = CZE
+				OR = {
+					original_tag = POL
+					original_tag = CZE
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.6.a executed"
 	}
 	option = {
 		name = poland_news.6.b
-		trigger = { tag = POL tag = CZE }
-		log = "[GetDateText]: [This.GetName]: poland_news.6.b executed"
+		trigger = { OR = { original_tag = POL original_tag = CZE } }
 	}
 }
 
@@ -7239,17 +5773,17 @@ news_event = {
 		name = poland_news.7.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = CZE
-				tag = SLO
+				OR = {
+					original_tag = POL
+					original_tag = CZE
+					original_tag = SLO
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.7.a executed"
 	}
 	option = {
 		name = poland_news.7.b
-		trigger = { tag = POL tag = CZE tag = SLO }
-		log = "[GetDateText]: [This.GetName]: poland_news.7.b executed"
+		trigger = { OR = { original_tag = POL original_tag = CZE original_tag = SLO } }
 	}
 }
 
@@ -7266,18 +5800,18 @@ news_event = {
 		name = poland_news.8.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = CZE
-				tag = SLO
-				tag = HUN
+				OR = {
+					original_tag = POL
+					original_tag = CZE
+					original_tag = SLO
+					original_tag = HUN
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.8.a executed"
 	}
 	option = {
 		name = poland_news.8.b
-		trigger = { tag = POL tag = CZE tag = SLO tag = HUN }
-		log = "[GetDateText]: [This.GetName]: poland_news.8.b executed"
+		trigger = { OR = { original_tag = POL original_tag = CZE original_tag = SLO original_tag = HUN } }
 	}
 }
 
@@ -7294,23 +5828,22 @@ news_event = {
 		name = poland_news.9.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = CZE
-				tag = SLO
-				tag = HUN
+				OR = {
+					original_tag = POL
+					original_tag = CZE
+					original_tag = SLO
+					original_tag = HUN
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.9.a executed"
 	}
 	option = {
 		name = poland_news.9.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.9.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.9.c
-		trigger = { tag = CZE tag = SLO tag = HUN }
-		log = "[GetDateText]: [This.GetName]: poland_news.9.c executed"
+		trigger = { OR = { original_tag = CZE original_tag = SLO original_tag = HUN } }
 	}
 }
 
@@ -7327,15 +5860,13 @@ news_event = {
 		name = poland_news.10.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.10.a executed"
 	}
 	option = {
 		name = poland_news.10.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.10.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -7352,15 +5883,13 @@ news_event = {
 		name = poland_news.11.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.11.a executed"
 	}
 	option = {
 		name = poland_news.11.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.11.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -7377,15 +5906,13 @@ news_event = {
 		name = poland_news.12.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.12.a executed"
 	}
 	option = {
 		name = poland_news.12.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.12.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -7402,15 +5929,13 @@ news_event = {
 		name = poland_news.13.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.13.a executed"
 	}
 	option = {
 		name = poland_news.13.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.13.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -7427,15 +5952,13 @@ news_event = {
 		name = poland_news.14.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.14.a executed"
 	}
 	option = {
 		name = poland_news.14.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.14.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -7452,21 +5975,20 @@ news_event = {
 		name = poland_news.15.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = UKR
+				OR = {
+					original_tag = POL
+					original_tag = UKR
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.15.a executed"
 	}
 	option = {
 		name = poland_news.15.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.15.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.15.c
-		trigger = { tag = UKR }
-		log = "[GetDateText]: [This.GetName]: poland_news.15.c executed"
+		trigger = { original_tag = UKR }
 	}
 }
 
@@ -7483,21 +6005,20 @@ news_event = {
 		name = poland_news.16.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = UKR
+				OR = {
+					original_tag = POL
+					original_tag = UKR
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.16.a executed"
 	}
 	option = {
 		name = poland_news.16.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.16.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.16.c
-		trigger = { tag = UKR }
-		log = "[GetDateText]: [This.GetName]: poland_news.16.c executed"
+		trigger = { original_tag = UKR }
 	}
 }
 
@@ -7514,21 +6035,20 @@ news_event = {
 		name = poland_news.17.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = UKR
+				OR = {
+					original_tag = POL
+					original_tag = UKR
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.17.a executed"
 	}
 	option = {
 		name = poland_news.17.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.17.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.17.c
-		trigger = { tag = UKR }
-		log = "[GetDateText]: [This.GetName]: poland_news.17.c executed"
+		trigger = { original_tag = UKR }
 	}
 }
 
@@ -7545,21 +6065,20 @@ news_event = {
 		name = poland_news.18.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = UKR
+				OR = {
+					original_tag = POL
+					original_tag = UKR
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.18.a executed"
 	}
 	option = {
 		name = poland_news.18.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.18.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.18.c
-		trigger = { tag = UKR }
-		log = "[GetDateText]: [This.GetName]: poland_news.18.c executed"
+		trigger = { original_tag = UKR }
 	}
 }
 
@@ -7576,27 +6095,25 @@ news_event = {
 		name = poland_news.19.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = UKR
-				tag = SOV
+				OR = {
+					original_tag = POL
+					original_tag = UKR
+					original_tag = SOV
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.19.a executed"
 	}
 	option = {
 		name = poland_news.19.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.19.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.19.c
-		trigger = { tag = UKR }
-		log = "[GetDateText]: [This.GetName]: poland_news.19.c executed"
+		trigger = { original_tag = UKR }
 	}
 	option = {
 		name = poland_news.19.e
-		trigger = { tag = SOV }
-		log = "[GetDateText]: [This.GetName]: poland_news.19.d executed"
+		trigger = { original_tag = SOV }
 	}
 }
 
@@ -7613,27 +6130,25 @@ news_event = {
 		name = poland_news.20.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = UKR
-				tag = SOV
+				OR = {
+					original_tag = POL
+					original_tag = UKR
+					original_tag = SOV
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.20.a executed"
 	}
 	option = {
 		name = poland_news.20.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.20.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.20.c
-		trigger = { tag = UKR }
-		log = "[GetDateText]: [This.GetName]: poland_news.20.c executed"
+		trigger = { original_tag = UKR }
 	}
 	option = {
 		name = poland_news.20.e
-		trigger = { tag = SOV }
-		log = "[GetDateText]: [This.GetName]: poland_news.20.d executed"
+		trigger = { original_tag = SOV }
 	}
 }
 
@@ -7650,27 +6165,25 @@ news_event = {
 		name = poland_news.21.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = UKR
-				tag = SOV
+				OR = {
+					original_tag = POL
+					original_tag = UKR
+					original_tag = SOV
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.21.a executed"
 	}
 	option = {
 		name = poland_news.21.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.21.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.21.c
-		trigger = { tag = UKR }
-		log = "[GetDateText]: [This.GetName]: poland_news.21.c executed"
+		trigger = { original_tag = UKR }
 	}
 	option = {
 		name = poland_news.21.e
-		trigger = { tag = SOV }
-		log = "[GetDateText]: [This.GetName]: poland_news.21.d executed"
+		trigger = { original_tag = SOV }
 	}
 }
 
@@ -7687,27 +6200,25 @@ news_event = {
 		name = poland_news.22.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = UKR
-				tag = SOV
+				OR = {
+					original_tag = POL
+					original_tag = UKR
+					original_tag = SOV
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.22.a executed"
 	}
 	option = {
 		name = poland_news.22.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.22.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.22.c
-		trigger = { tag = UKR }
-		log = "[GetDateText]: [This.GetName]: poland_news.22.c executed"
+		trigger = { original_tag = UKR }
 	}
 	option = {
 		name = poland_news.22.e
-		trigger = { tag = SOV }
-		log = "[GetDateText]: [This.GetName]: poland_news.22.d executed"
+		trigger = { original_tag = SOV }
 	}
 }
 
@@ -7724,27 +6235,25 @@ news_event = {
 		name = poland_news.23.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = UKR
-				tag = SOV
+				OR = {
+					original_tag = POL
+					original_tag = UKR
+					original_tag = SOV
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.23.a executed"
 	}
 	option = {
 		name = poland_news.23.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.23.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.23.c
-		trigger = { tag = UKR }
-		log = "[GetDateText]: [This.GetName]: poland_news.23.c executed"
+		trigger = { original_tag = UKR }
 	}
 	option = {
 		name = poland_news.23.e
-		trigger = { tag = SOV }
-		log = "[GetDateText]: [This.GetName]: poland_news.23.d executed"
+		trigger = { original_tag = SOV }
 	}
 }
 
@@ -7761,21 +6270,20 @@ news_event = {
 		name = poland_news.24.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = LIT
+				OR = {
+					original_tag = POL
+					original_tag = LIT
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.24.a executed"
 	}
 	option = {
 		name = poland_news.24.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.24.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.24.c
-		trigger = { tag = LIT }
-		log = "[GetDateText]: [This.GetName]: poland_news.24.c executed"
+		trigger = { original_tag = LIT }
 	}
 }
 
@@ -7792,21 +6300,20 @@ news_event = {
 		name = poland_news.25.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = LIT
+				OR = {
+					original_tag = POL
+					original_tag = LIT
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.25.a executed"
 	}
 	option = {
 		name = poland_news.25.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.25.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.25.c
-		trigger = { tag = LIT }
-		log = "[GetDateText]: [This.GetName]: poland_news.25.c executed"
+		trigger = { original_tag = LIT }
 	}
 }
 
@@ -7823,21 +6330,20 @@ news_event = {
 		name = poland_news.26.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = SOV
+				OR = {
+					original_tag = POL
+					original_tag = SOV
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.26.a executed"
 	}
 	option = {
 		name = poland_news.26.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.26.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.26.c
-		trigger = { tag = SOV }
-		log = "[GetDateText]: [This.GetName]: poland_news.26.c executed"
+		trigger = { original_tag = SOV }
 	}
 }
 
@@ -7854,21 +6360,20 @@ news_event = {
 		name = poland_news.27.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = SOV
+				OR = {
+					original_tag = POL
+					original_tag = SOV
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.27.a executed"
 	}
 	option = {
 		name = poland_news.27.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.27.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.27.c
-		trigger = { tag = SOV }
-		log = "[GetDateText]: [This.GetName]: poland_news.27.c executed"
+		trigger = { original_tag = SOV }
 	}
 }
 
@@ -7885,21 +6390,20 @@ news_event = {
 		name = poland_news.28.a
 		trigger = {
 			NOT = {
-				tag = POL
-				tag = SOV
+				OR = {
+					original_tag = POL
+					original_tag = SOV
+				}
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.28.a executed"
 	}
 	option = {
 		name = poland_news.28.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.28.b executed"
+		trigger = { original_tag = POL }
 	}
 	option = {
 		name = poland_news.28.c
-		trigger = { tag = SOV }
-		log = "[GetDateText]: [This.GetName]: poland_news.28.c executed"
+		trigger = { original_tag = SOV }
 	}
 }
 
@@ -7916,15 +6420,13 @@ news_event = {
 		name = poland_news.29.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.29.a executed"
 	}
 	option = {
 		name = poland_news.29.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.29.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -7941,15 +6443,13 @@ news_event = {
 		name = poland_news.30.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.30.a executed"
 	}
 	option = {
 		name = poland_news.30.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.30.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -7966,15 +6466,13 @@ news_event = {
 		name = poland_news.31.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.31.a executed"
 	}
 	option = {
 		name = poland_news.31.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.31.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -7991,15 +6489,13 @@ news_event = {
 		name = poland_news.32.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.32.a executed"
 	}
 	option = {
 		name = poland_news.32.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.32.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -8016,15 +6512,13 @@ news_event = {
 		name = poland_news.33.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.33.a executed"
 	}
 	option = {
 		name = poland_news.33.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.33.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -8041,19 +6535,17 @@ news_event = {
 		name = poland_news.34.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 			OR = {
 				capital_scope = { is_on_continent = europe }
 				capital_scope = { is_on_continent = middle_east }
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.34.a executed"
 	}
 	option = {
 		name = poland_news.34.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.34.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -8070,19 +6562,17 @@ news_event = {
 		name = poland_news.35.a
 		trigger = {
 			NOT = {
-				tag = POL
+				original_tag = POL
 			}
 			OR = {
 				capital_scope = { is_on_continent = europe }
 				capital_scope = { is_on_continent = middle_east }
 			}
 		}
-		log = "[GetDateText]: [This.GetName]: poland_news.35.a executed"
 	}
 	option = {
 		name = poland_news.35.b
-		trigger = { tag = POL }
-		log = "[GetDateText]: [This.GetName]: poland_news.35.b executed"
+		trigger = { original_tag = POL }
 	}
 }
 
@@ -8098,19 +6588,19 @@ country_event = {
 
 	option = {
 		name = poland_border_conflict.2.a
+		log = "[GetDateText]: [This.GetName]: poland_border_conflict.2.a executed"
 		trigger = {
-			original_tag = POL
+			original_tag  = POL
 		}
 		642 = { transfer_state_to = POL }
-		log = "[GetDateText]: [This.GetName]: poland_border_conflict.2.a executed"
 	}
 	option = {
 		name = poland_border_conflict.2.b
+		log = "[GetDateText]: [This.GetName]: poland_border_conflict.2.b executed"
 		trigger = {
-			original_tag = SOV
+			original_tag  = SOV
 		}
 		add_political_power = -100
-		log = "[GetDateText]: [This.GetName]: poland_border_conflict.2.b executed"
 	}
 }
 
@@ -8124,8 +6614,9 @@ country_event = {
 
 	option = {
 		name = poland_border_conflict.3.a
+		log = "[GetDateText]: [This.GetName]: poland_border_conflict.3.a executed"
 		trigger = {
-			original_tag = POL
+			original_tag  = POL
 		}
 		POL = {
 			add_war_support = -0.1
@@ -8133,12 +6624,12 @@ country_event = {
 			set_temp_variable = { treasury_change = -40 }
 			modify_treasury_effect = yes
 		}
-		log = "[GetDateText]: [This.GetName]: poland_border_conflict.3.a executed"
 	}
 	option = {
 		name = poland_border_conflict.3.b
+		log = "[GetDateText]: [This.GetName]: poland_border_conflict.3.b executed"
 		trigger = {
-			original_tag = SOV
+			original_tag  = SOV
 		}
 		SOV = {
 			add_war_support = 0.1
@@ -8146,7 +6637,6 @@ country_event = {
 			set_temp_variable = { treasury_change = 40 }
 			modify_treasury_effect = yes
 		}
-		log = "[GetDateText]: [This.GetName]: poland_border_conflict.3.b executed"
 	}
 }
 
@@ -8160,24 +6650,24 @@ country_event = {
 
 	option = {
 		name = poland_border_conflict.4.a
+		log = "[GetDateText]: [This.GetName]: poland_border_conflict.4.a executed"
 		trigger = {
-			original_tag = POL
+			original_tag  = POL
 		}
 		add_war_support = -0.05
 		add_stability = -0.05
 		add_political_power = -50
 		642 = { set_demilitarized_zone = yes }
-		log = "[GetDateText]: [This.GetName]: poland_border_conflict.4.a executed"
 	}
 	option = {
 		name = poland_border_conflict.4.b
+		log = "[GetDateText]: [This.GetName]: poland_border_conflict.4.b executed"
 		trigger = {
-			original_tag = SOV
+			original_tag  = SOV
 		}
 		add_war_support = -0.04
 		add_stability = -0.02
 		add_political_power = -20
-		log = "[GetDateText]: [This.GetName]: poland_border_conflict.4.b executed"
 	}
 }
 
@@ -8187,30 +6677,18 @@ country_event = {
 	desc = poland_ai.1.d
 	picture = GFX_politics_talks
 
-	trigger = {
-		original_tag = POL
-		OR = {
-			has_global_flag = POL_KORWIN_PE_PATH
-			has_global_flag = POL_KORWIN_AG_PATH
-		}
-	}
-
-	mean_time_to_happen = {
-		months = 12
-	}
+	fire_only_once = yes
+	is_triggered_only = yes
 
 	option = {
 		name = poland_ai.1.a
-		trigger = {
-			original_tag = POL
-		}
+		log = "[GetDateText]: [This.GetName]: poland_ai.1.a executed"
 		add_political_power = 300
 		set_temp_variable = { party_index = 23 }
 		set_temp_variable = { party_popularity_increase = 0.4 }
 		set_temp_variable = { temp_outlook_increase = 0.4 }
 		add_relative_party_popularity = yes
 		set_country_flag = POL_ai_first_event
-		log = "[GetDateText]: [This.GetName]: poland_ai.1.a executed"
 	}
 }
 
@@ -8220,31 +6698,18 @@ country_event = {
 	desc = poland_ai.2.d
 	picture = GFX_politics_talks
 
-	trigger = {
-		original_tag = POL
-		OR = {
-			has_global_flag = POL_KORWIN_PE_PATH
-			has_global_flag = POL_KORWIN_AG_PATH
-		}
-		has_country_flag = POL_ai_first_event
-	}
-
-	mean_time_to_happen = {
-		months = 12
-	}
+	fire_only_once = yes
+	is_triggered_only = yes
 
 	option = {
 		name = poland_ai.2.a
-		trigger = {
-			original_tag = POL
-		}
+		log = "[GetDateText]: [This.GetName]: poland_ai.2.a executed"
 		add_political_power = 300
 		set_temp_variable = { party_index = 23 }
 		set_temp_variable = { party_popularity_increase = 0.5 }
 		set_temp_variable = { temp_outlook_increase = 0.5 }
 		add_relative_party_popularity = yes
 		set_country_flag = POL_ai_second_event
-		log = "[GetDateText]: [This.GetName]: poland_ai.2.a executed"
 	}
 }
 
@@ -8254,31 +6719,18 @@ country_event = {
 	desc = poland_ai.3.d
 	picture = GFX_politics_talks
 
-	trigger = {
-		original_tag = POL
-		OR = {
-			has_global_flag = POL_KORWIN_PE_PATH
-			has_global_flag = POL_KORWIN_AG_PATH
-		}
-		has_country_flag = POL_ai_second_event
-	}
-
-	mean_time_to_happen = {
-		months = 12
-	}
+	fire_only_once = yes
+	is_triggered_only = yes
 
 	option = {
 		name = poland_ai.3.a
-		trigger = {
-			original_tag = POL
-		}
+		log = "[GetDateText]: [This.GetName]: poland_ai.3.a executed"
 		add_political_power = 300
 		set_temp_variable = { party_index = 23 }
 		set_temp_variable = { party_popularity_increase = 0.6 }
 		set_temp_variable = { temp_outlook_increase = 0.6 }
 		add_relative_party_popularity = yes
 		set_country_flag = POL_ai_third_event
-		log = "[GetDateText]: [This.GetName]: poland_ai.3.a executed"
 	}
 }
 
@@ -8288,27 +6740,18 @@ country_event = {
 	desc = poland_ai.4.d
 	picture = GFX_politics_talks
 
-	trigger = {
-		original_tag = POL
-		has_global_flag = POL_WALESA_PATH
-	}
-
-	mean_time_to_happen = {
-		months = 12
-	}
+	fire_only_once = yes
+	is_triggered_only = yes
 
 	option = {
 		name = poland_ai.4.a
-		trigger = {
-			original_tag = POL
-		}
+		log = "[GetDateText]: [This.GetName]: poland_ai.4.a executed"
 		add_political_power = 300
 		set_temp_variable = { party_index = 14 }
 		set_temp_variable = { party_popularity_increase = 0.4 }
 		set_temp_variable = { temp_outlook_increase = 0.4 }
 		add_relative_party_popularity = yes
 		set_country_flag = POL_ai_walesa_first_event
-		log = "[GetDateText]: [This.GetName]: poland_ai.4.a executed"
 	}
 }
 
@@ -8318,28 +6761,18 @@ country_event = {
 	desc = poland_ai.5.d
 	picture = GFX_politics_talks
 
-	trigger = {
-		original_tag = POL
-		has_global_flag = POL_WALESA_PATH
-		has_country_flag = POL_ai_walesa_first_event
-	}
-
-	mean_time_to_happen = {
-		months = 12
-	}
+	fire_only_once = yes
+	is_triggered_only = yes
 
 	option = {
 		name = poland_ai.5.a
-		trigger = {
-			original_tag = POL
-		}
+		log = "[GetDateText]: [This.GetName]: poland_ai.5.a executed"
 		add_political_power = 300
 		set_temp_variable = { party_index = 14 }
 		set_temp_variable = { party_popularity_increase = 0.4 }
 		set_temp_variable = { temp_outlook_increase = 0.4 }
 		add_relative_party_popularity = yes
 		set_country_flag = POL_ai_walesa_second_event
-		log = "[GetDateText]: [This.GetName]: poland_ai.5.a executed"
 	}
 }
 
@@ -8349,28 +6782,18 @@ country_event = {
 	desc = poland_ai.6.d
 	picture = GFX_politics_talks
 
-	trigger = {
-		original_tag = POL
-		has_global_flag = POL_WALESA_PATH
-		has_country_flag = POL_ai_walesa_second_event
-	}
-
-	mean_time_to_happen = {
-		months = 12
-	}
+	fire_only_once = yes
+	is_triggered_only = yes
 
 	option = {
 		name = poland_ai.6.a
-		trigger = {
-			original_tag = POL
-		}
+		log = "[GetDateText]: [This.GetName]: poland_ai.6.a executed"
 		add_political_power = 300
 		set_temp_variable = { party_index = 14 }
 		set_temp_variable = { party_popularity_increase = 0.4 }
 		set_temp_variable = { temp_outlook_increase = 0.4 }
 		add_relative_party_popularity = yes
 		set_country_flag = POL_ai_walesa_third_event
-		log = "[GetDateText]: [This.GetName]: poland_ai.6.a executed"
 	}
 }
 
@@ -8380,27 +6803,17 @@ country_event = {
 	desc = poland_ai.7.d
 	picture = GFX_politics_talks
 
-	trigger = {
-		original_tag = POL
-		has_global_flag = POL_WALESA_PATH
-		has_country_flag = POL_ai_walesa_third_event
-	}
-
-	mean_time_to_happen = {
-		months = 12
-	}
+	fire_only_once = yes
+	is_triggered_only = yes
 
 	option = {
 		name = poland_ai.7.a
-		trigger = {
-			original_tag = POL
-		}
+		log = "[GetDateText]: [This.GetName]: poland_ai.7.a executed"
 		add_political_power = 300
 		set_temp_variable = { party_index = 14 }
 		set_temp_variable = { party_popularity_increase = 0.5 }
 		set_temp_variable = { temp_outlook_increase = 0.5 }
 		add_relative_party_popularity = yes
-		log = "[GetDateText]: [This.GetName]: poland_ai.7.a executed"
 	}
 }
 
@@ -8410,29 +6823,16 @@ country_event = {
 	desc = poland_ai.8.d
 	picture = GFX_politics_talks
 
-	trigger = {
-		original_tag = POL
-		OR = {
-			has_global_flag = POL_KORWIN_PE_PATH
-			has_global_flag = POL_KORWIN_AG_PATH
-		}
-		has_country_flag = POL_ai_third_event
-	}
-
-	mean_time_to_happen = {
-		months = 12
-	}
+	fire_only_once = yes
+	is_triggered_only = yes
 
 	option = {
 		name = poland_ai.8.a
-		trigger = {
-			original_tag = POL
-		}
+		log = "[GetDateText]: [This.GetName]: poland_ai.8.a executed"
 		add_political_power = 300
 		set_temp_variable = { party_index = 23 }
 		set_temp_variable = { party_popularity_increase = 0.6 }
 		set_temp_variable = { temp_outlook_increase = 0.6 }
 		add_relative_party_popularity = yes
-		log = "[GetDateText]: [This.GetName]: poland_ai.8.a executed"
 	}
 }

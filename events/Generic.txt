@@ -1,4 +1,4 @@
-﻿# Written by HansNery
+# Written by HansNery
 add_namespace = md4
 add_namespace = generic
 
@@ -7,7 +7,8 @@ country_event = {
 	id = md4.1
 	title = md4.1.t
 	desc = md4.1.d
-	picture = GFX_report_event_generic_read_write
+	picture = GFX_negotiations
+	is_triggered_only = yes
 
 	immediate = {
 		hidden_effect = {
@@ -17,8 +18,6 @@ country_event = {
 			}
 		}
 	}
-
-	is_triggered_only = yes
 
 	option = { #Agree
 		name = md4.1.a
@@ -37,10 +36,13 @@ country_event = {
 			target = FROM
 			modifier = free_trade_agreement
 		}
+		set_temp_variable = { receiver_nation = ROOT.id }
+		set_temp_variable = { sender_nation = FROM.id }
+		set_improved_trade_agreement = yes
 		hidden_effect = {
 			set_country_flag = fta_applicant@ROOT
 			FROM = { set_country_flag = fta_inviter@ROOT }
-			news_event = { id = news.1 hours = 12 }
+			#news_event = { id = news.1 hours = 12 }
 		}
 	}
 
@@ -56,6 +58,7 @@ country_event = {
 			}
 		}
 	}
+
 }
 
 # ROOT signed Free Trade Agreement
@@ -63,15 +66,14 @@ country_event = {
 	id = md4.2
 	title = md4.2.t
 	desc = md4.2.d
-
-	picture = GFX_report_event_generic_sign_treaty2
-
+	picture = GFX_negotiations
 	is_triggered_only = yes
 
 	option = {
 		name = md4.2.a
 		log = "[GetDateText]: [This.GetName]: md4.2.a executed"
 	}
+
 }
 
 # ROOT refused to sign Free Trade Agreement
@@ -79,15 +81,14 @@ country_event = {
 	id = md4.3
 	title = md4.3.t
 	desc = md4.3.d
-
-	picture = GFX_report_event_generic_read_write
-
+	picture = GFX_negotiations
 	is_triggered_only = yes
 
 	option = {
 		name = md4.3.a
 		log = "[GetDateText]: [This.GetName]: md4.3.a executed"
 	}
+
 }
 
 # ROOT Receives Offer to Sign Military Cooperation Treaty
@@ -95,7 +96,8 @@ country_event = {
 	id = md4.4
 	title = md4.4.t
 	desc = md4.4.d
-	picture = GFX_report_event_generic_read_write
+	picture = GFX_handshake_black
+	is_triggered_only = yes
 
 	immediate = {
 		hidden_effect = {
@@ -105,8 +107,6 @@ country_event = {
 			}
 		}
 	}
-
-	is_triggered_only = yes
 
 	option = { #Agree
 		name = md4.4.a
@@ -120,6 +120,21 @@ country_event = {
 				modifier = military_cooperation
 			}
 			country_event = { id = md4.5 hours = 6 }
+		}
+		add_political_power = -100
+		army_experience = 25
+		add_command_power = 15
+		add_tech_bonus = {
+			name = EGY_spec_weap
+			uses = 1
+			bonus = 0.25
+			category = Cat_SPECIAL_FORCES
+		}
+		add_doctrine_cost_reduction = {
+			name = EGY_exer
+			category = Cat_land_doctrine
+			uses = 1
+			cost_reduction = 0.25
 		}
 		hidden_effect = {
 			set_country_flag = mct_applicant@ROOT
@@ -140,6 +155,7 @@ country_event = {
 			}
 		}
 	}
+
 }
 
 # ROOT signed Military Cooperation Treaty
@@ -147,15 +163,29 @@ country_event = {
 	id = md4.5
 	title = md4.5.t
 	desc = md4.5.d
-
-	picture = GFX_report_event_generic_sign_treaty2
-
+	picture = GFX_handshake_black
 	is_triggered_only = yes
 
 	option = {
 		name = md4.5.a
 		log = "[GetDateText]: [This.GetName]: md4.5.a executed"
+		add_political_power = -100
+		army_experience = 25
+		add_command_power = 15
+		add_tech_bonus = {
+			name = EGY_spec_weap
+			uses = 1
+			bonus = 0.25
+			category = Cat_SPECIAL_FORCES
+		}
+		add_doctrine_cost_reduction = {
+			name = EGY_exer
+			category = Cat_land_doctrine
+			uses = 1
+			cost_reduction = 0.25
+		}
 	}
+
 }
 
 # ROOT refused to sign Military Cooperation Treaty
@@ -163,15 +193,14 @@ country_event = {
 	id = md4.6
 	title = md4.6.t
 	desc = md4.6.d
-
-	picture = GFX_report_event_generic_read_write
-
+	picture = GFX_handshake_black
 	is_triggered_only = yes
 
 	option = {
 		name = md4.6.a
 		log = "[GetDateText]: [This.GetName]: md4.6.a executed"
 	}
+
 }
 
 ## Useful Vanilla Events ######################################
@@ -181,19 +210,12 @@ country_event = {
 	id = generic.1
 	title = generic.1.t
 	desc = {
-		text = generic.1.d_neutral_good
-		trigger = {
-			has_government = FROM
-		}
-	}
-	desc = {
 		text = generic.1.d_bad
 		trigger = {
 			NOT = { has_government = FROM }
 		}
 	}
-	picture = GFX_report_event_generic_read_write
-
+	picture = GFX_politics_speak
 	is_triggered_only = yes
 
 	option = {
@@ -203,6 +225,7 @@ country_event = {
 			has_government = FROM
 		}
 	}
+
 	option = {
 		name = generic.1.b
 		log = "[GetDateText]: [This.GetName]: generic.1.b executed"
@@ -210,71 +233,23 @@ country_event = {
 			NOT = { has_government = FROM }
 		}
 	}
+
 }
 
 # Generic request to join major Alliance
 country_event = {
 	id = generic.2
 	title = generic.2.t
-	desc = { # FROM and ROOT are Democratic
-		text = generic.2.d.a
-		trigger = {
-			AND = {
-				FROM = {
-					has_government = democratic
-				}
-				has_government = democratic
-			}
-		}
-	}
-	desc = { # FROM and ROOT are Fascist
-		text = generic.2.d.b
-		trigger = {
-			AND = {
-				FROM = {
-					has_government = fascism
-				}
-				has_government = fascism
-			}
-		}
-	}
-	desc = { # FROM and ROOT are Communist
-		text = generic.2.d.c
-		trigger = {
-			AND = {
-				FROM = {
-					has_government = communism
-				}
-				has_government = communism
-			}
-		}
-	}
 	desc = { # FROM and ROOT are different ideologies
 		text = generic.2.d.e
 		trigger = {
 			NOT = {
-				AND = {
-					FROM = {
-						has_government = democratic
-					}
-					has_government = democratic
-				}
-				AND = {
-					FROM = {
-						has_government = fascism
-					}
-					has_government = fascism
-				}
-				AND = {
-					FROM = {
-						has_government = communism
-					}
-					has_government = communism
-				}
+				has_government = FROM
 			}
 		}
 	}
-	picture = GFX_report_event_generic_read_write
+	picture = GFX_politics_speak
+	is_triggered_only = yes
 
 	immediate = {
 		hidden_effect = {
@@ -284,8 +259,6 @@ country_event = {
 			}
 		}
 	}
-
-	is_triggered_only = yes
 
 	option = { #Agree / Both Democratic
 		name = generic.2.a
@@ -307,6 +280,7 @@ country_event = {
 			news_event = { id = news.289 hours = 12 }
 		}
 	}
+
 	option = { #Agree / Both Fascist
 		name = generic.2.b
 		log = "[GetDateText]: [This.GetName]: generic.2.b executed"
@@ -327,6 +301,7 @@ country_event = {
 			news_event = { id = news.289 hours = 12 }
 		}
 	}
+
 	option = { #Agree / Both Communist
 		name = generic.2.c
 		log = "[GetDateText]: [This.GetName]: generic.2.c executed"
@@ -347,29 +322,13 @@ country_event = {
 			news_event = { id = news.289 hours = 12 }
 		}
 	}
+
 	option = { #Agree / Both different
 		name = generic.2.e
 		log = "[GetDateText]: [This.GetName]: generic.2.e executed"
 		trigger = {
 			NOT = {
-				AND = {
-					FROM = {
-						has_government = democratic
-					}
-					has_government = democratic
-				}
-				AND = {
-					FROM = {
-						has_government = fascism
-					}
-					has_government = fascism
-				}
-				AND = {
-					FROM = {
-						has_government = communism
-					}
-					has_government = communism
-				}
+				has_government = FROM
 			}
 		}
 		ai_chance = {
@@ -392,6 +351,7 @@ country_event = {
 			country_event = { id = generic.4 hours = 6 }
 		}
 	}
+
 }
 
 # Generic accepted request to join major Alliance
@@ -399,9 +359,7 @@ country_event = {
 	id = generic.3
 	title = generic.3.t
 	desc = generic.3.d
-
-	picture = GFX_report_event_generic_sign_treaty2
-
+	picture = GFX_message_signing
 	is_triggered_only = yes
 
 	option = {
@@ -414,6 +372,7 @@ country_event = {
 			has_government = democratic
 		}
 	}
+
 	option = {
 		name = generic.3.b
 		log = "[GetDateText]: [This.GetName]: generic.3.b executed"
@@ -423,9 +382,8 @@ country_event = {
 			}
 			has_government = fascism
 		}
-
-
 	}
+
 	option = {
 		name = generic.3.c
 		log = "[GetDateText]: [This.GetName]: generic.3.c executed"
@@ -436,32 +394,17 @@ country_event = {
 			has_government = communism
 		}
 	}
+
 	option = {
 		name = generic.3.e
 		log = "[GetDateText]: [This.GetName]: generic.3.e executed"
 		trigger = {
 			NOT = {
-				AND = {
-					FROM = {
-						has_government = democratic
-					}
-					has_government = democratic
-				}
-				AND = {
-					FROM = {
-						has_government = fascism
-					}
-					has_government = fascism
-				}
-				AND = {
-					FROM = {
-						has_government = communism
-					}
-					has_government = communism
-				}
+				has_government = FROM
 			}
 		}
 	}
+
 }
 
 # Generic rejected request to join major Alliance
@@ -469,9 +412,7 @@ country_event = {
 	id = generic.4
 	title = generic.4.t
 	desc = generic.4.d
-
-	picture = GFX_report_event_generic_read_write
-
+	picture = GFX_politics_speak
 	is_triggered_only = yes
 
 	option = {
@@ -484,6 +425,7 @@ country_event = {
 			has_government = democratic
 		}
 	}
+
 	option = {
 		name = generic.4.b
 		log = "[GetDateText]: [This.GetName]: generic.4.b executed"
@@ -494,6 +436,7 @@ country_event = {
 			has_government = fascism
 		}
 	}
+
 	option = {
 		name = generic.4.c
 		log = "[GetDateText]: [This.GetName]: generic.4.c executed"
@@ -504,32 +447,17 @@ country_event = {
 			has_government = communism
 		}
 	}
+
 	option = {
 		name = generic.4.e
 		log = "[GetDateText]: [This.GetName]: generic.4.e executed"
 		trigger = {
 			NOT = {
-				AND = {
-					FROM = {
-						has_government = democratic
-					}
-					has_government = democratic
-				}
-				AND = {
-					FROM = {
-						has_government = fascism
-					}
-					has_government = fascism
-				}
-				AND = {
-					FROM = {
-						has_government = communism
-					}
-					has_government = communism
-				}
+				has_government = FROM
 			}
 		}
 	}
+
 }
 
 #####################################################################
@@ -539,65 +467,16 @@ country_event = {
 country_event = {
 	id = generic.5
 	title = generic.5.t
-	desc = { # FROM and ROOT are Democratic
-		text = generic.5.d.a
-		trigger = {
-			AND = {
-				FROM = {
-					has_government = democratic
-				}
-				has_government = democratic
-			}
-		}
-	}
-	desc = { # FROM and ROOT are Fascist
-		text = generic.5.d.b
-		trigger = {
-			AND = {
-				FROM = {
-					has_government = fascism
-				}
-				has_government = fascism
-			}
-		}
-	}
-	desc = { # FROM and ROOT are Communist
-		text = generic.5.d.c
-		trigger = {
-			AND = {
-				FROM = {
-					has_government = communism
-				}
-				has_government = communism
-			}
-		}
-	}
 	desc = { # FROM and ROOT are different ideologies
 		text = generic.5.d.e
 		trigger = {
 			NOT = {
-				AND = {
-					FROM = {
-						has_government = democratic
-					}
-					has_government = democratic
-				}
-				AND = {
-					FROM = {
-						has_government = fascism
-					}
-					has_government = fascism
-				}
-				AND = {
-					FROM = {
-						has_government = communism
-					}
-					has_government = communism
-				}
+				has_government = FROM
 			}
 		}
 	}
-	picture = GFX_report_event_generic_read_write
+	picture = GFX_politics_speak
+	is_triggered_only = yes
 
 	immediate = {
 		hidden_effect = {
@@ -608,18 +487,14 @@ country_event = {
 		}
 	}
 
-	is_triggered_only = yes
-
 	option = { #Agree / Both Democratic
 		name = generic.5.a
 		log = "[GetDateText]: [This.GetName]: generic.5.a executed"
 		trigger = {
-			AND = {
-				FROM = {
-					has_government = democratic
-				}
+			FROM = {
 				has_government = democratic
 			}
+			has_government = democratic
 		}
 		ai_chance = {
 			base = 100
@@ -634,6 +509,7 @@ country_event = {
 			news_event = { id = news.289 hours = 12 }
 		}
 	}
+
 	option = { #Agree / Both Fascist
 		name = generic.5.b
 		log = "[GetDateText]: [This.GetName]: generic.5.b executed"
@@ -656,6 +532,7 @@ country_event = {
 			news_event = { id = news.289 hours = 12 }
 		}
 	}
+
 	option = { #Agree / Both Communist
 		name = generic.5.c
 		log = "[GetDateText]: [This.GetName]: generic.5.c executed"
@@ -678,29 +555,13 @@ country_event = {
 			news_event = { id = news.289 hours = 12 }
 		}
 	}
+
 	option = { #Agree / Both different
 		name = generic.5.e
 		log = "[GetDateText]: [This.GetName]: generic.5.e executed"
 		trigger = {
 			NOT = {
-				AND = {
-					FROM = {
-						has_government = democratic
-					}
-					has_government = democratic
-				}
-				AND = {
-					FROM = {
-						has_government = fascism
-					}
-					has_government = fascism
-				}
-				AND = {
-					FROM = {
-						has_government = communism
-					}
-					has_government = communism
-				}
+				has_government = FROM
 			}
 		}
 		ai_chance = {
@@ -718,13 +579,14 @@ country_event = {
 	}
 
 	option = { #Reject
-		name = generic.2.f
-		log = "[GetDateText]: [This.GetName]: generic.2.f executed"
+		name = generic.5.f
+		log = "[GetDateText]: [This.GetName]: generic.5.f executed"
 		ai_chance = { factor = 0 }
 		FROM = {
 			country_event = { id = generic.7 hours = 6 }
 		}
 	}
+
 }
 
 # Generic accepted invitation to join major Alliance
@@ -732,9 +594,7 @@ country_event = {
 	id = generic.6
 	title = generic.6.t
 	desc = generic.6.d
-
-	picture = GFX_report_event_generic_sign_treaty2
-
+	picture = GFX_message_signing
 	is_triggered_only = yes
 
 	option = {
@@ -747,6 +607,7 @@ country_event = {
 			has_government = democratic
 		}
 	}
+
 	option = {
 		name = generic.3.b
 		log = "[GetDateText]: [This.GetName]: generic.3.b executed"
@@ -756,9 +617,8 @@ country_event = {
 			}
 			has_government = fascism
 		}
-
-
 	}
+
 	option = {
 		name = generic.3.c
 		log = "[GetDateText]: [This.GetName]: generic.3.c executed"
@@ -769,32 +629,17 @@ country_event = {
 			has_government = communism
 		}
 	}
+
 	option = {
 		name = generic.3.e
 		log = "[GetDateText]: [This.GetName]: generic.3.e executed"
 		trigger = {
 			NOT = {
-				AND = {
-					FROM = {
-						has_government = democratic
-					}
-					has_government = democratic
-				}
-				AND = {
-					FROM = {
-						has_government = fascism
-					}
-					has_government = fascism
-				}
-				AND = {
-					FROM = {
-						has_government = communism
-					}
-					has_government = communism
-				}
+				has_government = FROM
 			}
 		}
 	}
+
 }
 
 # Generic rejected invitation to join major Alliance
@@ -802,9 +647,7 @@ country_event = {
 	id = generic.7
 	title = generic.7.t
 	desc = generic.7.d
-
-	picture = GFX_report_event_generic_read_write
-
+	picture = GFX_politics_speak
 	is_triggered_only = yes
 
 	option = {
@@ -817,6 +660,7 @@ country_event = {
 			has_government = democratic
 		}
 	}
+
 	option = {
 		name = generic.4.b
 		log = "[GetDateText]: [This.GetName]: generic.4.b executed"
@@ -827,6 +671,7 @@ country_event = {
 			has_government = fascism
 		}
 	}
+
 	option = {
 		name = generic.4.c
 		log = "[GetDateText]: [This.GetName]: generic.4.c executed"
@@ -837,32 +682,17 @@ country_event = {
 			has_government = communism
 		}
 	}
+
 	option = {
 		name = generic.4.e
 		log = "[GetDateText]: [This.GetName]: generic.4.e executed"
 		trigger = {
 			NOT = {
-				AND = {
-					FROM = {
-						has_government = democratic
-					}
-					has_government = democratic
-				}
-				AND = {
-					FROM = {
-						has_government = fascism
-					}
-					has_government = fascism
-				}
-				AND = {
-					FROM = {
-						has_government = communism
-					}
-					has_government = communism
-				}
+				has_government = FROM
 			}
 		}
 	}
+
 }
 
 #####################################################################
@@ -874,7 +704,6 @@ country_event = {
 	title = md4.7.t
 	desc = md4.7.d
 	picture = GFX_election_rally
-
 	is_triggered_only = yes
 
 	option = { #Deny
@@ -884,6 +713,7 @@ country_event = {
 			base = 75
 			}
 		}
+
 	option = { #Accept
 		name = md4.7.b
 		log = "[GetDateText]: [This.GetName]: md4.7.b executed"
@@ -891,6 +721,7 @@ country_event = {
 			base = 50
 		}
 	}
+
 }
 
 country_event = {
@@ -898,7 +729,6 @@ country_event = {
 	title = md4.8.t
 	desc = md4.8.d
 	picture = GFX_election_rally
-
 	is_triggered_only = yes
 
 	option = {
@@ -909,8 +739,6 @@ country_event = {
 			}
 		}
 
-
-
 	option = {
 		name = md4.8.b
 		log = "[GetDateText]: [This.GetName]: md4.8.b executed"
@@ -918,54 +746,50 @@ country_event = {
 			base = 50
 			}
 		}
-	}
+
+}
 
 country_event = {
 	id = md4.9
 	title = md4.9.t
 	desc = md4.9.d
 	picture = GFX_election_rally
-
 	is_triggered_only = yes
 
 	option = { #Yes, raise for poor
 	name = md4.9.a
 	log = "[GetDateText]: [This.GetName]: md4.9.a executed"
-	random_list = {
-		50 = {
-			if = {
-				limit = {
-					has_government = democratic
-						}
-							add_popularity = { ideology = democratic popularity = 0.1 }
-				}
-			if = {
-				limit = {
-					has_government = nationalist
-						}
-							add_popularity = { ideology = nationalist popularity = 0.1 }
-				}
-			if = {
-				limit = {
-					has_government = communism
-						}
-							add_popularity = { ideology = communism popularity = 0.1 }
-				}
-			if = {
-				limit = {
-					has_government = fascism
-						}
-				add_popularity = { ideology = fascism popularity = 0.1 }
-				}
+	random = {
+		chance = 50
+		if = {
+			limit = {
+				has_government = democratic
+					}
+						add_popularity = { ideology = democratic popularity = 0.1 }
 			}
-	50 = { }
-		}
+		if = {
+			limit = {
+				has_government = nationalist
+					}
+						add_popularity = { ideology = nationalist popularity = 0.1 }
+			}
+		if = {
+			limit = {
+				has_government = communism
+					}
+						add_popularity = { ideology = communism popularity = 0.1 }
+			}
+		if = {
+			limit = {
+				has_government = fascism
+					}
+			add_popularity = { ideology = fascism popularity = 0.1 }
+			}
+	}
 		hidden_effect = {
-			random_list = {
-				50 = {
-					country_event = { id = md4.10 hours = 6 }
-				}
-				50 = { }
+			random = {
+				chance = 50
+				country_event = { id = md4.10 hours = 6 }
 			}
 			}
 		ai_chance = {
@@ -976,43 +800,38 @@ country_event = {
 	option = { #Lower for poor
 		name = md4.9.b
 		log = "[GetDateText]: [This.GetName]: md4.9.b executed"
-		random_list = {
-		30 = {
-			if = {
-				limit = {
-					has_government = democratic
-						}
-							add_popularity = { ideology = democratic popularity = 0.2 }
-				}
-			if = {
-				limit = {
-					has_government = nationalist
-						}
-							add_popularity = { ideology = nationalist popularity = 0.2 }
-				}
-			if = {
-				limit = {
-					has_government = communism
-						}
-							add_popularity = { ideology = communism popularity = 0.3 }
-				}
-			if = {
-				limit = {
-					has_government = fascism
-						}
-				add_popularity = { ideology = fascism popularity = 0.3 }
-				}
+		random = {
+			chance = 30
+		if = {
+			limit = {
+				has_government = democratic
+					}
+						add_popularity = { ideology = democratic popularity = 0.2 }
 			}
-
-	70 = { }
+		if = {
+			limit = {
+				has_government = nationalist
+					}
+						add_popularity = { ideology = nationalist popularity = 0.2 }
 			}
+		if = {
+			limit = {
+				has_government = communism
+					}
+						add_popularity = { ideology = communism popularity = 0.3 }
+			}
+		if = {
+			limit = {
+				has_government = fascism
+					}
+			add_popularity = { ideology = fascism popularity = 0.3 }
+			}
+		}
 		hidden_effect = {
-		random_list = {
-				70 = {
-					country_event = { id = md4.11 hours = 6 }
-				}
-				30 = { }
-			}
+		random = {
+			chance = 70
+				country_event = { id = md4.11 hours = 6 }
+		}
 		}
 			ai_chance = {
 			base = 50
@@ -1022,42 +841,38 @@ country_event = {
 	option = { #Raise taxes for rich
 		name = md4.9.c
 		log = "[GetDateText]: [This.GetName]: md4.9.c executed"
-		random_list = {
-		50 = {
-			if = {
-				limit = {
-					has_government = democratic
-						}
-							add_popularity = { ideology = democratic popularity = 0.05 }
-				}
-			if = {
-				limit = {
-					has_government = nationalist
-						}
-							add_popularity = { ideology = nationalist popularity = 0.05 }
-				}
-			if = {
-				limit = {
-					has_government = communism
-						}
-							add_popularity = { ideology = communism popularity = 0.05 }
-				}
-			if = {
-				limit = {
-					has_government = fascism
-						}
-				add_popularity = { ideology = fascism popularity = 0.05 }
-				}
+		random = {
+			chance = 50
+		if = {
+			limit = {
+				has_government = democratic
+					}
+						add_popularity = { ideology = democratic popularity = 0.05 }
 			}
-			50 = { }
+		if = {
+			limit = {
+				has_government = nationalist
+					}
+						add_popularity = { ideology = nationalist popularity = 0.05 }
+			}
+		if = {
+			limit = {
+				has_government = communism
+					}
+						add_popularity = { ideology = communism popularity = 0.05 }
+			}
+		if = {
+			limit = {
+				has_government = fascism
+					}
+			add_popularity = { ideology = fascism popularity = 0.05 }
+			}
 		}
 		hidden_effect = {
-		random_list = {
-				20 = {
-					country_event = { id = md4.12 hours = 6 }
-				}
-				80 = { }
-			}
+		random = {
+			chance = 20
+				country_event = { id = md4.12 hours = 6 }
+		}
 		}
 			ai_chance = {
 			base = 50
@@ -1067,55 +882,51 @@ country_event = {
 	option = {
 		name = md4.9.e
 		log = "[GetDateText]: [This.GetName]: md4.9.e executed"
-		random_list = {
-		50 = {
-			if = {
-				limit = {
-					has_government = democratic
-						}
-							add_popularity = { ideology = democratic popularity = 0.05 }
-				}
-			if = {
-				limit = {
-					has_government = nationalist
-						}
-							add_popularity = { ideology = nationalist popularity = 0.05 }
-				}
-			if = {
-				limit = {
-					has_government = communism
-						}
-							add_popularity = { ideology = communism popularity = 0.05 }
-				}
-			if = {
-				limit = {
-					has_government = fascism
-						}
-				add_popularity = { ideology = fascism popularity = 0.05 }
-				}
+		random = {
+			chance = 50
+		if = {
+			limit = {
+				has_government = democratic
+					}
+						add_popularity = { ideology = democratic popularity = 0.05 }
 			}
-			50 = { }
+		if = {
+			limit = {
+				has_government = nationalist
+					}
+						add_popularity = { ideology = nationalist popularity = 0.05 }
+			}
+		if = {
+			limit = {
+				has_government = communism
+					}
+						add_popularity = { ideology = communism popularity = 0.05 }
+			}
+		if = {
+			limit = {
+				has_government = fascism
+					}
+			add_popularity = { ideology = fascism popularity = 0.05 }
+			}
 		}
 		hidden_effect = {
-		random_list = {
-				20 = {
-					country_event = { id = md4.13 hours = 6 }
-				}
-				80 = { }
-			}
+		random = {
+			chance = 20
+				country_event = { id = md4.13 hours = 6 }
+		}
 		}
 			ai_chance = {
 			base = 50
 			}
 		}
-	}
 
-country_event = { #Response event 1 for 4.9.a
+}
+
+country_event = {
 	id = md4.10
 	title = md4.10.t
 	desc = md4.10.d
 	picture = GFX_election_rally
-
 	is_triggered_only = yes
 
 	option = {
@@ -1146,14 +957,14 @@ country_event = { #Response event 1 for 4.9.a
 				add_popularity = { ideology = fascism popularity = -0.1 }
 				}
 		}
+
 }
 
-country_event = { #Response event 1 for 4.9.b
+country_event = {
 	id = md4.11
 	title = md4.11.t
 	desc = md4.11.d
 	picture = GFX_election_rally
-
 	is_triggered_only = yes
 
 	option = {
@@ -1184,14 +995,14 @@ country_event = { #Response event 1 for 4.9.b
 				add_popularity = { ideology = fascism popularity = -0.3 }
 				}
 		}
+
 }
 
-country_event = { #Response event 1 for 4.9.c
+country_event = {
 	id = md4.12
 	title = md4.12.t
 	desc = md4.12.d
 	picture = GFX_election_rally
-
 	is_triggered_only = yes
 
 	option = {
@@ -1222,14 +1033,14 @@ country_event = { #Response event 1 for 4.9.c
 				add_popularity = { ideology = fascism popularity = -0.05 }
 				}
 		}
+
 }
 
-country_event = { #Response event 1 for 4.9.e
+country_event = {
 	id = md4.13
 	title = md4.13.t
 	desc = md4.13.d
 	picture = GFX_election_rally
-
 	is_triggered_only = yes
 
 	option = {
@@ -1260,6 +1071,7 @@ country_event = { #Response event 1 for 4.9.e
 				add_popularity = { ideology = fascism popularity = -0.05 }
 				}
 		}
+
 }
 
 
@@ -1269,9 +1081,7 @@ country_event = {
 	id = md4.14
 	title = md4.14.t
 	desc = md4.14.d
-
 	picture = GFX_political_deal
-
 	is_triggered_only = yes
 
 	option = {
@@ -1308,6 +1118,7 @@ country_event = {
 		FROM = { country_event = { id = md4.15 hours = 6 } }
 		clr_country_flag = always_say_yes
 	}
+
 	option = {
 		name = md4.14.b
 		log = "[GetDateText]: [This.GetName]: md4.14.b executed"
@@ -1342,6 +1153,7 @@ country_event = {
 		FROM = { country_event = { id = md4.16 hours = 6 } }
 		clr_country_flag = always_say_yes
 	}
+
 }
 
 # Generic country accepts submission
@@ -1349,9 +1161,7 @@ country_event = {
 	id = md4.15
 	title = md4.15.t
 	desc = md4.15.d
-
 	picture = GFX_political_deal
-
 	is_triggered_only = yes
 
 	option = {
@@ -1359,6 +1169,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: md4.15.a executed"
 		puppet = FROM
 	}
+
 }
 
 # Generic country rejects submission
@@ -1366,19 +1177,20 @@ country_event = {
 	id = md4.16
 	title = md4.16.t
 	desc = md4.16.d
-
 	picture = GFX_political_deal
-
 	is_triggered_only = yes
 
 	option = {
 		name = md4.16.a
 		log = "[GetDateText]: [This.GetName]: md4.16.a executed"
+		set_temp_variable = { wargoal_on = FROM }
+		add_threat_from_wargoal_effect = yes
 		create_wargoal = {
 			target = FROM
 			type = puppet_wargoal_focus
 		}
 	}
+
 }
 
 # Generic country accepts alliance (use only if country inviting is already in faction, otherwise define a custom faction name, eg. see Syria)
@@ -1386,9 +1198,7 @@ country_event = {
 	id = md4.17
 	title = md4.17.t
 	desc = md4.17.d
-
 	picture = GFX_political_deal
-
 	is_triggered_only = yes
 
 	option = {
@@ -1412,7 +1222,7 @@ country_event = {
 					is_in_faction_with = ROOT
 					is_faction_leader = yes
 				}
-				THIS = { add_to_faction = FROM }
+				add_to_faction = FROM
 			}
 		}
 		if = {
@@ -1427,7 +1237,7 @@ country_event = {
 						original_tag = NUS
 					}
 				}
-				create_faction = Peninsula_Sword
+				create_faction_from_template = faction_template_peninsula_sword
 			}
 			ROOT = { add_to_faction = FROM }
 		}
@@ -1454,6 +1264,7 @@ country_event = {
 			value = 200
 		}
 	}
+
 }
 
 # Generic country rejects alliance
@@ -1461,9 +1272,7 @@ country_event = {
 	id = md4.18
 	title = md4.18.t
 	desc = md4.18.d
-
 	picture = GFX_treaty_rejected
-
 	is_triggered_only = yes
 
 	option = {
@@ -1475,6 +1284,7 @@ country_event = {
 			modifier = insult
 		}
 	}
+
 }
 
 # Generic country cedes territory
@@ -1482,9 +1292,7 @@ country_event = {
 	id = md4.19
 	title = md4.19.t
 	desc = md4.19.d
-
 	picture = GFX_political_deal
-
 	is_triggered_only = yes
 
 	option = {
@@ -1494,16 +1302,17 @@ country_event = {
 		FROM = {
 			every_state = {
 				limit = { has_state_flag = SET_STATE_FOR_TRANSFER }
-				ROOT = { transfer_state = PREV }
 				if = {
-					limit = { FROM = { has_country_flag = STATE_TRANSFER_ADD_CORES } }
+					limit = { owner = { has_country_flag = STATE_TRANSFER_ADD_CORES } }
 					add_core_of = ROOT
-					FROM = { clr_country_flag = STATE_TRANSFER_ADD_CORES }
 				}
 				clr_state_flag = SET_STATE_FOR_TRANSFER
+				ROOT = { transfer_state = PREV }
 			}
+			FROM = { clr_country_flag = STATE_TRANSFER_ADD_CORES }
 		}
 	}
+
 }
 
 # Generic country refuses to cede territory
@@ -1511,9 +1320,7 @@ country_event = {
 	id = md4.20
 	title = md4.20.t
 	desc = md4.20.d
-
 	picture = GFX_treaty_rejected
-
 	is_triggered_only = yes
 
 	option = {
@@ -1525,16 +1332,99 @@ country_event = {
 				limit = { has_state_flag = SET_STATE_FOR_TRANSFER }
 				add_claim_by = ROOT
 				if = {
-					limit = { FROM = { has_country_flag = STATE_TRANSFER_ADD_CORES } }
+					limit = { owner = { has_country_flag = STATE_TRANSFER_ADD_CORES } }
 					add_core_of = ROOT
-					FROM = { clr_country_flag = STATE_TRANSFER_ADD_CORES }
 				}
 				clr_state_flag = SET_STATE_FOR_TRANSFER
 			}
+			FROM = { clr_country_flag = STATE_TRANSFER_ADD_CORES }
 		}
+		set_temp_variable = { wargoal_on = FROM }
+		set_temp_variable = { wargoal_type = 2 }
+		add_threat_from_wargoal_effect = yes
 		create_wargoal = {
 			target = FROM
 			type = annex_everything
 		}
 	}
+
+}
+
+# EAEU Integration Proposal
+
+country_event = {
+	id = md4.21
+	title = md4.21.t
+	desc = md4.21.d
+	picture = GFX_eastern_europe
+	is_triggered_only = yes
+
+	option = { #Agree
+		name = md4.21.a
+		log = "[GetDateText]: [This.GetName]: md4.21.a executed"
+		ai_chance = {
+			base = 100
+		}
+		FROM = {
+			add_opinion_modifier = {
+				target = ROOT
+				modifier = free_trade_agreement
+			}
+			country_event = { id = md4.22 hours = 6 }
+		}
+		add_opinion_modifier = {
+			target = FROM
+			modifier = free_trade_agreement
+		}
+		FROM = {
+			add_ideas = EUR_idea_eacu_cooperation
+		}
+		set_temp_variable = { receiver_nation = ROOT.id }
+		set_temp_variable = { sender_nation = FROM.id }
+		set_improved_trade_agreement = yes
+	}
+
+	option = { #Refuse
+		name = md4.21.b
+		log = "[GetDateText]: [This.GetName]: md4.21.b executed"
+		ai_chance = { factor = 0 }
+		FROM = {
+			country_event = { id = md4.23 hours = 6 }
+			add_opinion_modifier = {
+				target = ROOT
+				modifier = insult
+			}
+		}
+	}
+
+}
+
+# ROOT signed EAEU Integration
+country_event = {
+	id = md4.22
+	title = md4.22.t
+	desc = md4.22.d
+	picture = GFX_eastern_europe
+	is_triggered_only = yes
+
+	option = {
+		name = md4.22.a
+		log = "[GetDateText]: [This.GetName]: md4.22.a executed"
+	}
+
+}
+
+# ROOT refused to sign EAEU Integration
+country_event = {
+	id = md4.23
+	title = md4.23.t
+	desc = md4.23.d
+	picture = GFX_eastern_europe
+	is_triggered_only = yes
+
+	option = {
+		name = md4.23.a
+		log = "[GetDateText]: [This.GetName]: md4.23.a executed"
+	}
+
 }

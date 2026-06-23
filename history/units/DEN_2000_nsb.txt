@@ -2,6 +2,8 @@
 division_template = {
 	name = "Mekaniseret Brigade"
 
+	division_names_group = DEN_MECH
+
 	regiments = {
 		armor_Bat = { x = 0 y = 0 }
 		Mech_Inf_Bat = { x = 1 y = 0 }
@@ -10,14 +12,22 @@ division_template = {
 		SP_Arty_Bat = { x = 2 y = 1 }
 		Mot_Inf_Bat = { x = 3 y = 0 }
 	}
+
+	regimental_support = {
+		Mot_Recce_Comp = { x = 3 y = 0 }
+	}
+
 	support = {
 		H_Engi_Comp = { x = 0 y = 0 }
 		SP_AA_Battery = { x = 0 y = 1 }
+		combat_service_support_company = { x = 0 y = 2 }
 	}
 }
 
 division_template = {
 	name = "International Brigade"
+
+	division_names_group = DEN_MECH
 
 	regiments = {
 		armor_Bat = { x = 0 y = 0 }
@@ -25,42 +35,101 @@ division_template = {
 		Mech_Inf_Bat = { x = 1 y = 1 }
 		Arty_Bat = { x = 2 y = 0 }
 	}
+
+	regimental_support = {
+		Mech_Recce_Comp = { x = 0 y = 0 }
+	}
+
 	support = {
 		H_Engi_Comp = { x = 0 y = 0 }
-		Mech_Recce_Comp = { x = 0 y = 1 }
-		SP_AA_Battery = { x = 0 y = 2 }
+		SP_AA_Battery = { x = 0 y = 1 }
+		combat_service_support_company = { x = 0 y = 2 }
 	}
+}
+division_template = {
+	name = "Special Operations"
+	regiments = {
+		Special_Forces = { x = 0 y = 0 }
+	}
+
+		support = {
+			combat_service_support_company = { x = 0 y = 0 }
+			L_Ranger_Recce_Comp = { x = 0 y = 1 }
+		}
+	priority = 2
 }
 
 
 #Ground Forces
 units = {
 	division = {
-		name = "1. Jydske Brigade"
+		division_name = {
+			is_name_ordered = yes
+			name_order = 1
+		}
+		officer = {
+			name = "Jørgen Andreassen"
+
+	}
 		location = 399		#Fredericia
 		division_template = "Mekaniseret Brigade"
 		start_experience_factor = 0.4
 		start_equipment_factor = 0.01
 	}
 	division = {
-		name = "3. Jydske Brigade"
+		division_name = {
+			is_name_ordered = yes
+			name_order = 3
+	}
+		officer = {
+			name = "Per Ludvigsen"
+
+	}
 		location = 394		#Haderslev
 		division_template = "Mekaniseret Brigade"
 		start_experience_factor = 0.4
 		start_equipment_factor = 0.01
 	}
 	division = {
-		name = "1. Sjællandske Brigade"
+		division_name = {
+			is_name_ordered = yes
+			name_order = 2
+		}
+		officer = {
+			name = "Niels Kjeldsen"
+	}
 		location = 6287		#Ringsted
 		division_template = "Mekaniseret Brigade"
 		start_experience_factor = 0.4
 		start_equipment_factor = 0.01
 	}
 	division = {
-		name = "Den Danske Internationale Brigade"
-		location = 3325		#Vordingborg
+		division_name = {
+			is_name_ordered = yes
+			name_order = 4
+		}
+		officer = {
+			name = "Jørgen Hansen-Nord"
+
+	}
+		location = 3305		#Vordingborg
 		division_template = "International Brigade"
 		start_experience_factor = 0.6
+		start_equipment_factor = 0.01
+	}
+
+	division = {
+		name = "Jægerkorpset"
+		location = 6287
+		division_template = "Special Operations"
+		start_experience_factor = 0.75
+		start_equipment_factor = 0.01
+	}
+	division = {
+		name = "Frømandskorpset"
+		location = 3305
+		division_template = "Special Operations"
+		start_experience_factor = 0.75
 		start_equipment_factor = 0.01
 	}
 
@@ -72,8 +141,15 @@ units = {
 
 instant_effect = {
 	add_equipment_to_stockpile = {
-		type = infantry_weapons2 	#Colt C7
-		producer = CAN
+		type = infantry_weapons_2 	#M/66
+		amount = 3500
+	}
+	add_equipment_to_stockpile = {
+		type = infantry_weapons_3 	#M/75
+		amount = 20000 #70'000 thousand in service in 1985, not sure how many scrapped by 2000
+	}
+	add_equipment_to_stockpile = {
+		type = infantry_weapons_4 	#Colt C7
 		amount = 3500
 	}
 
@@ -96,37 +172,23 @@ instant_effect = {
 	}
 
 	add_equipment_to_stockpile = {
-		type = command_control_equipment2
+		type = cnc_equipment_3
 		producer = DEN
 		amount = 600
 	}
 
 	add_equipment_to_stockpile = {
-		type = mbt_hull_0
-		variant_name = "Leopard 1A5"
-		producer = GER
-		amount = 180
-	}
-
-	add_equipment_to_stockpile = {
-		type = mbt_hull_1
-		variant_name = "Leopard 2A5"
-		producer = GER
-		amount = 51
-	}
-
-	add_equipment_to_stockpile = {
-		type = apc_hull_0
+		type = medium_tank_amphibious_chassis_1
 		variant_name = "M113"
 		producer = USA
 		amount = 657
 	}
 
 	add_equipment_to_stockpile = {
-		type = apc_hull_0
-		variant_name = "Mowag Piranha III"
+		type = medium_tank_amphibious_chassis_2
+		variant_name = "MOWAG Piranha III APC"
 		producer = SWI
-		amount = 22
+		amount = 113
 	}
 
 	add_equipment_to_stockpile = {
@@ -136,26 +198,19 @@ instant_effect = {
 	}
 
 	add_equipment_to_stockpile = {
-		type = util_vehicle_2			#Humvee
+		type = util_vehicle_3			#Humvee
 		producer = USA
 		amount = 22
 	}
 
 	add_equipment_to_stockpile = {
-		type = util_vehicle_0			#Various MAN trucks
+		type = util_vehicle_1			#Various MAN trucks
 		producer = GER
 		amount = 220
 	}
 
 	add_equipment_to_stockpile = {
-		type = spaa_hull_0
-		amount = 36
-		producer = USA
-		variant_name = "MIM-23 Hawk"
-	}
-
-	add_equipment_to_stockpile = {
-		type = spart_hull_0
+		type = medium_tank_artillery_chassis_1
 		variant_name = "M109A3"
 		producer = USA
 		amount = 76
@@ -168,8 +223,10 @@ instant_effect = {
 	}
 
 	add_equipment_to_stockpile = {
-		type = transport_helicopter2		#AW101 & Westland Lynx
+		type = transport_helicopter_2		#AW101 & Westland Lynx
 		producer = ENG
 		amount = 19
 	}
 }
+
+#https://marinehist.dk/FOF/FaktaOmFSV-Jan2000.pdf useful

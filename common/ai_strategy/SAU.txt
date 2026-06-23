@@ -19,7 +19,10 @@ SAU_rival_iran = {
 	allowed = { original_tag = SAU }
 	enable = {
 		country_exists = PER
-		NOT = { is_in_faction_with = PER }
+		NOT = {
+			is_in_faction_with = PER
+			has_country_flag = SAU_be_nice_to_iran
+		}
 	}
 	abort_when_not_enabled = yes
 
@@ -42,15 +45,38 @@ SAU_rival_iran = {
 	ai_strategy = { type = contain id = "HEZ" value = 100 }
 }
 
-SAU_support_HOR = {
+SAU_like_iran = {
 	allowed = { original_tag = SAU }
-	enable = { country_exists = HOR }
+	enable = {
+		country_exists = PER
+		has_country_flag = SAU_be_nice_to_iran
+	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = { type = befriend id = "HOR" value = 50 }
-	ai_strategy = { type = protect id = "HOR" value = 50 }
-	ai_strategy = { type = influence id = "HOR" value = 50 }
-	ai_strategy = { type = support id = "HOR" value = 50 }
+	ai_strategy = { type = befriend id = "PER" value = 200 }
+	ai_strategy = { type = support id = "PER" value = 200 }
+	ai_strategy = { type = protect id = "PER" value = 200 }
+	ai_strategy = { type = send_volunteers_desire id = "PER" value = 200 }
+}
+
+SAU_support_BLC = {
+	allowed = { original_tag = SAU }
+	enable = { has_country_flag = PER_BLC_rebellion }
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = befriend id = "BLC" value = 20 }
+	ai_strategy = { type = protect id = "BLC" value = 20 }
+	ai_strategy = { type = influence id = "BLC" value = 20 }
+	ai_strategy = { type = support id = "BLC" value = 20 }
+	ai_strategy = { type = send_volunteers_desire id = "BLC" value = 200 }
+	ai_strategy = { type = befriend id = "PER" value = -100 }
+	ai_strategy = { type = conquer id = "PER" value = 50 }
+	ai_strategy = { type = invade id = "PER" value = 50 }
+	ai_strategy = { type = protect id = "PER" value = -100 }
+	ai_strategy = { type = antagonize id = "PER" value = 100 }
+	ai_strategy = { type = alliance id = "PER" value = -200 }
+	ai_strategy = { type = support id = "PER" value = -100 }
+	ai_strategy = { type = contain id = "PER" value = 100 }
 }
 
 SAU_support_YEM = {
@@ -72,6 +98,23 @@ SAU_support_YEM = {
 	ai_strategy = { type = support id = "HOU" value = -100 }
 	ai_strategy = { type = contain id = "HOU" value = 100 }
 }
+
+SAU_support_ARA = {
+	allowed = { original_tag = SAU }
+	enable = { ARA = { has_war_with = PER } }
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = send_volunteers_desire id = "ARA" value = 200 }
+	ai_strategy = { type = befriend id = "PER" value = -100 }
+	ai_strategy = { type = conquer id = "PER" value = 50 }
+	ai_strategy = { type = invade id = "PER" value = 50 }
+	ai_strategy = { type = protect id = "PER" value = -100 }
+	ai_strategy = { type = antagonize id = "PER" value = 100 }
+	ai_strategy = { type = alliance id = "PER" value = -200 }
+	ai_strategy = { type = support id = "PER" value = -100 }
+	ai_strategy = { type = contain id = "PER" value = 100 }
+}
+
 
 SAU_like_OMA = {
 	allowed = { original_tag = SAU }
@@ -103,10 +146,12 @@ SAU_dislike_SYR = {
 	ai_strategy = { type = contain id = "SYR" value = 100 }
 }
 
+# DO NOT SEND TO FASCISTS
 SAU_block_volunteers_to_jihadists = {
 	allowed = { original_tag = SAU }
 	enable = {
-		always = yes
+		has_government = fascism
+		NOT = { salafist_caliphate_are_in_power = yes }
 	}
 	abort_when_not_enabled = yes
 
@@ -122,11 +167,24 @@ SAU_block_pointless_volunteers = {
 	enable = {
 		threat < 0.5
 	}
-	abort = {
-		threat > 0.5
-	}
+	abort_when_not_enabled = yes
 
 	ai_strategy = { type = send_volunteers_desire id = "ROJ" value = -200 }
 	ai_strategy = { type = send_volunteers_desire id = "TUA" value = -100 }
 	ai_strategy = { type = send_volunteers_desire id = "GNC" value = -200 }
+}
+
+SAU_embrace_the_arab_states = {
+	allowed = { original_tag = SAU }
+	enable = {
+		salafist_kingdom_are_in_power = yes
+		has_idea = saudi_royal_family
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = befriend id = "UAE" value = 50 }
+	ai_strategy = { type = befriend id = "KUW" value = 50 }
+	ai_strategy = { type = befriend id = "OMA" value = 50 }
+	ai_strategy = { type = befriend id = "BHR" value = 50 }
+	ai_strategy = { type = befriend id = "QAT" value = 50 }
 }

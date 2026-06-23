@@ -14,6 +14,7 @@ get_same_ideology = {
 		add_to_array = { FROM.country_array = THIS }
 		remove_from_array = { FROM.array_to_sort = THIS }
 	}
+	update_ledger_dirty_var = yes
 }
 
 create_sorted_array = {
@@ -24,7 +25,7 @@ create_sorted_array = {
 		set_variable = { middle = country_array^num }
 		set_temp_variable = { len = country_array^num }
 		subtract_from_temp_variable = { len = 1 }
-		divide_variable = { middle = 2 }
+		multiply_variable = { middle = 0.5 }
 		round_variable = middle
 		for_loop_effect = {
 			start = 0
@@ -63,54 +64,37 @@ get_strategic_building_levels = {
 }
 
 update_misc_vars = {
-	set_variable = {
-		consumer_goods_factories = num_of_civilian_factories
-	}
-	multiply_variable = {
-		consumer_goods_factories = modifier@consumer_goods_factor
-	}
-	set_variable = {
-		effective_civilian_factories = num_of_civilian_factories
-	}
-	subtract_from_variable = {
-		effective_civilian_factories = consumer_goods_factories
-	}
-	set_temp_variable = {
-		civ_factories_multiplier = modifier@production_speed_buildings_factor
-	}
-	multiply_temp_variable = {
-		civ_factories_multiplier = effective_civilian_factories
-	}
-	add_to_variable = {
-		effective_civilian_factories = civ_factories_multiplier
-	}
-	set_variable = {
-		effective_military_factories = num_of_military_factories
-	}
-	set_temp_variable = {
-		mil_factories_multiplier = modifier@industrial_capacity_factory
-	}
-	multiply_temp_variable = {
-		mil_factories_multiplier = effective_military_factories
-	}
-	add_to_variable = {
-		effective_military_factories = mil_factories_multiplier
-	}
-	set_variable = {
-		effective_naval_factories = num_of_naval_factories
-	}
-	set_temp_variable = {
-		nav_factories_multiplier = modifier@industrial_capacity_dockyard
-	}
-	multiply_temp_variable = {
-		nav_factories_multiplier = effective_naval_factories
-	}
-	add_to_variable = {
-		effective_naval_factories = nav_factories_multiplier
-	}
-	set_variable = {
-		num_controlled_states_including_subjects = num_controlled_states
-	}
+	# Consumer Good Factories
+	set_variable = { consumer_goods_factories = num_of_civilian_factories }
+
+	set_temp_variable = { actual_consumer_goods_percent = modifier@consumer_goods_expected_value }
+	set_temp_variable = { consumer_goods_factor_full = 1 }
+	add_to_temp_variable = { consumer_goods_factor_full = modifier@consumer_goods_factor }
+	multiply_temp_variable = { actual_consumer_goods_percent = consumer_goods_factor_full }
+
+	multiply_variable = { consumer_goods_factories = actual_consumer_goods_percent }
+
+	set_variable = { used_consumer_goods_factories = num_of_civilian_factories }
+	subtract_from_variable = { used_consumer_goods_Factories = consumer_goods_factories }
+
+	set_variable = { effective_civilian_factories = num_of_civilian_factories }
+	subtract_from_variable = { effective_civilian_factories = consumer_goods_factories }
+
+	set_temp_variable = { civ_factories_multiplier = modifier@production_speed_buildings_factor }
+	multiply_temp_variable = { civ_factories_multiplier = effective_civilian_factories }
+	add_to_variable = { effective_civilian_factories = civ_factories_multiplier }
+
+	set_variable = { effective_military_factories = num_of_military_factories }
+	set_temp_variable = { mil_factories_multiplier = modifier@industrial_capacity_factory }
+	multiply_temp_variable = { mil_factories_multiplier = effective_military_factories }
+	add_to_variable = { effective_military_factories = mil_factories_multiplier }
+
+	set_variable = { effective_naval_factories = num_of_naval_factories }
+	set_temp_variable = { nav_factories_multiplier = modifier@industrial_capacity_dockyard }
+	multiply_temp_variable = { nav_factories_multiplier = effective_naval_factories }
+	add_to_variable = { effective_naval_factories = nav_factories_multiplier }
+
+	set_variable = { num_controlled_states_including_subjects = num_controlled_states }
 	for_each_scope_loop = {
 		array = subjects
 		add_to_variable = {
@@ -145,8 +129,15 @@ update_misc_vars = {
 }
 
 open_ledger = {
-	update_ledger_country_array = yes
-	set_variable = { ledger_open = 1 }
+	if = {
+		limit = { check_variable = { ledger_open = 1 } }
+		clear_variable = ledger_open
+		update_ledger_dirty_var = yes
+	} else = {
+		update_ledger_country_array = yes
+		set_variable = { ledger_open = 1 }
+	}
+	update_ledger_dirty_var = yes
 }
 
 update_ledger_country_array = {
@@ -278,8 +269,10 @@ ledger_quicksort = {
 				}
 			}
 		}
+		# Make sure to update common/scripted_localisation/ledger_localisation.txt for the new variables you're adding
 		VARIABLE = "[ROOT.LedgerGetVariableToSort]"
 	}
+
 	clear_variable = min
 	clear_variable = tmp
 	clear_variable = random_pivot
@@ -287,10 +280,10 @@ ledger_quicksort = {
 }
 
 update_ledger_dirty_var = {
-	if = { limit = { check_variable = { global.ledger_ui_dirty_var = 1000 } }
-		set_variable = { global.ledger_ui_dirty_var = 0 }
+	if = { limit = { check_variable = { global.ledger_ui_dirty_var < 1000000 } }
+		add_to_variable = { global.ledger_ui_dirty_var = 1 }
 	}
 	else = {
-		add_to_variable = { global.ledger_ui_dirty_var = 1 }
+		set_variable = { global.ledger_ui_dirty_var = 0 }
 	}
 }

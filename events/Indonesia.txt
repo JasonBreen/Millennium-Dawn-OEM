@@ -15,29 +15,30 @@ country_event = {
 				id = indonesia.50
 				hours = 6
 			}
-		 }
-		 set_temp_variable = { percent_change = 2 }
-			set_temp_variable = { tag_index = ROOT }
-			set_temp_variable = { influence_target = IND }
-			change_influence_percentage = yes
-				add_opinion_modifier = {
-					target = IND
-					modifier = medium_increase
-				}
-				set_temp_variable = { treasury_change = -26.45 }
-				modify_treasury_effect = yes
+		}
+		set_temp_variable = { percent_change = 2 }
+		set_temp_variable = { influence_target = IND }
+		change_influence_percentage = yes
+			add_opinion_modifier = {
+				target = IND
+				modifier = medium_increase
 			}
-			option = {
-				name = indonesia.5.b
-				log = "[GetDateText]: [This.GetName]: indonesia.5.b executed"
-				IND = {
-					country_event = {
-						id = indonesia.500
-						hours = 6
-					}
-				}
+			set_temp_variable = { treasury_change = -26.45 }
+			modify_treasury_effect = yes
+	}
+
+	option = {
+		name = indonesia.5.b
+		log = "[GetDateText]: [This.GetName]: indonesia.5.b executed"
+		IND = {
+			country_event = {
+				id = indonesia.500
+				hours = 6
 			}
 		}
+	}
+}
+
 country_event = {
 	id = indonesia.50
 	title = indonesia.50.t
@@ -79,7 +80,6 @@ country_event = {
 		log = "[GetDateText]: [Root.GetName]: event indonesia.6.a"
 		IND = { country_event = { id = indonesia.60 hours = 6 } }
 		set_temp_variable = { percent_change = 2 }
-		set_temp_variable = { tag_index = ROOT }
 		set_temp_variable = { influence_target = IND }
 		change_influence_percentage = yes
 		add_opinion_modifier = { target = IND modifier = medium_increase }
@@ -133,12 +133,9 @@ country_event = {
 		name = indonesia.7.a
 		log = "[GetDateText]: [Root.GetName]: event indonesia.7.a"
 		IND = {
-			country_event = {
-				id = indonesia.70
-				hours = 6
-			}
- 		}
-		 IND = {
+			country_event = { id = indonesia.70 hours = 6 }
+			set_temp_variable = { wargoal_on = MAY }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = MAY
@@ -148,12 +145,9 @@ country_event = {
 	option = {
 		name = indonesia.7.b
 		log = "[GetDateText]: [This.GetName]: indonesia.7.b executed"
-			IND = {
-				country_event = {
-					id = indonesia.700
-					hours = 6
-			}
-		 }
+		IND = {
+			country_event = { id = indonesia.700 hours = 6 }
+		}
 	}
 }
 country_event = {
@@ -165,6 +159,8 @@ country_event = {
 		name = indonesia.70.a
 		log = "[GetDateText]: [Root.GetName]: event indonesia.70.a"
 		IND = {
+			set_temp_variable = { wargoal_on = MAY }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = MAY
@@ -205,8 +201,8 @@ country_event = {
 				id = indonesia.80
 				hours = 6
 			}
- 		}
-		 IND = {
+			set_temp_variable = { wargoal_on = AST }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = AST
@@ -233,6 +229,8 @@ country_event = {
 		name = indonesia.80.a
 		log = "[GetDateText]: [Root.GetName]: event indonesia.80.a"
 		IND = {
+			set_temp_variable = { wargoal_on = AST }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = AST
@@ -268,56 +266,59 @@ country_event = {
 	title = indonesia.2.t
 	desc = indonesia.2.d
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.2"
-		}
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
-		}
+	}
 	##East Timor Gains Independence
 	option = {
 		name = indonesia.2.a
 		log = "[GetDateText]: [Root.GetName]: event indonesia.2.a"
 		hidden_effect = {
 			country_event = { id = indonesia.3 days = 204 }
-			}
-		custom_effect_tooltip = IND_est1
+		}
+
 		USA = {
-				add_opinion_modifier = {
-					target = IND
-					modifier = large_increase
-				}
+			add_opinion_modifier = { target = IND modifier = large_increase }
+			reverse_add_opinion_modifier = { target = IND modifier = large_increase }
+		}
+		every_country = {
+			limit = {
+				NOT = { has_war_with = IND }
+				NOT = { has_government = fascism }
+				NOT = { has_government = nationalist }
 			}
-			every_country = {
-				add_opinion_modifier = {
-					target = IND
-					modifier = small_increase
-				}
-			}
+			add_opinion_modifier = { target = IND modifier = small_increase }
+			reverse_add_opinion_modifier = { target = IND modifier = small_increase }
+		}
+
 		ai_chance = {
-			factor = 1
+			base = 1
+			modifier = {
+				factor = 5
+				is_historical_focus_on = yes
+			}
 		}
 	}
 	option = {
 		name = indonesia.2.b
 		log = "[GetDateText]: [Root.GetName]: event indonesia.2.b"
 		add_state_core = 734
-		custom_effect_tooltip = IND_est2
+		add_state_core = 1226
 		hidden_effect = {
 			AST = { country_event = { id = indonesia.9 hours = 6 } }
 			add_timed_idea = {
 				idea = IND_east_timor_resistance
 				days = 200
-				}
+			}
 			reverse_add_opinion_modifier = { target = USA modifier = large_decrease }
 			every_country = {
 				limit = { is_in_europe = yes }
 				add_opinion_modifier = { target = IND modifier = large_decrease }
-				}
 			}
+		}
+
 		ai_chance = {
-			factor = 1
+			base = 1
 		}
 	}
 }
@@ -328,53 +329,44 @@ country_event = {
 	desc = indonesia.9.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.9"
-	}
 	trigger = {
 		tag = AST
-		has_start_date < 2005.01.01
 	}
-##Start Seperatist or do nothing
-option = {
-	name = indonesia.9.a
-	log = "[GetDateText]: [Root.GetName]: event indonesia.9.a"
-	ai_chance = {
-		factor = 2
-		}
-	IND = {
-			add_opinion_modifier = {
-				target = AST
-				modifier = large_decrease
-			}
-		}
-		TIM = {
-			IND = { release_on_controlled = TIM
-			}
+
+	##Start Seperatist or do nothing
+	option = {
+		name = indonesia.9.a
+		log = "[GetDateText]: [Root.GetName]: event indonesia.9.a"
+		IND = {
+			add_opinion_modifier = { target = AST modifier = large_decrease }
+			release_on_controlled = TIM
+			add_state_core = 734
+			add_state_core = 1226
 		}
 		TIM = {
 			declare_war_on = {
 				target = IND
 				type = annex_everything ##Fix later to be indenpendence
-		}
-		TIM = {
+			}
 			capital_scope = {
 				create_unit = {
-					division = "name =\"Kodam-II\" division_template = \"Kodam-II\" start_experience_factor =  1.0"
+					division = "name = \"Kodam-II\" division_template = \"Kodam-II\" start_experience_factor = 1.0"
 					owner = TIM
 					count = 3
 				}
 			}
 		}
-		AST = { set_temp_variable = { treasury_change = -4.35 }
-		modify_treasury_effect = yes
-		}
 		AST = {
+			set_temp_variable = { treasury_change = -4.35 }
+			modify_treasury_effect = yes
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons_type
 				amount = -3000
-				}
 			}
+		}
+
+		ai_chance = {
+			factor = 2
 		}
 	}
 	option = {
@@ -397,12 +389,9 @@ country_event = {
 	title = indonesia.3.t
 	desc = indonesia.3.d
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.3"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##East Timor Gains Independence
 	option = {
@@ -410,7 +399,7 @@ country_event = {
 		log = "[GetDateText]: [Root.GetName]: event indonesia.3.a"
 		hidden_effect = {
 			country_event = { id = indonesia.4 days = 59 }
-			}
+		}
 		ai_chance = {
 			factor = 1
 		}
@@ -423,13 +412,10 @@ country_event = {
 	desc = indonesia.4.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.4"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
-		}
+	}
 	##East Timor Gains Independence
 	option = {
 		name = indonesia.4.a
@@ -437,20 +423,10 @@ country_event = {
 
 		TIM = {
 			transfer_state = 734
+			transfer_state = 1226
 			hidden_effect = {
-				clear_array = ruling_party
-				clear_array = gov_coalition_array
-				add_to_array = { ruling_party = 18 }
-				update_government_coalition_strength = yes
-				update_party_name = yes
-				set_coalition_drift = yes
-				meta_effect = {
-					text = {
-						set_country_flag = [META_SET_RULING_PARTY]
-					}
-					META_SET_RULING_PARTY = "[meta_set_ruling_leader]"
-				}
-				set_leader = yes
+				set_temp_variable = { rul_party_temp = 18 }
+				change_ruling_party_effect = yes
 				set_popularities = {
 					democratic = 18.91
 					communism = 1.78
@@ -458,52 +434,17 @@ country_event = {
 					neutrality = 77.1
 					nationalist = 2.21
 				}
-				set_politics = {
-					ruling_party = neutrality
-					last_election = "2000.1.1"
-					elections_allowed = yes
-				}
-				set_variable = { party_pop_array^0 = 0 } #Western_Autocracy
 				set_variable = { party_pop_array^1 = 0.02 } #conservatism
 				set_variable = { party_pop_array^2 = 0.09 } #liberalism
 				set_variable = { party_pop_array^3 = 0.02 } #socialism
 				set_variable = { party_pop_array^4 = 0.0178 } #Communist-State
-				set_variable = { party_pop_array^5 = 0 } #anarchist_communism
-				set_variable = { party_pop_array^6 = 0 } #Conservative
-				set_variable = { party_pop_array^7 = 0 } #Autocracy
-				set_variable = { party_pop_array^8 = 0 } #Mod_Vilayat_e_Faqih
-				set_variable = { party_pop_array^9 = 0 } #Vilayat_e_Faqih
-				set_variable = { party_pop_array^10 = 0 } #Kingdom
-				set_variable = { party_pop_array^11 = 0 } #Caliphate
-				set_variable = { party_pop_array^12 = 0 } #Neutral_Muslim_Brotherhood
-				set_variable = { party_pop_array^13 = 0 } #Neutral_Autocracy
 				set_variable = { party_pop_array^14 = 0.04 } #Neutral_conservatism
-				set_variable = { party_pop_array^15 = 0 } #oligarchism
 				set_variable = { party_pop_array^16 = 0.02 } #Neutral_Libertarian
 				set_variable = { party_pop_array^17 = 0.03 } #Neutral_green
 				set_variable = { party_pop_array^18 = 0.5737 } #neutral_Social
-				set_variable = { party_pop_array^19 = 0 } #Neutral_Communism
 				set_variable = { party_pop_array^20 = 0.02 } #Nat_Populism
-				set_variable = { party_pop_array^21 = 0 } #Nat_Fascism
-				set_variable = { party_pop_array^22 = 0 } #Nat_Autocracy
-				set_variable = { party_pop_array^23 = 0 } #Monarchist
-				set_country_flag = no_leader_change
-				set_temp_variable = { election_year = global.year }
-				subtract_from_temp_variable = { election_year = 3 }
-				meta_effect = {
-					text = {
-						set_politics = {
-							ruling_party = [OUTLOOK]
-							elections_allowed = yes
-							last_election = "[YEAR].[MONTH].1"
-							election_frequency = 60
-						}
-					}
-					OUTLOOK = "[meta_ideology_names]"
-					YEAR = election_year
-					MONTH = global.month
-				}
-				clr_country_flag = no_leader_change
+				set_temp_variable = { year_change = 3 }
+				set_election_year_60_months = yes
 				create_country_leader = {
 					name = "Mari Alkatiri"
 					picture = "mari_alkatiri.dds"
@@ -526,12 +467,9 @@ country_event = {
 	desc = indonesia.41.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.41"
-	}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -560,7 +498,6 @@ country_event = {
 	is_triggered_only = yes
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -589,8 +526,7 @@ country_event = {
 	is_triggered_only = yes
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
-		}
+	}
 
 	##DISASTER
 	option = {
@@ -609,13 +545,10 @@ country_event = {
 	title = indonesia.44.t
 	desc = indonesia.44.d
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.44"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
-		}
+	}
 	##DISASTER
 	option = {
 		name = indonesia.44.a
@@ -640,12 +573,9 @@ country_event = {
 	title = indonesia.45.t
 	desc = indonesia.45.d
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.45"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -665,12 +595,9 @@ country_event = {
 	desc = indonesia.46.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.46"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 
 	##DISASTER
@@ -697,13 +624,10 @@ country_event = {
 	desc = indonesia.47.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.47"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
-		}
+	}
 	##DISASTER
 	option = {
 		name = indonesia.47.a
@@ -728,12 +652,9 @@ country_event = {
 	desc = indonesia.48.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.48"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 
 	##DISASTER
@@ -761,12 +682,9 @@ country_event = {
 	desc = indonesia.49.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.49"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 
 	##DISASTER
@@ -787,12 +705,9 @@ country_event = {
 	desc = indonesia.51.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.51"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -818,12 +733,9 @@ country_event = {
 	desc = indonesia.52.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.52"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -850,12 +762,9 @@ country_event = {
 	desc = indonesia.53.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.53"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -880,12 +789,9 @@ country_event = {
 	title = indonesia.54.t
 	desc = indonesia.54.d
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.54"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -912,12 +818,9 @@ country_event = {
 	desc = indonesia.56.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.56"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 
 	##DISASTER
@@ -945,12 +848,9 @@ country_event = {
 	desc = indonesia.57.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.57"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -977,12 +877,9 @@ country_event = {
 	desc = indonesia.58.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.58"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -1009,12 +906,9 @@ country_event = {
 	desc = indonesia.59.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.59"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -1041,12 +935,9 @@ country_event = {
 	desc = indonesia.61.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.61"
-		}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -1073,12 +964,9 @@ country_event = {
 	desc = indonesia.62.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.62"
-	}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -1105,12 +993,9 @@ country_event = {
 	desc = indonesia.63.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.63"
-	}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -1129,12 +1014,9 @@ country_event = {
 	desc = indonesia.64.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.64"
-	}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##DISASTER
 	option = {
@@ -1178,12 +1060,9 @@ country_event = {
 	desc = indonesia.420.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.420"
-	}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
 	##East Timor Gains Independence
 	option = {
@@ -1206,12 +1085,9 @@ country_event = {
 		desc = indonesia.55.d
 		#picture =
 		is_triggered_only = yes
-		immediate = {
-			log = "[GetDateText]: [Root.GetName]: event indonesia.55"
-			}
+
 		trigger = {
 			tag = IND
-			has_start_date < 2005.01.01
 		}
 		##Education Question
 		option = {
@@ -1250,7 +1126,7 @@ country_event = {
 		option = { # back christians
 			name = indonesia.77.c
 			log = "[GetDateText]: [Root.GetName]: event indonesia.77.c"
-			complete_national_focus = IND_maluku_back_chrisitians
+			complete_national_focus = IND_maluku_back_christians
 			}
 		}
 ##############
@@ -1263,25 +1139,23 @@ country_event = {
 	desc = indonesia.69.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.69"
-	}
+
 	trigger = {
 		tag = IND
-		has_start_date < 2005.01.01
 	}
-##What to do
-option = {
-	name = indonesia.69.a
-	log = "[GetDateText]: [Root.GetName]: event indonesia.69.a"
-	ai_chance = {
-		factor = 1
-		}
-		add_timed_idea = {
-			idea = IND_scars_kalimantan
-			days = 400
-		}
+	##What to do
+	option = {
+		name = indonesia.69.a
+		log = "[GetDateText]: [Root.GetName]: event indonesia.69.a"
+		ai_chance = {
+			factor = 1
+			}
+			add_timed_idea = {
+				idea = IND_scars_kalimantan
+				days = 400
+			}
 	}
+
 	option = {
 		name = indonesia.69.b
 		log = "[GetDateText]: [Root.GetName]: event indonesia.69.b"
@@ -1293,16 +1167,14 @@ option = {
 		}
 	}
 }
-#
+
 country_event = {
 	id = indonesia.76854
 	title = indonesia.76854.t
 	desc = indonesia.76854.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.76854"
-	}
+
 	#
 	option = {
 		name = indonesia.76854.a
@@ -1316,6 +1188,8 @@ country_event = {
 		name = indonesia.76854.b
 		log = "[GetDateText]: [Root.GetName]: event indonesia.76854.b"
 		IND = {
+			set_temp_variable = { wargoal_on = ACE }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = puppet_wargoal_focus
 				target = ACE
@@ -1357,16 +1231,17 @@ country_event = {
 			country_leader = {
 				ideology = conservatism
 			}
-   		}
+		 }
 	}
 }
 # Bali Attack 2004
 country_event = {
-id = indonesia.37
-title = indonesia.37.t
-desc = indonesia.37.d
-is_triggered_only = yes
-option = {
+	id = indonesia.37
+	title = indonesia.37.t
+	desc = indonesia.37.d
+	is_triggered_only = yes
+
+	option = {
 		name = indonesia.37.a
 		log = "[GetDateText]: [Root.GetName]: news event indonesia.37.a"
 		add_political_power = -100
@@ -1377,11 +1252,11 @@ option = {
 		name = indonesia.37.b
 		log = "[GetDateText]: [Root.GetName]: news event indonesia.37.b"
 		add_stability = -0.10
-		set_party_index_to_ruling_party = yes
 		set_temp_variable = { party_popularity_increase = -0.10 }
 		add_relative_party_popularity = yes
 	}
 }
+
 #Arrest of Radical FPI members
 country_event = {
 	id = indonesia.772
@@ -1390,20 +1265,21 @@ country_event = {
 	is_triggered_only = yes
 	option = {
 		name = indonesia.772.a
-		log = "[GetDateText]: [Root.GetName]: news event indonesia.772.a"
+		log = "[GetDateText]: [Root.GetName]: country event indonesia.772.a"
 		add_political_power = 75
 		add_popularity = {
 			ideology = fascism
 			popularity = -0.10
-			}
 		}
 	}
+}
 # The Raid 2003
 country_event = {
 	id = indonesia.477
 	title = indonesia.477.t
 	desc = indonesia.477.d
 	is_triggered_only = yes
+
 	option = {
 		name = indonesia.477.a
 		log = "[GetDateText]: [Root.GetName]: news event indonesia.477.a"
@@ -1411,23 +1287,23 @@ country_event = {
 		add_stability = 0.02
 		IND = {
 			add_equipment_to_stockpile = {
-				type = Inf_equipment
+				type = infantry_weapons_type
 				amount = -200
-				}
 			}
 		}
-		option = {
-			name = indonesia.477.b
-			log = "[GetDateText]: [Root.GetName]: news event indonesia.477.b"
-			add_stability = -0.02
-			IND = {
-				add_equipment_to_stockpile = {
-					type = Inf_equipment
-					amount = -800
-					}
-				}
+	}
+	option = {
+		name = indonesia.477.b
+		log = "[GetDateText]: [Root.GetName]: news event indonesia.477.b"
+		add_stability = -0.02
+		IND = {
+			add_equipment_to_stockpile = {
+				type = infantry_weapons_type
+				amount = -800
 			}
 		}
+	}
+}
 #2004 Aceh Tsunami Earthquake
 country_event = {
 	id = indonesia.577
@@ -1464,9 +1340,7 @@ country_event = {
 	desc = indonesia.988.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.988"
-	}
+
 	#
 	option = {
 		name = indonesia.988.a
@@ -1484,9 +1358,7 @@ country_event = {
 	desc = indonesia.1000.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.1000"
-		}
+
 	#
 	option = {
 		name = indonesia.1000.a
@@ -1505,9 +1377,7 @@ country_event = {
 	desc = indonesia.1001.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.1001"
-		}
+
 	#
 	option = {
 		name = indonesia.1001.a
@@ -1528,9 +1398,7 @@ country_event = {
 	desc = indonesia.1002.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.1002"
-		}
+
 	#
 	option = {
 		name = indonesia.1002.a
@@ -1551,10 +1419,7 @@ country_event = {
 	desc = indonesia.888.d
 	#picture =
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: event indonesia.888"
-		}
-	#
+
 	option = {
 		name = indonesia.988.a
 		log = "[GetDateText]: [Root.GetName]: event indonesia.888.a"
@@ -1571,9 +1436,7 @@ country_event = {
 	title = indonesia.67.t
 	desc = indonesia.67.d
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: news event indonesia.67"
-		}
+
 	option = {
 		name = indonesia.67.a
 		log = "[GetDateText]: [Root.GetName]: news event indonesia.67.a"
@@ -1600,9 +1463,7 @@ country_event = {
 	title = indonesia.678.t
 	desc = indonesia.678.d
 	is_triggered_only = yes
-	immediate = {
-		log = "[GetDateText]: [Root.GetName]: news event indonesia.678"
-		}
+
 	option = {
 		name = indonesia.678.a
 		log = "[GetDateText]: [Root.GetName]: news event indonesia.678.a"

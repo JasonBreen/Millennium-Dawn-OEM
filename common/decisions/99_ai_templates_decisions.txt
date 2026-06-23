@@ -11,8 +11,8 @@ ai_templates_category = {
 		available = {
 			date > 2005.01.01
 			has_war = no
-			has_equipment = { Inf_equipment > 2000 }
-			has_equipment = { cnc_equipment > 500 }
+			has_equipment = { infantry_weapons_type > 2000 }
+			has_equipment = { cnc_equipment_type > 500 }
 			num_of_military_factories > 5
 			any_country_division = {
 				division_has_majority_template = Militia_Bat
@@ -41,7 +41,7 @@ ai_templates_category = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 		}
 	}
 
@@ -57,7 +57,7 @@ ai_templates_category = {
 		available = {
 			date > 2005.01.01
 			has_war = no
-			has_equipment = { util_vehicle_equipment > 500 }
+			has_equipment = { util_vehicle_type > 500 }
 			num_of_military_factories > 10
 			any_country_division = {
 				division_has_majority_template = L_Inf_Bat
@@ -86,7 +86,7 @@ ai_templates_category = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 		}
 	}
 
@@ -102,7 +102,7 @@ ai_templates_category = {
 		available = {
 			date > 2005.01.01
 			has_war = no
-			has_equipment = { apc_hull > 500 }
+			has_equipment = { medium_tank_amphibious_chassis > 500 }
 			num_of_military_factories > 20
 			any_country_division = {
 				division_has_majority_template = Mot_Inf_Bat
@@ -131,37 +131,63 @@ ai_templates_category = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 		}
 	}
 
-	# convert_mech_to_arm_inf = {
-	# 	fire_only_once = no
-	# 	days_re_enable = 300
+	add_manpower_god_of_war = {
+		available = {
+			has_war = yes
+			has_game_rule = {
+				rule = rule_god_of_war
+				option = yes
+			}
+			has_manpower < 10000
+		}
 
-	# 	available = {
-	# 		date > 2005.01.01
-	# 		has_war = no
-	# 		has_equipment = { ifv_hull > 500 }
-	# 		num_of_military_factories > 35
-	# 		any_country_division = {
-	# 			division_has_majority_template = Mech_Inf_Bat
-	# 		}
-	# 	}
+		fire_only_once = no
+		days_re_enable = 60
 
-	# 	complete_effect = {
-	# 		log = "[GetDateText]: [Root.GetName]: Decision convert_mech_to_arm_inf"
-	# 		every_country_division = {
-	# 			limit = { division_has_majority_template = Mech_Inf_Bat }
-	# 			random_select_amount = 5
-	# 			change_division_template = {
-	# 				division_template = "AI Armored Infantry Brigade"
-	# 			}
-	# 		}
-	# 	}
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision add_manpower_god_of_war"
+			add_manpower = 10000
+		}
 
-	# 	ai_will_do = {
-	# 		factor = 1
-	# 	}
-	# }
+		ai_will_do = {
+			base = 10
+		}
+	}
+
+	UKR_convert_stuff = {
+		allowed = { original_tag = UKR }
+		fire_only_once = yes
+
+		available = {
+			date > 2000.06.01
+			has_war = no
+			any_country_division = {
+				division_has_majority_template = Militia_Bat
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision UKR_convert_stuff"
+			every_country_division = {
+				limit = { division_has_majority_template = Militia_Bat }
+				change_division_template = {
+					division_template = "AI Light Infantry Brigade"
+				}
+			}
+			every_country_division = {
+				limit = { division_has_majority_template = L_Inf_Bat }
+				change_division_template = {
+					division_template = "AI Mechanized Brigade"
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 1
+		}
+	}
 }

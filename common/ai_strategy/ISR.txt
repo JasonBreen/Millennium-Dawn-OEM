@@ -1,14 +1,28 @@
-ISR_fuck_hamas = {
+ISR_stop_selling_our_heavy_weapons_we_need_it_at_home = {
 	allowed = { original_tag = ISR }
 	enable = {
-		country_exists = HAM
-		has_opinion_modifier = HAM_Are_Terrorists
+		country_exists = ISR
 	}
 	abort_when_not_enabled = yes
 
-	ai_strategy = { type = contain id = "HAM" value = 50 }
-	ai_strategy = { type = antagonize id = "HAM" value = 100 }
-	ai_strategy = { type = conquer id = "HAM" value = 50 }
+	ai_strategy = { type = equipment_market_for_sale_factor id = mechanized value = -100 }
+	ai_strategy = { type = equipment_market_for_sale_factor id = armor value = -100 }
+	ai_strategy = { type = equipment_market_for_sale_factor id = fighter value = -100 }
+	ai_strategy = { type = equipment_market_for_sale_factor id = tactical_bomber value = -100 }
+	ai_strategy = { type = equipment_market_for_sale_factor id = cas value = -100 }
+	ai_strategy = { type = equipment_market_for_sale_factor id = naval_bomber value = -100 }
+	ai_strategy = { type = equipment_market_for_sale_factor id = strategic_bomber value = -100 }
+}
+ISR_we_want_the_merkava4 = { #tell ISR AI to research these tech ahead of time to unlock the Merkava IV design
+	allowed = { original_tag = ISR }
+	enable = {
+		country_exists = ISR
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = research_tech id = era_tech_3 value = 100 }
+	ai_strategy = { type = research_tech id = armor_tech_3 value = 100 }
+	ai_strategy = { type = research_tech id = tank_components_tech_4 value = 100 }
 }
 
 ISR_arab_relations = {
@@ -42,6 +56,17 @@ ISR_kurdistan_relations = {
 	ai_strategy = { type = support id = "KUR" value = 200 }
 }
 
+ISR_kurdistan_puk_relations = {
+	allowed = { original_tag = ISR }
+	enable = {
+		country_exists = PUK
+		KUR = { has_war_with = IRQ }
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = support id = "PUK" value = 200 }
+}
+
 ISR_support_druze_and_fsa = {
 	allowed = { original_tag = ISR }
 	enable = {
@@ -62,20 +87,7 @@ ISR_support_druze_and_fsa = {
 			}
 		}
 	}
-	abort = {
-		OR = {
-			has_war_with = FSA
-			has_war_with = DRU
-		}
-		587 = {
-			OR = {
-				is_core_of = FSA
-				is_claimed_by = FSA
-				is_core_of = DRU
-				is_claimed_by = DRU
-			}
-		}
-	}
+	abort_when_not_enabled = yes
 
 	ai_strategy = { type = support id = "FSA" value = 200 }
 	ai_strategy = { type = send_volunteers_desire id = "FSA" value = 200 }
@@ -94,4 +106,89 @@ ISR_eliminate_hezbollah = {
 	ai_strategy = { type = contain id = "HEZ" value = 200 }
 	ai_strategy = { type = antagonize id = "HEZ" value = 200 }
 	ai_strategy = { type = conquer id = "HEZ" value = 200 }
+}
+
+#Libya is supporting Hamas
+ISR_antagonize_libya = {
+	allowed = { original_tag = ISR }
+	enable = {
+		LBA = { has_completed_focus = LBA_approach_hamas }
+		NOT = { is_in_faction_with = LBA }
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = antagonize id = "LBA" value = 50 }
+}
+#Libya is sending soldiers to Hamas
+ISR_contain_libya = {
+	allowed = { original_tag = ISR }
+	enable = {
+		LBA = { has_completed_focus = LBA_send_fighters_to_hamas }
+		NOT = { is_in_faction_with = LBA }
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = contain id = "LBA" value = 50 }
+}
+#Libya befriended Israel
+ISR_befriend_libya = {
+	allowed = { original_tag = ISR }
+
+	enable = {
+		LBA = { has_completed_focus = LBA_reconcile_with_israel }
+		NOT = { has_war_with = LBA }
+	}
+
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = befriend id = "LBA" value = 25 }
+}
+
+#CIVIL WAR IN AMERICA
+ISR_confederate_states_america_help = {
+	allowed = { original_tag = ISR }
+	enable = {
+		country_exists = CSA
+		ISR = {
+			has_war = no
+		}
+	}
+	abort_when_not_enabled = yes
+	ai_strategy = { type = send_volunteers_desire id = "CSA" value = 1000 }
+	ai_strategy = { type = send_lend_lease_desire id = "CSA" value = 400 }
+}
+
+# Wartime execution — air-dominant doctrine against Iran
+ISR_total_war_against_iran = {
+	allowed = { original_tag = ISR }
+	enable = {
+		has_war_with = PER
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = antagonize id = PER value = 300 }
+	ai_strategy = { type = contain id = PER value = 300 }
+	ai_strategy = { type = force_build_armies value = 100 }
+	ai_strategy = { type = unit_ratio id = fighter value = 12 }
+	ai_strategy = { type = unit_ratio id = cas value = 8 }
+	ai_strategy = { type = unit_ratio id = tactical_bomber value = 10 }
+	ai_strategy = { type = unit_ratio id = strategic_bomber value = 12 }
+	ai_strategy = { type = air_factory_balance value = 14 }
+}
+
+# Bombardment doctrine when fighting distant enemies (excludes PER — covered by ISR_total_war_against_iran)
+ISR_bombardment_when_enemy_is_distant = {
+	allowed = { original_tag = ISR }
+	enable = {
+		has_war = yes
+		NOT = { has_war_with = PER }
+		any_enemy_country = {
+			NOT = { is_neighbor_of = ISR }
+		}
+	}
+	abort_when_not_enabled = yes
+
+	ai_strategy = { type = unit_ratio id = fighter value = 8 }
+	ai_strategy = { type = unit_ratio id = strategic_bomber value = 8 }
+	ai_strategy = { type = unit_ratio id = tactical_bomber value = 8 }
 }

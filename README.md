@@ -1,35 +1,76 @@
-# Welcome to Millennium Dawn's Dev Build
+# Millennium Dawn: A Modern Day Mod
 
-Millennium Dawn is a multi-mod project set in 2000 and continues to the modern day and beyond. The mod boasts new and unique tech trees, focus trees, events, and decisions to immerse you in the intricacies of the modern era.
+![Millennium Dawn Header](https://i.imgur.com/hpEdk0J.png)
+![Millennium Dawn Features](https://i.imgur.com/MYaznE7.png)
 
-Further, it offers a new and unique economic system, a new political system, national taxation and debt, custom internal political factions, international influence mechanics, custom 3D models, a custom soundtrack, and much more!
+Millennium Dawn is a multi-mod project set in 2000 and continues to the modern day and beyond.
+The mod boasts new and unique tech trees, focus trees, events, and decisions to immerse you in the intricacies of the modern era.
 
-## Important Links
+This repo is the source code for [Millennium Dawn: A Modern Day Mod](https://steamcommunity.com/sharedfiles/filedetails/?id=2777392649)
 
-[Link to MD's Discord](http://discord.gg/millenniumdawn)
+## Quick Links
 
-[Bugreporting Form](https://forms.gle/2zAWhggnYbTcmG1b6)
+- [Discord](http://discord.gg/millenniumdawn) - Community and support
+- [Reddit](https://www.reddit.com/r/MillenniumDawn/)
+- [Git Setup Guide](https://docs.google.com/document/d/1V8DLowqEOSmlgazlHeC-hLZzLki5e6cWhQO_ZK6HVYs) - Repository setup
+- [Contribution Guide](./CONTRIBUTING.md) - Contribution policies
 
-[MD's Git Instructions](https://docs.google.com/document/d/1V8DLowqEOSmlgazlHeC-hLZzLki5e6cWhQO_ZK6HVYs)
+## Features
 
-## Access Rules
+- **Economic Systems**: Taxation, debt management, international investment
+- **Political Mechanics**: Internal factions, influence, party systems
+- **Rich Content**: Focus trees, events, decisions for 150+ nations
+- **Modern Era**: Realistic geopolitical organizations (EU, NATO, etc.)
 
-Junior Developer Access:
+## Contributing
 
-- If you are a new recruit you will be given access for two months from the date you are added. i.e. if you join on Jan 1st. You get access until Feb 1st.
-- You are granted access based on your role. Playtesters get the reporter rule meaning they cannot do any pushing to branches. However, they may pull and update their local builds
-- Contributions of any kind show activity. Please be as active as you reasonable can.
-- Inactive users will be removed based on whehter or not they are present on the Discord or by discretion of the Lead Developers.
+Available issues can be found in our [GitHub Issues](https://github.com/MillenniumDawn/Millennium-Dawn/issues)
 
-Playtester Access:
+We also take open source contributions of any form whether they be localization, code, additions, content, or more.
 
-- The first time you are granted access requires your first playtest within 48 hours, after the first you get monthly access and are expected to do at least one playtest a month.
-- Playtesting for MD requires some pretty extensive notes and opinions regarding the content you're playtesting
+1. Fork the repository
+2. Create a feature branch
+3. Make changes following style guidelines
+4. Run pre-commit hooks
+5. Update [Changelog.txt](./Changelog.txt)
+6. Add yourself to [AUTHORS.md](./docs/src/content/misc/authors.md)
+7. Submit a pull request
 
-## Maintainers & Approvers
+See [Contributing](./CONTRIBUTING.md) for more details including stylization, pre-commit information and more.
 
-MD has a number of maintainers who can push and pull from master. Most lead devs and a handful of select developers can also approve merge requests. If you need a merge request approved, please start by requesting a council member to look at the merge request in the discord.
+**NOTE**: Millennium Dawn's development team allows for AI assisted coding if and only if the developer is capable and is able to review the code it produces.
+More details can be found in the team's [Contribution Policy](./CONTRIBUTING.md#ai-policy)
 
-Thanks for reading!
+## Project Structure
 
-Sincerely, Bird
+```
+common/          - Game data (focuses, ideas, events, decisions)
+localisation/    - Language files
+events/          - Event chains
+history/         - Historical country data
+map/             - Terrain, states
+interface/       - UI definitions
+gfx/             - Graphics assets
+tools/           - Scripts for supporting development such as validators, standardizations, and other utilities
+docs/            - Development documentation
+```
+
+## Documentation
+
+| Topic               | Location                                                                                                    |
+| ------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Code Style          | [docs/src/content/resources/code-stylization-guide.md](./docs/src/content/resources/code-stylization-guide.md) |
+| Modifiers & Effects | [docs/src/content/resources/code-resource.md](./docs/src/content/resources/code-resource.md)                   |
+| Game Rules          | [docs/src/content/tutorials/game-rules.md](./docs/src/content/tutorials/game-rules.md)                         |
+
+## License
+
+See [LICENSE](./LICENSE) file for details.
+
+## Security
+
+See [SECURITY](./SECURITY.md) file for security details.
+
+---
+
+_Created by the Millennium Dawn Development Team_
