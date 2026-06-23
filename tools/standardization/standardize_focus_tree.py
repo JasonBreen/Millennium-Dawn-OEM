@@ -298,7 +298,7 @@ def format_focus_block(props, block_type="focus"):
     lines = []
     lines.append(f"\t{block_type} = {{")
 
-    # 1. ID and icon (no blank line between them)
+    # 1. ID, icon, text_icon, overlay (no blank line between them)
     if props["id"]:
         lines.append(f"\t\t{props['id']}")
     if props["icon"]:
@@ -311,6 +311,10 @@ def format_focus_block(props, block_type="focus"):
                         lines.append(icon_line)
             else:
                 lines.append(f"\t\t{icon_lines}")
+    if props["text_icon"]:
+        lines.append(f"\t\t{props['text_icon']}")
+    if props["overlay"]:
+        lines.append(f"\t\t{props['overlay']}")
 
     # 2. Blank line before position group
     lines.append("")
@@ -333,10 +337,6 @@ def format_focus_block(props, block_type="focus"):
     # 5. Cost
     if props["cost"]:
         lines.append(f"\t\t{props['cost']}")
-    if props["text_icon"]:
-        lines.append(f"\t\t{props['text_icon']}")
-    if props["overlay"]:
-        lines.append(f"\t\t{props['overlay']}")
 
     # 6. Blank line before prerequisites/conditions
     lines.append("")
@@ -481,6 +481,42 @@ def format_focus_block(props, block_type="focus"):
             cleaned_lines.append(line)
 
     return cleaned_lines
+
+
+def reindent_by_brace_depth(block_lines, base_tabs=0):
+    """Re-indent a formatted block so each line's tab depth is derived purely
+    from brace nesting (base_tabs at the outermost level). Blank lines are kept
+    empty. Braces inside double-quoted strings are ignored. Used to render a
+    top-level shared_focus/joint_focus block at column 0 regardless of the
+    source's original indentation, keeping the standardizer idempotent."""
+    out = []
+    depth = 0
+    for line in block_lines:
+        stripped = line.strip()
+        if not stripped:
+            out.append("")
+            continue
+
+        opens = closes = 0
+        in_str = False
+        prev = ""
+        for c in stripped:
+            if c == '"' and prev != "\\":
+                in_str = not in_str
+            elif not in_str:
+                if c == "{":
+                    opens += 1
+                elif c == "}":
+                    closes += 1
+            prev = c
+
+        this_depth = depth - 1 if stripped.startswith("}") else depth
+        indent = "\t" * (base_tabs + max(0, this_depth))
+        out.append(f"{indent}{stripped}")
+
+        depth = max(0, depth + opens - closes)
+
+    return out
 
 
 def format_shortcut_block(block_lines):
@@ -801,6 +837,10 @@ def standardize_focus_tree(input_file: str, output_file: str, verbose: bool = Fa
             if block_type in _FOCUS_BLOCK_TYPES:
                 props = extract_focus_properties(block_lines)
                 formatted_lines = format_focus_block(props, block_type)
+                if block_type in {"shared_focus", "joint_focus"}:
+                    # shared_focus/joint_focus are top-level definitions (no
+                    # focus_tree wrapper), so render them at column 0.
+                    formatted_lines = reindent_by_brace_depth(formatted_lines)
                 counts[block_type] += 1
                 log_message(
                     "DEBUG",
@@ -821,7 +861,7 @@ def standardize_focus_tree(input_file: str, output_file: str, verbose: bool = Fa
         i = next_i
 
     # Post-processing: ensure blank lines between consecutive focus/shared_focus/joint_focus blocks
-    focus_block_pattern = re.compile(r"^\t(focus|shared_focus|joint_focus)\s*=\s*{")
+    focus_block_pattern = re.compile(r"^\t?(focus|shared_focus|joint_focus)\s*=\s*{")
     final_lines = []
     for idx, line in enumerate(output_lines):
         if focus_block_pattern.match(line) and final_lines:

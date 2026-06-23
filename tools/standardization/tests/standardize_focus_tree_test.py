@@ -4,7 +4,11 @@ A focus may declare war on several targets, so will_lead_to_war_with can appear
 multiple times. The standardizer must preserve every occurrence, in order.
 """
 
-from standardize_focus_tree import extract_focus_properties, format_focus_block
+from standardize_focus_tree import (
+    extract_focus_properties,
+    format_focus_block,
+    standardize_focus_tree,
+)
 
 
 def _focus_with_war_targets(targets):
@@ -48,3 +52,75 @@ def test_round_trip_emits_one_line_per_target():
         "will_lead_to_war_with = MOR",
         "will_lead_to_war_with = TUN",
     ]
+
+
+def test_text_icon_and_overlay_emitted_directly_under_icon():
+    lines = [
+        "\tfocus = {\n",
+        "\t\tid = TST_branding\n",
+        "\t\ticon = TST_icon\n",
+        "\t\toverlay = GFX_overlay\n",
+        "\t\ttext_icon = TST_style\n",
+        "\t\tcost = 5\n",
+        "\t}\n",
+    ]
+    props = extract_focus_properties(lines)
+    out = format_focus_block(props)
+
+    icon_idx = out.index("\t\ticon = TST_icon")
+    text_icon_idx = out.index("\t\ttext_icon = TST_style")
+    overlay_idx = out.index("\t\toverlay = GFX_overlay")
+    first_blank_idx = out.index("")
+    cost_idx = out.index("\t\tcost = 5")
+
+    # text_icon and overlay sit right after icon, before the first blank line.
+    assert icon_idx < text_icon_idx < first_blank_idx
+    assert icon_idx < overlay_idx < first_blank_idx
+    # cost is no longer grouped with text_icon/overlay.
+    assert cost_idx > first_blank_idx
+
+
+def _joint_focus_file_lines():
+    return [
+        "joint_focus = {\n",
+        "\tid = TST_joint\n",
+        "\ticon = TST_icon\n",
+        "\tx = 10\n",
+        "\ty = 0\n",
+        "\tcost = 5\n",
+        "\tsearch_filters = { FOCUS_FILTER_POLITICAL }\n",
+        "\tcompletion_reward = {\n",
+        '\t\tlog = "[GetDateText]: [Root.GetName]: Focus TST_joint"\n',
+        "\t\tadd_political_power = 50\n",
+        "\t}\n",
+        "\tai_will_do = { base = 5 }\n",
+        "}\n",
+    ]
+
+
+def test_joint_focus_dedented_to_top_level(tmp_path):
+    src = tmp_path / "shared.txt"
+    src.write_text("".join(_joint_focus_file_lines()), encoding="utf-8")
+
+    assert standardize_focus_tree(str(src), str(src)) is True
+    out = src.read_text(encoding="utf-8").splitlines()
+
+    assert "joint_focus = {" in out  # block opens at column 0
+    assert "\tid = TST_joint" in out  # properties at 1 tab
+    assert "\tsearch_filters = { FOCUS_FILTER_POLITICAL }" in out
+    # closing brace of the block at column 0
+    assert out[-1] == "}" or "}" in [l for l in out if l == "}"]
+    assert "}" in out
+    # no over-indented property survives
+    assert not any(l.startswith("\t\t\tid =") for l in out)
+
+
+def test_joint_focus_standardization_idempotent(tmp_path):
+    src = tmp_path / "shared.txt"
+    src.write_text("".join(_joint_focus_file_lines()), encoding="utf-8")
+
+    assert standardize_focus_tree(str(src), str(src)) is True
+    first = src.read_text(encoding="utf-8")
+    assert standardize_focus_tree(str(src), str(src)) is True
+    second = src.read_text(encoding="utf-8")
+    assert first == second
