@@ -9,7 +9,7 @@ Millennium Dawn coding standards.
 from typing import Any, Dict, List
 
 from common_utils import BaseStandardizer, run_standardizer
-from shared_utils import compact_block, extract_block
+from shared_utils import collapse_or_compact, compact_block, extract_block
 
 
 class MIOStandardizer(BaseStandardizer):
@@ -347,7 +347,9 @@ class MIOStandardizer(BaseStandardizer):
 
         inner = full.split("{", 1)[1].rsplit("}", 1)[0].strip()
         if "{" in inner or "}" in inner:
-            return compact_block(block_lines)
+            # Nested block: collapse single-leaf chains to one line, else keep
+            # multi-line via compact_block (the helper's own fallback).
+            return collapse_or_compact(block_lines, indent)
 
         tokens = inner.split()
         if not tokens:
