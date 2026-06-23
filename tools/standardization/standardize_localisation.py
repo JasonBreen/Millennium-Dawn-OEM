@@ -3,7 +3,8 @@
 """
 Millennium Dawn Localisation Standardizer
 Reorganises a loc file by content category: National Focus, Ideas, Dynamic Modifiers,
-Opinion Modifiers, Decisions, Events, Characters, MIO, and Overig.
+Opinion Modifiers, Decisions, Events, Characters, MIO, Traits, Variables & GUI,
+Tooltips, Other, and Unreferenced (keys found nowhere in the mod's code).
 """
 
 import os
@@ -26,8 +27,18 @@ SECTION_ORDER = [
     "Events",
     "Characters",
     "MIO",
-    "Overig",
+    "Traits",
+    "Variables & GUI",
+    "Tooltips",
+    "Other",
+    "Unreferenced",
 ]
+
+# Directories scanned to decide whether a key is referenced anywhere in the mod.
+# A key that lands in "Other" but appears in none of these is a cleanup candidate
+# (dead loc, or a dynamically-built key) and is routed to "Unreferenced".
+REFERENCE_DIRS = ["common", "events", "interface"]
+_TOKEN_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 # Content directories (relative to mod root) and extraction patterns per category.
 # Each entry: (list_of_dirs, list_of_regex_patterns, recursive_glob)
@@ -72,6 +83,26 @@ CATEGORY_CONFIG: Dict[str, Tuple[List[str], List[str], bool]] = {
         [r"^(\w+)\s*=\s*\{", r"\bname\s*=\s*(\w+)"],
         False,
     ),
+    "Traits": (
+        ["common/unit_leader", "common/country_leader"],
+        [r"^\t(\w+)\s*=\s*\{"],
+        False,
+    ),
+    "Variables & GUI": (
+        [
+            "common/scripted_effects",
+            "common/scripted_guis",
+            "common/decisions",
+            "interface",
+        ],
+        [
+            r"set_variable\s*=\s*\{\s*(\w+)",
+            r"add_to_variable\s*=\s*\{\s*(\w+)",
+            r"set_global_variable\s*=\s*\{\s*(\w+)",
+            r"set_country_flag\s*=\s*(\w+)",
+        ],
+        True,
+    ),
 }
 
 # Key suffixes that may be appended to a base ID to form a loc key
@@ -97,8 +128,8 @@ def _scan_dir(directory: Path, recursive: bool) -> List[Path]:
     if not directory.exists():
         return []
     if recursive:
-        return list(directory.rglob("*.txt"))
-    return list(directory.glob("*.txt"))
+        return list(directory.rglob("*.txt")) + list(directory.rglob("*.gui"))
+    return list(directory.glob("*.txt")) + list(directory.glob("*.gui"))
 
 
 def _build_index(mod_root: Path, verbose: bool) -> Dict[str, Set[str]]:
@@ -128,11 +159,27 @@ def _build_index(mod_root: Path, verbose: bool) -> Dict[str, Set[str]]:
     return index
 
 
-def _find_category(key: str, index: Dict[str, Set[str]]) -> str:
-    # Event keys: match `namespace.N` or `namespace.N.x`
-    event_match = re.match(r"^(.+?)\.\d+(?:\.\w+)?$", key)
-    if event_match:
-        namespace = event_match.group(1)
+def _build_reference_tokens(mod_root: Path, verbose: bool) -> Set[str]:
+    """Collect every identifier token appearing in REFERENCE_DIRS (excludes loc)."""
+    tokens: Set[str] = set()
+    for rel_dir in REFERENCE_DIRS:
+        directory = mod_root / rel_dir
+        for src_file in _scan_dir(directory, recursive=True):
+            try:
+                content = src_file.read_text(encoding="utf-8-sig", errors="replace")
+            except OSError:
+                continue
+            tokens.update(_TOKEN_RE.findall(content))
+    log_message("DEBUG", f"Reference tokens: {len(tokens)}", verbose)
+    return tokens
+
+
+def _find_category(
+    key: str, index: Dict[str, Set[str]], references: Optional[Set[str]] = None
+) -> str:
+    # Event keys: `namespace.<id>` or `namespace.<id>.x`, numeric or text-named id.
+    if "." in key:
+        namespace = key.split(".", 1)[0]
         if namespace in index["Events"]:
             return "Events"
 
@@ -150,7 +197,17 @@ def _find_category(key: str, index: Dict[str, Set[str]]) -> str:
                     return category
             break
 
-    return "Overig"
+    # Tooltip strings with no ID backing (fallback only — a `_tt` key whose base
+    # is a real focus/decision was already grouped with it above).
+    if key.endswith("_tt"):
+        return "Tooltips"
+
+    # No category matched. If the key is referenced nowhere in the mod's code,
+    # it is a cleanup candidate (dead loc or a dynamically-built key).
+    if references is not None and key not in references:
+        return "Unreferenced"
+
+    return "Other"
 
 
 def _parse_loc_file(content: str) -> Tuple[str, List[LocEntry]]:
@@ -189,7 +246,7 @@ def _parse_loc_file(content: str) -> Tuple[str, List[LocEntry]]:
             # Unrecognised line — keep it as a standalone comment
             pending_comments.append(line.rstrip())
 
-    # Any trailing comments with no following key → attach as Overig comment entries
+    # Any trailing comments with no following key → attach as Other comment entries
     if pending_comments:
         entries.append(LocEntry(list(pending_comments), "", ""))
 
@@ -206,14 +263,18 @@ def _format_section_header(category: str) -> List[str]:
 
 
 def _format_output(
-    header: str, entries: List[LocEntry], index: Dict[str, Set[str]], file_stem: str = ""
+    header: str,
+    entries: List[LocEntry],
+    index: Dict[str, Set[str]],
+    file_stem: str = "",
+    references: Optional[Set[str]] = None,
 ) -> str:
     buckets: Dict[str, List[LocEntry]] = {cat: [] for cat in SECTION_ORDER}
 
     for entry in entries:
         if not entry.key:
             continue
-        category = _find_category(entry.key, index)
+        category = _find_category(entry.key, index, references)
         buckets[category].append(entry)
 
     output_lines: List[str] = [header]
@@ -264,6 +325,7 @@ class LocalisationStandardizer:
         self.verbose = verbose
         log_message("INFO", f"Building content index from {mod_root}", verbose)
         self.index = _build_index(mod_root, verbose)
+        self.references = _build_reference_tokens(mod_root, verbose)
 
     def standardize_file(self, input_file: Path, output_file: Path) -> bool:
         log_message("INFO", f"Standardising {input_file}", self.verbose)
@@ -282,7 +344,9 @@ class LocalisationStandardizer:
 
         log_message("INFO", f"Parsed {len(entries)} entries", self.verbose)
 
-        output = _format_output(header, entries, self.index, output_file.stem)
+        output = _format_output(
+            header, entries, self.index, output_file.stem, self.references
+        )
 
         try:
             output_file.write_text(output, encoding="utf-8-sig")
@@ -294,7 +358,7 @@ class LocalisationStandardizer:
         cats = {}
         for entry in entries:
             if entry.key:
-                cat = _find_category(entry.key, self.index)
+                cat = _find_category(entry.key, self.index, self.references)
                 cats[cat] = cats.get(cat, 0) + 1
         for cat in SECTION_ORDER:
             if cat in cats:
