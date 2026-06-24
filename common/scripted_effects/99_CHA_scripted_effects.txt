@@ -1,125 +1,5 @@
 # Chad Second Civil War Scripted Effects
 
-# Spawns the FUC (United Front for Democratic Change) rebel faction
-CHA_spawn_fuc_rebels = {
-	log = "[GetDateText]: [Root.GetName]: Spawning FUC rebels"
-
-	# Set global war flag
-	set_global_flag = CHA_second_civil_war
-	set_country_flag = CHA_fuc_rebellion_active
-
-	# Create FUC rebel state
-	FUC = {
-		# Set starting variables
-		set_variable = { gdp_per_capita = 0.908 }
-		set_cosmetic_tag = FUC
-		set_country_flag = dynamic_flag
-		set_country_flag = dynamic_rebel_flag
-
-		# Transfer eastern border region (Kanem)
-		transfer_state = 327
-
-		# Add cores
-		add_state_core = 327
-		add_state_core = 328
-		add_state_core = 326
-
-		# Declare war on Chad
-		declare_war_on = {
-			target = CHA
-			type = annex_everything
-		}
-
-		# Create rebel divisions
-		division_template = {
-			name = "FUC Quwwat Mutamarrida"
-			regiments = {
-				Militia_Bat = { x = 0 y = 0 }
-				Militia_Bat = { x = 0 y = 1 }
-				Militia_Bat = { x = 1 y = 0 }
-				Militia_Bat = { x = 1 y = 1 }
-			}
-		}
-
-		capital_scope = {
-			create_unit = {
-				division = "name = \"1st FUC Brigade\" division_template = \"FUC Quwwat Mutamarrida\" start_experience_factor = 0.3"
-				owner = FUC
-				count = 3
-			}
-		}
-
-		# Add war-related ideas
-		add_ideas = CHA_rebel_momentum
-	}
-
-	# Chad gets defensive ideas
-	add_ideas = CHA_second_civil_war
-}
-
-# Spawns the UFDD (Union of Forces for Democracy and Development) rebel faction
-CHA_spawn_ufdd_rebels = {
-	log = "[GetDateText]: [Root.GetName]: Spawning UFDD rebels"
-
-	# Set flags
-	set_country_flag = CHA_ufdd_rebellion_active
-	clr_country_flag = CHA_fuc_rebellion_active
-
-	# Remove FUC if they exist
-	if = {
-		limit = { country_exists = FUC }
-		FUC = {
-			every_owned_state = {
-				CHA = { transfer_state = PREV }
-			}
-		}
-	}
-
-	# Create UFDD rebel state
-	UFD = {
-		set_variable = { gdp_per_capita = 0.908 }
-		set_cosmetic_tag = UFD
-		set_country_flag = dynamic_flag
-		set_country_flag = dynamic_rebel_flag
-
-		# Transfer territory
-		transfer_state = 327
-
-		# Add cores
-		add_state_core = 327
-		add_state_core = 328
-		add_state_core = 326
-		add_state_core = 580
-
-		# Declare war on Chad
-		declare_war_on = {
-			target = CHA
-			type = annex_everything
-		}
-
-		# Create rebel divisions
-		division_template = {
-			name = "UFDD Quwwat Mutamarrida"
-			regiments = {
-				Militia_Bat = { x = 0 y = 0 }
-				Militia_Bat = { x = 0 y = 1 }
-				Militia_Bat = { x = 1 y = 0 }
-				Militia_Bat = { x = 1 y = 1 }
-			}
-		}
-
-		capital_scope = {
-			create_unit = {
-				division = "name = \"1st UFDD Brigade\" division_template = \"UFDD Quwwat Mutamarrida\" start_experience_factor = 0.3"
-				owner = UFD
-				count = 3
-			}
-		}
-
-		add_ideas = CHA_rebel_momentum
-	}
-}
-
 # End the Second Chadian Civil War
 CHA_end_civil_war = {
 	log = "[GetDateText]: [Root.GetName]: Ending Second Chadian Civil War"
@@ -803,41 +683,12 @@ CHA_end_tribal_rebellion = {
 # PATH TRANSITION EFFECTS
 #####################################
 
-# Déby death effect (2021)
-CHA_deby_death_effect = {
-	log = "[GetDateText]: [Root.GetName]: Déby death effect triggered"
-	set_country_flag = CHA_deby_dead
-	retire_country_leader = yes
-	add_stability = -0.15
-	add_war_support = -0.10
-	add_political_power = -100
-	country_event = { id = chad.2005 days = 1 }
-}
-
 # Transition to military junta path
 CHA_transition_to_junta = {
 	log = "[GetDateText]: [Root.GetName]: Transitioning to junta path"
 	set_country_flag = CHA_junta_path
 	add_ideas = CHA_transitional_military_council
 	set_politics = { ruling_party = neutrality }
-	add_political_power = 100
-}
-
-# Declare the Caliphate of the Sahel
-CHA_declare_caliphate = {
-	log = "[GetDateText]: [Root.GetName]: Declaring caliphate"
-	set_country_flag = CHA_caliphate_declared
-	set_politics = { ruling_party = fascism }
-	add_ideas = CHA_caliphate_declared
-	add_stability = -0.15
-	add_war_support = 0.20
-}
-
-# Establish federal republic
-CHA_establish_federation = {
-	log = "[GetDateText]: [Root.GetName]: Establishing federation"
-	set_country_flag = CHA_federation_established
-	add_stability = 0.10
 	add_political_power = 100
 }
 
