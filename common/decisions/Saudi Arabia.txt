@@ -62,7 +62,6 @@ SAU_domestic_external_category = {
 		allowed = { original_tag = SAU }
 		visible = { has_completed_focus = SAU_Aramco_petrodollar_oil }
 		available = {
-			has_war = no
 			OR = {
 				has_idea = SAU_aramco_production
 				has_idea = SAU_aramco_export
@@ -4069,5 +4068,71 @@ SAU_spread_revolution_category = {
 			event_target:SAU_faction_invite_target = { country_event = { id = SAU_events.109 days = 1 } }
 		}
 		ai_will_do = { base = 0 }
+	}
+}
+arab_spring_category = {
+	# SAU: shows once protests hit 100; taking it instantly fires the breaking-point event (SAU_events.90).
+	#SAU_arab_spring_breaking_point = {
+	#	icon = GFX_decision_generic_civil_support
+
+	#	cost = 15
+	#	days_remove = 15
+	#	fire_only_once = yes
+	#	visible = {
+	#		original_tag = SAU
+	#	}
+
+	#	available = {
+	#		has_country_flag = arab_spring_active
+	#		has_government = fascism
+	#		check_variable = { var = arab_spring value = 50 compare = greater_than_or_equals }
+	#		custom_effect_tooltip = arab_spring_saudi_arabia_decision_tt
+	#		NOT = { has_country_flag = SAU_arab_spring_fired }
+	#	}
+
+	#	remove_effect = {
+	#		log = "[GetDateText]: [Root.GetName]: SAU_arab_spring_breaking_point -> SAU_events.90"
+	#		country_event = { id = SAU_events.90 }
+	#	}
+
+	#	ai_will_do = { factor = 1 }
+	#}
+		SAU_arab_spring_breaking_point = {
+		icon = GFX_decision_generic_civil_support
+		priority = 110
+
+		allowed = { original_tag = SAU }
+		activation = {
+			has_country_flag = arab_spring_active
+			has_government = fascism
+			check_variable = { var = arab_spring value = 100 compare = greater_than_or_equals }
+			NOT = { has_country_flag = SAU_arab_spring_fired }
+		}
+		available = {
+			has_country_flag = arab_spring_active
+			NOT = {check_variable = { var = arab_spring value = 100 compare = greater_than_or_equals } }
+			
+#			NOT = { has_country_flag = SAU_arab_spring_fired }
+		}
+		cancel_trigger = {
+			
+		}
+
+		days_mission_timeout = 10
+		selectable_mission = no
+		fire_only_once = yes
+		is_good = no
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Mission SAU_arab_spring_breaking_point complete"
+			add_political_power = 100
+			custom_effect_tooltip = arab_spring_saudi_arabia_decision_2_tt
+		}
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: Mission SAU_arab_spring_breaking_point timeout"
+			country_event = { id = SAU_events.90 }
+			set_country_flag = SAU_arab_spring_fired
+			custom_effect_tooltip = arab_spring_saudi_arabia_decision_tt
+		}
 	}
 }
