@@ -303,21 +303,6 @@ CHA_update_tribal_resource_modifiers = {
 	if = { limit = { is_ai = no } add_to_variable = { CHA_tribal_loyalty_dirty = 1 } }
 }
 
-# Reduce tribal influence (call from modernization focuses)
-CHA_reduce_tribal_influence = {
-	log = "[GetDateText]: [Root.GetName]: Reducing tribal influence"
-
-	subtract_from_variable = { CHA_tribal_influence = 10 }
-	clamp_variable = {
-		var = CHA_tribal_influence
-		min = 0
-		max = 100
-	}
-
-	# Update resource modifiers with reduced impact
-	CHA_update_tribal_resource_modifiers = yes
-}
-
 #####################################
 # TRIBAL REBELLION ESCALATION SYSTEM
 #####################################
@@ -913,56 +898,5 @@ CHA_build_infrastructure = {
 			level = 1
 			instant_build = yes
 		}
-	}
-}
-
-# Building cost template - Factory (civilian)
-CHA_build_factory = {
-	log = "[GetDateText]: [Root.GetName]: Building factory (treasury cost)"
-	set_temp_variable = { treasury_change = -3 }
-	modify_treasury_effect = yes
-	random_owned_controlled_state = {
-		limit = {
-			is_owned_by = ROOT
-			free_building_slots = { building = industrial_complex size > 0 include_locked = yes }
-		}
-		add_extra_state_shared_building_slots = 1
-		add_building_construction = {
-			type = industrial_complex
-			level = 1
-			instant_build = yes
-		}
-	}
-}
-
-# Building cost template - Military factory
-CHA_build_military_factory = {
-	log = "[GetDateText]: [Root.GetName]: Building military factory (treasury cost)"
-	set_temp_variable = { treasury_change = -4 }
-	modify_treasury_effect = yes
-	random_owned_controlled_state = {
-		limit = {
-			is_owned_by = ROOT
-			free_building_slots = { building = arms_factory size > 0 include_locked = yes }
-		}
-		add_extra_state_shared_building_slots = 1
-		add_building_construction = {
-			type = arms_factory
-			level = 1
-			instant_build = yes
-		}
-	}
-}
-
-# Building cost template - Infrastructure in specific state
-CHA_build_infrastructure_in_state = {
-	log = "[GetDateText]: [Root.GetName]: Building infrastructure in [PREV.GetName]"
-	set_temp_variable = { treasury_change = -2 }
-	modify_treasury_effect = yes
-	add_extra_state_shared_building_slots = 1
-	add_building_construction = {
-		type = infrastructure
-		level = 1
-		instant_build = yes
 	}
 }
