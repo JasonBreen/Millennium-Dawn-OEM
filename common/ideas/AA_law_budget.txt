@@ -13,11 +13,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -27,11 +23,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -58,14 +50,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = bureau_01_TT
-				set_variable = { law_attitude = 3 }
-				set_variable = { law_change = 1 }
-				subtract_from_variable = { law_change = bureaucracy }
-				law_attitude_change = yes
 				set_variable = { bureaucracy = 1 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea bureau_01"
 				PER_centralized_change = yes
 			}
 			on_remove = {
@@ -81,18 +67,18 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to reduce if is above desired level
 					add = 50
 					has_idea = bureau_02
-					has_country_flag = wants_bureau_01
+					check_variable = { expected_adm_spending = 1 }
 				}
 				# Killswitch for the AI
 				# reference 00_desire_law_triggers.txt
 				modifier = {
 					factor = 0
 					OR = {
-						NOT = { has_country_flag = wants_bureau_01 }
+						check_variable = { expected_adm_spending > 1 }
 						has_bureau_idea_law_desired = yes
 					}
 				}
@@ -110,11 +96,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -124,11 +106,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -165,15 +143,9 @@ ideas = {
 				}
 			}
 			on_add = {
-				log = "[GetDateText]: [Root.GetName]: add idea bureau_02"
 				custom_effect_tooltip = bureau_02_TT
-				set_variable = { law_attitude = 3 }
-				set_variable = { law_change = 2 }
-				subtract_from_variable = { law_change = bureaucracy }
-				law_attitude_change = yes
 				set_variable = { bureaucracy = 2 }
 				ingame_update_setup = yes
-				set_law_vars = yes
 				PER_centralized_change = yes
 			}
 			on_remove = {
@@ -194,24 +166,16 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = bureau_01
-					OR = {
-						has_country_flag = wants_bureau_02
-						has_country_flag = wants_bureau_03
-						has_country_flag = wants_bureau_04
-						has_country_flag = wants_bureau_05
-					}
+					check_variable = { expected_adm_spending > 1 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
 					add = 25
 					has_idea = bureau_03
-					OR = {
-						has_country_flag = wants_bureau_01
-						has_country_flag = wants_bureau_02
-					}
+					check_variable = { expected_adm_spending < 3 }
 				}
 				modifier = {
 					factor = 0
@@ -232,11 +196,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -246,11 +206,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -289,15 +245,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = bureau_03_TT
-				set_variable = { law_attitude = 3 }
-				set_variable = { law_change = 3 }
-				subtract_from_variable = { law_change = bureaucracy }
-				law_attitude_change = yes
 				set_variable = { bureaucracy = 3 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea bureau_03"
-
 				PER_centralized_change = yes
 			}
 			on_remove = {
@@ -317,24 +266,16 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = bureau_02
-					OR = {
-						has_country_flag = wants_bureau_03
-						has_country_flag = wants_bureau_04
-						has_country_flag = wants_bureau_05
-					}
+					check_variable = { expected_adm_spending > 2 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
 					add = 25
 					has_idea = bureau_04
-					OR = {
-						has_country_flag = wants_bureau_01
-						has_country_flag = wants_bureau_02
-						has_country_flag = wants_bureau_03
-					}
+					check_variable = { expected_adm_spending < 4 }
 				}
 				modifier = {
 					factor = 0
@@ -355,11 +296,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -369,22 +306,14 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
 					limit = { original_tag = GER }
 					custom_trigger_tooltip = {
 						tooltip = GER_Grundgesetz_tt
-					}
-					NOT = {
-						hidden_trigger = {
-						has_country_flag = GER_Grundgesetz
-						}
+						NOT = { has_country_flag = GER_Grundgesetz }
 					}
 				}
 				if = {
@@ -433,13 +362,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = bureau_04_TT
-				set_variable = { law_attitude = 3 }
-				set_variable = { law_change = 4 }
-				subtract_from_variable = { law_change = bureaucracy }
-				law_attitude_change = yes
 				set_variable = { bureaucracy = 4 }
 				ingame_update_setup = yes
-				set_law_vars = yes
 				PER_centralized_change = yes
 			}
 			on_remove = {
@@ -460,24 +384,16 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = bureau_03
-					OR = {
-						has_country_flag = wants_bureau_04
-						has_country_flag = wants_bureau_05
-					}
+					check_variable = { expected_adm_spending > 3 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
 					add = 25
 					has_idea = bureau_05
-					OR = {
-						has_country_flag = wants_bureau_01
-						has_country_flag = wants_bureau_02
-						has_country_flag = wants_bureau_03
-						has_country_flag = wants_bureau_04
-					}
+					check_variable = { expected_adm_spending < 5 }
 				}
 				modifier = {
 					factor = 0
@@ -498,11 +414,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -512,22 +424,14 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
 					limit = { original_tag = GER }
 					custom_trigger_tooltip = {
 						tooltip = GER_Grundgesetz_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = GER_Grundgesetz
-						}
+						NOT = { has_country_flag = GER_Grundgesetz }
 					}
 				}
 				if = {
@@ -571,13 +475,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = bureau_05_TT
-				set_variable = { law_attitude = 3 }
-				set_variable = { law_change = 5 }
-				subtract_from_variable = { law_change = bureaucracy }
-				law_attitude_change = yes
 				set_variable = { bureaucracy = 5 }
 				ingame_update_setup = yes
-				set_law_vars = yes
 				PER_centralized_change = yes
 			}
 			on_remove = {
@@ -598,11 +497,11 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = bureau_04
-					has_country_flag = wants_bureau_05
+					check_variable = { expected_adm_spending > 4 }
 				}
 				modifier = {
 					factor = 0
@@ -625,11 +524,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -639,22 +534,14 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
 					limit = { original_tag = GER }
 					custom_trigger_tooltip = {
 						tooltip = GER_Grundgesetz_tt
-					}
-					NOT = {
-						hidden_trigger = {
-						has_country_flag = GER_Grundgesetz
-						}
+						NOT = { has_country_flag = GER_Grundgesetz }
 					}
 				}
 				MLW_UDF_police_lock_checker = yes
@@ -674,14 +561,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = police_01_TT
-				set_variable = { law_attitude = 5 }
-				set_variable = { law_change = 1 }
-				subtract_from_variable = { law_change = crime_fighting }
-				law_attitude_change = yes
 				set_variable = { crime_fighting = 1 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea police_01"
 				PER_police_change = yes
 				if = {
 					limit = { original_tag = BOT }
@@ -701,14 +582,15 @@ ideas = {
 			}
 
 			modifier = {
+				terror_threat_base_defense_modifier = 5
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to reduce if is above desired level
 					factor = 15
 					has_idea = police_02
-					has_country_flag = wants_police_01
+					check_variable = { expected_police_spending = 1 }
 				}
 				modifier = {
 					factor = 0
@@ -728,11 +610,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				MLW_UDF_police_lock_checker = yes
@@ -743,11 +621,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -777,15 +651,9 @@ ideas = {
 				}
 			}
 			on_add = {
-				log = "[GetDateText]: [Root.GetName]: add idea police_02"
 				custom_effect_tooltip = police_02_TT
-				set_variable = { law_attitude = 5 }
-				set_variable = { law_change = 2 }
-				subtract_from_variable = { law_change = crime_fighting }
-				law_attitude_change = yes
 				set_variable = { crime_fighting = 2 }
 				ingame_update_setup = yes
-				set_law_vars = yes
 				PER_police_change = yes
 				if = {
 					limit = { original_tag = BOT }
@@ -812,26 +680,20 @@ ideas = {
 				planning_speed = 0.10
 				foreign_influence_defense_modifier = 0.05
 				required_garrison_factor = -0.1
+				terror_threat_base_detect_modifier = 6
+				terror_threat_base_defense_modifier = 10
 			}
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = police_01
-					OR = {
-						has_country_flag = wants_police_02
-						has_country_flag = wants_police_03
-						has_country_flag = wants_police_04
-						has_country_flag = wants_police_05
-					}
+					check_variable = { expected_police_spending > 1 }
 				}
 				modifier = {
 					add = 25
 					has_idea = police_03
-					OR = {
-						has_country_flag = wants_police_01
-						has_country_flag = wants_police_02
-					}
+					check_variable = { expected_police_spending < 3 }
 				}
 				modifier = {
 					factor = 0
@@ -850,11 +712,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				MLW_UDF_police_lock_checker = yes
@@ -865,11 +723,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -905,14 +759,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = police_03_TT
-				set_variable = { law_attitude = 5 }
-				set_variable = { law_change = 3 }
-				subtract_from_variable = { law_change = crime_fighting }
-				law_attitude_change = yes
 				set_variable = { crime_fighting = 3 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea police_03"
 				PER_police_change = yes
 				if = {
 					limit = { original_tag = BOT }
@@ -942,27 +790,21 @@ ideas = {
 				planning_speed = 0.15
 				foreign_influence_defense_modifier = 0.10
 				required_garrison_factor = -0.2
+				terror_threat_base_detect_modifier = 8
+				terror_threat_base_defense_modifier = 15
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { #Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = police_02
-					OR = {
-						has_country_flag = wants_police_03
-						has_country_flag = wants_police_04
-						has_country_flag = wants_police_05
-					}
+					check_variable = { expected_police_spending > 2 }
 				}
 				modifier = {
 					add = 25
 					has_idea = police_04
-					OR = {
-						has_country_flag = wants_police_01
-						has_country_flag = wants_police_02
-						has_country_flag = wants_police_03
-					}
+					check_variable = { expected_police_spending < 4 }
 				}
 				modifier = {
 					factor = 0
@@ -980,11 +822,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -994,11 +832,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -1033,14 +867,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = police_04_TT
-				set_variable = { law_attitude = 5 }
-				set_variable = { law_change = 4 }
-				subtract_from_variable = { law_change = crime_fighting }
-				law_attitude_change = yes
 				set_variable = { crime_fighting = 4 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea police_04"
 				PER_police_change = yes
 				if = {
 					limit = { original_tag = BOT }
@@ -1070,27 +898,21 @@ ideas = {
 				planning_speed = 0.20
 				foreign_influence_defense_modifier = 0.15
 				required_garrison_factor = -0.3
+				terror_threat_base_detect_modifier = 10
+				terror_threat_base_defense_modifier = 20
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = {
 					add = 25
 					has_idea = police_03
-					OR = {
-						has_country_flag = wants_police_04
-						has_country_flag = wants_police_05
-					}
+					check_variable = { expected_police_spending > 3 }
 				}
 				modifier = {
 					add = 25
 					has_idea = police_05
-					OR = {
-						has_country_flag = wants_police_01
-						has_country_flag = wants_police_02
-						has_country_flag = wants_police_03
-						has_country_flag = wants_police_04
-					}
+					check_variable = { expected_police_spending < 5 }
 				}
 				modifier = {
 					factor = 0
@@ -1109,11 +931,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -1123,11 +941,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -1157,14 +971,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = police_05_TT
-				set_variable = { law_attitude = 5 }
-				set_variable = { law_change = 5 }
-				subtract_from_variable = { law_change = crime_fighting }
-				law_attitude_change = yes
 				set_variable = { crime_fighting = 5 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea police_05"
 				PER_police_change = yes
 				if = {
 					limit = { original_tag = BOT }
@@ -1193,14 +1001,16 @@ ideas = {
 				planning_speed = 0.20
 				foreign_influence_defense_modifier = 0.20
 				required_garrison_factor = -0.4
+				terror_threat_base_detect_modifier = 12
+				terror_threat_base_defense_modifier = 25
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = {
 					add = 25
 					has_idea = police_04
-					has_country_flag = wants_police_05
+					check_variable = { expected_police_spending > 4 }
 				}
 				modifier = {
 					factor = 0
@@ -1225,11 +1035,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -1239,11 +1045,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -1271,14 +1073,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = edu_01_TT
-				set_variable = { law_attitude = 6 }
-				set_variable = { law_change = 1 }
-				subtract_from_variable = { law_change = education_budget }
-				law_attitude_change = yes
 				set_variable = { education_budget = 1 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea edu_01"
 				PER_education_change = yes
 			}
 			on_remove = {
@@ -1294,11 +1090,11 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = {
 					add = 25
 					has_idea = edu_02
-					has_country_flag = wants_edu_01
+					check_variable = { expected_edu_spending = 1 }
 				}
 				modifier = {
 					factor = 0
@@ -1309,6 +1105,7 @@ ideas = {
 			modifier = {
 				research_speed_factor = 0.02
 				literacy_rate_education_modifier = 0.02
+				productivity_growth_modifier = -0.2
 			}
 
 			cancel_if_invalid = no
@@ -1324,11 +1121,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -1338,11 +1131,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -1383,14 +1172,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = edu_02_TT
-				set_variable = { law_attitude = 6 }
-				set_variable = { law_change = 2 }
-				subtract_from_variable = { law_change = education_budget }
-				law_attitude_change = yes
 				set_variable = { education_budget = 2 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea edu_02"
 				PER_education_change = yes
 			}
 			on_remove = {
@@ -1406,24 +1189,16 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = {
 					add = 25
 					has_idea = edu_03
-					OR = {
-						has_country_flag = wants_edu_02
-						has_country_flag = wants_edu_01
-					}
+					check_variable = { expected_edu_spending < 3 }
 				}
 				modifier = {
 					add = 25
 					has_idea = edu_01
-					OR = {
-						has_country_flag = wants_edu_02
-						has_country_flag = wants_edu_03
-						has_country_flag = wants_edu_04
-						has_country_flag = wants_edu_05
-					}
+					check_variable = { expected_edu_spending > 1 }
 				}
 				modifier = {
 					factor = 0
@@ -1437,7 +1212,7 @@ ideas = {
 				special_project_speed_factor = 0.04
 				stability_factor = 0.01
 				foreign_influence_modifier = 0.05
-				productivity_growth_modifier = 0.04
+				productivity_growth_modifier = -0.1
 				literacy_rate_education_modifier = 0.04
 			}
 
@@ -1452,11 +1227,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -1466,11 +1237,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -1506,14 +1273,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = edu_03_TT
-				set_variable = { law_attitude = 6 }
-				set_variable = { law_change = 3 }
-				subtract_from_variable = { law_change = education_budget }
-				law_attitude_change = yes
 				set_variable = { education_budget = 3 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea edu_03"
 				PER_education_change = yes
 			}
 			on_remove = {
@@ -1529,24 +1290,16 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = edu_02
-					OR = {
-						has_country_flag = wants_edu_03
-						has_country_flag = wants_edu_04
-						has_country_flag = wants_edu_05
-					}
+					check_variable = { expected_edu_spending > 2 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
-				add = 25
+					add = 25
 					has_idea = edu_04
-					OR = {
-						has_country_flag = wants_edu_01
-						has_country_flag = wants_edu_02
-						has_country_flag = wants_edu_03
-					}
+					check_variable = { expected_edu_spending < 4 }
 				}
 				modifier = {
 					factor = 0
@@ -1562,7 +1315,7 @@ ideas = {
 				special_project_speed_factor = 0.08
 				stability_factor = 0.02
 				foreign_influence_modifier = 0.10
-				productivity_growth_modifier = 0.08
+				productivity_growth_modifier = 0.05
 				literacy_rate_education_modifier = 0.06
 			}
 
@@ -1578,11 +1331,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -1592,18 +1341,12 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
 					limit = {
-						OR = {
-							has_idea = edu_05
-						}
+						has_idea = edu_05
 						edu_decrease_blocked = yes
 					}
 					edu_decrease_blocked = no
@@ -1633,14 +1376,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = edu_04_TT
-				set_variable = { law_attitude = 6 }
-				set_variable = { law_change = 4 }
-				subtract_from_variable = { law_change = education_budget }
-				law_attitude_change = yes
 				set_variable = { education_budget = 4 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea edu_04"
 				PER_education_change = yes
 			}
 			on_remove = {
@@ -1663,31 +1400,23 @@ ideas = {
 				special_project_speed_factor = 0.12
 				stability_factor = 0.03
 				foreign_influence_modifier = 0.15
-				productivity_growth_modifier = 0.12
+				productivity_growth_modifier = 0.25
 				literacy_rate_education_modifier = 0.08
 			}
 
 			cancel_if_invalid = no
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = edu_03
-					OR = {
-						has_country_flag = wants_edu_04
-						has_country_flag = wants_edu_05
-					}
+					check_variable = { expected_edu_spending > 3 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
 					add = 25
 					has_idea = edu_05
-					OR = {
-						has_country_flag = wants_edu_01
-						has_country_flag = wants_edu_02
-						has_country_flag = wants_edu_03
-						has_country_flag = wants_edu_04
-					}
+					check_variable = { expected_edu_spending < 5 }
 				}
 				modifier = { # no money
 					factor = 0
@@ -1704,11 +1433,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -1718,11 +1443,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -1752,14 +1473,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = edu_05_TT
-				set_variable = { law_attitude = 6 }
-				set_variable = { law_change = 5 }
-				subtract_from_variable = { law_change = education_budget }
-				law_attitude_change = yes
 				set_variable = { education_budget = 5 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea edu_05"
 				PER_education_change = yes
 			}
 			on_remove = {
@@ -1775,11 +1490,11 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = edu_04
-					has_country_flag = wants_edu_05
+					check_variable = { expected_edu_spending > 4 }
 				}
 				modifier = { #for BRIKS members
 					factor = 0
@@ -1795,7 +1510,7 @@ ideas = {
 				special_project_speed_factor = 0.16
 				stability_factor = 0.05
 				foreign_influence_modifier = 0.20
-				productivity_growth_modifier = 0.16
+				productivity_growth_modifier = 0.5
 				literacy_rate_education_modifier = 0.10
 			}
 
@@ -1811,15 +1526,15 @@ ideas = {
 			removal_cost = -1
 			level = 1
 			available = {
+				NOT = {
+					has_idea = fully_nationalized_healthcare
+					has_idea = partially_nationalized_healthcare
+				}
 				if = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -1829,11 +1544,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -1852,14 +1563,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = health_01_TT
-				set_variable = { law_attitude = 7 }
-				set_variable = { law_change = 1 }
-				subtract_from_variable = { law_change = health_budget }
-				law_attitude_change = yes
 				set_variable = { health_budget = 1 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea health_01 [health_budget idea_law]"
 				PER_health_change = yes
 			}
 			on_remove = {
@@ -1875,11 +1580,11 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = {
 					add = 25
 					has_idea = health_02
-					has_country_flag = wants_health_01
+					check_variable = { expected_health_spending = 1 }
 				}
 				modifier = {
 					factor = 0
@@ -1896,15 +1601,15 @@ ideas = {
 			removal_cost = -1
 			level = 2
 			available = {
+				NOT = {
+					has_idea = fully_nationalized_healthcare
+					has_idea = partially_nationalized_healthcare
+				}
 				if = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -1914,11 +1619,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -1950,14 +1651,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = health_02_TT
-				set_variable = { law_attitude = 7 }
-				set_variable = { law_change = 2 }
-				subtract_from_variable = { law_change = health_budget }
-				law_attitude_change = yes
 				set_variable = { health_budget = 2 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea health_02 [health_budget idea_law]"
 				PER_health_change = yes
 			}
 			on_remove = {
@@ -1973,25 +1668,16 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = health_01
-					OR = {
-						has_country_flag = wants_health_02
-						has_country_flag = wants_health_03
-						has_country_flag = wants_health_04
-						has_country_flag = wants_health_05
-						has_country_flag = wants_health_06
-					}
+					check_variable = { expected_health_spending > 1 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
 					add = 25
 					has_idea = health_03
-					OR = {
-						has_country_flag = wants_health_01
-						has_country_flag = wants_health_02
-					}
+					check_variable = { expected_health_spending < 3 }
 				}
 				modifier = {
 					factor = 0
@@ -2014,15 +1700,14 @@ ideas = {
 			removal_cost = -1
 			level = 3
 			available = {
+				NOT = {
+					has_idea = fully_nationalized_healthcare
+				}
 				if = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -2032,11 +1717,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -2073,14 +1754,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = health_03_TT
-				set_variable = { law_attitude = 7 }
-				set_variable = { law_change = 3 }
-				subtract_from_variable = { law_change = health_budget }
-				law_attitude_change = yes
 				set_variable = { health_budget = 3 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea health_03 [health_budget idea_law]"
 				PER_health_change = yes
 			}
 			on_remove = {
@@ -2096,25 +1771,16 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					factor = 10
 					has_idea = health_02
-					OR = {
-						has_country_flag = wants_health_03
-						has_country_flag = wants_health_04
-						has_country_flag = wants_health_05
-						has_country_flag = wants_health_06
-					}
+					check_variable = { expected_health_spending > 2 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
 					factor = 10
 					has_idea = health_04
-					OR = {
-						has_country_flag = wants_health_01
-						has_country_flag = wants_health_02
-						has_country_flag = wants_health_03
-					}
+					check_variable = { expected_health_spending < 4 }
 				}
 				modifier = {
 					factor = 0
@@ -2139,15 +1805,14 @@ ideas = {
 			removal_cost = -1
 			level = 4
 			available = {
+				NOT = {
+					has_idea = fully_privatized_healthcare
+				}
 				if = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -2157,11 +1822,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -2199,14 +1860,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = health_04_TT
-				set_variable = { law_attitude = 7 }
-				set_variable = { law_change = 4 }
-				subtract_from_variable = { law_change = health_budget }
-				law_attitude_change = yes
 				set_variable = { health_budget = 4 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea health_04 [health_budget idea_law]"
 				PER_health_change = yes
 			}
 			on_remove = {
@@ -2222,25 +1877,16 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					factor = 10
 					has_idea = health_03
-					OR = {
-						has_country_flag = wants_health_04
-						has_country_flag = wants_health_05
-						has_country_flag = wants_health_06
-					}
+					check_variable = { expected_health_spending > 3 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
 					factor = 10
 					has_idea = health_05
-					OR = {
-						has_country_flag = wants_health_01
-						has_country_flag = wants_health_02
-						has_country_flag = wants_health_03
-						has_country_flag = wants_health_04
-					}
+					check_variable = { expected_health_spending < 5 }
 				}
 				modifier = {
 					factor = 0
@@ -2265,15 +1911,15 @@ ideas = {
 			removal_cost = -1
 			level = 5
 			available = {
+				NOT = {
+					has_idea = fully_privatized_healthcare
+					has_idea = partially_privatized_healthcare
+				}
 				if = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -2283,18 +1929,12 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
 					limit = {
-						OR = {
-							has_idea = health_06
-						}
+						has_idea = health_06
 						health_decrease_blocked = yes
 					}
 					health_decrease_blocked = no
@@ -2323,21 +1963,11 @@ ideas = {
 					}
 					NOT = { has_active_mission = cheap_loan_from_the_imf_mission }
 				}
-				if = {
-					limit = { original_tag = ENG }
-					NOT = { has_idea = ENG_idea_privatized_nhs }
-				}
 			}
 			on_add = {
 				custom_effect_tooltip = health_05_TT
-				set_variable = { law_attitude = 7 }
-				set_variable = { law_change = 5 }
-				subtract_from_variable = { law_change = health_budget }
-				law_attitude_change = yes
 				set_variable = { health_budget = 5 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea health_05 [health_budget idea_law]"
 				PER_health_change = yes
 			}
 			on_remove = {
@@ -2353,25 +1983,16 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = health_04
-					OR = {
-						has_country_flag = wants_health_05
-						has_country_flag = wants_health_06
-					}
+					check_variable = { expected_health_spending > 4 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
 					add = 25
 					has_idea = health_06
-					OR = {
-						has_country_flag = wants_health_01
-						has_country_flag = wants_health_02
-						has_country_flag = wants_health_03
-						has_country_flag = wants_health_04
-						has_country_flag = wants_health_05
-					}
+					check_variable = { expected_health_spending < 6 }
 				}
 				modifier = {
 					factor = 0
@@ -2395,15 +2016,15 @@ ideas = {
 			removal_cost = -1
 			level = 6
 			available = {
+				NOT = {
+					has_idea = fully_privatized_healthcare
+					has_idea = partially_privatized_healthcare
+				}
 				if = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -2413,11 +2034,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -2446,21 +2063,11 @@ ideas = {
 					}
 					NOT = { has_active_mission = cheap_loan_from_the_imf_mission }
 				}
-				if = {
-					limit = { original_tag = ENG }
-					NOT = { has_idea = ENG_idea_privatized_nhs }
-				}
 			}
 			on_add = {
 				custom_effect_tooltip = health_06_TT
-				set_variable = { law_attitude = 7 }
-				set_variable = { law_change = 6 }
-				subtract_from_variable = { law_change = health_budget }
-				law_attitude_change = yes
 				set_variable = { health_budget = 6 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea health_06 [health_budget idea_law]"
 				PER_health_change = yes
 			}
 			on_remove = {
@@ -2476,11 +2083,11 @@ ideas = {
 			}
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = {
 					add = 25
 					has_idea = health_05
-					has_country_flag = wants_health_06
+					check_variable = { expected_health_spending > 5 }
 				}
 				modifier = {
 					factor = 0
@@ -2514,11 +2121,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -2528,11 +2131,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -2560,15 +2159,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = social_01_TT
-
-				set_variable = { law_attitude = 8 }
-				set_variable = { law_change = 1 }
-				subtract_from_variable = { law_change = social_budget }
-				law_attitude_change = yes
 				set_variable = { social_budget = 1 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea social_01 [social_budget idea_law]"
 				PER_social_change = yes
 			}
 			on_remove = {
@@ -2586,11 +2178,11 @@ ideas = {
 			cancel_if_invalid = no
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to reduce if is above desired level
 					add = 25
 					has_idea = social_02
-					has_country_flag = wants_social_01
+					check_variable = { expected_welfare_spending = 1 }
 				}
 				modifier = {
 					factor = 0
@@ -2609,11 +2201,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -2623,11 +2211,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -2659,15 +2243,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = social_02_TT
-
-				set_variable = { law_attitude = 8 }
-				set_variable = { law_change = 2 }
-				subtract_from_variable = { law_change = social_budget }
-				law_attitude_change = yes
 				set_variable = { social_budget = 2 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea social_02 [social_budget idea_law]"
 				PER_social_change = yes
 			}
 			on_remove = {
@@ -2692,25 +2269,16 @@ ideas = {
 			cancel_if_invalid = no
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = social_01
-					OR = {
-						has_country_flag = wants_social_02
-						has_country_flag = wants_social_03
-						has_country_flag = wants_social_04
-						has_country_flag = wants_social_05
-						has_country_flag = wants_social_06
-					}
+					check_variable = { expected_welfare_spending > 1 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
 					add = 25
 					has_idea = social_03
-					OR = {
-						has_country_flag = wants_social_01
-						has_country_flag = wants_social_02
-					}
+					check_variable = { expected_welfare_spending < 3 }
 				}
 				modifier = {
 					factor = 0
@@ -2727,11 +2295,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -2741,11 +2305,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -2781,16 +2341,9 @@ ideas = {
 				}
 			}
 			on_add = {
-				log = "[GetDateText]: [Root.GetName]: add idea social_03 [social_budget idea_law]"
 				custom_effect_tooltip = social_03_TT
-
-				set_variable = { law_attitude = 8 }
-				set_variable = { law_change = 3 }
-				subtract_from_variable = { law_change = social_budget }
-				law_attitude_change = yes
 				set_variable = { social_budget = 3 }
 				ingame_update_setup = yes
-				set_law_vars = yes
 				PER_social_change = yes
 			}
 			on_remove = {
@@ -2815,25 +2368,16 @@ ideas = {
 			cancel_if_invalid = no
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = social_02
-					OR = {
-						has_country_flag = wants_social_03
-						has_country_flag = wants_social_04
-						has_country_flag = wants_social_05
-						has_country_flag = wants_social_06
-					}
+					check_variable = { expected_welfare_spending > 2 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
 					add = 25
 					has_idea = social_04
-					OR = {
-						has_country_flag = wants_social_01
-						has_country_flag = wants_social_02
-						has_country_flag = wants_social_03
-					}
+					check_variable = { expected_welfare_spending < 4 }
 				}
 				modifier = {
 					factor = 0
@@ -2851,11 +2395,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -2865,11 +2405,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -2907,15 +2443,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = social_04_TT
-
-				set_variable = { law_attitude = 8 }
-				set_variable = { law_change = 4 }
-				subtract_from_variable = { law_change = social_budget }
-				law_attitude_change = yes
 				set_variable = { social_budget = 4 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea social_04 [social_budget idea_law]"
 				PER_social_change = yes
 			}
 			on_remove = {
@@ -2941,25 +2470,16 @@ ideas = {
 			cancel_if_invalid = no
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = {
 					add = 25
 					has_idea = social_03
-					OR = {
-						has_country_flag = wants_social_04
-						has_country_flag = wants_social_05
-						has_country_flag = wants_social_06
-					}
+					check_variable = { expected_welfare_spending > 3 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
 					add = 10
 					has_idea = social_05
-					OR = {
-						has_country_flag = wants_social_01
-						has_country_flag = wants_social_02
-						has_country_flag = wants_social_03
-						has_country_flag = wants_social_04
-					}
+					check_variable = { expected_welfare_spending < 5 }
 				}
 				modifier = {
 					factor = 0
@@ -2977,11 +2497,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -2991,18 +2507,12 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
 					limit = {
-						OR = {
-							has_idea = social_06
-						}
+						has_idea = social_06
 						social_decrease_blocked = yes
 					}
 					social_decrease_blocked = no
@@ -3034,15 +2544,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = social_05_TT
-
-				set_variable = { law_attitude = 8 }
-				set_variable = { law_change = 5 }
-				subtract_from_variable = { law_change = social_budget }
-				law_attitude_change = yes
 				set_variable = { social_budget = 5 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea social_05 [social_budget idea_law]"
 				PER_social_change = yes
 			}
 			on_remove = {
@@ -3068,25 +2571,16 @@ ideas = {
 			cancel_if_invalid = no
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = { # Make law more appealing to raise if is below desired level
 					add = 25
 					has_idea = social_04
-					OR = {
-						has_country_flag = wants_social_05
-						has_country_flag = wants_social_06
-					}
+					check_variable = { expected_welfare_spending > 4 }
 				}
 				modifier = { # Make law more appealing to reduce if is above desired level
 					add = 25
 					has_idea = social_06
-					OR = {
-						has_country_flag = wants_social_01
-						has_country_flag = wants_social_02
-						has_country_flag = wants_social_03
-						has_country_flag = wants_social_04
-						has_country_flag = wants_social_05
-					}
+					check_variable = { expected_welfare_spending < 6 }
 				}
 				modifier = {
 					factor = 0
@@ -3104,11 +2598,7 @@ ideas = {
 					limit = { original_tag = UKR }
 					custom_trigger_tooltip = {
 						tooltip = UKR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = UKR_parliament_block
-						}
+						NOT = { has_country_flag = UKR_parliament_block }
 					}
 				}
 				if = {
@@ -3118,11 +2608,7 @@ ideas = {
 					}
 					custom_trigger_tooltip = {
 						tooltip = ISR_parliament_block_tt
-					}
-					NOT = {
-						hidden_trigger = {
-							has_country_flag = ISR_parliament_block
-						}
+						NOT = { has_country_flag = ISR_parliament_block }
 					}
 				}
 				if = {
@@ -3141,15 +2627,8 @@ ideas = {
 			}
 			on_add = {
 				custom_effect_tooltip = social_06_TT
-
-				set_variable = { law_attitude = 8 }
-				set_variable = { law_change = 6 }
-				subtract_from_variable = { law_change = social_budget }
-				law_attitude_change = yes
 				set_variable = { social_budget = 6 }
 				ingame_update_setup = yes
-				set_law_vars = yes
-				log = "[GetDateText]: [Root.GetName]: add idea social_06 [social_budget idea_law]"
 				PER_social_change = yes
 			}
 			on_remove = {
@@ -3175,11 +2654,11 @@ ideas = {
 			cancel_if_invalid = no
 
 			ai_will_do = {
-				factor = 1
+				base = 1
 				modifier = {
 					add = 25
 					has_idea = social_05
-					has_country_flag = wants_social_06
+					check_variable = { expected_welfare_spending > 5 }
 				}
 				modifier = {
 					factor = 0

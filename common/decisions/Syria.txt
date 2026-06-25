@@ -17,6 +17,23 @@ Syria_decisions = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision SYR_al_abbas_brigades"
+			if = {
+				limit = { NOT = { has_template = "Mechanized Brigade" } }
+				division_template = {
+					name = "Mechanized Brigade"
+					regiments = {
+						armor_Bat = { x = 0 y = 0 }
+						Mech_Inf_Bat = { x = 1 y = 0 }
+						Mech_Inf_Bat = { x = 1 y = 1 }
+						Mech_Inf_Bat = { x = 1 y = 2 }
+						SP_Arty_Bat = { x = 2 y = 0 }
+						SP_Arty_Bat = { x = 2 y = 1 }
+					}
+					support = {
+						H_Engi_Comp = { x = 0 y = 0 }
+					}
+				}
+			}
 			capital_scope = {
 				create_unit = {
 					division = "name = \"Liwa al-Abbas\" division_template = \"Mechanized Brigade\" start_experience_factor = 0.8 start_equipment_factor = 1.0"
@@ -27,7 +44,7 @@ Syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 
@@ -35,8 +52,11 @@ Syria_decisions = {
 
 		icon = GFX_decision_generic_army_support_new
 
-		visible = {
+		allowed = {
 			original_tag = SYR
+		}
+
+		visible = {
 			has_government = communism
 			check_variable = { SYR_hired_PMCs < 3 }
 			hidden_trigger = {
@@ -49,7 +69,6 @@ Syria_decisions = {
 		}
 
 		available = {
-			original_tag = SYR
 			has_government = communism
 			custom_trigger_tooltip = {
 				tooltip = TT_HIRE_PMCS_LIMIT
@@ -111,7 +130,7 @@ Syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
 				factor = 0
 				num_divisions > 50
@@ -123,11 +142,14 @@ Syria_decisions = {
 
 		icon = GFX_decision_generic_break_treaty
 
-		visible = {
+		allowed = {
 			OR = {
 				original_tag = FSA
 				original_tag = DRU
 			}
+		}
+
+		visible = {
 			587 = {
 				OR = {
 					is_core_of = ROOT
@@ -149,14 +171,13 @@ Syria_decisions = {
 			set_country_flag = Golan_Negotiations
 			ISR = {	country_event = { id = SyriaDecisions.0 days = 3 } }
 
-			set_party_index_to_ruling_party = yes
 			set_temp_variable = { party_popularity_increase = -0.10 }
 			set_temp_variable = { temp_outlook_increase = -0.05 }
 			add_relative_party_popularity = yes
 		}
 
 		ai_will_do = {
-			factor = 0
+			base = 0
 			modifier = {
 				add = 1
 				original_tag = DRU
@@ -165,8 +186,8 @@ Syria_decisions = {
 			modifier = {
 				add = 1
 				original_tag = FSA
-				any_other_country = {
-					original_tag = ISR
+				any_country_with_original_tag = {
+					original_tag_to_check = ISR
 					same_ideology = yes
 				}
 			}
@@ -177,8 +198,11 @@ Syria_decisions = {
 
 		icon = GFX_decision_generic_break_treaty
 
-		visible = {
+		allowed = {
 			original_tag = ALA
+		}
+
+		visible = {
 			158 = {
 				OR = {
 					is_core_of = ROOT
@@ -195,14 +219,13 @@ Syria_decisions = {
 			log = "[GetDateText]: [Root.GetName]: Decision renounce_claims_on_hatay"
 			set_country_flag = Hatay_Negotiations
 			TUR = {	country_event = { id = SyriaDecisions.3 days = 3 } }
-			set_party_index_to_ruling_party = yes
 			set_temp_variable = { party_popularity_increase = -0.10 }
 			set_temp_variable = { temp_outlook_increase = -0.05 }
 			add_relative_party_popularity = yes
 		}
 
 		ai_will_do = {
-			factor = 0
+			base = 0
 			modifier = {
 				add = 1
 				tag = ALA
@@ -216,17 +239,20 @@ Syria_decisions = {
 
 		icon = GFX_decision_generic_nationalism
 
-		visible = {
+		allowed = {
 			OR = {
 				original_tag = SYR
 				original_tag = FSA
 			}
+		}
+
+		visible = {
 			OR = {
 				has_war_with = SYR
 				has_war_with = FSA
 				has_war_with = NUS
 			}
-			ROJ = { exists = yes }
+			country_exists = ROJ
 			NOT = { has_country_flag = Rojava_Negotiations }
 		}
 
@@ -237,14 +263,13 @@ Syria_decisions = {
 			set_country_flag = Rojava_Negotiations
 			ROJ = {	country_event = { id = SyriaDecisions.6 days = 3 } }
 
-			set_party_index_to_ruling_party = yes
 			set_temp_variable = { party_popularity_increase = -0.20 }
 			set_temp_variable = { temp_outlook_increase = -0.10 }
 			add_relative_party_popularity = yes
 		}
 
 		ai_will_do = {
-			factor = 0
+			base = 0
 			modifier = {
 				add = 50
 				surrender_progress > 0.8
@@ -254,8 +279,11 @@ Syria_decisions = {
 	}
 
 	concede_rojava = {
-		visible = {
+		allowed = {
 			original_tag = SYR
+		}
+
+		visible = {
 			has_war_with = FSA
 			controls_state = 193
 		}
@@ -287,7 +315,7 @@ Syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 }
@@ -295,8 +323,6 @@ Syria_decisions = {
 Syria_hafez_succession = {
 
 	SYR_bushra_present_to_inner_circle = {
-		visible = {
-		}
 
 		available = {
 			custom_trigger_tooltip = {
@@ -319,7 +345,7 @@ Syria_hafez_succession = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
 				factor = 0
 				is_historical_focus_on = yes
@@ -328,8 +354,6 @@ Syria_hafez_succession = {
 	}
 
 	SYR_bashar_present_to_inner_circle = {
-		visible = {
-		}
 
 		available = {
 			custom_trigger_tooltip = {
@@ -352,13 +376,11 @@ Syria_hafez_succession = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 		}
 	}
 
 	SYR_maher_present_to_inner_circle = {
-		visible = {
-		}
 
 		available = {
 			custom_trigger_tooltip = {
@@ -381,7 +403,7 @@ Syria_hafez_succession = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
 				factor = 0
 				is_historical_focus_on = yes
@@ -390,8 +412,6 @@ Syria_hafez_succession = {
 	}
 
 	SYR_bushra_gather_public_support = {
-		visible = {
-		}
 
 		available = {
 			custom_trigger_tooltip = {
@@ -415,7 +435,7 @@ Syria_hafez_succession = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
 				factor = 0
 				is_historical_focus_on = yes
@@ -424,8 +444,6 @@ Syria_hafez_succession = {
 	}
 
 	SYR_bashar_gather_public_support = {
-		visible = {
-		}
 
 		available = {
 			custom_trigger_tooltip = {
@@ -449,13 +467,11 @@ Syria_hafez_succession = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 		}
 	}
 
 	SYR_maher_gather_public_support = {
-		visible = {
-		}
 
 		available = {
 			custom_trigger_tooltip = {
@@ -479,7 +495,7 @@ Syria_hafez_succession = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
 				factor = 0
 				is_historical_focus_on = yes
@@ -488,8 +504,6 @@ Syria_hafez_succession = {
 	}
 
 	SYR_bushra_familiarise_in_government = {
-		visible = {
-		}
 
 		available = {
 			custom_trigger_tooltip = {
@@ -513,7 +527,7 @@ Syria_hafez_succession = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
 				factor = 0
 				is_historical_focus_on = yes
@@ -522,8 +536,6 @@ Syria_hafez_succession = {
 	}
 
 	SYR_bashar_familiarise_in_government = {
-		visible = {
-		}
 
 		available = {
 			custom_trigger_tooltip = {
@@ -547,13 +559,11 @@ Syria_hafez_succession = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 		}
 	}
 
 	SYR_maher_familiarise_in_government = {
-		visible = {
-		}
 
 		available = {
 			custom_trigger_tooltip = {
@@ -577,7 +587,7 @@ Syria_hafez_succession = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
 				factor = 0
 				is_historical_focus_on = yes
@@ -634,7 +644,7 @@ Syria_greater_syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 
 	}
@@ -746,7 +756,7 @@ Syria_greater_syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 
 	}
@@ -782,19 +792,15 @@ Syria_greater_syria_decisions = {
 			}
 			if = {
 				limit = { has_idea = syria_jewish_rights_guaranteed }
-				205 = { add_manpower = -320000 }
-				205 = { add_core_of = ROOT }
-				204 = { add_manpower = -462500 }
-				204 = { add_core_of = ROOT }
-				207 = { add_manpower = -155687 }
-				207 = { add_core_of = ROOT }
-				206 = { add_manpower = -178677 }
-				206 = { add_core_of = ROOT }
+				205 = { add_manpower = -320000 add_core_of = ROOT }
+				204 = { add_manpower = -462500 add_core_of = ROOT }
+				207 = { add_manpower = -155687 add_core_of = ROOT }
+				206 = { add_manpower = -178677 add_core_of = ROOT }
 			}
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 
 	}
@@ -820,7 +826,7 @@ Syria_greater_syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 
 	}
@@ -834,10 +840,12 @@ Syria_greater_syria_decisions = {
 		}
 
 		available = {
-			HOU = { is_subject = no }
-			HOU = { is_in_faction = no }
 			has_idea = shia
-			HOU = { has_idea = shia }
+			HOU = {
+				is_subject = no
+				is_in_faction = no
+				has_idea = shia
+			}
 		}
 
 		cost = 150
@@ -850,7 +858,7 @@ Syria_greater_syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 
@@ -870,6 +878,7 @@ Syria_greater_syria_decisions = {
 		cost = 150
 
 		fire_only_once = yes
+		war_with_on_complete = SAU
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision syria_shia_uprising_in_qatif"
@@ -892,7 +901,7 @@ Syria_greater_syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 
@@ -1002,7 +1011,7 @@ Syria_greater_syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 
 	}
@@ -1015,8 +1024,7 @@ Syria_greater_syria_decisions = {
 			NOT = { has_country_flag = SYR_attacked_iran }
 		}
 
-		available = {
-		}
+
 
 		cost = 20
 
@@ -1031,7 +1039,7 @@ Syria_greater_syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 
@@ -1043,8 +1051,7 @@ Syria_greater_syria_decisions = {
 			NOT = { has_country_flag = SYR_attacked_iran }
 		}
 
-		available = {
-		}
+
 
 		cost = 100
 
@@ -1059,7 +1066,7 @@ Syria_greater_syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 
@@ -1088,7 +1095,7 @@ Syria_greater_syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 
@@ -1100,8 +1107,7 @@ Syria_greater_syria_decisions = {
 			NOT = { has_country_flag = SYR_attacked_iran }
 		}
 
-		available = {
-		}
+
 
 		cost = 80
 
@@ -1116,7 +1122,7 @@ Syria_greater_syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 
@@ -1128,8 +1134,7 @@ Syria_greater_syria_decisions = {
 			NOT = { has_country_flag = SYR_attacked_iran }
 		}
 
-		available = {
-		}
+
 
 		cost = 50
 
@@ -1144,7 +1149,7 @@ Syria_greater_syria_decisions = {
 		}
 
 		ai_will_do = {
-			factor = 10
+			base = 10
 		}
 	}
 
@@ -1181,7 +1186,7 @@ Syria_foreign_policy = {
 		}
 
 		ai_will_do = {
-			factor = 100
+			base = 100
 		}
 
 	}
@@ -1214,7 +1219,7 @@ Syria_foreign_policy = {
 		}
 
 		ai_will_do = {
-			factor = 100
+			base = 100
 		}
 
 	}
@@ -1225,9 +1230,9 @@ Syria_external_countries = {
 
 	#Hezbollah gains ground
 	intervene_against_hezbollah = {
+		war_with_on_complete = HEZ
 
 		visible = {
-			tag = ISR
 			HEZ = { owns_state = 184 }
 			NOT = { is_in_faction_with = HEZ }
 			NOT = { has_country_flag = ISR_Destroy_HEZ }
@@ -1242,6 +1247,10 @@ Syria_external_countries = {
 			hidden_effect = {
 				add_state_claim = 201
 			}
+
+			set_temp_variable = { wargoal_on = HEZ }
+			set_temp_variable = { wargoal_type = 2 }
+			add_threat_from_wargoal_effect = yes
 			create_wargoal = {
 				type = annex_everything
 				target = HEZ
@@ -1250,7 +1259,7 @@ Syria_external_countries = {
 		}
 
 		ai_will_do = {
-			factor = 1
+			base = 1
 			modifier = {
 				factor = 0
 				has_war = yes
@@ -1263,36 +1272,6 @@ Syria_external_countries = {
 			}
 		}
 
-	}
-
-}
-
-Syria_united_arab_republic_decisions = {
-
-	join_the_united_arab_republic = {
-
-		visible = {
-		}
-
-		available = {
-		}
-
-		complete_effect = {
-			random_country = {
-				limit = { has_country_flag = leader_of_arab_union }
-				country_event = { id = SyriaDecisions.15 hours = 6 }
-			}
-			custom_effect_tooltip = GAME_OVER_TT
-			hidden_effect = { news_event = { id = SyriaDecisionsNews.4 days = 2 } }
-		}
-
-		ai_will_do = {
-			factor = 1
-			modifier = {
-				factor = 0
-				has_war = yes
-			}
-		}
 	}
 
 }
@@ -1314,7 +1293,7 @@ Syria_damascus_spring_organization = {
 			log = "[GetDateText]: [Root.GetName]: Mission timeout sectarian_groups_start_to_seek_independence"
 			country_event = SyriaFocus.97
 			if = {
-				limit = { has_idea = citizenship_denied_kurds }
+				limit = { has_idea = idea_syrian_kurds_without_citizenships }
 				country_event = SyriaFocus.111
 			}
 		}
@@ -1373,14 +1352,13 @@ Syria_economic_investments = {
 				change_small_medium_business_owners_opinion = yes
 			}
 		}
+		ai_will_do = { base = 0 }
 	}
 	hisiyah_industrial_expansion = {
 		icon = GFX_decision_economy
 		visible = {
-			AND = {
-				has_completed_focus = SYR_legalise_private_banking
-				has_country_flag = hisiyah_invigorated
-			}
+			has_completed_focus = SYR_legalise_private_banking
+			has_country_flag = hisiyah_invigorated
 		}
 		available = {
 			controls_state = 188
@@ -1417,6 +1395,7 @@ Syria_economic_investments = {
 				}
 			}
 		}
+		ai_will_do = { base = 0 }
 	}
 	clear_aleppan_slums = {
 		icon = GFX_decision_economy
@@ -1481,14 +1460,13 @@ Syria_economic_investments = {
 				change_small_medium_business_owners_opinion = yes
 			}
 		}
+		ai_will_do = { base = 0 }
 	}
 	aleppan_economy_booming = {
 		icon = GFX_decision_economy
 		visible = {
-			AND = {
-				has_completed_focus = SYR_legalise_private_banking
-				has_country_flag = aleppan_slums_cleared
-			}
+			has_completed_focus = SYR_legalise_private_banking
+			has_country_flag = aleppan_slums_cleared
 		}
 		available = {
 			controls_state = 566
@@ -1525,6 +1503,7 @@ Syria_economic_investments = {
 				}
 			}
 		}
+		ai_will_do = { base = 0 }
 	}
 	damascus_private_sector_encouragement = {
 		icon = GFX_decision_economy
@@ -1589,14 +1568,13 @@ Syria_economic_investments = {
 				change_small_medium_business_owners_opinion = yes
 			}
 		}
+		ai_will_do = { base = 0 }
 	}
 	damascus_private_sector_booming = {
 		icon = GFX_decision_economy
 		visible = {
-			AND = {
-				has_completed_focus = SYR_economic_revitalization
-				has_country_flag = damascus_private_sector_encouraged
-			}
+			has_completed_focus = SYR_economic_revitalization
+			has_country_flag = damascus_private_sector_encouraged
 		}
 		available = {
 			controls_state = 186
@@ -1633,6 +1611,7 @@ Syria_economic_investments = {
 				}
 			}
 		}
+		ai_will_do = { base = 0 }
 	}
 	eastern_oil_excavation_phase1 = {
 		icon = GFX_decision_oil
@@ -1713,6 +1692,7 @@ Syria_economic_investments = {
 			}
 			add_stability = -0.02
 		}
+		ai_will_do = { base = 0 }
 	}
 	eastern_oil_excavation_phase2 = {
 		icon = GFX_decision_oil
@@ -1794,6 +1774,7 @@ Syria_economic_investments = {
 			}
 			add_stability = -0.02
 		}
+		ai_will_do = { base = 0 }
 	}
 	eastern_oil_excavation_phase3 = {
 		icon = GFX_decision_oil
@@ -1874,6 +1855,7 @@ Syria_economic_investments = {
 			}
 			add_stability = -0.02
 		}
+		ai_will_do = { base = 0 }
 	}
 	invest_in_eastern_cotton = {
 		icon = GFX_decision_economy
@@ -1899,20 +1881,18 @@ Syria_economic_investments = {
 				limit = { controls_state = 193 }
 				if = {
 					limit = {
-						AND = {
-							OR = {
-								check_variable = {
-									kurdish_status  > 49
-								}
-								NOT = {
-									has_dynamic_modifier = {
-										modifier = kurdish_political_inclusiveness_dynamic_modifier
-										scope = SYR
-									}
+						OR = {
+							check_variable = {
+								kurdish_status  > 49
+							}
+							NOT = {
+								has_dynamic_modifier = {
+									modifier = kurdish_political_inclusiveness_dynamic_modifier
+									scope = SYR
 								}
 							}
-							has_completed_focus = SYR_legalise_private_banking
 						}
+						has_completed_focus = SYR_legalise_private_banking
 					}
 					193 = {
 						add_extra_state_shared_building_slots = 1
@@ -1947,6 +1927,7 @@ Syria_economic_investments = {
 			}
 			custom_effect_tooltip = TT_SYR_COTTON_INVESTMENTS
 		}
+		ai_will_do = { base = 0 }
 	}
 }
 Syria_agricultural_subsidies_decisions = {
@@ -1960,10 +1941,7 @@ Syria_agricultural_subsidies_decisions = {
 		days_re_enable = 180
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision syria_decision_increase_subsidies"
-			set_temp_variable = { rad_change = -5 }
-			modify_radicalization_effect = yes
 			custom_effect_tooltip = TT_SYR_AGRICULTURAL_SUBSIDIES_INCREASED_FOCUS
-			clamp_radicalization = yes
 			set_temp_variable = { temp_opinion = 5 }
 			change_farmers_opinion = yes
 			set_temp_variable = { temp_opinion = -5 }
@@ -1994,6 +1972,7 @@ Syria_agricultural_subsidies_decisions = {
 				}
 			}
 		}
+		ai_will_do = { base = 0 }
 	}
 	syria_decision_decrease_subsidies = {
 		icon = GFX_decision_economy
@@ -2007,8 +1986,6 @@ Syria_agricultural_subsidies_decisions = {
 		days_re_enable = 180
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision syria_decision_decrease_subsidies"
-			set_temp_variable = { rad_change = 5 }
-			modify_radicalization_effect = yes
 			custom_effect_tooltip = TT_SYR_AGRICULTURAL_SUBSIDIES_DECREASED_FOCUS
 			set_temp_variable = { temp_opinion = -5 }
 			change_farmers_opinion = yes
@@ -2033,6 +2010,7 @@ Syria_agricultural_subsidies_decisions = {
 				}
 			}
 		}
+		ai_will_do = { base = 0 }
 	}
 }
 
@@ -2092,6 +2070,7 @@ Syria_digital_investments_decisions = {
 				}
 			}
 		}
+		ai_will_do = { base = 0 }
 	}
 	syria_decision_decrease_investments = {
 		icon = GFX_decision_economy
@@ -2145,6 +2124,7 @@ Syria_digital_investments_decisions = {
 				}
 			}
 		}
+		ai_will_do = { base = 0 }
 	}
 }
 
@@ -2168,43 +2148,43 @@ Syria_centralization_balance_of_power_category = {
 		remove_effect = {
 			set_temp_variable = { local_accountability_chance = 0 }
 			if = {
-				limit = { has_idea = paralyzing_corruption }
+				limit = { has_idea = corruption_level_10 }
 				add_to_temp_variable = { local_accountability_chance = 2.5 }
 			}
 			else_if = {
-				limit = { has_idea = crippling_corruption }
+				limit = { has_idea = corruption_level_09 }
 				add_to_temp_variable = { local_accountability_chance = 5 }
 			}
 			else_if = {
-				limit = { has_idea = rampant_corruption }
+				limit = { has_idea = corruption_level_08 }
 				add_to_temp_variable = { local_accountability_chance = 7.5 }
 			}
 			else_if = {
-				limit = { has_idea = unrestrained_corruption }
+				limit = { has_idea = corruption_level_07 }
 				add_to_temp_variable = { local_accountability_chance = 10 }
 			}
 			else_if = {
-				limit = { has_idea = systematic_corruption }
+				limit = { has_idea = corruption_level_06 }
 				add_to_temp_variable = { local_accountability_chance = 12.5 }
 			}
 			else_if = {
-				limit = { has_idea = widespread_corruption }
+				limit = { has_idea = corruption_level_05 }
 				add_to_temp_variable = { local_accountability_chance = 15 }
 			}
 			else_if = {
-				limit = { has_idea = medium_corruption }
+				limit = { has_idea = corruption_level_04 }
 				add_to_temp_variable = { local_accountability_chance = 17.5 }
 			}
 			else_if = {
-				limit = { has_idea = modest_corruption }
+				limit = { has_idea = corruption_level_03 }
 				add_to_temp_variable = { local_accountability_chance = 20 }
 			}
 			else_if = {
-				limit = { has_idea = slight_corruption }
+				limit = { has_idea = corruption_level_02 }
 				add_to_temp_variable = { local_accountability_chance = 22.5 }
 			}
 			else_if = {
-				limit = { has_idea = negligible_corruption }
+				limit = { has_idea = corruption_level_01 }
 				add_to_temp_variable = { local_accountability_chance = 25 }
 			}
 
@@ -2252,7 +2232,7 @@ Syria_centralization_balance_of_power_category = {
 			}
 			else = {
 				divide_temp_variable = { syrian_centralization_minority_average = syrian_number_of_minorities }
-				divide_temp_variable = { syrian_centralization_minority_average = 4 }
+				multiply_temp_variable = { syrian_centralization_minority_average = 0.25 }
 			}
 			add_to_temp_variable = { local_accountability_chance = syrian_centralization_minority_average }
 
@@ -2285,6 +2265,7 @@ Syria_centralization_balance_of_power_category = {
 			custom_effect_tooltip = SYR_LOCAL_ACCOUNTABILITY_SUCCESS_EFFECTS
 			custom_effect_tooltip = TT_SYR_BOP_SUCCESSFUL_REPUBLICAN_EFFECT
 		}
+		ai_will_do = { base = 0 }
 	}
 	syria_decision_find_promising_bureaucracy = {
 		icon = GFX_decision_syr_burecrats_button
@@ -2305,43 +2286,43 @@ Syria_centralization_balance_of_power_category = {
 		remove_effect = {
 			set_temp_variable = { promising_pol_rep_chance = 0 }
 			if = {
-				limit = { has_idea = paralyzing_corruption }
+				limit = { has_idea = corruption_level_10 }
 				add_to_temp_variable = { promising_pol_rep_chance = 4 }
 			}
 			else_if = {
-				limit = { has_idea = crippling_corruption }
+				limit = { has_idea = corruption_level_09 }
 				add_to_temp_variable = { promising_pol_rep_chance = 8 }
 			}
 			else_if = {
-				limit = { has_idea = rampant_corruption }
+				limit = { has_idea = corruption_level_08 }
 				add_to_temp_variable = { promising_pol_rep_chance = 12 }
 			}
 			else_if = {
-				limit = { has_idea = unrestrained_corruption }
+				limit = { has_idea = corruption_level_07 }
 				add_to_temp_variable = { promising_pol_rep_chance = 16 }
 			}
 			else_if = {
-				limit = { has_idea = systematic_corruption }
+				limit = { has_idea = corruption_level_06 }
 				add_to_temp_variable = { promising_pol_rep_chance = 20 }
 			}
 			else_if = {
-				limit = { has_idea = widespread_corruption }
+				limit = { has_idea = corruption_level_05 }
 				add_to_temp_variable = { promising_pol_rep_chance = 24 }
 			}
 			else_if = {
-				limit = { has_idea = medium_corruption }
+				limit = { has_idea = corruption_level_04 }
 				add_to_temp_variable = { promising_pol_rep_chance = 28 }
 			}
 			else_if = {
-				limit = { has_idea = modest_corruption }
+				limit = { has_idea = corruption_level_03 }
 				add_to_temp_variable = { promising_pol_rep_chance = 32 }
 			}
 			else_if = {
-				limit = { has_idea = slight_corruption }
+				limit = { has_idea = corruption_level_02 }
 				add_to_temp_variable = { promising_pol_rep_chance = 36 }
 			}
 			else_if = {
-				limit = { has_idea = negligible_corruption }
+				limit = { has_idea = corruption_level_01 }
 				add_to_temp_variable = { promising_pol_rep_chance = 40 }
 			}
 
@@ -2395,6 +2376,7 @@ Syria_centralization_balance_of_power_category = {
 			custom_effect_tooltip = SYR_FINDING_PROMISING_BUREAUCRACY_EFFECTS
 			custom_effect_tooltip = TT_SYR_BOP_SUCCESSFUL_REPUBLICAN_EFFECT
 		}
+		ai_will_do = { base = 0 }
 	}
 	syria_decision_build_bureaucratic_infrastructure1 = {
 		icon = GFX_decision_syr_infra_button
@@ -2418,6 +2400,7 @@ Syria_centralization_balance_of_power_category = {
 			}
 			set_country_flag = built_bureaucratic_infrastructure1
 		}
+		ai_will_do = { base = 0 }
 	}
 	syria_decision_build_bureaucratic_infrastructure2 = {
 		icon = GFX_decision_syr_infra_button
@@ -2442,6 +2425,7 @@ Syria_centralization_balance_of_power_category = {
 			}
 			set_country_flag = built_bureaucratic_infrastructure2
 		}
+		ai_will_do = { base = 0 }
 	}
 	syria_decision_build_bureaucratic_infrastructure3 = {
 		icon = GFX_decision_syr_infra_button
@@ -2466,6 +2450,7 @@ Syria_centralization_balance_of_power_category = {
 			}
 			set_country_flag = built_bureaucratic_infrastructure3
 		}
+		ai_will_do = { base = 0 }
 	}
 	syria_decision_build_bureaucratic_infrastructure4 = {
 		icon = GFX_decision_syr_infra_button
@@ -2489,6 +2474,7 @@ Syria_centralization_balance_of_power_category = {
 				tooltip_side = SYR_republican_bop_right_side
 			}
 		}
+		ai_will_do = { base = 0 }
 	}
 	syria_decision_fund_voluntary_organizations = {
 		icon = GFX_decision_syr_money_button
@@ -2563,6 +2549,7 @@ Syria_centralization_balance_of_power_category = {
 			custom_effect_tooltip = SYR_FUND_VOLUNTARY_ORGANIZATIONS_SUCCESS_EFFECTS
 			custom_effect_tooltip = TT_SYR_BOP_SUCCESSFUL_FEDERALISM_EFFECT
 		}
+		ai_will_do = { base = 0 }
 	}
 	syria_decision_encourage_economic_self_reliance = {
 		icon = GFX_decision_syr_self_button
@@ -2583,43 +2570,43 @@ Syria_centralization_balance_of_power_category = {
 		remove_effect = {
 			set_temp_variable = { economic_self_reliance_chance = 0 }
 			if = {
-				limit = { has_idea = paralyzing_corruption }
+				limit = { has_idea = corruption_level_10 }
 				add_to_temp_variable = { economic_self_reliance_chance = 2.5 }
 			}
 			else_if = {
-				limit = { has_idea = crippling_corruption }
+				limit = { has_idea = corruption_level_09 }
 				add_to_temp_variable = { economic_self_reliance_chance = 5 }
 			}
 			else_if = {
-				limit = { has_idea = rampant_corruption }
+				limit = { has_idea = corruption_level_08 }
 				add_to_temp_variable = { economic_self_reliance_chance = 7.5 }
 			}
 			else_if = {
-				limit = { has_idea = unrestrained_corruption }
+				limit = { has_idea = corruption_level_07 }
 				add_to_temp_variable = { economic_self_reliance_chance = 10 }
 			}
 			else_if = {
-				limit = { has_idea = systematic_corruption }
+				limit = { has_idea = corruption_level_06 }
 				add_to_temp_variable = { economic_self_reliance_chance = 12.5 }
 			}
 			else_if = {
-				limit = { has_idea = widespread_corruption }
+				limit = { has_idea = corruption_level_05 }
 				add_to_temp_variable = { economic_self_reliance_chance = 15 }
 			}
 			else_if = {
-				limit = { has_idea = medium_corruption }
+				limit = { has_idea = corruption_level_04 }
 				add_to_temp_variable = { economic_self_reliance_chance = 17.5 }
 			}
 			else_if = {
-				limit = { has_idea = modest_corruption }
+				limit = { has_idea = corruption_level_03 }
 				add_to_temp_variable = { economic_self_reliance_chance = 20 }
 			}
 			else_if = {
-				limit = { has_idea = slight_corruption }
+				limit = { has_idea = corruption_level_02 }
 				add_to_temp_variable = { economic_self_reliance_chance = 22.5 }
 			}
 			else_if = {
-				limit = { has_idea = negligible_corruption }
+				limit = { has_idea = corruption_level_01 }
 				add_to_temp_variable = { economic_self_reliance_chance = 25 }
 			}
 
@@ -2667,7 +2654,7 @@ Syria_centralization_balance_of_power_category = {
 			}
 			else = {
 				divide_temp_variable = { syrian_centralization_minority_average = syrian_number_of_minorities }
-				divide_temp_variable = { syrian_centralization_minority_average = 4 }
+				multiply_temp_variable = { syrian_centralization_minority_average = 0.25 }
 			}
 			add_to_temp_variable = { economic_self_reliance_chance = syrian_centralization_minority_average }
 
@@ -2699,6 +2686,7 @@ Syria_centralization_balance_of_power_category = {
 			custom_effect_tooltip = SYR_ENCOURAGE_ECONOMIC_SELF_RELIANCE
 			custom_effect_tooltip = TT_SYR_BOP_SUCCESSFUL_FEDERALISM_EFFECT
 		}
+		ai_will_do = { base = 0 }
 	}
 	syria_decision_encourage_state_decision_making = {
 		icon = GFX_decision_syr_govern_button
@@ -2719,43 +2707,43 @@ Syria_centralization_balance_of_power_category = {
 		remove_effect = {
 			set_temp_variable = { state_level_decision_chance = 0 }
 			if = {
-				limit = { has_idea = paralyzing_corruption }
+				limit = { has_idea = corruption_level_10 }
 				add_to_temp_variable = { state_level_decision_chance = 4 }
 			}
 			else_if = {
-				limit = { has_idea = crippling_corruption }
+				limit = { has_idea = corruption_level_09 }
 				add_to_temp_variable = { state_level_decision_chance = 8 }
 			}
 			else_if = {
-				limit = { has_idea = rampant_corruption }
+				limit = { has_idea = corruption_level_08 }
 				add_to_temp_variable = { state_level_decision_chance = 12 }
 			}
 			else_if = {
-				limit = { has_idea = unrestrained_corruption }
+				limit = { has_idea = corruption_level_07 }
 				add_to_temp_variable = { state_level_decision_chance = 16 }
 			}
 			else_if = {
-				limit = { has_idea = systematic_corruption }
+				limit = { has_idea = corruption_level_06 }
 				add_to_temp_variable = { state_level_decision_chance = 20 }
 			}
 			else_if = {
-				limit = { has_idea = widespread_corruption }
+				limit = { has_idea = corruption_level_05 }
 				add_to_temp_variable = { state_level_decision_chance = 24 }
 			}
 			else_if = {
-				limit = { has_idea = medium_corruption }
+				limit = { has_idea = corruption_level_04 }
 				add_to_temp_variable = { state_level_decision_chance = 28 }
 			}
 			else_if = {
-				limit = { has_idea = modest_corruption }
+				limit = { has_idea = corruption_level_03 }
 				add_to_temp_variable = { state_level_decision_chance = 32 }
 			}
 			else_if = {
-				limit = { has_idea = slight_corruption }
+				limit = { has_idea = corruption_level_02 }
 				add_to_temp_variable = { state_level_decision_chance = 36 }
 			}
 			else_if = {
-				limit = { has_idea = negligible_corruption }
+				limit = { has_idea = corruption_level_01 }
 				add_to_temp_variable = { state_level_decision_chance = 40 }
 			}
 
@@ -2816,5 +2804,6 @@ Syria_centralization_balance_of_power_category = {
 			custom_effect_tooltip = SYR_STATE_DECISION_MAKING_SUCCESS_EFFECTS
 			custom_effect_tooltip = TT_SYR_BOP_SUCCESSFUL_FEDERALISM_EFFECT
 		}
+		ai_will_do = { base = 0 }
 	}
 }
