@@ -43,14 +43,6 @@ country_event = {
 			factor = 1.5
 			has_idea = GRE_austerity_3
 		}
-		modifier = {
-			factor = 1.80
-			has_idea = GRE_austerity_4
-		}
-		modifier = {
-			factor = 2.5
-			has_idea = GRE_austerity_5
-		}
 	}
 
 	#we must manage this with with a delicate hand
@@ -71,7 +63,7 @@ country_event = {
 	trigger = {
 		original_tag = GRE
 		has_country_flag = GRE_austerity
-		NOT = { has_idea = GRE_austerity_5 }
+		NOT = { has_idea = GRE_austerity_3 }
 	}
 
 	mean_time_to_happen = {
@@ -103,18 +95,6 @@ country_event = {
 			swap_ideas = {
 				remove_idea = GRE_austerity_2
 				add_idea = GRE_austerity_3
-			}
-		}
-		else_if = { limit = { has_idea = GRE_austerity_3 }
-			swap_ideas = {
-				remove_idea = GRE_austerity_3
-				add_idea = GRE_austerity_4
-			}
-		}
-		else_if = { limit = { has_idea = GRE_austerity_4 }
-			swap_ideas = {
-				remove_idea = GRE_austerity_4
-				add_idea = GRE_austerity_5
 			}
 		}
 	}
@@ -225,7 +205,17 @@ country_event = {
 			SOV = { give_guarantee = GRE }
 		}
 		GRE = { country_event = diplomatic_response.1 }
-		ai_chance = { base = 3 }
+		ai_chance = {
+			base = 3
+			modifier = {
+				factor = 2
+				has_opinion = { target = SOV value > 30 }
+			}
+			modifier = {
+				factor = 0.25
+				has_opinion = { target = SOV value < 0 }
+			}
+		}
 	}
 
 	# Decline
@@ -233,7 +223,13 @@ country_event = {
 		name = greece.10.b
 		log = "[GetDateText]: [This.GetName]: greece.10.b executed"
 		GRE = { country_event = diplomatic_response.2 }
-		ai_chance = { base = 1 }
+		ai_chance = {
+			base = 1
+			modifier = {
+				factor = 3
+				has_opinion = { target = SOV value < 0 }
+			}
+		}
 	}
 }
 
@@ -243,6 +239,7 @@ news_event = {
 	title = greece.11.t
 	desc = greece.11.d
 	picture = GFX_political_deal
+	major = yes
 	fire_only_once = yes
 	is_triggered_only = yes
 
@@ -538,14 +535,6 @@ country_event = {
 		modifier = {
 			factor = 1.25
 			has_idea = GRE_austerity_3
-		}
-		modifier = {
-			factor = 1.5
-			has_idea = GRE_austerity_4
-		}
-		modifier = {
-			factor = 1.75
-			has_idea = GRE_austerity_5
 		}
 		modifier = {
 			factor = 1.2
@@ -1500,31 +1489,6 @@ country_event = {
 	}
 }
 
-# The shipowners return
-country_event = {
-	id = greece.640
-	title = greece.640.t
-	desc = greece.640.d
-	picture = GFX_GRE_generic
-	is_triggered_only = yes
-
-	# Tax incentives to re-flag under the Greek registry
-	option = {
-		name = greece.640.a
-		log = "[GetDateText]: [This.GetName]: greece.640.a executed"
-		add_ideas = GRE_ship_finance_hub
-	}
-
-	# Levy a one-time windfall tax on repatriated fortunes
-	option = {
-		name = greece.640.b
-		log = "[GetDateText]: [This.GetName]: greece.640.b executed"
-		set_temp_variable = { treasury_change = 12 }
-		modify_treasury_effect = yes
-		add_stability = -0.02
-	}
-}
-
 # A record tourist season
 country_event = {
 	id = greece.641
@@ -1625,7 +1589,7 @@ country_event = {
 	id = greece_military.01
 	title = greece_military.01.t
 	desc = greece_military.01.d
-	#picture = #TODO
+	picture = GFX_weapons_arms1
 
 	is_triggered_only = yes
 
@@ -1649,7 +1613,7 @@ country_event = {
 	id = greece_military.02
 	title = greece_military.02.t
 	desc = greece_military.02.d
-	#picture = #TODO
+	picture = GFX_weapons_arms1
 
 	is_triggered_only = yes
 
@@ -1685,7 +1649,7 @@ country_event = {
 	id = greece_debt.1
 	title = greece_debt.1.t
 	desc = greece_debt.1.desc
-	#picture = #TODO
+	picture = GFX_political_deal
 
 	is_triggered_only = yes
 
@@ -1697,6 +1661,8 @@ country_event = {
 		}
 		log = "[GetDateText]: [This.GetName]: greece_debt.1.a executed"
 		RAJ = { country_event = { id = greece_debt.2 days = 2 random_hours = 12 } }
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
+		custom_effect_tooltip = GRE_debt_swap_accept_tt
 
 		ai_chance = {
 			base = 10
@@ -1711,6 +1677,8 @@ country_event = {
 		}
 		log = "[GetDateText]: [This.GetName]: greece_debt.1.b executed"
 		SOV = { country_event = { id = greece_debt.2 days = 2 random_hours = 12 } }
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
+		custom_effect_tooltip = GRE_debt_swap_accept_tt
 
 		ai_chance = {
 			base = 10
@@ -1725,6 +1693,8 @@ country_event = {
 		}
 		log = "[GetDateText]: [This.GetName]: greece_debt.1.c executed"
 		CHI = { country_event = { id = greece_debt.2 days = 2 random_hours = 12 } }
+		custom_effect_tooltip = TT_IF_THEY_ACCEPT
+		custom_effect_tooltip = GRE_debt_swap_accept_tt
 
 		ai_chance = {
 			base = 10
@@ -1754,7 +1724,7 @@ country_event = {
 	id = greece_debt.2
 	title = greece_debt.2.t
 	desc = greece_debt.2.d
-	#picture = #TODO
+	picture = GFX_political_deal
 	is_triggered_only = yes
 
 	# Reject the Deal
@@ -1779,7 +1749,7 @@ country_event = {
 		FROM = {
 			set_variable = { debt_swap_holder_nation = PREV.id }
 			set_variable = { GRE_creditor_target = PREV.id }
-			set_temp_variable = { GRE_creditor_debt_change = 50 }
+			set_temp_variable = { GRE_creditor_debt_change = 150 }
 			GRE_add_creditor = yes
 		}
 		add_opinion_modifier = { target = FROM modifier = GRE_debt_swap_accepted_opinion }
@@ -1814,7 +1784,9 @@ country_event = {
 		# Pay cost from our treasury (we're buying their debt)
 		set_temp_variable = { our_cost = FROM.GRE_proposed_debt_amount }
 		multiply_temp_variable = { our_cost = 0.75 }
-		subtract_from_variable = { treasury = our_cost }
+		set_temp_variable = { treasury_change = our_cost }
+		multiply_temp_variable = { treasury_change = -1 }
+		modify_treasury_effect = yes
 
 		FROM = { country_event = { id = greece_debt.12 days = 1 } }
 
@@ -1857,7 +1829,9 @@ country_event = {
 
 		set_temp_variable = { our_cost = FROM.GRE_proposed_debt_amount }
 		multiply_temp_variable = { our_cost = 0.75 }
-		subtract_from_variable = { treasury = our_cost }
+		set_temp_variable = { treasury_change = our_cost }
+		multiply_temp_variable = { treasury_change = -1 }
+		modify_treasury_effect = yes
 
 		# Set a higher rate for counter-offer
 		set_variable = { GRE_counter_offer_rate = 5 }
@@ -1868,79 +1842,6 @@ country_event = {
 			modifier = {
 				factor = 2
 				check_variable = { treasury > 200 }
-			}
-		}
-	}
-}
-
-# Large Debt Proposal - Sent to potential creditor
-country_event = {
-	id = greece_debt.11
-	title = greece_debt.11.t
-	desc = greece_debt.11.d
-	picture = GFX_political_deal
-	is_triggered_only = yes
-
-	# Accept the Deal
-	option = {
-		name = greece_debt.11.a
-		log = "[GetDateText]: [This.GetName]: greece_debt.11.a executed"
-
-		set_temp_variable = { our_cost = FROM.GRE_proposed_debt_amount }
-		multiply_temp_variable = { our_cost = 0.75 }
-		subtract_from_variable = { treasury = our_cost }
-
-		FROM = { country_event = { id = greece_debt.12 days = 1 } }
-
-		ai_chance = {
-			base = 25
-			modifier = {
-				factor = 2
-				has_opinion = { target = FROM value > 50 }
-			}
-			modifier = {
-				factor = 0.3
-				has_opinion = { target = FROM value < 0 }
-			}
-			modifier = {
-				factor = 2
-				check_variable = { treasury > 1000 }
-			}
-		}
-	}
-
-	# Reject the Deal
-	option = {
-		name = greece_debt.11.b
-		log = "[GetDateText]: [This.GetName]: greece_debt.11.b executed"
-		FROM = { country_event = { id = greece_debt.13 days = 1 } }
-
-		ai_chance = {
-			base = 40
-			modifier = {
-				factor = 3
-				has_opinion = { target = FROM value < -25 }
-			}
-		}
-	}
-
-	# Counter-Offer - Higher Interest Rate
-	option = {
-		name = greece_debt.11.c
-		log = "[GetDateText]: [This.GetName]: greece_debt.11.c executed"
-
-		set_temp_variable = { our_cost = FROM.GRE_proposed_debt_amount }
-		multiply_temp_variable = { our_cost = 0.75 }
-		subtract_from_variable = { treasury = our_cost }
-
-		set_variable = { GRE_counter_offer_rate = 6 }
-		FROM = { country_event = { id = greece_debt.14 days = 1 } }
-
-		ai_chance = {
-			base = 35
-			modifier = {
-				factor = 2
-				check_variable = { treasury > 500 }
 			}
 		}
 	}
@@ -2021,6 +1922,7 @@ country_event = {
 		name = greece_debt.14.b
 		log = "[GetDateText]: [This.GetName]: greece_debt.14.b executed"
 
+		custom_effect_tooltip = GRE_debt_counter_refund_tt
 		# Refund the creditor since the deal fell through
 		FROM = {
 			set_temp_variable = { refund = GRE.GRE_proposed_debt_amount }
@@ -2031,19 +1933,6 @@ country_event = {
 		ai_chance = {
 			base = 40
 		}
-	}
-}
-
-# Interest Rate Changed - Notification to Greece
-country_event = {
-	id = greece_debt.15
-	title = greece_debt.15.t
-	desc = greece_debt.15.d
-	picture = GFX_political_deal
-	is_triggered_only = yes
-
-	option = {
-		name = greece_debt.15.a
 	}
 }
 
@@ -2210,15 +2099,8 @@ country_event = {
 	option = {
 		name = greece.30.a
 		log = "[GetDateText]: [This.GetName]: greece.30.a executed"
-		if = { limit = { has_country_flag = GRE_defer_payments_flag }
-			set_temp_variable = { skip_payment = 1 }
-			set_temp_variable = { debt_change = 3 }
-			GRE_defer_payment = yes
-		}
-		else = {
-			set_temp_variable = { treasury_change = -3 }
-			modify_treasury_effect = yes
-		}
+		set_temp_variable = { debt_change = 3 }
+		GRE_pay_or_defer = yes
 		140 = {
 			add_extra_state_shared_building_slots = 1
 			add_building_construction = {
@@ -2308,15 +2190,8 @@ country_event = {
 	option = {
 		name = greece.33.a
 		log = "[GetDateText]: [This.GetName]: greece.33.a executed"
-		if = { limit = { has_country_flag = GRE_defer_payments_flag }
-			set_temp_variable = { skip_payment = 1 }
-			set_temp_variable = { debt_change = 5 }
-			GRE_defer_payment = yes
-		}
-		else = {
-			set_temp_variable = { treasury_change = -5 }
-			modify_treasury_effect = yes
-		}
+		set_temp_variable = { debt_change = 5 }
+		GRE_pay_or_defer = yes
 		141 = {
 			add_building_construction = {
 				type = infrastructure
@@ -2558,15 +2433,8 @@ country_event = {
 	option = {
 		name = greece.42.a
 		log = "[GetDateText]: [This.GetName]: greece.42.a executed"
-		if = { limit = { has_country_flag = GRE_defer_payments_flag }
-			set_temp_variable = { skip_payment = 1 }
-			set_temp_variable = { debt_change = 7 }
-			GRE_defer_payment = yes
-		}
-		else = {
-			set_temp_variable = { treasury_change = -7 }
-			modify_treasury_effect = yes
-		}
+		set_temp_variable = { debt_change = 7 }
+		GRE_pay_or_defer = yes
 		141 = {
 			add_building_construction = {
 				type = infrastructure
@@ -2932,7 +2800,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: greece.537.a executed"
 		add_opinion_modifier = { target = CHI modifier = declaration_of_friendship }
 		set_temp_variable = { percent_change = 5 }
-		set_temp_variable = { influence_target = CHI }
+		set_temp_variable = { influence_target = CHI.id }
 		change_influence_percentage = yes
 		add_to_variable = { GRE_eastern_alignment_score = 1 }
 		GRE_check_eastern_alignment_swap = yes
@@ -4526,8 +4394,8 @@ country_event = {
 	}
 }
 
-# greece.703 — Turkey responds at moderate tension (news event, no player choice)
-news_event = {
+# greece.703 — Turkey responds at moderate tension (GRE-only flavor, no player choice)
+country_event = {
 	id = greece.703
 	title = greece.703.t
 	desc = greece.703.d
@@ -4609,7 +4477,7 @@ country_event = {
 }
 
 # greece.706 — Minor airspace violation flavor event (low/moderate tension)
-news_event = {
+country_event = {
 	id = greece.706
 	title = greece.706.t
 	desc = greece.706.d

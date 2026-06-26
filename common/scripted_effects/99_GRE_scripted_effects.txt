@@ -166,6 +166,20 @@ GRE_defer_payment = {
 	}
 }
 
+# Pays a treasury cost, or defers it into the creditor debt pool when the defer flag is set.
+# Expects: debt_change (positive cost amount)
+GRE_pay_or_defer = {
+	if = {
+		limit = { has_country_flag = GRE_defer_payments_flag }
+		GRE_defer_payment = yes
+	}
+	else = {
+		set_temp_variable = { treasury_change = debt_change }
+		multiply_temp_variable = { treasury_change = -1 }
+		modify_treasury_effect = yes
+	}
+}
+
 # Calculates the unified Greek debt ratio
 # Generic debt (full weight) + creditor debt (half weight)
 # Result stored in GRE_unified_debt_ratio (decimal, e.g. 1.5 = 150%)
@@ -207,22 +221,13 @@ GRE_calculate_unified_debt = {
 			NOT = { has_country_flag = GRE_debt_crisis_active }
 		}
 		set_country_flag = GRE_debt_crisis_active
+		if = {
+			limit = { NOT = { has_country_flag = GRE_austerity } }
+			set_country_flag = GRE_austerity
+			add_ideas = GRE_austerity_1
+		}
 		activate_mission = GRE_austerity_tension_mission
 	}
-}
-
-# Legacy wrapper for focuses that manually set GRE_debt_change
-update_greek_debt = {
-	set_temp_variable = { debt_change = GRE_debt_change }
-	modify_debt_effect = yes
-
-	GRE_calculate_unified_debt = yes
-
-	if = {
-		limit = { check_variable = { GRE_debt_change > 0 } }
-		custom_effect_tooltip = GRE_worsen_debt_TT
-	}
-	else = { custom_effect_tooltip = GRE_lowers_debt_TT }
 }
 
 GRE_startup_creditor_system = {

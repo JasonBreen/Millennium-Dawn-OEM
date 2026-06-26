@@ -54,9 +54,7 @@ GRE_debt_crisis_category = {
 		}
 
 		available = {
-			NOT = {
-				has_country_flag = GRE_austerity
-			}
+			has_country_flag = GRE_austerity
 		}
 
 		days_mission_timeout = 120
@@ -80,22 +78,6 @@ GRE_debt_crisis_category = {
 				swap_ideas = {
 					remove_idea = GRE_austerity_2
 					add_idea = GRE_austerity_3
-				}
-				activate_mission = GRE_austerity_tension_mission
-			}
-			else_if = {
-				limit = { has_idea = GRE_austerity_3 }
-				swap_ideas = {
-					remove_idea = GRE_austerity_3
-					add_idea = GRE_austerity_4
-				}
-				activate_mission = GRE_austerity_tension_mission
-			}
-			else_if = {
-				limit = { has_idea = GRE_austerity_4 }
-				swap_ideas = {
-					remove_idea = GRE_austerity_4
-					add_idea = GRE_austerity_5
 				}
 			}
 		}
@@ -133,34 +115,16 @@ GRE_debt_crisis_category = {
 					add_idea = GRE_austerity_2
 				}
 			}
-			else_if = {
-				limit = { has_idea = GRE_austerity_4 }
-				swap_ideas = {
-					remove_idea = GRE_austerity_4
-					add_idea = GRE_austerity_3
-				}
-			}
-			else_if = {
-				limit = { has_idea = GRE_austerity_5 }
-				swap_ideas = {
-					remove_idea = GRE_austerity_5
-					add_idea = GRE_austerity_4
-				}
-			}
 		}
 		ai_will_do = {
 			base = 1
 
 			modifier = {
-				has_idea = GRE_austerity_3
+				has_idea = GRE_austerity_2
 				factor = 3
 			}
 			modifier = {
-				has_idea = GRE_austerity_4
-				factor = 5
-			}
-			modifier = {
-				has_idea = GRE_austerity_5
+				has_idea = GRE_austerity_3
 				factor = 10
 			}
 		}
@@ -235,9 +199,15 @@ GRE_debt_crisis_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision GRE_propose_debt_deal"
-			# Propose 10% of current debt
+			# Propose a larger share of debt the deeper the crisis runs (25% past 90%, else 10%)
 			set_temp_variable = { GRE_proposed_debt_amount = debt }
-			multiply_temp_variable = { GRE_proposed_debt_amount = 0.1 }
+			if = {
+				limit = { gdp_debt_ratio_higher_90 = yes }
+				multiply_temp_variable = { GRE_proposed_debt_amount = 0.25 }
+			}
+			else = {
+				multiply_temp_variable = { GRE_proposed_debt_amount = 0.1 }
+			}
 			round_temp_variable = GRE_proposed_debt_amount
 			set_variable = { GRE_proposed_debt_amount = GRE_proposed_debt_amount }
 			set_variable = { GRE_creditor_target = FROM.id }
@@ -249,53 +219,6 @@ GRE_debt_crisis_category = {
 			modifier = {
 				factor = 3
 				gdp_debt_ratio_higher_90 = yes
-			}
-		}
-	}
-
-	GRE_propose_large_debt_deal = {
-		icon = GFX_decision_bancru_ask_button
-
-		cost = 200
-
-		target_array = GRE.potential_creditors
-
-		target_trigger = {
-			FROM = {
-				GRE_is_eligible_creditor = yes
-			}
-		}
-
-		visible = {
-			gdp_debt_ratio_higher_90 = yes
-			NOT = { has_country_flag = GRE_debt_crisis_concluded }
-		}
-
-		available = {
-			custom_trigger_tooltip = {
-				tooltip = GRE_debt_ratio_above_90_tt
-				gdp_debt_ratio_higher_90 = yes
-			}
-		}
-
-		days_re_enable = 180
-
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision GRE_propose_large_debt_deal"
-			# Propose 25% of current debt
-			set_temp_variable = { GRE_proposed_debt_amount = debt }
-			multiply_temp_variable = { GRE_proposed_debt_amount = 0.25 }
-			round_temp_variable = GRE_proposed_debt_amount
-			set_variable = { GRE_proposed_debt_amount = GRE_proposed_debt_amount }
-			set_variable = { GRE_creditor_target = FROM.id }
-			FROM = { country_event = { id = greece_debt.11 days = 2 random_hours = 12 } }
-		}
-
-		ai_will_do = {
-			base = 10
-			modifier = {
-				factor = 0
-				NOT = { gdp_debt_ratio_higher_90 = yes }
 			}
 		}
 	}
@@ -398,10 +321,8 @@ GRE_CYP_category = {
 		available = {
 			custom_trigger_tooltip = {
 				tooltip = PER_presidential_decisions_only_one_is_available_TT
-				NOT = {
-					has_decision = TUR_CYP_propaganda_south
-					has_decision = TUR_CYP_propaganda_north
-				}
+				NOT = { has_decision = TUR_CYP_propaganda_south }
+				NOT = { has_decision = TUR_CYP_propaganda_north }
 			}
 			custom_trigger_tooltip = {
 				tooltip = GRE_enemy_blocked_us
@@ -482,10 +403,8 @@ GRE_CYP_category = {
 		available = {
 			custom_trigger_tooltip = {
 				tooltip = PER_presidential_decisions_only_one_is_available_TT
-				NOT = {
-					has_decision = TUR_CYP_propaganda_south
-					has_decision = TUR_CYP_incite_riot
-				}
+				NOT = { has_decision = TUR_CYP_propaganda_south }
+				NOT = { has_decision = TUR_CYP_incite_riot }
 			}
 			custom_trigger_tooltip = {
 				tooltip = GRE_enemy_blocked_us
@@ -541,10 +460,8 @@ GRE_CYP_category = {
 		available = {
 			custom_trigger_tooltip = {
 				tooltip = PER_presidential_decisions_only_one_is_available_TT
-				NOT = {
-					has_decision = TUR_CYP_propaganda_north
-					has_decision = TUR_CYP_incite_riot
-				}
+				NOT = { has_decision = TUR_CYP_propaganda_north }
+				NOT = { has_decision = TUR_CYP_incite_riot }
 			}
 			custom_trigger_tooltip = {
 				tooltip = GRE_enemy_blocked_us
@@ -821,7 +738,7 @@ GRE_homelessness_crisis_category = {
 		}
 
 		ai_will_do = {
-			base = 0
+			base = 5
 		}
 	}
 
@@ -852,7 +769,7 @@ GRE_homelessness_crisis_category = {
 		}
 
 		ai_will_do = {
-			base = 0
+			base = 3
 		}
 	}
 
@@ -882,7 +799,7 @@ GRE_homelessness_crisis_category = {
 		}
 
 		ai_will_do = {
-			base = 0
+			base = 2
 		}
 	}
 }
@@ -1449,15 +1366,8 @@ GRE_generic_decisions_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision GRE_aegean_survey"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 4.50 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -4.50 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 4.50 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -1505,15 +1415,8 @@ GRE_generic_decisions_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision GRE_aegean_extraction"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 3.75 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -3.75 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 3.75 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -1555,15 +1458,8 @@ GRE_generic_decisions_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision GRE_aegean_offshore_industry"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 13.50 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -13.50 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 13.50 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -1610,15 +1506,8 @@ GRE_generic_decisions_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision GRE_crete_survey"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 4.50 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -4.50 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 4.50 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -1666,15 +1555,8 @@ GRE_generic_decisions_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision GRE_crete_extraction complete"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 5.63 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -5.63 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 5.63 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -1716,15 +1598,8 @@ GRE_generic_decisions_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision GRE_crete_offshore_industry"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 19.75 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -19.75 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 19.75 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -1751,100 +1626,6 @@ GRE_generic_decisions_category = {
 }
 
 GRE_creditor_management_category = {
-
-	GRE_creditor_raise_interest = {
-		icon = GFX_decision_bancru_ask_button
-
-		cost = 25
-
-		visible = {
-			GRE_is_creditor_of_greece = yes
-		}
-
-		available = {
-			custom_trigger_tooltip = {
-				tooltip = GRE_interest_rate_below_cap_tt
-				check_variable = { GRE_our_interest_rate < 8 }
-			}
-		}
-
-		days_re_enable = 60
-
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision GRE_creditor_raise_interest"
-			add_to_variable = { GRE_our_interest_rate = 0.5 }
-			clamp_variable = { var = GRE_our_interest_rate min = 0.5 max = 8 }
-			# Update the rate in GRE's parallel array
-			GRE = {
-				for_each_loop = {
-					array = GRE_creditors
-					if = {
-						limit = { check_variable = { v = FROM.id } }
-						set_variable = { GRE_creditor_rate^i = FROM.GRE_our_interest_rate }
-					}
-				}
-				country_event = { id = greece_debt.15 days = 1 }
-			}
-			add_opinion_modifier = { target = GRE modifier = GRE_raised_interest_opinion }
-		}
-
-		ai_will_do = {
-			base = 1
-			modifier = {
-				factor = 5
-				check_variable = { GRE_our_interest_rate < 3 }
-			}
-			modifier = {
-				factor = 0
-				has_opinion = { target = GRE value > 50 }
-			}
-		}
-	}
-
-	GRE_creditor_lower_interest = {
-		icon = GFX_decision_bancru_ask_button
-
-		cost = 25
-
-		visible = {
-			GRE_is_creditor_of_greece = yes
-		}
-
-		available = {
-			custom_trigger_tooltip = {
-				tooltip = GRE_interest_rate_above_min_tt
-				check_variable = { GRE_our_interest_rate > 0.5 }
-			}
-		}
-
-		days_re_enable = 60
-
-		complete_effect = {
-			log = "[GetDateText]: [Root.GetName]: Decision GRE_creditor_lower_interest"
-			subtract_from_variable = { GRE_our_interest_rate = 0.5 }
-			clamp_variable = { var = GRE_our_interest_rate min = 0.5 max = 8 }
-			# Update the rate in GRE's parallel array
-			GRE = {
-				for_each_loop = {
-					array = GRE_creditors
-					if = {
-						limit = { check_variable = { v = FROM.id } }
-						set_variable = { GRE_creditor_rate^i = FROM.GRE_our_interest_rate }
-					}
-				}
-				country_event = { id = greece_debt.15 days = 1 }
-			}
-			add_opinion_modifier = { target = GRE modifier = GRE_lowered_interest_opinion }
-		}
-
-		ai_will_do = {
-			base = 1
-			modifier = {
-				factor = 5
-				has_opinion = { target = GRE value > 75 }
-			}
-		}
-	}
 
 	GRE_creditor_call_in_debt = {
 		icon = GFX_decision_bancru_ask_button
@@ -1966,15 +1747,8 @@ GRE_prospecting_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_halkidiki_prospecting_1"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 3 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -3 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 3 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -2017,15 +1791,8 @@ GRE_prospecting_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_halkidiki_prospecting_2"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 4 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -4 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 4 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -2068,15 +1835,8 @@ GRE_prospecting_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_halkidiki_prospecting_3"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 5 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -5 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 5 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -2119,15 +1879,8 @@ GRE_prospecting_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_halkidiki_prospecting_4"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 7 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -7 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 7 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -2171,15 +1924,8 @@ GRE_prospecting_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_peloponnese_bauxite_1"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 3 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -3 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 3 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -2222,15 +1968,8 @@ GRE_prospecting_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_peloponnese_bauxite_2"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 4 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -4 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 4 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -2273,15 +2012,8 @@ GRE_prospecting_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_peloponnese_bauxite_3"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 6 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -6 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 6 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -2325,15 +2057,8 @@ GRE_prospecting_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_thessaly_mining_1"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 3 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -3 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 3 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -2376,15 +2101,8 @@ GRE_prospecting_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_thessaly_mining_2"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 4 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -4 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 4 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -2427,15 +2145,8 @@ GRE_prospecting_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_thessaly_mining_3"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 6 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -6 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 6 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -2480,15 +2191,8 @@ GRE_prospecting_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_aegean_mining_1"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 3 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -3 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 3 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -2531,15 +2235,8 @@ GRE_prospecting_category = {
 
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision complete GRE_aegean_mining_2"
-			if = { limit = { has_country_flag = GRE_defer_payments_flag }
-				set_temp_variable = { skip_payment = 1 }
-				set_temp_variable = { debt_change = 5 }
-				GRE_defer_payment = yes
-			}
-			else = {
-				set_temp_variable = { treasury_change = -5 }
-				modify_treasury_effect = yes
-			}
+			set_temp_variable = { debt_change = 5 }
+			GRE_pay_or_defer = yes
 		}
 
 		remove_effect = {
@@ -2621,6 +2318,7 @@ GRE_diplomacy_category = {
 			add_to_variable = { civilian_factories_used_for_projects = 1 }
 		}
 		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision GRE_cosco_pier_expansion resolved"
 			capital_scope = { add_extra_state_shared_building_slots = 1 }
 			add_to_variable = { GRE_eastern_alignment_score = 1 }
 			GRE_check_eastern_alignment_swap = yes
