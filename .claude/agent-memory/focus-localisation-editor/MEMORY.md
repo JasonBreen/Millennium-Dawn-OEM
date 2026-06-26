@@ -1,1 +1,0 @@
-- [Greece focus tree localisation conventions](project_greece_tone.md) — Tense (simple present), hyphenated compound focus names, real-world grounding in GRE descs
