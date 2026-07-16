@@ -176,26 +176,26 @@ A merge conflict happens when Git can't automatically combine two changes to the
 Open the conflicted file. You'll see markers like this:
 
 ```
-<<<<<<< HEAD:events/MD_Init.txt
+CONFLICT_START (HEAD:events/MD_Init.txt)
 your changes on the current branch
-=======
+CONFLICT_SEPARATOR
 changes from the branch being merged in (e.g., main)
->>>>>>> master:events/MD_Init.txt
+CONFLICT_END (master:events/MD_Init.txt)
 ```
 
-- Everything between `<<<<<<< HEAD` and `=======` is **your version**.
-- Everything between `=======` and `>>>>>>> master` is **the other version**.
+- Everything between `CONFLICT_START` and `CONFLICT_SEPARATOR` is **your version**.
+- Everything between `CONFLICT_SEPARATOR` and `CONFLICT_END` is **the other version**.
 - Decide which to keep (or combine both), then delete the markers.
 
 ## How to Resolve
 
 1. Open the conflicted file and find all conflict markers.
 2. Edit the file to keep the correct code.
-3. Delete the `<<<<<<<`, `=======`, and `>>>>>>>` markers.
+3. Delete the conflict start/separator/end markers.
 4. Save the file.
 5. In your Git GUI, mark the conflict as resolved and commit.
 
-> **Check carefully**: a file can have multiple conflicts. Search for `<<<<<<<` to find them all.
+> **Check carefully**: a file can have multiple conflicts. Search for `CONFLICT_START` (or the real conflict marker) to find them all.
 
 ---
 
