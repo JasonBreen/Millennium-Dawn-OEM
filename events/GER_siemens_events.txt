@@ -67,11 +67,21 @@ country_event = {
 	id = GER_siemens_events.2
 	title = GER_siemens_events.2.t
 	desc = {
-		trigger = { FIN = { has_country_flag = FIN_nokia_siemens_networks_formed } }
+		trigger = {
+			country_exists = FIN
+			FIN = { has_country_flag = FIN_nokia_siemens_networks_formed }
+		}
 		text = GER_siemens_events.2.d_formed
 	}
 	desc = {
-		trigger = { NOT = { FIN = { has_country_flag = FIN_nokia_siemens_networks_formed } } }
+		trigger = {
+			NOT = {
+				AND = {
+					country_exists = FIN
+					FIN = { has_country_flag = FIN_nokia_siemens_networks_formed }
+				}
+			}
+		}
 		text = GER_siemens_events.2.d_fallback
 	}
 	picture = GFX_stock_market
@@ -87,7 +97,10 @@ country_event = {
 
 	option = {
 		name = GER_siemens_events.2.a_formed
-		trigger = { FIN = { has_country_flag = FIN_nokia_siemens_networks_formed } }
+		trigger = {
+			country_exists = FIN
+			FIN = { has_country_flag = FIN_nokia_siemens_networks_formed }
+		}
 		log = "[GetDateText]: [Root.GetName]: GER_siemens_events.2.a_formed executed"
 		set_temp_variable = { treasury_change = -2.00 }
 		modify_treasury_effect = yes
@@ -101,6 +114,10 @@ country_event = {
 
 		ai_chance = {
 			base = 50
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 			modifier = {
 				factor = 10
 				is_historical_focus_on = yes
@@ -120,7 +137,10 @@ country_event = {
 
 	option = {
 		name = GER_siemens_events.2.b_formed
-		trigger = { FIN = { has_country_flag = FIN_nokia_siemens_networks_formed } }
+		trigger = {
+			country_exists = FIN
+			FIN = { has_country_flag = FIN_nokia_siemens_networks_formed }
+		}
 		log = "[GetDateText]: [Root.GetName]: GER_siemens_events.2.b_formed executed"
 		add_political_power = 10
 		add_tech_bonus = {
@@ -152,7 +172,14 @@ country_event = {
 
 	option = {
 		name = GER_siemens_events.2.a_fallback
-		trigger = { NOT = { FIN = { has_country_flag = FIN_nokia_siemens_networks_formed } } }
+		trigger = {
+			NOT = {
+				AND = {
+					country_exists = FIN
+					FIN = { has_country_flag = FIN_nokia_siemens_networks_formed }
+				}
+			}
+		}
 		log = "[GetDateText]: [Root.GetName]: GER_siemens_events.2.a_fallback executed"
 		set_temp_variable = { treasury_change = -2.00 }
 		modify_treasury_effect = yes
@@ -166,6 +193,10 @@ country_event = {
 
 		ai_chance = {
 			base = 50
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 			modifier = {
 				factor = 10
 				is_historical_focus_on = yes
@@ -185,7 +216,14 @@ country_event = {
 
 	option = {
 		name = GER_siemens_events.2.b_fallback
-		trigger = { NOT = { FIN = { has_country_flag = FIN_nokia_siemens_networks_formed } } }
+		trigger = {
+			NOT = {
+				AND = {
+					country_exists = FIN
+					FIN = { has_country_flag = FIN_nokia_siemens_networks_formed }
+				}
+			}
+		}
 		log = "[GetDateText]: [Root.GetName]: GER_siemens_events.2.b_fallback executed"
 		add_political_power = 10
 		add_tech_bonus = {
@@ -220,20 +258,45 @@ country_event = {
 	id = GER_siemens_events.3
 	title = GER_siemens_events.3.t
 	desc = {
-		trigger = { FIN = { has_country_flag = FIN_nokia_networks_wholly_owned } }
+		trigger = {
+			country_exists = FIN
+			FIN = {
+				has_country_flag = FIN_nokia_siemens_networks_formed
+				has_country_flag = FIN_nokia_networks_wholly_owned
+			}
+		}
 		text = GER_siemens_events.3.d_purchase
 	}
 	desc = {
 		trigger = {
-			NOT = { FIN = { has_country_flag = FIN_nokia_networks_wholly_owned } }
-			FIN = { has_country_flag = FIN_nokia_exited_networks }
+			country_exists = FIN
+			FIN = {
+				NOT = { has_country_flag = FIN_nokia_networks_wholly_owned }
+				has_country_flag = FIN_nokia_exited_networks
+			}
 		}
 		text = GER_siemens_events.3.d_exit
 	}
 	desc = {
 		trigger = {
-			NOT = { FIN = { has_country_flag = FIN_nokia_networks_wholly_owned } }
-			NOT = { FIN = { has_country_flag = FIN_nokia_exited_networks } }
+			NOT = {
+				OR = {
+					AND = {
+						country_exists = FIN
+						FIN = {
+							has_country_flag = FIN_nokia_siemens_networks_formed
+							has_country_flag = FIN_nokia_networks_wholly_owned
+						}
+					}
+					AND = {
+						country_exists = FIN
+						FIN = {
+							NOT = { has_country_flag = FIN_nokia_networks_wholly_owned }
+							has_country_flag = FIN_nokia_exited_networks
+						}
+					}
+				}
+			}
 		}
 		text = GER_siemens_events.3.d_fallback
 	}
@@ -248,10 +311,20 @@ country_event = {
 
 	option = {
 		name = GER_siemens_events.3.a_purchase
-		trigger = { FIN = { has_country_flag = FIN_nokia_networks_wholly_owned } }
+		trigger = {
+			country_exists = FIN
+			FIN = {
+				has_country_flag = FIN_nokia_siemens_networks_formed
+				has_country_flag = FIN_nokia_networks_wholly_owned
+			}
+		}
 		log = "[GetDateText]: [Root.GetName]: GER_siemens_events.3.a_purchase executed"
-		set_temp_variable = { treasury_change = 3.00 }
-		modify_treasury_effect = yes
+		if = {
+			limit = { NOT = { has_country_flag = GER_nokia_siemens_sale_proceeds_applied } }
+			set_temp_variable = { treasury_change = 3.00 }
+			modify_treasury_effect = yes
+			set_country_flag = GER_nokia_siemens_sale_proceeds_applied
+		}
 		add_political_power = 10
 		add_tech_bonus = {
 			name = GER_siemens_events.3.purchase_computing_bonus
@@ -281,7 +354,13 @@ country_event = {
 
 	option = {
 		name = GER_siemens_events.3.b_purchase
-		trigger = { FIN = { has_country_flag = FIN_nokia_networks_wholly_owned } }
+		trigger = {
+			country_exists = FIN
+			FIN = {
+				has_country_flag = FIN_nokia_siemens_networks_formed
+				has_country_flag = FIN_nokia_networks_wholly_owned
+			}
+		}
 		log = "[GetDateText]: [Root.GetName]: GER_siemens_events.3.b_purchase executed"
 		add_tech_bonus = {
 			name = GER_siemens_events.3.purchase_networks_bonus
@@ -312,8 +391,11 @@ country_event = {
 	option = {
 		name = GER_siemens_events.3.a_exit
 		trigger = {
-			NOT = { FIN = { has_country_flag = FIN_nokia_networks_wholly_owned } }
-			FIN = { has_country_flag = FIN_nokia_exited_networks }
+			country_exists = FIN
+			FIN = {
+				NOT = { has_country_flag = FIN_nokia_networks_wholly_owned }
+				has_country_flag = FIN_nokia_exited_networks
+			}
 		}
 		log = "[GetDateText]: [Root.GetName]: GER_siemens_events.3.a_exit executed"
 		set_temp_variable = { treasury_change = -4.00 }
@@ -327,6 +409,10 @@ country_event = {
 
 		ai_chance = {
 			base = 50
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 			modifier = {
 				factor = 10
 				is_historical_focus_on = yes
@@ -347,8 +433,11 @@ country_event = {
 	option = {
 		name = GER_siemens_events.3.b_exit
 		trigger = {
-			NOT = { FIN = { has_country_flag = FIN_nokia_networks_wholly_owned } }
-			FIN = { has_country_flag = FIN_nokia_exited_networks }
+			country_exists = FIN
+			FIN = {
+				NOT = { has_country_flag = FIN_nokia_networks_wholly_owned }
+				has_country_flag = FIN_nokia_exited_networks
+			}
 		}
 		log = "[GetDateText]: [Root.GetName]: GER_siemens_events.3.b_exit executed"
 		set_temp_variable = { treasury_change = -2.00 }
@@ -363,6 +452,10 @@ country_event = {
 
 		ai_chance = {
 			base = 50
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 			modifier = {
 				factor = 0
 				is_historical_focus_on = yes
@@ -383,8 +476,24 @@ country_event = {
 	option = {
 		name = GER_siemens_events.3.a_fallback
 		trigger = {
-			NOT = { FIN = { has_country_flag = FIN_nokia_networks_wholly_owned } }
-			NOT = { FIN = { has_country_flag = FIN_nokia_exited_networks } }
+			NOT = {
+				OR = {
+					AND = {
+						country_exists = FIN
+						FIN = {
+							has_country_flag = FIN_nokia_siemens_networks_formed
+							has_country_flag = FIN_nokia_networks_wholly_owned
+						}
+					}
+					AND = {
+						country_exists = FIN
+						FIN = {
+							NOT = { has_country_flag = FIN_nokia_networks_wholly_owned }
+							has_country_flag = FIN_nokia_exited_networks
+						}
+					}
+				}
+			}
 		}
 		log = "[GetDateText]: [Root.GetName]: GER_siemens_events.3.a_fallback executed"
 		set_temp_variable = { treasury_change = 3.00 }
@@ -418,8 +527,24 @@ country_event = {
 	option = {
 		name = GER_siemens_events.3.b_fallback
 		trigger = {
-			NOT = { FIN = { has_country_flag = FIN_nokia_networks_wholly_owned } }
-			NOT = { FIN = { has_country_flag = FIN_nokia_exited_networks } }
+			NOT = {
+				OR = {
+					AND = {
+						country_exists = FIN
+						FIN = {
+							has_country_flag = FIN_nokia_siemens_networks_formed
+							has_country_flag = FIN_nokia_networks_wholly_owned
+						}
+					}
+					AND = {
+						country_exists = FIN
+						FIN = {
+							NOT = { has_country_flag = FIN_nokia_networks_wholly_owned }
+							has_country_flag = FIN_nokia_exited_networks
+						}
+					}
+				}
+			}
 		}
 		log = "[GetDateText]: [Root.GetName]: GER_siemens_events.3.b_fallback executed"
 		set_temp_variable = { treasury_change = -2.00 }
@@ -433,6 +558,10 @@ country_event = {
 
 		ai_chance = {
 			base = 50
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 			modifier = {
 				factor = 0
 				is_historical_focus_on = yes
