@@ -1,7 +1,8 @@
 # Corporate-history framework. Docs: docs/src/content/resources/corporate-history-framework.md
 #
-# Chains: IBM, Sun/Microsoft, HP, Apple (USA), Sony (JAP), Matrox (CAN), Nokia (FIN);
-# dispatch/gating only for Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA).
+# Chains: IBM, Sun/Microsoft, HP, Apple, NVIDIA (USA), Sony (JAP), Matrox (CAN),
+# Nokia (FIN), TSMC (TAI); dispatch/gating only for Siemens (GER), Ericsson (SWE),
+# BlackBerry (CAN/USA).
 # The rule_corporate_history game rule gates chains ONLY at dispatcher level: the
 # startup driver below, the TAG_corporate_trigger_year_* effects
 # (00_corporate_history_dispatch_effects.txt), the monthly outcome drivers below,
@@ -52,7 +53,9 @@ corporate_history_on_startup = {
 				USA_microsoft_reconstruct_history = yes
 				USA_apple_reconstruct_history = yes
 				USA_apple_schedule_current_year_events = yes
+				USA_nvidia_schedule_current_year_events = yes
 				country_event = { id = USA_ibm_events.90 days = 1 }
+				country_event = { id = USA_nvidia_events.90 days = 4 }
 			}
 		}
 
@@ -74,11 +77,19 @@ corporate_history_on_startup = {
 		}
 
 		if = {
-			limit = {
-				country_exists = FIN
-				date > 2003.10.15
+			limit = { country_exists = FIN }
+			FIN = {
+				FIN_nokia_schedule_current_year_events = yes
+				country_event = { id = FIN_nokia_events.90 days = 1 }
 			}
-			FIN = { country_event = { id = FIN_nokia_events.90 days = 1 } }
+		}
+
+		if = {
+			limit = { country_exists = TAI }
+			TAI = {
+				TAI_tsmc_schedule_current_year_events = yes
+				country_event = { id = TAI_tsmc_events.90 days = 3 }
+			}
 		}
 
 		if = {
@@ -109,6 +120,7 @@ corporate_history_on_startup = {
 				USA_microsoft_reconstruct_history = yes
 				USA_apple_reconstruct_history = yes
 				USA_ibm_reconstruct_history = yes
+				USA_nvidia_reconstruct_history = yes
 			}
 		}
 		if = {
@@ -123,6 +135,10 @@ corporate_history_on_startup = {
 			limit = { country_exists = FIN }
 			FIN = { FIN_nokia_reconstruct_history = yes }
 		}
+		if = {
+			limit = { country_exists = TAI }
+			TAI = { TAI_tsmc_reconstruct_history = yes }
+		}
 		# TODO: Siemens (GER), Ericsson (SWE) and BlackBerry (CAN/USA) have no
 		# reconstruction effects yet - Outcomes Only suppresses their events with
 		# no silent replacement. HP has no persistent state to reconstruct.
@@ -130,7 +146,7 @@ corporate_history_on_startup = {
 }
 
 # Effect: USA_corporate_history_monthly_outcomes
-# Purpose: Outcomes Only driver - applies IBM/Microsoft/Apple historical outcomes
+# Purpose: Outcomes Only driver - applies IBM/Microsoft/Apple/NVIDIA outcomes
 #          on the first monthly tick after each milestone date (<= ~31 days lag,
 #          the same order of slop as the yearly dispatcher's early-January offsets).
 USA_corporate_history_monthly_outcomes = {
@@ -143,11 +159,13 @@ USA_corporate_history_monthly_outcomes = {
 				NOT = { has_country_flag = USA_microsoft_reconstruct_complete }
 				NOT = { has_country_flag = USA_apple_reconstruct_complete }
 				NOT = { has_country_flag = USA_ibm_reconstruct_complete }
+				NOT = { has_country_flag = USA_nvidia_reconstruct_complete }
 			}
 		}
 		USA_microsoft_reconstruct_history = yes
 		USA_apple_reconstruct_history = yes
 		USA_ibm_reconstruct_history = yes
+		USA_nvidia_reconstruct_history = yes
 	}
 }
 
@@ -182,8 +200,8 @@ CAN_corporate_history_monthly_outcomes = {
 }
 
 # Effect: FIN_corporate_history_monthly_outcomes
-# Purpose: Outcomes Only driver for the Nokia chain; terminates once the ladder
-#          sets its completion flag (final milestone 2016.5.17).
+# Purpose: Reconstructs Nokia in Outcomes Only and processes externally confirmed
+#          future stages in Full mode.
 FIN_corporate_history_monthly_outcomes = {
 	if = {
 		limit = {
@@ -193,5 +211,28 @@ FIN_corporate_history_monthly_outcomes = {
 			NOT = { has_country_flag = FIN_nokia_reconstruct_complete }
 		}
 		FIN_nokia_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = FIN
+			NOT = { has_country_flag = collapsed_nation }
+		}
+		FIN_nokia_process_external_confirmations = yes
+	}
+}
+
+# Effect: TAI_corporate_history_monthly_outcomes
+# Purpose: Outcomes Only driver for the TSMC chain; terminates once its 2026
+#          capstone sets the completion flag.
+TAI_corporate_history_monthly_outcomes = {
+	if = {
+		limit = {
+			corporate_history_outcomes_only_enabled = yes
+			original_tag = TAI
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = TAI_tsmc_reconstruct_complete }
+		}
+		TAI_tsmc_reconstruct_history = yes
 	}
 }
