@@ -7,6 +7,7 @@ before calling. Warns on scope-boundary violations (temp var set inside a
 scope-changing block, but the effect call is outside).
 """
 
+import functools
 import glob
 import os
 import re
@@ -146,6 +147,7 @@ _MISCASED_TAG_RE = re.compile(r"[A-Za-z]{3}")
 _NUMERIC_RE = re.compile(r"-?\d+(\.\d+)?")
 
 
+@functools.lru_cache(maxsize=None)
 def _load_valid_country_tags(mod_path: str) -> "frozenset[str]":
     """Load valid country tags and tag aliases as one accept-set.
 
