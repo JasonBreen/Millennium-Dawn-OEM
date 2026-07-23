@@ -7,10 +7,10 @@ before calling. Warns on scope-boundary violations (temp var set inside a
 scope-changing block, but the effect call is outside).
 """
 
+import functools
 import glob
 import os
 import re
-import functools
 from typing import Dict, List, Set, Tuple
 
 import disk_cache
