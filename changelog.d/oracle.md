@@ -1,0 +1,1 @@
+- Added a new USA Oracle corporate-history event chain covering the PeopleSoft, Siebel, BEA, and Sun era through Oracle v. Google, the cloud pivot, TikTok bid, and AI infrastructure commitments, including major forks and integration-debt failure outcomes.
