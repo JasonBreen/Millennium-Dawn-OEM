@@ -1,3 +1,3 @@
-- Added a new USA Google corporate-history event chain covering AdWords, IPO governance, Android, YouTube, China market entry/exit decisions, Motorola, Snowden, Alphabet, DeepMind, antitrust, TPUs, and submarine cables.
+- Added a new USA Google corporate-history event chain covering AdWords, IPO governance, Android, YouTube, China market entry/exit policy choices, Motorola, Snowden, Alphabet, DeepMind, antitrust, TPUs, and submarine cables.
 - Added workforce-consent tracking with veto behavior that can lock out future government contracting after repeated defense or censorship concessions.
 - Added dedicated English localisation for every Google chain event, option, and effect tooltip.
