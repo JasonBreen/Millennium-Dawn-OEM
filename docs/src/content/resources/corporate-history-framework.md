@@ -3,7 +3,7 @@ title: Corporate History Framework
 description: Millennium Dawn corporate-history chains - framework effects, game rule, start-date policy, tier budgets, and integration rules
 ---
 
-The corporate-history framework powers the dated company chains (IBM, Sun/Microsoft, HP, Apple, Sony, Matrox, Nokia, and (at dispatch level only) Siemens, Ericsson, BlackBerry). It centralizes control flow, value bounds, and game-rule gating; each company binds its own names, dates, and deltas in thin wrapper effects.
+The corporate-history framework powers the dated company chains (IBM, Sun/Microsoft, HP, Apple, NVIDIA, Sony, Matrox, Nokia, TSMC, and, at dispatch level only, Siemens, Ericsson, and BlackBerry). It centralizes control flow, value bounds, and game-rule gating; each company binds its own names, dates, and deltas in thin wrapper effects.
 
 # File Map
 
@@ -14,7 +14,7 @@ The corporate-history framework powers the dated company chains (IBM, Sun/Micros
 | Primitives (`corporate_history_apply_delta`, `corporate_history_clamp_value`), startup driver, monthly Outcomes-Only drivers | `common/scripted_effects/00_corporate_history_effects.txt` |
 | `<TAG>_corporate_trigger_year_<YYYY>` yearly dispatch (one effect per country per year) | `common/scripted_effects/00_corporate_history_dispatch_effects.txt` |
 | Rule gates `corporate_history_full_enabled` / `corporate_history_outcomes_only_enabled` | `common/scripted_triggers/MD_corporate_history_triggers.txt` |
-| Per-company wrappers (init/clamp/reconstruct/schedule/capstone) | `common/scripted_effects/USA_ibm_effects.txt`, `USA_apple_effects.txt`, `USA_microsoft_effects.txt`, `JAP_sony_effects.txt`, `CAN_matrox_effects.txt`, `FIN_nokia_effects.txt` |
+| Per-company wrappers (init/clamp/reconstruct/schedule/capstone) | `common/scripted_effects/USA_ibm_effects.txt`, `USA_apple_effects.txt`, `USA_microsoft_effects.txt`, `USA_nvidia_effects.txt`, `JAP_sony_effects.txt`, `CAN_matrox_effects.txt`, `FIN_nokia_effects.txt`, `TAI_tsmc_effects.txt` |
 | Game rule `rule_corporate_history` | `common/game_rules/00_game_rules.txt` |
 
 # Game Rule Semantics
@@ -22,7 +22,7 @@ The corporate-history framework powers the dated company chains (IBM, Sun/Micros
 `rule_corporate_history` has three options, fixed at game setup (no mid-game transitions):
 
 - **Full** (default): story events, decision windows, and the IBM crisis engine run exactly as authored.
-- **Outcomes Only**: no corporate story events fire. The historical path (flags, state variables, outcome ideas) is applied silently by the per-company `*_reconstruct_history` effects, invoked at startup and then from per-country monthly drivers. Each milestone lands on the **first monthly tick after its historical date** (≤ ~31 days lag, the same order of slop as the yearly dispatcher's early-January day offsets). The IBM crisis engine is Full-only (its events are popups), so no crisis ideas appear in this mode. Siemens, Ericsson, BlackBerry, and HP are suppressed without replacement (no reconstruction exists for them).
+- **Outcomes Only**: no corporate story events fire. The historical path (flags, state variables, outcome ideas, and monotonic delivery stages) is applied silently by the per-company `*_reconstruct_history` effects, invoked at startup and then from per-country monthly drivers. Each milestone lands on the **first monthly tick after its historical date** (≤ ~31 days lag, the same order of slop as the yearly dispatcher's early-January day offsets). The IBM crisis engine is Full-only (its events are popups), so no crisis ideas appear in this mode. Siemens, Ericsson, BlackBerry, and HP are suppressed without replacement (no reconstruction exists for them).
 - **Off**: dispatchers never run, so no corporate events, variables, flags, or ideas ever exist for any country.
 
 **Gating happens only at dispatcher level**: the startup driver, the `<TAG>_corporate_trigger_year_*` effects, the monthly drivers, and the `USA_ibm_monthly_crisis_checks` call site in `99_USA_on_actions.txt`. Never add rule checks inside individual events: an event that was never scheduled needs no gate, and per-event gates rot.
@@ -47,7 +47,7 @@ HOI4 cannot parameterize identifier names (variables, flags, ideas, event ids) w
 | `<TAG>_<co>_clamp_state` | per variable: `set_temp_variable = { corp_value = X }` → `corporate_history_clamp_value = yes` → `set_variable = { X = corp_value }` |
 | `<TAG>_<co>_reconstruct_history` | date-ascending ladder; every step `date > D` + `NOT` on **all** sibling outcome markers; `add_ideas` steps guarded by `NOT has_idea` on all alternatives; no event fires; ends with silent capstone resolution where the chain has one, then sets `<TAG>_<co>_reconstruct_complete` once the final milestone date has passed (the monthly driver's only terminal check). A ladder can end *after* its capstone (IBM's integrations run to 2027.6.1, past the 2026.6.2 capstone), so the completion date is the last step's date, not the capstone's |
 | `<TAG>_<co>_events.90` | hidden, `fire_only_once` event whose immediate is a thin call to the reconstruct effect (IBM's also keeps its `date < 2000.2.1` prehistory-scheduling branch) |
-| `<TAG>_<co>_schedule_current_year_events` | per-year Jan-1 window guard + `country_event` offsets (optional; Apple only so far) |
+| `<TAG>_<co>_schedule_current_year_events` | per-year Jan-1 window guard + `country_event` offsets (implemented for Apple, Nokia, TSMC, and NVIDIA) |
 | capstone family | `clear_capstone_outcome` (remove all competing ideas + flags) / `apply_*_capstone` (clear, add one idea, set outcome + resolved flags) / `resolve_capstone` (threshold ladder) |
 
 The primitives:
@@ -71,12 +71,17 @@ A chain may read **only its own flags and variables**, plus the cross-links decl
 | --- | --- | --- |
 | Sun/Microsoft | IBM shared state `USA_oem_*`, `USA_ibm_faction_*` (write-through + `ai_chance` reads); calls `USA_ibm_initialize_state`/`USA_ibm_clamp_state` | `events/USA_sun_microsoft_events.txt` |
 | Apple | IBM outcome flags `USA_ibm_watson_enterprise`, `USA_ibm_x86_divested`; Microsoft outcome flags `USA_microsoft_azure_*`, `USA_microsoft_cloud_*` (`ai_chance` only) | `events/USA_apple_events.txt` |
+| NVIDIA | GPU mirrors `USA_gpu_2007_cuda_*`, `USA_gpu_2012_alexnet_*`, `USA_gpu_2017_volta_*`, `USA_gpu_2020_shortage_*`, `USA_gpu_2022_hopper_*`, `USA_gpu_2024_*`; IBM state `USA_oem_open_standards`, `USA_oem_national_compute_stack`, `USA_ibm_outcome_open_hybrid`, `USA_ibm_outcome_systems_ministry`; TSMC flag `TAI_tsmc_advanced_packaging_expanded`; Nokia flag `FIN_nokia_nvidia_ai_ran_partnership` (`ai_chance` / flavor only) | `events/USA_nvidia_events.txt` |
+| TSMC | GPU mirrors `TAI_gpu_2000_*`, `TAI_gpu_2017_*`, `TAI_gpu_2020_*`, `TAI_gpu_2022_*`, `TAI_gpu_2024_*`; US CHIPS idea `USA_chips_act`; ASML group `HOL_asml_tsmc_group`; existing MIO variables `tai_tsmc_const_boost_var`, `tai_tsmc_prod_boost_var` (`ai_chance` only) | `events/TAI_tsmc_events.txt` |
+| Nokia | Receiver-owned GER flags `GER_nokia_nsn_jv_accepted`, `GER_nokia_nsn_jv_declined`, `GER_nokia_siemens_sale_accepted`, `GER_nokia_siemens_sale_declined`; FRA flags `FRA_nokia_alu_commitments_accepted`, `FRA_nokia_alu_commitments_enhanced`, `FRA_nokia_alu_transaction_blocked` (transaction callbacks only) | `events/FIN_nokia_events.txt`, `common/scripted_effects/FIN_nokia_effects.txt` |
 | Siemens | Nokia NSN flags `FIN_nokia_siemens_networks_formed`, `FIN_nokia_networks_wholly_owned`, `FIN_nokia_exited_networks` (option triggers) | `events/GER_siemens_events.txt` |
 | Sony | GPU-chain flags `JAP_gpu_*` (capstone option triggers/`ai_chance`) | `events/JAP_sony_events.txt` |
 | Matrox | BlackBerry/AI flags `CAN_blackberry_qnx_embedded`, `CAN_ai_public_research_network` (capstone option triggers) | `events/CAN_matrox_events.txt` |
 | IBM (inbound) | US politics via `USA_ibm_*_administration` triggers, reads non-corporate state, allowed | `common/scripted_triggers/MD_oem_triggers.txt` |
 
-`gpu_development`, `USA_oem_events`, BlackBerry, and Ericsson read **no** state of the covered chains, so gating the chains cannot strand them. The three Nokia NSN flags are a stable API; Siemens depends on them; do not rename.
+`gpu_development`, `USA_oem_events`, BlackBerry, and Ericsson read **no** state of the covered chains, so gating the chains cannot strand them. The global GPU chain is independent of `rule_corporate_history`; its USA/TAI mirrors are inputs only. The three Nokia NSN flags are a stable API; Siemens depends on them; do not rename.
+
+Nokia's `FIN_nokia_fwa_cpe_sale_confirmed` and `FIN_nokia_ai_ran_trial_confirmed` flags are future external confirmations. No dated event or reconstruction step sets them. In Full mode, the Finnish monthly driver dispatches `.106` or `.107` only after another system supplies the matching confirmation; it never infers a close, trial, or deployment date.
 
 # Tier Budgets
 
@@ -91,11 +96,13 @@ Classification of the existing chains (chains predating the budgets are marked *
 | Chain | Tier | Notes |
 | --- | --- | --- |
 | Apple (USA) | 1 | Reference implementation: 15 events, 7 variables, 5 outcome ideas, scheduler + reconstruction |
+| NVIDIA (USA) | 1 | 12 visible events, 4 bounded variables, 5 outcome ideas, scheduler + reconstruction |
 | Sony (JAP) | 1 | 15 events, flag-based state, 4 outcome ideas, player-choice capstone |
 | Matrox (CAN) | 1 | 12 events, flag-based state, 4 outcome ideas, player-choice capstone |
+| TSMC (TAI) | 1 | 15 visible events, 4 bounded variables, monotonic facility callbacks, 5 outcome ideas |
+| Nokia (FIN) | 1 | 15 visible events, 4 bounded variables, staged GER/FRA transactions, 6 outcome ideas |
 | IBM (USA) | 1 *(grandfathered)* | 50 events, 13 ideas, consequence schedulers, monthly crisis engine, over every budget |
 | Sun/Microsoft (USA) | 2 *(satellite)* | 11 events, no own state or ideas; declared write-through into IBM state |
-| Nokia (FIN) | 2 | 8 events, flag-only, no capstone ideas; NSN flags are a Siemens-read API |
 | HP (USA) | 3 *(grandfathered)* | 13 events but no persistent corporate state, no reconstruction; flavor economics only |
 | Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA) | 2 | Dispatch-moved + rule-gated only; internals not yet on the framework |
 
@@ -112,6 +119,6 @@ Classification of the existing chains (chains predating the budgets are marked *
 # TODO Register
 
 - **Siemens / Ericsson / BlackBerry**: no reconstruction effects; Outcomes Only suppresses their events with no silent replacement. Ericsson's existing `SWE_ericsson_events.90` is the natural first extraction; Siemens and BlackBerry have no `.90` at all and need ladders authored from their option effects.
-- **Start-year schedulers** for IBM, Sun/Microsoft, Sony, Matrox, Nokia (Apple-pattern; inert while MD ships only the 2000.1.1 bookmark).
+- **Start-year schedulers** for IBM, Sun/Microsoft, Sony, and Matrox (Apple-pattern; inert while MD ships only the 2000.1.1 bookmark).
 - **HP**: no persistent corporate state by design; decide whether to formalize as Tier 3 or extend to Tier 2 with an outcome idea.
 - **Sun/Microsoft**: consider its own capstone/state if ever split from the IBM substrate; the current write-through is the declared exception.
