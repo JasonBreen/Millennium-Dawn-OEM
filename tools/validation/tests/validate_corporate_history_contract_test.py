@@ -149,7 +149,9 @@ def _base_core_effects(monthly_registration=True, startup_uses_hidden=True):
         if startup_uses_hidden
         else "country_event = { id = USA_test_events.1 days = 1 }"
     )
-    monthly_call = "\t\tUSA_test_reconstruct_history = yes\n" if monthly_registration else ""
+    monthly_call = (
+        "\t\tUSA_test_reconstruct_history = yes\n" if monthly_registration else ""
+    )
     return f"""corporate_history_on_startup = {{
 \tif = {{
 \t\tlimit = {{ corporate_history_full_enabled = yes }}
@@ -184,7 +186,11 @@ USA_corporate_history_monthly_outcomes = {{
 
 
 def _base_dispatch(duplicate=False):
-    extra = "\n\t\t\tcountry_event = { id = USA_test_events.1 days = 20 }" if duplicate else ""
+    extra = (
+        "\n\t\t\tcountry_event = { id = USA_test_events.1 days = 20 }"
+        if duplicate
+        else ""
+    )
     return f"""USA_corporate_trigger_year_2001 = {{
 \tif = {{
 \t\tlimit = {{
@@ -242,11 +248,21 @@ def _build_fixture(
     duplicate_complete=False,
     missing_civil_war=False,
 ):
-    _write(root, "tools/corporate_history_contract.json", json.dumps(_manifest(callerless)))
-    _write(root, "common/scripted_triggers/MD_corporate_history_triggers.txt", """corporate_history_full_enabled = { always = yes }
+    _write(
+        root, "tools/corporate_history_contract.json", json.dumps(_manifest(callerless))
+    )
+    _write(
+        root,
+        "common/scripted_triggers/MD_corporate_history_triggers.txt",
+        """corporate_history_full_enabled = { always = yes }
 corporate_history_outcomes_only_enabled = { always = no }
-""")
-    _write(root, "common/game_rules/00_game_rules.txt", "rule_corporate_history = { default = { name = full } }\n")
+""",
+    )
+    _write(
+        root,
+        "common/game_rules/00_game_rules.txt",
+        "rule_corporate_history = { default = { name = full } }\n",
+    )
     _write(
         root,
         "common/scripted_effects/00_corporate_history_effects.txt",
@@ -282,7 +298,9 @@ corporate_history_outcomes_only_enabled = { always = no }
 
 
 def _messages(root: Path):
-    validator = Validator(mod_path=str(root), use_colors=False, workers=1, no_cache=True)
+    validator = Validator(
+        mod_path=str(root), use_colors=False, workers=1, no_cache=True
+    )
     validator.run_all_validations()
     return [issue.message for issue in validator._issues]
 
@@ -290,7 +308,9 @@ def _messages(root: Path):
 def test_visible_event_with_no_caller(tmp_path):
     _build_fixture(tmp_path, include_anchor=True)
     messages = _messages(tmp_path)
-    assert any("USA_test_events.2 has no direct callers" in message for message in messages)
+    assert any(
+        "USA_test_events.2 has no direct callers" in message for message in messages
+    )
 
 
 def test_duplicate_dispatch_caller(tmp_path):
@@ -305,7 +325,9 @@ def test_duplicate_dispatch_caller(tmp_path):
 def test_tier_one_missing_hidden_ninety(tmp_path):
     _build_fixture(tmp_path, include_hidden_ninety=False)
     messages = _messages(tmp_path)
-    assert any("USA_test_events.90 is missing or not hidden" in message for message in messages)
+    assert any(
+        "USA_test_events.90 is missing or not hidden" in message for message in messages
+    )
 
 
 def test_tier_one_missing_monthly_outcomes_registration(tmp_path):
@@ -330,13 +352,19 @@ def test_option_mutating_bounded_variable_without_clamp(tmp_path):
 def test_reconstruction_replaying_treasury(tmp_path):
     _build_fixture(tmp_path, treasury_in_reconstruct=True)
     messages = _messages(tmp_path)
-    assert any("USA_test_reconstruct_history replays treasury changes" in message for message in messages)
+    assert any(
+        "USA_test_reconstruct_history replays treasury changes" in message
+        for message in messages
+    )
 
 
 def test_duplicate_reconstruct_complete_producers(tmp_path):
     _build_fixture(tmp_path, duplicate_complete=True)
     messages = _messages(tmp_path)
-    assert any("USA_test_reconstruct_complete has 2 producers" in message for message in messages)
+    assert any(
+        "USA_test_reconstruct_complete has 2 producers" in message
+        for message in messages
+    )
 
 
 def test_outcome_idea_missing_allowed_civil_war(tmp_path):
@@ -356,4 +384,6 @@ def test_valid_minimal_tier_one_fixture(tmp_path):
 def test_explicitly_allowed_custom_anchor(tmp_path):
     _build_fixture(tmp_path, include_anchor=True, callerless=["USA_test_events.2"])
     messages = _messages(tmp_path)
-    assert not any("USA_test_events.2 has no direct callers" in message for message in messages)
+    assert not any(
+        "USA_test_events.2 has no direct callers" in message for message in messages
+    )

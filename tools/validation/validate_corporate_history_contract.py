@@ -9,7 +9,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
+from typing import Dict, Iterable, List, Sequence, Set, Tuple
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -32,13 +32,13 @@ _OPTION_RE = re.compile(r"\boption\s*=\s*\{")
 _IMMEDIATE_RE = re.compile(r"\bimmediate\s*=\s*\{")
 _ID_RE = re.compile(r"\bid\s*=\s*([A-Za-z0-9_.]+)")
 _EVENT_SHORT_CALL_RE = re.compile(
-    r"\b(?:"
-    + _EVENT_ALT
-    + r")\s*=\s*([A-Za-z0-9_.]+)\b(?!\s*\{)"
+    r"\b(?:" + _EVENT_ALT + r")\s*=\s*([A-Za-z0-9_.]+)\b(?!\s*\{)"
 )
 _EVENT_LONG_CALL_RE = re.compile(r"\b(?:" + _EVENT_ALT + r")\s*=\s*\{")
 _EFFECT_YES_RE = re.compile(r"\b([A-Za-z0-9_]+)\s*=\s*yes\b")
-_SET_VAR_RE = re.compile(r"\b(?:set_variable|add_to_variable|subtract_from_variable)\s*=\s*\{\s*([A-Za-z0-9_]+)")
+_SET_VAR_RE = re.compile(
+    r"\b(?:set_variable|add_to_variable|subtract_from_variable)\s*=\s*\{\s*([A-Za-z0-9_]+)"
+)
 _CLAMP_VAR_RE = re.compile(
     r"\bclamp_variable\s*=\s*\{\s*var\s*=\s*([A-Za-z0-9_]+)\s+min\s*=\s*(-?\d+)\s+max\s*=\s*(-?\d+)"
 )
@@ -211,7 +211,9 @@ class Validator(BaseValidator):
             effect_defs.get("corporate_history_on_startup", []),
             effect_defs,
         )
-        call_sites = self._load_event_call_sites(event_defs, effect_defs, core_namespaces)
+        call_sites = self._load_event_call_sites(
+            event_defs, effect_defs, core_namespaces
+        )
 
         self._log_section("manifest coverage")
         self._report(
@@ -241,7 +243,9 @@ class Validator(BaseValidator):
 
         self._log_section("tier-1 contract")
         self._report(
-            self._validate_tier_one_contract(chains, effect_defs, event_defs, idea_defs),
+            self._validate_tier_one_contract(
+                chains, effect_defs, event_defs, idea_defs
+            ),
             "Tier-1 chains satisfy the framework contract",
             "Tier-1 corporate-history contract issues:",
             category="Corporate-history Tier-1 contract",
@@ -318,14 +322,18 @@ class Validator(BaseValidator):
                         raw.get("allow_yearly_scheduler_duplicates", False)
                     ),
                     callerless_anchors=set(raw.get("callerless_anchors", [])),
-                    allowed_multiple_callers=set(raw.get("allowed_multiple_callers", [])),
+                    allowed_multiple_callers=set(
+                        raw.get("allowed_multiple_callers", [])
+                    ),
                     allowed_reads=tuple(raw.get("allowed_reads", [])),
                     allowed_writes=tuple(raw.get("allowed_writes", [])),
                 )
             )
         return chains
 
-    def _collect_text_files(self, patterns: Sequence[str], ignore_staged: bool = True) -> List[str]:
+    def _collect_text_files(
+        self, patterns: Sequence[str], ignore_staged: bool = True
+    ) -> List[str]:
         seen: Set[str] = set()
         files: List[str] = []
         for pattern in patterns:
@@ -335,7 +343,9 @@ class Validator(BaseValidator):
                     files.append(path)
         return files
 
-    def _load_top_level_blocks(self, patterns: Sequence[str]) -> Dict[str, List[BlockDef]]:
+    def _load_top_level_blocks(
+        self, patterns: Sequence[str]
+    ) -> Dict[str, List[BlockDef]]:
         results: Dict[str, List[BlockDef]] = {}
         for filepath in self._collect_text_files(patterns):
             try:
@@ -350,7 +360,12 @@ class Validator(BaseValidator):
                     continue
                 name = match.group(1)
                 results.setdefault(name, []).append(
-                    BlockDef(name, self._relpath(filepath), self._line(text, match.start()), body)
+                    BlockDef(
+                        name,
+                        self._relpath(filepath),
+                        self._line(text, match.start()),
+                        body,
+                    )
                 )
         return results
 
@@ -396,9 +411,13 @@ class Validator(BaseValidator):
                 events[event_id] = event_def
         return events
 
-    def _load_idea_definitions(self, chains: Sequence[ChainConfig]) -> Dict[str, IdeaDef]:
+    def _load_idea_definitions(
+        self, chains: Sequence[ChainConfig]
+    ) -> Dict[str, IdeaDef]:
         idea_ids: Set[str] = set()
-        chain_effects = self._load_top_level_blocks(["common/scripted_effects/**/*_effects.txt"])
+        chain_effects = self._load_top_level_blocks(
+            ["common/scripted_effects/**/*_effects.txt"]
+        )
         for chain in chains:
             prefixes = chain.outcome_idea_prefixes
             if not prefixes:
@@ -416,7 +435,9 @@ class Validator(BaseValidator):
                         if any(idea_id.startswith(prefix) for prefix in prefixes):
                             idea_ids.add(idea_id)
                     for match in _REMOVE_IDEA_BLOCK_RE.finditer(effect.body):
-                        body, end = extract_block_from_text(effect.body, match.end() - 1)
+                        body, end = extract_block_from_text(
+                            effect.body, match.end() - 1
+                        )
                         if end == -1:
                             continue
                         for idea_id in re.findall(r"\b([A-Za-z0-9_]+)\b", body):
@@ -427,7 +448,9 @@ class Validator(BaseValidator):
 
         results: Dict[str, IdeaDef] = {}
         idea_pattern = re.compile(
-            r"(?m)^\s*(" + "|".join(sorted(re.escape(i) for i in idea_ids)) + r")\s*=\s*\{"
+            r"(?m)^\s*("
+            + "|".join(sorted(re.escape(i) for i in idea_ids))
+            + r")\s*=\s*\{"
         )
         for filepath in self._collect_text_files(["common/ideas/**/*.txt"]):
             try:
@@ -477,7 +500,9 @@ class Validator(BaseValidator):
 
         for defs in effect_defs.values():
             for effect in defs:
-                for target, line in self._find_event_calls(effect.body, effect.line, tracked):
+                for target, line in self._find_event_calls(
+                    effect.body, effect.line, tracked
+                ):
                     call_sites.setdefault(target, []).append(
                         CallSite(target, effect.file, line, "effect", effect.name)
                     )
@@ -485,7 +510,9 @@ class Validator(BaseValidator):
         for event in event_defs.values():
             for idx, option in enumerate(event.options, start=1):
                 owner = f"{event.event_id}.option_{idx}"
-                for target, line in self._find_event_calls(option.body, option.line, tracked):
+                for target, line in self._find_event_calls(
+                    option.body, option.line, tracked
+                ):
                     call_sites.setdefault(target, []).append(
                         CallSite(target, option.file, line, "event-option", owner)
                     )
@@ -612,7 +639,9 @@ class Validator(BaseValidator):
                         definition.line,
                     )
                 )
-            scheduled = self._find_event_calls(definition.body, definition.line, frozenset())
+            scheduled = self._find_event_calls(
+                definition.body, definition.line, frozenset()
+            )
             counts: Dict[str, int] = {}
             for target, _line in scheduled:
                 counts[target] = counts.get(target, 0) + 1
@@ -637,9 +666,15 @@ class Validator(BaseValidator):
         yearly_inline = effect_defs
         for defs in yearly_inline.values():
             for block in defs:
-                if not block.file.endswith("common\\scripted_effects\\00_yearly_effects.txt") and not block.file.endswith("common/scripted_effects/00_yearly_effects.txt"):
+                if not block.file.endswith(
+                    "common\\scripted_effects\\00_yearly_effects.txt"
+                ) and not block.file.endswith(
+                    "common/scripted_effects/00_yearly_effects.txt"
+                ):
                     continue
-                for target, line in self._find_event_calls(block.body, block.line, defined_events):
+                for target, line in self._find_event_calls(
+                    block.body, block.line, defined_events
+                ):
                     namespace = target.split(".", 1)[0]
                     if namespace in registered_namespaces:
                         findings.append(
@@ -660,19 +695,25 @@ class Validator(BaseValidator):
     ) -> List[Tuple[str, str, int]]:
         findings = []
         startup_defs = effect_defs.get("corporate_history_on_startup", [])
-        monthly_defs = {name: defs[0] for name, defs in effect_defs.items() if len(defs) == 1}
+        monthly_defs = {
+            name: defs[0] for name, defs in effect_defs.items() if len(defs) == 1
+        }
 
         for chain in chains:
             if chain.tier != 1:
                 continue
             findings.extend(
                 self._require_effect(
-                    effect_defs, chain.initialize_effect, f"{chain.name} is missing its initialization effect"
+                    effect_defs,
+                    chain.initialize_effect,
+                    f"{chain.name} is missing its initialization effect",
                 )
             )
             findings.extend(
                 self._require_effect(
-                    effect_defs, chain.clamp_effect, f"{chain.name} is missing its clamp effect"
+                    effect_defs,
+                    chain.clamp_effect,
+                    f"{chain.name} is missing its clamp effect",
                 )
             )
             findings.extend(
@@ -702,7 +743,8 @@ class Validator(BaseValidator):
                     )
                 )
             if not startup_defs or not any(
-                self._chain_is_registered_in_startup(chain, startup.body) for startup in startup_defs
+                self._chain_is_registered_in_startup(chain, startup.body)
+                for startup in startup_defs
             ):
                 findings.append(
                     (
@@ -712,7 +754,10 @@ class Validator(BaseValidator):
                     )
                 )
             monthly = monthly_defs.get(chain.monthly_driver)
-            if monthly is None or f"{chain.reconstruct_effect} = yes" not in monthly.body:
+            if (
+                monthly is None
+                or f"{chain.reconstruct_effect} = yes" not in monthly.body
+            ):
                 findings.append(
                     (
                         f"{chain.reconstruct_effect} is not called from {chain.monthly_driver}",
@@ -720,7 +765,10 @@ class Validator(BaseValidator):
                         monthly.line if monthly else 0,
                     )
                 )
-            if chain.requires_current_year_scheduler and chain.scheduler_effect not in effect_defs:
+            if (
+                chain.requires_current_year_scheduler
+                and chain.scheduler_effect not in effect_defs
+            ):
                 findings.append(
                     (
                         f"{chain.name} is missing its current-year scheduler {chain.scheduler_effect}",
@@ -849,7 +897,9 @@ class Validator(BaseValidator):
                             reconstruct.line,
                         )
                     )
-            event_calls = self._find_event_calls(reconstruct.body, reconstruct.line, frozenset())
+            event_calls = self._find_event_calls(
+                reconstruct.body, reconstruct.line, frozenset()
+            )
             for _target, line in event_calls:
                 findings.append(
                     (
@@ -858,7 +908,9 @@ class Validator(BaseValidator):
                         line,
                     )
                 )
-            if not self._flag_is_produced(chain.completion_flag, {chain.reconstruct_effect: [reconstruct]}):
+            if not self._flag_is_produced(
+                chain.completion_flag, {chain.reconstruct_effect: [reconstruct]}
+            ):
                 findings.append(
                     (
                         f"{chain.reconstruct_effect} never sets {chain.completion_flag}",
@@ -910,16 +962,28 @@ class Validator(BaseValidator):
         for flag in sorted(discovered_flags):
             chain_owners = owners.get(flag, [])
             if len(chain_owners) != 1:
-                findings.append((f"{flag} has {len(chain_owners)} owning chains", "", 0))
+                findings.append(
+                    (f"{flag} has {len(chain_owners)} owning chains", "", 0)
+                )
                 continue
             producers = self._flag_producers(flag, effect_defs)
             if not producers:
                 findings.append((f"{flag} has no producers", "", 0))
             elif len(producers) > 1:
-                findings.append((f"{flag} has {len(producers)} producers", producers[0][0], producers[0][1]))
+                findings.append(
+                    (
+                        f"{flag} has {len(producers)} producers",
+                        producers[0][0],
+                        producers[0][1],
+                    )
+                )
             consumers = self._monthly_consumers(flag, effect_defs)
             if len(consumers) != 1:
-                file = consumers[0][0] if consumers else "common/scripted_effects/00_corporate_history_effects.txt"
+                file = (
+                    consumers[0][0]
+                    if consumers
+                    else "common/scripted_effects/00_corporate_history_effects.txt"
+                )
                 line = consumers[0][1] if consumers else 0
                 findings.append(
                     (
@@ -949,13 +1013,18 @@ class Validator(BaseValidator):
         for chain in chains:
             paths = [
                 self._root / "events" / f"{chain.namespace}.txt",
-                self._root / "common" / "scripted_effects" / f"{chain.root}_effects.txt",
+                self._root
+                / "common"
+                / "scripted_effects"
+                / f"{chain.root}_effects.txt",
             ]
             for path in paths:
                 if not path.exists():
                     continue
                 try:
-                    text = strip_comments(path.read_text(encoding="utf-8-sig", errors="replace"))
+                    text = strip_comments(
+                        path.read_text(encoding="utf-8-sig", errors="replace")
+                    )
                 except OSError:
                     continue
                 stack: List[str] = []
@@ -991,7 +1060,10 @@ class Validator(BaseValidator):
                                 if not self._is_allowed(token, chain.allowed_reads):
                                     label = (
                                         "read-only AI/flavour use"
-                                        if any(ctx in ("ai_chance", "trigger") for ctx in stack)
+                                        if any(
+                                            ctx in ("ai_chance", "trigger")
+                                            for ctx in stack
+                                        )
                                         else "read"
                                     )
                                     findings.append(
@@ -1101,7 +1173,9 @@ class Validator(BaseValidator):
                         counts[name].append(
                             (
                                 effect.file,
-                                effect.line + self._line(effect.body, match.start()) - 1,
+                                effect.line
+                                + self._line(effect.body, match.start())
+                                - 1,
                                 effect.name,
                             )
                         )
@@ -1171,7 +1245,9 @@ class Validator(BaseValidator):
     ) -> Set[str]:
         results = set()
         for idea_id in idea_defs:
-            if any(idea_id.startswith(prefix) for prefix in chain.outcome_idea_prefixes):
+            if any(
+                idea_id.startswith(prefix) for prefix in chain.outcome_idea_prefixes
+            ):
                 results.add(idea_id)
         return results
 
@@ -1188,7 +1264,9 @@ class Validator(BaseValidator):
                 if not effect.name.startswith(chain.root):
                     continue
                 remove_count = sum(
-                    1 for idea_id in outcome_ids if re.search(r"\b" + re.escape(idea_id) + r"\b", effect.body)
+                    1
+                    for idea_id in outcome_ids
+                    if re.search(r"\b" + re.escape(idea_id) + r"\b", effect.body)
                 )
                 if "remove_ideas" in effect.body and remove_count >= 2:
                     return True
@@ -1284,7 +1362,9 @@ class Validator(BaseValidator):
         return any(keyword in line for keyword in _READ_KEYWORDS)
 
     def _is_allowed(self, token: str, patterns: Sequence[str]) -> bool:
-        return any(token == pattern or token.startswith(pattern) for pattern in patterns)
+        return any(
+            token == pattern or token.startswith(pattern) for pattern in patterns
+        )
 
     def _dedupe_findings(
         self, findings: Sequence[Tuple[str, str, int]]
