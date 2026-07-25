@@ -1,12 +1,7 @@
 import json
-import re
 from pathlib import Path
 
-from validate_corporate_history_contract import (
-    _BLOCK_IDENTIFIER,
-    _TOP_LEVEL_BLOCK_RE,
-    Validator,
-)
+from validate_corporate_history_contract import Validator
 
 
 def _write(root: Path, relative: str, text: str):
