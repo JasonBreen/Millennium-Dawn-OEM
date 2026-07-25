@@ -1,12 +1,7 @@
 import json
-import re
 from pathlib import Path
 
-from validate_corporate_history_contract import (
-    _BLOCK_IDENTIFIER,
-    _TOP_LEVEL_BLOCK_RE,
-    Validator,
-)
+from validate_corporate_history_contract import Validator
 
 
 def _write(root: Path, relative: str, text: str):
@@ -15,28 +10,56 @@ def _write(root: Path, relative: str, text: str):
     path.write_text(text, encoding="utf-8")
 
 
-def _manifest(callerless=None, allow_multiple_completion_producers=False):
-    return {
-        "chains": [
+def _manifest(
+    callerless=None,
+    allowed_reads=None,
+    with_other_chain=False,
+    variables=None,
+    allow_multiple_completion_producers=False,
+):
+    chains = [
+        {
+            "name": "TestCo",
+            "tag": "USA",
+            "namespace": "USA_test_events",
+            "root": "USA_test",
+            "tier": 1,
+            "owned_prefixes": ["USA_test"],
+            "variables": (
+                {"USA_test_state": {"min": 0, "max": 10}}
+                if variables is None
+                else variables
+            ),
+            "outcome_idea_prefixes": ["USA_test_outcome_"],
+            "requires_current_year_scheduler": True,
+            "allow_yearly_scheduler_duplicates": True,
+            "callerless_anchors": callerless or [],
+            "allowed_multiple_callers": [],
+            "allowed_reads": allowed_reads or [],
+            "allowed_writes": [],
+            "allow_multiple_completion_producers": allow_multiple_completion_producers,
+        }
+    ]
+    if with_other_chain:
+        chains.append(
             {
-                "name": "TestCo",
+                "name": "OtherCo",
                 "tag": "USA",
-                "namespace": "USA_test_events",
-                "root": "USA_test",
-                "tier": 1,
-                "owned_prefixes": ["USA_test"],
-                "variables": {"USA_test_state": {"min": 0, "max": 10}},
-                "outcome_idea_prefixes": ["USA_test_outcome_"],
-                "requires_current_year_scheduler": True,
-                "allow_yearly_scheduler_duplicates": True,
-                "callerless_anchors": callerless or [],
+                "namespace": "USA_other_events",
+                "root": "USA_other",
+                "tier": 2,
+                "owned_prefixes": ["USA_other"],
+                "variables": {},
+                "outcome_idea_prefixes": [],
+                "requires_current_year_scheduler": False,
+                "allow_yearly_scheduler_duplicates": False,
+                "callerless_anchors": [],
                 "allowed_multiple_callers": [],
                 "allowed_reads": [],
                 "allowed_writes": [],
-                "allow_multiple_completion_producers": allow_multiple_completion_producers,
             }
-        ]
-    }
+        )
+    return {"chains": chains}
 
 
 def _base_events(include_hidden_ninety=True, include_anchor=False):
@@ -149,11 +172,11 @@ USA_test_reconstruct_history = {
 """
 
 
-def _base_core_effects(monthly_registration=True, startup_uses_hidden=True):
+def _base_core_effects(monthly_registration=True, startup_reconstructs=False):
     startup_body = (
-        "country_event = { id = USA_test_events.90 days = 1 }"
-        if startup_uses_hidden
-        else "country_event = { id = USA_test_events.1 days = 1 }"
+        "USA_test_reconstruct_history = yes"
+        if startup_reconstructs
+        else "country_event = { id = USA_test_events.90 days = 1 }"
     )
     monthly_call = (
         "\t\tUSA_test_reconstruct_history = yes\n" if monthly_registration else ""
@@ -253,19 +276,21 @@ def _build_fixture(
     treasury_in_reconstruct=False,
     duplicate_complete=False,
     missing_civil_war=False,
-    reconstruct_effect_override=None,
+    reconstruct_body=None,
+    startup_reconstructs=False,
+    manifest_overrides=None,
+    cross_chain_reads=(),
+    cleanup_in_option=False,
+    drop_cleanup_effect=False,
+    drop_state_effects=False,
     allow_multiple_completion_producers=False,
 ):
-    _write(
-        root,
-        "tools/corporate_history_contract.json",
-        json.dumps(
-            _manifest(
-                callerless,
-                allow_multiple_completion_producers=allow_multiple_completion_producers,
-            )
-        ),
+    manifest = _manifest(
+        callerless,
+        allow_multiple_completion_producers=allow_multiple_completion_producers,
+        **(manifest_overrides or {}),
     )
+    _write(root, "tools/corporate_history_contract.json", json.dumps(manifest))
     _write(
         root,
         "common/scripted_triggers/MD_corporate_history_triggers.txt",
@@ -281,7 +306,10 @@ corporate_history_outcomes_only_enabled = { always = no }
     _write(
         root,
         "common/scripted_effects/00_corporate_history_effects.txt",
-        _base_core_effects(monthly_registration=monthly_registration),
+        _base_core_effects(
+            monthly_registration=monthly_registration,
+            startup_reconstructs=startup_reconstructs,
+        ),
     )
     _write(
         root,
@@ -290,8 +318,26 @@ corporate_history_outcomes_only_enabled = { always = no }
     )
     _write(root, "common/scripted_effects/00_yearly_effects.txt", _base_yearly())
     effects = _base_effects()
-    if reconstruct_effect_override is not None:
-        effects = reconstruct_effect_override
+    if reconstruct_body is not None:
+        head, _sep, _tail = effects.partition("USA_test_reconstruct_history = {")
+        effects = f"{head}USA_test_reconstruct_history = {{\n{reconstruct_body}}}\n"
+    if drop_state_effects:
+        head, _sep, tail = effects.partition(
+            "USA_test_schedule_current_year_events = {"
+        )
+        del head
+        effects = "USA_test_schedule_current_year_events = {" + tail
+        effects = effects.replace("\tUSA_test_clamp_state = yes\n", "")
+    if cleanup_in_option or drop_cleanup_effect:
+        effects = effects.replace(
+            "USA_test_clear_capstone_outcome = {\n"
+            "\tremove_ideas = {\n"
+            "\t\tUSA_test_outcome_a\n"
+            "\t\tUSA_test_outcome_b\n"
+            "\t}\n"
+            "}\n\n",
+            "",
+        ).replace("\tUSA_test_clear_capstone_outcome = yes\n", "")
     if treasury_in_reconstruct:
         effects = effects.replace(
             "\t\tset_country_flag = USA_test_branch_a\n",
@@ -308,8 +354,25 @@ corporate_history_outcomes_only_enabled = { always = no }
     events = _base_events(
         include_hidden_ninety=include_hidden_ninety, include_anchor=include_anchor
     )
-    if missing_clamp:
+    if missing_clamp or drop_state_effects:
         events = events.replace("\n\t\t\tUSA_test_clamp_state = yes", "")
+    if cleanup_in_option:
+        events = events.replace(
+            "\t\tname = USA_test_events.1.a\n",
+            "\t\tname = USA_test_events.1.a\n"
+            "\t\tremove_ideas = {\n"
+            "\t\t\tUSA_test_outcome_a\n"
+            "\t\t\tUSA_test_outcome_b\n"
+            "\t\t}\n",
+        )
+    if cross_chain_reads:
+        reads = "\n".join(
+            f"\t\t\thas_country_flag = {flag}" for flag in cross_chain_reads
+        )
+        events = events.replace(
+            "\t\tname = USA_test_events.1.a\n",
+            f"\t\tname = USA_test_events.1.a\n\t\tai_chance = {{\n\t\t\tbase = 10\n{reads}\n\t\t}}\n",
+        )
     _write(root, "events/USA_test_events.txt", events)
     _write(root, "common/ideas/USA_test_ideas.txt", _base_ideas(missing_civil_war))
 
@@ -343,8 +406,16 @@ def test_tier_one_missing_hidden_ninety(tmp_path):
     _build_fixture(tmp_path, include_hidden_ninety=False)
     messages = _messages(tmp_path)
     assert any(
-        "USA_test_events.90 is missing or not hidden" in message for message in messages
+        "USA_test_events.90 is missing or not hidden and "
+        "USA_test_reconstruct_history is not called directly from "
+        "corporate_history_on_startup" in message
+        for message in messages
     )
+
+
+def test_tier_one_startup_reconstruct_replaces_hidden_ninety(tmp_path):
+    _build_fixture(tmp_path, include_hidden_ninety=False, startup_reconstructs=True)
+    assert _messages(tmp_path) == []
 
 
 def test_tier_one_missing_monthly_outcomes_registration(tmp_path):
@@ -419,36 +490,11 @@ def test_explicitly_allowed_custom_anchor(tmp_path):
     )
 
 
-# ============================================================================
-# Reconstruction safety marker-guard tests
-# ============================================================================
-
-
-def _reconstruct_with_direct_negative_flag_guard():
-    """Valid: direct negative country-flag guard."""
-    return """USA_test_reconstruct_history = {
-\tif = {
+_COMPLETE_BRANCH = """\tif = {
 \t\tlimit = {
-\t\t\tdate > 2001.2.1
-\t\t\tNOT = { has_country_flag = USA_test_branch_a }
-\t\t}
-\t\tset_country_flag = USA_test_branch_a
-\t}
-\tif = {
-\t\tlimit = { date > 2001.3.1 }
-\t\tset_country_flag = USA_test_reconstruct_complete
-\t}
-}
-"""
-
-
-def _reconstruct_with_direct_negative_idea_guard():
-    """Valid: direct negative idea guard."""
-    return """USA_test_reconstruct_history = {
-\tif = {
-\t\tlimit = {
-\t\t\tdate > 2001.2.1
+\t\t\tdate > 2001.3.1
 \t\t\tNOT = { has_idea = USA_test_outcome_a }
+\t\t\tNOT = { has_idea = USA_test_outcome_b }
 \t\t}
 \t\tUSA_test_resolve_capstone = yes
 \t}
@@ -456,330 +502,295 @@ def _reconstruct_with_direct_negative_idea_guard():
 \t\tlimit = { date > 2001.3.1 }
 \t\tset_country_flag = USA_test_reconstruct_complete
 \t}
-}
 """
 
 
-def _reconstruct_with_not_or_flag_set():
-    """Valid: NOT -> OR flag set."""
-    return """USA_test_reconstruct_history = {
-\tif = {
-\t\tlimit = {
-\t\t\tdate > 2001.2.1
-\t\t\tNOT = {
-\t\t\t\tOR = {
-\t\t\t\t\thas_country_flag = USA_test_branch_a
-\t\t\t\t\thas_country_flag = USA_test_branch_b
-\t\t\t\t}
-\t\t\t}
-\t\t}
-\t\tset_country_flag = USA_test_branch_a
-\t}
-\tif = {
-\t\tlimit = { date > 2001.3.1 }
-\t\tset_country_flag = USA_test_reconstruct_complete
-\t}
-}
-"""
+def _reconstruct(branch: str) -> str:
+    return branch + _COMPLETE_BRANCH
 
 
-def _reconstruct_with_not_or_mixed_flag_idea_set():
-    """Valid: mixed flag/idea NOT -> OR set."""
-    return """USA_test_reconstruct_history = {
-\tif = {
-\t\tlimit = {
-\t\t\tdate > 2001.2.1
-\t\t\tNOT = {
-\t\t\t\tOR = {
-\t\t\t\t\thas_country_flag = USA_test_branch_a
-\t\t\t\t\thas_idea = USA_test_outcome_a
-\t\t\t\t}
-\t\t\t}
-\t\t}
-\t\tset_country_flag = USA_test_branch_a
-\t}
-\tif = {
-\t\tlimit = { date > 2001.3.1 }
-\t\tset_country_flag = USA_test_reconstruct_complete
-\t}
-}
-"""
+_UNGUARDED_MESSAGE = (
+    "USA_test_reconstruct_history has a state-changing block "
+    "without sibling-marker guards"
+)
 
 
-def _reconstruct_with_positive_or():
-    """Invalid: positive OR (not negated)."""
-    return """USA_test_reconstruct_history = {
-\tif = {
-\t\tlimit = {
-\t\t\tdate > 2001.2.1
-\t\t\tOR = {
-\t\t\t\thas_country_flag = USA_test_branch_a
-\t\t\t\thas_country_flag = USA_test_branch_b
-\t\t\t}
-\t\t}
-\t\tset_country_flag = USA_test_branch_a
-\t}
-\tif = {
-\t\tlimit = { date > 2001.3.1 }
-\t\tset_country_flag = USA_test_reconstruct_complete
-\t}
-}
-"""
+def _guarded_branch(limit_body: str) -> str:
+    return (
+        "\tif = {\n"
+        "\t\tlimit = {\n"
+        "\t\t\tdate > 2001.2.1\n"
+        f"{limit_body}"
+        "\t\t}\n"
+        "\t\tset_country_flag = USA_test_branch_a\n"
+        "\t\tadd_to_variable = { USA_test_state = 1 }\n"
+        "\t\tUSA_test_clamp_state = yes\n"
+        "\t}\n"
+    )
 
 
-def _reconstruct_with_marker_only_after_limit():
-    """Invalid: marker present only after the limit (in effect body)."""
-    return """USA_test_reconstruct_history = {
-\tif = {
-\t\tlimit = {
-\t\t\tdate > 2001.2.1
-\t\t}
-\t\tNOT = { has_country_flag = USA_test_branch_a }
-\t\tset_country_flag = USA_test_branch_a
-\t}
-\tif = {
-\t\tlimit = { date > 2001.3.1 }
-\t\tset_country_flag = USA_test_reconstruct_complete
-\t}
-}
-"""
-
-
-def _reconstruct_with_nested_marker_guard_only():
-    """Invalid: nested limit guard does not cover the outer state change."""
-    return """USA_test_reconstruct_history = {
-\tif = {
-\t\tlimit = {
-\t\t\tdate > 2001.2.1
-\t\t}
-\t\tif = {
-\t\t\tlimit = { NOT = { has_country_flag = USA_test_branch_a } }
-\t\t\tset_country_flag = USA_test_branch_b
-\t\t}
-\t\tset_country_flag = USA_test_branch_a
-\t}
-\tif = {
-\t\tlimit = { date > 2001.3.1 }
-\t\tset_country_flag = USA_test_reconstruct_complete
-\t}
-}
-"""
-
-
-def _reconstruct_with_top_level_date_and_nested_marker_only():
-    """Invalid: nested marker guards do not count without a top-level limit."""
-    return """USA_test_reconstruct_history = {
-\tif = {
-\t\tdate > 2001.2.1
-\t\tif = {
-\t\t\tlimit = { NOT = { has_country_flag = USA_test_branch_a } }
-\t\t\tset_country_flag = USA_test_branch_b
-\t\t}
-\t\tset_country_flag = USA_test_branch_a
-\t}
-\tif = {
-\t\tlimit = { date > 2001.3.1 }
-\t\tset_country_flag = USA_test_reconstruct_complete
-\t}
-}
-"""
-
-
-def _reconstruct_with_top_level_not_guard_without_limit():
-    """Valid: top-level NOT guard without a limit block."""
-    return """USA_test_reconstruct_history = {
-\tif = {
-\t\tdate > 2001.2.1
-\t\tNOT = { has_country_flag = USA_test_branch_a }
-\t\tset_country_flag = USA_test_branch_a
-\t}
-\tif = {
-\t\tlimit = { date > 2001.3.1 }
-\t\tset_country_flag = USA_test_reconstruct_complete
-\t}
-}
-"""
-
-
-def _reconstruct_with_date_only():
-    """Invalid: date-only state-changing branch."""
-    return """USA_test_reconstruct_history = {
-\tif = {
-\t\tlimit = {
-\t\t\tdate > 2001.2.1
-\t\t}
-\t\tset_country_flag = USA_test_branch_a
-\t}
-\tif = {
-\t\tlimit = { date > 2001.3.1 }
-\t\tset_country_flag = USA_test_reconstruct_complete
-\t}
-}
-"""
-
-
-def _reconstruct_with_unguarded_state_change():
-    """Invalid: genuinely unguarded reconstruction fixture."""
-    return """USA_test_reconstruct_history = {
-\tif = {
-\t\tlimit = {
-\t\t\tdate > 2001.2.1
-\t\t}
-\t\tset_country_flag = USA_test_branch_a
-\t\tadd_to_variable = { USA_test_state = 1 }
-\t}
-\tif = {
-\t\tlimit = { date > 2001.3.1 }
-\t\tset_country_flag = USA_test_reconstruct_complete
-\t}
-}
-"""
-
-
-def test_valid_direct_negative_flag_guard(tmp_path):
-    """Test that direct negative flag guards are accepted."""
+def test_direct_negative_flag_guard_is_accepted(tmp_path):
     _build_fixture(
         tmp_path,
-        reconstruct_effect_override=_reconstruct_with_direct_negative_flag_guard(),
+        reconstruct_body=_reconstruct(
+            _guarded_branch("\t\t\tNOT = { has_country_flag = USA_test_branch_a }\n")
+        ),
     )
-    messages = _messages(tmp_path)
-    assert not any(
-        "state-changing block without sibling-marker guards" in message
-        for message in messages
-    )
+    assert _messages(tmp_path) == []
 
 
-def test_block_header_regex_accepts_closing_brackets():
-    assert _TOP_LEVEL_BLOCK_RE.search("header] = {")
-    assert re.findall(r"(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{", "header] = {") == [
-        "header]"
+def test_direct_negative_idea_guard_is_accepted(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_body=_reconstruct(
+            _guarded_branch("\t\t\tNOT = { has_idea = USA_test_outcome_a }\n")
+        ),
+    )
+    assert _messages(tmp_path) == []
+
+
+def test_negated_or_flag_set_is_accepted(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_body=_reconstruct(
+            _guarded_branch(
+                "\t\t\tNOT = {\n"
+                "\t\t\t\tOR = {\n"
+                "\t\t\t\t\thas_country_flag = USA_test_branch_a\n"
+                "\t\t\t\t\thas_country_flag = USA_test_branch_b\n"
+                "\t\t\t\t}\n"
+                "\t\t\t}\n"
+            )
+        ),
+    )
+    assert _messages(tmp_path) == []
+
+
+def test_negated_or_mixed_flag_and_idea_set_is_accepted(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_body=_reconstruct(
+            _guarded_branch(
+                "\t\t\tNOT = {\n"
+                "\t\t\t\tOR = {\n"
+                "\t\t\t\t\thas_country_flag = USA_test_branch_a\n"
+                "\t\t\t\t\thas_idea = USA_test_outcome_a\n"
+                "\t\t\t\t}\n"
+                "\t\t\t}\n"
+            )
+        ),
+    )
+    assert _messages(tmp_path) == []
+
+
+def test_positive_or_marker_set_is_rejected(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_body=_reconstruct(
+            _guarded_branch(
+                "\t\t\tOR = {\n"
+                "\t\t\t\thas_country_flag = USA_test_branch_a\n"
+                "\t\t\t\thas_country_flag = USA_test_branch_b\n"
+                "\t\t\t}\n"
+            )
+        ),
+    )
+    assert _messages(tmp_path) == [_UNGUARDED_MESSAGE]
+
+
+def test_double_negated_marker_is_rejected(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_body=_reconstruct(
+            _guarded_branch(
+                "\t\t\tNOT = {\n"
+                "\t\t\t\tNOT = { has_country_flag = USA_test_branch_a }\n"
+                "\t\t\t}\n"
+            )
+        ),
+    )
+    assert _messages(tmp_path) == [_UNGUARDED_MESSAGE]
+
+
+def test_marker_guarding_another_country_is_rejected(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_body=_reconstruct(
+            _guarded_branch(
+                "\t\t\tCAN = { NOT = { has_country_flag = USA_test_branch_a } }\n"
+            )
+        ),
+    )
+    assert _messages(tmp_path) == [_UNGUARDED_MESSAGE]
+
+
+def test_marker_only_in_the_effect_body_is_rejected(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_body=_reconstruct(
+            "\tif = {\n"
+            "\t\tlimit = { date > 2001.2.1 }\n"
+            "\t\tcustom_effect_tooltip = USA_test_branch_a_tt\n"
+            "\t\tNOT = { has_country_flag = USA_test_branch_a }\n"
+            "\t\tset_country_flag = USA_test_branch_a\n"
+            "\t}\n"
+        ),
+    )
+    assert _messages(tmp_path) == [_UNGUARDED_MESSAGE]
+
+
+def test_date_only_state_changing_branch_is_rejected(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_body=_reconstruct(_guarded_branch("")),
+    )
+    assert _messages(tmp_path) == [_UNGUARDED_MESSAGE]
+
+
+def test_branch_without_a_limit_is_rejected(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_body=_reconstruct(
+            "\tif = {\n"
+            "\t\tset_country_flag = USA_test_branch_a\n"
+            "\t\tadd_to_variable = { USA_test_state = 1 }\n"
+            "\t\tUSA_test_clamp_state = yes\n"
+            "\t}\n"
+        ),
+    )
+    assert _messages(tmp_path) == [
+        "USA_test_reconstruct_history has a state-changing block without a date guard",
+        _UNGUARDED_MESSAGE,
     ]
 
 
-def test_reconstruct_override_accepts_empty_string(tmp_path):
-    _build_fixture(tmp_path, reconstruct_effect_override="")
-    assert (tmp_path / "common/scripted_effects/USA_test_effects.txt").read_text(
-        encoding="utf-8"
-    ) == ""
-
-
-def test_valid_direct_negative_idea_guard(tmp_path):
-    """Test that direct negative idea guards are accepted."""
+def test_variable_only_mutation_still_needs_a_marker_guard(tmp_path):
     _build_fixture(
         tmp_path,
-        reconstruct_effect_override=_reconstruct_with_direct_negative_idea_guard(),
+        reconstruct_body=_reconstruct(
+            "\tif = {\n"
+            "\t\tlimit = { date > 2001.2.1 }\n"
+            "\t\tadd_to_variable = { USA_test_state = 1 }\n"
+            "\t\tUSA_test_clamp_state = yes\n"
+            "\t}\n"
+        ),
     )
-    messages = _messages(tmp_path)
-    assert not any(
-        "state-changing block without sibling-marker guards" in message
-        for message in messages
-    )
+    assert _messages(tmp_path) == [_UNGUARDED_MESSAGE]
 
 
-def test_valid_not_or_flag_set(tmp_path):
-    """Test that NOT -> OR flag sets are accepted."""
-    _build_fixture(
-        tmp_path, reconstruct_effect_override=_reconstruct_with_not_or_flag_set()
-    )
-    messages = _messages(tmp_path)
-    assert not any(
-        "state-changing block without sibling-marker guards" in message
-        for message in messages
-    )
-
-
-def test_valid_not_or_mixed_flag_idea_set(tmp_path):
-    """Test that mixed flag/idea NOT -> OR sets are accepted."""
+def test_declared_cross_chain_read_is_accepted(tmp_path):
     _build_fixture(
         tmp_path,
-        reconstruct_effect_override=_reconstruct_with_not_or_mixed_flag_idea_set(),
+        manifest_overrides={
+            "with_other_chain": True,
+            "allowed_reads": ["USA_other_qnx_stack"],
+        },
+        cross_chain_reads=["USA_other_qnx_stack"],
     )
-    messages = _messages(tmp_path)
-    assert not any(
-        "state-changing block without sibling-marker guards" in message
-        for message in messages
-    )
+    assert _messages(tmp_path) == []
 
 
-def test_invalid_positive_or(tmp_path):
-    """Test that positive-only OR blocks are rejected."""
-    _build_fixture(
-        tmp_path, reconstruct_effect_override=_reconstruct_with_positive_or()
-    )
-    messages = _messages(tmp_path)
-    assert any(
-        "state-changing block without sibling-marker guards" in message
-        for message in messages
-    )
-
-
-def test_invalid_marker_only_after_limit(tmp_path):
-    """Test that markers appearing only after the limit are rejected."""
+def test_cross_chain_exception_does_not_cover_prefix_neighbours(tmp_path):
     _build_fixture(
         tmp_path,
-        reconstruct_effect_override=_reconstruct_with_marker_only_after_limit(),
+        manifest_overrides={
+            "with_other_chain": True,
+            "allowed_reads": ["USA_other_qnx_stack"],
+        },
+        cross_chain_reads=["USA_other_qnx_stack", "USA_other_qnx_stack_v2"],
     )
+    assert _messages(tmp_path) == [
+        "TestCo has undeclared cross-chain read-only AI/flavour use of "
+        "USA_other_qnx_stack_v2, owned by OtherCo"
+    ]
+
+
+def test_flag_state_chain_needs_no_initialize_or_clamp_effect(tmp_path):
+    _build_fixture(
+        tmp_path, manifest_overrides={"variables": {}}, drop_state_effects=True
+    )
+    assert _messages(tmp_path) == []
+
+
+def test_bounded_state_chain_still_needs_initialize_and_clamp_effects(tmp_path):
+    _build_fixture(tmp_path, drop_state_effects=True)
     messages = _messages(tmp_path)
-    assert any(
-        "state-changing block without sibling-marker guards" in message
-        for message in messages
-    )
+    assert "TestCo is missing its initialization effect" in messages
+    assert "TestCo is missing its clamp effect" in messages
 
 
-def test_invalid_nested_marker_guard_only(tmp_path):
-    """Test that nested marker guards do not validate the outer state change."""
+def test_reconstruction_that_never_lands_an_outcome_has_no_terminal_resolver(tmp_path):
     _build_fixture(
         tmp_path,
-        reconstruct_effect_override=_reconstruct_with_nested_marker_guard_only(),
+        reconstruct_body=(
+            "\tif = {\n"
+            "\t\tlimit = {\n"
+            "\t\t\tdate > 2001.2.1\n"
+            "\t\t\tNOT = { has_country_flag = USA_test_branch_a }\n"
+            "\t\t}\n"
+            "\t\tset_country_flag = USA_test_branch_a\n"
+            "\t}\n"
+            "\tif = {\n"
+            "\t\tlimit = { date > 2001.3.1 }\n"
+            "\t\tset_country_flag = USA_test_reconstruct_complete\n"
+            "\t}\n"
+        ),
     )
-    messages = _messages(tmp_path)
-    assert any(
-        "state-changing block without sibling-marker guards" in message
-        for message in messages
-    )
+    assert _messages(tmp_path) == ["TestCo is missing a terminal resolver effect"]
 
 
-def test_invalid_nested_marker_guard_without_top_level_limit(tmp_path):
+def test_capstone_cleanup_may_live_in_the_event_option(tmp_path):
+    _build_fixture(tmp_path, cleanup_in_option=True)
+    assert _messages(tmp_path) == []
+
+
+def test_chain_without_any_capstone_cleanup_is_reported(tmp_path):
+    _build_fixture(tmp_path, drop_cleanup_effect=True)
+    assert _messages(tmp_path) == [
+        "TestCo is missing a mutually exclusive cleanup effect"
+    ]
+
+
+def test_bare_multi_child_not_is_rejected(tmp_path):
     _build_fixture(
         tmp_path,
-        reconstruct_effect_override=_reconstruct_with_top_level_date_and_nested_marker_only(),
+        reconstruct_body=_reconstruct(
+            _guarded_branch(
+                "\t\t\tNOT = {\n"
+                "\t\t\t\thas_country_flag = USA_test_branch_a\n"
+                "\t\t\t\thas_country_flag = USA_test_branch_b\n"
+                "\t\t\t}\n"
+            )
+        ),
     )
-    messages = _messages(tmp_path)
-    assert any(
-        "state-changing block without sibling-marker guards" in message
-        for message in messages
-    )
+    assert _messages(tmp_path) == [_UNGUARDED_MESSAGE]
 
 
-def test_valid_top_level_not_guard_without_limit(tmp_path):
+def test_separate_negated_markers_are_accepted(tmp_path):
     _build_fixture(
         tmp_path,
-        reconstruct_effect_override=_reconstruct_with_top_level_not_guard_without_limit(),
+        reconstruct_body=_reconstruct(
+            _guarded_branch(
+                "\t\t\tNOT = { has_country_flag = USA_test_branch_a }\n"
+                "\t\t\tNOT = { has_country_flag = USA_test_branch_b }\n"
+            )
+        ),
     )
-    messages = _messages(tmp_path)
-    assert not any(
-        "state-changing block without sibling-marker guards" in message
-        for message in messages
-    )
+    assert _messages(tmp_path) == []
 
 
-def test_invalid_date_only(tmp_path):
-    """Test that date-only state-changing branches are rejected."""
-    _build_fixture(tmp_path, reconstruct_effect_override=_reconstruct_with_date_only())
-    messages = _messages(tmp_path)
-    assert any(
-        "state-changing block without sibling-marker guards" in message
-        for message in messages
-    )
-
-
-def test_invalid_unguarded_reconstruction(tmp_path):
-    """Test that genuinely unguarded reconstruction fixtures are rejected."""
+def test_negated_and_marker_set_is_rejected(tmp_path):
     _build_fixture(
-        tmp_path, reconstruct_effect_override=_reconstruct_with_unguarded_state_change()
+        tmp_path,
+        reconstruct_body=_reconstruct(
+            _guarded_branch(
+                "\t\t\tNOT = {\n"
+                "\t\t\t\tAND = {\n"
+                "\t\t\t\t\thas_country_flag = USA_test_branch_a\n"
+                "\t\t\t\t\thas_country_flag = USA_test_branch_b\n"
+                "\t\t\t\t}\n"
+                "\t\t\t}\n"
+            )
+        ),
     )
-    messages = _messages(tmp_path)
-    assert any(
-        "state-changing block without sibling-marker guards" in message
-        for message in messages
-    )
+    assert _messages(tmp_path) == [_UNGUARDED_MESSAGE]
