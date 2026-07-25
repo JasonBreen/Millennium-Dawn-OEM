@@ -27,7 +27,8 @@ _EVENT_KEYWORDS = (
 )
 _EVENT_ALT = "|".join(_EVENT_KEYWORDS)
 _EVENT_DEF_RE = re.compile(r"(?m)^(" + _EVENT_ALT + r")\s*=\s*\{")
-_TOP_LEVEL_BLOCK_RE = re.compile(r"(?m)^([A-Za-z0-9_.:@^\[\]-]+)\s*=\s*\{")
+_BLOCK_IDENTIFIER = r"[A-Za-z0-9_.:@^\[\]-]+"
+_TOP_LEVEL_BLOCK_RE = re.compile(r"(?m)^(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{")
 _OPTION_RE = re.compile(r"\boption\s*=\s*\{")
 _IMMEDIATE_RE = re.compile(r"\bimmediate\s*=\s*\{")
 _ID_RE = re.compile(r"\bid\s*=\s*([A-Za-z0-9_.]+)")
@@ -116,6 +117,7 @@ class ChainConfig:
     allowed_multiple_callers: Set[str]
     allowed_reads: Tuple[str, ...]
     allowed_writes: Tuple[str, ...]
+    allow_multiple_completion_producers: bool = False
 
     @property
     def completion_flag(self) -> str:
@@ -327,6 +329,9 @@ class Validator(BaseValidator):
                     ),
                     allowed_reads=tuple(raw.get("allowed_reads", [])),
                     allowed_writes=tuple(raw.get("allowed_writes", [])),
+                    allow_multiple_completion_producers=bool(
+                        raw.get("allow_multiple_completion_producers", False)
+                    ),
                 )
             )
         return chains
@@ -969,7 +974,10 @@ class Validator(BaseValidator):
             producers = self._flag_producers(flag, effect_defs)
             if not producers:
                 findings.append((f"{flag} has no producers", "", 0))
-            elif len(producers) > 1:
+            elif (
+                len(producers) > 1
+                and not chain_owners[0].allow_multiple_completion_producers
+            ):
                 findings.append(
                     (
                         f"{flag} has {len(producers)} producers",
@@ -1032,7 +1040,7 @@ class Validator(BaseValidator):
                 for raw_line in text.splitlines():
                     line_no += 1
                     code = blank_quoted_strings(raw_line)
-                    headers = re.findall(r"([A-Za-z0-9_.:@^\[\]-]+)\s*=\s*\{", code)
+                    headers = re.findall(r"(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{", code)
                     stack.extend(headers)
                     tokens: List[Tuple[ChainConfig, str]] = []
                     seen_tokens: Set[Tuple[str, str]] = set()
@@ -1343,12 +1351,56 @@ class Validator(BaseValidator):
         return any(variable in body for variable in chain.variables)
 
     def _has_marker_guard(self, body: str) -> bool:
+        # Special case: reconstruction-complete flag setting is always valid
         if "set_country_flag = " in body and "_reconstruct_complete" in body:
             return True
-        return bool(
-            re.search(r"NOT\s*=\s*\{\s*has_country_flag\s*=", body)
-            or re.search(r"NOT\s*=\s*\{\s*has_idea\s*=", body)
-        )
+
+        limit_match = re.search(r"\blimit\s*=\s*\{", body)
+        if not limit_match:
+            # No limit block found, check the old way for backwards compatibility
+            return bool(
+                re.search(r"NOT\s*=\s*\{\s*has_country_flag\s*=", body)
+                or re.search(r"NOT\s*=\s*\{\s*has_idea\s*=", body)
+            )
+
+        limit_body, _end = extract_block_from_text(body, limit_match.end() - 1)
+        return self._limit_has_marker_guard(limit_body)
+
+    def _limit_has_marker_guard(self, limit_body: str) -> bool:
+        """Check if a limit block contains valid sibling-marker guards.
+
+        Valid patterns:
+        - Direct negative country-flag guards: NOT = { has_country_flag = ... }
+        - Direct negative idea guards: NOT = { has_idea = ... }
+        - Nested NOT -> OR -> marker sets
+        - Mixed flag/idea NOT -> OR sets
+
+        Invalid patterns:
+        - Positive-only OR blocks
+        - Date-only branches
+        - Markers appearing only in the effect body after the limit
+        """
+        # Check for direct negative guards
+        if re.search(r"NOT\s*=\s*\{\s*has_country_flag\s*=", limit_body):
+            return True
+        if re.search(r"NOT\s*=\s*\{\s*has_idea\s*=", limit_body):
+            return True
+
+        # Check for NOT -> OR -> marker patterns
+        not_pattern = re.compile(r"NOT\s*=\s*\{")
+        not_blocks = self._nested_blocks(limit_body, not_pattern, "NOT", "", 0)
+
+        for not_block in not_blocks:
+            or_pattern = re.compile(r"OR\s*=\s*\{")
+            or_blocks = self._nested_blocks(not_block.body, or_pattern, "OR", "", 0)
+
+            for or_block in or_blocks:
+                if re.search(r"\bhas_country_flag\s*=", or_block.body) or re.search(
+                    r"\bhas_idea\s*=", or_block.body
+                ):
+                    return True
+
+        return False
 
     def _line_is_cross_write(self, line: str, owner: ChainConfig) -> bool:
         if any(keyword in line for keyword in _WRITE_KEYWORDS):
