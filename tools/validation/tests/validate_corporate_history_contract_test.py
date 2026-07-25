@@ -566,6 +566,25 @@ def _reconstruct_with_nested_marker_guard_only():
 """
 
 
+def _reconstruct_with_top_level_date_and_nested_marker_only():
+    """Invalid: nested marker guards do not count without a top-level limit."""
+    return """USA_test_reconstruct_history = {
+\tif = {
+\t\tdate > 2001.2.1
+\t\tif = {
+\t\t\tlimit = { NOT = { has_country_flag = USA_test_branch_a } }
+\t\t\tset_country_flag = USA_test_branch_b
+\t\t}
+\t\tset_country_flag = USA_test_branch_a
+\t}
+\tif = {
+\t\tlimit = { date > 2001.3.1 }
+\t\tset_country_flag = USA_test_reconstruct_complete
+\t}
+}
+"""
+
+
 def _reconstruct_with_date_only():
     """Invalid: date-only state-changing branch."""
     return """USA_test_reconstruct_history = {
@@ -696,6 +715,18 @@ def test_invalid_nested_marker_guard_only(tmp_path):
     _build_fixture(
         tmp_path,
         reconstruct_effect_override=_reconstruct_with_nested_marker_guard_only(),
+    )
+    messages = _messages(tmp_path)
+    assert any(
+        "state-changing block without sibling-marker guards" in message
+        for message in messages
+    )
+
+
+def test_invalid_nested_marker_guard_without_top_level_limit(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_effect_override=_reconstruct_with_top_level_date_and_nested_marker_only(),
     )
     messages = _messages(tmp_path)
     assert any(
