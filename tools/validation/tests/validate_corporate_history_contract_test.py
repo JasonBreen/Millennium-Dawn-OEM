@@ -1,7 +1,12 @@
 import json
+import re
 from pathlib import Path
 
-from validate_corporate_history_contract import Validator
+from validate_corporate_history_contract import (
+    _BLOCK_IDENTIFIER,
+    _TOP_LEVEL_BLOCK_RE,
+    Validator,
+)
 
 
 def _write(root: Path, relative: str, text: str):
@@ -276,7 +281,7 @@ corporate_history_outcomes_only_enabled = { always = no }
     )
     _write(root, "common/scripted_effects/00_yearly_effects.txt", _base_yearly())
     effects = _base_effects()
-    if reconstruct_effect_override:
+    if reconstruct_effect_override is not None:
         effects = reconstruct_effect_override
     if treasury_in_reconstruct:
         effects = effects.replace(
@@ -518,6 +523,27 @@ def _reconstruct_with_marker_only_after_limit():
 """
 
 
+def _reconstruct_with_nested_marker_guard_only():
+    """Invalid: nested limit guard does not cover the outer state change."""
+    return """USA_test_reconstruct_history = {
+\tif = {
+\t\tlimit = {
+\t\t\tdate > 2001.2.1
+\t\t}
+\t\tif = {
+\t\t\tlimit = { NOT = { has_country_flag = USA_test_branch_a } }
+\t\t\tset_country_flag = USA_test_branch_b
+\t\t}
+\t\tset_country_flag = USA_test_branch_a
+\t}
+\tif = {
+\t\tlimit = { date > 2001.3.1 }
+\t\tset_country_flag = USA_test_reconstruct_complete
+\t}
+}
+"""
+
+
 def _reconstruct_with_date_only():
     """Invalid: date-only state-changing branch."""
     return """USA_test_reconstruct_history = {
@@ -564,6 +590,20 @@ def test_valid_direct_negative_flag_guard(tmp_path):
         "state-changing block without sibling-marker guards" in message
         for message in messages
     )
+
+
+def test_block_header_regex_accepts_closing_brackets():
+    assert _TOP_LEVEL_BLOCK_RE.search("header] = {")
+    assert re.findall(r"(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{", "header] = {") == [
+        "header]"
+    ]
+
+
+def test_reconstruct_override_accepts_empty_string(tmp_path):
+    _build_fixture(tmp_path, reconstruct_effect_override="")
+    assert (tmp_path / "common/scripted_effects/USA_test_effects.txt").read_text(
+        encoding="utf-8"
+    ) == ""
 
 
 def test_valid_direct_negative_idea_guard(tmp_path):
@@ -621,6 +661,19 @@ def test_invalid_marker_only_after_limit(tmp_path):
     _build_fixture(
         tmp_path,
         reconstruct_effect_override=_reconstruct_with_marker_only_after_limit(),
+    )
+    messages = _messages(tmp_path)
+    assert any(
+        "state-changing block without sibling-marker guards" in message
+        for message in messages
+    )
+
+
+def test_invalid_nested_marker_guard_only(tmp_path):
+    """Test that nested marker guards do not validate the outer state change."""
+    _build_fixture(
+        tmp_path,
+        reconstruct_effect_override=_reconstruct_with_nested_marker_guard_only(),
     )
     messages = _messages(tmp_path)
     assert any(

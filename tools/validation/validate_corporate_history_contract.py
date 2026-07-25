@@ -27,7 +27,8 @@ _EVENT_KEYWORDS = (
 )
 _EVENT_ALT = "|".join(_EVENT_KEYWORDS)
 _EVENT_DEF_RE = re.compile(r"(?m)^(" + _EVENT_ALT + r")\s*=\s*\{")
-_TOP_LEVEL_BLOCK_RE = re.compile(r"(?m)^([A-Za-z0-9_.:@^\[-]+)\s*=\s*\{")
+_BLOCK_IDENTIFIER = r"[A-Za-z0-9_.:@^\[\]-]+"
+_TOP_LEVEL_BLOCK_RE = re.compile(r"(?m)^(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{")
 _OPTION_RE = re.compile(r"\boption\s*=\s*\{")
 _IMMEDIATE_RE = re.compile(r"\bimmediate\s*=\s*\{")
 _ID_RE = re.compile(r"\bid\s*=\s*([A-Za-z0-9_.]+)")
@@ -1032,7 +1033,7 @@ class Validator(BaseValidator):
                 for raw_line in text.splitlines():
                     line_no += 1
                     code = blank_quoted_strings(raw_line)
-                    headers = re.findall(r"([A-Za-z0-9_.:@^\[-]+)\s*=\s*\{", code)
+                    headers = re.findall(r"(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{", code)
                     stack.extend(headers)
                     tokens: List[Tuple[ChainConfig, str]] = []
                     seen_tokens: Set[Tuple[str, str]] = set()
@@ -1347,23 +1348,16 @@ class Validator(BaseValidator):
         if "set_country_flag = " in body and "_reconstruct_complete" in body:
             return True
 
-        # Extract the limit block from the if/else_if body
-        limit_pattern = re.compile(r"\blimit\s*=\s*\{")
-        limit_blocks = self._nested_blocks(body, limit_pattern, "limit", "", 0)
-
-        if not limit_blocks:
+        limit_match = re.search(r"\blimit\s*=\s*\{", body)
+        if not limit_match:
             # No limit block found, check the old way for backwards compatibility
             return bool(
                 re.search(r"NOT\s*=\s*\{\s*has_country_flag\s*=", body)
                 or re.search(r"NOT\s*=\s*\{\s*has_idea\s*=", body)
             )
 
-        # Check each limit block for valid marker guards
-        for limit_block in limit_blocks:
-            if self._limit_has_marker_guard(limit_block.body):
-                return True
-
-        return False
+        limit_body, _end = extract_block_from_text(body, limit_match.end() - 1)
+        return self._limit_has_marker_guard(limit_body)
 
     def _limit_has_marker_guard(self, limit_body: str) -> bool:
         """Check if a limit block contains valid sibling-marker guards.
