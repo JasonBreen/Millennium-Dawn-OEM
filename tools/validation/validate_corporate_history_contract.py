@@ -1382,14 +1382,8 @@ class Validator(BaseValidator):
         return bool(
             not_body
             and (
-                re.search(
-                    r"NOT\s*=\s*\{\s*has_country_flag\s*=",
-                    not_body,
-                )
-                or re.search(
-                    r"NOT\s*=\s*\{\s*has_idea\s*=",
-                    not_body,
-                )
+                re.search(r"\bhas_country_flag\s*=", not_body)
+                or re.search(r"\bhas_idea\s*=", not_body)
             )
         )
 
