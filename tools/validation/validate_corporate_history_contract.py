@@ -9,7 +9,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence, Set, Tuple
+from typing import Dict, FrozenSet, Iterable, List, Sequence, Set, Tuple
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -27,7 +27,8 @@ _EVENT_KEYWORDS = (
 )
 _EVENT_ALT = "|".join(_EVENT_KEYWORDS)
 _EVENT_DEF_RE = re.compile(r"(?m)^(" + _EVENT_ALT + r")\s*=\s*\{")
-_TOP_LEVEL_BLOCK_RE = re.compile(r"(?m)^([A-Za-z0-9_.:@^\[\]-]+)\s*=\s*\{")
+_BLOCK_IDENTIFIER = r"[A-Za-z0-9_.:@^\[\]-]+"
+_TOP_LEVEL_BLOCK_RE = re.compile(r"(?m)^(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{")
 _OPTION_RE = re.compile(r"\boption\s*=\s*\{")
 _IMMEDIATE_RE = re.compile(r"\bimmediate\s*=\s*\{")
 _ID_RE = re.compile(r"\bid\s*=\s*([A-Za-z0-9_.]+)")
@@ -46,16 +47,11 @@ _SET_TEMP_CORP_RE = re.compile(
     r"\bset_temp_variable\s*=\s*\{\s*corp_value\s*=\s*([A-Za-z0-9_]+)\s*\}"
 )
 _DIRECT_CORP_CLAMP_RE = re.compile(r"\bcorporate_history_clamp_value\s*=\s*yes\b")
-_SET_FLAG_RE = re.compile(r"\bset_country_flag\s*=\s*([A-Za-z0-9_]+)")
-_CLR_FLAG_RE = re.compile(r"\bclr_country_flag\s*=\s*([A-Za-z0-9_]+)")
 _ADD_IDEA_RE = re.compile(r"\badd_ideas\s*=\s*([A-Za-z0-9_]+)")
 _REMOVE_IDEA_RE = re.compile(r"\bremove_ideas\s*=\s*([A-Za-z0-9_]+)")
 _REMOVE_IDEA_BLOCK_RE = re.compile(r"\bremove_ideas\s*=\s*\{")
-_HAS_FLAG_RE = re.compile(r"\bhas_country_flag\s*=\s*([A-Za-z0-9_]+)")
-_HAS_IDEA_RE = re.compile(r"\bhas_idea\s*=\s*([A-Za-z0-9_]+)")
-_CHECK_VAR_RE = re.compile(
-    r"\bcheck_variable\s*=\s*\{\s*(?:var\s*=\s*)?([A-Za-z0-9_]+)"
-)
+_BLOCK_HEADER_RE = re.compile(r"([A-Za-z0-9_.:@^\[\]-]+)\s*=\s*\{")
+_MARKER_TRIGGER_RE = re.compile(r"\b(?:has_country_flag|has_idea)\s*=")
 _CUSTOM_EFFECT_REWARDS: Tuple[Tuple[str, re.Pattern[str]], ...] = (
     ("Political Power", re.compile(r"\badd_political_power\b")),
     ("Stability", re.compile(r"\badd_stability\b")),
@@ -116,6 +112,7 @@ class ChainConfig:
     allowed_multiple_callers: Set[str]
     allowed_reads: Tuple[str, ...]
     allowed_writes: Tuple[str, ...]
+    allow_multiple_completion_producers: bool = False
 
     @property
     def completion_flag(self) -> str:
@@ -206,7 +203,7 @@ class Validator(BaseValidator):
         self._log_section("indexing corporate history")
         effect_defs = self._load_top_level_blocks(["common/scripted_effects/**/*.txt"])
         event_defs = self._load_events()
-        idea_defs = self._load_idea_definitions(chains)
+        idea_defs = self._load_idea_definitions(chains, event_defs)
         core_namespaces = self._discover_core_namespaces(
             effect_defs.get("corporate_history_on_startup", []),
             effect_defs,
@@ -327,6 +324,9 @@ class Validator(BaseValidator):
                     ),
                     allowed_reads=tuple(raw.get("allowed_reads", [])),
                     allowed_writes=tuple(raw.get("allowed_writes", [])),
+                    allow_multiple_completion_producers=bool(
+                        raw.get("allow_multiple_completion_producers", False)
+                    ),
                 )
             )
         return chains
@@ -412,7 +412,7 @@ class Validator(BaseValidator):
         return events
 
     def _load_idea_definitions(
-        self, chains: Sequence[ChainConfig]
+        self, chains: Sequence[ChainConfig], event_defs: Dict[str, EventDef]
     ) -> Dict[str, IdeaDef]:
         idea_ids: Set[str] = set()
         chain_effects = self._load_top_level_blocks(
@@ -422,27 +422,19 @@ class Validator(BaseValidator):
             prefixes = chain.outcome_idea_prefixes
             if not prefixes:
                 continue
-            for defs in chain_effects.values():
-                for effect in defs:
-                    if not effect.name.startswith(chain.root):
-                        continue
-                    for match in _ADD_IDEA_RE.finditer(effect.body):
-                        idea_id = match.group(1)
-                        if any(idea_id.startswith(prefix) for prefix in prefixes):
-                            idea_ids.add(idea_id)
-                    for match in _REMOVE_IDEA_RE.finditer(effect.body):
-                        idea_id = match.group(1)
-                        if any(idea_id.startswith(prefix) for prefix in prefixes):
-                            idea_ids.add(idea_id)
-                    for match in _REMOVE_IDEA_BLOCK_RE.finditer(effect.body):
-                        body, end = extract_block_from_text(
-                            effect.body, match.end() - 1
-                        )
-                        if end == -1:
-                            continue
-                        for idea_id in re.findall(r"\b([A-Za-z0-9_]+)\b", body):
-                            if any(idea_id.startswith(prefix) for prefix in prefixes):
-                                idea_ids.add(idea_id)
+            bodies = [
+                effect.body
+                for defs in chain_effects.values()
+                for effect in defs
+                if effect.name.startswith(chain.root)
+            ]
+            bodies.extend(
+                event.body
+                for event in event_defs.values()
+                if event.event_id.startswith(chain.namespace + ".")
+            )
+            for body in bodies:
+                idea_ids.update(self._idea_ids_in(body, prefixes))
         if not idea_ids:
             return {}
 
@@ -472,6 +464,22 @@ class Validator(BaseValidator):
                     body=body,
                 )
         return results
+
+    def _idea_ids_in(self, body: str, prefixes: Sequence[str]) -> Set[str]:
+        found: Set[str] = set()
+        for pattern in (_ADD_IDEA_RE, _REMOVE_IDEA_RE):
+            for match in pattern.finditer(body):
+                idea_id = match.group(1)
+                if any(idea_id.startswith(prefix) for prefix in prefixes):
+                    found.add(idea_id)
+        for match in _REMOVE_IDEA_BLOCK_RE.finditer(body):
+            block, end = extract_block_from_text(body, match.end() - 1)
+            if end == -1:
+                continue
+            for idea_id in re.findall(r"\b([A-Za-z0-9_]+)\b", block):
+                if any(idea_id.startswith(prefix) for prefix in prefixes):
+                    found.add(idea_id)
+        return found
 
     def _discover_core_namespaces(
         self,
@@ -695,6 +703,9 @@ class Validator(BaseValidator):
     ) -> List[Tuple[str, str, int]]:
         findings = []
         startup_defs = effect_defs.get("corporate_history_on_startup", [])
+        startup_full_branches = [
+            self._startup_full_branch(startup.body) for startup in startup_defs
+        ]
         monthly_defs = {
             name: defs[0] for name, defs in effect_defs.items() if len(defs) == 1
         }
@@ -702,20 +713,21 @@ class Validator(BaseValidator):
         for chain in chains:
             if chain.tier != 1:
                 continue
-            findings.extend(
-                self._require_effect(
-                    effect_defs,
-                    chain.initialize_effect,
-                    f"{chain.name} is missing its initialization effect",
+            if chain.variables:
+                findings.extend(
+                    self._require_effect(
+                        effect_defs,
+                        chain.initialize_effect,
+                        f"{chain.name} is missing its initialization effect",
+                    )
                 )
-            )
-            findings.extend(
-                self._require_effect(
-                    effect_defs,
-                    chain.clamp_effect,
-                    f"{chain.name} is missing its clamp effect",
+                findings.extend(
+                    self._require_effect(
+                        effect_defs,
+                        chain.clamp_effect,
+                        f"{chain.name} is missing its clamp effect",
+                    )
                 )
-            )
             findings.extend(
                 self._require_effect(
                     effect_defs,
@@ -724,12 +736,18 @@ class Validator(BaseValidator):
                 )
             )
             event_90 = event_defs.get(chain.hidden_ninety_id)
-            if event_90 is None or not event_90.hidden:
+            startup_reconstructs = any(
+                f"{chain.reconstruct_effect} = yes" in branch
+                for branch in startup_full_branches
+            )
+            if (event_90 is None or not event_90.hidden) and not startup_reconstructs:
                 file = f"events/{chain.namespace}.txt"
                 line = event_90.line if event_90 else 0
                 findings.append(
                     (
-                        f"{chain.hidden_ninety_id} is missing or not hidden",
+                        f"{chain.hidden_ninety_id} is missing or not hidden and "
+                        f"{chain.reconstruct_effect} is not called directly from "
+                        "corporate_history_on_startup",
                         event_90.file if event_90 else file,
                         line,
                     )
@@ -793,7 +811,7 @@ class Validator(BaseValidator):
                         0,
                     )
                 )
-            if not self._has_cleanup_effect(chain, effect_defs, outcome_ids):
+            if not self._has_cleanup_path(chain, effect_defs, event_defs, outcome_ids):
                 findings.append(
                     (
                         f"{chain.name} is missing a mutually exclusive cleanup effect",
@@ -969,7 +987,10 @@ class Validator(BaseValidator):
             producers = self._flag_producers(flag, effect_defs)
             if not producers:
                 findings.append((f"{flag} has no producers", "", 0))
-            elif len(producers) > 1:
+            elif (
+                len(producers) > 1
+                and not chain_owners[0].allow_multiple_completion_producers
+            ):
                 findings.append(
                     (
                         f"{flag} has {len(producers)} producers",
@@ -1032,7 +1053,7 @@ class Validator(BaseValidator):
                 for raw_line in text.splitlines():
                     line_no += 1
                     code = blank_quoted_strings(raw_line)
-                    headers = re.findall(r"([A-Za-z0-9_.:@^\[\]-]+)\s*=\s*\{", code)
+                    headers = re.findall(r"(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{", code)
                     stack.extend(headers)
                     tokens: List[Tuple[ChainConfig, str]] = []
                     seen_tokens: Set[Tuple[str, str]] = set()
@@ -1221,6 +1242,20 @@ class Validator(BaseValidator):
                     break
         return consumers
 
+    def _startup_full_branch(self, startup_body: str) -> str:
+        """The Full-rule arm of corporate_history_on_startup, or an empty string.
+
+        Outcomes Only always reconstructs; only the Full arm proves a later start
+        still catches its chain up without the hidden .90 anchor.
+        """
+        for name, _start, _end, body in self._iter_direct_child_blocks(startup_body):
+            if name != "if":
+                continue
+            limit = self._direct_child_block(body, "limit")
+            if limit and "corporate_history_full_enabled" in limit:
+                return body
+        return ""
+
     def _chain_is_registered_in_startup(self, chain: ChainConfig, body: str) -> bool:
         markers = (
             f"{chain.reconstruct_effect} = yes",
@@ -1233,12 +1268,43 @@ class Validator(BaseValidator):
     def _has_terminal_resolver(
         self, chain: ChainConfig, effect_defs: Dict[str, List[BlockDef]]
     ) -> bool:
-        for name in effect_defs:
-            if not name.startswith(chain.root):
+        """The reconstruct ladder must silently land one of the chain's outcomes.
+
+        A name check (``*resolve*``) says nothing about behaviour and misses the
+        player-choice capstones that resolve inline in the ladder.
+        """
+        reconstruct = effect_defs.get(chain.reconstruct_effect)
+        if not reconstruct or not chain.outcome_idea_prefixes:
+            return False
+        return bool(self._outcome_ideas_added(reconstruct[0].body, chain, effect_defs))
+
+    def _outcome_ideas_added(
+        self,
+        body: str,
+        chain: ChainConfig,
+        effect_defs: Dict[str, List[BlockDef]],
+        seen: FrozenSet[str] = frozenset(),
+    ) -> Set[str]:
+        found = {
+            match.group(1)
+            for match in _ADD_IDEA_RE.finditer(body)
+            if any(
+                match.group(1).startswith(prefix)
+                for prefix in chain.outcome_idea_prefixes
+            )
+        }
+        for match in _EFFECT_YES_RE.finditer(body):
+            name = match.group(1)
+            if (
+                not name.startswith(chain.root)
+                or name in seen
+                or name not in effect_defs
+            ):
                 continue
-            if "resolve" in name:
-                return True
-        return False
+            found |= self._outcome_ideas_added(
+                effect_defs[name][0].body, chain, effect_defs, seen | {name}
+            )
+        return found
 
     def _outcome_ideas_for_chain(
         self, chain: ChainConfig, idea_defs: Dict[str, IdeaDef]
@@ -1251,25 +1317,43 @@ class Validator(BaseValidator):
                 results.add(idea_id)
         return results
 
-    def _has_cleanup_effect(
+    def _has_cleanup_path(
         self,
         chain: ChainConfig,
         effect_defs: Dict[str, List[BlockDef]],
+        event_defs: Dict[str, EventDef],
         outcome_ids: Set[str],
     ) -> bool:
+        """A chain must clear competing outcomes somewhere it can act atomically.
+
+        The cleanup may live in a chain-owned effect or directly in a capstone
+        option; what matters is that one block drops at least two competing
+        outcome ideas, not which file it sits in.
+        """
         if not outcome_ids:
             return False
-        for defs in effect_defs.values():
-            for effect in defs:
-                if not effect.name.startswith(chain.root):
-                    continue
-                remove_count = sum(
-                    1
-                    for idea_id in outcome_ids
-                    if re.search(r"\b" + re.escape(idea_id) + r"\b", effect.body)
-                )
-                if "remove_ideas" in effect.body and remove_count >= 2:
-                    return True
+        bodies = [
+            effect.body
+            for defs in effect_defs.values()
+            for effect in defs
+            if effect.name.startswith(chain.root)
+        ]
+        bodies.extend(
+            option.body
+            for event in event_defs.values()
+            if event.event_id.startswith(chain.namespace + ".")
+            for option in event.options
+        )
+        for body in bodies:
+            if "remove_ideas" not in body:
+                continue
+            removed = sum(
+                1
+                for idea_id in outcome_ids
+                if re.search(r"\b" + re.escape(idea_id) + r"\b", body)
+            )
+            if removed >= 2:
+                return True
         return False
 
     def _trace_mutation_path(
@@ -1343,12 +1427,66 @@ class Validator(BaseValidator):
         return any(variable in body for variable in chain.variables)
 
     def _has_marker_guard(self, body: str) -> bool:
+        # Special case: reconstruction-complete flag setting is always valid
         if "set_country_flag = " in body and "_reconstruct_complete" in body:
             return True
-        return bool(
-            re.search(r"NOT\s*=\s*\{\s*has_country_flag\s*=", body)
-            or re.search(r"NOT\s*=\s*\{\s*has_idea\s*=", body)
-        )
+        limit = self._direct_child_block(body, "limit")
+        if limit is None:
+            return False
+        return self._negated_marker_in_trigger(limit)
+
+    def _iter_direct_child_blocks(
+        self, text: str
+    ) -> Iterable[Tuple[str, int, int, str]]:
+        pos = 0
+        while True:
+            match = _BLOCK_HEADER_RE.search(text, pos)
+            if not match:
+                return
+            body, end = extract_block_from_text(text, match.end() - 1)
+            if end == -1:
+                pos = match.end()
+                continue
+            yield match.group(1), match.start(), end, body
+            pos = end
+
+    def _direct_child_block(self, text: str, name: str):
+        for child, _start, _end, body in self._iter_direct_child_blocks(text):
+            if child == name:
+                return body
+        return None
+
+    def _negated_marker_in_trigger(
+        self, text: str, negated: bool = False, disjunction: bool = False
+    ) -> bool:
+        """True when a sibling-marker check sits under an odd number of NOTs.
+
+        Only ``NOT``/``OR``/``AND`` are descended into: a marker read inside a
+        scope switch guards a different country, and a positive marker check is
+        a branch selector rather than a replay guard. Siblings of a conjunction
+        are AND-ed, so two bare markers under one ``NOT`` mean "not both at
+        once" and still let the branch replay; only ``OR`` may carry a set.
+        """
+        residual: List[str] = []
+        cursor = 0
+        markers = 0
+        for name, start, end, body in self._iter_direct_child_blocks(text):
+            residual.append(text[cursor:start])
+            cursor = end
+            upper = name.upper()
+            if upper == "NOT":
+                if self._negated_marker_in_trigger(body, not negated):
+                    return True
+            elif upper in ("OR", "AND"):
+                if self._negated_marker_in_trigger(body, negated, upper == "OR"):
+                    return True
+            elif upper in ("HAS_COUNTRY_FLAG", "HAS_IDEA"):
+                markers += 1
+        residual.append(text[cursor:])
+        markers += len(_MARKER_TRIGGER_RE.findall("".join(residual)))
+        if not negated:
+            return False
+        return markers >= 1 if disjunction else markers == 1
 
     def _line_is_cross_write(self, line: str, owner: ChainConfig) -> bool:
         if any(keyword in line for keyword in _WRITE_KEYWORDS):
@@ -1362,9 +1500,8 @@ class Validator(BaseValidator):
         return any(keyword in line for keyword in _READ_KEYWORDS)
 
     def _is_allowed(self, token: str, patterns: Sequence[str]) -> bool:
-        return any(
-            token == pattern or token.startswith(pattern) for pattern in patterns
-        )
+        """Exact match only, so an exception never covers a neighbouring symbol."""
+        return token in patterns
 
     def _dedupe_findings(
         self, findings: Sequence[Tuple[str, str, int]]
