@@ -1350,21 +1350,42 @@ class Validator(BaseValidator):
             return True
         return any(variable in body for variable in chain.variables)
 
+    def _top_level_block_body(self, body: str, key: str) -> str | None:
+        pattern = re.compile(r"\b" + re.escape(key) + r"\s*=\s*\{")
+        depth = 0
+        for index, char in enumerate(body):
+            if char == "{":
+                depth += 1
+                continue
+            if char == "}":
+                depth = max(0, depth - 1)
+                continue
+            if depth != 0:
+                continue
+            match = pattern.match(body, index)
+            if not match:
+                continue
+            block_body, _end = extract_block_from_text(body, match.end() - 1)
+            return block_body
+        return None
+
     def _has_marker_guard(self, body: str) -> bool:
         # Special case: reconstruction-complete flag setting is always valid
         if "set_country_flag = " in body and "_reconstruct_complete" in body:
             return True
 
-        limit_match = re.search(r"\blimit\s*=\s*\{", body)
-        if not limit_match:
-            # No limit block found, check the old way for backwards compatibility
-            return bool(
-                re.search(r"NOT\s*=\s*\{\s*has_country_flag\s*=", body)
-                or re.search(r"NOT\s*=\s*\{\s*has_idea\s*=", body)
-            )
+        limit_body = self._top_level_block_body(body, "limit")
+        if limit_body is not None:
+            return self._limit_has_marker_guard(limit_body)
 
-        limit_body, _end = extract_block_from_text(body, limit_match.end() - 1)
-        return self._limit_has_marker_guard(limit_body)
+        not_body = self._top_level_block_body(body, "NOT")
+        return bool(
+            not_body
+            and (
+                re.search(r"\bhas_country_flag\s*=", not_body)
+                or re.search(r"\bhas_idea\s*=", not_body)
+            )
+        )
 
     def _limit_has_marker_guard(self, limit_body: str) -> bool:
         """Check if a limit block contains valid sibling-marker guards.
