@@ -27,7 +27,8 @@ _EVENT_KEYWORDS = (
 )
 _EVENT_ALT = "|".join(_EVENT_KEYWORDS)
 _EVENT_DEF_RE = re.compile(r"(?m)^(" + _EVENT_ALT + r")\s*=\s*\{")
-_TOP_LEVEL_BLOCK_RE = re.compile(r"(?m)^([A-Za-z0-9_.:@^\[\]-]+)\s*=\s*\{")
+_BLOCK_IDENTIFIER = r"[A-Za-z0-9_.:@^\[\]-]+"
+_TOP_LEVEL_BLOCK_RE = re.compile(r"(?m)^(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{")
 _OPTION_RE = re.compile(r"\boption\s*=\s*\{")
 _IMMEDIATE_RE = re.compile(r"\bimmediate\s*=\s*\{")
 _ID_RE = re.compile(r"\bid\s*=\s*([A-Za-z0-9_.]+)")
@@ -111,6 +112,7 @@ class ChainConfig:
     allowed_multiple_callers: Set[str]
     allowed_reads: Tuple[str, ...]
     allowed_writes: Tuple[str, ...]
+    allow_multiple_completion_producers: bool = False
 
     @property
     def completion_flag(self) -> str:
@@ -322,6 +324,9 @@ class Validator(BaseValidator):
                     ),
                     allowed_reads=tuple(raw.get("allowed_reads", [])),
                     allowed_writes=tuple(raw.get("allowed_writes", [])),
+                    allow_multiple_completion_producers=bool(
+                        raw.get("allow_multiple_completion_producers", False)
+                    ),
                 )
             )
         return chains
@@ -982,7 +987,10 @@ class Validator(BaseValidator):
             producers = self._flag_producers(flag, effect_defs)
             if not producers:
                 findings.append((f"{flag} has no producers", "", 0))
-            elif len(producers) > 1:
+            elif (
+                len(producers) > 1
+                and not chain_owners[0].allow_multiple_completion_producers
+            ):
                 findings.append(
                     (
                         f"{flag} has {len(producers)} producers",
@@ -1045,7 +1053,7 @@ class Validator(BaseValidator):
                 for raw_line in text.splitlines():
                     line_no += 1
                     code = blank_quoted_strings(raw_line)
-                    headers = re.findall(r"([A-Za-z0-9_.:@^\[\]-]+)\s*=\s*\{", code)
+                    headers = re.findall(r"(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{", code)
                     stack.extend(headers)
                     tokens: List[Tuple[ChainConfig, str]] = []
                     seen_tokens: Set[Tuple[str, str]] = set()
@@ -1419,6 +1427,7 @@ class Validator(BaseValidator):
         return any(variable in body for variable in chain.variables)
 
     def _has_marker_guard(self, body: str) -> bool:
+        # Special case: reconstruction-complete flag setting is always valid
         if "set_country_flag = " in body and "_reconstruct_complete" in body:
             return True
         limit = self._direct_child_block(body, "limit")

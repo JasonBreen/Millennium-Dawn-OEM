@@ -1,7 +1,12 @@
 import json
+import re
 from pathlib import Path
 
-from validate_corporate_history_contract import Validator
+from validate_corporate_history_contract import (
+    _BLOCK_IDENTIFIER,
+    _TOP_LEVEL_BLOCK_RE,
+    Validator,
+)
 
 
 def _write(root: Path, relative: str, text: str):
@@ -11,7 +16,11 @@ def _write(root: Path, relative: str, text: str):
 
 
 def _manifest(
-    callerless=None, allowed_reads=None, with_other_chain=False, variables=None
+    callerless=None,
+    allowed_reads=None,
+    with_other_chain=False,
+    variables=None,
+    allow_multiple_completion_producers=False,
 ):
     chains = [
         {
@@ -33,6 +42,7 @@ def _manifest(
             "allowed_multiple_callers": [],
             "allowed_reads": allowed_reads or [],
             "allowed_writes": [],
+            "allow_multiple_completion_producers": allow_multiple_completion_producers,
         }
     ]
     if with_other_chain:
@@ -278,8 +288,13 @@ def _build_fixture(
     cleanup_in_option=False,
     drop_cleanup_effect=False,
     drop_state_effects=False,
+    allow_multiple_completion_producers=False,
 ):
-    manifest = _manifest(callerless, **(manifest_overrides or {}))
+    manifest = _manifest(
+        callerless,
+        allow_multiple_completion_producers=allow_multiple_completion_producers,
+        **(manifest_overrides or {}),
+    )
     _write(root, "tools/corporate_history_contract.json", json.dumps(manifest))
     _write(
         root,
@@ -440,6 +455,19 @@ def test_duplicate_reconstruct_complete_producers(tmp_path):
     _build_fixture(tmp_path, duplicate_complete=True)
     messages = _messages(tmp_path)
     assert any(
+        "USA_test_reconstruct_complete has 2 producers" in message
+        for message in messages
+    )
+
+
+def test_allowed_duplicate_reconstruct_complete_producers(tmp_path):
+    _build_fixture(
+        tmp_path,
+        duplicate_complete=True,
+        allow_multiple_completion_producers=True,
+    )
+    messages = _messages(tmp_path)
+    assert not any(
         "USA_test_reconstruct_complete has 2 producers" in message
         for message in messages
     )
