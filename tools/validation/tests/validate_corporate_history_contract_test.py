@@ -15,7 +15,7 @@ def _write(root: Path, relative: str, text: str):
     path.write_text(text, encoding="utf-8")
 
 
-def _manifest(callerless=None):
+def _manifest(callerless=None, allow_multiple_completion_producers=False):
     return {
         "chains": [
             {
@@ -33,6 +33,7 @@ def _manifest(callerless=None):
                 "allowed_multiple_callers": [],
                 "allowed_reads": [],
                 "allowed_writes": [],
+                "allow_multiple_completion_producers": allow_multiple_completion_producers,
             }
         ]
     }
@@ -253,9 +254,17 @@ def _build_fixture(
     duplicate_complete=False,
     missing_civil_war=False,
     reconstruct_effect_override=None,
+    allow_multiple_completion_producers=False,
 ):
     _write(
-        root, "tools/corporate_history_contract.json", json.dumps(_manifest(callerless))
+        root,
+        "tools/corporate_history_contract.json",
+        json.dumps(
+            _manifest(
+                callerless,
+                allow_multiple_completion_producers=allow_multiple_completion_producers,
+            )
+        ),
     )
     _write(
         root,
@@ -370,6 +379,19 @@ def test_duplicate_reconstruct_complete_producers(tmp_path):
     _build_fixture(tmp_path, duplicate_complete=True)
     messages = _messages(tmp_path)
     assert any(
+        "USA_test_reconstruct_complete has 2 producers" in message
+        for message in messages
+    )
+
+
+def test_allowed_duplicate_reconstruct_complete_producers(tmp_path):
+    _build_fixture(
+        tmp_path,
+        duplicate_complete=True,
+        allow_multiple_completion_producers=True,
+    )
+    messages = _messages(tmp_path)
+    assert not any(
         "USA_test_reconstruct_complete has 2 producers" in message
         for message in messages
     )
