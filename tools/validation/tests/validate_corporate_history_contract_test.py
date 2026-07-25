@@ -247,6 +247,7 @@ def _build_fixture(
     treasury_in_reconstruct=False,
     duplicate_complete=False,
     missing_civil_war=False,
+    reconstruct_effect_override=None,
 ):
     _write(
         root, "tools/corporate_history_contract.json", json.dumps(_manifest(callerless))
@@ -275,6 +276,8 @@ corporate_history_outcomes_only_enabled = { always = no }
     )
     _write(root, "common/scripted_effects/00_yearly_effects.txt", _base_yearly())
     effects = _base_effects()
+    if reconstruct_effect_override:
+        effects = reconstruct_effect_override
     if treasury_in_reconstruct:
         effects = effects.replace(
             "\t\tset_country_flag = USA_test_branch_a\n",
@@ -386,4 +389,263 @@ def test_explicitly_allowed_custom_anchor(tmp_path):
     messages = _messages(tmp_path)
     assert not any(
         "USA_test_events.2 has no direct callers" in message for message in messages
+    )
+
+
+# ============================================================================
+# Reconstruction safety marker-guard tests
+# ============================================================================
+
+
+def _reconstruct_with_direct_negative_flag_guard():
+    """Valid: direct negative country-flag guard."""
+    return """USA_test_reconstruct_history = {
+\tif = {
+\t\tlimit = {
+\t\t\tdate > 2001.2.1
+\t\t\tNOT = { has_country_flag = USA_test_branch_a }
+\t\t}
+\t\tset_country_flag = USA_test_branch_a
+\t}
+\tif = {
+\t\tlimit = { date > 2001.3.1 }
+\t\tset_country_flag = USA_test_reconstruct_complete
+\t}
+}
+"""
+
+
+def _reconstruct_with_direct_negative_idea_guard():
+    """Valid: direct negative idea guard."""
+    return """USA_test_reconstruct_history = {
+\tif = {
+\t\tlimit = {
+\t\t\tdate > 2001.2.1
+\t\t\tNOT = { has_idea = USA_test_outcome_a }
+\t\t}
+\t\tUSA_test_resolve_capstone = yes
+\t}
+\tif = {
+\t\tlimit = { date > 2001.3.1 }
+\t\tset_country_flag = USA_test_reconstruct_complete
+\t}
+}
+"""
+
+
+def _reconstruct_with_not_or_flag_set():
+    """Valid: NOT -> OR flag set."""
+    return """USA_test_reconstruct_history = {
+\tif = {
+\t\tlimit = {
+\t\t\tdate > 2001.2.1
+\t\t\tNOT = {
+\t\t\t\tOR = {
+\t\t\t\t\thas_country_flag = USA_test_branch_a
+\t\t\t\t\thas_country_flag = USA_test_branch_b
+\t\t\t\t}
+\t\t\t}
+\t\t}
+\t\tset_country_flag = USA_test_branch_a
+\t}
+\tif = {
+\t\tlimit = { date > 2001.3.1 }
+\t\tset_country_flag = USA_test_reconstruct_complete
+\t}
+}
+"""
+
+
+def _reconstruct_with_not_or_mixed_flag_idea_set():
+    """Valid: mixed flag/idea NOT -> OR set."""
+    return """USA_test_reconstruct_history = {
+\tif = {
+\t\tlimit = {
+\t\t\tdate > 2001.2.1
+\t\t\tNOT = {
+\t\t\t\tOR = {
+\t\t\t\t\thas_country_flag = USA_test_branch_a
+\t\t\t\t\thas_idea = USA_test_outcome_a
+\t\t\t\t}
+\t\t\t}
+\t\t}
+\t\tset_country_flag = USA_test_branch_a
+\t}
+\tif = {
+\t\tlimit = { date > 2001.3.1 }
+\t\tset_country_flag = USA_test_reconstruct_complete
+\t}
+}
+"""
+
+
+def _reconstruct_with_positive_or():
+    """Invalid: positive OR (not negated)."""
+    return """USA_test_reconstruct_history = {
+\tif = {
+\t\tlimit = {
+\t\t\tdate > 2001.2.1
+\t\t\tOR = {
+\t\t\t\thas_country_flag = USA_test_branch_a
+\t\t\t\thas_country_flag = USA_test_branch_b
+\t\t\t}
+\t\t}
+\t\tset_country_flag = USA_test_branch_a
+\t}
+\tif = {
+\t\tlimit = { date > 2001.3.1 }
+\t\tset_country_flag = USA_test_reconstruct_complete
+\t}
+}
+"""
+
+
+def _reconstruct_with_marker_only_after_limit():
+    """Invalid: marker present only after the limit (in effect body)."""
+    return """USA_test_reconstruct_history = {
+\tif = {
+\t\tlimit = {
+\t\t\tdate > 2001.2.1
+\t\t}
+\t\tNOT = { has_country_flag = USA_test_branch_a }
+\t\tset_country_flag = USA_test_branch_a
+\t}
+\tif = {
+\t\tlimit = { date > 2001.3.1 }
+\t\tset_country_flag = USA_test_reconstruct_complete
+\t}
+}
+"""
+
+
+def _reconstruct_with_date_only():
+    """Invalid: date-only state-changing branch."""
+    return """USA_test_reconstruct_history = {
+\tif = {
+\t\tlimit = {
+\t\t\tdate > 2001.2.1
+\t\t}
+\t\tset_country_flag = USA_test_branch_a
+\t}
+\tif = {
+\t\tlimit = { date > 2001.3.1 }
+\t\tset_country_flag = USA_test_reconstruct_complete
+\t}
+}
+"""
+
+
+def _reconstruct_with_unguarded_state_change():
+    """Invalid: genuinely unguarded reconstruction fixture."""
+    return """USA_test_reconstruct_history = {
+\tif = {
+\t\tlimit = {
+\t\t\tdate > 2001.2.1
+\t\t}
+\t\tset_country_flag = USA_test_branch_a
+\t\tadd_to_variable = { USA_test_state = 1 }
+\t}
+\tif = {
+\t\tlimit = { date > 2001.3.1 }
+\t\tset_country_flag = USA_test_reconstruct_complete
+\t}
+}
+"""
+
+
+def test_valid_direct_negative_flag_guard(tmp_path):
+    """Test that direct negative flag guards are accepted."""
+    _build_fixture(
+        tmp_path,
+        reconstruct_effect_override=_reconstruct_with_direct_negative_flag_guard(),
+    )
+    messages = _messages(tmp_path)
+    assert not any(
+        "state-changing block without sibling-marker guards" in message
+        for message in messages
+    )
+
+
+def test_valid_direct_negative_idea_guard(tmp_path):
+    """Test that direct negative idea guards are accepted."""
+    _build_fixture(
+        tmp_path,
+        reconstruct_effect_override=_reconstruct_with_direct_negative_idea_guard(),
+    )
+    messages = _messages(tmp_path)
+    assert not any(
+        "state-changing block without sibling-marker guards" in message
+        for message in messages
+    )
+
+
+def test_valid_not_or_flag_set(tmp_path):
+    """Test that NOT -> OR flag sets are accepted."""
+    _build_fixture(
+        tmp_path, reconstruct_effect_override=_reconstruct_with_not_or_flag_set()
+    )
+    messages = _messages(tmp_path)
+    assert not any(
+        "state-changing block without sibling-marker guards" in message
+        for message in messages
+    )
+
+
+def test_valid_not_or_mixed_flag_idea_set(tmp_path):
+    """Test that mixed flag/idea NOT -> OR sets are accepted."""
+    _build_fixture(
+        tmp_path,
+        reconstruct_effect_override=_reconstruct_with_not_or_mixed_flag_idea_set(),
+    )
+    messages = _messages(tmp_path)
+    assert not any(
+        "state-changing block without sibling-marker guards" in message
+        for message in messages
+    )
+
+
+def test_invalid_positive_or(tmp_path):
+    """Test that positive-only OR blocks are rejected."""
+    _build_fixture(
+        tmp_path, reconstruct_effect_override=_reconstruct_with_positive_or()
+    )
+    messages = _messages(tmp_path)
+    assert any(
+        "state-changing block without sibling-marker guards" in message
+        for message in messages
+    )
+
+
+def test_invalid_marker_only_after_limit(tmp_path):
+    """Test that markers appearing only after the limit are rejected."""
+    _build_fixture(
+        tmp_path,
+        reconstruct_effect_override=_reconstruct_with_marker_only_after_limit(),
+    )
+    messages = _messages(tmp_path)
+    assert any(
+        "state-changing block without sibling-marker guards" in message
+        for message in messages
+    )
+
+
+def test_invalid_date_only(tmp_path):
+    """Test that date-only state-changing branches are rejected."""
+    _build_fixture(tmp_path, reconstruct_effect_override=_reconstruct_with_date_only())
+    messages = _messages(tmp_path)
+    assert any(
+        "state-changing block without sibling-marker guards" in message
+        for message in messages
+    )
+
+
+def test_invalid_unguarded_reconstruction(tmp_path):
+    """Test that genuinely unguarded reconstruction fixtures are rejected."""
+    _build_fixture(
+        tmp_path, reconstruct_effect_override=_reconstruct_with_unguarded_state_change()
+    )
+    messages = _messages(tmp_path)
+    assert any(
+        "state-changing block without sibling-marker guards" in message
+        for message in messages
     )
