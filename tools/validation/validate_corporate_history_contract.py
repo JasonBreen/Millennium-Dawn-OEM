@@ -46,18 +46,11 @@ _SET_TEMP_CORP_RE = re.compile(
     r"\bset_temp_variable\s*=\s*\{\s*corp_value\s*=\s*([A-Za-z0-9_]+)\s*\}"
 )
 _DIRECT_CORP_CLAMP_RE = re.compile(r"\bcorporate_history_clamp_value\s*=\s*yes\b")
-_SET_FLAG_RE = re.compile(r"\bset_country_flag\s*=\s*([A-Za-z0-9_]+)")
-_CLR_FLAG_RE = re.compile(r"\bclr_country_flag\s*=\s*([A-Za-z0-9_]+)")
 _ADD_IDEA_RE = re.compile(r"\badd_ideas\s*=\s*([A-Za-z0-9_]+)")
 _REMOVE_IDEA_RE = re.compile(r"\bremove_ideas\s*=\s*([A-Za-z0-9_]+)")
 _REMOVE_IDEA_BLOCK_RE = re.compile(r"\bremove_ideas\s*=\s*\{")
 _BLOCK_HEADER_RE = re.compile(r"([A-Za-z0-9_.:@^\[\]-]+)\s*=\s*\{")
 _MARKER_TRIGGER_RE = re.compile(r"\b(?:has_country_flag|has_idea)\s*=")
-_HAS_FLAG_RE = re.compile(r"\bhas_country_flag\s*=\s*([A-Za-z0-9_]+)")
-_HAS_IDEA_RE = re.compile(r"\bhas_idea\s*=\s*([A-Za-z0-9_]+)")
-_CHECK_VAR_RE = re.compile(
-    r"\bcheck_variable\s*=\s*\{\s*(?:var\s*=\s*)?([A-Za-z0-9_]+)"
-)
 _CUSTOM_EFFECT_REWARDS: Tuple[Tuple[str, re.Pattern[str]], ...] = (
     ("Political Power", re.compile(r"\badd_political_power\b")),
     ("Stability", re.compile(r"\badd_stability\b")),
@@ -705,6 +698,9 @@ class Validator(BaseValidator):
     ) -> List[Tuple[str, str, int]]:
         findings = []
         startup_defs = effect_defs.get("corporate_history_on_startup", [])
+        startup_full_branches = [
+            self._startup_full_branch(startup.body) for startup in startup_defs
+        ]
         monthly_defs = {
             name: defs[0] for name, defs in effect_defs.items() if len(defs) == 1
         }
@@ -737,9 +733,7 @@ class Validator(BaseValidator):
             event_90 = event_defs.get(chain.hidden_ninety_id)
             startup_reconstructs = any(
                 f"{chain.reconstruct_effect} = yes" in branch
-                for startup in startup_defs
-                for branch in [self._startup_full_branch(startup.body)]
-                if branch
+                for branch in startup_full_branches
             )
             if (event_90 is None or not event_90.hidden) and not startup_reconstructs:
                 file = f"events/{chain.namespace}.txt"
@@ -1442,7 +1436,8 @@ class Validator(BaseValidator):
                 return
             body, end = extract_block_from_text(text, match.end() - 1)
             if end == -1:
-                return
+                pos = match.end()
+                continue
             yield match.group(1), match.start(), end, body
             pos = end
 
@@ -1452,15 +1447,20 @@ class Validator(BaseValidator):
                 return body
         return None
 
-    def _negated_marker_in_trigger(self, text: str, negated: bool = False) -> bool:
+    def _negated_marker_in_trigger(
+        self, text: str, negated: bool = False, disjunction: bool = False
+    ) -> bool:
         """True when a sibling-marker check sits under an odd number of NOTs.
 
         Only ``NOT``/``OR``/``AND`` are descended into: a marker read inside a
         scope switch guards a different country, and a positive marker check is
-        a branch selector rather than a replay guard.
+        a branch selector rather than a replay guard. Siblings of a conjunction
+        are AND-ed, so two bare markers under one ``NOT`` mean "not both at
+        once" and still let the branch replay; only ``OR`` may carry a set.
         """
         residual: List[str] = []
         cursor = 0
+        markers = 0
         for name, start, end, body in self._iter_direct_child_blocks(text):
             residual.append(text[cursor:start])
             cursor = end
@@ -1469,12 +1469,15 @@ class Validator(BaseValidator):
                 if self._negated_marker_in_trigger(body, not negated):
                     return True
             elif upper in ("OR", "AND"):
-                if self._negated_marker_in_trigger(body, negated):
+                if self._negated_marker_in_trigger(body, negated, upper == "OR"):
                     return True
-            elif negated and upper in ("HAS_COUNTRY_FLAG", "HAS_IDEA"):
-                return True
+            elif upper in ("HAS_COUNTRY_FLAG", "HAS_IDEA"):
+                markers += 1
         residual.append(text[cursor:])
-        return negated and bool(_MARKER_TRIGGER_RE.search("".join(residual)))
+        markers += len(_MARKER_TRIGGER_RE.findall("".join(residual)))
+        if not negated:
+            return False
+        return markers >= 1 if disjunction else markers == 1
 
     def _line_is_cross_write(self, line: str, owner: ChainConfig) -> bool:
         if any(keyword in line for keyword in _WRITE_KEYWORDS):

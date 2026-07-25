@@ -726,3 +726,48 @@ def test_chain_without_any_capstone_cleanup_is_reported(tmp_path):
     assert _messages(tmp_path) == [
         "TestCo is missing a mutually exclusive cleanup effect"
     ]
+
+
+def test_bare_multi_child_not_is_rejected(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_body=_reconstruct(
+            _guarded_branch(
+                "\t\t\tNOT = {\n"
+                "\t\t\t\thas_country_flag = USA_test_branch_a\n"
+                "\t\t\t\thas_country_flag = USA_test_branch_b\n"
+                "\t\t\t}\n"
+            )
+        ),
+    )
+    assert _messages(tmp_path) == [_UNGUARDED_MESSAGE]
+
+
+def test_separate_negated_markers_are_accepted(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_body=_reconstruct(
+            _guarded_branch(
+                "\t\t\tNOT = { has_country_flag = USA_test_branch_a }\n"
+                "\t\t\tNOT = { has_country_flag = USA_test_branch_b }\n"
+            )
+        ),
+    )
+    assert _messages(tmp_path) == []
+
+
+def test_negated_and_marker_set_is_rejected(tmp_path):
+    _build_fixture(
+        tmp_path,
+        reconstruct_body=_reconstruct(
+            _guarded_branch(
+                "\t\t\tNOT = {\n"
+                "\t\t\t\tAND = {\n"
+                "\t\t\t\t\thas_country_flag = USA_test_branch_a\n"
+                "\t\t\t\t\thas_country_flag = USA_test_branch_b\n"
+                "\t\t\t\t}\n"
+                "\t\t\t}\n"
+            )
+        ),
+    )
+    assert _messages(tmp_path) == [_UNGUARDED_MESSAGE]
