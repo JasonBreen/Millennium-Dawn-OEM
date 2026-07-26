@@ -1,0 +1,93 @@
+# Schedules the late Google and Oracle corporate-history extensions.
+# One event per chain is queued on each yearly pulse so late starts catch up
+# without presenting several corporate events on the same day.
+
+on_actions = {
+	on_yearly_pulse = {
+		effect = {
+			every_country = {
+				limit = {
+					original_tag = USA
+					NOT = { has_country_flag = collapsed_nation }
+					corporate_history_full_enabled = yes
+				}
+
+				if = {
+					limit = {
+						date > 2016.12.13
+						OR = {
+							has_country_flag = USA_google_cables_allied_mesh
+							has_country_flag = USA_google_cables_state_backed_corridors
+							has_country_flag = USA_google_cables_lease_capacity
+						}
+						NOT = { has_country_flag = USA_google_event_17_resolved }
+					}
+					country_event = { id = USA_google_events.17 days = 1 }
+				}
+				else_if = {
+					limit = {
+						date > 2021.5.25
+						has_country_flag = USA_google_event_17_resolved
+						NOT = { has_country_flag = USA_google_event_18_resolved }
+					}
+					country_event = { id = USA_google_events.18 days = 1 }
+				}
+				else_if = {
+					limit = {
+						date > 2023.2.6
+						has_country_flag = USA_google_event_18_resolved
+						NOT = { has_country_flag = USA_google_event_19_resolved }
+					}
+					country_event = { id = USA_google_events.19 days = 1 }
+				}
+				else_if = {
+					limit = {
+						date > 2024.8.5
+						has_country_flag = USA_google_event_19_resolved
+						NOT = {
+							OR = {
+								has_country_flag = USA_google_antitrust_settlement
+								has_country_flag = USA_google_antitrust_litigation
+								has_country_flag = USA_google_antitrust_structural_separation
+							}
+						}
+					}
+					country_event = { id = USA_google_events.20 days = 1 }
+				}
+
+				if = {
+					limit = {
+						date > 2021.12.20
+						has_country_flag = USA_oracle_event_8_resolved
+						NOT = { has_country_flag = USA_oracle_event_9_resolved }
+					}
+					country_event = { id = USA_oracle_events.9 days = 2 }
+				}
+				else_if = {
+					limit = {
+						date > 2021.12.20
+						has_country_flag = USA_oracle_event_9_resolved
+						NOT = { has_country_flag = USA_oracle_event_10_resolved }
+					}
+					country_event = { id = USA_oracle_events.10 days = 2 }
+				}
+				else_if = {
+					limit = {
+						date > 2021.12.20
+						has_country_flag = USA_oracle_event_10_resolved
+						NOT = { has_country_flag = USA_oracle_event_11_resolved }
+					}
+					country_event = { id = USA_oracle_events.11 days = 2 }
+				}
+				else_if = {
+					limit = {
+						date > 2023.1.1
+						has_country_flag = USA_oracle_event_11_resolved
+						NOT = { has_country_flag = USA_oracle_event_12_resolved }
+					}
+					country_event = { id = USA_oracle_events.12 days = 2 }
+				}
+			}
+		}
+	}
+}
