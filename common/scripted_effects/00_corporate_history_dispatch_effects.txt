@@ -3,6 +3,106 @@
 # block; gated on the rule_corporate_history game rule at dispatcher level.
 # Framework: 00_corporate_history_effects.txt; docs: docs/src/content/resources/corporate-history-framework.md
 
+# Catch-up dispatcher for the Google extension chain (events 16–20).
+# Queues the next unresolved event each year so late-starts and mid-campaign
+# saves can progress through the chain even if the event's original year has
+# already passed. Called from every USA yearly dispatcher from 2011 onward.
+USA_google_extension_catchup = {
+	if = {
+		limit = {
+			NOT = { OR = {
+				has_country_flag = USA_google_cables_allied_mesh
+				has_country_flag = USA_google_cables_state_backed_corridors
+				has_country_flag = USA_google_cables_lease_capacity
+			} }
+		}
+		country_event = { id = USA_google_events.16 days = 5 }
+	}
+	else_if = {
+		limit = { NOT = { has_country_flag = USA_google_event_17_resolved } }
+		country_event = { id = USA_google_events.17 days = 5 }
+	}
+	else_if = {
+		limit = {
+			OR = {
+				has_country_flag = USA_google_waymo_full_investment
+				has_country_flag = USA_google_waymo_partnered_development
+				has_country_flag = USA_google_waymo_minimal_investment
+			}
+			NOT = { has_country_flag = USA_google_event_18_resolved }
+		}
+		country_event = { id = USA_google_events.18 days = 5 }
+	}
+	else_if = {
+		limit = {
+			OR = {
+				has_country_flag = USA_google_vertex_ai_platform
+				has_country_flag = USA_google_vertex_partnered_ai
+				has_country_flag = USA_google_vertex_open_ecosystem
+			}
+			NOT = { has_country_flag = USA_google_event_19_resolved }
+		}
+		country_event = { id = USA_google_events.19 days = 5 }
+	}
+	else_if = {
+		limit = {
+			OR = {
+				has_country_flag = USA_google_bard_full_integration
+				has_country_flag = USA_google_bard_partnered_ecosystem
+				has_country_flag = USA_google_bard_open_competition
+			}
+			NOT = { OR = {
+				has_country_flag = USA_google_antitrust_settlement
+				has_country_flag = USA_google_antitrust_litigation
+				has_country_flag = USA_google_antitrust_structural_separation
+			} }
+		}
+		country_event = { id = USA_google_events.20 days = 5 }
+	}
+}
+
+# Catch-up dispatcher for the Oracle extension chain (events 8–12).
+# Queues the next unresolved event each year so late-starts and mid-campaign
+# saves can progress through the chain even if the event's original year has
+# already passed. Called from every USA yearly dispatcher from 2021 onward.
+USA_oracle_extension_catchup = {
+	if = {
+		limit = {
+			has_country_flag = USA_oracle_event_7_resolved
+			NOT = { has_country_flag = USA_oracle_event_8_resolved }
+		}
+		country_event = { id = USA_oracle_events.8 days = 5 }
+	}
+	else_if = {
+		limit = {
+			has_country_flag = USA_oracle_event_8_resolved
+			NOT = { has_country_flag = USA_oracle_event_9_resolved }
+		}
+		country_event = { id = USA_oracle_events.9 days = 5 }
+	}
+	else_if = {
+		limit = {
+			has_country_flag = USA_oracle_event_9_resolved
+			NOT = { has_country_flag = USA_oracle_event_10_resolved }
+		}
+		country_event = { id = USA_oracle_events.10 days = 5 }
+	}
+	else_if = {
+		limit = {
+			has_country_flag = USA_oracle_event_10_resolved
+			NOT = { has_country_flag = USA_oracle_event_11_resolved }
+		}
+		country_event = { id = USA_oracle_events.11 days = 5 }
+	}
+	else_if = {
+		limit = {
+			has_country_flag = USA_oracle_event_11_resolved
+			NOT = { has_country_flag = USA_oracle_event_12_resolved }
+		}
+		country_event = { id = USA_oracle_events.12 days = 5 }
+	}
+}
+
 USA_corporate_trigger_year_2001 = {
 	if = {
 		limit = {
@@ -332,6 +432,7 @@ USA_corporate_trigger_year_2011 = {
 			country_event = { id = USA_ibm_events.2 days = 46 }
 			country_event = { id = USA_google_events.7 days = 223 }
 			country_event = { id = USA_hp_events.5 days = 229 }
+			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -369,6 +470,7 @@ USA_corporate_trigger_year_2012 = {
 		USA = {
 			country_event = { id = USA_hp_events.6 days = 324 }
 			country_event = { id = USA_oracle_events.5 days = 144 }
+			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -383,6 +485,7 @@ USA_corporate_trigger_year_2013 = {
 			country_event = { id = USA_e3_events.9 days = 160 }
 			country_event = { id = USA_nvidia_events.3 days = 31 }
 			country_event = { id = USA_google_events.8 days = 257 }
+			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -473,6 +576,7 @@ USA_corporate_trigger_year_2014 = {
 			country_event = { id = USA_sun_microsoft_events.8 days = 34 }
 			country_event = { id = USA_ibm_events.3 days = 22 }
 			country_event = { id = USA_hp_events.7 days = 278 }
+			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -499,6 +603,7 @@ USA_corporate_trigger_year_2015 = {
 			country_event = { id = USA_ibm_events.4 days = 102 }
 			country_event = { id = USA_google_events.9 days = 279 }
 			country_event = { id = USA_sun_microsoft_events.13 days = 188 }
+			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -539,6 +644,7 @@ USA_corporate_trigger_year_2016 = {
 			country_event = { id = USA_e3_events.10 days = 163 }
 			country_event = { id = USA_sun_microsoft_events.14 days = 342 }
 			country_event = { id = USA_google_events.17 days = 350 }
+			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -577,6 +683,7 @@ USA_corporate_trigger_year_2017 = {
 			country_event = { id = USA_apple_events.9 days = 155 }
 			country_event = { id = USA_hp_events.9 days = 243 }
 			country_event = { id = USA_e3_events.11 days = 38 }
+			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -594,6 +701,7 @@ USA_corporate_trigger_year_2018 = {
 			country_event = { id = USA_google_events.10 days = 152 }
 			country_event = { id = USA_google_events.11 days = 262 }
 			country_event = { id = USA_e3_events.12 days = 318 }
+			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -633,6 +741,7 @@ USA_corporate_trigger_year_2019 = {
 			country_event = { id = USA_sun_microsoft_events.10 days = 155 }
 			country_event = { id = USA_e3_events.13 days = 214 }
 			country_event = { id = USA_oracle_events.6 days = 287 }
+			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -666,6 +775,7 @@ USA_corporate_trigger_year_2020 = {
 			country_event = { id = USA_e3_events.15 days = 97 }
 			country_event = { id = USA_oracle_events.7 days = 260 }
 			country_event = { id = USA_oracle_events.8 days = 300 }
+			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -717,6 +827,8 @@ USA_corporate_trigger_year_2021 = {
 			country_event = { id = USA_google_events.13 days = 300 }
 			country_event = { id = USA_google_events.18 days = 200 }
 			country_event = { id = USA_oracle_events.9 days = 350 }
+			USA_google_extension_catchup = yes
+			USA_oracle_extension_catchup = yes
 		}
 	}
 }
@@ -735,6 +847,8 @@ USA_corporate_trigger_year_2022 = {
 			country_event = { id = USA_e3_events.18 days = 187 }
 			country_event = { id = USA_sun_microsoft_events.15 days = 151 }
 			country_event = { id = USA_oracle_events.10 days = 150 }
+			USA_google_extension_catchup = yes
+			USA_oracle_extension_catchup = yes
 		}
 	}
 }
@@ -792,6 +906,8 @@ USA_corporate_trigger_year_2023 = {
 			country_event = { id = USA_oracle_events.11 days = 100 }
 			country_event = { id = USA_sun_microsoft_events.16 days = 285 }
 			country_event = { id = USA_sun_microsoft_events.17 days = 325 }
+			USA_google_extension_catchup = yes
+			USA_oracle_extension_catchup = yes
 		}
 	}
 }
@@ -810,6 +926,8 @@ USA_corporate_trigger_year_2024 = {
 			country_event = { id = USA_google_events.15 days = 336 }
 			country_event = { id = USA_google_events.20 days = 200 }
 			country_event = { id = USA_oracle_events.12 days = 150 }
+			USA_google_extension_catchup = yes
+			USA_oracle_extension_catchup = yes
 		}
 	}
 }
@@ -837,6 +955,8 @@ USA_corporate_trigger_year_2025 = {
 			country_event = { id = USA_nvidia_events.11 days = 320 }
 			country_event = { id = USA_hp_events.12 days = 182 }
 			country_event = { id = USA_e3_events.21 days = 36 }
+			USA_google_extension_catchup = yes
+			USA_oracle_extension_catchup = yes
 		}
 	}
 }
