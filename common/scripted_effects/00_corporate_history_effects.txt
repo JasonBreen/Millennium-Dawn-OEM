@@ -148,10 +148,47 @@ corporate_history_on_startup = {
 }
 
 # Effect: USA_corporate_history_monthly_outcomes
-# Purpose: Outcomes Only driver - applies IBM/Microsoft/Apple/NVIDIA outcomes
-#          on the first monthly tick after each milestone date (<= ~31 days lag,
-#          the same order of slop as the yearly dispatcher's early-January offsets).
+# Purpose: Applies silent Outcomes Only reconstruction and advances unresolved
+#          Full-mode Google/Oracle extensions after their canonical dates.
 USA_corporate_history_monthly_outcomes = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+		}
+		USA_google_reconstruct_extension_prerequisite = yes
+		USA_oracle_reconstruct_extension_prerequisites = yes
+		if = {
+			limit = {
+				NOT = { OR = {
+					has_country_flag = USA_google_antitrust_settlement
+					has_country_flag = USA_google_antitrust_litigation
+					has_country_flag = USA_google_antitrust_structural_separation
+				} }
+			}
+			USA_google_extension_catchup = yes
+		}
+		if = {
+			limit = { NOT = { has_country_flag = USA_oracle_event_12_resolved } }
+			USA_oracle_extension_catchup = yes
+		}
+		if = {
+			limit = {
+				country_exists = CHI
+				OR = {
+					has_country_flag = USA_ibm_pc_divested
+					has_country_flag = USA_ibm_pc_retained
+					has_country_flag = USA_ibm_pc_spinout
+				}
+				CHI = {
+					original_tag = CHI
+					NOT = { has_country_flag = CHI_lenovo_pc_path_chosen }
+				}
+			}
+			USA_ibm_notify_lenovo_pc_path = yes
+		}
+	}
 	if = {
 		limit = {
 			corporate_history_outcomes_only_enabled = yes
