@@ -1,8 +1,8 @@
 # Corporate-history framework. Docs: docs/src/content/resources/corporate-history-framework.md
 #
-# Chains: IBM, Sun/Microsoft, HP, Apple, NVIDIA (USA), Sony (JAP), Matrox (CAN),
-# Nokia (FIN), TSMC (TAI); dispatch/gating only for Siemens (GER), Ericsson (SWE),
-# BlackBerry (CAN/USA).
+# Chains: IBM, Sun/Microsoft, HP, Apple, NVIDIA (USA), Lenovo (CHI), Sony (JAP),
+# Matrox (CAN), Nokia (FIN), TSMC (TAI); dispatch/gating only for Siemens (GER),
+# Ericsson (SWE), BlackBerry (CAN/USA).
 # The rule_corporate_history game rule gates chains ONLY at dispatcher level: the
 # startup driver below, the TAG_corporate_trigger_year_* effects
 # (00_corporate_history_dispatch_effects.txt), the monthly outcome drivers below,
@@ -57,6 +57,14 @@ corporate_history_on_startup = {
 				country_event = { id = USA_e3_events.90 days = 1 }
 				country_event = { id = USA_ibm_events.90 days = 1 }
 				country_event = { id = USA_nvidia_events.90 days = 4 }
+			}
+		}
+
+		if = {
+			limit = { country_exists = CHI }
+			CHI = {
+				CHI_lenovo_schedule_current_year_events = yes
+				country_event = { id = CHI_lenovo_events.90 days = 2 }
 			}
 		}
 
@@ -141,6 +149,10 @@ corporate_history_on_startup = {
 			limit = { country_exists = TAI }
 			TAI = { TAI_tsmc_reconstruct_history = yes }
 		}
+		if = {
+			limit = { country_exists = CHI }
+			CHI = { CHI_lenovo_reconstruct_history = yes }
+		}
 		# TODO: Siemens (GER), Ericsson (SWE) and BlackBerry (CAN/USA) have no
 		# reconstruction effects yet - Outcomes Only suppresses their events with
 		# no silent replacement. HP has no persistent state to reconstruct.
@@ -192,6 +204,70 @@ USA_corporate_history_monthly_outcomes = {
 		}
 		USA_google_extension_catchup = yes
 		USA_oracle_chain_catchup = yes
+	}
+}
+
+# Effect: CHI_corporate_history_monthly_outcomes
+# Purpose: Outcomes Only reconstruction plus Full-mode recovery for missed
+#          Lenovo delivery windows.
+CHI_corporate_history_monthly_outcomes = {
+	if = {
+		limit = {
+			corporate_history_outcomes_only_enabled = yes
+			original_tag = CHI
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = CHI_lenovo_reconstruct_complete }
+		}
+		CHI_lenovo_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = CHI
+			NOT = { has_country_flag = collapsed_nation }
+		}
+		if = {
+			limit = {
+				date > 2005.9.17
+				NOT = { has_country_flag = CHI_lenovo_pc_path_chosen }
+				NOT = { has_country_flag = CHI_lenovo_event_1_delivered }
+				NOT = { has_country_flag = CHI_lenovo_event_1_pending }
+				country_exists = USA
+				NOT = { has_war_with = USA }
+				USA = {
+					NOT = { has_country_flag = collapsed_nation }
+					OR = {
+						has_country_flag = USA_ibm_pc_divested
+						has_country_flag = USA_ibm_pc_retained
+						has_country_flag = USA_ibm_pc_spinout
+					}
+				}
+			}
+			set_country_flag = { flag = CHI_lenovo_event_1_pending value = 1 days = 40 }
+			country_event = { id = CHI_lenovo_events.1 days = 5 }
+		}
+		if = {
+			limit = {
+				date > 2014.7.9
+				has_country_flag = CHI_lenovo_brand_path_chosen
+				NOT = { has_country_flag = CHI_lenovo_systemx_path_chosen }
+				NOT = { has_country_flag = CHI_lenovo_event_7_delivered }
+				NOT = { has_country_flag = CHI_lenovo_event_7_pending }
+				country_exists = USA
+				NOT = { has_war_with = USA }
+				USA = {
+					NOT = { has_country_flag = collapsed_nation }
+					OR = {
+						has_country_flag = USA_ibm_x86_divested
+						has_country_flag = USA_ibm_x86_retained
+						has_country_flag = USA_ibm_silicon_retained
+					}
+				}
+			}
+			set_country_flag = { flag = CHI_lenovo_event_7_pending value = 1 days = 40 }
+			country_event = { id = CHI_lenovo_events.7 days = 5 }
+		}
+		CHI_lenovo_recover_interrupted_stages = yes
 	}
 }
 
