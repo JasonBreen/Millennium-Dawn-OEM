@@ -148,8 +148,10 @@ corporate_history_on_startup = {
 }
 
 # Effect: USA_corporate_history_monthly_outcomes
-# Purpose: Applies silent Outcomes Only reconstruction and advances unresolved
-#          Full-mode Google/Oracle extensions after their canonical dates.
+# Purpose: Outcomes Only driver - applies IBM/Microsoft/Apple/NVIDIA outcomes
+#          on the first monthly tick after each milestone date (<= ~31 days lag,
+#          the same order of slop as yearly offsets). In Full mode it owns visible
+#          Google/Oracle catch-up and retries the IBM-to-Lenovo handoff.
 USA_corporate_history_monthly_outcomes = {
 	if = {
 		limit = {
@@ -158,7 +160,6 @@ USA_corporate_history_monthly_outcomes = {
 			NOT = { has_country_flag = collapsed_nation }
 		}
 		USA_google_reconstruct_extension_prerequisite = yes
-		USA_oracle_reconstruct_extension_prerequisites = yes
 		if = {
 			limit = {
 				NOT = { OR = {
@@ -171,7 +172,7 @@ USA_corporate_history_monthly_outcomes = {
 		}
 		if = {
 			limit = { NOT = { has_country_flag = USA_oracle_event_12_resolved } }
-			USA_oracle_extension_catchup = yes
+			USA_oracle_chain_catchup = yes
 		}
 		if = {
 			limit = {
