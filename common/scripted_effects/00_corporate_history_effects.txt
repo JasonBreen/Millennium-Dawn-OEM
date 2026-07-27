@@ -151,6 +151,8 @@ corporate_history_on_startup = {
 # Purpose: Outcomes Only driver - applies IBM/Microsoft/Apple/NVIDIA outcomes
 #          on the first monthly tick after each milestone date (<= ~31 days lag,
 #          the same order of slop as the yearly dispatcher's early-January offsets).
+#          Also owns the Full-mode Google/Oracle extension catch-up, which needs a
+#          persistent driver because the yearly dispatchers stop at 2026.
 USA_corporate_history_monthly_outcomes = {
 	if = {
 		limit = {
@@ -170,6 +172,26 @@ USA_corporate_history_monthly_outcomes = {
 		USA_ibm_reconstruct_history = yes
 		USA_nvidia_reconstruct_history = yes
 		USA_e3_reconstruct_history = yes
+	}
+
+	# Terminal outcomes, not the fire markers: once an antitrust flag and Oracle 12
+	# are in hand both ladders are inert, so the driver stops doing work.
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+			OR = {
+				NOT = { OR = {
+					has_country_flag = USA_google_antitrust_settlement
+					has_country_flag = USA_google_antitrust_litigation
+					has_country_flag = USA_google_antitrust_structural_separation
+				} }
+				NOT = { has_country_flag = USA_oracle_event_12_resolved }
+			}
+		}
+		USA_google_extension_catchup = yes
+		USA_oracle_chain_catchup = yes
 	}
 }
 
