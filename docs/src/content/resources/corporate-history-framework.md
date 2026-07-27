@@ -15,7 +15,7 @@ The authoritative chain list is `tools/corporate_history_contract.json`, enforce
 | --- | --- |
 | Primitives (`corporate_history_apply_delta`, `corporate_history_clamp_value`), startup driver, monthly Outcomes-Only drivers | `common/scripted_effects/00_corporate_history_effects.txt` |
 | `<TAG>_corporate_trigger_year_<YYYY>` yearly dispatch (one effect per country per year) | `common/scripted_effects/00_corporate_history_dispatch_effects.txt` |
-| Google/Oracle extension catch-up drivers (`USA_google_extension_catchup`, `USA_oracle_extension_catchup`) | `common/scripted_effects/00_corporate_history_dispatch_effects.txt` |
+| Google/Oracle catch-up drivers (`USA_google_extension_catchup`, `USA_oracle_chain_catchup`) | `common/scripted_effects/00_corporate_history_dispatch_effects.txt` |
 | Rule gates `corporate_history_full_enabled` / `corporate_history_outcomes_only_enabled` | `common/scripted_triggers/MD_corporate_history_triggers.txt` |
 | Per-company wrappers (init/clamp/reconstruct/schedule/capstone) | `common/scripted_effects/USA_ibm_effects.txt`, `USA_apple_effects.txt`, `USA_microsoft_effects.txt`, `USA_nvidia_effects.txt`, `USA_e3_effects.txt`, `USA_google_effects.txt`, `JAP_sony_effects.txt`, `CAN_matrox_effects.txt`, `FIN_nokia_effects.txt`, `TAI_tsmc_effects.txt` |
 | Machine-readable chain manifest | `tools/corporate_history_contract.json` |
@@ -35,7 +35,7 @@ Two mechanisms are easy to confuse, and they are not interchangeable:
 
 | | Visible catch-up (Full) | Silent reconstruction (Outcomes Only) |
 | --- | --- | --- |
-| Applies to | Google 16-20, Oracle 8-12 | every chain with a `*_reconstruct_history` ladder |
+| Applies to | Google 16-20, Oracle 1-12 | every chain with a `*_reconstruct_history` ladder |
 | Effect | queues the real event; the player answers it | sets flags/variables/ideas directly, no popup |
 | Outcome chosen by | the player (or AI `ai_chance`) | the historical branch, hard-coded in the ladder |
 | Terminates on | the chain's terminal outcome flags | `<chain>_reconstruct_complete` |
@@ -52,16 +52,21 @@ The framework handles start dates with a **hard guard, not day-of-year math**:
 - For any later start, the per-company `*_reconstruct_history` effects silently apply every milestone whose date has passed (each step is `date >` + marker-flag guarded, idempotent, and event-free).
 - Non-January-1 starts are **deliberately not scheduled**: passed milestones reconstruct; the start year's remaining milestones are skipped rather than fired on wrong dates. MD ships a single 2000.1.1 bookmark, so this path is theoretical.
 
-## Extension catch-up (Google, Oracle)
+## Catch-up drivers (Google, Oracle)
 
-Google and Oracle have no reconstruction ladder, so a missed milestone cannot be applied silently. Instead their late chain steps are owned by a persistent monthly driver, `USA_google_extension_catchup` / `USA_oracle_extension_catchup`, called from the Full arm of `USA_corporate_history_monthly_outcomes` (which runs on `on_monthly_USA`). They are the **sole** scheduling owner of those event ids; the yearly dispatchers do not schedule them, because the yearly dispatchers stop at 2026 and a 2026+ start or a save first updated after 2025 would otherwise strand the chain permanently.
+Google and Oracle have no reconstruction ladder, so a missed milestone cannot be applied silently. Instead their chain steps are owned by a persistent monthly driver, `USA_google_extension_catchup` / `USA_oracle_chain_catchup`, called from the Full arm of `USA_corporate_history_monthly_outcomes` (which runs on `on_monthly_USA`). They are the **sole** scheduling owner of those event ids; the yearly dispatchers do not schedule them, because the yearly dispatchers stop at 2026 and a 2026+ start or a save first updated after 2025 would otherwise strand the chain permanently.
+
+The two drivers cover different spans, and the reason is structural:
+
+- **Google** owns events **16-20** only. Event 16's arm needs no predecessor (its guard is "no cables outcome yet"), so the extension seeds itself from any start date. Events 1-15 stay on the yearly dispatchers and are simply missed by a campaign that starts after their milestone year.
+- **Oracle** owns the **whole chain, 1-12**. Every Oracle event requires its predecessor's `_resolved` flag, so the chain cannot be entered part-way: while events 1-7 sat on the yearly dispatchers, a campaign starting after 2005 never set `USA_oracle_event_1_resolved` and *nothing* in the chain could ever fire, extension included. Event 1 has no predecessor, so moving the whole ladder onto the driver lets it seed itself.
 
 Each ladder step is a single `else_if` arm gated on three things: the predecessor outcome flags, the step's own fire marker (`USA_<co>_event_<N>_resolved`, set in the event's `immediate`), and `date >` the last day before its milestone year. Within an arm:
 
 - **first monthly tick of the milestone year** (`date < <Y>.2.1`): queue with the canonical `days = N` offset, reproducing the historical date exactly.
 - **any later tick**: queue with `days = 5`, so a late start or an updated save walks the remaining steps one per monthly tick instead of dumping them at once.
 
-A chain-level `USA_<co>_extension_pending` flag is set when a step is queued and cleared in the queued event's `immediate`, so at most one event per chain is in flight. It is set as a timed flag (`days = 400`, longer than the largest canonical offset) so a step whose event never fires cannot deadlock the ladder.
+A chain-level pending flag (`USA_google_extension_pending` / `USA_oracle_chain_pending`) is set when a step is queued and cleared in the queued event's `immediate`, so at most one event per chain is in flight. It is set as a timed flag (`days = 400`, longer than the largest canonical offset) so a step whose event never fires cannot deadlock the ladder.
 
 Canonical offsets, all measured from January 1 of the listed year:
 
@@ -72,6 +77,13 @@ Canonical offsets, all measured from January 1 of the listed year:
 | Google | `.18` | 2021 | 200 |
 | Google | `.19` | 2023 | 150 |
 | Google | `.20` | 2024 | 200 |
+| Oracle | `.1` | 2005 | 154 |
+| Oracle | `.2` | 2008 | 119 |
+| Oracle | `.3` | 2009 | 223 |
+| Oracle | `.4` | 2010 | 202 |
+| Oracle | `.5` | 2012 | 144 |
+| Oracle | `.6` | 2019 | 287 |
+| Oracle | `.7` | 2020 | 260 |
 | Oracle | `.8` | 2020 | 300 |
 | Oracle | `.9` | 2021 | 350 |
 | Oracle | `.10` | 2022 | 150 |
@@ -147,8 +159,8 @@ Classification of the existing chains (chains predating the budgets are marked *
 | Nokia (FIN) | 1 | 15 visible events, 4 bounded variables, staged GER/FRA transactions, 6 outcome ideas |
 | IBM (USA) | 1 *(grandfathered)* | 50 events, 13 ideas, consequence schedulers, monthly crisis engine, over every budget |
 | Sun/Microsoft (USA) | 2 *(satellite)* | 11 events, no own state or ideas; declared write-through into IBM state |
-| Google (USA) | 2 *(grandfathered)* | 20 events and 3 bounded variables, over the Tier-2 event budget; no outcome ideas and no reconstruction. Events 16-20 run on the extension catch-up driver |
-| Oracle (USA) | 2 *(grandfathered)* | 12 events, over the Tier-2 event budget; no outcome ideas and no reconstruction. Its state variables are undeclared in the manifest and therefore unclamped. Events 8-12 run on the extension catch-up driver |
+| Google (USA) | 2 *(grandfathered)* | 20 events and 3 bounded variables, over the Tier-2 event budget; no outcome ideas and no reconstruction. Events 16-20 run on `USA_google_extension_catchup`; 1-15 stay on the yearly dispatchers |
+| Oracle (USA) | 2 *(grandfathered)* | 12 events, over the Tier-2 event budget; no outcome ideas and no reconstruction. Its state variables are undeclared in the manifest and therefore unclamped. The whole chain runs on `USA_oracle_chain_catchup` |
 | HP (USA) | 3 *(grandfathered)* | 13 events but no persistent corporate state, no reconstruction; flavor economics only |
 | Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA) | 2 | Dispatch-moved + rule-gated only; internals not yet on the framework |
 
@@ -165,7 +177,7 @@ Classification of the existing chains (chains predating the budgets are marked *
 # TODO Register
 
 - **Siemens / Ericsson / BlackBerry**: no reconstruction effects; Outcomes Only suppresses their events with no silent replacement. Ericsson's existing `SWE_ericsson_events.90` is the natural first extraction; Siemens and BlackBerry have no `.90` at all and need ladders authored from their option effects.
-- **Google / Oracle**: no reconstruction effects either, so Outcomes Only suppresses them without replacement. Full mode covers late starts through the extension catch-up driver, but only for Google 16-20 and Oracle 8-12; Google 1-15 and Oracle 1-7 are yearly-dispatch only and a start after their milestone year misses them.
+- **Google / Oracle**: no reconstruction effects either, so Outcomes Only suppresses them without replacement. In Full mode Oracle 1-12 is fully covered by its catch-up driver, but Google 1-15 is still yearly-dispatch only, so a campaign starting after one of those milestone years misses those events; only the 16-20 extension seeds itself. Google's per-year blocks schedule two events in some years, so moving them onto the one-arm-per-tick ladder would need a different shape.
 - **Oracle state variables** (`USA_oracle_platform_scale`, `policy_access`, `integration_debt`, `ecosystem_openness`, `execution_discipline`, `infrastructure_depth`): mutated by every event, never initialized and never clamped, and undeclared in the manifest so the contract's clamp check skips them. Only `policy_access` and `integration_debt` are ever read, and only against one-sided thresholds, so the drift is currently inert. Declaring them in the manifest requires an `USA_oracle_initialize_state` / `USA_oracle_clamp_state` pair first.
 - **Google extension variables** (`USA_google_ecosystem_openness`, `USA_google_policy_access`, `USA_google_platform_scale`): written by events 18-20, never read, never initialized, and not covered by `USA_google_clamp_state`. Either wire them into the clamp and the manifest or drop the writes.
 - **`USA_google_events` namespace** is declared in two files (`USA_google_events.txt` and `USA_google_events_extension.txt`), the only split namespace in the repo. The contract's cross-chain ownership check only reads `events/<namespace>.txt`, so the extension file escapes that check. Merging the files would close the gap.
