@@ -3,7 +3,7 @@ title: Corporate History Framework
 description: Millennium Dawn corporate-history chains - framework effects, game rule, start-date policy, tier budgets, and integration rules
 ---
 
-The corporate-history framework powers the dated company chains (IBM, Sun/Microsoft, HP, Apple, NVIDIA, Sony, Matrox, Nokia, TSMC, and, at dispatch level only, Siemens, Ericsson, and BlackBerry). It centralizes control flow, value bounds, and game-rule gating; each company binds its own names, dates, and deltas in thin wrapper effects.
+The corporate-history framework powers the dated company chains (IBM, Sun/Microsoft, HP, Apple, NVIDIA, Dell, Sony, Matrox, Nokia, TSMC, and, at dispatch level only, Siemens, Ericsson, and BlackBerry). It centralizes control flow, value bounds, and game-rule gating; each company binds its own names, dates, and deltas in thin wrapper effects.
 
 # File Map
 
@@ -14,7 +14,7 @@ The corporate-history framework powers the dated company chains (IBM, Sun/Micros
 | Primitives (`corporate_history_apply_delta`, `corporate_history_clamp_value`), startup driver, monthly Outcomes-Only drivers | `common/scripted_effects/00_corporate_history_effects.txt` |
 | `<TAG>_corporate_trigger_year_<YYYY>` yearly dispatch (one effect per country per year) | `common/scripted_effects/00_corporate_history_dispatch_effects.txt` |
 | Rule gates `corporate_history_full_enabled` / `corporate_history_outcomes_only_enabled` | `common/scripted_triggers/MD_corporate_history_triggers.txt` |
-| Per-company wrappers (init/clamp/reconstruct/schedule/capstone) | `common/scripted_effects/USA_ibm_effects.txt`, `USA_apple_effects.txt`, `USA_microsoft_effects.txt`, `USA_nvidia_effects.txt`, `JAP_sony_effects.txt`, `CAN_matrox_effects.txt`, `FIN_nokia_effects.txt`, `TAI_tsmc_effects.txt` |
+| Per-company wrappers (init/clamp/reconstruct/schedule/capstone) | `common/scripted_effects/USA_ibm_effects.txt`, `USA_apple_effects.txt`, `USA_microsoft_effects.txt`, `USA_nvidia_effects.txt`, `USA_dell_effects.txt`, `JAP_sony_effects.txt`, `CAN_matrox_effects.txt`, `FIN_nokia_effects.txt`, `TAI_tsmc_effects.txt` |
 | Game rule `rule_corporate_history` | `common/game_rules/00_game_rules.txt` |
 
 # Game Rule Semantics
@@ -97,6 +97,7 @@ Classification of the existing chains (chains predating the budgets are marked *
 | --- | --- | --- |
 | Apple (USA) | 1 | Reference implementation: 15 events, 7 variables, 5 outcome ideas, scheduler + reconstruction |
 | NVIDIA (USA) | 1 | 12 visible events, 4 bounded variables, 5 outcome ideas, scheduler + reconstruction |
+| Dell (USA) | 1 | 15 events, 5 bounded variables, 5 outcome ideas, Alienware brand branch, reconstruction (no scheduler: earliest milestone is 2004) |
 | Sony (JAP) | 1 | 15 events, flag-based state, 4 outcome ideas, player-choice capstone |
 | Matrox (CAN) | 1 | 12 events, flag-based state, 4 outcome ideas, player-choice capstone |
 | TSMC (TAI) | 1 | 15 visible events, 4 bounded variables, monotonic facility callbacks, 5 outcome ideas |
