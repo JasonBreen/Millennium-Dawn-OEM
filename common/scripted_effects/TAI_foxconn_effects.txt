@@ -40,12 +40,60 @@ TAI_foxconn_prepare_capstone = {
 	remove_ideas = TAI_foxconn_responsible_manufacturing_compact
 }
 
+TAI_foxconn_finish_sharp_integration = {
+	remove_ideas = TAI_foxconn_integrating_sharp
+}
+
+TAI_foxconn_apply_wisconsin_reconstruction = {
+	if = {
+		limit = {
+			country_exists = USA
+			USA = { has_country_flag = USA_foxconn_wisconsin_rejected }
+		}
+		set_country_flag = TAI_foxconn_wisconsin_declined
+		set_country_flag = TAI_foxconn_asia_reinvestment
+		add_to_variable = { TAI_foxconn_geographic_resilience = 2 }
+		add_to_variable = { TAI_foxconn_customer_diversification = 1 }
+	}
+	else_if = {
+		limit = {
+			country_exists = USA
+			NOT = { has_war_with = USA }
+			USA = {
+				NOT = { has_country_flag = collapsed_nation }
+				779 = { is_owned_by = USA }
+			}
+		}
+		set_country_flag = TAI_foxconn_wisconsin_maximum_proposed
+		set_country_flag = TAI_foxconn_wisconsin_committed
+		add_to_variable = { TAI_foxconn_geographic_resilience = 1 }
+		add_to_variable = { TAI_foxconn_technology_depth = 1 }
+		add_ideas = TAI_foxconn_wisconsin_obligation
+		USA = {
+			if = {
+				limit = {
+					NOT = { has_country_flag = USA_foxconn_wisconsin_full_support }
+					NOT = { has_country_flag = USA_foxconn_wisconsin_conditional_support }
+					NOT = { has_country_flag = USA_foxconn_wisconsin_rejected }
+				}
+				set_country_flag = USA_foxconn_wisconsin_full_support
+			}
+		}
+	}
+	else = {
+		set_country_flag = TAI_foxconn_wisconsin_declined
+		set_country_flag = TAI_foxconn_asia_reinvestment
+		add_to_variable = { TAI_foxconn_geographic_resilience = 2 }
+		add_to_variable = { TAI_foxconn_customer_diversification = 1 }
+	}
+}
+
 TAI_foxconn_reconstruct_history = {
 	TAI_foxconn_initialize_state = yes
 
 	if = {
 		limit = {
-			date > 2000.12.31
+			date > 2000.1.31
 			NOT = { has_country_flag = TAI_foxconn_mainland_scale }
 			NOT = { has_country_flag = TAI_foxconn_domestic_capacity }
 			NOT = { has_country_flag = TAI_foxconn_regional_diversification }
@@ -126,7 +174,7 @@ TAI_foxconn_reconstruct_history = {
 			date > 2018.12.30
 			has_idea = TAI_foxconn_integrating_sharp
 		}
-		remove_ideas = TAI_foxconn_integrating_sharp
+		TAI_foxconn_finish_sharp_integration = yes
 	}
 	if = {
 		limit = {
@@ -135,37 +183,7 @@ TAI_foxconn_reconstruct_history = {
 			NOT = { has_country_flag = TAI_foxconn_wisconsin_scaled_down }
 			NOT = { has_country_flag = TAI_foxconn_asia_reinvestment }
 		}
-		if = {
-			limit = {
-				country_exists = USA
-				NOT = { has_war_with = USA }
-				USA = {
-					NOT = { has_country_flag = collapsed_nation }
-					779 = { is_owned_by = USA }
-				}
-			}
-			set_country_flag = TAI_foxconn_wisconsin_maximum_proposed
-			set_country_flag = TAI_foxconn_wisconsin_committed
-			add_to_variable = { TAI_foxconn_geographic_resilience = 1 }
-			add_to_variable = { TAI_foxconn_technology_depth = 1 }
-			add_ideas = TAI_foxconn_wisconsin_obligation
-			USA = {
-				if = {
-					limit = {
-						NOT = { has_country_flag = USA_foxconn_wisconsin_full_support }
-						NOT = { has_country_flag = USA_foxconn_wisconsin_conditional_support }
-						NOT = { has_country_flag = USA_foxconn_wisconsin_rejected }
-					}
-					set_country_flag = USA_foxconn_wisconsin_full_support
-				}
-			}
-		}
-		else = {
-			set_country_flag = TAI_foxconn_wisconsin_declined
-			set_country_flag = TAI_foxconn_asia_reinvestment
-			add_to_variable = { TAI_foxconn_geographic_resilience = 2 }
-			add_to_variable = { TAI_foxconn_customer_diversification = 1 }
-		}
+		TAI_foxconn_apply_wisconsin_reconstruction = yes
 	}
 	if = {
 		limit = {
@@ -253,6 +271,22 @@ TAI_foxconn_reconstruct_history = {
 	}
 	if = {
 		limit = {
+			date > 2025.7.10
+			has_country_flag = TAI_foxconn_greenfield_fab_venture
+			OR = {
+				NOT = { has_idea = TAI_the_great_chip_empire }
+				check_variable = { var = TAI_foxconn_technology_depth value = 10 compare = less_than }
+			}
+			NOT = { has_country_flag = TAI_foxconn_fab_partnered }
+			NOT = { has_country_flag = TAI_foxconn_semiconductor_niche }
+			NOT = { has_country_flag = TAI_foxconn_fab_withdrawn }
+		}
+		set_country_flag = TAI_foxconn_semiconductor_niche
+		add_to_variable = { TAI_foxconn_customer_diversification = 1 }
+		add_to_variable = { TAI_foxconn_technology_depth = 1 }
+	}
+	if = {
+		limit = {
 			date > 2025.11.25
 			has_country_flag = TAI_foxconn_ai_server_pivot
 			OR = {
@@ -272,10 +306,273 @@ TAI_foxconn_reconstruct_history = {
 		limit = {
 			date > 2026.5.31
 			NOT = { has_country_flag = TAI_foxconn_capstone_resolved }
+			NOT = { has_country_flag = TAI_foxconn_capstone_choice_pending }
 		}
 		TAI_foxconn_prepare_capstone = yes
 		add_ideas = TAI_foxconn_resilient_manufacturing_network
 		set_country_flag = TAI_foxconn_capstone_resolved
 	}
+	if = {
+		limit = {
+			date > 2026.5.31
+			NOT = { has_country_flag = TAI_foxconn_capstone_choice_pending }
+		}
+		set_country_flag = TAI_foxconn_reconstruct_complete
+	}
 	TAI_foxconn_clamp_state = yes
+}
+
+TAI_foxconn_schedule_current_year_events = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2000.1.1 }
+			has_start_date < 2000.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_mainland_scale
+					has_country_flag = TAI_foxconn_domestic_capacity
+					has_country_flag = TAI_foxconn_regional_diversification
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.1 days = 30 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2007.1.1 }
+			has_start_date < 2007.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_apple_anchor
+					has_country_flag = TAI_foxconn_customer_balance
+					has_country_flag = TAI_foxconn_platform_independence
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.2 days = 179 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2010.1.1 }
+			has_start_date < 2010.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_labor_reform
+					has_country_flag = TAI_foxconn_automation_compact
+					has_country_flag = TAI_foxconn_production_first
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.3 days = 158 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2011.1.1 }
+			has_start_date < 2011.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_zhengzhou_hub
+					has_country_flag = TAI_foxconn_inland_network
+					has_country_flag = TAI_foxconn_stable_ramp
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.4 days = 181 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2013.1.1 }
+			has_start_date < 2013.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_audit_remediation
+					has_country_flag = TAI_foxconn_audit_internal
+					has_country_flag = TAI_foxconn_audit_resisted
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.5 days = 181 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2016.1.1 }
+			has_start_date < 2016.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_sharp_acquired
+					has_country_flag = TAI_foxconn_sharp_partnership
+					has_country_flag = TAI_foxconn_sharp_withdrawn
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.6 days = 226 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2017.1.1 }
+			has_start_date < 2017.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_wisconsin_maximum_proposed
+					has_country_flag = TAI_foxconn_wisconsin_modular_proposed
+					has_country_flag = TAI_foxconn_wisconsin_declined
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.7 days = 207 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2019.1.1 }
+			has_start_date < 2019.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_professional_succession
+					has_country_flag = TAI_foxconn_founder_control
+					has_country_flag = TAI_foxconn_sector_federation
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.10 days = 172 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2020.1.1 }
+			has_start_date < 2020.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_mih_open_platform
+					has_country_flag = TAI_foxconn_vertical_ev
+					has_country_flag = TAI_foxconn_assembly_core
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.11 days = 290 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2021.1.1 }
+			has_start_date < 2021.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_wisconsin_scaled_down
+					has_country_flag = TAI_foxconn_asia_reinvestment
+					has_country_flag = TAI_foxconn_wisconsin_lcd_preserved
+					has_country_flag = TAI_foxconn_wisconsin_modular_products
+					has_country_flag = TAI_foxconn_wisconsin_renegotiated
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.20 days = 109 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2022.1.1 }
+			has_start_date < 2022.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_zhengzhou_rebalanced
+					has_country_flag = TAI_foxconn_restored_concentration
+					has_country_flag = TAI_foxconn_accelerated_exit
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.12 days = 334 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2023.1.1 }
+			has_start_date < 2023.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_ev_new_customer
+					has_country_flag = TAI_foxconn_ev_plant_repurposed
+					has_country_flag = TAI_foxconn_ev_exited
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.22 days = 178 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2023.1.1 }
+			has_start_date < 2023.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_bol_regional_network
+					has_country_flag = TAI_foxconn_bol_mainland_plus
+					has_country_flag = TAI_foxconn_bol_taiwan_core
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.13 days = 322 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2024.1.1 }
+			has_start_date < 2024.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_ai_server_pivot
+					has_country_flag = TAI_foxconn_sovereign_systems
+					has_country_flag = TAI_foxconn_consumer_specialization
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.14 days = 319 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2025.1.1 }
+			has_start_date < 2025.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_fab_partnered
+					has_country_flag = TAI_foxconn_semiconductor_niche
+					has_country_flag = TAI_foxconn_fab_withdrawn
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.23 days = 190 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2025.1.1 }
+			has_start_date < 2025.1.2
+			NOT = {
+				OR = {
+					has_country_flag = TAI_foxconn_wisconsin_ai_repurposed
+					has_country_flag = TAI_foxconn_wisconsin_specialized_elsewhere
+					has_country_flag = TAI_foxconn_wisconsin_wound_down
+				}
+			}
+		}
+		country_event = { id = TAI_foxconn_events.21 days = 329 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = TAI_foxconn_start_year_events_scheduled }
+			NOT = { has_start_date < 2026.1.1 }
+			has_start_date < 2026.1.2
+			NOT = { has_country_flag = TAI_foxconn_capstone_resolved }
+		}
+		country_event = { id = TAI_foxconn_events.15 days = 151 }
+	}
+	set_country_flag = TAI_foxconn_start_year_events_scheduled
 }

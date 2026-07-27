@@ -1,8 +1,8 @@
 # Corporate-history framework. Docs: docs/src/content/resources/corporate-history-framework.md
 #
-# Chains: IBM, Sun/Microsoft, HP, Apple, NVIDIA (USA), Sony (JAP), Matrox (CAN),
-# Nokia (FIN), TSMC (TAI); dispatch/gating only for Siemens (GER), Ericsson (SWE),
-# BlackBerry (CAN/USA).
+# Chains: IBM, Sun/Microsoft, HP, Apple, NVIDIA, TI, Micron, Motorola (USA),
+# Sony (JAP), Matrox (CAN), Nokia (FIN), TSMC and Foxconn (TAI);
+# dispatch/gating only for Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA).
 # The rule_corporate_history game rule gates chains ONLY at dispatcher level: the
 # startup driver below, the TAG_corporate_trigger_year_* effects
 # (00_corporate_history_dispatch_effects.txt), the monthly outcome drivers below,
@@ -54,6 +54,12 @@ corporate_history_on_startup = {
 				USA_apple_reconstruct_history = yes
 				USA_apple_schedule_current_year_events = yes
 				USA_nvidia_schedule_current_year_events = yes
+				country_event = USA_micron_events.90
+				country_event = USA_ti_events.90
+				country_event = USA_motorola_events.90
+				USA_ti_schedule_current_year_events = yes
+				USA_micron_schedule_current_year_events = yes
+				USA_motorola_schedule_current_year_events = yes
 				country_event = { id = USA_e3_events.90 days = 1 }
 				country_event = { id = USA_ibm_events.90 days = 1 }
 				country_event = { id = USA_nvidia_events.90 days = 4 }
@@ -89,6 +95,8 @@ corporate_history_on_startup = {
 			limit = { country_exists = TAI }
 			TAI = {
 				TAI_tsmc_schedule_current_year_events = yes
+				country_event = TAI_foxconn_events.90
+				TAI_foxconn_schedule_current_year_events = yes
 				country_event = { id = TAI_tsmc_events.90 days = 3 }
 			}
 		}
@@ -123,6 +131,9 @@ corporate_history_on_startup = {
 				USA_ibm_reconstruct_history = yes
 				USA_nvidia_reconstruct_history = yes
 				USA_e3_reconstruct_history = yes
+				USA_micron_reconstruct_history = yes
+				USA_ti_reconstruct_history = yes
+				USA_motorola_reconstruct_history = yes
 			}
 		}
 		if = {
@@ -139,7 +150,10 @@ corporate_history_on_startup = {
 		}
 		if = {
 			limit = { country_exists = TAI }
-			TAI = { TAI_tsmc_reconstruct_history = yes }
+			TAI = {
+				TAI_tsmc_reconstruct_history = yes
+				TAI_foxconn_reconstruct_history = yes
+			}
 		}
 		# TODO: Siemens (GER), Ericsson (SWE) and BlackBerry (CAN/USA) have no
 		# reconstruction effects yet - Outcomes Only suppresses their events with
@@ -148,10 +162,10 @@ corporate_history_on_startup = {
 }
 
 # Effect: USA_corporate_history_monthly_outcomes
-# Purpose: Outcomes Only driver - applies IBM/Microsoft/Apple/NVIDIA outcomes
-#          on the first monthly tick after each milestone date (<= ~31 days lag,
-#          the same order of slop as yearly offsets). In Full mode it owns visible
-#          Google/Oracle catch-up and retries the IBM-to-Lenovo handoff.
+# Purpose: Outcomes Only driver for USA corporate chains on the first monthly tick
+#          after each historical milestone (<= ~31 days lag). In Full mode it owns
+#          visible Google/Oracle catch-up, retries the IBM-to-Lenovo handoff, and
+#          recovers missed TI/Micron/Motorola terminal outcomes.
 USA_corporate_history_monthly_outcomes = {
 	if = {
 		limit = {
@@ -201,6 +215,9 @@ USA_corporate_history_monthly_outcomes = {
 				NOT = { has_country_flag = USA_ibm_reconstruct_complete }
 				NOT = { has_country_flag = USA_nvidia_reconstruct_complete }
 				NOT = { has_country_flag = USA_e3_reconstruct_complete }
+				NOT = { has_country_flag = USA_ti_reconstruct_complete }
+				NOT = { has_country_flag = USA_micron_reconstruct_complete }
+				NOT = { has_country_flag = USA_motorola_reconstruct_complete }
 			}
 		}
 		USA_microsoft_reconstruct_history = yes
@@ -208,6 +225,42 @@ USA_corporate_history_monthly_outcomes = {
 		USA_ibm_reconstruct_history = yes
 		USA_nvidia_reconstruct_history = yes
 		USA_e3_reconstruct_history = yes
+		USA_micron_reconstruct_history = yes
+		USA_ti_reconstruct_history = yes
+		USA_motorola_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2025.6.12
+			NOT = { has_country_flag = USA_micron_reconstruct_complete }
+			NOT = { has_country_flag = USA_micron_capstone_choice_pending }
+		}
+		USA_micron_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2025.8.6
+			NOT = { has_country_flag = USA_motorola_reconstruct_complete }
+			NOT = { has_country_flag = USA_motorola_capstone_choice_pending }
+		}
+		USA_motorola_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2026.2.4
+			NOT = { has_country_flag = USA_ti_reconstruct_complete }
+			NOT = { has_country_flag = USA_ti_capstone_choice_pending }
+		}
+		USA_ti_reconstruct_history = yes
 	}
 }
 
@@ -265,16 +318,31 @@ FIN_corporate_history_monthly_outcomes = {
 }
 
 # Effect: TAI_corporate_history_monthly_outcomes
-# Purpose: Outcomes Only driver for the TSMC chain; terminates once its 2026
-#          capstone sets the completion flag.
+# Purpose: Outcomes Only driver for the TSMC and Foxconn chains; terminates
+#          once both 2026 capstones set their completion flags.
 TAI_corporate_history_monthly_outcomes = {
 	if = {
 		limit = {
 			corporate_history_outcomes_only_enabled = yes
 			original_tag = TAI
 			NOT = { has_country_flag = collapsed_nation }
-			NOT = { has_country_flag = TAI_tsmc_reconstruct_complete }
+			OR = {
+				NOT = { has_country_flag = TAI_tsmc_reconstruct_complete }
+				NOT = { has_country_flag = TAI_foxconn_reconstruct_complete }
+			}
 		}
 		TAI_tsmc_reconstruct_history = yes
+		TAI_foxconn_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = TAI
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2026.5.31
+			NOT = { has_country_flag = TAI_foxconn_reconstruct_complete }
+			NOT = { has_country_flag = TAI_foxconn_capstone_choice_pending }
+		}
+		TAI_foxconn_reconstruct_history = yes
 	}
 }
