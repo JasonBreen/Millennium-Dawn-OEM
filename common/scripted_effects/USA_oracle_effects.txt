@@ -1,0 +1,135 @@
+USA_oracle_reconstruct_history = {
+	# Event 8: AI Infrastructure (2020)
+	if = {
+		limit = {
+			date > 2020.1.1
+			NOT = { has_country_flag = USA_oracle_event_8_resolved }
+		}
+		# Default to moderate approach for late starts
+		add_to_variable = { USA_oracle_policy_access = 1 }
+		add_to_variable = { USA_oracle_execution_discipline = 1 }
+		add_to_variable = { USA_oracle_integration_debt = 1 }
+		set_country_flag = USA_oracle_event_8_resolved
+	}
+
+	# Event 9: Cerner (2021) - depends on event 8
+	if = {
+		limit = {
+			date > 2021.12.20
+			NOT = { has_country_flag = USA_oracle_event_9_resolved }
+			has_country_flag = USA_oracle_event_8_resolved
+		}
+		# Default to option A for late starts
+		add_to_variable = { USA_oracle_platform_scale = 2 }
+		add_to_variable = { USA_oracle_policy_access = 2 }
+		add_to_variable = { USA_oracle_integration_debt = 2 }
+		add_political_power = -15
+		set_country_flag = USA_oracle_event_9_resolved
+	}
+
+	# Event 10: Austin Campus (2022) - depends on event 9
+	if = {
+		limit = {
+			date > 2022.1.1
+			NOT = { has_country_flag = USA_oracle_event_10_resolved }
+			has_country_flag = USA_oracle_event_9_resolved
+		}
+		# Default to option A for late starts
+		add_to_variable = { USA_oracle_policy_access = 2 }
+		add_to_variable = { USA_oracle_infrastructure_depth = 2 }
+		add_political_power = 15
+		set_country_flag = USA_oracle_event_10_resolved
+	}
+
+	# Event 11: Arm Partnership (2023) - depends on event 10
+	if = {
+		limit = {
+			date > 2023.1.1
+			NOT = { has_country_flag = USA_oracle_event_11_resolved }
+			has_country_flag = USA_oracle_event_10_resolved
+		}
+		# Default to option A for late starts
+		add_to_variable = { USA_oracle_platform_scale = 2 }
+		add_to_variable = { USA_oracle_infrastructure_depth = 2 }
+		add_to_variable = { USA_oracle_policy_access = 1 }
+		add_political_power = 10
+		set_country_flag = USA_oracle_event_11_resolved
+	}
+
+	# Event 12: Frontier AI (2024) - depends on event 11
+	if = {
+		limit = {
+			date > 2024.1.1
+			NOT = { has_country_flag = USA_oracle_event_12_resolved }
+			has_country_flag = USA_oracle_event_11_resolved
+		}
+		# Default to option A for late starts
+		add_to_variable = { USA_oracle_infrastructure_depth = 3 }
+		add_to_variable = { USA_oracle_policy_access = 2 }
+		add_to_variable = { USA_oracle_platform_scale = 2 }
+		add_political_power = 20
+		set_country_flag = USA_oracle_event_12_resolved
+	}
+
+	if = {
+		limit = { date > 2024.12.31 }
+		set_country_flag = USA_oracle_reconstruct_complete
+	}
+}
+
+USA_oracle_schedule_current_year_events = {
+	if = {
+		limit = {
+			country_exists = USA
+			corporate_history_full_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+		}
+		USA = {
+			# Schedule Oracle events for the current year based on date
+			if = {
+				limit = {
+					date > 2020.1.1
+					date < 2021.1.1
+					NOT = { has_country_flag = USA_oracle_event_8_resolved }
+				}
+				country_event = { id = USA_oracle_events.8 days = 1 }
+			}
+			if = {
+				limit = {
+					date > 2021.12.20
+					date < 2022.1.1
+					NOT = { has_country_flag = USA_oracle_event_9_resolved }
+					has_country_flag = USA_oracle_event_8_resolved
+				}
+				country_event = { id = USA_oracle_events.9 days = 1 }
+			}
+			if = {
+				limit = {
+					date > 2022.1.1
+					date < 2023.1.1
+					NOT = { has_country_flag = USA_oracle_event_10_resolved }
+					has_country_flag = USA_oracle_event_9_resolved
+				}
+				country_event = { id = USA_oracle_events.10 days = 1 }
+			}
+			if = {
+				limit = {
+					date > 2023.1.1
+					date < 2024.1.1
+					NOT = { has_country_flag = USA_oracle_event_11_resolved }
+					has_country_flag = USA_oracle_event_10_resolved
+				}
+				country_event = { id = USA_oracle_events.11 days = 1 }
+			}
+			if = {
+				limit = {
+					date > 2024.1.1
+					NOT = { has_country_flag = USA_oracle_event_12_resolved }
+					has_country_flag = USA_oracle_event_11_resolved
+				}
+				country_event = { id = USA_oracle_events.12 days = 1 }
+			}
+		}
+	}
+}

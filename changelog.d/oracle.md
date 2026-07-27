@@ -1,1 +1,2 @@
 - Added a new USA Oracle corporate-history event chain covering the PeopleSoft, Siebel, BEA, and Sun era through Oracle v. Google, the cloud pivot, TikTok bid, and AI infrastructure commitments, including major forks and integration-debt failure outcomes.
+- Extended the Oracle chain with Cerner acquisition, Austin campus expansion, Arm/custom-silicon partnership, and Frontier AI infrastructure events, fully integrated into the yearly corporate-history dispatcher with reconstruction support for late-start campaigns.

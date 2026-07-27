@@ -16,3 +16,201 @@ USA_google_clamp_state = {
 	clamp_variable = { var = USA_google_infrastructure_depth min = 0 max = 10 }
 	clamp_variable = { var = USA_google_sovereign_posture min = -10 max = 10 }
 }
+
+USA_google_reconstruct_history = {
+	USA_google_initialize_state = yes
+
+	# Event 16: Submarine cables (2010)
+	if = {
+		limit = {
+			date > 2010.6.1
+			NOT = { has_country_flag = USA_google_event_16_resolved }
+			NOT = {
+				OR = {
+					has_country_flag = USA_google_cables_allied_mesh
+					has_country_flag = USA_google_cables_state_backed_corridors
+					has_country_flag = USA_google_cables_lease_capacity
+				}
+			}
+		}
+		# Default to allied mesh for late starts
+		set_country_flag = USA_google_cables_allied_mesh
+		add_to_variable = { USA_google_infrastructure_depth = 2 }
+		add_to_variable = { USA_google_sovereign_posture = 1 }
+		set_country_flag = USA_google_event_16_resolved
+		USA_google_clamp_state = yes
+	}
+
+	# Event 17: Waymo (2016) - depends on event 16
+	if = {
+		limit = {
+			date > 2016.12.13
+			NOT = { has_country_flag = USA_google_event_17_resolved }
+			OR = {
+				has_country_flag = USA_google_cables_allied_mesh
+				has_country_flag = USA_google_cables_state_backed_corridors
+				has_country_flag = USA_google_cables_lease_capacity
+			}
+		}
+		# Default to partnered development for late starts
+		set_country_flag = USA_google_waymo_partnered_development
+		add_to_variable = { USA_google_infrastructure_depth = 1 }
+		add_to_variable = { USA_google_sovereign_posture = 1 }
+		add_to_variable = { USA_google_workforce_consent = 1 }
+		set_country_flag = USA_google_event_17_resolved
+		USA_google_clamp_state = yes
+	}
+
+	# Event 18: Vertex AI (2021) - depends on event 17
+	if = {
+		limit = {
+			date > 2021.5.25
+			NOT = { has_country_flag = USA_google_event_18_resolved }
+			OR = {
+				has_country_flag = USA_google_waymo_full_investment
+				has_country_flag = USA_google_waymo_partnered_development
+				has_country_flag = USA_google_waymo_minimal_investment
+			}
+		}
+		# Default to partnered AI for late starts
+		set_country_flag = USA_google_vertex_partnered_ai
+		add_to_variable = { USA_google_infrastructure_depth = 1 }
+		add_to_variable = { USA_google_sovereign_posture = 1 }
+		add_to_variable = { USA_google_workforce_consent = 1 }
+		set_country_flag = USA_google_event_18_resolved
+		USA_google_clamp_state = yes
+	}
+
+	# Event 19: Bard/Gemini (2023) - depends on event 18
+	if = {
+		limit = {
+			date > 2023.2.6
+			NOT = { has_country_flag = USA_google_event_19_resolved }
+			OR = {
+				has_country_flag = USA_google_vertex_ai_platform
+				has_country_flag = USA_google_vertex_partnered_ai
+				has_country_flag = USA_google_vertex_open_ecosystem
+			}
+		}
+		# Default to partnered ecosystem for late starts
+		set_country_flag = USA_google_bard_partnered_ecosystem
+		add_to_variable = { USA_google_infrastructure_depth = 1 }
+		add_to_variable = { USA_google_sovereign_posture = 1 }
+		add_to_variable = { USA_google_workforce_consent = 1 }
+		add_to_variable = { USA_google_ecosystem_openness = 1 }
+		set_country_flag = USA_google_event_19_resolved
+		USA_google_clamp_state = yes
+	}
+
+	# Event 20: DOJ antitrust (2024) - depends on event 19
+	if = {
+		limit = {
+			date > 2024.8.5
+			NOT = { has_country_flag = USA_google_event_20_resolved }
+			OR = {
+				has_country_flag = USA_google_bard_full_integration
+				has_country_flag = USA_google_bard_partnered_ecosystem
+				has_country_flag = USA_google_bard_open_competition
+			}
+			NOT = {
+				OR = {
+					has_country_flag = USA_google_antitrust_settlement
+					has_country_flag = USA_google_antitrust_litigation
+					has_country_flag = USA_google_antitrust_structural_separation
+				}
+			}
+		}
+		# Default to settlement for late starts
+		set_country_flag = USA_google_antitrust_settlement
+		add_to_variable = { USA_google_sovereign_posture = 1 }
+		add_to_variable = { USA_google_workforce_consent = 2 }
+		add_to_variable = { USA_google_policy_access = 2 }
+		set_country_flag = USA_google_event_20_resolved
+		USA_google_clamp_state = yes
+	}
+
+	if = {
+		limit = { date > 2024.12.31 }
+		set_country_flag = USA_google_reconstruct_complete
+	}
+}
+
+USA_google_schedule_current_year_events = {
+	if = {
+		limit = {
+			country_exists = USA
+			corporate_history_full_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+		}
+		USA = {
+			# Schedule events for the current year based on date
+			if = {
+				limit = {
+					date > 2010.6.1
+					date < 2011.1.1
+					NOT = { has_country_flag = USA_google_event_16_resolved }
+				}
+				country_event = { id = USA_google_events.16 days = 1 }
+			}
+			if = {
+				limit = {
+					date > 2016.12.13
+					date < 2017.1.1
+					NOT = { has_country_flag = USA_google_event_17_resolved }
+					OR = {
+						has_country_flag = USA_google_cables_allied_mesh
+						has_country_flag = USA_google_cables_state_backed_corridors
+						has_country_flag = USA_google_cables_lease_capacity
+					}
+				}
+				country_event = { id = USA_google_events.17 days = 1 }
+			}
+			if = {
+				limit = {
+					date > 2021.5.25
+					date < 2022.1.1
+					NOT = { has_country_flag = USA_google_event_18_resolved }
+					OR = {
+						has_country_flag = USA_google_waymo_full_investment
+						has_country_flag = USA_google_waymo_partnered_development
+						has_country_flag = USA_google_waymo_minimal_investment
+					}
+				}
+				country_event = { id = USA_google_events.18 days = 1 }
+			}
+			if = {
+				limit = {
+					date > 2023.2.6
+					date < 2024.1.1
+					NOT = { has_country_flag = USA_google_event_19_resolved }
+					OR = {
+						has_country_flag = USA_google_vertex_ai_platform
+						has_country_flag = USA_google_vertex_partnered_ai
+						has_country_flag = USA_google_vertex_open_ecosystem
+					}
+				}
+				country_event = { id = USA_google_events.19 days = 1 }
+			}
+			if = {
+				limit = {
+					date > 2024.8.5
+					NOT = { has_country_flag = USA_google_event_20_resolved }
+					OR = {
+						has_country_flag = USA_google_bard_full_integration
+						has_country_flag = USA_google_bard_partnered_ecosystem
+						has_country_flag = USA_google_bard_open_competition
+					}
+					NOT = {
+						OR = {
+							has_country_flag = USA_google_antitrust_settlement
+							has_country_flag = USA_google_antitrust_litigation
+							has_country_flag = USA_google_antitrust_structural_separation
+						}
+					}
+				}
+				country_event = { id = USA_google_events.20 days = 1 }
+			}
+		}
+	}
+}
