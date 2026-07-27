@@ -3,7 +3,9 @@ title: Corporate History Framework
 description: Millennium Dawn corporate-history chains - framework effects, game rule, start-date policy, tier budgets, and integration rules
 ---
 
-The corporate-history framework powers the dated company chains (IBM, Sun/Microsoft, HP, Apple, NVIDIA, Sony, Matrox, Nokia, TSMC, and, at dispatch level only, Siemens, Ericsson, and BlackBerry). It centralizes control flow, value bounds, and game-rule gating; each company binds its own names, dates, and deltas in thin wrapper effects.
+The corporate-history framework powers the dated company chains (IBM, Sun/Microsoft, HP, Apple, NVIDIA, Google, Oracle, E3, Sony, Matrox, Nokia, TSMC, and, at dispatch level only, Siemens, Ericsson, and BlackBerry). It centralizes control flow, value bounds, and game-rule gating; each company binds its own names, dates, and deltas in thin wrapper effects.
+
+The authoritative chain list is `tools/corporate_history_contract.json`, enforced by `tools/validation/validate_corporate_history_contract.py`. This page must match the manifest; the validator gates the manifest, not the prose.
 
 # File Map
 
@@ -13,8 +15,10 @@ The corporate-history framework powers the dated company chains (IBM, Sun/Micros
 | --- | --- |
 | Primitives (`corporate_history_apply_delta`, `corporate_history_clamp_value`), startup driver, monthly Outcomes-Only drivers | `common/scripted_effects/00_corporate_history_effects.txt` |
 | `<TAG>_corporate_trigger_year_<YYYY>` yearly dispatch (one effect per country per year) | `common/scripted_effects/00_corporate_history_dispatch_effects.txt` |
+| Google/Oracle catch-up drivers (`USA_google_extension_catchup`, `USA_oracle_chain_catchup`) | `common/scripted_effects/00_corporate_history_dispatch_effects.txt` |
 | Rule gates `corporate_history_full_enabled` / `corporate_history_outcomes_only_enabled` | `common/scripted_triggers/MD_corporate_history_triggers.txt` |
-| Per-company wrappers (init/clamp/reconstruct/schedule/capstone) | `common/scripted_effects/USA_ibm_effects.txt`, `USA_apple_effects.txt`, `USA_microsoft_effects.txt`, `USA_nvidia_effects.txt`, `JAP_sony_effects.txt`, `CAN_matrox_effects.txt`, `FIN_nokia_effects.txt`, `TAI_tsmc_effects.txt` |
+| Per-company wrappers (init/clamp/reconstruct/schedule/capstone) | `common/scripted_effects/USA_ibm_effects.txt`, `USA_apple_effects.txt`, `USA_microsoft_effects.txt`, `USA_nvidia_effects.txt`, `USA_e3_effects.txt`, `USA_google_effects.txt`, `JAP_sony_effects.txt`, `CAN_matrox_effects.txt`, `FIN_nokia_effects.txt`, `TAI_tsmc_effects.txt` |
+| Machine-readable chain manifest | `tools/corporate_history_contract.json` |
 | Game rule `rule_corporate_history` | `common/game_rules/00_game_rules.txt` |
 
 # Game Rule Semantics
@@ -22,10 +26,21 @@ The corporate-history framework powers the dated company chains (IBM, Sun/Micros
 `rule_corporate_history` has three options, fixed at game setup (no mid-game transitions):
 
 - **Full** (default): story events, decision windows, and the IBM crisis engine run exactly as authored.
-- **Outcomes Only**: no corporate story events fire. The historical path (flags, state variables, outcome ideas, and monotonic delivery stages) is applied silently by the per-company `*_reconstruct_history` effects, invoked at startup and then from per-country monthly drivers. Each milestone lands on the **first monthly tick after its historical date** (≤ ~31 days lag, the same order of slop as the yearly dispatcher's early-January day offsets). The IBM crisis engine is Full-only (its events are popups), so no crisis ideas appear in this mode. Siemens, Ericsson, BlackBerry, and HP are suppressed without replacement (no reconstruction exists for them).
+- **Outcomes Only**: no corporate story events fire. The historical path (flags, state variables, outcome ideas, and monotonic delivery stages) is applied silently by the per-company `*_reconstruct_history` effects, invoked at startup and then from per-country monthly drivers. Each milestone lands on the **first monthly tick after its historical date** (≤ ~31 days lag, the same order of slop as the yearly dispatcher's early-January day offsets). The IBM crisis engine is Full-only (its events are popups), so no crisis ideas appear in this mode. HP, Google, Oracle, Siemens, Ericsson, and BlackBerry are suppressed without replacement (no reconstruction exists for them).
 - **Off**: dispatchers never run, so no corporate events, variables, flags, or ideas ever exist for any country.
 
 **Gating happens only at dispatcher level**: the startup driver, the `<TAG>_corporate_trigger_year_*` effects, the monthly drivers, and the `USA_ibm_monthly_crisis_checks` call site in `99_USA_on_actions.txt`. Never add rule checks inside individual events: an event that was never scheduled needs no gate, and per-event gates rot.
+
+Two mechanisms are easy to confuse, and they are not interchangeable:
+
+| | Visible catch-up (Full) | Silent reconstruction (Outcomes Only) |
+| --- | --- | --- |
+| Applies to | Google 16-20, Oracle 1-12 | every chain with a `*_reconstruct_history` ladder |
+| Effect | queues the real event; the player answers it | sets flags/variables/ideas directly, no popup |
+| Outcome chosen by | the player (or AI `ai_chance`) | the historical branch, hard-coded in the ladder |
+| Terminates on | the chain's terminal outcome flags | `<chain>_reconstruct_complete` |
+
+Catch-up never runs in Outcomes Only or Off: it is called from the `corporate_history_full_enabled` arm of `USA_corporate_history_monthly_outcomes`, so both non-Full modes stay popup-free.
 
 # Start-Date Policy (January-1 Invariant)
 
@@ -37,6 +52,46 @@ The framework handles start dates with a **hard guard, not day-of-year math**:
 - For any later start, the per-company `*_reconstruct_history` effects silently apply every milestone whose date has passed (each step is `date >` + marker-flag guarded, idempotent, and event-free).
 - Non-January-1 starts are **deliberately not scheduled**: passed milestones reconstruct; the start year's remaining milestones are skipped rather than fired on wrong dates. MD ships a single 2000.1.1 bookmark, so this path is theoretical.
 
+## Catch-up drivers (Google, Oracle)
+
+Google and Oracle have no reconstruction ladder, so a missed milestone cannot be applied silently. Instead their chain steps are owned by a persistent monthly driver, `USA_google_extension_catchup` / `USA_oracle_chain_catchup`, called from the Full arm of `USA_corporate_history_monthly_outcomes` (which runs on `on_monthly_USA`). They are the **sole** scheduling owner of those event ids; the yearly dispatchers do not schedule them, because the yearly dispatchers stop at 2026 and a 2026+ start or a save first updated after 2025 would otherwise strand the chain permanently.
+
+The two drivers cover different spans, and the reason is structural:
+
+- **Google** owns events **16-20** only. Event 16's arm needs no predecessor (its guard is "no cables outcome yet"), so the extension seeds itself from any start date. Events 1-15 stay on the yearly dispatchers and are simply missed by a campaign that starts after their milestone year.
+- **Oracle** owns the **whole chain, 1-12**. Every Oracle event requires its predecessor's `_resolved` flag, so the chain cannot be entered part-way: while events 1-7 sat on the yearly dispatchers, a campaign starting after 2005 never set `USA_oracle_event_1_resolved` and *nothing* in the chain could ever fire, extension included. Event 1 has no predecessor, so moving the whole ladder onto the driver lets it seed itself.
+
+Each ladder step is a single `else_if` arm gated on three things: the predecessor outcome flags, the step's own fire marker (`USA_<co>_event_<N>_resolved`, set in the event's `immediate`), and `date >` the last day before its milestone year. Within an arm:
+
+- **first monthly tick of the milestone year** (`date < <Y>.2.1`): queue with the canonical `days = N` offset, reproducing the historical date exactly.
+- **any later tick**: queue with `days = 5`, so a late start or an updated save walks the remaining steps one per monthly tick instead of dumping them at once.
+
+A chain-level pending flag (`USA_google_extension_pending` / `USA_oracle_chain_pending`) is set when a step is queued and cleared in the queued event's `immediate`, so at most one event per chain is in flight. It is set as a timed flag (`days = 400`, longer than the largest canonical offset) so a step whose event never fires cannot deadlock the ladder.
+
+Canonical offsets, all measured from January 1 of the listed year:
+
+| Chain | Event | Year | `days` |
+| --- | --- | --- | --- |
+| Google | `.16` | 2010 | 250 |
+| Google | `.17` | 2016 | 350 |
+| Google | `.18` | 2021 | 200 |
+| Google | `.19` | 2023 | 150 |
+| Google | `.20` | 2024 | 200 |
+| Oracle | `.1` | 2005 | 154 |
+| Oracle | `.2` | 2008 | 119 |
+| Oracle | `.3` | 2009 | 223 |
+| Oracle | `.4` | 2010 | 202 |
+| Oracle | `.5` | 2012 | 144 |
+| Oracle | `.6` | 2019 | 287 |
+| Oracle | `.7` | 2020 | 260 |
+| Oracle | `.8` | 2020 | 300 |
+| Oracle | `.9` | 2021 | 350 |
+| Oracle | `.10` | 2022 | 150 |
+| Oracle | `.11` | 2023 | 100 |
+| Oracle | `.12` | 2024 | 150 |
+
+Once a chain reaches its terminal outcome (a Google antitrust flag, or `USA_oracle_event_12_resolved`) no arm matches and the driver stops doing work; the outer `if` in the monthly driver skips both calls when both chains are terminal.
+
 # Wrapper Contract
 
 HOI4 cannot parameterize identifier names (variables, flags, ideas, event ids) without meta_effect renames, so the framework owns **control flow, bounds, and gates**, and each company binds its names in wrapper effects that contain data, not logic:
@@ -47,7 +102,7 @@ HOI4 cannot parameterize identifier names (variables, flags, ideas, event ids) w
 | `<TAG>_<co>_clamp_state` | per variable: `set_temp_variable = { corp_value = X }` → `corporate_history_clamp_value = yes` → `set_variable = { X = corp_value }` |
 | `<TAG>_<co>_reconstruct_history` | date-ascending ladder; every step `date > D` + `NOT` on **all** sibling outcome markers; `add_ideas` steps guarded by `NOT has_idea` on all alternatives; no event fires; ends with silent capstone resolution where the chain has one, then sets `<TAG>_<co>_reconstruct_complete` once the final milestone date has passed (the monthly driver's only terminal check). A ladder can end *after* its capstone (IBM's integrations run to 2027.6.1, past the 2026.6.2 capstone), so the completion date is the last step's date, not the capstone's |
 | `<TAG>_<co>_events.90` | hidden, `fire_only_once` event whose immediate is a thin call to the reconstruct effect (IBM's also keeps its `date < 2000.2.1` prehistory-scheduling branch) |
-| `<TAG>_<co>_schedule_current_year_events` | per-year Jan-1 window guard + `country_event` offsets (implemented for Apple, Nokia, TSMC, and NVIDIA) |
+| `<TAG>_<co>_schedule_current_year_events` | per-year Jan-1 window guard + `country_event` offsets (implemented for Apple, E3, NVIDIA, Nokia, and TSMC, matching `requires_current_year_scheduler` in the manifest) |
 | capstone family | `clear_capstone_outcome` (remove all competing ideas + flags) / `apply_*_capstone` (clear, add one idea, set outcome + resolved flags) / `resolve_capstone` (threshold ladder) |
 
 The primitives:
@@ -97,12 +152,15 @@ Classification of the existing chains (chains predating the budgets are marked *
 | --- | --- | --- |
 | Apple (USA) | 1 | Reference implementation: 15 events, 7 variables, 5 outcome ideas, scheduler + reconstruction |
 | NVIDIA (USA) | 1 | 12 visible events, 4 bounded variables, 5 outcome ideas, scheduler + reconstruction |
+| E3 (USA) | 1 | 23 visible events, 10 variables incl. lifecycle stages, outcome ideas, scheduler + reconstruction |
 | Sony (JAP) | 1 | 15 events, flag-based state, 4 outcome ideas, player-choice capstone |
 | Matrox (CAN) | 1 | 12 events, flag-based state, 4 outcome ideas, player-choice capstone |
 | TSMC (TAI) | 1 | 15 visible events, 4 bounded variables, monotonic facility callbacks, 5 outcome ideas |
 | Nokia (FIN) | 1 | 15 visible events, 4 bounded variables, staged GER/FRA transactions, 6 outcome ideas |
 | IBM (USA) | 1 *(grandfathered)* | 50 events, 13 ideas, consequence schedulers, monthly crisis engine, over every budget |
 | Sun/Microsoft (USA) | 2 *(satellite)* | 11 events, no own state or ideas; declared write-through into IBM state |
+| Google (USA) | 2 *(grandfathered)* | 20 events and 3 bounded variables, over the Tier-2 event budget; no outcome ideas and no reconstruction. Events 16-20 run on `USA_google_extension_catchup`; 1-15 stay on the yearly dispatchers |
+| Oracle (USA) | 2 *(grandfathered)* | 12 events, over the Tier-2 event budget; no outcome ideas and no reconstruction. Its state variables are undeclared in the manifest and therefore unclamped. The whole chain runs on `USA_oracle_chain_catchup` |
 | HP (USA) | 3 *(grandfathered)* | 13 events but no persistent corporate state, no reconstruction; flavor economics only |
 | Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA) | 2 | Dispatch-moved + rule-gated only; internals not yet on the framework |
 
@@ -119,6 +177,11 @@ Classification of the existing chains (chains predating the budgets are marked *
 # TODO Register
 
 - **Siemens / Ericsson / BlackBerry**: no reconstruction effects; Outcomes Only suppresses their events with no silent replacement. Ericsson's existing `SWE_ericsson_events.90` is the natural first extraction; Siemens and BlackBerry have no `.90` at all and need ladders authored from their option effects.
+- **Google / Oracle**: no reconstruction effects either, so Outcomes Only suppresses them without replacement. In Full mode Oracle 1-12 is fully covered by its catch-up driver, but Google 1-15 is still yearly-dispatch only, so a campaign starting after one of those milestone years misses those events; only the 16-20 extension seeds itself. Google's per-year blocks schedule two events in some years, so moving them onto the one-arm-per-tick ladder would need a different shape.
+- **Oracle state variables** (`USA_oracle_platform_scale`, `policy_access`, `integration_debt`, `ecosystem_openness`, `execution_discipline`, `infrastructure_depth`): mutated by every event, never initialized and never clamped, and undeclared in the manifest so the contract's clamp check skips them. Only `policy_access` and `integration_debt` are ever read, and only against one-sided thresholds, so the drift is currently inert. Declaring them in the manifest requires an `USA_oracle_initialize_state` / `USA_oracle_clamp_state` pair first.
+- **Google extension variables** (`USA_google_ecosystem_openness`, `USA_google_policy_access`, `USA_google_platform_scale`): written by events 18-20, never read, never initialized, and not covered by `USA_google_clamp_state`. Either wire them into the clamp and the manifest or drop the writes.
+- **`USA_google_events` namespace** is declared in two files (`USA_google_events.txt` and `USA_google_events_extension.txt`), the only split namespace in the repo. The contract's cross-chain ownership check only reads `events/<namespace>.txt`, so the extension file escapes that check. Merging the files would close the gap.
+- **`USA_apple_events.90`** is defined but has no caller: `corporate_history_on_startup` calls `USA_apple_reconstruct_history` directly in both rule branches. Dead anchor, harmless, safe to delete.
 - **Start-year schedulers** for IBM, Sun/Microsoft, Sony, and Matrox (Apple-pattern; inert while MD ships only the 2000.1.1 bookmark).
 - **HP**: no persistent corporate state by design; decide whether to formalize as Tier 3 or extend to Tier 2 with an outcome idea.
 - **Sun/Microsoft**: consider its own capstone/state if ever split from the IBM substrate; the current write-through is the declared exception.
