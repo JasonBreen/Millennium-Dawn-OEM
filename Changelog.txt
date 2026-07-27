@@ -17,8 +17,9 @@ Content:
 - [USA] Reworked the Microsoft corporate-history chain from antitrust rulings through modern cloud procurement, retimed early dispatch years, and tied key outcomes into IBM federal-integration follow-ups.
 
 Bugfixes:
-- [USA] (PR #65) Repaired Google (events 16-20) and Oracle (events 8-12) corporate-history extension scheduling so late-start campaigns and existing saves past 2010/2020 reconstruct correctly instead of stranding the chains; kept the fix on supported USA-owned dispatch paths (no unsupported on_yearly_pulse route).
-- [USA] (PR #65) Removed duplicate extension catch-up dispatch callers so Google/Oracle reconstruction scheduling has a single owner and cannot queue the same chain from competing paths.
+- [USA] Repaired Google (events 16-20) and Oracle (events 8-12) corporate-history extension scheduling. The chains were driven from the yearly dispatchers, which stop at 2025 for these events, so a 2026+ start or a save first updated after 2025 stranded them permanently. In Corporate History Full both chains now run from a persistent USA monthly driver that keeps at most one event pending and walks the ladder until its final outcome; Outcomes Only and Off schedule nothing and stay popup-free. These chains have no reconstruction ladder, so late recovery is a visible catch-up event, not a silent state fix.
+- [USA] Google and Oracle extension events now fire on their historical dates in a normal 2000 campaign. Each step waits for its milestone year instead of advancing one step per year, which previously fired the Google extension from 2011 to 2014 (up to ten years early) and pushed each Oracle step into the following January. A start or save update after a milestone year replays the remaining events one per month rather than all at once.
+- [USA] Made the extension catch-up driver the sole scheduling owner of those ten events, so the yearly dispatchers can no longer queue the same chain from a competing path, and added the fire markers and pending flag that stop an event being queued again while it is already waiting.
 - [USA/CAN] Removed 18 obsolete direct HP and BlackBerry corporate-event calls from the yearly effects, leaving the centralized corporate-history dispatcher as the only scheduler for those events.
 - [USA] Added post-mutation clamp calls to every Google corporate-history option that changes a bounded variable, keeping workforce consent, infrastructure depth, and sovereign posture inside their bands.
 - [CAN] Matrox capstone options now clear the competing outcome ideas before granting the chosen one, so a save can never hold two Matrox outcomes at once.
@@ -27,6 +28,8 @@ Bugfixes:
 - Reworked the corporate-history contract checks to test behaviour instead of effect naming, index outcome ideas granted from events, and narrow cross-chain exceptions to exact symbols.
 - [USA] Fixed the Dell OEM event by replacing an invisible "+0.00" productivity modifier with a visible industrial-capacity effect and removing a strictly-dominant option.
 - [CAN] Completed the BlackBerry "Keep Canadian handset development" option tooltip, which omitted the conditional political power bonus it grants when the BlackBerry 10 platform was already backed.
+- Corrected the Corporate History game-rule descriptions, which listed neither NVIDIA, Google, Oracle, E3 nor TSMC and misreported which chains Outcomes Only reconstructs silently versus suppresses outright.
+- Registered Sony and Matrox as Tier 1 in the corporate-history manifest, matching their content scale and the framework documentation, so both are now covered by the validator's Tier 1 contract checks.
 
 Performance improvements:
 - Optimized tag directory scanning in validate_scripted_params.py to read files only once per execution by adding a cache, improving performance.
