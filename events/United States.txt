@@ -33933,13 +33933,22 @@ country_event = {
 	trigger = {
 		original_tag = USA
 		NOT = { has_country_flag = collapsed_nation }
+		# Compatibility for events already queued before the dedicated Dell chain.
+		NOT = {
+			OR = {
+				has_country_flag = USA_oem_services_pivot
+				has_country_flag = USA_oem_hardware_core
+				has_country_flag = USA_dell_perot_services_arm
+				has_country_flag = USA_dell_hardware_focus
+			}
+		}
 	}
 
 	option = {
 		name = USA_oem_events.15.a
 		log = "[GetDateText]: [This.GetName]: USA_oem_events.15.a executed"
 		add_political_power = -20
-		set_country_flag = USA_oem_services_pivot
+		hidden_effect = { USA_dell_apply_perot_services_path = yes }
 		if = {
 			limit = { has_country_flag = USA_lone_star_server_ecosystem }
 			add_command_power = 5
@@ -33963,7 +33972,7 @@ country_event = {
 		name = USA_oem_events.15.b
 		log = "[GetDateText]: [This.GetName]: USA_oem_events.15.b executed"
 		add_political_power = 10
-		set_country_flag = USA_oem_hardware_core
+		hidden_effect = { USA_dell_apply_hardware_focus_path = yes }
 		if = {
 			limit = { has_country_flag = USA_oem_global_supply_chain }
 			add_political_power = 5
@@ -34223,7 +34232,10 @@ country_event = {
 		}
 		add_to_variable = { econ_productivity = 0.0025 tooltip = productivity_growth_modifier_tt }
 		custom_effect_tooltip = USA_oem_storage_open_shift_tt
-		hidden_effect = { add_to_variable = { USA_oem_storage_policy = 1 } }
+		hidden_effect = {
+			add_to_variable = { USA_oem_storage_policy = 1 }
+			set_country_flag = USA_oem_storage_firmware_2015_resolved
+		}
 		ai_chance = {
 			base = 60
 			modifier = {
@@ -34252,7 +34264,10 @@ country_event = {
 		}
 		add_to_variable = { econ_factory_output = 0.0025 tooltip = industrial_capacity_factory_tt }
 		custom_effect_tooltip = USA_oem_storage_vendor_shift_tt
-		hidden_effect = { subtract_from_variable = { USA_oem_storage_policy = 1 } }
+		hidden_effect = {
+			subtract_from_variable = { USA_oem_storage_policy = 1 }
+			set_country_flag = USA_oem_storage_firmware_2015_resolved
+		}
 		ai_chance = {
 			base = 40
 			modifier = {
