@@ -168,16 +168,15 @@ def _split_block(block_lines):
     first = block_lines[0]
     if len(block_lines) == 1:
         code = strip_inline_comment(first)
-        # A trailing comment may carry its own braces, so the split indices
-        # would land inside it — bail and let the caller keep the line intact.
-        if code != first or "{" not in code or code.count("{") != code.count("}"):
+        if "{" not in code or code.count("{") != code.count("}"):
             return None
-        open_idx = first.index("{")
-        close_idx = first.rindex("}")
+        open_idx = code.index("{")
+        close_idx = code.rindex("}")
         indent = first[: len(first) - len(first.lstrip())]
-        inner = first[open_idx + 1 : close_idx].strip()
+        inner = code[open_idx + 1 : close_idx].strip()
         inner_lines = [f"{indent}\t{inner}"] if inner else []
-        return first[: open_idx + 1], inner_lines, f"{indent}}}"
+        comment_suffix = first[len(code.rstrip()) :]
+        return code[: open_idx + 1], inner_lines, f"{indent}}}{comment_suffix}"
     if block_lines[-1].strip() != "}":
         return None
     return first, block_lines[1:-1], block_lines[-1]
@@ -187,6 +186,12 @@ def _merge_duplicate_blocks(first, second):
     """The engine ANDs duplicate trigger blocks and runs duplicate effect
     blocks in order, so concatenating inner lines under one header preserves
     semantics. Falls back to emitting both blocks when a shape is opaque."""
+    if any(
+        strip_inline_comment(line) != line
+        for block in (first, second)
+        for line in block
+    ):
+        return first + second
     a = _split_block(first)
     b = _split_block(second)
     if a is None or b is None:
@@ -307,9 +312,7 @@ def emit_effect_block_with_log(lines, effect_block, focus_id):
     if focus_id and not any("log =" in line for line in effect_block):
         log_line = f'\t\t\tlog = "[GetDateText]: [Root.GetName]: Focus {focus_id}"'
         if len(effect_block) == 1:
-            # Expand `prop = { ... }` so the log lands INSIDE the braces, not
-            # after them. _split_block bails on an inline comment (whose braces
-            # would misplace the split), leaving such a block unlogged.
+            # Expand `prop = { ... }` so the log lands inside the braces.
             split = _split_block(effect_block)
             if split is not None:
                 header, inner_lines, close = split
