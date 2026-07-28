@@ -214,7 +214,9 @@ class Validator(BaseValidator):
 
         self._log_section("manifest coverage")
         self._report(
-            self._validate_manifest_coverage(core_namespaces, chain_by_namespace),
+            self._validate_manifest_coverage(
+                chains, core_namespaces, chain_by_namespace
+            ),
             "Corporate-history manifest covers current namespaces",
             "Corporate-history manifest coverage issues:",
             category="Corporate-history manifest",
@@ -274,7 +276,7 @@ class Validator(BaseValidator):
 
         self._log_section("cross-chain ownership")
         self._report(
-            self._validate_cross_chain_ownership(chains, chain_by_root),
+            self._validate_cross_chain_ownership(chains, chain_by_root, event_defs),
             "Cross-chain ownership stays within the declared contract",
             "Corporate-history cross-chain ownership issues:",
             category="Corporate-history cross-chain ownership",
@@ -553,9 +555,27 @@ class Validator(BaseValidator):
         return call_sites
 
     def _validate_manifest_coverage(
-        self, core_namespaces: Set[str], chain_by_namespace: Dict[str, ChainConfig]
+        self,
+        chains: Sequence[ChainConfig],
+        core_namespaces: Set[str],
+        chain_by_namespace: Dict[str, ChainConfig],
     ) -> List[Tuple[str, str, int]]:
         findings = []
+        for identity_field, values in (
+            ("name", [chain.name for chain in chains]),
+            ("namespace", [chain.namespace for chain in chains]),
+            ("root", [chain.root for chain in chains]),
+        ):
+            for value in sorted(set(values)):
+                count = values.count(value)
+                if count > 1:
+                    findings.append(
+                        (
+                            f"Manifest {identity_field} {value} is declared {count} times",
+                            "tools/corporate_history_contract.json",
+                            0,
+                        )
+                    )
         for namespace in sorted(core_namespaces):
             if namespace not in chain_by_namespace:
                 findings.append(
@@ -1016,7 +1036,10 @@ class Validator(BaseValidator):
         return findings
 
     def _validate_cross_chain_ownership(
-        self, chains: Sequence[ChainConfig], chain_by_root: Dict[str, ChainConfig]
+        self,
+        chains: Sequence[ChainConfig],
+        chain_by_root: Dict[str, ChainConfig],
+        event_defs: Dict[str, EventDef],
     ) -> List[Tuple[str, str, int]]:
         del chain_by_root
         findings = []
@@ -1032,8 +1055,12 @@ class Validator(BaseValidator):
                 )
 
         for chain in chains:
-            paths = [
-                self._root / "events" / f"{chain.namespace}.txt",
+            event_paths = {
+                self._root / event.file
+                for event in event_defs.values()
+                if event.event_id.startswith(chain.namespace + ".")
+            }
+            paths = sorted(event_paths) + [
                 self._root
                 / "common"
                 / "scripted_effects"

@@ -799,6 +799,40 @@ def test_cross_chain_effect_call_remains_a_write(tmp_path):
     ]
 
 
+def test_cross_chain_read_in_split_namespace_file_is_rejected(tmp_path):
+    _build_fixture(
+        tmp_path,
+        manifest_overrides={"with_other_chain": True},
+    )
+    _write(
+        tmp_path,
+        "events/USA_test_events_extension.txt",
+        """country_event = {
+\tid = USA_test_events.91
+\thidden = yes
+\tis_triggered_only = yes
+\ttrigger = { has_country_flag = USA_other_platform }
+}
+""",
+    )
+    assert _messages(tmp_path) == [
+        "TestCo has undeclared cross-chain read-only AI/flavour use of "
+        "USA_other_platform, owned by OtherCo"
+    ]
+
+
+def test_duplicate_manifest_identity_is_rejected(tmp_path):
+    _build_fixture(tmp_path)
+    manifest_path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["chains"].append(dict(manifest["chains"][0]))
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    messages = _messages(tmp_path)
+    assert "Manifest name TestCo is declared 2 times" in messages
+    assert "Manifest namespace USA_test_events is declared 2 times" in messages
+    assert "Manifest root USA_test is declared 2 times" in messages
+
+
 def test_flag_state_chain_needs_no_initialize_or_clamp_effect(tmp_path):
     _build_fixture(
         tmp_path, manifest_overrides={"variables": {}}, drop_state_effects=True
