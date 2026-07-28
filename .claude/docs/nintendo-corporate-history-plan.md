@@ -183,9 +183,10 @@ speculative dependency.
   reconstructs every passed milestone before any current-year scheduling.
 - A January 2000 start schedules `.1` once through the normal 2001 corporate
   dispatcher.
-- A January 1 later start invokes the current-year scheduler directly from
-  startup after synchronous reconstruction, so predecessor state is ready and
-  every `days` offset remains anchored to January 1.
+- Every later start invokes the current-year scheduler directly from startup
+  after synchronous reconstruction. Its January 1 mode queues future milestones
+  with calendar-anchored `days` offsets; its non-January startup mode records
+  those milestones as startup-skipped without queuing them.
 - A later start fires `.90` after two days as an idempotent reconstruction
   safety pass. It does not own current-year scheduling.
 - The current-year scheduler queues still-future milestones only when the
@@ -242,14 +243,16 @@ monthly effect rather than registering another `on_monthly_JAP` block.
 
 The current-year scheduler must be a manifest-required effect. It checks the
 calendar date, resolved marker, pending marker, and predecessor state for every
-event in that year. It accepts an explicit recovery parameter. In the normal
-January 1 mode, an earlier pending event satisfies the scheduling dependency for
-a later event in that year; at delivery and in recovery mode, the predecessor
-must be resolved. Full-mode startup invokes the scheduler directly rather than
-routing it through delayed `.90`, and only after synchronous reconstruction has
-established all prior-year predecessor state. It sets a timed pending flag
-before every event call and sets the start-year scheduling flag after the
-complete normal pass, even if the year contains no remaining event.
+event in that year. It has January 1, non-January startup, and explicit recovery
+modes. In January 1 mode, an earlier pending event satisfies the scheduling
+dependency for a later event in that year. Non-January startup mode sets
+startup-skipped on unresolved future milestones and makes no event call. At
+delivery and in recovery mode, the predecessor must be resolved. Full-mode
+startup invokes the scheduler directly rather than routing it through delayed
+`.90`, and only after synchronous reconstruction has established all prior-year
+predecessor state. It sets a timed pending flag before every event call and sets
+the start-year scheduling flag after either startup-mode pass, even if the year
+contains no remaining event. Recovery mode ignores that flag and never sets it.
 
 Recovery mode accepts an exact target milestone from the recovery effect. It
 does not require that target's milestone year equal the current calendar year;
