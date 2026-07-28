@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import patch
 
 from tools.dev_setup import check_bun
