@@ -1,6 +1,7 @@
-import pytest
 from unittest.mock import patch
+
 from tools.dev_setup import check_dev_packages
+
 
 @patch("tools.dev_setup._check_group")
 def test_check_dev_packages_true(mock_check_group):
