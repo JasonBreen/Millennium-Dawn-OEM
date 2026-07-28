@@ -65,6 +65,7 @@ corporate_history_on_startup = {
 				country_event = { id = USA_e3_events.90 days = 1 }
 				country_event = { id = USA_ibm_events.90 days = 1 }
 				country_event = { id = USA_nvidia_events.90 days = 4 }
+				USA_dell_schedule_current_year_events = yes
 				country_event = { id = USA_dell_events.90 days = 5 }
 			}
 		}
@@ -181,7 +182,7 @@ corporate_history_on_startup = {
 # Purpose: Outcomes Only driver for USA corporate chains on the first monthly tick
 #          after each historical milestone (<= ~31 days lag). In Full mode it owns
 #          visible Google/Oracle catch-up, retries the IBM-to-Lenovo handoff, and
-#          recovers missed TI/Micron/Motorola terminal outcomes.
+#          recovers missed TI/Micron/Motorola/Dell terminal outcomes.
 USA_corporate_history_monthly_outcomes = {
 	if = {
 		limit = {
@@ -281,6 +282,16 @@ USA_corporate_history_monthly_outcomes = {
 			NOT = { has_country_flag = USA_ti_capstone_choice_pending }
 		}
 		USA_ti_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2026.6.15
+			NOT = { has_country_flag = USA_dell_reconstruct_complete }
+		}
+		USA_dell_reconstruct_history = yes
 	}
 }
 
