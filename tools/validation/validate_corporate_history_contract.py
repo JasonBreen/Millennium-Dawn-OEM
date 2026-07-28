@@ -1068,7 +1068,7 @@ class Validator(BaseValidator):
                     if tokens:
                         rel = self._relpath(path)
                         for owner, token in sorted(tokens, key=lambda item: item[1]):
-                            if self._line_is_cross_write(code, owner):
+                            if self._line_is_cross_write(code, owner, stack):
                                 if not self._is_allowed(token, chain.allowed_writes):
                                     findings.append(
                                         (
@@ -1077,7 +1077,7 @@ class Validator(BaseValidator):
                                             line_no,
                                         )
                                     )
-                            elif self._line_is_cross_read(code):
+                            elif self._line_is_cross_read(code, stack):
                                 if not self._is_allowed(token, chain.allowed_reads):
                                     label = (
                                         "read-only AI/flavour use"
@@ -1488,16 +1488,25 @@ class Validator(BaseValidator):
             return False
         return markers >= 1 if disjunction else markers == 1
 
-    def _line_is_cross_write(self, line: str, owner: ChainConfig) -> bool:
+    def _line_is_cross_write(
+        self, line: str, owner: ChainConfig, stack: Sequence[str]
+    ) -> bool:
         if any(keyword in line for keyword in _WRITE_KEYWORDS):
             return True
+        if any(context in ("ai_chance", "trigger") for context in stack):
+            return False
         return bool(
             re.search(r"\b([A-Za-z0-9_]+)\s*=\s*yes\b", line)
             and any(prefix in line for prefix in owner.owned_prefixes)
         )
 
-    def _line_is_cross_read(self, line: str) -> bool:
-        return any(keyword in line for keyword in _READ_KEYWORDS)
+    def _line_is_cross_read(self, line: str, stack: Sequence[str]) -> bool:
+        if any(keyword in line for keyword in _READ_KEYWORDS):
+            return True
+        return bool(
+            any(context in ("ai_chance", "trigger") for context in stack)
+            and re.search(r"\b[A-Za-z0-9_]+\s*=\s*yes\b", line)
+        )
 
     def _is_allowed(self, token: str, patterns: Sequence[str]) -> bool:
         """Exact match only, so an exception never covers a neighbouring symbol."""
