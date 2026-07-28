@@ -368,9 +368,7 @@ corporate_history_outcomes_only_enabled = { always = no }
             "\t\t}\n",
         )
     if cross_chain_reads or cross_chain_trigger_reads:
-        flag_reads = [
-            f"\t\t\thas_country_flag = {flag}" for flag in cross_chain_reads
-        ]
+        flag_reads = [f"\t\t\thas_country_flag = {flag}" for flag in cross_chain_reads]
         trigger_reads = [
             f"\t\t\tmodifier = {{ add = 5 {trigger} = yes }}"
             for trigger in cross_chain_trigger_reads
@@ -381,9 +379,7 @@ corporate_history_outcomes_only_enabled = { always = no }
             f"\t\tname = USA_test_events.1.a\n\t\tai_chance = {{\n\t\t\tbase = 10\n{reads}\n\t\t}}\n",
         )
     if cross_chain_effect_calls:
-        calls = "\n".join(
-            f"\t\t{effect} = yes" for effect in cross_chain_effect_calls
-        )
+        calls = "\n".join(f"\t\t{effect} = yes" for effect in cross_chain_effect_calls)
         events = events.replace(
             "\t\tname = USA_test_events.1.a\n",
             f"\t\tname = USA_test_events.1.a\n{calls}\n",
