@@ -114,6 +114,15 @@ def test_find_redundant_effect_tooltip_wrappers_inline():
     assert "redundant effect_tooltip = { } wrapper" in issues[0][1]
 
 
+def test_find_redundant_effect_tooltip_wrappers_embedded_inline():
+    src = "foo = { effect_tooltip = { custom_effect_tooltip = bar_tt } }\n"
+    lines = src.splitlines(keepends=True)
+    issues = cet.find_redundant_effect_tooltip_wrappers(lines)
+    assert len(issues) == 1
+    assert issues[0][0] == 1
+    assert "redundant effect_tooltip = { } wrapper" in issues[0][1]
+
+
 def test_find_redundant_effect_tooltip_wrappers_no_issues():
     valid_cases = [
         "foo = {\n\teffect_tooltip = {\n\t\tadd_stability = 0.1\n\t}\n}\n",

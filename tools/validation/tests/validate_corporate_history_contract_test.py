@@ -821,6 +821,32 @@ def test_cross_chain_read_in_split_namespace_file_is_rejected(tmp_path):
     ]
 
 
+def test_events_sharing_a_file_are_checked_under_their_own_namespaces(tmp_path):
+    _build_fixture(
+        tmp_path,
+        manifest_overrides={"with_other_chain": True},
+    )
+    _write(
+        tmp_path,
+        "events/shared_events.txt",
+        """country_event = {
+\tid = USA_test_events.91
+\thidden = yes
+\tis_triggered_only = yes
+\timmediate = { set_country_flag = USA_test_platform }
+}
+
+country_event = {
+\tid = USA_other_events.91
+\thidden = yes
+\tis_triggered_only = yes
+\timmediate = { set_country_flag = USA_other_platform }
+}
+""",
+    )
+    assert _messages(tmp_path) == []
+
+
 def test_duplicate_manifest_identity_is_rejected(tmp_path):
     _build_fixture(tmp_path)
     manifest_path = tmp_path / "tools/corporate_history_contract.json"
