@@ -78,12 +78,18 @@ Required framework flags:
 - `JAP_nintendo_capstone_resolved`
 
 Each visible event also owns one resolved marker,
-`JAP_nintendo_event_<N>_resolved`, set in `immediate`, plus a corresponding
-`JAP_nintendo_event_<N>_pending` timed scheduling guard. A scheduling site sets
-the pending flag before queuing the event and keeps it alive beyond the intended
-delivery date; the event's `immediate` clears it while setting the resolved
-marker. If delivery is lost, expiry makes the milestone eligible for recovery.
-Each option owns a descriptive path flag under `JAP_nintendo_`.
+`JAP_nintendo_event_<N>_resolved`, set in `immediate`, plus corresponding
+`JAP_nintendo_event_<N>_delivery_expected`,
+`JAP_nintendo_event_<N>_startup_skipped`, and
+`JAP_nintendo_event_<N>_pending` markers. A scheduling site sets the persistent
+delivery-expected flag and timed pending flag before queuing the event, keeping
+the latter alive beyond the intended delivery date. The event's `immediate`
+clears both scheduling markers while setting the resolved marker. If delivery
+is lost, pending expiry leaves the delivery-expected evidence needed for
+recovery. An off-January startup instead sets startup-skipped without setting
+delivery-expected; after the milestone date, reward-free reconstruction clears
+startup-skipped and resolves it silently. Each option owns a descriptive path
+flag under `JAP_nintendo_`.
 Reconstruction selects the first listed choice as the canonical historical path
 only when no mutually exclusive option flag already exists.
 
@@ -184,8 +190,10 @@ speculative dependency.
 - The current-year scheduler queues still-future milestones only when the
   campaign began on January 1, so its `days` offsets remain calendar-correct,
   then sets `JAP_nintendo_start_year_events_scheduled`. A non-January start
-  reconstructs passed milestones but deliberately skips the rest of that
-  start year's milestones.
+  reconstructs passed milestones and marks the rest of that start year's
+  milestones as startup-skipped without queuing them. Once each skipped
+  milestone's date passes, the monthly Full-mode driver resolves it silently
+  through reward-free reconstruction so later years remain reachable.
 - Within one scheduling pass, a predecessor is ready when it is resolved or
   already pending at an earlier offset. This allows both 2015 milestones to be
   queued in chronological order without pretending that `.8` has already
@@ -196,10 +204,11 @@ speculative dependency.
   updated save cannot receive a second copy while one is queued.
 - The existing Japanese monthly Full-mode driver also invokes a bounded
   Nintendo recovery effect. After a pending flag expires, the recovery effect
-  invokes the current-year scheduler in recovery mode for a due unresolved
-  milestone whose predecessor has resolved. The startup scheduling-complete
-  flag suppresses only another initial January 1 pass; it does not suppress
-  recovery of a lost delivery.
+  invokes the current-year scheduler in recovery mode only for a due unresolved
+  milestone that still has delivery-expected evidence and whose predecessor has
+  resolved. Startup-skipped milestones use silent reconstruction instead. The
+  startup scheduling-complete flag suppresses only another initial January 1
+  pass; it does not suppress recovery of a lost delivery.
 - A start after 2025.06.05 reconstructs a deterministic capstone and completes
   silently; it does not display fifteen historical popups.
 
@@ -241,12 +250,13 @@ before every event call and sets the start-year scheduling flag after the
 complete normal pass, even if the year contains no remaining event.
 
 The annual dispatcher uses the same resolved and pending guards and sets the
-same timed pending flag before queuing an event. Each pending lifetime must
-extend beyond its delivery offset by a documented recovery buffer. Extend the
-existing Japanese monthly Full-mode driver with
+same delivery-expected and timed pending flags before queuing an event. Each
+pending lifetime must extend beyond its delivery offset by a documented
+recovery buffer. Extend the existing Japanese monthly Full-mode driver with
 `JAP_nintendo_recover_missing_events`: it identifies a milestone whose
-historical date has arrived, whose resolved and pending markers are both absent,
-and whose predecessor is resolved, then invokes
+historical date has arrived, whose delivery-expected marker is present, whose
+resolved and pending markers are both absent, and whose predecessor is resolved,
+then invokes
 `JAP_nintendo_schedule_current_year_events` in recovery mode. The recovery
 effect itself contains no `country_event` call. Recovery mode uses a short
 bounded delay and sets the pending flag again; it does not set the January 1
@@ -254,6 +264,12 @@ scheduling-complete flag. It must not bypass the game rule, grant
 reconstruction rewards, or schedule a successor whose predecessor is merely
 pending. Keeping all recovery event calls inside the scheduler preserves the
 contract's exact annual-dispatcher plus current-year-scheduler caller pair.
+
+The monthly Full-mode driver separately calls reward-free reconstruction for a
+due marker that is startup-skipped and not delivery-expected. That path never
+queues a visible event or grants its one-time reward; it applies the canonical
+Nintendo-owned choice, clears startup-skipped, and sets resolved. Recovery and
+silent skipped-milestone advancement are mutually exclusive.
 
 ## Future file map
 
@@ -307,13 +323,17 @@ Focused tests must prove:
    remaining same-year events on their exact calendar dates. A 2015 start queues
    `.8` and `.9` once, in offset order, with `.8`'s pending marker satisfying
    `.9`'s same-pass scheduling dependency. Non-January starts schedule no
-   offset-based current-year event.
+   offset-based current-year event; an upcoming start-year milestone receives
+   startup-skipped but not delivery-expected, produces no later popup, and
+   advances silently after its historical date so the following year remains
+   reachable.
 4. A 2026 start resolves exactly one capstone without visible catch-up.
 5. Save/reload with a queued event does not duplicate the popup or reward, and
    an intentionally lost delivery is requeued only after its timed pending flag
-   expires through scheduler recovery mode; successors wait for the recovered
-   predecessor to resolve and caller validation still reports only the
-   dispatcher/scheduler pair.
+   expires while delivery-expected remains set. Recovery runs through scheduler
+   mode; successors wait for the recovered predecessor to resolve and caller
+   validation still reports only the dispatcher/scheduler pair. A
+   startup-skipped event is never eligible for this recovery path.
 6. Reconstruction is idempotent and its completion flag terminates the monthly
    driver.
 7. Full, Outcomes Only, and Disabled satisfy the semantics above.
