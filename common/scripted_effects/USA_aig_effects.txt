@@ -140,10 +140,13 @@ USA_aig_resolve_capstone = {
 USA_aig_reconstruct_history = {
 	USA_aig_initialize_state = yes
 
+	# A queued-but-unanswered opening belongs to the recovery scheduler, not here:
+	# reconstructing over it would let the popup re-apply a conflicting opening.
 	if = {
 		limit = {
 			date > 2008.9.16
 			has_global_flag = USA_great_financial_crisis
+			NOT = { has_country_flag = USA_aig_event_1_pending }
 			NOT = { has_country_flag = USA_aig_direct_rescue_chosen }
 			NOT = { has_country_flag = USA_aig_consortium_attempted }
 			NOT = { has_country_flag = USA_aig_no_bailout }
@@ -151,6 +154,7 @@ USA_aig_reconstruct_history = {
 			NOT = { has_country_flag = USA_aig_equity_stake }
 			NOT = { has_country_flag = USA_aig_creditor_only }
 		}
+		set_country_flag = USA_aig_event_1_resolved
 		set_country_flag = USA_aig_direct_rescue_chosen
 		set_country_flag = USA_aig_rescue_active
 		set_country_flag = USA_aig_equity_stake
