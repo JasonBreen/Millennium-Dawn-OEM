@@ -154,6 +154,22 @@ USA_ti_normalize_state = {
 	}
 }
 
+USA_ti_apply_lehi_reconstruction = {
+	if = {
+		limit = { has_country_flag = USA_stack_txn_lehi_sold_to_ti }
+		add_to_variable = { USA_ti_embedded_reach = 1 }
+		add_to_variable = { USA_ti_manufacturing_control = 2 }
+	}
+	else_if = {
+		limit = { has_country_flag = USA_stack_txn_lehi_shared_reserve }
+		add_to_variable = { USA_ti_dsp_leadership = 1 }
+		add_to_variable = { USA_ti_manufacturing_control = 1 }
+	}
+	else = {
+		add_to_variable = { USA_ti_manufacturing_control = -1 }
+	}
+}
+
 USA_ti_reconstruct_history = {
 	USA_ti_initialize_state = yes
 
@@ -219,19 +235,7 @@ USA_ti_reconstruct_history = {
 			}
 		}
 		set_country_flag = USA_ti_event_17_resolved
-		if = {
-			limit = { has_country_flag = USA_stack_txn_lehi_sold_to_ti }
-			add_to_variable = { USA_ti_embedded_reach = 1 }
-			add_to_variable = { USA_ti_manufacturing_control = 2 }
-		}
-		else_if = {
-			limit = { has_country_flag = USA_stack_txn_lehi_shared_reserve }
-			add_to_variable = { USA_ti_dsp_leadership = 1 }
-			add_to_variable = { USA_ti_manufacturing_control = 1 }
-		}
-		else = {
-			add_to_variable = { USA_ti_manufacturing_control = -1 }
-		}
+		USA_ti_apply_lehi_reconstruction = yes
 	}
 	if = {
 		limit = {
@@ -257,6 +261,7 @@ USA_ti_reconstruct_history = {
 		limit = {
 			date > 2025.12.1
 			has_country_flag = USA_ti_event_19_resolved
+			NOT = { has_country_flag = USA_ti_sm1_initial_production }
 		}
 		set_country_flag = USA_ti_sm1_initial_production
 	}
@@ -264,6 +269,7 @@ USA_ti_reconstruct_history = {
 		limit = {
 			date > 2026.2.4
 			NOT = { has_country_flag = USA_ti_event_20_resolved }
+			NOT = { has_country_flag = USA_ti_capstone_choice_pending }
 		}
 		set_country_flag = USA_ti_event_20_resolved
 		set_country_flag = USA_ti_silabs_agreement_pending
@@ -272,10 +278,78 @@ USA_ti_reconstruct_history = {
 		add_to_variable = { USA_ti_embedded_reach = 1 }
 		add_to_variable = { USA_ti_dsp_leadership = 1 }
 	}
+	if = {
+		limit = {
+			date > 2026.2.4
+			NOT = { has_country_flag = USA_ti_capstone_choice_pending }
+		}
+		set_country_flag = USA_ti_reconstruct_complete
+	}
 
 	USA_ti_normalize_state = yes
 	USA_ti_clamp_state = yes
-	USA_ti_resolve_capstone = yes
+	if = {
+		limit = { NOT = { has_country_flag = USA_ti_capstone_choice_pending } }
+		USA_ti_resolve_capstone = yes
+	}
+}
+
+USA_ti_schedule_current_year_events = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_ti_start_year_events_scheduled }
+			NOT = { has_start_date < 2008.1.1 }
+			has_start_date < 2008.1.2
+			NOT = { has_country_flag = USA_ti_event_14_resolved }
+		}
+		country_event = { id = USA_ti_events.14 days = 1 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_ti_start_year_events_scheduled }
+			NOT = { has_start_date < 2011.1.1 }
+			has_start_date < 2011.1.2
+			NOT = { has_country_flag = USA_ti_event_15_resolved }
+		}
+		country_event = { id = USA_ti_events.15 days = 265 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_ti_start_year_events_scheduled }
+			NOT = { has_start_date < 2012.1.1 }
+			has_start_date < 2012.1.2
+			NOT = { has_country_flag = USA_ti_event_16_resolved }
+		}
+		country_event = { id = USA_ti_events.16 days = 318 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_ti_start_year_events_scheduled }
+			NOT = { has_start_date < 2024.1.1 }
+			has_start_date < 2024.1.2
+			NOT = { has_country_flag = USA_ti_event_18_resolved }
+		}
+		country_event = { id = USA_ti_events.18 days = 354 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_ti_start_year_events_scheduled }
+			NOT = { has_start_date < 2025.1.1 }
+			has_start_date < 2025.1.2
+			NOT = { has_country_flag = USA_ti_event_19_resolved }
+		}
+		country_event = { id = USA_ti_events.19 days = 168 }
+	}
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_ti_start_year_events_scheduled }
+			NOT = { has_start_date < 2026.1.1 }
+			has_start_date < 2026.1.2
+			NOT = { has_country_flag = USA_ti_event_20_resolved }
+		}
+		country_event = { id = USA_ti_events.20 days = 34 }
+	}
+	set_country_flag = USA_ti_start_year_events_scheduled
 }
 
 USA_ti_clear_capstone = {

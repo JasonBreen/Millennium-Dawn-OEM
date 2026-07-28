@@ -102,7 +102,14 @@ USA_ibm_schedule_pc_consequences = {
 			NOT = { has_country_flag = USA_ibm_event_17_resolved }
 		}
 		set_country_flag = USA_ibm_event_17_scheduled
-		country_event = { id = USA_ibm_events.17 days = 120 }
+		if = {
+			limit = {
+				NOT = { has_start_date < 2005.1.1 }
+				has_start_date < 2005.1.2
+			}
+			country_event = { id = USA_ibm_events.17 days = 66 }
+		}
+		else = { country_event = { id = USA_ibm_events.17 days = 91 } }
 	}
 	if = {
 		limit = {
@@ -110,7 +117,106 @@ USA_ibm_schedule_pc_consequences = {
 			NOT = { has_country_flag = USA_ibm_event_18_resolved }
 		}
 		set_country_flag = USA_ibm_event_18_scheduled
-		country_event = { id = USA_ibm_events.18 days = 180 }
+		if = {
+			limit = {
+				NOT = { has_start_date < 2005.1.1 }
+				has_start_date < 2005.1.2
+			}
+			country_event = { id = USA_ibm_events.18 days = 1002 }
+		}
+		else_if = {
+			limit = {
+				NOT = { has_start_date < 2006.1.1 }
+				has_start_date < 2006.1.2
+			}
+			country_event = { id = USA_ibm_events.18 days = 637 }
+		}
+		else_if = {
+			limit = {
+				NOT = { has_start_date < 2007.1.1 }
+				has_start_date < 2007.1.2
+			}
+			country_event = { id = USA_ibm_events.18 days = 272 }
+		}
+		else = { country_event = { id = USA_ibm_events.18 days = 1027 } }
+	}
+}
+
+USA_ibm_schedule_pc_decision = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_ibm_pc_divested }
+			NOT = { has_country_flag = USA_ibm_pc_retained }
+			NOT = { has_country_flag = USA_ibm_pc_spinout }
+			NOT = { has_country_flag = USA_ibm_event_1_pending }
+			has_start_date < 2004.1.2
+			OR = {
+				AND = {
+					date > 2003.12.31
+					date < 2004.1.2
+				}
+				date > 2004.12.8
+			}
+		}
+		if = {
+			limit = { date < 2004.1.2 }
+			set_country_flag = { flag = USA_ibm_event_1_pending value = 1 days = 382 }
+			country_event = { id = USA_ibm_events.1 days = 342 }
+		}
+		else = {
+			set_country_flag = { flag = USA_ibm_event_1_pending value = 1 days = 40 }
+			country_event = { id = USA_ibm_events.1 days = 5 }
+		}
+	}
+}
+
+USA_ibm_schedule_x86_decision = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_ibm_x86_divested }
+			NOT = { has_country_flag = USA_ibm_x86_retained }
+			NOT = { has_country_flag = USA_ibm_silicon_retained }
+			NOT = { has_country_flag = USA_ibm_event_3_pending }
+			has_start_date < 2014.1.2
+			OR = {
+				AND = {
+					date > 2013.12.31
+					date < 2014.1.2
+				}
+				date > 2014.1.23
+			}
+		}
+		if = {
+			limit = { date < 2014.1.2 }
+			set_country_flag = { flag = USA_ibm_event_3_pending value = 1 days = 62 }
+			country_event = { id = USA_ibm_events.3 days = 22 }
+		}
+		else = {
+			set_country_flag = { flag = USA_ibm_event_3_pending value = 1 days = 40 }
+			country_event = { id = USA_ibm_events.3 days = 5 }
+		}
+	}
+}
+
+USA_ibm_notify_lenovo_pc_path = {
+	if = {
+		limit = {
+			country_exists = CHI
+			NOT = { has_war_with = CHI }
+			NOT = { has_country_flag = USA_ibm_lenovo_pc_notification_pending }
+			OR = {
+				has_country_flag = USA_ibm_pc_divested
+				has_country_flag = USA_ibm_pc_retained
+				has_country_flag = USA_ibm_pc_spinout
+			}
+			CHI = {
+				original_tag = CHI
+				NOT = { has_country_flag = collapsed_nation }
+				NOT = { has_country_flag = CHI_lenovo_pc_path_chosen }
+			}
+		}
+		set_country_flag = { flag = USA_ibm_lenovo_pc_notification_pending value = 1 days = 40 }
+		CHI = { country_event = { id = CHI_lenovo_events.1 days = 1 } }
 	}
 }
 
@@ -478,7 +584,7 @@ USA_ibm_reconstruct_prehistory = {
 USA_ibm_reconstruct_consequences = {
 	if = {
 		limit = {
-			date > 2005.5.1
+			date > 2005.3.9
 			NOT = { has_country_flag = USA_ibm_event_17_resolved }
 			has_country_flag = USA_ibm_pc_divested
 		}
@@ -501,7 +607,7 @@ USA_ibm_reconstruct_consequences = {
 	}
 	if = {
 		limit = {
-			date > 2005.5.1
+			date > 2005.3.9
 			NOT = { has_country_flag = USA_ibm_event_17_resolved }
 			OR = {
 				has_country_flag = USA_ibm_pc_retained
@@ -944,7 +1050,6 @@ USA_ibm_reconstruct_integrations = {
 			NOT = { has_country_flag = USA_ibm_event_43_resolved }
 		}
 		set_country_flag = USA_ibm_event_43_resolved
-		set_country_flag = USA_ibm_firmware_crisis_eligible
 		add_to_variable = { USA_ibm_faction_open_platform = 2 }
 		add_to_variable = { USA_ibm_faction_services = 1 }
 		add_to_variable = { USA_oem_vertical_integration = -1 }
@@ -1346,12 +1451,12 @@ USA_ibm_resolve_capstone = {
 }
 
 # Effect: USA_ibm_reconstruct_main_decisions
-# Purpose: Main-decision flag ladder (2005.5.1 - 2026.6.2), moved verbatim from
+# Purpose: Main-decision flag ladder (2004.12.8 - 2026.6.2), moved verbatim from
 #          USA_ibm_events.90. Idempotent: every step is date + marker guarded.
 USA_ibm_reconstruct_main_decisions = {
 	if = {
 		limit = {
-			date > 2005.5.1
+			date > 2004.12.8
 			NOT = { has_country_flag = USA_ibm_pc_divested }
 			NOT = { has_country_flag = USA_ibm_pc_retained }
 			NOT = { has_country_flag = USA_ibm_pc_spinout }
@@ -1479,6 +1584,21 @@ USA_ibm_reconstruct_history = {
 	USA_ibm_reconstruct_prehistory = yes
 	USA_ibm_reconstruct_main_decisions = yes
 	USA_ibm_reconstruct_consequences = yes
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			OR = {
+				has_country_flag = USA_ibm_pc_divested
+				has_country_flag = USA_ibm_pc_retained
+				has_country_flag = USA_ibm_pc_spinout
+			}
+		}
+		if = {
+			limit = { date < 2005.5.2 }
+			USA_ibm_notify_lenovo_pc_path = yes
+		}
+		USA_ibm_schedule_pc_consequences = yes
+	}
 	USA_ibm_reconstruct_integrations = yes
 	USA_ibm_clamp_state = yes
 	if = {
