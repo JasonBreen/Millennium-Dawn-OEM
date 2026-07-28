@@ -214,7 +214,9 @@ class Validator(BaseValidator):
 
         self._log_section("manifest coverage")
         self._report(
-            self._validate_manifest_coverage(core_namespaces, chain_by_namespace),
+            self._validate_manifest_coverage(
+                chains, core_namespaces, chain_by_namespace
+            ),
             "Corporate-history manifest covers current namespaces",
             "Corporate-history manifest coverage issues:",
             category="Corporate-history manifest",
@@ -274,7 +276,7 @@ class Validator(BaseValidator):
 
         self._log_section("cross-chain ownership")
         self._report(
-            self._validate_cross_chain_ownership(chains, chain_by_root),
+            self._validate_cross_chain_ownership(chains, chain_by_root, event_defs),
             "Cross-chain ownership stays within the declared contract",
             "Corporate-history cross-chain ownership issues:",
             category="Corporate-history cross-chain ownership",
@@ -553,9 +555,27 @@ class Validator(BaseValidator):
         return call_sites
 
     def _validate_manifest_coverage(
-        self, core_namespaces: Set[str], chain_by_namespace: Dict[str, ChainConfig]
+        self,
+        chains: Sequence[ChainConfig],
+        core_namespaces: Set[str],
+        chain_by_namespace: Dict[str, ChainConfig],
     ) -> List[Tuple[str, str, int]]:
         findings = []
+        for identity_field, values in (
+            ("name", [chain.name for chain in chains]),
+            ("namespace", [chain.namespace for chain in chains]),
+            ("root", [chain.root for chain in chains]),
+        ):
+            for value in sorted(set(values)):
+                count = values.count(value)
+                if count > 1:
+                    findings.append(
+                        (
+                            f"Manifest {identity_field} {value} is declared {count} times",
+                            "tools/corporate_history_contract.json",
+                            0,
+                        )
+                    )
         for namespace in sorted(core_namespaces):
             if namespace not in chain_by_namespace:
                 findings.append(
@@ -1016,7 +1036,10 @@ class Validator(BaseValidator):
         return findings
 
     def _validate_cross_chain_ownership(
-        self, chains: Sequence[ChainConfig], chain_by_root: Dict[str, ChainConfig]
+        self,
+        chains: Sequence[ChainConfig],
+        chain_by_root: Dict[str, ChainConfig],
+        event_defs: Dict[str, EventDef],
     ) -> List[Tuple[str, str, int]]:
         del chain_by_root
         findings = []
@@ -1032,73 +1055,94 @@ class Validator(BaseValidator):
                 )
 
         for chain in chains:
-            paths = [
-                self._root / "events" / f"{chain.namespace}.txt",
-                self._root
-                / "common"
-                / "scripted_effects"
-                / f"{chain.root}_effects.txt",
-            ]
-            for path in paths:
-                if not path.exists():
+            for event in event_defs.values():
+                if not event.event_id.startswith(chain.namespace + "."):
                     continue
+                findings.extend(
+                    self._cross_chain_findings_in_text(
+                        chain,
+                        event.body,
+                        event.file,
+                        event.line,
+                        ownership_patterns,
+                    )
+                )
+
+            path = (
+                self._root / "common" / "scripted_effects" / f"{chain.root}_effects.txt"
+            )
+            if path.exists():
                 try:
                     text = strip_comments(
                         path.read_text(encoding="utf-8-sig", errors="replace")
                     )
                 except OSError:
                     continue
-                stack: List[str] = []
-                line_no = 0
-                for raw_line in text.splitlines():
-                    line_no += 1
-                    code = blank_quoted_strings(raw_line)
-                    headers = re.findall(r"(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{", code)
-                    stack.extend(headers)
-                    tokens: List[Tuple[ChainConfig, str]] = []
-                    seen_tokens: Set[Tuple[str, str]] = set()
-                    for owner, _prefix, pattern in ownership_patterns:
-                        if owner is chain:
-                            continue
-                        for token in pattern.findall(code):
-                            key = (owner.root, token)
-                            if key not in seen_tokens:
-                                seen_tokens.add(key)
-                                tokens.append((owner, token))
-                    if tokens:
-                        rel = self._relpath(path)
-                        for owner, token in sorted(tokens, key=lambda item: item[1]):
-                            if self._line_is_cross_write(code, owner, stack):
-                                if not self._is_allowed(token, chain.allowed_writes):
-                                    findings.append(
-                                        (
-                                            f"{chain.name} writes {token}, owned by {owner.name}, outside declared exceptions",
-                                            rel,
-                                            line_no,
-                                        )
-                                    )
-                            elif self._line_is_cross_read(code, stack):
-                                if not self._is_allowed(token, chain.allowed_reads):
-                                    label = (
-                                        "read-only AI/flavour use"
-                                        if any(
-                                            ctx in ("ai_chance", "trigger")
-                                            for ctx in stack
-                                        )
-                                        else "read"
-                                    )
-                                    findings.append(
-                                        (
-                                            f"{chain.name} has undeclared cross-chain {label} of {token}, owned by {owner.name}",
-                                            rel,
-                                            line_no,
-                                        )
-                                    )
-                    closes = code.count("}")
-                    while closes > 0 and stack:
-                        stack.pop()
-                        closes -= 1
+                findings.extend(
+                    self._cross_chain_findings_in_text(
+                        chain,
+                        text,
+                        self._relpath(path),
+                        1,
+                        ownership_patterns,
+                    )
+                )
         return self._dedupe_findings(findings)
+
+    def _cross_chain_findings_in_text(
+        self,
+        chain: ChainConfig,
+        text: str,
+        rel: str,
+        base_line: int,
+        ownership_patterns: Sequence[Tuple[ChainConfig, str, re.Pattern[str]]],
+    ) -> List[Tuple[str, str, int]]:
+        findings = []
+        stack: List[str] = []
+        for offset, raw_line in enumerate(text.splitlines()):
+            line_no = base_line + offset
+            code = blank_quoted_strings(raw_line)
+            headers = re.findall(r"(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{", code)
+            stack.extend(headers)
+            tokens: List[Tuple[ChainConfig, str]] = []
+            seen_tokens: Set[Tuple[str, str]] = set()
+            for owner, _prefix, pattern in ownership_patterns:
+                if owner is chain:
+                    continue
+                for token in pattern.findall(code):
+                    key = (owner.root, token)
+                    if key not in seen_tokens:
+                        seen_tokens.add(key)
+                        tokens.append((owner, token))
+            for owner, token in sorted(tokens, key=lambda item: item[1]):
+                if self._line_is_cross_write(code, owner, stack):
+                    if not self._is_allowed(token, chain.allowed_writes):
+                        findings.append(
+                            (
+                                f"{chain.name} writes {token}, owned by {owner.name}, outside declared exceptions",
+                                rel,
+                                line_no,
+                            )
+                        )
+                elif self._line_is_cross_read(code, stack):
+                    if not self._is_allowed(token, chain.allowed_reads):
+                        label = (
+                            "read-only AI/flavour use"
+                            if any(ctx in ("ai_chance", "trigger") for ctx in stack)
+                            else "read"
+                        )
+                        findings.append(
+                            (
+                                f"{chain.name} has undeclared cross-chain {label} of {token}, owned by {owner.name}",
+                                rel,
+                                line_no,
+                            )
+                        )
+            closes = code.count("}")
+            while closes > 0 and stack:
+                stack.pop()
+                closes -= 1
+        return findings
 
     def _find_event_calls(
         self, text: str, base_line: int, tracked_ids: Iterable[str]

@@ -99,6 +99,8 @@ def focus_add(cpath, dry_run=False):
                         ids.pop()
             line_number = 0
             file.close()
+            if not idss:
+                continue
             outputfile = (
                 io.StringIO()
                 if dry_run
@@ -160,6 +162,8 @@ def focus_remove(cpath, dry_run=False):
                 continue
             lines = outputfile.readlines()
             outputfile.close()
+            if not any('log = "[GetDateText]' in line for line in lines):
+                continue
             outputfile = (
                 io.StringIO()
                 if dry_run
@@ -236,6 +240,8 @@ def event_add(cpath, dry_run=False):
                             triggered = False
             line_number = 0
             file.close()
+            if not ids:
+                continue
             outputfile = (
                 io.StringIO()
                 if dry_run
@@ -285,6 +291,8 @@ def event_remove(cpath, dry_run=False):
                 print(filename)
                 continue
             outputfile.close()
+            if not any("immediate = {log = " in line for line in lines):
+                continue
             outputfile = (
                 io.StringIO()
                 if dry_run
@@ -335,6 +343,8 @@ def idea_add(cpath, dry_run=False):
                     level -= line.count("}")
             file.close()
             line_number = 0
+            if not ids:
+                continue
             outputfile = (
                 io.StringIO()
                 if dry_run
@@ -379,6 +389,8 @@ def idea_remove(cpath, dry_run=False):
                 continue
             lines = outputfile.readlines()
             outputfile.close()
+            if not any("on_add = { log = " in line for line in lines):
+                continue
             outputfile = (
                 io.StringIO()
                 if dry_run
@@ -438,6 +450,12 @@ def decision_add(cpath, dry_run=False):
                         level -= line.count("}")
 
             if found_decisions == {}:
+                continue
+
+            if not any(
+                idx[0] != 0 or idx[1] != 0 or idx[2] != 0
+                for idx in found_decisions.values()
+            ):
                 continue
 
             id = ""
@@ -533,6 +551,8 @@ def decision_remove(cpath, dry_run=False):
                 continue
             lines = outputfile.readlines()
             outputfile.close()
+            if not any('log = "[GetDateText]' in line for line in lines):
+                continue
             outputfile = (
                 io.StringIO()
                 if dry_run
@@ -586,6 +606,8 @@ def tech_add(cpath, dry_run=False):
                     level -= line.count("}")
             file.close()
             line_number = 0
+            if not ids:
+                continue
             outputfile = (
                 io.StringIO()
                 if dry_run
@@ -633,6 +655,8 @@ def tech_remove(cpath, dry_run=False):
                 continue
             lines = outputfile.readlines()
             outputfile.close()
+            if not any('log = "[GetDateText]' in line for line in lines):
+                continue
             outputfile = (
                 io.StringIO()
                 if dry_run
