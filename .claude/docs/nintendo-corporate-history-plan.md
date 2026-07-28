@@ -201,6 +201,11 @@ speculative dependency.
   already pending at an earlier offset. This allows both 2015 milestones to be
   queued in chronological order without pretending that `.8` has already
   resolved before `.9` is scheduled.
+- An annual dispatcher may likewise queue the current milestone when its
+  chronological predecessor is resolved or has persistent delivery-expected
+  evidence from an earlier scheduled date. The visible event itself still
+  requires the predecessor to be resolved at delivery; if that check fails, its
+  own delivery-expected marker survives for ordered recovery.
 - Annual dispatch effects own normal-year calls. No visible event calls its
   chronological successor directly.
 - Every visible event has its own resolved and timed pending guards, so an
@@ -275,10 +280,12 @@ Before each annual Nintendo dispatch check,
 `JAP_nintendo_advance_startup_skipped` silently resolves every due
 startup-skipped predecessor in chronological order. The helper contains no
 `country_event` call. The annual dispatcher then uses the same resolved and
-pending guards and sets the same delivery-expected and timed pending flags
-before queuing an event. Each pending lifetime must extend beyond its delivery
-offset by a documented recovery buffer. Extend the existing Japanese monthly
-Full-mode driver with
+pending guards. It may treat a predecessor's earlier delivery-expected marker as
+scheduling readiness, but never as resolution; every visible event trigger must
+still require the predecessor's resolved marker. The dispatcher sets the
+current event's delivery-expected and timed pending flags before queuing it.
+Each pending lifetime must extend beyond its delivery offset by a documented
+recovery buffer. Extend the existing Japanese monthly Full-mode driver with
 `JAP_nintendo_recover_missing_events`: it identifies a milestone whose
 historical date has arrived, whose delivery-expected marker is present, whose
 resolved and pending markers are both absent, and whose predecessor is resolved,
@@ -369,8 +376,11 @@ Focused tests must prove:
    mode; successors wait for the recovered predecessor to resolve and caller
    validation still reports only the dispatcher/scheduler pair. A
    startup-skipped event is never eligible for this recovery path. A lost
-   December event remains recoverable after its pending buffer expires in the
-   following year.
+   December `.6` remains recoverable after its pending buffer expires in the
+   following year, while the January dispatcher records and queues `.7` once
+   from `.6`'s delivery-expected evidence. If `.7` reaches delivery before `.6`
+   resolves, it does not fire and its own evidence makes it recoverable after
+   `.6`.
 6. Reconstruction is idempotent and its completion flag terminates the monthly
    driver.
 7. Full, Outcomes Only, and Disabled satisfy the semantics above.
