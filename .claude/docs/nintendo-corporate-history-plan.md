@@ -78,10 +78,13 @@ Required framework flags:
 
 Each visible event also owns one resolved marker,
 `JAP_nintendo_event_<N>_resolved`, set in `immediate`, plus a corresponding
-`JAP_nintendo_event_<N>_pending` scheduling guard. Each option owns a descriptive
-path flag under `JAP_nintendo_`. Reconstruction selects the first listed choice
-as the canonical historical path only when no mutually exclusive option flag
-already exists.
+`JAP_nintendo_event_<N>_pending` timed scheduling guard. A scheduling site sets
+the pending flag before queuing the event and keeps it alive beyond the intended
+delivery date; the event's `immediate` clears it while setting the resolved
+marker. If delivery is lost, expiry makes the milestone eligible for recovery.
+Each option owns a descriptive path flag under `JAP_nintendo_`.
+Reconstruction selects the first listed choice as the canonical historical path
+only when no mutually exclusive option flag already exists.
 
 ## Event chronology
 
@@ -132,6 +135,15 @@ All external state is read-only. A foreign read must first guard
 fall back to a neutral branch if the country or flag is absent. Nintendo must
 never set, clear, or mutate any identifier in this table.
 
+Reward-free reconstruction must not consume these foreign reads. It derives
+every historical choice and the reconstructed capstone solely from
+Nintendo-owned path markers and bounded variables, using the canonical choice
+and outcome precedence above. Foreign reads may affect a visible event's
+availability, AI weighting, or contextual effects when that event occurs in
+live play, but they may not change a silently reconstructed outcome. This keeps
+reconstruction deterministic and independent of whether Sony, GPU, NVIDIA,
+TSMC, or E3 startup work has already completed.
+
 | Exact read                              | Owner                | Nintendo context                                                                                  |
 | --------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------- |
 | `JAP_sony_playstation_platform`         | Sony                 | Measures domestic console-platform competition when scaling Wii, Switch, and the final ecosystem. |
@@ -173,10 +185,19 @@ speculative dependency.
   then sets `JAP_nintendo_start_year_events_scheduled`. A non-January start
   reconstructs passed milestones but deliberately skips the rest of that
   start year's milestones.
+- Within one scheduling pass, a predecessor is ready when it is resolved or
+  already pending at an earlier offset. This allows both 2015 milestones to be
+  queued in chronological order without pretending that `.8` has already
+  resolved before `.9` is scheduled.
 - Annual dispatch effects own normal-year calls. No visible event calls its
   chronological successor directly.
-- Every visible event has its own resolved and pending guards, so an updated save
-  cannot receive a second copy while one is queued.
+- Every visible event has its own resolved and timed pending guards, so an
+  updated save cannot receive a second copy while one is queued.
+- The existing Japanese monthly Full-mode driver also invokes a bounded
+  Nintendo recovery effect. After a pending flag expires, the recovery effect
+  requeues a due unresolved milestone once its predecessor has resolved. The
+  startup scheduling-complete flag suppresses only another initial January 1
+  pass; it does not suppress recovery of a lost delivery.
 - A start after 2025.06.05 reconstructs a deterministic capstone and completes
   silently; it does not display fifteen historical popups.
 
@@ -208,10 +229,25 @@ monthly effect rather than registering another `on_monthly_JAP` block.
 
 The current-year scheduler must be a manifest-required effect. It checks the
 calendar date, resolved marker, pending marker, and predecessor state for every
-event in that year. Full-mode startup invokes it directly rather than routing it
-through delayed `.90`, and only after synchronous reconstruction has established
-all predecessor state. It sets the start-year scheduling flag after the complete
-pass, even if the year contains no remaining event.
+event in that year. During the same pass, an earlier pending event satisfies the
+scheduling dependency for a later event in that year; at delivery and during
+recovery, the predecessor must be resolved. Full-mode startup invokes the
+scheduler directly rather than routing it through delayed `.90`, and only after
+synchronous reconstruction has established all prior-year predecessor state.
+It sets a timed pending flag before every event call and sets the start-year
+scheduling flag after the complete pass, even if the year contains no remaining
+event.
+
+The annual dispatcher uses the same resolved and pending guards and sets the
+same timed pending flag before queuing an event. Each pending lifetime must
+extend beyond its delivery offset by a documented recovery buffer. Extend the
+existing Japanese monthly Full-mode driver with
+`JAP_nintendo_recover_missing_events`: it may requeue only an event whose
+historical date has arrived, whose resolved and pending markers are both absent,
+and whose predecessor is resolved. Recovery uses a short bounded delay and
+sets the pending flag again. It must not bypass the game rule, grant
+reconstruction rewards, or schedule a successor whose predecessor is merely
+pending.
 
 ## Future file map
 
@@ -259,17 +295,23 @@ Focused tests must prove:
 1. All 15 visible IDs and `.90` are defined once and every visible event has
    exactly the permitted annual-dispatcher plus current-year-scheduler pair.
 2. A 2000 start reaches all events in order.
-3. January 1 starts reconstruct every prior milestone before scheduling only the
-   remaining same-year event on its exact calendar date, while non-January starts
-   schedule no offset-based current-year event.
+3. January 1 starts reconstruct every prior milestone before scheduling all
+   remaining same-year events on their exact calendar dates. A 2015 start queues
+   `.8` and `.9` once, in offset order, with `.8`'s pending marker satisfying
+   `.9`'s same-pass scheduling dependency. Non-January starts schedule no
+   offset-based current-year event.
 4. A 2026 start resolves exactly one capstone without visible catch-up.
-5. Save/reload with a queued event does not duplicate the popup or reward.
+5. Save/reload with a queued event does not duplicate the popup or reward, and
+   an intentionally lost delivery is requeued only after its timed pending flag
+   expires; successors wait for the recovered predecessor to resolve.
 6. Reconstruction is idempotent and its completion flag terminates the monthly
    driver.
 7. Full, Outcomes Only, and Disabled satisfy the semantics above.
 8. Every variable is initialized and clamped after all mutations.
 9. Exactly one outcome idea can survive the capstone effect.
 10. All foreign reads are guarded and declared; no foreign write is present.
+    Reconstruction produces the same markers, variables, and capstone before or
+    after foreign-owner startup effects and contains no foreign read.
 11. Existing Sony, GPU, NVIDIA, TSMC, E3, `JAP_games_are_fun`, and achievement
     identifiers remain unchanged.
 12. English localisation is complete and UTF-8 with BOM.
