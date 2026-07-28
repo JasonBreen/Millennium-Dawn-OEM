@@ -452,7 +452,10 @@ def decision_add(cpath, dry_run=False):
             if found_decisions == {}:
                 continue
 
-            if not any(idx[0] != 0 or idx[1] != 0 or idx[2] != 0 for idx in found_decisions.values()):
+            if not any(
+                idx[0] != 0 or idx[1] != 0 or idx[2] != 0
+                for idx in found_decisions.values()
+            ):
                 continue
 
             id = ""
