@@ -280,6 +280,8 @@ def _build_fixture(
     startup_reconstructs=False,
     manifest_overrides=None,
     cross_chain_reads=(),
+    cross_chain_trigger_reads=(),
+    cross_chain_effect_calls=(),
     cleanup_in_option=False,
     drop_cleanup_effect=False,
     drop_state_effects=False,
@@ -368,13 +370,22 @@ corporate_history_outcomes_only_enabled = { always = no }
             "\t\t\tUSA_test_outcome_b\n"
             "\t\t}\n",
         )
-    if cross_chain_reads:
-        reads = "\n".join(
-            f"\t\t\thas_country_flag = {flag}" for flag in cross_chain_reads
-        )
+    if cross_chain_reads or cross_chain_trigger_reads:
+        flag_reads = [f"\t\t\thas_country_flag = {flag}" for flag in cross_chain_reads]
+        trigger_reads = [
+            f"\t\t\tmodifier = {{ add = 5 {trigger} = yes }}"
+            for trigger in cross_chain_trigger_reads
+        ]
+        reads = "\n".join(flag_reads + trigger_reads)
         events = events.replace(
             "\t\tname = USA_test_events.1.a\n",
             f"\t\tname = USA_test_events.1.a\n\t\tai_chance = {{\n\t\t\tbase = 10\n{reads}\n\t\t}}\n",
+        )
+    if cross_chain_effect_calls:
+        calls = "\n".join(f"\t\t{effect} = yes" for effect in cross_chain_effect_calls)
+        events = events.replace(
+            "\t\tname = USA_test_events.1.a\n",
+            f"\t\tname = USA_test_events.1.a\n{calls}\n",
         )
     _write(root, "events/USA_test_events.txt", events)
     _write(root, "common/ideas/USA_test_ideas.txt", _base_ideas(missing_civil_war))
@@ -746,6 +757,45 @@ def test_cross_chain_exception_does_not_cover_prefix_neighbours(tmp_path):
     assert _messages(tmp_path) == [
         "TestCo has undeclared cross-chain read-only AI/flavour use of "
         "USA_other_qnx_stack_v2, owned by OtherCo"
+    ]
+
+
+def test_declared_cross_chain_scripted_trigger_read_is_accepted(tmp_path):
+    _build_fixture(
+        tmp_path,
+        manifest_overrides={
+            "with_other_chain": True,
+            "allowed_reads": ["USA_other_administration"],
+        },
+        cross_chain_trigger_reads=["USA_other_administration"],
+    )
+    assert _messages(tmp_path) == []
+
+
+def test_undeclared_cross_chain_scripted_trigger_read_is_rejected(tmp_path):
+    _build_fixture(
+        tmp_path,
+        manifest_overrides={"with_other_chain": True},
+        cross_chain_trigger_reads=["USA_other_administration"],
+    )
+    assert _messages(tmp_path) == [
+        "TestCo has undeclared cross-chain read-only AI/flavour use of "
+        "USA_other_administration, owned by OtherCo"
+    ]
+
+
+def test_cross_chain_effect_call_remains_a_write(tmp_path):
+    _build_fixture(
+        tmp_path,
+        manifest_overrides={
+            "with_other_chain": True,
+            "allowed_reads": ["USA_other_administration"],
+        },
+        cross_chain_effect_calls=["USA_other_administration"],
+    )
+    assert _messages(tmp_path) == [
+        "TestCo writes USA_other_administration, owned by OtherCo, "
+        "outside declared exceptions"
     ]
 
 
