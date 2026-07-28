@@ -3,162 +3,311 @@
 # block; gated on the rule_corporate_history game rule at dispatcher level.
 # Framework: 00_corporate_history_effects.txt; docs: docs/src/content/resources/corporate-history-framework.md
 
-# Catch-up dispatcher for the Google extension chain (events 16–20).
-# Queues the next unresolved event each year so late-starts and mid-campaign
-# saves can progress through the chain even if the event's original year has
-# already passed. Called from every USA yearly dispatcher from 2010 onward.
+# Persistent catch-up driver for the Google extension chain (events 16-20) and the
+# sole scheduling owner for them. The monthly driver preserves canonical dates in
+# a normal campaign and queues one short-delay event per tick after a late start.
 USA_google_extension_catchup = {
 	if = {
-		limit = {
-			NOT = { OR = {
-				has_country_flag = USA_google_cables_allied_mesh
-				has_country_flag = USA_google_cables_state_backed_corridors
-				has_country_flag = USA_google_cables_lease_capacity
-			} }
-		}
+		limit = { NOT = { has_country_flag = USA_google_extension_pending } }
 		if = {
-			limit = { date < 2011.1.1 }
-			country_event = { id = USA_google_events.16 days = 250 }
-		}
-		else = {
-			country_event = { id = USA_google_events.16 days = 5 }
-		}
-	}
-	else_if = {
-		limit = { NOT = { has_country_flag = USA_google_event_17_resolved } }
-		if = {
-			limit = { date < 2017.1.1 }
-			country_event = { id = USA_google_events.17 days = 350 }
-		}
-		else = {
-			country_event = { id = USA_google_events.17 days = 5 }
-		}
-	}
-	else_if = {
-		limit = {
-			OR = {
-				has_country_flag = USA_google_waymo_full_investment
-				has_country_flag = USA_google_waymo_partnered_development
-				has_country_flag = USA_google_waymo_minimal_investment
+			limit = {
+				date > 2009.12.31
+				NOT = { has_country_flag = USA_google_event_16_resolved }
+				NOT = { OR = {
+					has_country_flag = USA_google_cables_allied_mesh
+					has_country_flag = USA_google_cables_state_backed_corridors
+					has_country_flag = USA_google_cables_lease_capacity
+				} }
 			}
-			NOT = { has_country_flag = USA_google_event_18_resolved }
-		}
-		if = {
-			limit = { date < 2022.1.1 }
-			country_event = { id = USA_google_events.18 days = 200 }
-		}
-		else = {
-			country_event = { id = USA_google_events.18 days = 5 }
-		}
-	}
-	else_if = {
-		limit = {
-			OR = {
-				has_country_flag = USA_google_vertex_ai_platform
-				has_country_flag = USA_google_vertex_partnered_ai
-				has_country_flag = USA_google_vertex_open_ecosystem
+			set_country_flag = { flag = USA_google_extension_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2010.2.1 }
+				country_event = { id = USA_google_events.16 days = 89 }
 			}
-			NOT = { has_country_flag = USA_google_event_19_resolved }
-		}
-		if = {
-			limit = { date < 2024.1.1 }
-			country_event = { id = USA_google_events.19 days = 150 }
-		}
-		else = {
-			country_event = { id = USA_google_events.19 days = 5 }
-		}
-	}
-	else_if = {
-		limit = {
-			OR = {
-				has_country_flag = USA_google_bard_full_integration
-				has_country_flag = USA_google_bard_partnered_ecosystem
-				has_country_flag = USA_google_bard_open_competition
+			else = {
+				country_event = { id = USA_google_events.16 days = 5 }
 			}
-			NOT = { OR = {
-				has_country_flag = USA_google_antitrust_settlement
-				has_country_flag = USA_google_antitrust_litigation
-				has_country_flag = USA_google_antitrust_structural_separation
-			} }
 		}
-		if = {
-			limit = { date < 2025.1.1 }
-			country_event = { id = USA_google_events.20 days = 200 }
+		else_if = {
+			limit = {
+				date > 2015.12.31
+				OR = {
+					has_country_flag = USA_google_cables_allied_mesh
+					has_country_flag = USA_google_cables_state_backed_corridors
+					has_country_flag = USA_google_cables_lease_capacity
+				}
+				NOT = { has_country_flag = USA_google_event_17_resolved }
+			}
+			set_country_flag = { flag = USA_google_extension_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2016.2.1 }
+				country_event = { id = USA_google_events.17 days = 347 }
+			}
+			else = {
+				country_event = { id = USA_google_events.17 days = 5 }
+			}
 		}
-		else = {
-			country_event = { id = USA_google_events.20 days = 5 }
+		else_if = {
+			limit = {
+				date > 2020.12.31
+				OR = {
+					has_country_flag = USA_google_waymo_full_investment
+					has_country_flag = USA_google_waymo_partnered_development
+					has_country_flag = USA_google_waymo_minimal_investment
+				}
+				NOT = { has_country_flag = USA_google_event_18_resolved }
+			}
+			set_country_flag = { flag = USA_google_extension_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2021.2.1 }
+				country_event = { id = USA_google_events.18 days = 137 }
+			}
+			else = {
+				country_event = { id = USA_google_events.18 days = 5 }
+			}
+		}
+		else_if = {
+			limit = {
+				date > 2022.12.31
+				OR = {
+					has_country_flag = USA_google_vertex_ai_platform
+					has_country_flag = USA_google_vertex_partnered_ai
+					has_country_flag = USA_google_vertex_open_ecosystem
+				}
+				NOT = { has_country_flag = USA_google_event_19_resolved }
+			}
+			set_country_flag = { flag = USA_google_extension_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2023.2.1 }
+				country_event = { id = USA_google_events.19 days = 79 }
+			}
+			else = {
+				country_event = { id = USA_google_events.19 days = 5 }
+			}
+		}
+		else_if = {
+			limit = {
+				date > 2024.12.31
+				OR = {
+					has_country_flag = USA_google_bard_full_integration
+					has_country_flag = USA_google_bard_partnered_ecosystem
+					has_country_flag = USA_google_bard_open_competition
+				}
+				OR = {
+					has_country_flag = USA_google_antitrust_settle_distribution
+					has_country_flag = USA_google_antitrust_fight_distribution
+					has_country_flag = USA_google_antitrust_structural_split
+				}
+				NOT = { has_country_flag = USA_google_event_20_resolved }
+				NOT = { OR = {
+					has_country_flag = USA_google_antitrust_settlement
+					has_country_flag = USA_google_antitrust_litigation
+					has_country_flag = USA_google_antitrust_structural_separation
+				} }
+			}
+			set_country_flag = { flag = USA_google_extension_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2025.2.1 }
+				country_event = { id = USA_google_events.20 days = 110 }
+			}
+			else = {
+				country_event = { id = USA_google_events.20 days = 5 }
+			}
 		}
 	}
 }
 
-# Catch-up dispatcher for the Oracle extension chain (events 8–12).
-# Queues the next unresolved event each year so late-starts and mid-campaign
-# saves can progress through the chain even if the event's original year has
-# already passed. Called from every USA yearly dispatcher from 2020 onward.
-USA_oracle_extension_catchup = {
+# Persistent catch-up driver for the whole Oracle chain (events 1-12) and its
+# sole scheduling owner. Sun ownership selects whether events 3-4 run; all paths
+# reconverge at event 5. Same-year steps use delays from the next monthly tick.
+USA_oracle_chain_catchup = {
 	if = {
-		limit = {
-			has_country_flag = USA_oracle_event_7_resolved
-			NOT = { has_country_flag = USA_oracle_event_8_resolved }
-		}
+		limit = { NOT = { has_country_flag = USA_oracle_chain_pending } }
 		if = {
-			limit = { date < 2021.1.1 }
-			country_event = { id = USA_oracle_events.8 days = 300 }
+			limit = {
+				date > 2002.12.31
+				NOT = { has_country_flag = USA_oracle_event_1_resolved }
+			}
+			set_country_flag = { flag = USA_oracle_chain_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2003.2.1 }
+				country_event = { id = USA_oracle_events.1 days = 159 }
+			}
+			else = {
+				country_event = { id = USA_oracle_events.1 days = 5 }
+			}
 		}
-		else = {
-			country_event = { id = USA_oracle_events.8 days = 5 }
+		else_if = {
+			limit = {
+				date > 2007.12.31
+				has_country_flag = USA_oracle_event_1_resolved
+				NOT = { has_country_flag = USA_oracle_event_2_resolved }
+			}
+			set_country_flag = { flag = USA_oracle_chain_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2008.2.1 }
+				country_event = { id = USA_oracle_events.2 days = 119 }
+			}
+			else = {
+				country_event = { id = USA_oracle_events.2 days = 5 }
+			}
 		}
-	}
-	else_if = {
-		limit = {
-			has_country_flag = USA_oracle_event_8_resolved
-			NOT = { has_country_flag = USA_oracle_event_9_resolved }
+		else_if = {
+			limit = {
+				date > 2009.12.31
+				has_country_flag = USA_oracle_event_2_resolved
+				has_country_flag = USA_sun_oracle_acquisition
+				NOT = { has_country_flag = USA_oracle_event_3_resolved }
+			}
+			set_country_flag = { flag = USA_oracle_chain_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2010.2.1 }
+				country_event = { id = USA_oracle_events.3 days = 26 }
+			}
+			else = {
+				country_event = { id = USA_oracle_events.3 days = 5 }
+			}
 		}
-		if = {
-			limit = { date < 2022.1.1 }
-			country_event = { id = USA_oracle_events.9 days = 350 }
+		else_if = {
+			limit = {
+				date > 2009.12.31
+				has_country_flag = USA_oracle_event_3_resolved
+				NOT = { has_country_flag = USA_oracle_event_4_resolved }
+			}
+			set_country_flag = { flag = USA_oracle_chain_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2010.3.1 }
+				country_event = { id = USA_oracle_events.4 days = 171 }
+			}
+			else = {
+				country_event = { id = USA_oracle_events.4 days = 5 }
+			}
 		}
-		else = {
-			country_event = { id = USA_oracle_events.9 days = 5 }
+		else_if = {
+			limit = {
+				date > 2011.12.31
+				has_country_flag = USA_oracle_event_2_resolved
+				OR = {
+					has_country_flag = USA_oracle_event_4_resolved
+					has_country_flag = USA_sun_independent_restructuring
+					has_country_flag = USA_sun_foundation_stewardship
+					has_country_flag = USA_sun_microsoft_full_integration
+				}
+				NOT = { has_country_flag = USA_oracle_event_5_resolved }
+			}
+			set_country_flag = { flag = USA_oracle_chain_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2012.2.1 }
+				country_event = { id = USA_oracle_events.5 days = 144 }
+			}
+			else = {
+				country_event = { id = USA_oracle_events.5 days = 5 }
+			}
 		}
-	}
-	else_if = {
-		limit = {
-			has_country_flag = USA_oracle_event_9_resolved
-			NOT = { has_country_flag = USA_oracle_event_10_resolved }
+		else_if = {
+			limit = {
+				date > 2018.12.31
+				has_country_flag = USA_oracle_event_5_resolved
+				NOT = { has_country_flag = USA_oracle_event_6_resolved }
+			}
+			set_country_flag = { flag = USA_oracle_chain_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2019.2.1 }
+				country_event = { id = USA_oracle_events.6 days = 287 }
+			}
+			else = {
+				country_event = { id = USA_oracle_events.6 days = 5 }
+			}
 		}
-		if = {
-			limit = { date < 2023.1.1 }
-			country_event = { id = USA_oracle_events.10 days = 150 }
+		else_if = {
+			limit = {
+				date > 2019.12.31
+				has_country_flag = USA_oracle_event_6_resolved
+				NOT = { has_country_flag = USA_oracle_event_7_resolved }
+			}
+			set_country_flag = { flag = USA_oracle_chain_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2020.2.1 }
+				country_event = { id = USA_oracle_events.7 days = 260 }
+			}
+			else = {
+				country_event = { id = USA_oracle_events.7 days = 5 }
+			}
 		}
-		else = {
-			country_event = { id = USA_oracle_events.10 days = 5 }
+		else_if = {
+			limit = {
+				date > 2019.12.31
+				has_country_flag = USA_oracle_event_7_resolved
+				NOT = { has_country_flag = USA_oracle_event_8_resolved }
+			}
+			set_country_flag = { flag = USA_oracle_chain_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2020.11.1 }
+				country_event = { id = USA_oracle_events.8 days = 26 }
+			}
+			else = {
+				country_event = { id = USA_oracle_events.8 days = 5 }
+			}
 		}
-	}
-	else_if = {
-		limit = {
-			has_country_flag = USA_oracle_event_10_resolved
-			NOT = { has_country_flag = USA_oracle_event_11_resolved }
+		else_if = {
+			limit = {
+				date > 2019.12.31
+				has_country_flag = USA_oracle_event_8_resolved
+				NOT = { has_country_flag = USA_oracle_event_10_resolved }
+			}
+			set_country_flag = { flag = USA_oracle_chain_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2020.12.1 }
+				country_event = { id = USA_oracle_events.10 days = 40 }
+			}
+			else = {
+				country_event = { id = USA_oracle_events.10 days = 5 }
+			}
 		}
-		if = {
-			limit = { date < 2024.1.1 }
-			country_event = { id = USA_oracle_events.11 days = 100 }
+		else_if = {
+			limit = {
+				date > 2020.12.31
+				has_country_flag = USA_oracle_event_10_resolved
+				NOT = { has_country_flag = USA_oracle_event_11_resolved }
+			}
+			set_country_flag = { flag = USA_oracle_chain_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2021.2.1 }
+				country_event = { id = USA_oracle_events.11 days = 144 }
+			}
+			else = {
+				country_event = { id = USA_oracle_events.11 days = 5 }
+			}
 		}
-		else = {
-			country_event = { id = USA_oracle_events.11 days = 5 }
+		else_if = {
+			limit = {
+				date > 2020.12.31
+				has_country_flag = USA_oracle_event_11_resolved
+				NOT = { has_country_flag = USA_oracle_event_9_resolved }
+			}
+			set_country_flag = { flag = USA_oracle_chain_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2021.7.1 }
+				country_event = { id = USA_oracle_events.9 days = 202 }
+			}
+			else = {
+				country_event = { id = USA_oracle_events.9 days = 5 }
+			}
 		}
-	}
-	else_if = {
-		limit = {
-			has_country_flag = USA_oracle_event_11_resolved
-			NOT = { has_country_flag = USA_oracle_event_12_resolved }
-		}
-		if = {
-			limit = { date < 2025.1.1 }
-			country_event = { id = USA_oracle_events.12 days = 150 }
-		}
-		else = {
-			country_event = { id = USA_oracle_events.12 days = 5 }
+		else_if = {
+			limit = {
+				date > 2023.12.31
+				has_country_flag = USA_oracle_event_9_resolved
+				NOT = { has_country_flag = USA_oracle_event_12_resolved }
+			}
+			set_country_flag = { flag = USA_oracle_chain_pending value = 1 days = 400 }
+			if = {
+				limit = { date < 2024.2.1 }
+				country_event = { id = USA_oracle_events.12 days = 162 }
+			}
+			else = {
+				country_event = { id = USA_oracle_events.12 days = 5 }
+			}
 		}
 	}
 }
@@ -185,7 +334,7 @@ JAP_corporate_trigger_year_2001 = {
 		}
 		JAP = {
 			country_event = { id = JAP_sony_events.2 days = 70 }
-			country_event = { id = JAP_sony_events.3 days = 275 }
+			country_event = { id = JAP_sony_events.3 days = 273 }
 		}
 	}
 }
@@ -273,9 +422,11 @@ USA_corporate_trigger_year_2004 = {
 			corporate_history_full_enabled = yes
 		}
 		USA = {
-			country_event = { id = USA_google_events.2 days = 201 }
+			country_event = { id = USA_google_events.2 days = 231 }
 			country_event = { id = USA_sun_microsoft_events.3 days = 83 }
+			country_event = { id = USA_motorola_events.17 days = 197 }
 			country_event = { id = USA_dell_events.1 days = 197 }
+			USA_ibm_schedule_pc_decision = yes
 		}
 	}
 }
@@ -313,10 +464,9 @@ USA_corporate_trigger_year_2005 = {
 		USA = {
 			country_event = { id = USA_apple_events.3 days = 156 }
 			country_event = { id = USA_google_events.3 days = 227 }
-			country_event = { id = USA_ibm_events.1 days = 120 }
 			country_event = { id = USA_hp_events.3 days = 199 }
 			country_event = { id = USA_e3_events.5 days = 137 }
-			country_event = { id = USA_oracle_events.1 days = 154 }
+			country_event = { id = USA_micron_events.8 days = 324 }
 			country_event = { id = USA_dell_events.2 days = 243 }
 		}
 	}
@@ -341,11 +491,12 @@ USA_corporate_trigger_year_2006 = {
 			corporate_history_full_enabled = yes
 		}
 		USA = {
-			country_event = { id = USA_google_events.4 days = 97 }
+			country_event = { id = USA_google_events.4 days = 281 }
 			country_event = { id = USA_google_events.5 days = 315 }
 			country_event = { id = USA_nvidia_events.1 days = 151 }
 			country_event = { id = blackberry_events.2 days = 61 random_days = 5 }
 			country_event = { id = USA_e3_events.6 days = 211 }
+			country_event = { id = USA_micron_events.9 days = 180 }
 			country_event = { id = USA_dell_events.3 days = 80 }
 		}
 	}
@@ -358,7 +509,7 @@ JAP_corporate_trigger_year_2006 = {
 			corporate_history_full_enabled = yes
 		}
 		JAP = {
-			country_event = { id = JAP_sony_events.6 days = 315 }
+			country_event = { id = JAP_sony_events.6 days = 314 }
 		}
 	}
 }
@@ -425,8 +576,9 @@ USA_corporate_trigger_year_2008 = {
 			country_event = { id = USA_apple_events.5 days = 191 }
 			country_event = { id = USA_hp_events.4 days = 238 }
 			country_event = { id = USA_e3_events.8 days = 152 }
-			country_event = { id = USA_oracle_events.2 days = 119 }
 			country_event = { id = USA_sun_microsoft_events.12 days = 124 }
+			country_event = { id = USA_motorola_events.18 days = 274 }
+			country_event = { id = USA_ti_events.14 days = 1 }
 		}
 	}
 }
@@ -440,7 +592,7 @@ USA_corporate_trigger_year_2009 = {
 		USA = {
 			country_event = { id = USA_sun_microsoft_events.5 days = 109 }
 			country_event = { id = blackberry_events.4 days = 21 random_days = 5 }
-			country_event = { id = USA_oracle_events.3 days = 223 }
+			country_event = { id = USA_micron_events.10 days = 1 }
 			country_event = { id = USA_dell_events.6 days = 264 }
 		}
 	}
@@ -468,9 +620,7 @@ USA_corporate_trigger_year_2010 = {
 			country_event = { id = USA_apple_events.6 days = 26 }
 			country_event = { id = USA_sun_microsoft_events.7 days = 31 }
 			country_event = { id = USA_nvidia_events.2 days = 84 }
-			country_event = { id = USA_google_events.6 days = 196 }
-			country_event = { id = USA_oracle_events.4 days = 202 }
-			USA_google_extension_catchup = yes
+			country_event = { id = USA_google_events.6 days = 81 }
 		}
 	}
 }
@@ -496,9 +646,10 @@ USA_corporate_trigger_year_2011 = {
 		}
 		USA = {
 			country_event = { id = USA_ibm_events.2 days = 46 }
-			country_event = { id = USA_google_events.7 days = 223 }
+			country_event = { id = USA_google_events.7 days = 226 }
 			country_event = { id = USA_hp_events.5 days = 229 }
-			USA_google_extension_catchup = yes
+			country_event = { id = USA_motorola_events.19 days = 3 }
+			country_event = { id = USA_ti_events.15 days = 265 }
 		}
 	}
 }
@@ -535,8 +686,8 @@ USA_corporate_trigger_year_2012 = {
 		}
 		USA = {
 			country_event = { id = USA_hp_events.6 days = 324 }
-			country_event = { id = USA_oracle_events.5 days = 144 }
-			USA_google_extension_catchup = yes
+			country_event = { id = USA_motorola_events.20 days = 142 }
+			country_event = { id = USA_ti_events.16 days = 318 }
 		}
 	}
 }
@@ -551,9 +702,9 @@ USA_corporate_trigger_year_2013 = {
 			country_event = { id = USA_e3_events.9 days = 160 }
 			country_event = { id = USA_nvidia_events.3 days = 31 }
 			country_event = { id = USA_google_events.8 days = 257 }
+			country_event = { id = USA_micron_events.11 days = 211 }
 			country_event = { id = USA_dell_events.7 days = 36 }
 			country_event = { id = USA_dell_events.8 days = 255 }
-			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -565,7 +716,7 @@ JAP_corporate_trigger_year_2012 = {
 			corporate_history_full_enabled = yes
 		}
 		JAP = {
-			country_event = { id = JAP_sony_events.8 days = 48 }
+			country_event = { id = JAP_sony_events.8 days = 45 }
 			country_event = { id = JAP_sony_events.9 days = 103 }
 		}
 	}
@@ -642,10 +793,10 @@ USA_corporate_trigger_year_2014 = {
 			country_event = { id = USA_apple_events.7 days = 195 }
 			country_event = { id = USA_apple_events.8 days = 251 }
 			country_event = { id = USA_sun_microsoft_events.8 days = 34 }
-			country_event = { id = USA_ibm_events.3 days = 22 }
+			USA_ibm_schedule_x86_decision = yes
 			country_event = { id = USA_hp_events.7 days = 278 }
 			country_event = { id = USA_dell_events.9 days = 160 }
-			USA_google_extension_catchup = yes
+			USA_motorola_update_successor_chronology = yes
 		}
 	}
 }
@@ -657,7 +808,27 @@ JAP_corporate_trigger_year_2014 = {
 			corporate_history_full_enabled = yes
 		}
 		JAP = {
-			country_event = { id = JAP_sony_events.10 days = 37 }
+			country_event = { id = JAP_sony_events.10 days = 36 }
+		}
+	}
+}
+
+CHI_corporate_trigger_year_2014 = {
+	if = {
+		limit = {
+			country_exists = CHI
+			corporate_history_full_enabled = yes
+		}
+		CHI = {
+			if = {
+				limit = {
+					NOT = { has_country_flag = CHI_lenovo_systemx_path_chosen }
+					NOT = { has_country_flag = CHI_lenovo_event_7_delivered }
+					NOT = { has_country_flag = CHI_lenovo_event_7_pending }
+				}
+				set_country_flag = { flag = CHI_lenovo_event_7_pending value = 1 days = 230 }
+				country_event = { id = CHI_lenovo_events.7 days = 190 }
+			}
 		}
 	}
 }
@@ -672,7 +843,8 @@ USA_corporate_trigger_year_2015 = {
 			country_event = { id = USA_ibm_events.4 days = 102 }
 			country_event = { id = USA_google_events.9 days = 279 }
 			country_event = { id = USA_sun_microsoft_events.13 days = 188 }
-			USA_google_extension_catchup = yes
+			country_event = { id = USA_motorola_events.21 days = 340 }
+			country_event = { id = USA_micron_events.12 days = 208 }
 		}
 	}
 }
@@ -712,8 +884,9 @@ USA_corporate_trigger_year_2016 = {
 			country_event = { id = USA_hp_events.8 days = 255 }
 			country_event = { id = USA_e3_events.10 days = 163 }
 			country_event = { id = USA_sun_microsoft_events.14 days = 342 }
+			country_event = { id = USA_motorola_events.22 days = 49 }
+			country_event = { id = USA_micron_events.13 days = 340 }
 			country_event = { id = USA_dell_events.10 days = 251 }
-			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -752,7 +925,7 @@ USA_corporate_trigger_year_2017 = {
 			country_event = { id = USA_apple_events.9 days = 155 }
 			country_event = { id = USA_hp_events.9 days = 243 }
 			country_event = { id = USA_e3_events.11 days = 38 }
-			USA_google_extension_catchup = yes
+			country_event = { id = USA_micron_events.14 days = 242 }
 		}
 	}
 }
@@ -770,8 +943,8 @@ USA_corporate_trigger_year_2018 = {
 			country_event = { id = USA_google_events.10 days = 152 }
 			country_event = { id = USA_google_events.11 days = 262 }
 			country_event = { id = USA_e3_events.12 days = 318 }
+			country_event = { id = USA_motorola_events.23 days = 86 }
 			country_event = { id = USA_dell_events.11 days = 362 }
-			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -810,8 +983,6 @@ USA_corporate_trigger_year_2019 = {
 			country_event = { id = USA_apple_events.10 days = 205 }
 			country_event = { id = USA_sun_microsoft_events.10 days = 155 }
 			country_event = { id = USA_e3_events.13 days = 214 }
-			country_event = { id = USA_oracle_events.6 days = 287 }
-			USA_google_extension_catchup = yes
 		}
 	}
 }
@@ -843,9 +1014,6 @@ USA_corporate_trigger_year_2020 = {
 			country_event = { id = USA_hp_events.10 days = 90 }
 			country_event = { id = USA_e3_events.14 days = 70 }
 			country_event = { id = USA_e3_events.15 days = 97 }
-			country_event = { id = USA_oracle_events.7 days = 260 }
-			USA_google_extension_catchup = yes
-			USA_oracle_extension_catchup = yes
 		}
 	}
 }
@@ -857,7 +1025,7 @@ JAP_corporate_trigger_year_2020 = {
 			corporate_history_full_enabled = yes
 		}
 		JAP = {
-			country_event = { id = JAP_sony_events.12 days = 317 }
+			country_event = { id = JAP_sony_events.12 days = 316 }
 		}
 	}
 }
@@ -895,9 +1063,8 @@ USA_corporate_trigger_year_2021 = {
 		USA = {
 			country_event = { id = USA_e3_events.16 days = 95 }
 			country_event = { id = USA_google_events.13 days = 300 }
+			country_event = { id = USA_micron_events.15 days = 180 }
 			country_event = { id = USA_dell_events.12 days = 305 }
-			USA_google_extension_catchup = yes
-			USA_oracle_extension_catchup = yes
 		}
 	}
 }
@@ -915,8 +1082,7 @@ USA_corporate_trigger_year_2022 = {
 			country_event = { id = USA_e3_events.17 days = 5 }
 			country_event = { id = USA_e3_events.18 days = 187 }
 			country_event = { id = USA_sun_microsoft_events.15 days = 151 }
-			USA_google_extension_catchup = yes
-			USA_oracle_extension_catchup = yes
+			country_event = { id = USA_micron_events.16 days = 276 }
 		}
 	}
 }
@@ -967,13 +1133,11 @@ USA_corporate_trigger_year_2023 = {
 			country_event = { id = USA_apple_events.13 days = 155 }
 			country_event = { id = USA_ibm_events.8 days = 191 }
 			country_event = { id = USA_nvidia_events.8 days = 234 }
-			country_event = { id = USA_google_events.14 days = 274 }
 			country_event = { id = USA_e3_events.19 days = 89 }
 			country_event = { id = USA_e3_events.20 days = 345 }
 			country_event = { id = USA_sun_microsoft_events.16 days = 285 }
 			country_event = { id = USA_sun_microsoft_events.17 days = 325 }
-			USA_google_extension_catchup = yes
-			USA_oracle_extension_catchup = yes
+			country_event = { id = USA_micron_events.17 days = 140 }
 		}
 	}
 }
@@ -989,10 +1153,11 @@ USA_corporate_trigger_year_2024 = {
 			country_event = { id = USA_sun_microsoft_events.11 days = 92 }
 			country_event = { id = USA_nvidia_events.9 days = 77 }
 			country_event = { id = USA_nvidia_events.10 days = 270 }
+			country_event = { id = USA_google_events.14 days = 217 }
 			country_event = { id = USA_google_events.15 days = 336 }
+			country_event = { id = USA_micron_events.18 days = 344 }
+			country_event = { id = USA_ti_events.18 days = 354 }
 			country_event = { id = USA_dell_events.13 days = 141 }
-			USA_google_extension_catchup = yes
-			USA_oracle_extension_catchup = yes
 		}
 	}
 }
@@ -1004,7 +1169,7 @@ JAP_corporate_trigger_year_2024 = {
 			corporate_history_full_enabled = yes
 		}
 		JAP = {
-			country_event = { id = JAP_sony_events.14 days = 144 }
+			country_event = { id = JAP_sony_events.14 days = 143 }
 		}
 	}
 }
@@ -1020,9 +1185,11 @@ USA_corporate_trigger_year_2025 = {
 			country_event = { id = USA_nvidia_events.11 days = 320 }
 			country_event = { id = USA_hp_events.12 days = 182 }
 			country_event = { id = USA_e3_events.21 days = 36 }
+			country_event = { id = USA_motorola_events.24 days = 217 }
+			country_event = { id = USA_micron_events.19 days = 78 }
+			country_event = { id = USA_micron_events.20 days = 162 }
+			country_event = { id = USA_ti_events.19 days = 168 }
 			country_event = { id = USA_dell_events.14 days = 213 }
-			USA_google_extension_catchup = yes
-			USA_oracle_extension_catchup = yes
 		}
 	}
 }
@@ -1052,6 +1219,7 @@ USA_corporate_trigger_year_2026 = {
 			country_event = { id = USA_hp_events.13 days = 33 }
 			country_event = { id = USA_e3_events.22 days = 118 }
 			country_event = { id = USA_e3_events.23 days = 159 }
+			country_event = { id = USA_ti_events.20 days = 34 }
 			country_event = { id = USA_dell_events.15 days = 170 }
 		}
 	}
@@ -1189,6 +1357,16 @@ TAI_corporate_trigger_year_2004 = {
 	}
 }
 
+TAI_corporate_trigger_year_2007 = {
+	if = {
+		limit = {
+			country_exists = TAI
+			corporate_history_full_enabled = yes
+		}
+		TAI = { country_event = { id = TAI_foxconn_events.2 days = 179 } }
+	}
+}
+
 TAI_corporate_trigger_year_2008 = {
 	if = {
 		limit = {
@@ -1209,6 +1387,36 @@ TAI_corporate_trigger_year_2009 = {
 	}
 }
 
+TAI_corporate_trigger_year_2010 = {
+	if = {
+		limit = {
+			country_exists = TAI
+			corporate_history_full_enabled = yes
+		}
+		TAI = { country_event = { id = TAI_foxconn_events.3 days = 158 } }
+	}
+}
+
+TAI_corporate_trigger_year_2011 = {
+	if = {
+		limit = {
+			country_exists = TAI
+			corporate_history_full_enabled = yes
+		}
+		TAI = { country_event = { id = TAI_foxconn_events.4 days = 181 } }
+	}
+}
+
+TAI_corporate_trigger_year_2013 = {
+	if = {
+		limit = {
+			country_exists = TAI
+			corporate_history_full_enabled = yes
+		}
+		TAI = { country_event = { id = TAI_foxconn_events.5 days = 181 } }
+	}
+}
+
 TAI_corporate_trigger_year_2014 = {
 	if = {
 		limit = {
@@ -1219,13 +1427,26 @@ TAI_corporate_trigger_year_2014 = {
 	}
 }
 
+TAI_corporate_trigger_year_2016 = {
+	if = {
+		limit = {
+			country_exists = TAI
+			corporate_history_full_enabled = yes
+		}
+		TAI = { country_event = { id = TAI_foxconn_events.6 days = 226 } }
+	}
+}
+
 TAI_corporate_trigger_year_2017 = {
 	if = {
 		limit = {
 			country_exists = TAI
 			corporate_history_full_enabled = yes
 		}
-		TAI = { country_event = { id = TAI_tsmc_events.7 days = 260 } }
+		TAI = {
+			country_event = { id = TAI_tsmc_events.7 days = 260 }
+			country_event = { id = TAI_foxconn_events.7 days = 207 }
+		}
 	}
 }
 
@@ -1239,6 +1460,16 @@ TAI_corporate_trigger_year_2018 = {
 	}
 }
 
+TAI_corporate_trigger_year_2019 = {
+	if = {
+		limit = {
+			country_exists = TAI
+			corporate_history_full_enabled = yes
+		}
+		TAI = { country_event = { id = TAI_foxconn_events.10 days = 172 } }
+	}
+}
+
 TAI_corporate_trigger_year_2020 = {
 	if = {
 		limit = {
@@ -1247,7 +1478,8 @@ TAI_corporate_trigger_year_2020 = {
 		}
 		TAI = {
 			country_event = { id = TAI_tsmc_events.9 days = 135 }
-			country_event = { id = TAI_tsmc_events.10 days = 320 }
+			country_event = { id = TAI_tsmc_events.10 days = 258 }
+			country_event = { id = TAI_foxconn_events.11 days = 290 }
 		}
 	}
 }
@@ -1258,7 +1490,10 @@ TAI_corporate_trigger_year_2021 = {
 			country_exists = TAI
 			corporate_history_full_enabled = yes
 		}
-		TAI = { country_event = { id = TAI_tsmc_events.11 days = 200 } }
+		TAI = {
+			country_event = { id = TAI_tsmc_events.11 days = 200 }
+			country_event = { id = TAI_foxconn_events.20 days = 109 }
+		}
 	}
 }
 
@@ -1268,7 +1503,10 @@ TAI_corporate_trigger_year_2022 = {
 			country_exists = TAI
 			corporate_history_full_enabled = yes
 		}
-		TAI = { country_event = { id = TAI_tsmc_events.12 days = 220 } }
+		TAI = {
+			country_event = { id = TAI_tsmc_events.12 days = 220 }
+			country_event = { id = TAI_foxconn_events.12 days = 334 }
+		}
 	}
 }
 
@@ -1278,7 +1516,11 @@ TAI_corporate_trigger_year_2023 = {
 			country_exists = TAI
 			corporate_history_full_enabled = yes
 		}
-		TAI = { country_event = { id = TAI_tsmc_events.13 days = 230 } }
+		TAI = {
+			country_event = { id = TAI_tsmc_events.13 days = 230 }
+			country_event = { id = TAI_foxconn_events.22 days = 178 }
+			country_event = { id = TAI_foxconn_events.13 days = 322 }
+		}
 	}
 }
 
@@ -1292,6 +1534,7 @@ TAI_corporate_trigger_year_2024 = {
 			country_event = { id = TAI_tsmc_events.14 days = 232 }
 			country_event = { id = TAI_tsmc_events.92 days = 305 }
 			country_event = { id = TAI_tsmc_events.93 days = 335 }
+			country_event = { id = TAI_foxconn_events.14 days = 319 }
 		}
 	}
 }
@@ -1302,7 +1545,11 @@ TAI_corporate_trigger_year_2025 = {
 			country_exists = TAI
 			corporate_history_full_enabled = yes
 		}
-		TAI = { country_event = { id = TAI_tsmc_events.94 days = 300 } }
+		TAI = {
+			country_event = { id = TAI_tsmc_events.94 days = 300 }
+			country_event = { id = TAI_foxconn_events.23 days = 190 }
+			country_event = { id = TAI_foxconn_events.21 days = 329 }
+		}
 	}
 }
 
@@ -1312,6 +1559,9 @@ TAI_corporate_trigger_year_2026 = {
 			country_exists = TAI
 			corporate_history_full_enabled = yes
 		}
-		TAI = { country_event = { id = TAI_tsmc_events.15 days = 202 } }
+		TAI = {
+			country_event = { id = TAI_tsmc_events.15 days = 202 }
+			country_event = { id = TAI_foxconn_events.15 days = 151 }
+		}
 	}
 }
