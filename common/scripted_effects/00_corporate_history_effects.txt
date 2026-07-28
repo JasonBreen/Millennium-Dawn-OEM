@@ -67,6 +67,9 @@ corporate_history_on_startup = {
 				country_event = { id = USA_nvidia_events.90 days = 4 }
 				USA_dell_schedule_current_year_events = yes
 				country_event = { id = USA_dell_events.90 days = 5 }
+				set_temp_variable = { aig_schedule_mode = 0 }
+				USA_aig_schedule_current_year_events = yes
+				country_event = { id = USA_aig_events.90 days = 6 }
 			}
 		}
 
@@ -132,6 +135,19 @@ corporate_history_on_startup = {
 			limit = { country_exists = JAP }
 			JAP = { country_event = { id = JAP_sony_events.1 days = 63 } }
 		}
+
+		# Nintendo reconstructs synchronously before scheduling so the current-year
+		# scheduler sees every prior-year predecessor already resolved.
+		if = {
+			limit = { country_exists = JAP }
+			JAP = {
+				JAP_nintendo_initialize_state = yes
+				JAP_nintendo_reconstruct_history = yes
+				set_temp_variable = { nin_schedule_mode = 0 }
+				JAP_nintendo_schedule_current_year_events = yes
+				country_event = { id = JAP_nintendo_events.90 days = 2 }
+			}
+		}
 	}
 	else_if = {
 		limit = { corporate_history_outcomes_only_enabled = yes }
@@ -147,11 +163,15 @@ corporate_history_on_startup = {
 				USA_micron_reconstruct_history = yes
 				USA_ti_reconstruct_history = yes
 				USA_motorola_reconstruct_history = yes
+				USA_aig_reconstruct_history = yes
 			}
 		}
 		if = {
 			limit = { country_exists = JAP }
-			JAP = { JAP_sony_reconstruct_history = yes }
+			JAP = {
+				JAP_sony_reconstruct_history = yes
+				JAP_nintendo_reconstruct_history = yes
+			}
 		}
 		if = {
 			limit = { country_exists = CAN }
@@ -238,6 +258,7 @@ USA_corporate_history_monthly_outcomes = {
 				NOT = { has_country_flag = USA_ti_reconstruct_complete }
 				NOT = { has_country_flag = USA_micron_reconstruct_complete }
 				NOT = { has_country_flag = USA_motorola_reconstruct_complete }
+				NOT = { has_country_flag = USA_aig_reconstruct_complete }
 			}
 		}
 		USA_microsoft_reconstruct_history = yes
@@ -249,6 +270,7 @@ USA_corporate_history_monthly_outcomes = {
 		USA_micron_reconstruct_history = yes
 		USA_ti_reconstruct_history = yes
 		USA_motorola_reconstruct_history = yes
+		USA_aig_reconstruct_history = yes
 	}
 	if = {
 		limit = {
@@ -292,6 +314,20 @@ USA_corporate_history_monthly_outcomes = {
 			NOT = { has_country_flag = USA_dell_reconstruct_complete }
 		}
 		USA_dell_reconstruct_history = yes
+	}
+	# MD's Great Financial Crisis is mean-time-to-happen driven, so the 2008 dispatcher
+	# can reach AIG's opening date before the Lehman gate is satisfiable.
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2008.9.16
+			date < 2010.1.1
+			NOT = { has_country_flag = USA_aig_event_1_resolved }
+		}
+		set_temp_variable = { aig_schedule_mode = 1 }
+		USA_aig_schedule_current_year_events = yes
 	}
 }
 
@@ -340,8 +376,10 @@ CHI_corporate_history_monthly_outcomes = {
 }
 
 # Effect: JAP_corporate_history_monthly_outcomes
-# Purpose: Outcomes Only driver for the Sony chain; terminates once the ladder
-#          sets its completion flag (final milestone 2024.5.22).
+# Purpose: Outcomes Only driver for the Sony and Nintendo chains; each terminates once its
+#          ladder sets its completion flag (Sony 2024.5.22, Nintendo 2025.6.5). In Full mode
+#          it advances Nintendo milestones a non-January start skipped and recovers a
+#          Nintendo delivery that was queued but never arrived.
 JAP_corporate_history_monthly_outcomes = {
 	if = {
 		limit = {
@@ -351,6 +389,25 @@ JAP_corporate_history_monthly_outcomes = {
 			NOT = { has_country_flag = JAP_sony_reconstruct_complete }
 		}
 		JAP_sony_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_outcomes_only_enabled = yes
+			original_tag = JAP
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = JAP_nintendo_reconstruct_complete }
+		}
+		JAP_nintendo_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = JAP
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = JAP_nintendo_capstone_resolved }
+		}
+		JAP_nintendo_advance_startup_skipped = yes
+		JAP_nintendo_recover_missing_events = yes
 	}
 }
 

@@ -286,6 +286,7 @@ def _build_fixture(
     drop_cleanup_effect=False,
     drop_state_effects=False,
     allow_multiple_completion_producers=False,
+    extra_effects="",
 ):
     manifest = _manifest(
         callerless,
@@ -347,6 +348,8 @@ corporate_history_outcomes_only_enabled = { always = no }
         )
     if duplicate_complete:
         effects += "\nUSA_test_extra_complete = {\n\tset_country_flag = USA_test_reconstruct_complete\n}\n"
+    if extra_effects:
+        effects += "\n" + extra_effects
     _write(root, "common/scripted_effects/USA_test_effects.txt", effects)
     _write(
         root,
@@ -409,6 +412,47 @@ def test_duplicate_dispatch_caller(tmp_path):
     messages = _messages(tmp_path)
     assert any(
         "USA_corporate_trigger_year_2001 schedules USA_test_events.1 2 times" in message
+        for message in messages
+    )
+
+
+def test_recovery_helper_routed_through_the_scheduler_keeps_the_caller_pair(tmp_path):
+    """Lost-delivery recovery must re-enter the scheduler, not fire the event itself.
+
+    Nintendo and AIG recover a missed delivery from their monthly driver. Routing that
+    through the current-year scheduler keeps the permitted dispatcher + scheduler pair;
+    a helper that queued the event directly would silently become a third caller.
+    """
+    _build_fixture(
+        tmp_path,
+        extra_effects=(
+            "USA_test_recover_missing_events = {\n"
+            "\tif = {\n"
+            "\t\tlimit = { NOT = { has_country_flag = USA_test_branch_a } }\n"
+            "\t\tUSA_test_schedule_current_year_events = yes\n"
+            "\t}\n"
+            "}\n"
+        ),
+    )
+    messages = _messages(tmp_path)
+    assert not any("multiple direct callers" in message for message in messages)
+
+
+def test_recovery_helper_firing_the_event_directly_is_rejected(tmp_path):
+    _build_fixture(
+        tmp_path,
+        extra_effects=(
+            "USA_test_recover_missing_events = {\n"
+            "\tif = {\n"
+            "\t\tlimit = { NOT = { has_country_flag = USA_test_branch_a } }\n"
+            "\t\tcountry_event = { id = USA_test_events.1 days = 5 }\n"
+            "\t}\n"
+            "}\n"
+        ),
+    )
+    messages = _messages(tmp_path)
+    assert any(
+        "USA_test_events.1 has multiple direct callers" in message
         for message in messages
     )
 
