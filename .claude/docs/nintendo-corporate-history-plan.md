@@ -241,6 +241,17 @@ Add Nintendo calls to the existing corporate dispatch effects in
 second set of raw calls to `00_yearly_effects.txt`. Extend the existing Japanese
 monthly effect rather than registering another `on_monthly_JAP` block.
 
+Japan already has aggregate corporate dispatch effects and yearly invocations
+for 2001, 2004, 2006, 2011, 2012, and 2015; append Nintendo to those existing
+owners. It has no Japanese aggregate for Nintendo's 2008, 2013, 2016, 2017,
+2018, 2021, 2023, or 2025 milestones. For each missing year, define
+`JAP_corporate_trigger_year_<YEAR>` in
+`00_corporate_history_dispatch_effects.txt`, then add only
+`JAP_corporate_trigger_year_<YEAR> = yes` to the matching
+`trigger_year_<YEAR>_events` effect in `00_yearly_effects.txt`. The yearly file
+must never contain a raw `JAP_nintendo_events.*` call. The 2015 Japanese
+aggregate owns both `.8` and `.9` in chronological offset order.
+
 The current-year scheduler must be a manifest-required effect. It checks the
 calendar date, resolved marker, pending marker, and predecessor state for every
 event in that year. It has January 1, non-January startup, and explicit recovery
@@ -302,6 +313,7 @@ Implementation is expected to modify:
 
 - `common/scripted_effects/00_corporate_history_effects.txt`
 - `common/scripted_effects/00_corporate_history_dispatch_effects.txt`
+- `common/scripted_effects/00_yearly_effects.txt`
 - `localisation/english/MD_focus_JAP_l_english.yml`
 - `tools/corporate_history_contract.json`
 - `tools/validation/validate_corporate_history_contract.py`
@@ -336,7 +348,9 @@ Focused tests must prove:
 1. All 15 visible IDs and `.90` are defined once and every visible event has
    exactly the permitted annual-dispatcher plus current-year-scheduler pair.
    The recovery effect calls only the scheduler and is never a third direct
-   event caller.
+   event caller. Every milestone year has one Japanese aggregate invoked from
+   its matching yearly effect, and `00_yearly_effects.txt` contains no raw
+   Nintendo event call.
 2. A 2000 start reaches all events in order.
 3. January 1 starts reconstruct every prior milestone before scheduling all
    remaining same-year events on their exact calendar dates. A 2015 start queues
