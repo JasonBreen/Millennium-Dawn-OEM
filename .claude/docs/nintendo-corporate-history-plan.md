@@ -163,9 +163,13 @@ speculative dependency.
 - A January 2000 start schedules `.1` once through the normal 2001 corporate
   dispatcher.
 - A later start fires `.90` after two days. `.90` silently reconstructs every
-  milestone strictly before the current date, schedules only still-future
-  milestones in the current year, and sets
-  `JAP_nintendo_start_year_events_scheduled`.
+  milestone strictly before the current date and invokes the current-year
+  scheduler.
+- The current-year scheduler queues still-future milestones only when the
+  campaign began on January 1, so its `days` offsets remain calendar-correct,
+  then sets `JAP_nintendo_start_year_events_scheduled`. A non-January start
+  reconstructs passed milestones but deliberately skips the rest of that
+  start year's milestones.
 - Annual dispatch effects own normal-year calls. No visible event calls its
   chronological successor directly.
 - Every visible event has its own resolved and pending guards, so an updated save
@@ -219,6 +223,7 @@ Implementation is expected to modify:
 - `localisation/english/MD_focus_JAP_l_english.yml`
 - `tools/corporate_history_contract.json`
 - `tools/validation/validate_corporate_history_contract.py`
+- `docs/src/content/resources/corporate-history-framework.md`
 - Corporate-history validator unit tests
 - `Changelog.txt`
 
@@ -239,16 +244,18 @@ Add a Tier 1 manifest entry with:
 - `requires_current_year_scheduler`: `true`
 - `allow_yearly_scheduler_duplicates`: `true`
 - no callerless visible event
-- no allowed multiple caller unless a test proves a deliberate dual entrypoint
+- exactly the permitted annual-dispatcher plus current-year-scheduler pair for
+  each visible event
 - the exact `allowed_reads` list above
 - empty `allowed_writes`
 
 Focused tests must prove:
 
-1. All 15 visible IDs and `.90` are defined once and every visible event has one
-   scheduling owner.
+1. All 15 visible IDs and `.90` are defined once and every visible event has
+   exactly the permitted annual-dispatcher plus current-year-scheduler pair.
 2. A 2000 start reaches all events in order.
-3. Starts during each same-year window schedule only the remaining event.
+3. January 1 starts during each same-year window schedule only the remaining
+   event, while non-January starts schedule no offset-based current-year event.
 4. A 2026 start resolves exactly one capstone without visible catch-up.
 5. Save/reload with a queued event does not duplicate the popup or reward.
 6. Reconstruction is idempotent and its completion flag terminates the monthly
