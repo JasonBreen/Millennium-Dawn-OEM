@@ -162,9 +162,12 @@ speculative dependency.
 - `corporate_history_on_startup` initializes Nintendo state.
 - A January 2000 start schedules `.1` once through the normal 2001 corporate
   dispatcher.
+- A January 1 later start invokes the current-year scheduler directly from
+  startup, before any delayed event, so every `days` offset remains anchored to
+  January 1.
 - A later start fires `.90` after two days. `.90` silently reconstructs every
-  milestone strictly before the current date and invokes the current-year
-  scheduler.
+  milestone strictly before the current date; it does not own current-year
+  scheduling.
 - The current-year scheduler queues still-future milestones only when the
   campaign began on January 1, so its `days` offsets remain calendar-correct,
   then sets `JAP_nintendo_start_year_events_scheduled`. A non-January start
@@ -205,7 +208,8 @@ monthly effect rather than registering another `on_monthly_JAP` block.
 
 The current-year scheduler must be a manifest-required effect. It checks the
 calendar date, resolved marker, pending marker, and predecessor state for every
-event in that year. It sets the start-year scheduling flag after the complete
+event in that year. Full-mode startup invokes it directly rather than routing it
+through delayed `.90`. It sets the start-year scheduling flag after the complete
 pass, even if the year contains no remaining event.
 
 ## Future file map
@@ -255,7 +259,8 @@ Focused tests must prove:
    exactly the permitted annual-dispatcher plus current-year-scheduler pair.
 2. A 2000 start reaches all events in order.
 3. January 1 starts during each same-year window schedule only the remaining
-   event, while non-January starts schedule no offset-based current-year event.
+   event on its exact calendar date, while non-January starts schedule no
+   offset-based current-year event.
 4. A 2026 start resolves exactly one capstone without visible catch-up.
 5. Save/reload with a queued event does not duplicate the popup or reward.
 6. Reconstruction is idempotent and its completion flag terminates the monthly
