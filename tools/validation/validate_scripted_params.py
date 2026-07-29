@@ -156,30 +156,38 @@ def _load_valid_country_tags(mod_path: str) -> "frozenset[str]":
     references at runtime — e.g. STC / NTR are aliases, not typos — so the
     tag-validity check accepts both.
     """
-    valid: Set[str] = set()
-    tag_re = re.compile(r'^\s*([A-Z0-9_]{3})\s*=\s*"')
-    for fp in glob.glob(os.path.join(mod_path, "common", "country_tags", "*.txt")):
-        try:
-            with open(fp, "r", encoding="utf-8-sig") as fh:
-                for line in fh:
-                    m = tag_re.match(line)
-                    if m:
-                        valid.add(m.group(1))
-        except Exception:
-            continue
-    alias_re = re.compile(r"^\s*([A-Za-z0-9_]{3})\s*=\s*\{")
-    for fp in glob.glob(
+    tag_files = glob.glob(os.path.join(mod_path, "common", "country_tags", "*.txt"))
+    alias_files = glob.glob(
         os.path.join(mod_path, "common", "country_tag_aliases", "*.txt")
-    ):
-        try:
-            with open(fp, "r", encoding="utf-8-sig") as fh:
-                for line in fh:
-                    m = alias_re.match(line)
-                    if m:
-                        valid.add(m.group(1))
-        except Exception:
-            continue
-    return frozenset(valid)
+    )
+
+    def _build() -> "frozenset[str]":
+        valid: Set[str] = set()
+        tag_re = re.compile(r'^\s*([A-Z0-9_]{3})\s*=\s*"')
+        for fp in tag_files:
+            try:
+                with open(fp, "r", encoding="utf-8-sig") as fh:
+                    for line in fh:
+                        m = tag_re.match(line)
+                        if m:
+                            valid.add(m.group(1))
+            except Exception:
+                continue
+        alias_re = re.compile(r"^\s*([A-Za-z0-9_]{3})\s*=\s*\{")
+        for fp in alias_files:
+            try:
+                with open(fp, "r", encoding="utf-8-sig") as fh:
+                    for line in fh:
+                        m = alias_re.match(line)
+                        if m:
+                            valid.add(m.group(1))
+            except Exception:
+                continue
+        return frozenset(valid)
+
+    return disk_cache.aggregate_cached(
+        mod_path, "valid_country_tags", tag_files + alias_files, _build
+    )
 
 
 def _is_invalid_influence_tag(value: str, valid_tags: "frozenset[str]") -> bool:
