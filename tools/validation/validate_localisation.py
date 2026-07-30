@@ -72,6 +72,13 @@ _PROSE_SECTION_SIGN_RE = re.compile(r"§(?=\s+\d)")
 _MANGLED_KEY_NO_VALUE_RE = re.compile(r"^\s*\w[\w.\-]*:\d*\s*$")
 _MANGLED_SINGLE_QUOTE_VALUE_RE = re.compile(r"^\s*\w[\w.\-]*:\d*\s*'.*'\s*$")
 
+# The loc parser is line-based: every non-blank line must start with a key. A hard
+# newline inside a quoted value (instead of \n) leaves a keyless continuation line
+# the parser cannot place, putting every later key in the file at risk.
+# `KEY: "` with no closing quote is deliberate in the vanilla-blanking files under
+# localisation/english/replace/, so absence of a key is the check, not quote parity.
+_KEY_PREFIX_RE = re.compile(r"^[ \t]*[\w.\-]+:\d*[ \t]*")
+
 
 def process_yml_for_syntax(args: Tuple[str, List[str], frozenset]) -> List:
     filename, valid_colors, subst_keys = args
@@ -99,6 +106,16 @@ def process_yml_for_syntax(args: Tuple[str, List[str], frozenset]) -> List:
                     severity=Severity.ERROR,
                     category="mangled-loc-line",
                     message="Loc key has no value on the same line (formatter-mangled, breaks in-game)",
+                    file=os.path.basename(filename),
+                    line=line_idx + 2,
+                )
+            )
+        elif _KEY_PREFIX_RE.match(line) is None:
+            results.append(
+                Issue(
+                    severity=Severity.ERROR,
+                    category="mangled-loc-line",
+                    message="Loc line has no key — a hard newline inside a quoted value (use \\n); the parser cannot place this line and keys after it may be lost",
                     file=os.path.basename(filename),
                     line=line_idx + 2,
                 )
