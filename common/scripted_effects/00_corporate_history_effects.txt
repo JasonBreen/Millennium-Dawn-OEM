@@ -1,7 +1,7 @@
 # Corporate-history framework. Docs: docs/src/content/resources/corporate-history-framework.md
 #
 # Chains: IBM, Sun/Microsoft, HP, Apple, NVIDIA, Dell, TI, Micron, Motorola (USA),
-# Lenovo (CHI), Sony (JAP), Matrox (CAN), Nokia (FIN), TSMC and Foxconn (TAI);
+# Lenovo (CHI), Sony (JAP), ATI/AMD and Matrox (CAN), Nokia (FIN), TSMC and Foxconn (TAI);
 # dispatch/gating only for Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA).
 # The rule_corporate_history game rule gates chains ONLY at dispatcher level: the
 # startup driver below, the TAG_corporate_trigger_year_* effects
@@ -52,6 +52,7 @@ corporate_history_on_startup = {
 			USA = {
 				USA_microsoft_reconstruct_history = yes
 				USA_apple_reconstruct_history = yes
+				USA_hp_reconstruct_history = yes
 				USA_apple_schedule_current_year_events = yes
 				USA_nvidia_schedule_current_year_events = yes
 				country_event = USA_micron_events.90
@@ -82,7 +83,19 @@ corporate_history_on_startup = {
 		}
 
 		if = {
-			limit = { country_exists = USA }
+			limit = { country_exists = CAN }
+			CAN = {
+				CAN_ati_reconstruct_history = yes
+				CAN_ati_schedule_current_year_events = yes
+			}
+		}
+
+		if = {
+			limit = {
+				country_exists = USA
+				NOT = { has_start_date < 2000.1.1 }
+				has_start_date < 2000.1.2
+			}
 			USA = { country_event = { id = USA_hp_events.1 days = 153 } }
 		}
 
@@ -158,6 +171,9 @@ corporate_history_on_startup = {
 				USA_apple_reconstruct_history = yes
 				USA_ibm_reconstruct_history = yes
 				USA_nvidia_reconstruct_history = yes
+				USA_google_reconstruct_history = yes
+				USA_oracle_reconstruct_history = yes
+				USA_hp_reconstruct_history = yes
 				USA_e3_reconstruct_history = yes
 				USA_dell_reconstruct_history = yes
 				USA_micron_reconstruct_history = yes
@@ -175,7 +191,10 @@ corporate_history_on_startup = {
 		}
 		if = {
 			limit = { country_exists = CAN }
-			CAN = { CAN_matrox_reconstruct_history = yes }
+			CAN = {
+				CAN_ati_reconstruct_history = yes
+				CAN_matrox_reconstruct_history = yes
+			}
 		}
 		if = {
 			limit = { country_exists = FIN }
@@ -194,7 +213,7 @@ corporate_history_on_startup = {
 		}
 		# TODO: Siemens (GER), Ericsson (SWE) and BlackBerry (CAN/USA) have no
 		# reconstruction effects yet - Outcomes Only suppresses their events with
-		# no silent replacement. HP has no persistent state to reconstruct.
+		# no silent replacement.
 	}
 }
 
@@ -253,6 +272,9 @@ USA_corporate_history_monthly_outcomes = {
 				NOT = { has_country_flag = USA_apple_reconstruct_complete }
 				NOT = { has_country_flag = USA_ibm_reconstruct_complete }
 				NOT = { has_country_flag = USA_nvidia_reconstruct_complete }
+				NOT = { has_country_flag = USA_google_reconstruct_complete }
+				NOT = { has_country_flag = USA_oracle_reconstruct_complete }
+				NOT = { has_country_flag = USA_hp_reconstruct_complete }
 				NOT = { has_country_flag = USA_e3_reconstruct_complete }
 				NOT = { has_country_flag = USA_dell_reconstruct_complete }
 				NOT = { has_country_flag = USA_ti_reconstruct_complete }
@@ -265,6 +287,9 @@ USA_corporate_history_monthly_outcomes = {
 		USA_apple_reconstruct_history = yes
 		USA_ibm_reconstruct_history = yes
 		USA_nvidia_reconstruct_history = yes
+		USA_google_reconstruct_history = yes
+		USA_oracle_reconstruct_history = yes
+		USA_hp_reconstruct_history = yes
 		USA_e3_reconstruct_history = yes
 		USA_dell_reconstruct_history = yes
 		USA_micron_reconstruct_history = yes
@@ -412,9 +437,18 @@ JAP_corporate_history_monthly_outcomes = {
 }
 
 # Effect: CAN_corporate_history_monthly_outcomes
-# Purpose: Outcomes Only driver for the Matrox chain; terminates once the ladder
-#          sets its completion flag (final milestone 2026.5.25).
+# Purpose: Outcomes Only driver for ATI/AMD and Matrox, plus Full-mode recovery
+#          for ATI/AMD's terminal outcome.
 CAN_corporate_history_monthly_outcomes = {
+	if = {
+		limit = {
+			corporate_history_outcomes_only_enabled = yes
+			original_tag = CAN
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = CAN_ati_reconstruct_complete }
+		}
+		CAN_ati_reconstruct_history = yes
+	}
 	if = {
 		limit = {
 			corporate_history_outcomes_only_enabled = yes
@@ -423,6 +457,16 @@ CAN_corporate_history_monthly_outcomes = {
 			NOT = { has_country_flag = CAN_matrox_reconstruct_complete }
 		}
 		CAN_matrox_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = CAN
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2026.9.1
+			NOT = { has_country_flag = CAN_ati_reconstruct_complete }
+		}
+		CAN_ati_reconstruct_history = yes
 	}
 }
 
