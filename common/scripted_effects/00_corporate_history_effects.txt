@@ -1,7 +1,7 @@
 # Corporate-history framework. Docs: docs/src/content/resources/corporate-history-framework.md
 #
 # Chains: IBM, Sun/Microsoft, HP, Apple, NVIDIA, Dell, TI, Micron, Motorola (USA),
-# Lenovo (CHI), Sony (JAP), Matrox (CAN), Nokia (FIN), TSMC and Foxconn (TAI);
+# Lenovo (CHI), Sony (JAP), ATI/AMD and Matrox (CAN), Nokia (FIN), TSMC and Foxconn (TAI);
 # dispatch/gating only for Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA).
 # The rule_corporate_history game rule gates chains ONLY at dispatcher level: the
 # startup driver below, the TAG_corporate_trigger_year_* effects
@@ -79,6 +79,14 @@ corporate_history_on_startup = {
 			CHI = {
 				CHI_lenovo_schedule_current_year_events = yes
 				country_event = { id = CHI_lenovo_events.90 days = 2 }
+			}
+		}
+
+		if = {
+			limit = { country_exists = CAN }
+			CAN = {
+				CAN_ati_reconstruct_history = yes
+				CAN_ati_schedule_current_year_events = yes
 			}
 		}
 
@@ -183,7 +191,10 @@ corporate_history_on_startup = {
 		}
 		if = {
 			limit = { country_exists = CAN }
-			CAN = { CAN_matrox_reconstruct_history = yes }
+			CAN = {
+				CAN_ati_reconstruct_history = yes
+				CAN_matrox_reconstruct_history = yes
+			}
 		}
 		if = {
 			limit = { country_exists = FIN }
@@ -202,7 +213,7 @@ corporate_history_on_startup = {
 		}
 		# TODO: Siemens (GER), Ericsson (SWE) and BlackBerry (CAN/USA) have no
 		# reconstruction effects yet - Outcomes Only suppresses their events with
-		# no silent replacement. HP has no persistent state to reconstruct.
+		# no silent replacement.
 	}
 }
 
@@ -426,9 +437,18 @@ JAP_corporate_history_monthly_outcomes = {
 }
 
 # Effect: CAN_corporate_history_monthly_outcomes
-# Purpose: Outcomes Only driver for the Matrox chain; terminates once the ladder
-#          sets its completion flag (final milestone 2026.5.25).
+# Purpose: Outcomes Only driver for ATI/AMD and Matrox, plus Full-mode recovery
+#          for ATI/AMD's terminal outcome.
 CAN_corporate_history_monthly_outcomes = {
+	if = {
+		limit = {
+			corporate_history_outcomes_only_enabled = yes
+			original_tag = CAN
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = CAN_ati_reconstruct_complete }
+		}
+		CAN_ati_reconstruct_history = yes
+	}
 	if = {
 		limit = {
 			corporate_history_outcomes_only_enabled = yes
@@ -437,6 +457,16 @@ CAN_corporate_history_monthly_outcomes = {
 			NOT = { has_country_flag = CAN_matrox_reconstruct_complete }
 		}
 		CAN_matrox_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = CAN
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2026.9.1
+			NOT = { has_country_flag = CAN_ati_reconstruct_complete }
+		}
+		CAN_ati_reconstruct_history = yes
 	}
 }
 
