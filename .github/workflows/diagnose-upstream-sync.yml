@@ -1,0 +1,63 @@
+name: Diagnose upstream sync conflicts
+
+on:
+  push:
+    branches:
+      - diagnostic/upstream-sync-2026-07-31
+
+permissions:
+  contents: read
+
+jobs:
+  merge-tree-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compute exact upstream merge conflicts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git init --bare sync-diagnostic.git
+          cd sync-diagnostic.git
+
+          git remote add fork https://github.com/JasonBreen/Millennium-Dawn-OEM.git
+          git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git
+
+          git fetch --filter=blob:none --depth=500 --no-tags fork \
+            main:refs/remotes/fork/main
+          git fetch --filter=blob:none --depth=500 --no-tags upstream \
+            main:refs/remotes/upstream/main
+
+          echo "Fork head:     $(git rev-parse refs/remotes/fork/main)"
+          echo "Upstream head: $(git rev-parse refs/remotes/upstream/main)"
+          echo "Merge base:    $(git merge-base refs/remotes/fork/main refs/remotes/upstream/main)"
+          echo
+          echo "=== git merge-tree output ==="
+
+          set +e
+          git merge-tree --write-tree --messages --name-only \
+            refs/remotes/fork/main refs/remotes/upstream/main \
+            2>&1 | tee ../merge-tree-output.txt
+          merge_status=${PIPESTATUS[0]}
+          set -e
+
+          echo
+          echo "merge-tree exit status: ${merge_status}"
+          echo
+          echo "=== Conflict messages ==="
+          grep -E "^CONFLICT|Auto-merging" ../merge-tree-output.txt || true
+
+          {
+            echo "## Upstream sync diagnostic"
+            echo
+            echo "- Fork: \`$(git rev-parse refs/remotes/fork/main)\`"
+            echo "- Upstream: \`$(git rev-parse refs/remotes/upstream/main)\`"
+            echo "- Merge base: \`$(git merge-base refs/remotes/fork/main refs/remotes/upstream/main)\`"
+            echo "- merge-tree exit: \`${merge_status}\`"
+            echo
+            echo '```text'
+            grep -E "^CONFLICT|Auto-merging" ../merge-tree-output.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit 0
