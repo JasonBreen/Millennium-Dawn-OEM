@@ -1,0 +1,129 @@
+a: &meta
+  head: 61bee3a1aca500867627fbf3607b863e249bf8d2
+  date: 2026-08-01
+  reviewer: claude-second-pass
+
+phases:
+
+  - id: A
+    name: Discover the actual current state
+    status: complete
+    findings:
+      - "gh pr list --state open returns [] - every Codex feature branch is merged."
+      - "#98 and #99 were stacked on #97 and #96, not on main; they reached main through their parents."
+      - "upstream/main has advanced to 00846ea779 since the #103 sync - the fork is behind again."
+      - "HOI4 loads G:/Millennium-Dawn-OEM-acceptance-20260731 @ 9370598428, NOT main. Tree verified byte-identical to main."
+    artefact: repository-state.md
+
+  - id: B
+    name: Read repository guidance
+    status: complete
+    note: >-
+      All documents named in the brief exist at this head and were consulted:
+      AGENTS.md, .claude/rules/general-rules.md, and .claude/docs/
+      {agent-conventions, event-reference, idea-reference, decision-reference,
+      localisation-rules, validation-pipeline, md-custom-modifiers,
+      dynamic-modifier-tooltips, performance-patterns, bug-patterns,
+      refactor-checklist, scripting-edge-cases}.md, plus
+      docs/src/content/resources/{scripted-effects-reference,
+      corporate-history-framework}.md and tools/corporate_history_contract.json.
+      The bug-patterns adversarial checklist was applied to every changed block.
+
+  - id: C
+    name: Establish the correct integration head
+    status: complete
+    result: "origin/main @ 61bee3a1ac - no local integration branch required."
+
+  - id: D
+    name: U.S. Corporate Systems dashboard
+    status: complete
+    verdict: pass_source
+    advisories: 0
+    runtime: blocked
+
+  - id: E
+    name: Corporate Systems economic bridge
+    status: complete
+    verdict: pass_source
+    advisories: 2       # E-1 redundant meaningful-state gate, E-2 zero-valued Balanced modifier
+    runtime: blocked
+
+  - id: F
+    name: Corporate Systems policy decisions
+    status: complete
+    verdict: pass_source
+    advisories: 2       # F-1 inert `cost = N`, F-2 tautological OR in three visible blocks
+    runtime: blocked
+    note: >-
+      The suspected PP double-charge was investigated and DISPROVED against the
+      Paradox decision-modding documentation: a custom cost replaces the regular
+      cost and cannot be combined with it, so `cost = N` is inert and the manual
+      add_political_power is the only charge. Reported as advisory, not a defect.
+
+  - id: G
+    name: ATI/AMD corporate history
+    status: complete
+    verdict: pass_source
+    advisories: 1       # fallback capstone has no offsetting cost term
+    runtime: blocked
+
+  - id: H
+    name: Canadian Corporate Systems dashboard
+    status: complete
+    verdict: pass_source
+    advisories: 0
+    runtime: blocked
+
+  - id: I
+    name: Cross-company and cross-country ownership
+    status: complete
+    verdict: pass_source
+    method: "programmatic scan of every write inside an explicit TAG = { } scope across all corporate files (33 hits, all reviewed)"
+    violations_found: 0
+
+  - id: J
+    name: Open issues as acceptance specifications
+    status: complete
+    artefact: issue-review.yml
+    issues_reviewed: [24, 25, 26, 27, 28, 45]
+    issues_closed: 0
+    checklist_items_ticked: 0
+
+  - id: K
+    name: Verify the local HOI4 installation
+    status: complete
+    artefact: environment.txt
+    findings:
+      - "Single enabled mod, no Workshop copy, no duplicate local descriptor."
+      - "descriptor path points at the acceptance worktree; content equivalence to main verified."
+      - "In-game checksum, Windows scaling and HOI4 UI scale could not be captured - needs a live game."
+
+  - id: L
+    name: Live runtime matrix
+    status: blocked
+    reason: >-
+      mcp__computer-use__request_access for Hearts of Iron IV, Steam and File Explorer
+      was DENIED by the user (user_denied on all three). No game session could be
+      launched, driven, saved, reloaded or screenshotted.
+    partial_evidence: >-
+      Log artefacts from the prior session (2000.01.01 -> 2000.01.06) corroborate
+      exactly three corporate events executing: USA_ibm_events.12.a,
+      CAN_matrox_events.1.a, SWE_ericsson_events.1.a. error.log contains zero
+      corporate-history errors and twelve GPU-chain trigger errors.
+    artefact: test-results.md
+
+repairs:
+  - branch: claude/fix-gpu-chain-invalid-stability-trigger
+    commit: 3e616d76ce
+    base: 61bee3a1ac
+    files: ["events/00_gpu_development.txt", "Changelog.txt"]
+    defect: "12 invalid `stability` triggers; the trigger is `has_stability`"
+    evidence: "12 matching 'Unknown trigger-type: stability' lines in error.log"
+    validation: "validate_events, validate_corporate_history_contract, check_common_mistakes, git diff --check - all clean"
+    post_fix_runtime: blocked
+
+not_done:
+  - "Every live runtime item in phase L (see test-results.md for the explicit list)."
+  - "Post-fix error.log confirmation for the GPU stability repair."
+  - "Human editorial pass for issue #45 - deliberately not attempted; requires a human."
+  - "Upstream sync review: no open sync PR exists, so there was nothing to review. The fork being behind upstream/main again is reported, not fixed."

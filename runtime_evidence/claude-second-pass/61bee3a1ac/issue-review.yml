@@ -1,0 +1,221 @@
+# Claude second-pass issue review
+# Integration head: 61bee3a1aca500867627fbf3607b863e249bf8d2 (origin/main)
+# Runtime access: DENIED this session. No checklist item is being closed by this pass.
+# Classifications:
+#   confirmed_runtime  - verified against a real game session's artefacts
+#   confirmed_source   - verified by reading the implementation at this commit
+#   stale_evidence     - prior evidence exists but predates the current head
+#   untested           - no evidence either way
+#   failed             - demonstrated defect
+#   blocked            - cannot be verified without capability not available here
+#   human_editorial    - requires a human judgement call; Claude must not self-certify
+
+meta:
+  reviewed_at: 2026-08-01
+  reviewer: claude-second-pass
+  integration_head: 61bee3a1aca500867627fbf3607b863e249bf8d2
+  runtime_capability: denied
+  runtime_artefacts_available:
+    - "game.log  2000.01.01 -> 2000.01.06, session 2026-07-31 23:05 -> 2026-08-01 08:55"
+    - "error.log 1007 lines, same session"
+  runtime_artefact_commit: 9370598428b1f2f84fe30f94ebbcb3b2f9e26438
+  runtime_artefact_commit_note: >-
+    Tree byte-identical to origin/main (verified with git diff --quiet and matching
+    tree SHA 28737f74e6b3faaadcef33473345e7912b53b6e0), so the artefacts are valid
+    for the integration head despite the differing commit id.
+
+issues:
+
+  - number: 24
+    title: "Testing: Sony corporate-history runtime acceptance (PR #23)"
+    prior_comments: 7
+    latest_prior_comment: 2026-07-28
+    assessment:
+      - item: "All Playthrough A / B / C checklist items"
+        status: untested
+        note: >-
+          The Sony chain was not re-read in depth by this pass (out of the brief's
+          six named subsystems) and no Sony event fired in the available session
+          beyond nothing at all - the game never reached March 2000.
+      - item: "PS2 launch event artwork (PR #105)"
+        status: confirmed_source
+        note: "PR #105 merged at 61bee3a1ac; the artwork reference resolves - validate_gfx_references reports no missing sprite."
+      - item: "Evidence to record: game version and tested commit"
+        status: blocked
+        note: "In-game checksum needs a live main-menu screenshot."
+    blocking_for_release: false
+
+  - number: 25
+    title: "Testing: IBM Phase III full runtime acceptance (PR #21)"
+    prior_comments: 19
+    latest_prior_comment: 2026-08-01
+    assessment:
+      - item: "IBM prehistory .12-.16 fire once in order (already ticked in the body)"
+        status: confirmed_runtime
+        scope: partial
+        note: >-
+          Independently corroborated, but only for .12. game.log records
+          "United States: USA_ibm_events.12.a executed" at 22:00 on 6 Jan 2000.
+          Events .13-.16 are scheduled at +120/+550/... days and the session
+          ended on game-day 6, so the ordering claim in the ticked box is NOT
+          yet supported by evidence. Recommend un-ticking or narrowing it.
+      - item: "Dated anchors .1-.10, consequences .17-.36, integrations .37-.46, recoveries .47-.49"
+        status: untested
+      - item: "All five shared OEM axes initialize at 5 and stay bounded 0-10"
+        status: confirmed_source
+        note: >-
+          USA_ibm_effects.txt:5-9 sets all five to 5. Every mutation site across
+          USA_ibm_effects.txt and USA_microsoft_effects.txt is followed by
+          USA_ibm_clamp_state; the reconstruction ladder clamps once at the end of
+          USA_ibm_reconstruct_history before the capstone resolver reads it.
+          Checked programmatically over 35 sites. Runtime bound-driving still needed.
+      - item: "Five IBM institutional-faction variables initialize at 5 and stay bounded"
+        status: confirmed_source
+      - item: "Save and reload does not reinitialize state"
+        status: confirmed_source
+        note: "All initialize effects are guarded by NOT has_country_flag *_state_initialized."
+        runtime_status: blocked
+      - item: "Capstone exclusivity and atomic clearing"
+        status: confirmed_source
+        note: "USA_ibm_* apply effects clear all sibling ideas before add_ideas, matching the ATI and Apple pattern."
+      - item: "IBM never writes foreign-country state while reading cross-country signals"
+        status: confirmed_source
+        note: "Cross-tag write scan over all corporate files found no IBM write into a foreign scope."
+      - item: "Crisis/recovery matrix, Lenovo transaction, Sun/Microsoft pressure playthroughs"
+        status: untested
+      - item: "No raw localisation keys anywhere in IBM content"
+        status: confirmed_source
+        note: "validate_localisation.py and validate_scripted_localisation.py both clean."
+    blocking_for_release: true
+    blocking_reason: "The single largest untested surface; almost every runtime item is still open."
+
+  - number: 26
+    title: "Testing: Matrox event chain and capstone regression (PR #20)"
+    prior_comments: 8
+    latest_prior_comment: 2026-08-01
+    assessment:
+      - item: "Matrox events fire once in chronological order through 2026"
+        status: confirmed_runtime
+        scope: "first event only"
+        note: >-
+          game.log records "Canada: CAN_matrox_events.1.a executed" at 22:00 on
+          6 Jan 2000. Nothing beyond .1 was reached.
+      - item: "Descriptions react to prior ATI / QNX / AlexNet / GPU state"
+        status: confirmed_source
+        note: >-
+          CAN_matrox_events.txt:264-322 reads CAN_ati_research_autonomy and
+          CAN_ati_amd_integration in trigger position only, with an explicit
+          "neither" fallback branch.
+      - item: "Matrox reads external flags without overwriting the source chains"
+        status: confirmed_source
+        note: "Grep over both Matrox files: zero writes to any CAN_ati_* flag, variable or idea."
+      - item: "No raw localisation keys"
+        status: confirmed_source
+      - item: "Capstones, domestic GPU attempt, treasury/microchip failure paths, edge cases"
+        status: untested
+      - item: "Start in a later bookmark and confirm restoration replays no rewards"
+        status: blocked
+        note: >-
+          MD ships exactly one bookmark (common/bookmarks/blitzkrieg.txt, 2000.1.1).
+          This item is not executable without adding a bookmark or using console date
+          manipulation. Applies to every 'later start' item across issues 24-28.
+    blocking_for_release: false
+
+  - number: 27
+    title: "Testing: Nokia-Ericsson-Siemens cross-country integration regression"
+    prior_comments: 8
+    latest_prior_comment: 2026-08-01
+    assessment:
+      - item: "Ericsson events fire once in chronological order"
+        status: confirmed_runtime
+        scope: "first event only"
+        note: 'game.log: "Sweden: SWE_ericsson_events.1.a executed" at 22:00 on 6 Jan 2000.'
+      - item: "Germany reads Finnish flags but never writes, clears or replaces Finnish state"
+        status: confirmed_source
+        note: "Cross-tag write scan found no GER write into a FIN scope in any corporate file."
+      - item: "Finland absent -> Siemens content uses a valid fallback"
+        status: untested
+      - item: "Nokia chronology, counterfactuals, late-start catch-up, cross-country regression run"
+        status: untested
+    blocking_for_release: false
+
+  - number: 28
+    title: "Testing: North American OEM release smoke sweep"
+    prior_comments: 23
+    latest_prior_comment: 2026-07-31
+    assessment:
+      - item: "USA 2000 -> 2026 historical playthrough"
+        status: untested
+        note: "The only session reached 2000.01.06. This is the release-gate item and it is wide open."
+      - item: "HP namespace does not collide with the other USA_* namespaces"
+        status: confirmed_source
+        note: "validate_events.py duplicate-ID and namespace-mismatch checks both clean."
+      - item: "The six hidden .90 catch-ups never surface as player popups"
+        status: confirmed_source
+        note: "validate_events.py hidden-event check clean; all .90 events are hidden with no option localisation."
+      - item: "Apple's seven variables remain bounded 0-10"
+        status: confirmed_source
+        note: "Every Apple mutation is followed by USA_apple_clamp_state."
+      - item: "Apple capstones mutually exclusive, player may pick any qualified route"
+        status: confirmed_source
+        note: "USA_apple_effects.txt:544 clears all five before adding one."
+      - item: "bankruptcy_incoming_collapse zeroes expensive AI weight but every event keeps one eligible option"
+        status: untested
+      - item: "Physical-compute stack requires three viable pillars plus two seams"
+        status: confirmed_source
+        note: >-
+          USA_physical_compute_stack_effects.txt:95 requires all three pillar ideas
+          plus USA_stack_seam_count > 1, and the else branch clears the capstone flag
+          and idea, so the success route cannot be reached by accident.
+      - item: "The four shared physical-stack ideas stay coherent, stale ideas removed, no duplicates"
+        status: confirmed_source
+        note: "Each pillar has an explicit else-branch removal; add is guarded by NOT has_idea."
+      - item: "Physical-stack capstone does not replace IBM or Apple terminal ideas"
+        status: confirmed_source
+        note: "Disjoint idea sets; the stack resolver only touches its own four ideas."
+      - item: "Everything else in the sweep"
+        status: untested
+    blocking_for_release: true
+    blocking_reason: "This is the release-level coexistence gate and no meaningful playthrough exists."
+
+  - number: 45
+    title: "Release polish pass: all OEM and corporate-history event content"
+    prior_comments: 2
+    latest_prior_comment: 2026-07-31
+    assessment:
+      - item: "1. human editorial pass (all chains)"
+        status: human_editorial
+        note: >-
+          Explicitly requires a human. Claude has NOT performed and must not claim
+          an editorial pass. No item under this heading is being marked done.
+      - item: "2. historical/source audit"
+        status: human_editorial
+      - item: "3. mechanical and AI-weighting pass"
+        status: failed
+        scope: "shared GPU chain only"
+        note: >-
+          Found and repaired: twelve invalid `stability` AI-weighting triggers in
+          events/00_gpu_development.txt, runtime-confirmed by 12 matching
+          "Unknown trigger-type: stability" lines in error.log. Branch
+          claude/fix-gpu-chain-invalid-stability-trigger @ 3e616d76ce. The rest of
+          the AI-weighting pass is untested.
+      - item: "4. in-game visual/UX pass"
+        status: blocked
+      - item: "5. late-start, save/reload and game-rule pass"
+        status: blocked
+        note: "Single-bookmark limitation plus denied runtime access."
+      - item: "6. recorded evidence or linked bugs for anything still failing"
+        status: confirmed_source
+        note: "This pass contributes the GPU stability defect and the advisories in test-results.md."
+    blocking_for_release: true
+    blocking_reason: "Release-gate issue requiring a human editorial pass that has not happened."
+
+summary:
+  confirmed_runtime: 3     # IBM .12, Matrox .1, Ericsson .1 - all first-event-only
+  confirmed_source: 21
+  failed: 1                # repaired, post-fix runtime confirmation outstanding
+  blocked: 5
+  human_editorial: 2
+  untested: "the large majority of all six checklists"
+  issues_closed_by_this_pass: 0
+  checklist_items_ticked_by_this_pass: 0
