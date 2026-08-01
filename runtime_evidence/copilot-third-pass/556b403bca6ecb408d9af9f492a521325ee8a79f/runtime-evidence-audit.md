@@ -67,7 +67,7 @@ Integration head: `556b403bca6ecb408d9af9f492a521325ee8a79f`
 
 | Issue | Best available evidence | Valid for current main? | Retest required |
 | --- | --- | --- | --- |
-| #24 Sony | Day-6 fixture + source scan | Source: yes. Runtime: NO | Full Japan playthrough |
+| #24 Sony | Source scan only (no runtime fixture) | Source: yes. Runtime: NO | Full Japan playthrough |
 | #25 IBM | Day-6 fixture (event .12) + source scan | Source: yes. Runtime: NO | Full USA playthrough |
 | #26 Matrox | Day-6 fixture + source scan | Source: yes. Runtime: NO (GPU fix relevant) | Canada playthrough after #106 |
 | #27 Nokia/Ericsson | Day-6 fixture + source scan | Source: yes. Runtime: NO | Finland/Sweden/Germany playthrough |
