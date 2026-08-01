@@ -9,7 +9,7 @@ Captured 2026-08-01. All SHAs verified with `git rev-parse`.
 | Review worktree (this pass) | `C:/Users/New/repos/copilot-worktrees/Millennium-Dawn-OEM/jasonbreen-vigilant-enigma` |
 | Canonical main checkout | `G:/Millennium-Dawn-OEM` |
 | Acceptance worktree (Codex) | `G:/Millennium-Dawn-OEM-acceptance-20260731` (branch `codex/local-release-acceptance-integration-2026-07-31` @ `9370598428`) |
-| HOI4 install | `G:/steamlbirary/steamapps/common/Hearts of Iron IV` |
+| HOI4 install | `G:/steamlbirary/steamapps/common/Hearts of Iron IV` (literal on-disk path — the Steam library folder was created with this spelling) |
 | HOI4 mod descriptor loaded | `G:/Millennium-Dawn-OEM-acceptance-20260731` (points at acceptance worktree, NOT main) |
 
 ## Heads
@@ -74,5 +74,5 @@ No OEM feature regressions expected from these upstream commits. A sync PR is re
 1. `events/00_gpu_development.txt` — PR #106 GPU stability trigger fix
 2. `Changelog.txt` — PR #106 changelog entries
 
-`diff codex/local-release-acceptance-integration..main` shows only these two files.
+`git diff --name-only codex/local-release-acceptance-integration-2026-07-31..main` shows only these two files.
 **Current `main` @ `556b403b` is the correct integration head.** The local acceptance branch is stale and should not be used as a release candidate.

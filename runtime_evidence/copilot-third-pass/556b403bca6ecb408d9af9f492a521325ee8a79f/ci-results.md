@@ -36,5 +36,6 @@ Integration head: `556b403bca6ecb408d9af9f492a521325ee8a79f`
 
 - Zero blocking CI failures at current main.
 - Event/GFX warning counts are pre-existing baselines, not regressions introduced by OEM work.
-- The GPU chain fix in #106 eliminated 12 `Unknown trigger-type: stability` errors from `error.log`
-  (previously present at `61bee3a1ac`, confirmed by Claude's second-pass log inspection).
+- The GPU chain fix in #106 is expected to eliminate 12 `Unknown trigger-type: stability` errors from
+  `error.log` (previously present at `61bee3a1ac`, confirmed by Claude's second-pass log inspection).
+  Runtime confirmation at `556b403b` is still required.
