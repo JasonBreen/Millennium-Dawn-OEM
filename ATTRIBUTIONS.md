@@ -1,13 +1,13 @@
 # Asset Attributions
 
-Third-party artwork shipped with the mod, with source, author and licence.
+Third-party artwork shipped with the mod, with source, author and license.
 Millennium Dawn itself is released under CC BY-SA 4.0 (see `LICENSE`).
 
 ## IBM event pictures (`USA_ibm_events`)
 
 Sourced from Wikimedia Commons, cropped and resized to the HOI4 event-picture format.
 
-| Sprite | Source file | Author | Licence |
+| Sprite | Source file | Author | License |
 | --- | --- | --- | --- |
 | `GFX_ibm_ai_chip` | [Artificial Neural Network with Chip.jpg](https://commons.wikimedia.org/wiki/File:Artificial_Neural_Network_with_Chip.jpg) | mikemacmarketing / photo on flickr | CC BY 2.0 |
 | `GFX_ibm_armonk_lobby` | [IBM Armonk corporate headquarters inside displays.jpg](https://commons.wikimedia.org/wiki/File:IBM_Armonk_corporate_headquarters_inside_displays.jpg) | Mark Hillary | CC BY 2.0 |
