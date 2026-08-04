@@ -1,10 +1,4 @@
-# National economic bridge. Mapping table: .claude/docs/usa-oem-economic-bridge-map.md
-#
-# Layering: the five USA_oem_* axes are the base state written by the IBM and
-# Sun/Microsoft chains. Every other mature chain contributes through the
-# USA_oem_contribution_* accumulators below, which are rebuilt from scratch on
-# every bridge call, capped per axis, and added to the base to produce the
-# USA_oem_effective_* axes the national score and the dashboard read.
+# Chain-to-axis mapping and caps: .claude/docs/usa-oem-economic-bridge-map.md
 
 USA_corporate_systems_clear_economic_bridge_ideas = {
 	remove_ideas = {
@@ -17,11 +11,11 @@ USA_corporate_systems_clear_economic_bridge_ideas = {
 }
 
 USA_corporate_systems_clear_derived_axes = {
-	set_variable = { USA_oem_contribution_open_standards = 0 }
-	set_variable = { USA_oem_contribution_vertical_integration = 0 }
-	set_variable = { USA_oem_contribution_supply_resilience = 0 }
-	set_variable = { USA_oem_contribution_security_control = 0 }
-	set_variable = { USA_oem_contribution_national_compute_stack = 0 }
+	set_variable = { USA_oem_applied_open_standards = 0 }
+	set_variable = { USA_oem_applied_vertical_integration = 0 }
+	set_variable = { USA_oem_applied_supply_resilience = 0 }
+	set_variable = { USA_oem_applied_security_control = 0 }
+	set_variable = { USA_oem_applied_national_compute_stack = 0 }
 	set_variable = { USA_oem_effective_open_standards = 0 }
 	set_variable = { USA_oem_effective_vertical_integration = 0 }
 	set_variable = { USA_oem_effective_supply_resilience = 0 }
@@ -32,99 +26,97 @@ USA_corporate_systems_clear_derived_axes = {
 USA_corporate_systems_apple_contribution = {
 	if = {
 		limit = { has_country_flag = USA_apple_outcome_private_computing }
-		add_to_variable = { USA_oem_contribution_vertical_integration = 1 }
-		add_to_variable = { USA_oem_contribution_supply_resilience = 1 }
+		add_to_temp_variable = { USA_oem_contribution_vertical_integration = 1 }
+		add_to_temp_variable = { USA_oem_contribution_supply_resilience = 1 }
 	}
 	else_if = {
 		limit = { has_country_flag = USA_apple_outcome_integrated_device }
-		add_to_variable = { USA_oem_contribution_vertical_integration = 1 }
-		subtract_from_variable = { USA_oem_contribution_open_standards = 1 }
+		add_to_temp_variable = { USA_oem_contribution_vertical_integration = 1 }
+		subtract_from_temp_variable = { USA_oem_contribution_open_standards = 1 }
 	}
 	else_if = {
 		limit = { has_country_flag = USA_apple_outcome_resilient_silicon }
-		add_to_variable = { USA_oem_contribution_supply_resilience = 1 }
+		add_to_temp_variable = { USA_oem_contribution_supply_resilience = 1 }
 	}
 	else_if = {
 		limit = { has_country_flag = USA_apple_outcome_regulated_services }
-		add_to_variable = { USA_oem_contribution_open_standards = 1 }
-		subtract_from_variable = { USA_oem_contribution_vertical_integration = 1 }
+		add_to_temp_variable = { USA_oem_contribution_open_standards = 1 }
+		subtract_from_temp_variable = { USA_oem_contribution_vertical_integration = 1 }
 	}
 }
 
-# HP has no bounded company variables, so its structural milestones are the only
-# durable state the bridge can read.
+# HP has no bounded company variables; structural milestones are all it exposes.
 USA_corporate_systems_hp_contribution = {
 	if = {
 		limit = { has_country_flag = USA_hp_full_enterprise_stack }
-		add_to_variable = { USA_oem_contribution_vertical_integration = 1 }
-		add_to_variable = { USA_oem_contribution_national_compute_stack = 1 }
+		add_to_temp_variable = { USA_oem_contribution_vertical_integration = 1 }
+		add_to_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
 	}
 	else_if = {
 		limit = { has_country_flag = USA_hp_services_and_software_spun_off }
-		subtract_from_variable = { USA_oem_contribution_vertical_integration = 1 }
+		subtract_from_temp_variable = { USA_oem_contribution_vertical_integration = 1 }
 	}
 }
 
 USA_corporate_systems_nvidia_contribution = {
 	if = {
 		limit = { has_idea = USA_nvidia_cuda_fortress }
-		add_to_variable = { USA_oem_contribution_national_compute_stack = 1 }
-		subtract_from_variable = { USA_oem_contribution_open_standards = 1 }
+		add_to_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
+		subtract_from_temp_variable = { USA_oem_contribution_open_standards = 1 }
 	}
 	else_if = {
 		limit = { has_idea = USA_nvidia_open_accelerator_commonwealth }
-		add_to_variable = { USA_oem_contribution_open_standards = 1 }
-		add_to_variable = { USA_oem_contribution_national_compute_stack = 1 }
+		add_to_temp_variable = { USA_oem_contribution_open_standards = 1 }
+		add_to_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
 	}
 	else_if = {
 		limit = { has_idea = USA_nvidia_sovereign_compute_stack }
-		add_to_variable = { USA_oem_contribution_national_compute_stack = 1 }
+		add_to_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
 	}
 	else_if = {
 		limit = { has_idea = USA_nvidia_hybrid_national_champion }
-		add_to_variable = { USA_oem_contribution_open_standards = 1 }
+		add_to_temp_variable = { USA_oem_contribution_open_standards = 1 }
 	}
 	else_if = {
 		limit = { has_idea = USA_nvidia_commodity_decline }
-		subtract_from_variable = { USA_oem_contribution_national_compute_stack = 1 }
+		subtract_from_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
 	}
 }
 
 USA_corporate_systems_dell_contribution = {
 	if = {
 		limit = { has_country_flag = USA_dell_outcome_ai_backbone }
-		add_to_variable = { USA_oem_contribution_national_compute_stack = 1 }
-		add_to_variable = { USA_oem_contribution_supply_resilience = 1 }
+		add_to_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
+		add_to_temp_variable = { USA_oem_contribution_supply_resilience = 1 }
 	}
 	else_if = {
 		limit = { has_country_flag = USA_dell_outcome_integrated_federation }
-		add_to_variable = { USA_oem_contribution_national_compute_stack = 1 }
+		add_to_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
 	}
 	else_if = {
 		limit = { has_country_flag = USA_dell_outcome_direct_manufacturer }
-		add_to_variable = { USA_oem_contribution_supply_resilience = 1 }
+		add_to_temp_variable = { USA_oem_contribution_supply_resilience = 1 }
 	}
 	else_if = {
 		limit = { has_country_flag = USA_dell_outcome_leveraged_restructurer }
-		subtract_from_variable = { USA_oem_contribution_supply_resilience = 1 }
+		subtract_from_temp_variable = { USA_oem_contribution_supply_resilience = 1 }
 	}
 }
 
-# TI, Micron and Motorola carry the physical compute base. Pillar viability -
-# not the capstone alone - decides the sign, which is what the retired
-# USA_stack_physical_capstone_resolved score adjustment used to express.
+# Pillar viability, not the capstone alone, decides the sign for the three
+# physical-compute chains.
 USA_corporate_systems_ti_contribution = {
 	if = {
 		limit = {
 			has_country_flag = USA_ti_capstone_resolved
 			has_country_flag = USA_stack_ti_foundational_viable
 		}
-		add_to_variable = { USA_oem_contribution_supply_resilience = 1 }
-		add_to_variable = { USA_oem_contribution_national_compute_stack = 1 }
+		add_to_temp_variable = { USA_oem_contribution_supply_resilience = 1 }
+		add_to_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
 	}
 	else_if = {
 		limit = { has_country_flag = USA_ti_capstone_resolved }
-		subtract_from_variable = { USA_oem_contribution_national_compute_stack = 1 }
+		subtract_from_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
 	}
 }
 
@@ -134,54 +126,56 @@ USA_corporate_systems_micron_contribution = {
 			has_country_flag = USA_micron_capstone_resolved
 			has_country_flag = USA_stack_micron_memory_viable
 		}
-		add_to_variable = { USA_oem_contribution_supply_resilience = 1 }
-		add_to_variable = { USA_oem_contribution_vertical_integration = 1 }
+		add_to_temp_variable = { USA_oem_contribution_supply_resilience = 1 }
+		add_to_temp_variable = { USA_oem_contribution_vertical_integration = 1 }
 	}
 	else_if = {
 		limit = { has_country_flag = USA_micron_capstone_resolved }
-		subtract_from_variable = { USA_oem_contribution_supply_resilience = 1 }
+		subtract_from_temp_variable = { USA_oem_contribution_supply_resilience = 1 }
 	}
 }
 
+# Both gates can hold at once (the intact capstone); they are not complementary.
 USA_corporate_systems_motorola_contribution = {
 	if = {
 		limit = {
 			has_country_flag = USA_motorola_capstone_resolved
 			has_country_flag = USA_stack_motorola_communications_viable
 		}
-		add_to_variable = { USA_oem_contribution_security_control = 1 }
+		add_to_temp_variable = { USA_oem_contribution_security_control = 1 }
 	}
 	if = {
 		limit = {
 			has_country_flag = USA_motorola_capstone_resolved
 			has_country_flag = USA_stack_motorola_embedded_viable
 		}
-		add_to_variable = { USA_oem_contribution_national_compute_stack = 1 }
+		add_to_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
 	}
 }
 
+# Antitrust and Android gates are independent; both can hold at once.
 USA_corporate_systems_google_contribution = {
 	if = {
 		limit = { has_country_flag = USA_google_antitrust_structural_separation }
-		subtract_from_variable = { USA_oem_contribution_national_compute_stack = 1 }
+		subtract_from_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
 	}
 	else_if = {
 		limit = { has_country_flag = USA_google_tpu_sovereign_scale }
-		add_to_variable = { USA_oem_contribution_national_compute_stack = 1 }
+		add_to_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
 	}
 	if = {
 		limit = { has_country_flag = USA_google_android_licensing_rentier }
-		subtract_from_variable = { USA_oem_contribution_open_standards = 1 }
+		subtract_from_temp_variable = { USA_oem_contribution_open_standards = 1 }
 	}
 	else_if = {
 		limit = { has_country_flag = USA_google_android_open_stack }
-		add_to_variable = { USA_oem_contribution_open_standards = 1 }
+		add_to_temp_variable = { USA_oem_contribution_open_standards = 1 }
 	}
 }
 
-# The three depth variables only accumulate in a played-through Full campaign;
-# USA_oracle_cloud_public_sector is the reconstruction's equivalent maturity
-# marker, so both modes reach the same contribution for the same history.
+# The three depth variables only accumulate in a played-through Full campaign, so
+# the reconstructed cloud flag stands in for them. The maturity and Java gates are
+# independent; both can hold at once.
 USA_corporate_systems_oracle_contribution = {
 	if = {
 		limit = {
@@ -193,26 +187,25 @@ USA_corporate_systems_oracle_contribution = {
 				check_variable = { USA_oracle_infrastructure_depth > 5 }
 			}
 		}
-		add_to_variable = { USA_oem_contribution_vertical_integration = 1 }
+		add_to_temp_variable = { USA_oem_contribution_vertical_integration = 1 }
 	}
 	if = {
 		limit = { has_country_flag = USA_oracle_java_api_victory }
-		subtract_from_variable = { USA_oem_contribution_open_standards = 1 }
+		subtract_from_temp_variable = { USA_oem_contribution_open_standards = 1 }
 	}
 	else_if = {
 		limit = { has_country_flag = USA_oracle_sun_commons }
-		add_to_variable = { USA_oem_contribution_open_standards = 1 }
+		add_to_temp_variable = { USA_oem_contribution_open_standards = 1 }
 	}
 }
 
-# Rebuilt from zero on every call, so repeated monthly ticks, reloads and
-# Outcomes Only catch-up all converge on the same totals.
+# Rebuilt from zero on every call, so monthly ticks and reloads cannot stack.
 USA_corporate_systems_rebuild_company_contributions = {
-	set_variable = { USA_oem_contribution_open_standards = 0 }
-	set_variable = { USA_oem_contribution_vertical_integration = 0 }
-	set_variable = { USA_oem_contribution_supply_resilience = 0 }
-	set_variable = { USA_oem_contribution_security_control = 0 }
-	set_variable = { USA_oem_contribution_national_compute_stack = 0 }
+	set_temp_variable = { USA_oem_contribution_open_standards = 0 }
+	set_temp_variable = { USA_oem_contribution_vertical_integration = 0 }
+	set_temp_variable = { USA_oem_contribution_supply_resilience = 0 }
+	set_temp_variable = { USA_oem_contribution_security_control = 0 }
+	set_temp_variable = { USA_oem_contribution_national_compute_stack = 0 }
 
 	USA_corporate_systems_apple_contribution = yes
 	USA_corporate_systems_hp_contribution = yes
@@ -224,29 +217,41 @@ USA_corporate_systems_rebuild_company_contributions = {
 	USA_corporate_systems_google_contribution = yes
 	USA_corporate_systems_oracle_contribution = yes
 
-	clamp_variable = { var = USA_oem_contribution_open_standards min = -3 max = 3 }
-	clamp_variable = { var = USA_oem_contribution_vertical_integration min = -3 max = 3 }
-	clamp_variable = { var = USA_oem_contribution_supply_resilience min = -3 max = 3 }
-	clamp_variable = { var = USA_oem_contribution_security_control min = -3 max = 3 }
-	clamp_variable = { var = USA_oem_contribution_national_compute_stack min = -3 max = 3 }
+	clamp_temp_variable = { var = USA_oem_contribution_open_standards min = -3 max = 3 }
+	clamp_temp_variable = { var = USA_oem_contribution_vertical_integration min = -3 max = 3 }
+	clamp_temp_variable = { var = USA_oem_contribution_supply_resilience min = -3 max = 3 }
+	clamp_temp_variable = { var = USA_oem_contribution_security_control min = -3 max = 3 }
+	clamp_temp_variable = { var = USA_oem_contribution_national_compute_stack min = -3 max = 3 }
 }
 
+# USA_oem_applied_* is the post-clamp delta the dashboard shows, so base plus the
+# displayed number always equals the displayed effective value.
 USA_corporate_systems_rebuild_effective_axes = {
 	set_variable = { USA_oem_effective_open_standards = USA_oem_open_standards }
 	add_to_variable = { USA_oem_effective_open_standards = USA_oem_contribution_open_standards }
 	clamp_variable = { var = USA_oem_effective_open_standards min = 0 max = 10 }
+	set_variable = { USA_oem_applied_open_standards = USA_oem_effective_open_standards }
+	subtract_from_variable = { USA_oem_applied_open_standards = USA_oem_open_standards }
 	set_variable = { USA_oem_effective_vertical_integration = USA_oem_vertical_integration }
 	add_to_variable = { USA_oem_effective_vertical_integration = USA_oem_contribution_vertical_integration }
 	clamp_variable = { var = USA_oem_effective_vertical_integration min = 0 max = 10 }
+	set_variable = { USA_oem_applied_vertical_integration = USA_oem_effective_vertical_integration }
+	subtract_from_variable = { USA_oem_applied_vertical_integration = USA_oem_vertical_integration }
 	set_variable = { USA_oem_effective_supply_resilience = USA_oem_supply_resilience }
 	add_to_variable = { USA_oem_effective_supply_resilience = USA_oem_contribution_supply_resilience }
 	clamp_variable = { var = USA_oem_effective_supply_resilience min = 0 max = 10 }
+	set_variable = { USA_oem_applied_supply_resilience = USA_oem_effective_supply_resilience }
+	subtract_from_variable = { USA_oem_applied_supply_resilience = USA_oem_supply_resilience }
 	set_variable = { USA_oem_effective_security_control = USA_oem_security_control }
 	add_to_variable = { USA_oem_effective_security_control = USA_oem_contribution_security_control }
 	clamp_variable = { var = USA_oem_effective_security_control min = 0 max = 10 }
+	set_variable = { USA_oem_applied_security_control = USA_oem_effective_security_control }
+	subtract_from_variable = { USA_oem_applied_security_control = USA_oem_security_control }
 	set_variable = { USA_oem_effective_national_compute_stack = USA_oem_national_compute_stack }
 	add_to_variable = { USA_oem_effective_national_compute_stack = USA_oem_contribution_national_compute_stack }
 	clamp_variable = { var = USA_oem_effective_national_compute_stack min = 0 max = 10 }
+	set_variable = { USA_oem_applied_national_compute_stack = USA_oem_effective_national_compute_stack }
+	subtract_from_variable = { USA_oem_applied_national_compute_stack = USA_oem_national_compute_stack }
 }
 
 USA_corporate_systems_update_economic_bridge = {
@@ -348,8 +353,6 @@ USA_corporate_systems_update_economic_bridge = {
 		}
 	}
 	else = {
-		# Nothing to clear until the bridge has run at least once, which cannot
-		# happen before IBM initializes.
 		if = {
 			limit = { has_country_flag = USA_ibm_state_initialized }
 			USA_corporate_systems_clear_derived_axes = yes

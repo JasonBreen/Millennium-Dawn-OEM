@@ -8,11 +8,18 @@ changing `common/scripted_effects/USA_corporate_systems_effects.txt` or any
 
 ```
 base axes (USA_oem_*)            written by the IBM and Sun/Microsoft chains
-  + company contributions        USA_oem_contribution_*, rebuilt every bridge call, capped -3..+3
+  + company contributions        USA_oem_contribution_* temp vars, rebuilt every bridge call, capped -3..+3
   = effective axes               USA_oem_effective_*, clamped 0..10
   -> integration score           sum of the five effective axes (0..50)
   -> one economic idea           USA_corporate_systems_economic_integration_1..5
 ```
+
+Two persistent variable sets survive a bridge call: `USA_oem_effective_*` and
+`USA_oem_applied_*`, the post-clamp delta (`effective - base`). The dashboard
+shows the applied delta, not the raw capped contribution, so `base + shown
+delta = effective` holds even when an axis sits on the `0` or `10` boundary and
+part of the contribution is absorbed. The accumulators themselves are temp
+variables and never persist.
 
 `USA_corporate_systems_update_economic_bridge` is the only place any of this is
 computed. It never writes the base axes, so every existing event, policy,
@@ -21,11 +28,11 @@ unchanged.
 
 ### Idempotency
 
-`USA_corporate_systems_rebuild_company_contributions` sets all five contribution
-variables to `0` and rebuilds them from current flags and ideas on every call.
+`USA_corporate_systems_rebuild_company_contributions` sets all five temp
+accumulators to `0` and rebuilds them from current flags and ideas on every call.
 Nothing accumulates across monthly ticks, reloads, or repeated Outcomes Only
 catch-up. `USA_corporate_systems_rebuild_effective_axes` likewise recomputes each
-effective axis with `set_variable` from base + contribution, never `add_to`.
+effective axis and each applied delta with `set_variable`, never `add_to`.
 
 ### Update triggers
 
@@ -141,13 +148,16 @@ in-game measurements.
 
 Axis order below: OS / VI / SR / SC / NCS.
 
-| Case                       | Base           | Contribution (capped) | Effective      | Score | Tier           |
-| -------------------------- | -------------- | --------------------- | -------------- | ----- | -------------- |
-| Historical default, before | 10/3/2/10/10   | -                     | -              | 36    | 4 Integrated   |
-| Historical default, after  | 10/3/2/10/10   | 0/+2/+3/+1/+3         | 10/5/5/10/10   | 40    | 5 Strategic    |
-| Open and interoperable     | 10/2/2/10/10   | +2/+2/+2/+1/+3        | 10/4/4/10/10   | 38    | 5 Strategic    |
-| Integrated but closed      | 10/2/2/10/10   | -3/+3/+3/+1/+3        | 7/5/5/10/10    | 37    | 4 Integrated   |
-| Fragmented / adverse       | 10/3/1/10/10   | -3/-1/-2/+1/-1        | 7/2/0/10/9     | 28    | 3 Balanced     |
+| Case                       | Base           | Contribution (capped) | Applied delta  | Effective      | Score | Tier           |
+| -------------------------- | -------------- | --------------------- | -------------- | -------------- | ----- | -------------- |
+| Historical default, before | 10/3/2/10/10   | -                     | -              | -              | 36    | 4 Integrated   |
+| Historical default, after  | 10/3/2/10/10   | 0/+2/+3/+1/+3         | 0/+2/+3/0/0    | 10/5/5/10/10   | 40    | 5 Strategic    |
+| Open and interoperable     | 10/2/2/10/10   | +2/+2/+2/+1/+3        | 0/+2/+2/0/0    | 10/4/4/10/10   | 38    | 5 Strategic    |
+| Integrated but closed      | 10/2/2/10/10   | -3/+3/+3/+1/+3        | -3/+3/+3/0/0   | 7/5/5/10/10    | 37    | 4 Integrated   |
+| Fragmented / adverse       | 10/3/1/10/10   | -3/-1/-2/+1/-1        | -3/-1/-1/0/-1  | 7/2/0/10/9     | 28    | 3 Balanced     |
+
+The applied-delta column is what the dashboard shows: the gap between it and the
+capped contribution is the part absorbed by the `0..10` axis clamp.
 
 Aggregate bounds after the `-3..+3` per-axis cap, enumerated over every
 combination of mutually exclusive branches:
