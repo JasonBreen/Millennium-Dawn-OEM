@@ -22,6 +22,7 @@ jobs:
     timeout-minutes: 30
     env:
       SYNC_BRANCH: automation/real-upstream-ancestry-sync
+      WORKFLOW_PATH: .github/workflows/one-shot-real-upstream-sync.yml
     steps:
       - name: Checkout synchronization branch
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -44,11 +45,22 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          git remote get-url upstream >/dev/null 2>&1 || \
+            git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git
+          git fetch --filter=blob:none --no-tags upstream main
+          upstream_sha="$(git rev-parse upstream/main)"
+
+          if git merge-base --is-ancestor "$upstream_sha" HEAD; then
+            if [ -f "$WORKFLOW_PATH" ]; then
+              git rm "$WORKFLOW_PATH"
+              git commit -m "ci: remove completed upstream-sync workflow"
+              git push origin "HEAD:refs/heads/$SYNC_BRANCH"
+            fi
+            exit 0
+          fi
+
           cp .mcp.json "$RUNNER_TEMP/mcp.json"
           cp common/scripted_effects/00_yearly_effects.txt "$RUNNER_TEMP/00_yearly_effects.txt"
-
-          git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git
-          git fetch --filter=blob:none --no-tags upstream main
 
           set +e
           git merge --no-ff --no-commit upstream/main
@@ -75,11 +87,9 @@ jobs:
           cp "$RUNNER_TEMP/mcp.json" .mcp.json
           git add common/scripted_effects/00_yearly_effects.txt .mcp.json
 
-          # Remove this temporary workflow from the synchronized branch.
-          git rm .github/workflows/one-shot-real-upstream-sync.yml
+          git rm "$WORKFLOW_PATH"
           git add -A
 
-          upstream_sha="$(git rev-parse upstream/main)"
           git commit -m "Merge upstream Millennium Dawn main with real ancestry" \
             -m "Upstream: $upstream_sha" \
             -m "Preserve the OEM corporate/GPU yearly dispatcher and portable md-mcp configuration."
