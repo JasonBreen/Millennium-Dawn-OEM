@@ -19,6 +19,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      pages_setup: ${{ steps.setup_pages.outcome }}
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -28,7 +30,9 @@ jobs:
           sparse-checkout-cone-mode: true
 
       - name: Setup Pages
+        id: setup_pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
+        continue-on-error: true
         with:
           enablement: false
 
@@ -56,6 +60,7 @@ jobs:
           path: ./docs/dist
 
   deploy:
+    if: needs.build.result == 'success' && needs.build.outputs.pages_setup == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
