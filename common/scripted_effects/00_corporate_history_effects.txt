@@ -1,7 +1,8 @@
 # Corporate-history framework. Docs: docs/src/content/resources/corporate-history-framework.md
 #
 # Chains: IBM, Sun/Microsoft, HP, Apple, NVIDIA, Dell, TI, Micron, Motorola (USA),
-# Lenovo (CHI), Sony (JAP), ATI/AMD and Matrox (CAN), Nokia (FIN), TSMC and Foxconn (TAI);
+# Lenovo (CHI), Sony (JAP), ATI/AMD and Matrox (CAN), Nokia (FIN), TSMC and Foxconn (TAI),
+# and Industrial Sovereignty (POL);
 # dispatch/gating only for Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA).
 # The rule_corporate_history game rule gates chains ONLY at dispatcher level: the
 # startup driver below, the TAG_corporate_trigger_year_* effects
@@ -88,6 +89,17 @@ corporate_history_on_startup = {
 			CAN = {
 				CAN_ati_reconstruct_history = yes
 				CAN_ati_schedule_current_year_events = yes
+			}
+		}
+		# Reconstructs synchronously before scheduling so the current-year scheduler
+		# sees every elapsed milestone already resolved. At the 2000.1.1 bookmark every
+		# dated branch is still in the future, so this is a no-op there.
+		if = {
+			limit = { country_exists = POL }
+			POL = {
+				POL_industrial_sovereignty_initialize_state = yes
+				POL_industrial_sovereignty_reconstruct_history = yes
+				POL_industrial_sovereignty_schedule_current_year_events = yes
 			}
 		}
 
@@ -196,6 +208,13 @@ corporate_history_on_startup = {
 			CAN = {
 				CAN_ati_reconstruct_history = yes
 				CAN_matrox_reconstruct_history = yes
+			}
+		}
+		if = {
+			limit = { country_exists = POL }
+			POL = {
+				POL_industrial_sovereignty_initialize_state = yes
+				country_event = { id = POL_industrial_sovereignty_events.90 days = 1 }
 			}
 		}
 		if = {
@@ -525,5 +544,20 @@ TAI_corporate_history_monthly_outcomes = {
 			NOT = { has_country_flag = TAI_foxconn_capstone_choice_pending }
 		}
 		TAI_foxconn_reconstruct_history = yes
+	}
+}
+
+# Effect: POL_corporate_history_monthly_outcomes
+# Purpose: Retries the silent Polish Industrial Sovereignty reconstruction only in
+#          Outcomes Only mode until its dated 2026 terminal result exists.
+POL_corporate_history_monthly_outcomes = {
+	if = {
+		limit = {
+			corporate_history_outcomes_only_enabled = yes
+			original_tag = POL
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = POL_industrial_sovereignty_reconstruct_complete }
+		}
+		POL_industrial_sovereignty_reconstruct_history = yes
 	}
 }
