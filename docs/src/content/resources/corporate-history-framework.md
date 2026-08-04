@@ -215,6 +215,17 @@ Classification of the existing chains (chains predating the budgets are marked _
 | HP (USA)                                            | 3 _(grandfathered)_           | 13 events with flag-based historical reconstruction but no bounded variables or outcome ideas; flavor economics only                                                                                                                                           |
 | Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA) | 2                             | Dispatch-moved + rule-gated only; internals not yet on the framework                                                                                                                                                                                           |
 
+## Poland: Industrial Sovereignty
+
+Poland's Tier 1 chain is intentionally state-policy-only. Its five bounded values are domestic
+control, technological depth, export capacity, systems integration, and supply resilience.
+`corporate_history_on_startup` initializes and schedules its current year in Full mode, while
+Outcomes Only invokes hidden `POL_industrial_sovereignty_events.90` and the existing Polish
+monthly hook retries the silent dated ladder. The yearly file calls only the
+`POL_corporate_trigger_year_<year>` wrappers; it never schedules visible Polish events itself.
+The chain has no external contract reads or writes: pre-existing Polish procurement, MIO,
+energy, Rail Baltica, and foreign-country content remains independent context.
+
 # New-Chain Checklist
 
 1. Wrapper effect file in `common/scripted_effects/` with the contract set above (init, clamp, reconstruct; capstone family for Tier 1; scheduler if the chain has potential start-year milestones).
