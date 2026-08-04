@@ -15,6 +15,7 @@ jobs:
       github.actor != 'github-actions[bot]' &&
       github.event.pull_request.head.ref == 'automation/real-upstream-ancestry-sync'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       SYNC_BRANCH: automation/real-upstream-ancestry-sync
     steps:
@@ -23,6 +24,7 @@ jobs:
         with:
           ref: ${{ env.SYNC_BRANCH }}
           fetch-depth: 0
+          filter: blob:none
 
       - name: Merge current upstream main with real ancestry
         shell: bash
@@ -36,7 +38,7 @@ jobs:
           cp common/scripted_effects/00_yearly_effects.txt "$RUNNER_TEMP/00_yearly_effects.txt"
 
           git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git
-          git fetch --no-tags upstream main
+          git fetch --filter=blob:none --no-tags upstream main
 
           set +e
           git merge --no-ff --no-commit upstream/main
