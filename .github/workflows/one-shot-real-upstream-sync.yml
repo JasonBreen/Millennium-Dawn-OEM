@@ -1,21 +1,27 @@
 name: One-shot real upstream ancestry sync
 
 on:
-  push:
-    branches:
-      - automation/real-upstream-ancestry-sync
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
+  pull-requests: read
 
 jobs:
   sync:
-    if: github.actor != 'github-actions[bot]'
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      github.event.pull_request.head.ref == 'automation/real-upstream-ancestry-sync'
     runs-on: ubuntu-latest
+    env:
+      SYNC_BRANCH: automation/real-upstream-ancestry-sync
     steps:
       - name: Checkout synchronization branch
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
+          ref: ${{ env.SYNC_BRANCH }}
           fetch-depth: 0
 
       - name: Merge current upstream main with real ancestry
@@ -57,7 +63,7 @@ jobs:
           cp "$RUNNER_TEMP/mcp.json" .mcp.json
           git add common/scripted_effects/00_yearly_effects.txt .mcp.json
 
-          # Remove this one-shot workflow from the resulting synchronized tree.
+          # Remove this temporary workflow from the synchronized branch.
           git rm .github/workflows/one-shot-real-upstream-sync.yml
           git add -A
 
@@ -67,4 +73,4 @@ jobs:
             -m "Preserve the OEM corporate/GPU yearly dispatcher and portable md-mcp configuration."
 
           git merge-base --is-ancestor "$upstream_sha" HEAD
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          git push origin "HEAD:refs/heads/$SYNC_BRANCH"
