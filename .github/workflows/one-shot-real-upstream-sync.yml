@@ -1,0 +1,70 @@
+name: One-shot real upstream ancestry sync
+
+on:
+  push:
+    branches:
+      - automation/real-upstream-ancestry-sync
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout synchronization branch
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Merge current upstream main with real ancestry
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          cp .mcp.json "$RUNNER_TEMP/mcp.json"
+          cp common/scripted_effects/00_yearly_effects.txt "$RUNNER_TEMP/00_yearly_effects.txt"
+
+          git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git
+          git fetch --no-tags upstream main
+
+          set +e
+          git merge --no-ff --no-commit upstream/main
+          merge_status=$?
+          set -e
+
+          conflicts="$(git diff --name-only --diff-filter=U)"
+          if [ -n "$conflicts" ]; then
+            unexpected="$(printf '%s\n' "$conflicts" | grep -vFx 'common/scripted_effects/00_yearly_effects.txt' || true)"
+            if [ -n "$unexpected" ]; then
+              echo "Unexpected merge conflicts:" >&2
+              printf '%s\n' "$unexpected" >&2
+              exit 1
+            fi
+            git checkout --ours -- common/scripted_effects/00_yearly_effects.txt
+            git add common/scripted_effects/00_yearly_effects.txt
+          elif [ "$merge_status" -ne 0 ]; then
+            echo "Merge failed without a resolvable conflict list." >&2
+            exit "$merge_status"
+          fi
+
+          # Preserve fork-owned dispatcher composition and portable MCP setup.
+          cp "$RUNNER_TEMP/00_yearly_effects.txt" common/scripted_effects/00_yearly_effects.txt
+          cp "$RUNNER_TEMP/mcp.json" .mcp.json
+          git add common/scripted_effects/00_yearly_effects.txt .mcp.json
+
+          # Remove this one-shot workflow from the resulting synchronized tree.
+          git rm .github/workflows/one-shot-real-upstream-sync.yml
+          git add -A
+
+          upstream_sha="$(git rev-parse upstream/main)"
+          git commit -m "Merge upstream Millennium Dawn main with real ancestry" \
+            -m "Upstream: $upstream_sha" \
+            -m "Preserve the OEM corporate/GPU yearly dispatcher and portable md-mcp configuration."
+
+          git merge-base --is-ancestor "$upstream_sha" HEAD
+          git push origin "HEAD:${GITHUB_REF_NAME}"
