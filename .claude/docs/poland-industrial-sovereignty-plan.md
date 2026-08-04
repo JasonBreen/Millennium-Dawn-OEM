@@ -65,3 +65,19 @@ coverage is recorded separately for Full 2000, Outcomes Only, Disabled, save/rel
 event is pending, all five capstones, and absent/collapsed GER/KOR/USA/UKR safety.
 
 This is reviewable draft work only. Do not merge it into `main`.
+
+## Stacked dashboard and policy dependency
+
+The dashboard and policy layer targets `codex/poland-industrial-sovereignty-core`
+at core commit `2d8a5189010968fe7f69bfcc990ce983f8a5b548`. It adds a visible,
+read-only category only when Corporate History is enabled and the Polish state has
+initialized. Its five entries expose score bands, resolved route markers, system
+boundaries, outcome readiness, and the current terminal idea. They have no effects
+and AI weight zero.
+
+Four Full-only policies are repeatable on a 365-day cooldown: Industrial Credit
+(50 PP, 10.0B treasury), Strategic Procurement (75 PP, 25.0B), Regional Export
+Finance (50 PP, 15.0B), and an Applied-Research Consortium (50 PP, 20.0B). Each
+requires the initialized, non-bankrupt Polish state, clamps its stated score deltas,
+and cannot set routes or terminal outcomes. Outcomes Only and Disabled hide the
+entire category.
