@@ -1,0 +1,109 @@
+name: One-shot real upstream ancestry sync
+
+on:
+  push:
+    branches:
+      - automation/real-upstream-ancestry-sync-2026-08-05
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout synchronization branch
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Merge current upstream main with real ancestry
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          fork_start="$(git rev-parse HEAD)"
+          cp .mcp.json "$RUNNER_TEMP/mcp.json"
+
+          git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git
+          git fetch --no-tags upstream main
+
+          upstream_sha="$(git rev-parse upstream/main)"
+          merge_base="$(git merge-base HEAD upstream/main)"
+
+          set +e
+          git merge --no-ff --no-commit upstream/main
+          merge_status=$?
+          set -e
+
+          conflicts="$(git diff --name-only --diff-filter=U)"
+          if [ -n "$conflicts" ]; then
+            report="$RUNNER_TEMP/upstream-sync-conflicts.md"
+            {
+              echo "# Upstream synchronization conflict report"
+              echo
+              echo "- Fork start: \`$fork_start\`"
+              echo "- Upstream main: \`$upstream_sha\`"
+              echo "- Merge base: \`$merge_base\`"
+              echo "- Merge exit status: \`$merge_status\`"
+              echo
+              echo "## Conflicted paths"
+              echo
+              printf '%s\n' "$conflicts" | sed 's/^/- `/' | sed 's/$/`/'
+              echo
+              echo "## Index stages"
+              echo
+              echo '```text'
+              git ls-files -u
+              echo '```'
+              echo
+              echo "## Combined conflict hunks"
+              echo
+              while IFS= read -r path; do
+                [ -n "$path" ] || continue
+                echo "### \`$path\`"
+                echo
+                echo '```diff'
+                git diff --cc --no-color -- "$path" || true
+                echo '```'
+                echo
+              done <<< "$conflicts"
+            } > "$report"
+
+            git merge --abort
+            mkdir -p runtime_evidence/upstream-sync-2026-08-05
+            cp "$report" runtime_evidence/upstream-sync-2026-08-05/conflicts.md
+            git add runtime_evidence/upstream-sync-2026-08-05/conflicts.md
+            git commit -m "Record August 5 upstream synchronization conflicts"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+            exit 1
+          fi
+
+          if [ "$merge_status" -ne 0 ]; then
+            echo "Merge failed without a conflict list." >&2
+            exit "$merge_status"
+          fi
+
+          # Preserve the fork's portable MCP configuration if upstream touches it.
+          cp "$RUNNER_TEMP/mcp.json" .mcp.json
+          git add .mcp.json
+
+          # Remove one-shot infrastructure and its trigger from the synchronized tree.
+          git rm .github/workflows/one-shot-real-upstream-sync.yml
+          rm -f .github/upstream-sync-trigger-2026-08-05
+          git add -A
+
+          git diff --check --cached
+          test -z "$(git diff --name-only --diff-filter=U)"
+
+          git commit -m "Merge upstream Millennium Dawn main with real ancestry" \
+            -m "Upstream: $upstream_sha" \
+            -m "Preserve the OEM fork and portable md-mcp configuration."
+
+          git merge-base --is-ancestor "$fork_start" HEAD
+          git merge-base --is-ancestor "$upstream_sha" HEAD
+          git push origin "HEAD:${GITHUB_REF_NAME}"
