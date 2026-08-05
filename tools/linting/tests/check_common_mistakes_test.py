@@ -32,6 +32,7 @@ Unit tests for the checks added to check_common_mistakes.py (in file order):
   29. _files_need_global_refs pre-scan gate matches whitespace-flexible form
   30. add_to_faction with a non-country argument (a faction name)
   31. create_faction is deprecated (use create_faction_from_template)
+  32. event AI choices cannot all be zero under historical bankruptcy
 """
 
 import os
@@ -54,6 +55,7 @@ from check_common_mistakes import (
     _check_divide_variable_zero_guard,
     _check_duplicate_add_to_variable,
     _check_embargo_dlc_guard,
+    _check_event_ai_historical_bankruptcy_fallback,
     _check_event_log_id,
     _check_every_country_member_array,
     _check_every_owned_controlled_state,
@@ -3071,6 +3073,67 @@ assert_eq(
     ),
     False,
     "focus without available always-no does not force the scan",
+)
+
+
+# 32. A bankruptcy guard on the historical option needs a surviving fallback.
+
+print("\n── event historical-bankruptcy AI fallback ──")
+
+assert_finds(
+    _check_event_ai_historical_bankruptcy_fallback,
+    [
+        "country_event = {\n",
+        "\tid = test_events.1\n",
+        "\toption = {\n",
+        "\t\tname = test_events.1.a\n",
+        "\t\tai_chance = {\n",
+        "\t\t\tbase = 50\n",
+        "\t\t\tmodifier = {\n",
+        "\t\t\t\tfactor = 0\n",
+        "\t\t\t\thas_active_mission = bankruptcy_incoming_collapse\n",
+        "\t\t\t}\n",
+        "\t\t}\n",
+        "\t}\n",
+        "\toption = {\n",
+        "\t\tname = test_events.1.b\n",
+        "\t\tai_chance = {\n",
+        "\t\t\tbase = 50\n",
+        "\t\t\tmodifier = {\n",
+        "\t\t\t\tfactor = 0\n",
+        "\t\t\t\tis_historical_focus_on = yes\n",
+        "\t\t\t}\n",
+        "\t\t}\n",
+        "\t}\n",
+        "}\n",
+    ],
+    1,
+    "all event options zero under historical bankruptcy flagged",
+)
+
+assert_finds(
+    _check_event_ai_historical_bankruptcy_fallback,
+    [
+        "country_event = {\n",
+        "\tid = test_events.2\n",
+        "\toption = {\n",
+        "\t\tname = test_events.2.a\n",
+        "\t\tai_chance = {\n",
+        "\t\t\tbase = 50\n",
+        "\t\t\tmodifier = {\n",
+        "\t\t\t\tfactor = 0\n",
+        "\t\t\t\thas_active_mission = bankruptcy_incoming_collapse\n",
+        "\t\t\t}\n",
+        "\t\t}\n",
+        "\t}\n",
+        "\toption = {\n",
+        "\t\tname = test_events.2.b\n",
+        "\t\tai_chance = { base = 50 }\n",
+        "\t}\n",
+        "}\n",
+    ],
+    0,
+    "eligible fallback keeps historical bankruptcy event valid",
 )
 
 

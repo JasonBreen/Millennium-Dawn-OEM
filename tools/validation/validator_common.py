@@ -298,6 +298,9 @@ class Issue:
     file: str = ""
     line: int = 0
 
+    def __post_init__(self) -> None:
+        self.file = self.file.replace("\\", "/")
+
     def to_dict(self) -> dict:
         return {
             "severity": self.severity,
