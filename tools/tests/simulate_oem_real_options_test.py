@@ -1,6 +1,7 @@
 import json
 import math
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -89,6 +90,21 @@ def test_script_formula_constants_and_clamp_order_match_simulator():
         "subtract = { value = USA_oem_discount_x multiply = 0.5 }",
         "add = { value = USA_oem_discount_x_squared divide = 12 }",
         "add = { value = USA_oem_discount_x multiply = 0.5 }",
+        (
+            "value = microchip_plant_total\n"
+            "\t\t\t\tmultiply = 0.75\n"
+            "\t\t\t\tclamp = { min = 0 max = 30 }"
+        ),
+        (
+            "value = total_unemployed_percentage_display\n"
+            "\t\t\t\t\tmultiply = 500\n"
+            "\t\t\t\t\tclamp = { min = 0 max = 50 }"
+        ),
+        (
+            "\telse = {\n\t\tif = {\n"
+            "\t\t\tlimit = { has_country_flag = USA_oem_real_options_initialized }\n"
+            "\t\t\tclr_country_flag = USA_oem_real_options_initialized"
+        ),
     ):
         assert fragment in script
 
@@ -181,6 +197,29 @@ def test_high_volatility_preserves_option_value_but_reduces_readiness():
     assert (
         speculative["USA_oem_investment_readiness"]
         < strategic["USA_oem_investment_readiness"]
+    )
+
+
+@pytest.mark.parametrize(
+    ("unemployment_rate", "expected_contribution"), ((0.05, 25.0), (0.2, 50.0))
+)
+def test_labor_displacement_normalizes_fractional_unemployment(
+    unemployment_rate, expected_contribution
+):
+    scenario = replace(
+        SCENARIOS["historical_default"],
+        name="unemployment_normalization",
+        unemployment_rate=unemployment_rate,
+    )
+    simulator.SCENARIOS[scenario.name] = scenario
+    try:
+        actual = evaluate_scenario(scenario.name)
+    finally:
+        del simulator.SCENARIOS[scenario.name]
+
+    automation = actual["USA_oem_automation_pressure"]
+    assert actual["USA_oem_labor_displacement_pressure"] == pytest.approx(
+        0.5 * automation + expected_contribution
     )
 
 
@@ -279,6 +318,9 @@ def test_historical_balance_snapshots_are_static_model_evidence_within_caps():
         0.13
     )
     assert stress["within_caps"]["energy_use_modifier_microchip_plant"]
+    assert stress["aggregate"]["country_productivity_growth_modifier"] == pytest.approx(
+        0.03
+    )
 
 
 def test_cli_json_schema_and_success_exit(capsys):

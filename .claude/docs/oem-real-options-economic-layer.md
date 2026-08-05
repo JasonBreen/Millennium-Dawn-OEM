@@ -80,9 +80,9 @@ Live-input weights are scaled against the 2000 U.S. baseline rather than small-
 country counts. Productivity contributions use `(overall_productivity - 500)`
 with slopes of `0.01..0.02`; the initial U.S. value of 1200 therefore retains
 growth headroom. Industrial complexes, offices, microchip plants, and internet
-stations use weights of `0.15`, `0.2`, `1.25..1.5`, and `0.1` respectively.
-Their component clamps remain reachable without being saturated by the initial
-U.S. building stock.
+stations use weights of `0.15`, `0.2`, `0.75..1`, and `0.1` respectively. The
+microchip components cap at 40 plants, leaving room for the capacity program to
+reinforce building growth across the 2000-2026 span.
 
 ## Secondary scores and tiers
 
@@ -107,7 +107,9 @@ All secondary scores are rebuilt and clamped to `0..100`.
 
 The investment-climate family uses investment readiness at 0, 20, 40, 60, and
 80, so uncertainty alone cannot produce an investment boom. Modifier effects
-are intentionally small. Existing Corporate
+are intentionally small. Diffusion and the computing consortium share the
+percentage-typed country productivity modifier, reaching at most `+3%`
+together. Existing Corporate
 Systems ideas remain the authority for corporate-tax and investment-cost
 effects; the climate family mainly adjusts project duration and bureaucracy.
 The diffusion, depth, and pressure families provide separate economy-wide
@@ -144,7 +146,8 @@ readiness.
 `USA_oem_high_skill_labor_demand` are bounded dashboard outputs only. They make
 the later labor-transition interface explicit without altering upstream
 employment laws, worker requirements, stability, or social spending in this
-change.
+change. Displacement gives automation and unemployment equal 50-point ranges;
+the fractional unemployment input reaches its component cap at 10 percent.
 
 ## Historical balance audit
 
@@ -163,9 +166,10 @@ The simulator adds an all-four-program envelope to every row to expose exact-key
 overlaps even though this is not asserted as historical behavior. In the 2026
 maximum-stack row, notable totals are research speed `+13%`, office productivity
 `+16%`, maximum factory efficiency `+25%`, microchip-plant construction `+20%`,
-industrial-infrastructure construction `+13%`, microchip-plant energy use
-`+13%`, civilian chip demand `+27%`, cyber defense `+8`, and receiving-investment
-cost `-8%`. These are static balance-model totals, not runtime observations.
+industrial-infrastructure construction `+13%`, country productivity growth
+`+3%`, microchip-plant energy use `+13%`, civilian chip demand `+27%`, cyber
+defense `+8`, and receiving-investment cost `-8%`. These are static
+balance-model totals, not runtime observations.
 
 ## Verification and limitations
 

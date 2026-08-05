@@ -165,6 +165,7 @@ class EconomicScenario:
     interest_pressure: float
     uncertainty: float
     horizon: int
+    unemployment_rate: float = 0.05
 
     def formula_inputs(self) -> FormulaInputs:
         drivers = self.drivers()
@@ -200,6 +201,7 @@ class EconomicScenario:
             "debt_burden": _clamp(self.debt_burden, 0.0, 10.0),
             "interest_pressure": _clamp(self.interest_pressure, 0.0, 10.0),
             "uncertainty": _clamp(self.uncertainty, 0.0, 10.0),
+            "unemployment_rate": _clamp(self.unemployment_rate, 0.0, 1.0),
         }
 
     def indicators(self) -> Dict[str, float]:
@@ -266,7 +268,6 @@ BALANCE_CAPS = {
     "investment_duration_modifier": 0.05,
     "receiving_investment_duration_modifier": 0.05,
     "bureaucracy_cost_multiplier_modifier": 0.10,
-    "productivity_growth_modifier": 0.02,
     "country_productivity_growth_modifier": 0.03,
     "offices_productivity": 0.20,
     "production_speed_offices_factor": 0.10,
@@ -329,7 +330,7 @@ BALANCE_SNAPSHOTS = (
             investment_duration_modifier=0.025,
             receiving_investment_duration_modifier=0.025,
             bureaucracy_cost_multiplier_modifier=0.01,
-            productivity_growth_modifier=0.005,
+            country_productivity_growth_modifier=0.005,
             offices_productivity=0.01,
             research_speed_factor=0.005,
         ),
@@ -349,7 +350,7 @@ BALANCE_SNAPSHOTS = (
             investment_duration_modifier=0.025,
             receiving_investment_duration_modifier=0.025,
             bureaucracy_cost_multiplier_modifier=0.01,
-            productivity_growth_modifier=0.005,
+            country_productivity_growth_modifier=0.005,
             offices_productivity=0.01,
             research_speed_factor=0.005,
         ),
@@ -366,7 +367,7 @@ BALANCE_SNAPSHOTS = (
             investment_duration_modifier=0.025,
             receiving_investment_duration_modifier=0.025,
             bureaucracy_cost_multiplier_modifier=0.01,
-            productivity_growth_modifier=0.005,
+            country_productivity_growth_modifier=0.005,
             offices_productivity=0.01,
             research_speed_factor=0.005,
         ),
@@ -387,7 +388,7 @@ BALANCE_SNAPSHOTS = (
             investment_duration_modifier=0.025,
             receiving_investment_duration_modifier=0.025,
             bureaucracy_cost_multiplier_modifier=0.01,
-            productivity_growth_modifier=0.005,
+            country_productivity_growth_modifier=0.005,
             offices_productivity=0.01,
             research_speed_factor=0.005,
             energy_use_modifier_microchip_plant=0.025,
@@ -420,7 +421,7 @@ BALANCE_SNAPSHOTS = (
             investment_duration_modifier=-0.05,
             receiving_investment_duration_modifier=-0.05,
             bureaucracy_cost_multiplier_modifier=-0.02,
-            productivity_growth_modifier=0.01,
+            country_productivity_growth_modifier=0.01,
             offices_productivity=0.02,
             research_speed_factor=0.01,
             production_speed_microchip_plant_factor=0.05,
@@ -595,8 +596,11 @@ def evaluate_scenario(name: str, mode: str = "full") -> Dict[str, object]:
         0.0,
         100.0,
     )
+    unemployment_displacement = _clamp(
+        500.0 * scenario.drivers()["unemployment_rate"], 0.0, 50.0
+    )
     labor_displacement_pressure = _clamp(
-        0.65 * automation_pressure + 0.35 * indicators["pressure"],
+        0.5 * automation_pressure + unemployment_displacement,
         0.0,
         100.0,
     )

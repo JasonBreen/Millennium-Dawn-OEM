@@ -426,8 +426,8 @@ USA_oem_update_real_options_economy = {
 		set_temp_variable = {
 			USA_oem_microchip_depth = {
 				value = microchip_plant_total
-				multiply = 1.25
-				clamp = { min = 0 max = 20 }
+				multiply = 0.75
+				clamp = { min = 0 max = 30 }
 			}
 		}
 		set_variable = {
@@ -495,8 +495,8 @@ USA_oem_update_real_options_economy = {
 		set_temp_variable = {
 			USA_oem_microchip_capacity = {
 				value = microchip_plant_total
-				multiply = 1.5
-				clamp = { min = 0 max = 25 }
+				multiply = 1
+				clamp = { min = 0 max = 40 }
 			}
 		}
 		set_temp_variable = {
@@ -571,10 +571,11 @@ USA_oem_update_real_options_economy = {
 		set_variable = {
 			USA_oem_labor_displacement_pressure = {
 				value = USA_oem_automation_pressure
-				multiply = 0.65
+				multiply = 0.5
 				add = {
 					value = total_unemployed_percentage_display
-					multiply = 35
+					multiply = 500
+					clamp = { min = 0 max = 50 }
 				}
 				clamp = { min = 0 max = 100 }
 			}
@@ -615,6 +616,7 @@ USA_oem_update_real_options_economy = {
 			}
 		}
 
+		# Contract surface: keep explicit output clamps aligned with tools/corporate_history_contract.json.
 		clamp_variable = { var = USA_oem_option_underlying_value min = 1 max = 100 }
 		clamp_variable = { var = USA_oem_option_irreversible_cost min = 1 max = 100 }
 		clamp_variable = { var = USA_oem_option_discount_rate min = 0 max = 0.25 }
@@ -990,59 +992,62 @@ USA_oem_update_real_options_economy = {
 		}
 	}
 	else = {
-		clr_country_flag = USA_oem_real_options_initialized
-		remove_ideas = {
-			USA_oem_open_systems_procurement_program
-			USA_oem_domestic_capacity_grants_program
-			USA_oem_secure_federal_systems_program
-			USA_oem_advanced_computing_consortium_program
-		}
-		clear_variable = USA_oem_option_underlying_value
-		clear_variable = USA_oem_option_irreversible_cost
-		clear_variable = USA_oem_option_discount_rate
-		clear_variable = USA_oem_option_volatility
-		clear_variable = USA_oem_option_horizon
-		clear_variable = USA_oem_option_call_value
-		clear_variable = USA_oem_option_value
-		clear_variable = USA_oem_option_value_normalized
-		clear_variable = USA_oem_innovation_diffusion
-		clear_variable = USA_oem_industrial_depth
-		clear_variable = USA_oem_compute_infrastructure_demand
-		clear_variable = USA_oem_compute_infrastructure_capacity
-		clear_variable = USA_oem_infrastructure_pressure
-		clear_variable = USA_oem_investment_readiness
-		clear_variable = USA_oem_automation_pressure
-		clear_variable = USA_oem_labor_displacement_pressure
-		clear_variable = USA_oem_high_skill_labor_demand
-		clear_variable = USA_oem_option_value_display
-		clear_variable = USA_oem_option_value_normalized_display
-		clear_variable = USA_oem_innovation_diffusion_display
-		clear_variable = USA_oem_industrial_depth_display
-		clear_variable = USA_oem_compute_infrastructure_demand_display
-		clear_variable = USA_oem_compute_infrastructure_capacity_display
-		clear_variable = USA_oem_infrastructure_pressure_display
-		clear_variable = USA_oem_investment_readiness_display
-		clear_variable = USA_oem_automation_pressure_display
-		clear_variable = USA_oem_labor_displacement_pressure_display
-		clear_variable = USA_oem_high_skill_labor_demand_display
+		if = {
+			limit = { has_country_flag = USA_oem_real_options_initialized }
+			clr_country_flag = USA_oem_real_options_initialized
+			remove_ideas = {
+				USA_oem_open_systems_procurement_program
+				USA_oem_domestic_capacity_grants_program
+				USA_oem_secure_federal_systems_program
+				USA_oem_advanced_computing_consortium_program
+			}
+			clear_variable = USA_oem_option_underlying_value
+			clear_variable = USA_oem_option_irreversible_cost
+			clear_variable = USA_oem_option_discount_rate
+			clear_variable = USA_oem_option_volatility
+			clear_variable = USA_oem_option_horizon
+			clear_variable = USA_oem_option_call_value
+			clear_variable = USA_oem_option_value
+			clear_variable = USA_oem_option_value_normalized
+			clear_variable = USA_oem_innovation_diffusion
+			clear_variable = USA_oem_industrial_depth
+			clear_variable = USA_oem_compute_infrastructure_demand
+			clear_variable = USA_oem_compute_infrastructure_capacity
+			clear_variable = USA_oem_infrastructure_pressure
+			clear_variable = USA_oem_investment_readiness
+			clear_variable = USA_oem_automation_pressure
+			clear_variable = USA_oem_labor_displacement_pressure
+			clear_variable = USA_oem_high_skill_labor_demand
+			clear_variable = USA_oem_option_value_display
+			clear_variable = USA_oem_option_value_normalized_display
+			clear_variable = USA_oem_innovation_diffusion_display
+			clear_variable = USA_oem_industrial_depth_display
+			clear_variable = USA_oem_compute_infrastructure_demand_display
+			clear_variable = USA_oem_compute_infrastructure_capacity_display
+			clear_variable = USA_oem_infrastructure_pressure_display
+			clear_variable = USA_oem_investment_readiness_display
+			clear_variable = USA_oem_automation_pressure_display
+			clear_variable = USA_oem_labor_displacement_pressure_display
+			clear_variable = USA_oem_high_skill_labor_demand_display
 
-		remove_dynamic_modifier = { modifier = USA_oem_investment_climate_1 }
-		remove_dynamic_modifier = { modifier = USA_oem_investment_climate_2 }
-		remove_dynamic_modifier = { modifier = USA_oem_investment_climate_3 }
-		remove_dynamic_modifier = { modifier = USA_oem_investment_climate_4 }
-		remove_dynamic_modifier = { modifier = USA_oem_investment_climate_5 }
-		remove_dynamic_modifier = { modifier = USA_oem_innovation_diffusion_1 }
-		remove_dynamic_modifier = { modifier = USA_oem_innovation_diffusion_2 }
-		remove_dynamic_modifier = { modifier = USA_oem_innovation_diffusion_3 }
-		remove_dynamic_modifier = { modifier = USA_oem_innovation_diffusion_4 }
-		remove_dynamic_modifier = { modifier = USA_oem_industrial_depth_1 }
-		remove_dynamic_modifier = { modifier = USA_oem_industrial_depth_2 }
-		remove_dynamic_modifier = { modifier = USA_oem_industrial_depth_3 }
-		remove_dynamic_modifier = { modifier = USA_oem_industrial_depth_4 }
-		remove_dynamic_modifier = { modifier = USA_oem_infrastructure_pressure_1 }
-		remove_dynamic_modifier = { modifier = USA_oem_infrastructure_pressure_2 }
-		remove_dynamic_modifier = { modifier = USA_oem_infrastructure_pressure_3 }
-		remove_dynamic_modifier = { modifier = USA_oem_infrastructure_pressure_4 }
-		remove_dynamic_modifier = { modifier = USA_oem_infrastructure_pressure_5 }
+			remove_dynamic_modifier = { modifier = USA_oem_investment_climate_1 }
+			remove_dynamic_modifier = { modifier = USA_oem_investment_climate_2 }
+			remove_dynamic_modifier = { modifier = USA_oem_investment_climate_3 }
+			remove_dynamic_modifier = { modifier = USA_oem_investment_climate_4 }
+			remove_dynamic_modifier = { modifier = USA_oem_investment_climate_5 }
+			remove_dynamic_modifier = { modifier = USA_oem_innovation_diffusion_1 }
+			remove_dynamic_modifier = { modifier = USA_oem_innovation_diffusion_2 }
+			remove_dynamic_modifier = { modifier = USA_oem_innovation_diffusion_3 }
+			remove_dynamic_modifier = { modifier = USA_oem_innovation_diffusion_4 }
+			remove_dynamic_modifier = { modifier = USA_oem_industrial_depth_1 }
+			remove_dynamic_modifier = { modifier = USA_oem_industrial_depth_2 }
+			remove_dynamic_modifier = { modifier = USA_oem_industrial_depth_3 }
+			remove_dynamic_modifier = { modifier = USA_oem_industrial_depth_4 }
+			remove_dynamic_modifier = { modifier = USA_oem_infrastructure_pressure_1 }
+			remove_dynamic_modifier = { modifier = USA_oem_infrastructure_pressure_2 }
+			remove_dynamic_modifier = { modifier = USA_oem_infrastructure_pressure_3 }
+			remove_dynamic_modifier = { modifier = USA_oem_infrastructure_pressure_4 }
+			remove_dynamic_modifier = { modifier = USA_oem_infrastructure_pressure_5 }
+		}
 	}
 }
