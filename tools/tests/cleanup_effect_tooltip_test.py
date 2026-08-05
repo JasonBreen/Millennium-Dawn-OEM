@@ -21,6 +21,46 @@ _WRAP_MULTI = (
 _COLLAPSED = "foo = {\n\tcustom_effect_tooltip = bar_tt\n}\n"
 
 
+def test_simplify_effect_tooltip_block_single_line():
+    src = "foo = {\n\teffect_tooltip = { custom_effect_tooltip = bar_tt }\n}\n"
+    lines = src.splitlines(keepends=True)
+    out, n = cet.simplify_effect_tooltip_block(lines)
+    assert n == 1
+    assert "".join(out) == "foo = {\n\tcustom_effect_tooltip = bar_tt\n}\n"
+
+
+def test_simplify_effect_tooltip_block_multi_line():
+    src = "foo = {\n\teffect_tooltip = {\n\t\tcustom_effect_tooltip = bar_tt\n\t}\n}\n"
+    lines = src.splitlines(keepends=True)
+    out, n = cet.simplify_effect_tooltip_block(lines)
+    assert n == 1
+    assert "".join(out) == "foo = {\n\tcustom_effect_tooltip = bar_tt\n}\n"
+
+
+def test_simplify_effect_tooltip_block_inline():
+    src = "foo = { effect_tooltip = { custom_effect_tooltip = bar_tt } }\n"
+    lines = src.splitlines(keepends=True)
+    out, n = cet.simplify_effect_tooltip_block(lines)
+    assert n == 1
+    assert "".join(out) == "foo = { custom_effect_tooltip = bar_tt }\n"
+
+
+def test_simplify_effect_tooltip_block_multiple_keys():
+    src = "foo = {\n\teffect_tooltip = {\n\t\tcustom_effect_tooltip = a_tt\n\t\tcustom_effect_tooltip = b_tt\n\t}\n}\n"
+    lines = src.splitlines(keepends=True)
+    out, n = cet.simplify_effect_tooltip_block(lines)
+    assert n == 1
+    assert "".join(out) == "foo = {\n\tcustom_effect_tooltip = a_tt\n\tcustom_effect_tooltip = b_tt\n}\n"
+
+
+def test_simplify_effect_tooltip_block_inline_multiple_keys():
+    src = "foo = { effect_tooltip = { custom_effect_tooltip = a_tt custom_effect_tooltip = b_tt } }\n"
+    lines = src.splitlines(keepends=True)
+    out, n = cet.simplify_effect_tooltip_block(lines)
+    assert n == 1
+    assert "".join(out) == "foo = { custom_effect_tooltip = a_tt custom_effect_tooltip = b_tt }\n"
+
+
 def test_single_line_wrapper_collapses(tmp_path):
     f = tmp_path / "ctrl.txt"
     f.write_text(_WRAP_SINGLE, encoding="utf-8")
