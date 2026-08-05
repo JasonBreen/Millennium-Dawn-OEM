@@ -50,7 +50,10 @@ def test_simplify_effect_tooltip_block_multiple_keys():
     lines = src.splitlines(keepends=True)
     out, n = cet.simplify_effect_tooltip_block(lines)
     assert n == 1
-    assert "".join(out) == "foo = {\n\tcustom_effect_tooltip = a_tt\n\tcustom_effect_tooltip = b_tt\n}\n"
+    assert (
+        "".join(out)
+        == "foo = {\n\tcustom_effect_tooltip = a_tt\n\tcustom_effect_tooltip = b_tt\n}\n"
+    )
 
 
 def test_simplify_effect_tooltip_block_inline_multiple_keys():
@@ -58,7 +61,10 @@ def test_simplify_effect_tooltip_block_inline_multiple_keys():
     lines = src.splitlines(keepends=True)
     out, n = cet.simplify_effect_tooltip_block(lines)
     assert n == 1
-    assert "".join(out) == "foo = { custom_effect_tooltip = a_tt custom_effect_tooltip = b_tt }\n"
+    assert (
+        "".join(out)
+        == "foo = { custom_effect_tooltip = a_tt custom_effect_tooltip = b_tt }\n"
+    )
 
 
 def test_single_line_wrapper_collapses(tmp_path):
