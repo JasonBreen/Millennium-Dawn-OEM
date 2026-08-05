@@ -7,6 +7,8 @@ its scan root from mod_path, so no production files are touched.
 import os
 import sys
 
+import pytest
+
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(REPO_ROOT, "tools"))
 
@@ -59,6 +61,9 @@ def test_syntax_error_flagged(tmp_path):
     assert "broken_script.py" in validator._issues[0].message
 
 
+@pytest.mark.skipif(
+    os.name == "nt", reason="POSIX executable bits are unavailable on Windows"
+)
 def test_style_warnings_for_bare_script(tmp_path):
     # No shebang, no main guard, not executable — warnings only, not errors.
     _write_script(tmp_path, "bare_script.py", "x = 1\n", mode=0o644)
@@ -107,6 +112,9 @@ def test_imported_standalone_library_exempt(tmp_path):
     assert not any("Warning:" in line for line in validator.output_lines)
 
 
+@pytest.mark.skipif(
+    os.name == "nt", reason="POSIX executable bits are unavailable on Windows"
+)
 def test_guarded_script_checked_even_when_imported(tmp_path):
     # A main guard means "runnable"; being imported by a test must not exempt it.
     guarded = (

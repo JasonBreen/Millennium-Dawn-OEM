@@ -10,8 +10,15 @@ def _write(root: Path, relative: str, text: str):
     path.write_text(text, encoding="utf-8")
 
 
+def _write_loc(root: Path, relative: str, text: str):
+    path = root / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b"\xef\xbb\xbf" + text.encode("utf-8"))
+
+
 def _manifest(
     callerless=None,
+    other_callerless=None,
     allowed_reads=None,
     with_other_chain=False,
     variables=None,
@@ -24,6 +31,21 @@ def _manifest(
             "namespace": "USA_test_events",
             "root": "USA_test",
             "tier": 1,
+            "full_start_strategies": [
+                "yearly_dispatcher",
+                "current_year_scheduler",
+                "reconstruction",
+            ],
+            "outcomes_only_strategy": "reconstruction",
+            "monthly_driver": "USA_corporate_history_monthly_outcomes",
+            "terminal_marker": "USA_test_reconstruct_complete",
+            "terminal_date": "2001-03-01",
+            "outcome_ideas": ["USA_test_outcome_a", "USA_test_outcome_b"],
+            "expected_callers": {},
+            "dependency_order": [],
+            "localisation_prefixes": ["USA_test"],
+            "effect_preview_policy": "engine_or_explicit",
+            "bridge_refresh_policy": "none",
             "owned_prefixes": ["USA_test"],
             "variables": (
                 {"USA_test_state": {"min": 0, "max": 10}}
@@ -48,18 +70,29 @@ def _manifest(
                 "namespace": "USA_other_events",
                 "root": "USA_other",
                 "tier": 2,
+                "full_start_strategies": ["yearly_dispatcher"],
+                "outcomes_only_strategy": "suppressed",
+                "monthly_driver": "USA_corporate_history_monthly_outcomes",
+                "terminal_marker": "USA_other_reconstruct_complete",
+                "terminal_date": "2001-03-01",
+                "outcome_ideas": [],
+                "expected_callers": {},
+                "dependency_order": [],
+                "localisation_prefixes": ["USA_other"],
+                "effect_preview_policy": "engine_or_explicit",
+                "bridge_refresh_policy": "none",
                 "owned_prefixes": ["USA_other"],
                 "variables": {},
                 "outcome_idea_prefixes": [],
                 "requires_current_year_scheduler": False,
                 "allow_yearly_scheduler_duplicates": False,
-                "callerless_anchors": [],
+                "callerless_anchors": other_callerless or [],
                 "allowed_multiple_callers": [],
                 "allowed_reads": [],
                 "allowed_writes": [],
             }
         )
-    return {"chains": chains}
+    return {"schema_version": 2, "chains": chains}
 
 
 def _base_events(include_hidden_ninety=True, include_anchor=False):
@@ -297,14 +330,30 @@ def _build_fixture(
     _write(
         root,
         "common/scripted_triggers/MD_corporate_history_triggers.txt",
-        """corporate_history_full_enabled = { always = yes }
-corporate_history_outcomes_only_enabled = { always = no }
+        """corporate_history_full_enabled = {
+	NOT = { has_game_rule = { rule = rule_corporate_history option = outcomes_only } }
+	NOT = { has_game_rule = { rule = rule_corporate_history option = disabled } }
+}
+corporate_history_outcomes_only_enabled = {
+	has_game_rule = { rule = rule_corporate_history option = outcomes_only }
+}
+corporate_history_enabled = {
+	OR = {
+		corporate_history_full_enabled = yes
+		corporate_history_outcomes_only_enabled = yes
+	}
+}
 """,
     )
     _write(
         root,
         "common/game_rules/00_game_rules.txt",
-        "rule_corporate_history = { default = { name = full } }\n",
+        """rule_corporate_history = {
+	default = { name = full }
+	option = { name = outcomes_only }
+	option = { name = disabled }
+}
+""",
     )
     _write(
         root,
@@ -354,7 +403,9 @@ corporate_history_outcomes_only_enabled = { always = no }
     _write(
         root,
         "common/on_actions/MD_event_on_actions.txt",
-        "on_monthly_USA = { effect = { USA_corporate_history_monthly_outcomes = yes } }\n",
+        """on_startup = { effect = { corporate_history_on_startup = yes } }
+on_monthly_USA = { effect = { USA_corporate_history_monthly_outcomes = yes } }
+""",
     )
     events = _base_events(
         include_hidden_ninety=include_hidden_ninety, include_anchor=include_anchor
@@ -389,6 +440,22 @@ corporate_history_outcomes_only_enabled = { always = no }
         )
     _write(root, "events/USA_test_events.txt", events)
     _write(root, "common/ideas/USA_test_ideas.txt", _base_ideas(missing_civil_war))
+    _write_loc(
+        root,
+        "localisation/english/MD_focus_USA_l_english.yml",
+        """l_english:
+ USA_test_events.1.t: "Test event"
+ USA_test_events.1.d: "Test description."
+ USA_test_events.1.a: "Choose the test"
+ USA_test_events.2.t: "Test anchor"
+ USA_test_events.2.d: "Test anchor description."
+ USA_test_events.2.a: "Choose the anchor"
+ USA_test_outcome_a: "Outcome A"
+ USA_test_outcome_a_desc: "The first outcome."
+ USA_test_outcome_b: "Outcome B"
+ USA_test_outcome_b_desc: "The second outcome."
+""",
+    )
 
 
 def _messages(root: Path):
@@ -397,6 +464,132 @@ def _messages(root: Path):
     )
     validator.run_all_validations()
     return [issue.message for issue in validator._issues]
+
+
+def _enable_bridge_fixture(root: Path, *, refresh: str):
+    manifest_path = root / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["chains"][0]["bridge_refresh_policy"] = "immediate"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    events_path = root / "events/USA_test_events.txt"
+    events = events_path.read_text(encoding="utf-8")
+    if refresh == "transitive":
+        mutation = "\t\tUSA_test_finish_bridge = yes\n"
+    else:
+        mutation = "\t\tset_country_flag = USA_test_bridge_outcome\n"
+        if refresh == "direct":
+            mutation += "\t\tUSA_corporate_systems_update_economic_bridge = yes\n"
+    events_path.write_text(
+        events.replace(
+            "\t\tname = USA_test_events.1.a\n",
+            "\t\tname = USA_test_events.1.a\n" + mutation,
+        ),
+        encoding="utf-8",
+    )
+
+    axes = (
+        "open_standards",
+        "vertical_integration",
+        "supply_resilience",
+        "security_control",
+        "national_compute_stack",
+    )
+    reset = "\n".join(
+        f"\tset_temp_variable = {{ USA_oem_contribution_{axis} = 0 }}" for axis in axes
+    )
+    contribution_clamps = "\n".join(
+        f"\tclamp_temp_variable = {{ var = USA_oem_contribution_{axis} min = -3 max = 3 }}"
+        for axis in axes
+    )
+    effective = "\n".join(
+        f"\tset_variable = {{ USA_oem_effective_{axis} = 0 }}\n"
+        f"\tadd_to_variable = {{ USA_oem_effective_{axis} = USA_oem_contribution_{axis} }}\n"
+        f"\tclamp_variable = {{ var = USA_oem_effective_{axis} min = 0 max = 10 }}"
+        for axis in axes
+    )
+    score = "\n".join(
+        (
+            f"\t\tset_temp_variable = {{ USA_corporate_systems_economic_integration_score = USA_oem_effective_{axes[0]} }}",
+            *(
+                f"\t\tadd_to_temp_variable = {{ USA_corporate_systems_economic_integration_score = USA_oem_effective_{axis} }}"
+                for axis in axes[1:]
+            ),
+        )
+    )
+    helper = (
+        "USA_test_finish_bridge = {\n"
+        "\tset_country_flag = USA_test_bridge_outcome\n"
+        "\tUSA_corporate_systems_update_economic_bridge = yes\n"
+        "}\n\n"
+        if refresh == "transitive"
+        else ""
+    )
+    _write(
+        root,
+        "common/scripted_effects/USA_corporate_systems_effects.txt",
+        f"""{helper}USA_corporate_systems_clear_economic_bridge_ideas = {{
+\tremove_ideas = {{
+\t\tUSA_corporate_systems_economic_integration_1
+\t\tUSA_corporate_systems_economic_integration_2
+\t\tUSA_corporate_systems_economic_integration_3
+\t\tUSA_corporate_systems_economic_integration_4
+\t\tUSA_corporate_systems_economic_integration_5
+\t}}
+}}
+
+USA_corporate_systems_clear_derived_axes = {{
+\tset_variable = {{ USA_oem_effective_open_standards = 0 }}
+}}
+
+USA_corporate_systems_test_contribution = {{
+\tif = {{
+\t\tlimit = {{ has_country_flag = USA_test_bridge_outcome }}
+\t\tadd_to_temp_variable = {{ USA_oem_contribution_open_standards = 1 }}
+\t}}
+}}
+
+USA_corporate_systems_rebuild_company_contributions = {{
+{reset}
+\tUSA_corporate_systems_test_contribution = yes
+{contribution_clamps}
+}}
+
+USA_corporate_systems_rebuild_effective_axes = {{
+{effective}
+}}
+
+USA_corporate_systems_update_economic_bridge = {{
+\tif = {{
+\t\tlimit = {{ corporate_history_enabled = yes }}
+\t\tUSA_corporate_systems_rebuild_company_contributions = yes
+\t\tUSA_corporate_systems_rebuild_effective_axes = yes
+{score}
+\t\tif = {{
+\t\t\tlimit = {{ check_variable = {{ USA_corporate_systems_economic_integration_score < 15 }} }}
+\t\t\tadd_ideas = USA_corporate_systems_economic_integration_1
+\t\t}}
+\t\telse_if = {{
+\t\t\tlimit = {{ check_variable = {{ USA_corporate_systems_economic_integration_score < 22 }} }}
+\t\t\tadd_ideas = USA_corporate_systems_economic_integration_2
+\t\t}}
+\t\telse_if = {{
+\t\t\tlimit = {{ check_variable = {{ USA_corporate_systems_economic_integration_score < 29 }} }}
+\t\t\tadd_ideas = USA_corporate_systems_economic_integration_3
+\t\t}}
+\t\telse_if = {{
+\t\t\tlimit = {{ check_variable = {{ USA_corporate_systems_economic_integration_score < 38 }} }}
+\t\t\tadd_ideas = USA_corporate_systems_economic_integration_4
+\t\t}}
+\t\telse = {{ add_ideas = USA_corporate_systems_economic_integration_5 }}
+\t}}
+\telse = {{
+\t\tUSA_corporate_systems_clear_derived_axes = yes
+\t\tUSA_corporate_systems_clear_economic_bridge_ideas = yes
+\t}}
+}}
+""",
+    )
 
 
 def test_visible_event_with_no_caller(tmp_path):
@@ -496,7 +689,7 @@ def test_reconstruction_replaying_treasury(tmp_path):
     _build_fixture(tmp_path, treasury_in_reconstruct=True)
     messages = _messages(tmp_path)
     assert any(
-        "USA_test_reconstruct_history replays treasury changes" in message
+        "USA_test_reconstruct_history transitively replays treasury changes" in message
         for message in messages
     )
 
@@ -775,6 +968,7 @@ def test_declared_cross_chain_scripted_trigger_read_is_accepted(tmp_path):
 def test_undeclared_cross_chain_scripted_trigger_read_is_rejected(tmp_path):
     _build_fixture(
         tmp_path,
+        callerless=["USA_test_events.91"],
         manifest_overrides={"with_other_chain": True},
         cross_chain_trigger_reads=["USA_other_administration"],
     )
@@ -802,7 +996,11 @@ def test_cross_chain_effect_call_remains_a_write(tmp_path):
 def test_cross_chain_read_in_split_namespace_file_is_rejected(tmp_path):
     _build_fixture(
         tmp_path,
-        manifest_overrides={"with_other_chain": True},
+        callerless=["USA_test_events.91"],
+        manifest_overrides={
+            "with_other_chain": True,
+            "other_callerless": ["USA_other_events.91"],
+        },
     )
     _write(
         tmp_path,
@@ -824,7 +1022,11 @@ def test_cross_chain_read_in_split_namespace_file_is_rejected(tmp_path):
 def test_events_sharing_a_file_are_checked_under_their_own_namespaces(tmp_path):
     _build_fixture(
         tmp_path,
-        manifest_overrides={"with_other_chain": True},
+        callerless=["USA_test_events.91"],
+        manifest_overrides={
+            "with_other_chain": True,
+            "other_callerless": ["USA_other_events.91"],
+        },
     )
     _write(
         tmp_path,
@@ -948,3 +1150,500 @@ def test_negated_and_marker_set_is_rejected(tmp_path):
         ),
     )
     assert _messages(tmp_path) == [_UNGUARDED_MESSAGE]
+
+
+def test_game_rule_requires_all_three_modes(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/game_rules/00_game_rules.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "\toption = { name = disabled }\n", ""
+        ),
+        encoding="utf-8",
+    )
+    assert any(
+        "must define Full, Outcomes Only, and Disabled" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_full_trigger_must_exclude_disabled(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/scripted_triggers/MD_corporate_history_triggers.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "\tNOT = { has_game_rule = { rule = rule_corporate_history option = disabled } }\n",
+            "",
+        ),
+        encoding="utf-8",
+    )
+    assert any(
+        "corporate_history_full_enabled does not exclude disabled" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_startup_driver_requires_exactly_one_on_action_caller(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/on_actions/MD_event_on_actions.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8")
+        + "on_new_term = { effect = { corporate_history_on_startup = yes } }\n",
+        encoding="utf-8",
+    )
+    assert any(
+        "corporate_history_on_startup requires exactly one on-action caller; found 2"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_monthly_driver_requires_matching_on_action_caller(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/on_actions/MD_event_on_actions.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "on_monthly_USA = { effect = { USA_corporate_history_monthly_outcomes = yes } }\n",
+            "",
+        ),
+        encoding="utf-8",
+    )
+    assert any(
+        "USA_corporate_history_monthly_outcomes requires exactly one matching on-monthly caller; found 0"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_hidden_event_without_a_caller_is_rejected(tmp_path):
+    _build_fixture(tmp_path)
+    _write(
+        tmp_path,
+        "events/USA_test_events_extension.txt",
+        """country_event = {
+\tid = USA_test_events.91
+\thidden = yes
+\tis_triggered_only = yes
+\timmediate = { set_country_flag = USA_test_hidden_resolved }
+}
+""",
+    )
+    assert any(
+        "USA_test_events.91 has no direct callers" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_manifest_expected_callers_are_exact(tmp_path):
+    _build_fixture(tmp_path)
+    manifest_path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["chains"][0]["expected_callers"] = {
+        "USA_test_events.1": ["effect:wrong_owner"]
+    }
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    assert any(
+        "USA_test_events.1 callers differ from the manifest" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_dispatcher_requires_the_matching_trigger_year_caller(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/00_yearly_effects.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "trigger_year_2001_events", "trigger_year_2002_events"
+        ),
+        encoding="utf-8",
+    )
+    assert any(
+        "USA_corporate_trigger_year_2001 must be called by trigger_year_2001_events"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_dispatcher_event_calls_must_be_inside_the_full_gate(tmp_path):
+    _build_fixture(tmp_path)
+    path = (
+        tmp_path / "common/scripted_effects/00_corporate_history_dispatch_effects.txt"
+    )
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "\t\t\tcorporate_history_full_enabled = yes\n", ""
+        ),
+        encoding="utf-8",
+    )
+    assert any(
+        "schedules events outside its corporate_history_full_enabled branch" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_cross_chain_event_call_is_a_declared_write(tmp_path):
+    _build_fixture(tmp_path, manifest_overrides={"with_other_chain": True})
+    path = tmp_path / "events/USA_test_events.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "\t\tname = USA_test_events.1.a\n",
+            "\t\tname = USA_test_events.1.a\n"
+            "\t\tcountry_event = { id = USA_other_events.1 days = 1 }\n",
+        ),
+        encoding="utf-8",
+    )
+    assert any(
+        "TestCo writes USA_other_events, owned by OtherCo" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_multiply_variable_without_clamp_is_rejected(tmp_path):
+    _build_fixture(tmp_path, missing_clamp=True)
+    path = tmp_path / "events/USA_test_events.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "add_to_variable = { USA_test_state = 1 }",
+            "multiply_variable = { USA_test_state = 2 }",
+        ),
+        encoding="utf-8",
+    )
+    assert any(
+        "mutates bounded variables without a later USA_test_clamp_state call" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_transitive_reconstruction_reward_is_rejected(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/USA_test_effects.txt"
+    text = path.read_text(encoding="utf-8").replace(
+        "USA_test_reconstruct_history = {\n",
+        "USA_test_reconstruct_history = {\n\tUSA_test_reward_helper = yes\n",
+    )
+    text += "\nUSA_test_reward_helper = {\n\tmodify_treasury_effect = yes\n}\n"
+    path.write_text(text, encoding="utf-8")
+    assert any(
+        "transitively replays treasury changes through USA_test_reward_helper"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_cleanup_must_remove_every_declared_outcome(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/USA_test_effects.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace("\t\tUSA_test_outcome_b\n", ""),
+        encoding="utf-8",
+    )
+    assert any(
+        "TestCo is missing a mutually exclusive cleanup effect" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_explicit_preview_policy_requires_option_tooltip(tmp_path):
+    _build_fixture(tmp_path)
+    manifest_path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["chains"][0]["effect_preview_policy"] = "explicit"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    assert any(
+        "USA_test_events.1.a requires exact custom_effect_tooltip = USA_test_events.1.a_tt"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_oem_localisation_requires_utf8_bom(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "localisation/english/MD_focus_USA_l_english.yml"
+    text = path.read_text(encoding="utf-8-sig")
+    path.write_text(text, encoding="utf-8")
+    assert any(
+        "English OEM localisation file is missing a UTF-8 BOM" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_manifest_v2_requires_lifecycle_fields(tmp_path):
+    _build_fixture(tmp_path)
+    manifest_path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    del manifest["chains"][0]["terminal_date"]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    assert any(
+        "is missing required fields: terminal_date" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_startup_driver_accepts_one_hop_on_action_caller(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/on_actions/MD_event_on_actions.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "corporate_history_on_startup = yes", "startup_events = yes"
+        ),
+        encoding="utf-8",
+    )
+    assert not any(
+        "corporate_history_on_startup requires exactly one on-action caller" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_standard_indirect_clamp_matches_manifest_bounds(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/USA_test_effects.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "clamp_variable = { var = USA_test_state min = 0 max = 10 }",
+            "set_temp_variable = { corp_value = USA_test_state }\n"
+            "\tcorporate_history_clamp_value = yes\n"
+            "\tset_variable = { USA_test_state = corp_value }",
+        ),
+        encoding="utf-8",
+    )
+    assert not any(
+        "must clamp USA_test_state to manifest bounds" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_nonstandard_indirect_temp_clamp_matches_manifest_bounds(tmp_path):
+    _build_fixture(
+        tmp_path,
+        manifest_overrides={"variables": {"USA_test_state": {"min": 0, "max": 7}}},
+    )
+    path = tmp_path / "common/scripted_effects/USA_test_effects.txt"
+    text = path.read_text(encoding="utf-8").replace(
+        "clamp_variable = { var = USA_test_state min = 0 max = 10 }",
+        "USA_test_validate_registers = yes",
+    )
+    text += (
+        "\nUSA_test_validate_registers = {\n"
+        "\tset_temp_variable = { corp_value = USA_test_state }\n"
+        "\tclamp_temp_variable = { var = corp_value min = 0 max = 7 }\n"
+        "\tset_variable = { USA_test_state = corp_value }\n"
+        "}\n"
+    )
+    path.write_text(text, encoding="utf-8")
+    assert not any(
+        "must clamp USA_test_state to manifest bounds" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_reconstruction_may_call_hidden_integration_event(tmp_path):
+    _build_fixture(tmp_path)
+    events_path = tmp_path / "events/USA_test_events.txt"
+    events_path.write_text(
+        events_path.read_text(encoding="utf-8") + "\ncountry_event = {\n"
+        "\tid = USA_test_events.91\n"
+        "\thidden = yes\n"
+        "\tis_triggered_only = yes\n"
+        "\timmediate = { set_country_flag = USA_test_hidden_integrated }\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    effects_path = tmp_path / "common/scripted_effects/USA_test_effects.txt"
+    effects_path.write_text(
+        effects_path.read_text(encoding="utf-8").replace(
+            "USA_test_reconstruct_history = {\n",
+            "USA_test_reconstruct_history = {\n\tcountry_event = USA_test_events.91\n",
+        ),
+        encoding="utf-8",
+    )
+    assert not any(
+        "transitively fires an event" in message for message in _messages(tmp_path)
+    )
+
+
+def test_reconstruction_rejects_visible_event_replay(tmp_path):
+    _build_fixture(tmp_path)
+    effects_path = tmp_path / "common/scripted_effects/USA_test_effects.txt"
+    effects_path.write_text(
+        effects_path.read_text(encoding="utf-8").replace(
+            "USA_test_reconstruct_history = {\n",
+            "USA_test_reconstruct_history = {\n\tcountry_event = USA_test_events.1\n",
+        ),
+        encoding="utf-8",
+    )
+    assert any(
+        "transitively fires an event" in message for message in _messages(tmp_path)
+    )
+
+
+def test_shared_english_localisation_key_resolves_outside_owned_prefix(tmp_path):
+    _build_fixture(tmp_path)
+    events_path = tmp_path / "events/USA_test_events.txt"
+    events_path.write_text(
+        events_path.read_text(encoding="utf-8").replace(
+            "title = USA_test_events.1.t", "title = SHARED_CORPORATE_TITLE"
+        ),
+        encoding="utf-8",
+    )
+    loc_path = tmp_path / "localisation/english/MD_focus_USA_l_english.yml"
+    loc_path.write_bytes(
+        loc_path.read_bytes() + b' SHARED_CORPORATE_TITLE: "Shared title"\n'
+    )
+    assert not any(
+        "Missing English corporate-history localisation key SHARED_CORPORATE_TITLE"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_tooltip_exemption_requires_a_reason(tmp_path):
+    _build_fixture(tmp_path)
+    manifest_path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["chains"][0]["effect_preview_policy"] = "explicit"
+    manifest["chains"][0]["tooltip_exemptions"] = {"USA_test_events.1.a": ""}
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    messages = _messages(tmp_path)
+    assert "Tooltip exemption USA_test_events.1.a requires a reason" in messages
+    assert not any(
+        "requires exact custom_effect_tooltip" in message for message in messages
+    )
+
+
+def test_auxiliary_completion_marker_has_declared_ownership(tmp_path):
+    _build_fixture(tmp_path)
+    manifest_path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["chains"][0]["auxiliary_completion_markers"] = [
+        "USA_test_aux_reconstruct_complete"
+    ]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    effects_path = tmp_path / "common/scripted_effects/USA_test_effects.txt"
+    effects_path.write_text(
+        effects_path.read_text(encoding="utf-8") + "\nUSA_test_aux_complete = {\n"
+        "\tset_country_flag = USA_test_aux_reconstruct_complete\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    core_path = tmp_path / "common/scripted_effects/00_corporate_history_effects.txt"
+    core_path.write_text(
+        core_path.read_text(encoding="utf-8").replace(
+            "NOT = { has_country_flag = USA_test_reconstruct_complete }",
+            "NOT = { has_country_flag = USA_test_reconstruct_complete }\n"
+            "\t\t\tNOT = { has_country_flag = USA_test_aux_reconstruct_complete }",
+        ),
+        encoding="utf-8",
+    )
+    assert not any(
+        "USA_test_aux_reconstruct_complete has 0 owning chains" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_bridge_contribution_requires_immediate_refresh(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_bridge_fixture(tmp_path, refresh="missing")
+    assert any(
+        "changes a USA bridge contribution without an immediate refresh" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_bridge_accepts_transitive_immediate_refresh(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_bridge_fixture(tmp_path, refresh="transitive")
+    assert not any(
+        "changes a USA bridge contribution without an immediate refresh" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_scoped_english_localisation_rejects_malformed_quotes(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "localisation/english/MD_focus_USA_l_english.yml"
+    text = path.read_text(encoding="utf-8-sig").replace(
+        'USA_test_events.1.d: "Test description."',
+        'USA_test_events.1.d: "A "broken" description"',
+    )
+    path.write_bytes(b"\xef\xbb\xbf" + text.encode())
+    assert any(
+        "Malformed English corporate-history localisation value USA_test_events.1.d"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_scoped_english_localisation_rejects_physical_newline(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "localisation/english/MD_focus_USA_l_english.yml"
+    text = path.read_text(encoding="utf-8-sig").replace(
+        'USA_test_events.1.d: "Test description."',
+        'USA_test_events.1.d: "First line\n second line"',
+    )
+    path.write_bytes(b"\xef\xbb\xbf" + text.encode())
+    assert any(
+        "Malformed English corporate-history localisation value USA_test_events.1.d"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_scoped_english_localisation_accepts_escapes_and_literal_newline(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "localisation/english/MD_focus_USA_l_english.yml"
+    text = path.read_text(encoding="utf-8-sig").replace(
+        'USA_test_events.1.d: "Test description."',
+        r'USA_test_events.1.d: "A \"quoted\" description\nSecond line #4"',
+    )
+    path.write_bytes(b"\xef\xbb\xbf" + text.encode())
+    assert not any(
+        "Malformed English corporate-history localisation value USA_test_events.1.d"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_duplicate_scoped_english_key_is_rejected_but_non_english_is_ignored(tmp_path):
+    _build_fixture(tmp_path)
+    _write_loc(
+        tmp_path,
+        "localisation/english/duplicate_l_english.yml",
+        'l_english:\n USA_test_events.1.t: "Duplicate"\n',
+    )
+    _write_loc(
+        tmp_path,
+        "localisation/french/duplicate_l_french.yml",
+        'l_french:\n USA_test_events.1.t: "French duplicate"\n',
+    )
+    assert any(
+        "English OEM localisation key USA_test_events.1.t is defined 2 times" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_manifest_terminal_date_matches_scripted_completion_guard(tmp_path):
+    _build_fixture(tmp_path)
+    manifest_path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["chains"][0]["terminal_date"] = "2001-03-02"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "terminal marker USA_test_reconstruct_complete must use date > 2001.3.2"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_manifest_scheduler_requirement_matches_full_start_strategy(tmp_path):
+    _build_fixture(tmp_path)
+    manifest_path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["chains"][0]["full_start_strategies"].remove("current_year_scheduler")
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "requires_current_year_scheduler disagrees with full_start_strategies"
+        in message
+        for message in _messages(tmp_path)
+    )

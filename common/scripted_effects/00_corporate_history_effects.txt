@@ -2,8 +2,7 @@
 #
 # Chains: IBM, Sun/Microsoft, HP, Apple, NVIDIA, Dell, TI, Micron, Motorola (USA),
 # Lenovo (CHI), Sony (JAP), ATI/AMD and Matrox (CAN), Nokia (FIN), TSMC and Foxconn (TAI),
-# and Industrial Sovereignty (POL);
-# dispatch/gating only for Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA).
+# Industrial Sovereignty (POL), Siemens (GER), Ericsson (SWE), and BlackBerry (CAN/USA).
 # The rule_corporate_history game rule gates chains ONLY at dispatcher level: the
 # startup driver below, the TAG_corporate_trigger_year_* effects
 # (00_corporate_history_dispatch_effects.txt), the monthly outcome drivers below,
@@ -36,6 +35,153 @@ corporate_history_clamp_value = {
 	corporate_history_apply_delta = yes
 }
 
+USA_blackberry_reconstruct_history = {
+	if = {
+		limit = { NOT = { has_country_flag = USA_blackberry_reconstruct_complete } }
+		if = {
+			limit = {
+				date > 2006.3.7
+				NOT = { OR = { has_country_flag = USA_blackberry_federal_continuity has_country_flag = USA_blackberry_patent_case_closed } }
+			}
+			set_country_flag = USA_blackberry_federal_continuity
+		}
+		if = {
+			limit = { date > 2009.1.26 }
+			set_country_flag = USA_blackberry_reconstruct_complete
+		}
+	}
+}
+
+CAN_blackberry_reconstruct_history = {
+	if = {
+		limit = { NOT = { has_country_flag = CAN_blackberry_reconstruct_complete } }
+		if = {
+			limit = {
+				date > 2002.3.31
+				NOT = { OR = { has_country_flag = CAN_blackberry_private_expansion has_country_flag = CAN_blackberry_waterloo_support } }
+			}
+			set_country_flag = CAN_blackberry_private_expansion
+		}
+		if = {
+			limit = {
+				date > 2007.7.3
+				NOT = { OR = { has_country_flag = CAN_blackberry_enterprise_hardware has_country_flag = CAN_blackberry_application_ecosystem } }
+			}
+			set_country_flag = CAN_blackberry_enterprise_hardware
+		}
+		if = {
+			limit = {
+				date > 2010.4.13
+				NOT = { OR = { has_country_flag = CAN_blackberry_qnx_mobile has_country_flag = CAN_blackberry_qnx_embedded } }
+			}
+			set_country_flag = CAN_blackberry_qnx_mobile
+		}
+		if = {
+			limit = {
+				date > 2013.2.3
+				NOT = { OR = { has_country_flag = CAN_blackberry_bb10_backed has_country_flag = CAN_blackberry_enterprise_services_prioritized } }
+			}
+			set_country_flag = CAN_blackberry_bb10_backed
+		}
+		if = {
+			limit = { date > 2016.10.2 }
+			set_country_flag = CAN_blackberry_reconstruct_complete
+		}
+	}
+}
+
+SWE_ericsson_reconstruct_history = {
+	if = {
+		limit = { NOT = { has_country_flag = SWE_ericsson_reconstruct_complete } }
+		if = {
+			limit = {
+				date > 2001.9.30
+				NOT = { OR = { has_country_flag = SWE_sony_ericsson_joint_venture has_country_flag = SWE_ericsson_retained_handsets } }
+			}
+			set_country_flag = SWE_sony_ericsson_joint_venture
+		}
+		if = {
+			limit = {
+				date > 2009.12.13
+				NOT = { OR = { has_country_flag = SWE_ericsson_lte_network_leadership has_country_flag = SWE_ericsson_lte_device_ecosystem } }
+			}
+			set_country_flag = SWE_ericsson_lte_network_leadership
+		}
+		if = {
+			limit = {
+				date > 2012.2.14
+				NOT = { OR = { has_country_flag = SWE_ericsson_exited_handsets has_country_flag = SWE_ericsson_full_handset_control } }
+			}
+			set_country_flag = SWE_ericsson_exited_handsets
+		}
+		if = {
+			limit = {
+				date > 2018.12.4
+				NOT = { OR = { has_country_flag = SWE_ericsson_5g_testbed has_country_flag = SWE_ericsson_5g_export_drive } }
+			}
+			set_country_flag = SWE_ericsson_5g_testbed
+		}
+		if = {
+			limit = {
+				date > 2022.7.20
+				NOT = { OR = { has_country_flag = SWE_ericsson_vonage_platform has_country_flag = SWE_ericsson_radio_network_focus } }
+			}
+			set_country_flag = SWE_ericsson_vonage_platform
+		}
+		if = {
+			limit = { date > 2022.7.20 }
+			set_country_flag = SWE_ericsson_reconstruct_complete
+		}
+	}
+}
+
+GER_siemens_reconstruct_history = {
+	if = {
+		limit = { NOT = { has_country_flag = GER_siemens_reconstruct_complete } }
+		if = {
+			limit = {
+				date > 2000.4.29
+				NOT = { OR = { has_country_flag = GER_siemens_integrated_conglomerate has_country_flag = GER_siemens_digital_industry_strategy } }
+			}
+			set_country_flag = GER_siemens_integrated_conglomerate
+		}
+		if = {
+			limit = {
+				date > 2007.4.2
+				NOT = { OR = { has_country_flag = GER_siemens_networks_strategy has_country_flag = GER_siemens_automation_strategy } }
+			}
+			set_country_flag = GER_siemens_networks_strategy
+		}
+		if = {
+			limit = {
+				date > 2013.8.8
+				country_exists = FIN
+				FIN = { has_country_flag = FIN_nokia_networks_wholly_owned }
+				NOT = { has_country_flag = GER_nokia_siemens_sale_proceeds_applied }
+			}
+			set_country_flag = GER_nokia_siemens_sale_proceeds_applied
+		}
+		if = {
+			limit = {
+				date > 2018.3.15
+				NOT = { OR = { has_country_flag = GER_siemens_healthineers_listed has_country_flag = GER_siemens_healthineers_integrated } }
+			}
+			set_country_flag = GER_siemens_healthineers_listed
+		}
+		if = {
+			limit = {
+				date > 2020.9.27
+				NOT = { OR = { has_country_flag = GER_siemens_energy_spun_off has_country_flag = GER_siemens_energy_integrated } }
+			}
+			set_country_flag = GER_siemens_energy_spun_off
+		}
+		if = {
+			limit = { date > 2025.11.11 }
+			set_country_flag = GER_siemens_reconstruct_complete
+		}
+	}
+}
+
 # Effect: corporate_history_on_startup
 # Purpose: Startup dispatcher for the corporate-history chains; sole caller is
 #          MD_event_on_startup_events, which runs in the ABK init scope - every
@@ -44,18 +190,17 @@ corporate_history_on_startup = {
 	if = {
 		limit = { corporate_history_full_enabled = yes }
 		if = {
-			limit = { country_exists = GER }
-			GER = { country_event = { id = GER_siemens_events.1 days = 120 } }
-		}
-
-		if = {
 			limit = { country_exists = USA }
 			USA = {
 				USA_microsoft_reconstruct_history = yes
 				USA_apple_reconstruct_history = yes
 				USA_hp_reconstruct_history = yes
+				USA_google_reconstruct_history = yes
+				USA_blackberry_reconstruct_history = yes
 				USA_apple_schedule_current_year_events = yes
 				USA_nvidia_schedule_current_year_events = yes
+				USA_google_schedule_current_year_events = yes
+				USA_blackberry_schedule_current_year_events = yes
 				country_event = USA_micron_events.90
 				country_event = USA_ti_events.90
 				country_event = USA_motorola_events.90
@@ -73,6 +218,7 @@ corporate_history_on_startup = {
 				USA_aig_schedule_current_year_events = yes
 				country_event = { id = USA_aig_events.90 days = 6 }
 				country_event = { id = USA_xbox_events.90 days = 1 }
+				USA_corporate_systems_update_economic_bridge = yes
 			}
 		}
 
@@ -88,7 +234,9 @@ corporate_history_on_startup = {
 			limit = { country_exists = CAN }
 			CAN = {
 				CAN_ati_reconstruct_history = yes
+				CAN_blackberry_reconstruct_history = yes
 				CAN_ati_schedule_current_year_events = yes
+				CAN_blackberry_schedule_current_year_events = yes
 			}
 		}
 		# Reconstructs synchronously before scheduling so the current-year scheduler
@@ -127,8 +275,17 @@ corporate_history_on_startup = {
 		if = {
 			limit = { country_exists = FIN }
 			FIN = {
+				FIN_nokia_reconstruct_history = yes
 				FIN_nokia_schedule_current_year_events = yes
 				country_event = { id = FIN_nokia_events.90 days = 1 }
+			}
+		}
+
+		if = {
+			limit = { country_exists = GER }
+			GER = {
+				GER_siemens_reconstruct_history = yes
+				GER_siemens_schedule_current_year_events = yes
 			}
 		}
 
@@ -143,11 +300,11 @@ corporate_history_on_startup = {
 		}
 
 		if = {
-			limit = {
-				country_exists = SWE
-				date > 2001.9.30
+			limit = { country_exists = SWE }
+			SWE = {
+				SWE_ericsson_schedule_current_year_events = yes
+				country_event = { id = SWE_ericsson_events.90 days = 1 }
 			}
-			SWE = { country_event = { id = SWE_ericsson_events.90 days = 1 } }
 		}
 
 		if = {
@@ -194,6 +351,8 @@ corporate_history_on_startup = {
 				USA_motorola_reconstruct_history = yes
 				USA_aig_reconstruct_history = yes
 				USA_xbox_reconstruct_history = yes
+				USA_blackberry_reconstruct_history = yes
+				USA_corporate_systems_update_economic_bridge = yes
 			}
 		}
 		if = {
@@ -208,18 +367,26 @@ corporate_history_on_startup = {
 			CAN = {
 				CAN_ati_reconstruct_history = yes
 				CAN_matrox_reconstruct_history = yes
+				CAN_blackberry_reconstruct_history = yes
 			}
 		}
 		if = {
 			limit = { country_exists = POL }
 			POL = {
-				POL_industrial_sovereignty_initialize_state = yes
-				country_event = { id = POL_industrial_sovereignty_events.90 days = 1 }
+				POL_industrial_sovereignty_reconstruct_history = yes
 			}
 		}
 		if = {
 			limit = { country_exists = FIN }
 			FIN = { FIN_nokia_reconstruct_history = yes }
+		}
+		if = {
+			limit = { country_exists = GER }
+			GER = { GER_siemens_reconstruct_history = yes }
+		}
+		if = {
+			limit = { country_exists = SWE }
+			SWE = { SWE_ericsson_reconstruct_history = yes }
 		}
 		if = {
 			limit = { country_exists = TAI }
@@ -232,9 +399,6 @@ corporate_history_on_startup = {
 			limit = { country_exists = CHI }
 			CHI = { CHI_lenovo_reconstruct_history = yes }
 		}
-		# TODO: Siemens (GER), Ericsson (SWE) and BlackBerry (CAN/USA) have no
-		# reconstruction effects yet - Outcomes Only suppresses their events with
-		# no silent replacement.
 	}
 }
 
@@ -303,6 +467,7 @@ USA_corporate_history_monthly_outcomes = {
 				NOT = { has_country_flag = USA_motorola_reconstruct_complete }
 				NOT = { has_country_flag = USA_aig_reconstruct_complete }
 				NOT = { has_country_flag = USA_xbox_reconstruct_complete }
+				NOT = { has_country_flag = USA_blackberry_reconstruct_complete }
 			}
 		}
 		USA_microsoft_reconstruct_history = yes
@@ -319,6 +484,17 @@ USA_corporate_history_monthly_outcomes = {
 		USA_motorola_reconstruct_history = yes
 		USA_aig_reconstruct_history = yes
 		USA_xbox_reconstruct_history = yes
+		USA_blackberry_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2009.1.26
+			NOT = { has_country_flag = USA_blackberry_reconstruct_complete }
+		}
+		USA_blackberry_reconstruct_history = yes
 	}
 	if = {
 		limit = {
@@ -492,6 +668,25 @@ CAN_corporate_history_monthly_outcomes = {
 		}
 		CAN_ati_reconstruct_history = yes
 	}
+	if = {
+		limit = {
+			corporate_history_outcomes_only_enabled = yes
+			original_tag = CAN
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = CAN_blackberry_reconstruct_complete }
+		}
+		CAN_blackberry_reconstruct_history = yes
+	}
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = CAN
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2016.10.2
+			NOT = { has_country_flag = CAN_blackberry_reconstruct_complete }
+		}
+		CAN_blackberry_reconstruct_history = yes
+	}
 }
 
 # Effect: FIN_corporate_history_monthly_outcomes
@@ -514,6 +709,42 @@ FIN_corporate_history_monthly_outcomes = {
 			NOT = { has_country_flag = collapsed_nation }
 		}
 		FIN_nokia_process_external_confirmations = yes
+	}
+}
+
+GER_corporate_history_monthly_outcomes = {
+	if = {
+		limit = {
+			OR = {
+				corporate_history_outcomes_only_enabled = yes
+				AND = {
+					corporate_history_full_enabled = yes
+					date > 2025.11.11
+				}
+			}
+			original_tag = GER
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = GER_siemens_reconstruct_complete }
+		}
+		GER_siemens_reconstruct_history = yes
+	}
+}
+
+SWE_corporate_history_monthly_outcomes = {
+	if = {
+		limit = {
+			OR = {
+				corporate_history_outcomes_only_enabled = yes
+				AND = {
+					corporate_history_full_enabled = yes
+					date > 2022.7.20
+				}
+			}
+			original_tag = SWE
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = SWE_ericsson_reconstruct_complete }
+		}
+		SWE_ericsson_reconstruct_history = yes
 	}
 }
 
