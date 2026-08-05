@@ -4,32 +4,51 @@ on:
   push:
     branches:
       - automation/real-upstream-ancestry-sync-2026-08-05
+  pull_request_target:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 permissions:
   contents: write
 
 jobs:
   sync:
-    if: github.actor != 'github-actions[bot]'
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      (
+        (github.event_name == 'push' && github.ref_name == 'automation/real-upstream-ancestry-sync-2026-08-05') ||
+        (
+          github.event_name == 'pull_request_target' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.event.pull_request.head.ref == 'automation/real-upstream-ancestry-sync-2026-08-05'
+        )
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Checkout synchronization branch
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
+          ref: automation/real-upstream-ancestry-sync-2026-08-05
 
       - name: Merge current upstream main with real ancestry
         shell: bash
         run: |
           set -euo pipefail
 
+          sync_branch="automation/real-upstream-ancestry-sync-2026-08-05"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           fork_start="$(git rev-parse HEAD)"
           cp .mcp.json "$RUNNER_TEMP/mcp.json"
 
-          git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git
+          git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git 2>/dev/null || \
+            git remote set-url upstream https://github.com/MillenniumDawn/Millennium-Dawn.git
           git fetch --no-tags upstream main
 
           upstream_sha="$(git rev-parse upstream/main)"
@@ -79,7 +98,7 @@ jobs:
             cp "$report" runtime_evidence/upstream-sync-2026-08-05/conflicts.md
             git add runtime_evidence/upstream-sync-2026-08-05/conflicts.md
             git commit -m "Record August 5 upstream synchronization conflicts"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            git push origin "HEAD:$sync_branch"
             exit 1
           fi
 
@@ -106,4 +125,4 @@ jobs:
 
           git merge-base --is-ancestor "$fork_start" HEAD
           git merge-base --is-ancestor "$upstream_sha" HEAD
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          git push origin "HEAD:$sync_branch"
