@@ -440,6 +440,18 @@ def test_gfx_reference_validator_runs_for_all_reference_sources():
         assert f"needs.detect-changes.outputs.{output} == 'true'" in expression
 
 
+def test_corporate_history_contract_runs_for_localisation_changes():
+    workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
+    entry = next(
+        entry
+        for entry in workflow["jobs"]["validate-targeted"]["strategy"]["matrix"][
+            "validator"
+        ]
+        if entry["script"] == "validate_corporate_history_contract.py"
+    )
+    assert "needs.detect-changes.outputs.localisation == 'true'" in entry["should_run"]
+
+
 def test_scripted_localisation_core_runs_for_interface_changes():
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
     core = workflow["jobs"]["validate-core"]

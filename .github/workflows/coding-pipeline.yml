@@ -675,7 +675,13 @@ jobs:
           - script: validate_corporate_history_contract.py
             name: corporate-history-contract
             title: "Validate Corporate History Contract"
-            should_run: ${{ (needs.detect-changes.outputs.common == 'true' || needs.detect-changes.outputs.events == 'true' || needs.detect-changes.outputs.on-actions == 'true' || needs.detect-changes.outputs.scripted-effects == 'true') && 'true' || 'false' }}
+            should_run: >-
+              ${{ (needs.detect-changes.outputs.common == 'true' ||
+              needs.detect-changes.outputs.events == 'true' ||
+              needs.detect-changes.outputs.localisation == 'true' ||
+              needs.detect-changes.outputs.on-actions == 'true' ||
+              needs.detect-changes.outputs.scripted-effects == 'true') &&
+              'true' || 'false' }}
           - script: validate_gfx_references.py
             name: gfx-references
             title: "Validate GFX Sprite References"
