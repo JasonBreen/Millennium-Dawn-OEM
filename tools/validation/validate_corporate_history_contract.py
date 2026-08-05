@@ -1240,7 +1240,8 @@ class Validator(BaseValidator):
                 continue
             definition = defs[0]
             callers = yearly_calls.get(name, [])
-            call_count = len(callers)
+            on_action_callers = self._script_effect_call_sites(name)
+            call_count = len(callers) + len(on_action_callers)
             if call_count != 1:
                 findings.append(
                     (
@@ -1252,14 +1253,28 @@ class Validator(BaseValidator):
             year_match = re.search(r"_corporate_trigger_year_(\d{4})$", name)
             if call_count == 1 and year_match:
                 expected_owner = f"trigger_year_{year_match.group(1)}_events"
-                if callers[0][2] != expected_owner:
-                    findings.append(
-                        (
-                            f"{name} must be called by {expected_owner}; found {callers[0][2]}",
-                            callers[0][0],
-                            callers[0][1],
+                if callers:
+                    if callers[0][2] != expected_owner:
+                        findings.append(
+                            (
+                                f"{name} must be called by {expected_owner}; found {callers[0][2]}",
+                                callers[0][0],
+                                callers[0][1],
+                            )
                         )
+                else:
+                    on_action_file, on_action_line = on_action_callers[0]
+                    expected_on_action = (
+                        "common/on_actions/01_oem_corporate_history_on_actions.txt"
                     )
+                    if on_action_file.replace("\\", "/") != expected_on_action:
+                        findings.append(
+                            (
+                                f"{name} must be called by {expected_owner} or the dedicated OEM yearly on-action; found {on_action_file}",
+                                on_action_file,
+                                on_action_line,
+                            )
+                        )
 
             all_scheduled = self._find_event_calls(
                 definition.body, definition.line, frozenset()
@@ -1946,7 +1961,7 @@ class Validator(BaseValidator):
             for chain in chains
             for prefix in (chain.localisation_prefixes or (chain.namespace, chain.root))
         )
-        for filepath in self._collect_text_files(["localisation/english/*.yml"]):
+        for filepath in self._collect_text_files(["localisation/english/**/*.yml"]):
             path = Path(filepath)
             try:
                 raw = path.read_bytes()
