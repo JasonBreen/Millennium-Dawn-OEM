@@ -1,6 +1,9 @@
 name: One-shot upstream-to-OEM sync
 
 on:
+  push:
+    branches:
+      - sync/upstream-main-2026-08-05-final
   pull_request_target:
     branches:
       - main
@@ -16,8 +19,14 @@ jobs:
   sync:
     if: >-
       github.actor != 'github-actions[bot]' &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.head.ref == 'sync/upstream-main-2026-08-05-final'
+      (
+        (github.event_name == 'push' && github.ref_name == 'sync/upstream-main-2026-08-05-final') ||
+        (
+          github.event_name == 'pull_request_target' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.event.pull_request.head.ref == 'sync/upstream-main-2026-08-05-final'
+        )
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the isolated synchronization branch
@@ -50,6 +59,11 @@ jobs:
           git fetch --no-tags upstream main
           git cat-file -e "${upstream_sha}^{commit}"
           git merge-base --is-ancestor "$upstream_sha" upstream/main
+
+          if git merge-base --is-ancestor "$upstream_sha" HEAD; then
+            echo "Upstream commit is already an ancestor of the synchronization branch."
+            exit 0
+          fi
 
           set +e
           git merge --no-ff --no-commit "$upstream_sha"
@@ -97,6 +111,8 @@ jobs:
           git add .mcp.json
 
           rm -f .github/upstream-sync-trigger-2026-08-05
+          rm -f .github/upstream-sync-trigger-2026-08-05-final
+          rm -f .github/upstream-sync-kick-2026-08-05-final
           rm -f "$report_path"
           rmdir runtime_evidence/upstream-sync-2026-08-05 2>/dev/null || true
           git rm -f .github/workflows/one-shot-real-upstream-sync.yml
@@ -111,7 +127,7 @@ jobs:
             exit 1
           fi
 
-          git commit -m "Merge upstream Millennium Dawn main into OEM fork" \
+          git commit -m "Merge upstream Millennium Dawn main into OEM sync branch" \
             -m "Upstream: $upstream_sha" \
             -m "Preserve OEM corporate-history and GPU scheduling, preserve OEM Sony/Nintendo localisation, and accept current upstream translations and native Japan rewrites."
 
