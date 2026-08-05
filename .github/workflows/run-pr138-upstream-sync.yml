@@ -1,0 +1,130 @@
+name: Run PR 138 upstream synchronization
+
+on:
+  pull_request_target:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'sync/upstream-main-2026-08-05-final'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout isolated synchronization branch
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          ref: sync/upstream-main-2026-08-05-final
+
+      - name: Merge upstream with genuine ancestry
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sync_branch="sync/upstream-main-2026-08-05-final"
+          upstream_sha="effafebe65ed9543e39d86f696352f36990c257a"
+          report_path="runtime_evidence/upstream-sync-2026-08-05/conflicts.md"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          fork_start="$(git rev-parse HEAD)"
+          cp .mcp.json "$RUNNER_TEMP/mcp.json"
+
+          git fetch --no-tags origin main
+          git show origin/main:.github/scripts/resolve_upstream_sync.py > "$RUNNER_TEMP/resolve_upstream_sync.py"
+          python -m py_compile "$RUNNER_TEMP/resolve_upstream_sync.py"
+
+          git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git 2>/dev/null || \
+            git remote set-url upstream https://github.com/MillenniumDawn/Millennium-Dawn.git
+          git fetch --no-tags upstream main
+          git cat-file -e "${upstream_sha}^{commit}"
+          git merge-base --is-ancestor "$upstream_sha" upstream/main
+
+          if git merge-base --is-ancestor "$upstream_sha" HEAD; then
+            echo "Upstream commit is already an ancestor of the synchronization branch."
+            exit 0
+          fi
+
+          set +e
+          git merge --no-ff --no-commit "$upstream_sha"
+          merge_status=$?
+          set -e
+
+          conflicts="$(git diff --name-only --diff-filter=U | sort)"
+          if [ -n "$conflicts" ]; then
+            set +e
+            python "$RUNNER_TEMP/resolve_upstream_sync.py" 2>&1 | tee "$RUNNER_TEMP/resolver.log"
+            resolver_status=${PIPESTATUS[0]}
+            set -e
+
+            if [ "$resolver_status" -ne 0 ]; then
+              report="$RUNNER_TEMP/upstream-sync-conflicts.md"
+              printf '# Upstream-to-OEM synchronization conflict report\n\n' > "$report"
+              printf -- '- Fork start: `%s`\n' "$fork_start" >> "$report"
+              printf -- '- Upstream commit: `%s`\n' "$upstream_sha" >> "$report"
+              printf -- '- Merge exit status: `%s`\n' "$merge_status" >> "$report"
+              printf -- '- Resolver exit status: `%s`\n\n' "$resolver_status" >> "$report"
+              printf '## Conflicted paths\n\n' >> "$report"
+              printf '%s\n' "$conflicts" | sed 's/^/- `/' | sed 's/$/`/' >> "$report"
+              printf '\n## Resolver output\n\n```text\n' >> "$report"
+              cat "$RUNNER_TEMP/resolver.log" >> "$report"
+              printf '\n```\n\n## Index stages\n\n```text\n' >> "$report"
+              git ls-files -u >> "$report"
+              printf '```\n' >> "$report"
+
+              git merge --abort
+              mkdir -p "$(dirname "$report_path")"
+              cp "$report" "$report_path"
+              git add "$report_path"
+              git commit -m "Record unresolved August 5 upstream sync conflicts"
+              git push origin "HEAD:$sync_branch"
+              exit 1
+            fi
+          elif [ "$merge_status" -ne 0 ]; then
+            echo "Merge failed without unresolved paths." >&2
+            exit "$merge_status"
+          fi
+
+          test -z "$(git diff --name-only --diff-filter=U)"
+
+          cp "$RUNNER_TEMP/mcp.json" .mcp.json
+          git add .mcp.json
+
+          rm -f .github/upstream-sync-trigger-2026-08-05
+          rm -f .github/upstream-sync-trigger-2026-08-05-final
+          rm -f .github/upstream-sync-kick-2026-08-05-final
+          rm -f .github/upstream-sync-kick-2026-08-05-final-v2
+          rm -f "$report_path"
+          rmdir runtime_evidence/upstream-sync-2026-08-05 2>/dev/null || true
+          git rm -f .github/workflows/one-shot-real-upstream-sync.yml
+          git rm -f .github/workflows/run-upstream-sync-final-2026-08-05.yml
+          git rm -f .github/scripts/resolve_upstream_sync.py
+          git add -A
+
+          git diff --check --cached
+          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)' -- \
+            common/scripted_effects/00_yearly_effects.txt \
+            localisation/english/MD_focus_JAP_l_english.yml; then
+            echo "A merge-conflict marker remains in a resolved file." >&2
+            exit 1
+          fi
+
+          git commit -m "Merge upstream Millennium Dawn main into OEM sync branch" \
+            -m "Upstream: $upstream_sha" \
+            -m "Preserve OEM corporate-history and GPU scheduling, preserve OEM Sony/Nintendo localisation, and accept current upstream translations and native Japan rewrites."
+
+          git merge-base --is-ancestor "$fork_start" HEAD
+          git merge-base --is-ancestor "$upstream_sha" HEAD
+          test "$(git show --no-patch --format='%P' HEAD | wc -w)" -eq 2
+          git push origin "HEAD:$sync_branch"
