@@ -384,6 +384,7 @@ def test_tools_tests_checkout_consumed_workflows():
     assert {
         ".github/workflows/validator-cache.yml",
         ".github/workflows/nightly-pr-validation.yml",
+        "common/scripted_effects",
     } <= sparse_paths
 
 
