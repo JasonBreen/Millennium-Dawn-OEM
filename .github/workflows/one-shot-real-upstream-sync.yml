@@ -35,12 +35,14 @@ jobs:
           fetch-depth: 0
           ref: automation/real-upstream-ancestry-sync-2026-08-05
 
-      - name: Merge current upstream main with real ancestry
+      - name: Merge pinned upstream main with real ancestry
         shell: bash
         run: |
           set -euo pipefail
 
           sync_branch="automation/real-upstream-ancestry-sync-2026-08-05"
+          target_upstream_sha="e84b43bef92d0417db9509c2777f005ebd89b387"
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -50,79 +52,343 @@ jobs:
           git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git 2>/dev/null || \
             git remote set-url upstream https://github.com/MillenniumDawn/Millennium-Dawn.git
           git fetch --no-tags upstream main
+          git cat-file -e "${target_upstream_sha}^{commit}"
+          git merge-base --is-ancestor "$target_upstream_sha" upstream/main
 
-          upstream_sha="$(git rev-parse upstream/main)"
-          merge_base="$(git merge-base HEAD upstream/main)"
+          if git merge-base --is-ancestor "$target_upstream_sha" HEAD; then
+            echo "Pinned upstream commit is already an ancestor of the synchronization branch."
+            exit 0
+          fi
+
+          merge_base="$(git merge-base HEAD "$target_upstream_sha")"
 
           set +e
-          git merge --no-ff --no-commit upstream/main
+          git merge --no-ff --no-commit "$target_upstream_sha"
           merge_status=$?
           set -e
 
-          conflicts="$(git diff --name-only --diff-filter=U)"
+          conflicts="$(git diff --name-only --diff-filter=U | sort)"
           if [ -n "$conflicts" ]; then
-            report="$RUNNER_TEMP/upstream-sync-conflicts.md"
-            {
-              echo "# Upstream synchronization conflict report"
-              echo
-              echo "- Fork start: \`$fork_start\`"
-              echo "- Upstream main: \`$upstream_sha\`"
-              echo "- Merge base: \`$merge_base\`"
-              echo "- Merge exit status: \`$merge_status\`"
-              echo
-              echo "## Conflicted paths"
-              echo
-              printf '%s\n' "$conflicts" | sed 's/^/- `/' | sed 's/$/`/'
-              echo
-              echo "## Index stages"
-              echo
-              echo '```text'
-              git ls-files -u
-              echo '```'
-              echo
-              echo "## Combined conflict hunks"
-              echo
-              while IFS= read -r path; do
-                [ -n "$path" ] || continue
-                echo "### \`$path\`"
+            expected_conflicts="$(cat <<'EOF'
+common/scripted_effects/00_yearly_effects.txt
+localisation/english/MD_focus_JAP_l_english.yml
+localisation/french/MD_focus_CHI_l_french.yml
+localisation/french/MD_techs_l_french.yml
+localisation/german/MD_focus_CHI_l_german.yml
+localisation/german/MD_techs_l_german.yml
+localisation/japanese/MD_countries_cosmetic_l_japanese.yml
+localisation/japanese/MD_focus_CHI_l_japanese.yml
+localisation/japanese/MD_money_l_japanese.yml
+localisation/japanese/MD_techs_l_japanese.yml
+localisation/japanese/MD_tooltips_l_japanese.yml
+localisation/japanese/MD_traits_l_japanese.yml
+localisation/korean/MD_cats_generic_defcomp_l_korean.yml
+localisation/korean/MD_countries_cosmetic_l_korean.yml
+localisation/korean/MD_focus_CHI_l_korean.yml
+localisation/korean/MD_formable_nations_l_korean.yml
+localisation/korean/MD_global_reaction_l_korean.yml
+localisation/korean/MD_operations_l_korean.yml
+localisation/korean/MD_techs_l_korean.yml
+localisation/korean/MD_tooltips_l_korean.yml
+localisation/korean/replace/replaced_from_doctrines_l_korean.yml
+localisation/polish/MD_focus_CHI_l_polish.yml
+localisation/polish/MD_techs_l_polish.yml
+localisation/russian/MD_countries_cosmetic_l_russian.yml
+localisation/russian/MD_country_politics_view_l_russian.yml
+localisation/russian/MD_focus_JAP_l_russian.yml
+localisation/russian/MD_focus_USA_l_russian.yml
+localisation/russian/MD_techs_l_russian.yml
+localisation/russian/MD_tooltips_l_russian.yml
+localisation/simp_chinese/MD_focus_CHI_l_simp_chinese.yml
+localisation/simp_chinese/MD_focus_USA_l_simp_chinese.yml
+localisation/simp_chinese/MD_opinion_modifiers_l_simp_chinese.yml
+localisation/simp_chinese/MD_techs_l_simp_chinese.yml
+localisation/simp_chinese/MD_tooltips_l_simp_chinese.yml
+localisation/spanish/MD_focus_CHI_l_spanish.yml
+localisation/spanish/MD_techs_l_spanish.yml
+EOF
+)"
+
+            if ! diff -u \
+              <(printf '%s\n' "$expected_conflicts") \
+              <(printf '%s\n' "$conflicts"); then
+              report="$RUNNER_TEMP/upstream-sync-conflicts.md"
+              {
+                echo "# Unexpected upstream synchronization conflicts"
                 echo
-                echo '```diff'
-                git diff --cc --no-color -- "$path" || true
+                echo "- Fork start: \`$fork_start\`"
+                echo "- Pinned upstream: \`$target_upstream_sha\`"
+                echo "- Merge base: \`$merge_base\`"
+                echo "- Merge exit status: \`$merge_status\`"
+                echo
+                echo "## Conflicted paths"
+                echo
+                printf '%s\n' "$conflicts" | sed 's/^/- `/' | sed 's/$/`/'
+                echo
+                echo "## Index stages"
+                echo
+                echo '```text'
+                git ls-files -u
                 echo '```'
-                echo
-              done <<< "$conflicts"
-            } > "$report"
+              } > "$report"
 
-            git merge --abort
-            mkdir -p runtime_evidence/upstream-sync-2026-08-05
-            cp "$report" runtime_evidence/upstream-sync-2026-08-05/conflicts.md
-            git add runtime_evidence/upstream-sync-2026-08-05/conflicts.md
-            git commit -m "Record August 5 upstream synchronization conflicts"
-            git push origin "HEAD:$sync_branch"
-            exit 1
-          fi
+              git merge --abort
+              mkdir -p runtime_evidence/upstream-sync-2026-08-05
+              cp "$report" runtime_evidence/upstream-sync-2026-08-05/conflicts.md
+              git add runtime_evidence/upstream-sync-2026-08-05/conflicts.md
+              if ! git diff --cached --quiet; then
+                git commit -m "Update August 5 upstream synchronization conflicts"
+                git push origin "HEAD:$sync_branch"
+              fi
+              exit 1
+            fi
 
-          if [ "$merge_status" -ne 0 ]; then
+            # Translation files are upstream-owned. Keep their exact upstream blobs.
+            while IFS= read -r path; do
+              [ -n "$path" ] || continue
+              git checkout --theirs -- "$path"
+              git add "$path"
+            done <<'EOF'
+localisation/french/MD_focus_CHI_l_french.yml
+localisation/french/MD_techs_l_french.yml
+localisation/german/MD_focus_CHI_l_german.yml
+localisation/german/MD_techs_l_german.yml
+localisation/japanese/MD_countries_cosmetic_l_japanese.yml
+localisation/japanese/MD_focus_CHI_l_japanese.yml
+localisation/japanese/MD_money_l_japanese.yml
+localisation/japanese/MD_techs_l_japanese.yml
+localisation/japanese/MD_tooltips_l_japanese.yml
+localisation/japanese/MD_traits_l_japanese.yml
+localisation/korean/MD_cats_generic_defcomp_l_korean.yml
+localisation/korean/MD_countries_cosmetic_l_korean.yml
+localisation/korean/MD_focus_CHI_l_korean.yml
+localisation/korean/MD_formable_nations_l_korean.yml
+localisation/korean/MD_global_reaction_l_korean.yml
+localisation/korean/MD_operations_l_korean.yml
+localisation/korean/MD_techs_l_korean.yml
+localisation/korean/MD_tooltips_l_korean.yml
+localisation/korean/replace/replaced_from_doctrines_l_korean.yml
+localisation/polish/MD_focus_CHI_l_polish.yml
+localisation/polish/MD_techs_l_polish.yml
+localisation/russian/MD_countries_cosmetic_l_russian.yml
+localisation/russian/MD_country_politics_view_l_russian.yml
+localisation/russian/MD_focus_JAP_l_russian.yml
+localisation/russian/MD_focus_USA_l_russian.yml
+localisation/russian/MD_techs_l_russian.yml
+localisation/russian/MD_tooltips_l_russian.yml
+localisation/simp_chinese/MD_focus_CHI_l_simp_chinese.yml
+localisation/simp_chinese/MD_focus_USA_l_simp_chinese.yml
+localisation/simp_chinese/MD_opinion_modifiers_l_simp_chinese.yml
+localisation/simp_chinese/MD_techs_l_simp_chinese.yml
+localisation/simp_chinese/MD_tooltips_l_simp_chinese.yml
+localisation/spanish/MD_focus_CHI_l_spanish.yml
+localisation/spanish/MD_techs_l_spanish.yml
+EOF
+
+            # The yearly dispatcher conflicts are additive. Retain Git's automatic
+            # non-conflicting merge and combine each marked region, explicitly
+            # closing any fork-side country block that shared its closing brace.
+            python - <<'PY'
+from pathlib import Path
+
+path = Path("common/scripted_effects/00_yearly_effects.txt")
+lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+out: list[str] = []
+i = 0
+resolved = 0
+
+while i < len(lines):
+    if lines[i].lstrip().startswith("<<<<<<< "):
+        i += 1
+        ours: list[str] = []
+        while i < len(lines) and not lines[i].lstrip().startswith("======="):
+            ours.append(lines[i])
+            i += 1
+        if i >= len(lines):
+            raise SystemExit("unterminated yearly-effects conflict before separator")
+        i += 1
+        theirs: list[str] = []
+        while i < len(lines) and not lines[i].lstrip().startswith(">>>>>>> "):
+            theirs.append(lines[i])
+            i += 1
+        if i >= len(lines):
+            raise SystemExit("unterminated yearly-effects conflict after separator")
+        i += 1
+
+        delta = sum(line.count("{") - line.count("}") for line in ours)
+        if delta < 0 or delta > 2:
+            raise SystemExit(f"unexpected fork-side brace delta in yearly conflict: {delta}")
+
+        out.extend(ours)
+        out.extend("\t}\n" for _ in range(delta))
+        out.extend(theirs)
+        resolved += 1
+    else:
+        out.append(lines[i])
+        i += 1
+
+if resolved != 5:
+    raise SystemExit(f"expected five yearly-effects conflict regions, resolved {resolved}")
+if any(marker in "".join(out) for marker in ("<<<<<<<", "=======", ">>>>>>>")):
+    raise SystemExit("yearly-effects conflict marker remains")
+if sum(line.count("{") - line.count("}") for line in out) != 0:
+    raise SystemExit("yearly-effects braces are unbalanced after resolution")
+
+path.write_text("".join(out), encoding="utf-8")
+PY
+            git add common/scripted_effects/00_yearly_effects.txt
+
+            # English Japan localisation is a flat key/value catalogue. Perform a
+            # semantic three-way merge: upstream supplies the current native Japan
+            # rewrite; fork-only keys survive; overlapping OEM-owned keys prefer the
+            # fork; all other simultaneous edits prefer upstream.
+            python - <<'PY'
+from __future__ import annotations
+
+import re
+import subprocess
+from pathlib import Path
+
+path = "localisation/english/MD_focus_JAP_l_english.yml"
+key_re = re.compile(r"^\s*([^#\s][^:]*):")
+
+
+def stage(number: int) -> tuple[list[str], bool]:
+    raw = subprocess.check_output(["git", "show", f":{number}:{path}"])
+    return raw.decode("utf-8-sig").splitlines(), raw.startswith(b"\xef\xbb\xbf")
+
+
+def catalogue(lines: list[str], label: str) -> tuple[dict[str, str], list[str]]:
+    mapping: dict[str, str] = {}
+    order: list[str] = []
+    for line in lines:
+        match = key_re.match(line)
+        if not match:
+            continue
+        key = match.group(1)
+        if key in mapping:
+            raise SystemExit(f"duplicate localisation key in {label}: {key}")
+        mapping[key] = line
+        order.append(key)
+    return mapping, order
+
+
+def oem_owned(key: str) -> bool:
+    lowered = key.lower()
+    return (
+        key.startswith(("JAP_sony", "JAP_nintendo", "JAP_oem"))
+        or "_sony_" in lowered
+        or "_nintendo_" in lowered
+        or "playstation" in lowered
+    )
+
+
+base_lines, _ = stage(1)
+ours_lines, _ = stage(2)
+theirs_lines, theirs_bom = stage(3)
+base, _ = catalogue(base_lines, "merge base")
+ours, ours_order = catalogue(ours_lines, "fork")
+theirs, _ = catalogue(theirs_lines, "upstream")
+
+result: list[str | None] = list(theirs_lines)
+positions: dict[str, int] = {}
+for index, line in enumerate(theirs_lines):
+    match = key_re.match(line)
+    if match:
+        positions[match.group(1)] = index
+
+append: list[str] = []
+all_keys = set(base) | set(ours) | set(theirs)
+ours_rank = {key: index for index, key in enumerate(ours_order)}
+
+for key in sorted(all_keys, key=lambda item: (ours_rank.get(item, 10**9), item)):
+    base_line = base.get(key)
+    ours_line = ours.get(key)
+    theirs_line = theirs.get(key)
+    ours_changed = ours_line != base_line
+    theirs_changed = theirs_line != base_line
+
+    target = theirs_line
+    if ours_changed and not theirs_changed:
+        target = ours_line
+    elif ours_changed and theirs_changed:
+        if ours_line == theirs_line:
+            target = ours_line
+        elif oem_owned(key):
+            target = ours_line
+        else:
+            target = theirs_line
+
+    if target == theirs_line:
+        continue
+    if key in positions:
+        result[positions[key]] = target
+    elif target is not None:
+        append.append(target)
+
+merged = [line for line in result if line is not None]
+if append:
+    while merged and not merged[-1].strip():
+        merged.pop()
+    merged.extend(
+        [
+            "",
+            "# OEM fork localisation preserved during upstream synchronization",
+            *append,
+        ]
+    )
+
+final, _ = catalogue(merged, "resolved output")
+expected_keys = {
+    key
+    for key in all_keys
+    if (
+        theirs.get(key) is not None
+        or (ours.get(key) != base.get(key) and ours.get(key) is not None)
+    )
+}
+missing = sorted(expected_keys - set(final))
+if missing:
+    raise SystemExit(f"resolved localisation lost keys: {missing[:20]}")
+
+payload = ("\n".join(merged) + "\n").encode("utf-8")
+if theirs_bom:
+    payload = b"\xef\xbb\xbf" + payload
+Path(path).write_bytes(payload)
+PY
+            git add localisation/english/MD_focus_JAP_l_english.yml
+          elif [ "$merge_status" -ne 0 ]; then
             echo "Merge failed without a conflict list." >&2
             exit "$merge_status"
           fi
+
+          test -z "$(git diff --name-only --diff-filter=U)"
 
           # Preserve the fork's portable MCP configuration if upstream touches it.
           cp "$RUNNER_TEMP/mcp.json" .mcp.json
           git add .mcp.json
 
-          # Remove one-shot infrastructure and its trigger from the synchronized tree.
-          git rm .github/workflows/one-shot-real-upstream-sync.yml
+          # Remove one-shot infrastructure, its trigger, and temporary diagnostics
+          # from the synchronized tree before creating the real merge commit.
+          git rm -f .github/workflows/one-shot-real-upstream-sync.yml
           rm -f .github/upstream-sync-trigger-2026-08-05
+          rm -f runtime_evidence/upstream-sync-2026-08-05/conflicts.md
+          rmdir runtime_evidence/upstream-sync-2026-08-05 2>/dev/null || true
           git add -A
 
           git diff --check --cached
-          test -z "$(git diff --name-only --diff-filter=U)"
+          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)' -- \
+            common/scripted_effects/00_yearly_effects.txt \
+            localisation/english/MD_focus_JAP_l_english.yml; then
+            echo "Conflict marker remains in a resolved file." >&2
+            exit 1
+          fi
 
           git commit -m "Merge upstream Millennium Dawn main with real ancestry" \
-            -m "Upstream: $upstream_sha" \
-            -m "Preserve the OEM fork and portable md-mcp configuration."
+            -m "Upstream: $target_upstream_sha" \
+            -m "Preserve OEM corporate-history scheduling and English Sony/Nintendo localisation; accept exact upstream non-English translations and native Japan rewrites."
 
           git merge-base --is-ancestor "$fork_start" HEAD
-          git merge-base --is-ancestor "$upstream_sha" HEAD
+          git merge-base --is-ancestor "$target_upstream_sha" HEAD
+          test "$(git show --no-patch --format='%P' HEAD | wc -w)" -eq 2
           git push origin "HEAD:$sync_branch"
