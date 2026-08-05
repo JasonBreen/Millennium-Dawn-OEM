@@ -43,6 +43,7 @@ import tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from check_common_mistakes import (
     _RE_IS_X_NATION,
+    _ai_zero_modifier_conditions,
     _check_add_to_faction_country,
     _check_any_country_member_array,
     _check_check_expr_bad_operand,
@@ -3134,6 +3135,22 @@ assert_finds(
     ],
     0,
     "eligible fallback keeps historical bankruptcy event valid",
+)
+
+assert_eq(
+    _ai_zero_modifier_conditions(
+        [
+            "modifier = {\n",
+            "\tfactor = 0\n",
+            "\tNAND = {\n",
+            "\t\tis_historical_focus_on = yes\n",
+            "\t\thas_active_mission = bankruptcy_incoming_collapse\n",
+            "\t}\n",
+            "}\n",
+        ]
+    ),
+    (False, False),
+    "brace-valued conditions are not treated as unconditional zero modifiers",
 )
 
 

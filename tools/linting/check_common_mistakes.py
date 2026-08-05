@@ -2157,10 +2157,26 @@ def _ai_zero_modifier_conditions(modifier_block):
     if re.search(r"\bNOT\s*=", code):
         return False, False
 
+    body_start = code.find("{")
+    body_end = code.rfind("}")
+    if body_start < 0 or body_end <= body_start:
+        return False, False
+
+    body = code[body_start + 1 : body_end]
+    assignments = []
+    cursor = 0
+    for match in _RE_AI_ASSIGNMENT.finditer(body):
+        if body[cursor : match.start()].strip():
+            return False, False
+        assignments.append(match.groups())
+        cursor = match.end()
+    if body[cursor:].strip():
+        return False, False
+
     factor_zero = False
     has_target_condition = False
     has_bankruptcy_condition = False
-    for key, value in _RE_AI_ASSIGNMENT.findall(code):
+    for key, value in assignments:
         if key == "factor" and value in {"0", "0.0", "0.00"}:
             factor_zero = True
         elif key == "is_historical_focus_on" and value == "yes":

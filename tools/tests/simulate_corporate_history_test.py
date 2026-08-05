@@ -2,9 +2,18 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "analysis"))
 
-from simulate_corporate_history import LABEL, ScriptIndex, main, run_scenarios
+from simulate_corporate_history import (
+    LABEL,
+    ScenarioError,
+    ScriptIndex,
+    _simulate_bridge,
+    main,
+    run_scenarios,
+)
 
 
 def _manifest():
@@ -158,6 +167,21 @@ def test_bridge_clamps_axes_and_uses_exact_thresholds():
     }
     _results, passed = run_scenarios(_manifest(), {"scenarios": [axis_scenario]})
     assert passed
+
+
+@pytest.mark.parametrize(
+    ("scenario", "label"),
+    [
+        ({"axes": [{"base": None}]}, "axes[0].base"),
+        ({"axes": [{"contribution": "invalid"}]}, "axes[0].contribution"),
+        ({"score": []}, "score"),
+    ],
+)
+def test_bridge_rejects_non_integer_values_with_scenario_error(scenario, label):
+    with pytest.raises(ScenarioError) as exc_info:
+        _simulate_bridge(scenario)
+
+    assert str(exc_info.value) == f"{label} must be an integer"
 
 
 def test_cli_labels_output_and_fails_on_mismatch(tmp_path, capsys):

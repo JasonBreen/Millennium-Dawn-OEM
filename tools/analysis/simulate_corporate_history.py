@@ -146,6 +146,12 @@ def _clamp(value: int, minimum: int, maximum: int) -> int:
     return max(minimum, min(maximum, value))
 
 
+def _require_integer(value: object, label: str) -> int:
+    if type(value) is not int:
+        raise ScenarioError(f"{label} must be an integer")
+    return value
+
+
 def _bridge_idea(score: int) -> str:
     if score < 15:
         level = 1
@@ -175,8 +181,10 @@ def _simulate_bridge(scenario: Mapping[str, object]) -> Dict[str, object]:
     for index, raw_axis in enumerate(scenario.get("axes", [])):
         if not isinstance(raw_axis, dict):
             raise ScenarioError(f"axes[{index}] must be an object")
-        base = int(raw_axis.get("base", 0))
-        contribution = int(raw_axis.get("contribution", 0))
+        base = _require_integer(raw_axis.get("base", 0), f"axes[{index}].base")
+        contribution = _require_integer(
+            raw_axis.get("contribution", 0), f"axes[{index}].contribution"
+        )
         effective = _clamp(base + contribution, 0, 10)
         effective_axes.append(effective)
         applied_deltas.append(effective - base)
@@ -184,7 +192,7 @@ def _simulate_bridge(scenario: Mapping[str, object]) -> Dict[str, object]:
     if effective_axes:
         score = sum(effective_axes)
     else:
-        score = _clamp(int(scenario.get("score", 0)), 0, 50)
+        score = _clamp(_require_integer(scenario.get("score", 0), "score"), 0, 50)
     return {
         "applied_deltas": applied_deltas,
         "cleared": False,
