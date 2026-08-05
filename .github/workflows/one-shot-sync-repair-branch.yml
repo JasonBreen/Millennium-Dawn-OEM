@@ -1,0 +1,42 @@
+name: One-shot branch repair for upstream sync
+
+on:
+  push:
+    branches:
+      - sync/upstream-main-2026-08-05-resolved
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the synchronization branch
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          ref: sync/upstream-main-2026-08-05-resolved
+
+      - name: Repair the focused CI failures
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sync_branch="sync/upstream-main-2026-08-05-resolved"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          python .github/scripts/fix_upstream_sync_ci.py
+
+          git rm .github/scripts/fix_upstream_sync_ci.py
+          git rm .github/workflows/one-shot-sync-repair-branch.yml
+          rm -f .github/upstream-sync-repair-trigger-2026-08-05
+          git add -A
+
+          git diff --check --cached
+          python -m py_compile tools/validation/validate_corporate_history_contract.py
+
+          git commit -m "Repair upstream sync localisation and dispatcher validation"
+          git push origin "HEAD:$sync_branch"
