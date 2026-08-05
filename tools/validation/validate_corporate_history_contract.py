@@ -9,6 +9,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from datetime import date
+from decimal import Decimal
 from pathlib import Path
 from typing import Dict, FrozenSet, Iterable, List, Mapping, Sequence, Set, Tuple
 
@@ -42,7 +43,7 @@ _SET_VAR_RE = re.compile(
     r"\b(?:set_variable|add_to_variable|subtract_from_variable|multiply_variable|divide_variable)\s*=\s*\{\s*([A-Za-z0-9_]+)"
 )
 _CLAMP_VAR_RE = re.compile(
-    r"\bclamp_variable\s*=\s*\{\s*var\s*=\s*([A-Za-z0-9_]+)\s+min\s*=\s*(-?\d+)\s+max\s*=\s*(-?\d+)"
+    r"\bclamp_variable\s*=\s*\{\s*var\s*=\s*([A-Za-z0-9_]+)\s+min\s*=\s*(-?(?:\d+(?:\.\d*)?|\.\d+))\s+max\s*=\s*(-?(?:\d+(?:\.\d*)?|\.\d+))"
 )
 _SET_TEMP_CORP_RE = re.compile(
     r"\bset_temp_variable\s*=\s*\{\s*corp_value\s*=\s*([A-Za-z0-9_]+)\s*\}"
@@ -95,8 +96,8 @@ _READ_KEYWORDS = ("has_country_flag", "has_idea", "check_variable")
 
 @dataclass(frozen=True)
 class Bound:
-    minimum: int
-    maximum: int
+    minimum: Decimal
+    maximum: Decimal
 
 
 @dataclass(frozen=True)
@@ -224,6 +225,7 @@ class Validator(BaseValidator):
         super().__init__(mod_path, **kwargs)
         self._root = Path(self.mod_path)
         self._manifest_path = self._root / "tools" / "corporate_history_contract.json"
+        self._manifest_payload: Dict[str, object] = {}
 
     def run_validations(self):
         self._log_section("loading manifest")
@@ -355,6 +357,14 @@ class Validator(BaseValidator):
             category="Corporate-history economic bridge",
         )
 
+        self._log_section("real-options economic layer")
+        self._report(
+            self._validate_economic_layers(effect_defs, chains),
+            "Corporate-history real-options economic layers are coherent",
+            "Corporate-history real-options economic-layer issues:",
+            category="Corporate-history real-options economic layer",
+        )
+
     def _load_manifest(self) -> List[ChainConfig]:
         if not self._manifest_path.exists():
             self.add_error(
@@ -370,6 +380,8 @@ class Validator(BaseValidator):
                 f"Failed to load {self._manifest_path.relative_to(self._root)}: {exc}",
             )
             return []
+
+        self._manifest_payload = payload
 
         raw_chains = payload.get("chains")
         if not isinstance(raw_chains, list) or not raw_chains:
@@ -410,7 +422,7 @@ class Validator(BaseValidator):
                 continue
             try:
                 bounds = {
-                    name: Bound(int(cfg["min"]), int(cfg["max"]))
+                    name: Bound(Decimal(str(cfg["min"])), Decimal(str(cfg["max"])))
                     for name, cfg in raw.get("variables", {}).items()
                 }
                 expected_callers = {
@@ -505,6 +517,632 @@ class Validator(BaseValidator):
                 )
             chains.append(chain)
         return chains
+
+    def _validate_economic_layers(
+        self,
+        effect_defs: Dict[str, List[BlockDef]],
+        chains: Sequence[ChainConfig],
+    ) -> List[Tuple[str, str, int]]:
+        findings: List[Tuple[str, str, int]] = []
+        schema_version = int(self._manifest_payload.get("schema_version", 1))
+        raw_layers = self._manifest_payload.get("economic_layers")
+        if raw_layers is None and schema_version < 3:
+            return findings
+        if not isinstance(raw_layers, list) or not raw_layers:
+            return [
+                (
+                    "Schema v3 requires a non-empty economic_layers list",
+                    "tools/corporate_history_contract.json",
+                    1,
+                )
+            ]
+
+        required_fields = (
+            "name",
+            "tag",
+            "updater",
+            "bridge",
+            "effect_file",
+            "dynamic_modifier_file",
+            "decision_file",
+            "idea_file",
+            "scripted_localisation_file",
+            "localisation_file",
+            "initialized_flag",
+            "variables",
+            "source_variables",
+            "cdf",
+            "modifier_families",
+            "policy_programs",
+            "dashboard_variables",
+            "scripted_localisation",
+            "localisation_keys",
+        )
+
+        chain_variables = {variable for chain in chains for variable in chain.variables}
+        for index, raw_layer in enumerate(raw_layers):
+            if not isinstance(raw_layer, dict):
+                findings.append(
+                    (
+                        f"economic_layers[{index}] must be an object",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                continue
+            missing = [field for field in required_fields if field not in raw_layer]
+            if missing:
+                findings.append(
+                    (
+                        f"economic_layers[{index}] is missing required fields: {', '.join(missing)}",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                continue
+
+            layer_name = str(raw_layer["name"])
+
+            def read_layer_file(field: str) -> Tuple[str, str]:
+                relative = str(raw_layer[field])
+                path = self._root / relative
+                try:
+                    return relative, path.read_text(
+                        encoding="utf-8-sig", errors="replace"
+                    )
+                except OSError:
+                    findings.append(
+                        (f"{layer_name} is missing {field} {relative}", relative, 1)
+                    )
+                    return relative, ""
+
+            effect_file, effect_text_raw = read_layer_file("effect_file")
+            dynamic_file, dynamic_text_raw = read_layer_file("dynamic_modifier_file")
+            decision_file, decision_text_raw = read_layer_file("decision_file")
+            idea_file, idea_text_raw = read_layer_file("idea_file")
+            scripted_loc_file, scripted_loc_text_raw = read_layer_file(
+                "scripted_localisation_file"
+            )
+            localisation_file, localisation_text = read_layer_file("localisation_file")
+            effect_text = strip_comments(effect_text_raw)
+            dynamic_text = strip_comments(dynamic_text_raw)
+            decision_text = strip_comments(decision_text_raw)
+            idea_text = strip_comments(idea_text_raw)
+            scripted_loc_text = strip_comments(scripted_loc_text_raw)
+
+            updater = str(raw_layer["updater"])
+            bridge = str(raw_layer["bridge"])
+            updater_defs = effect_defs.get(updater, [])
+            if len(updater_defs) != 1:
+                findings.append(
+                    (
+                        f"{layer_name} requires exactly one authoritative updater {updater}; found {len(updater_defs)}",
+                        effect_file,
+                        1,
+                    )
+                )
+                updater_body = effect_text
+            else:
+                updater_body = updater_defs[0].body
+                if updater_defs[0].file.replace("\\", "/") != effect_file.replace(
+                    "\\", "/"
+                ):
+                    findings.append(
+                        (
+                            f"{updater} must be defined in {effect_file}",
+                            updater_defs[0].file,
+                            updater_defs[0].line,
+                        )
+                    )
+
+            bridge_defs = effect_defs.get(bridge, [])
+            if len(bridge_defs) != 1:
+                findings.append(
+                    (
+                        f"{layer_name} bridge {bridge} must have exactly one definition",
+                        effect_file,
+                        1,
+                    )
+                )
+            else:
+                calls = len(
+                    re.findall(
+                        rf"\b{re.escape(updater)}\s*=\s*yes\b", bridge_defs[0].body
+                    )
+                )
+                if calls != 1:
+                    findings.append(
+                        (
+                            f"{bridge} must call {updater} exactly once; found {calls}",
+                            bridge_defs[0].file,
+                            bridge_defs[0].line,
+                        )
+                    )
+
+            for token in ("ln", "log", "sqrt", "exp", "pow"):
+                if re.search(rf"\b{token}\s*=", effect_text):
+                    findings.append(
+                        (
+                            f"{layer_name} uses unsupported scripted math operator {token}",
+                            effect_file,
+                            1,
+                        )
+                    )
+            for forbidden_gate in (
+                "corporate_history_full_enabled",
+                "corporate_history_outcomes_only_enabled",
+            ):
+                if forbidden_gate in updater_body:
+                    findings.append(
+                        (
+                            f"{updater} must be mode-neutral and cannot read {forbidden_gate}",
+                            effect_file,
+                            1,
+                        )
+                    )
+            for required_gate in (
+                "corporate_history_enabled",
+                "collapsed_nation",
+                str(raw_layer["initialized_flag"]),
+            ):
+                if required_gate not in updater_body:
+                    findings.append(
+                        (
+                            f"{updater} is missing required gate or cleanup symbol {required_gate}",
+                            effect_file,
+                            1,
+                        )
+                    )
+            if "force_update_dynamic_modifier" in effect_text:
+                findings.append(
+                    (
+                        f"{layer_name} must not force-update dynamic modifiers",
+                        effect_file,
+                        1,
+                    )
+                )
+
+            daily_files = []
+            for filepath in self._collect_text_files(["common/on_actions/**/*.txt"]):
+                try:
+                    on_action_text = Path(filepath).read_text(
+                        encoding="utf-8-sig", errors="replace"
+                    )
+                except OSError:
+                    continue
+                if updater in strip_comments(on_action_text):
+                    daily_files.append(self._relpath(filepath))
+            for daily_file in daily_files:
+                findings.append(
+                    (
+                        f"{updater} must be reached through the economic bridge, not an on-action",
+                        daily_file,
+                        1,
+                    )
+                )
+
+            raw_variables = raw_layer["variables"]
+            declared_variables: Set[str] = set()
+            if not isinstance(raw_variables, dict) or not raw_variables:
+                findings.append(
+                    (
+                        f"{layer_name} requires declared bounded variables",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                raw_variables = {}
+            script_clamps = {
+                match.group(1): (Decimal(match.group(2)), Decimal(match.group(3)))
+                for match in _CLAMP_VAR_RE.finditer(effect_text)
+            }
+            for variable, raw_bound in raw_variables.items():
+                declared_variables.add(str(variable))
+                try:
+                    expected = (
+                        Decimal(str(raw_bound["min"])),
+                        Decimal(str(raw_bound["max"])),
+                    )
+                except (KeyError, TypeError, ValueError) as exc:
+                    findings.append(
+                        (
+                            f"{layer_name} has invalid bounds for {variable}: {exc}",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                    continue
+                if script_clamps.get(str(variable)) != expected:
+                    findings.append(
+                        (
+                            f"{updater} must clamp {variable} to economic-layer bounds {expected[0]}..{expected[1]}",
+                            effect_file,
+                            1,
+                        )
+                    )
+                if not re.search(
+                    rf"\bclear_variable\s*=\s*{re.escape(str(variable))}\b",
+                    updater_body,
+                ):
+                    findings.append(
+                        (
+                            f"{updater} Off cleanup must clear {variable}",
+                            effect_file,
+                            1,
+                        )
+                    )
+
+            for match in _SET_VAR_RE.finditer(effect_text):
+                variable = match.group(1)
+                if variable in chain_variables:
+                    findings.append(
+                        (
+                            f"{layer_name} writes company-owned variable {variable}",
+                            effect_file,
+                            self._line(effect_text, match.start()),
+                        )
+                    )
+                elif (
+                    variable.startswith("USA_oem_")
+                    and variable not in declared_variables
+                    and not variable.endswith("_display")
+                ):
+                    findings.append(
+                        (
+                            f"{layer_name} writes undeclared persistent variable {variable}",
+                            effect_file,
+                            self._line(effect_text, match.start()),
+                        )
+                    )
+
+            for source_variable in raw_layer["source_variables"]:
+                if not re.search(
+                    rf"\b{re.escape(str(source_variable))}\b", updater_body
+                ):
+                    findings.append(
+                        (
+                            f"{updater} does not read declared source variable {source_variable}",
+                            effect_file,
+                            1,
+                        )
+                    )
+
+            cdf = raw_layer["cdf"]
+            if not isinstance(cdf, dict):
+                findings.append(
+                    (
+                        f"{layer_name} CDF contract must be an object",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+            else:
+                knots = cdf.get("knots", [])
+                values = cdf.get("values", [])
+                if (
+                    not isinstance(knots, list)
+                    or not isinstance(values, list)
+                    or len(knots) != len(values)
+                    or len(knots) < 2
+                    or any(left >= right for left, right in zip(knots, knots[1:]))
+                    or any(left >= right for left, right in zip(values, values[1:]))
+                    or any(value < 0 or value > 1 for value in values)
+                ):
+                    findings.append(
+                        (
+                            f"{layer_name} CDF knots and values must be paired, monotonic, and bounded",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                for value in values:
+                    if str(value) not in effect_text:
+                        findings.append(
+                            (
+                                f"{layer_name} CDF script is missing contracted value {value}",
+                                effect_file,
+                                1,
+                            )
+                        )
+                if not re.search(
+                    r"clamp_temp_variable\s*=\s*\{\s*var\s*=\s*USA_oem_cdf_output\s+min\s*=\s*0\s+max\s*=\s*1",
+                    effect_text,
+                ):
+                    findings.append(
+                        (
+                            f"{layer_name} CDF output must clamp to 0..1",
+                            effect_file,
+                            1,
+                        )
+                    )
+
+            all_modifier_members: List[str] = []
+            families = raw_layer["modifier_families"]
+            if not isinstance(families, list) or not families:
+                findings.append(
+                    (
+                        f"{layer_name} requires modifier families",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                families = []
+            for family in families:
+                if not isinstance(family, dict):
+                    continue
+                family_name = str(family.get("name", "unnamed"))
+                members = family.get("members", [])
+                thresholds = family.get("thresholds", [])
+                score = str(family.get("score", ""))
+                if (
+                    not isinstance(members, list)
+                    or not isinstance(thresholds, list)
+                    or len(members) != len(thresholds) + 1
+                    or any(
+                        left >= right for left, right in zip(thresholds, thresholds[1:])
+                    )
+                ):
+                    findings.append(
+                        (
+                            f"{layer_name} modifier family {family_name} has invalid members or thresholds",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                    continue
+                if score not in declared_variables:
+                    findings.append(
+                        (
+                            f"{layer_name} modifier family {family_name} reads undeclared score {score}",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                for threshold in thresholds:
+                    threshold_text = str(threshold)
+                    if not re.search(
+                        rf"check_variable\s*=\s*\{{\s*{re.escape(score)}\s*<\s*{re.escape(threshold_text)}\s*\}}",
+                        updater_body,
+                    ):
+                        findings.append(
+                            (
+                                f"{layer_name} modifier family {family_name} is missing threshold {threshold_text} for {score}",
+                                effect_file,
+                                1,
+                            )
+                        )
+                for member in members:
+                    member = str(member)
+                    all_modifier_members.append(member)
+                    definitions = len(
+                        re.findall(rf"(?m)^{re.escape(member)}\s*=\s*\{{", dynamic_text)
+                    )
+                    if definitions != 1:
+                        findings.append(
+                            (
+                                f"Dynamic modifier {member} must be defined exactly once; found {definitions}",
+                                dynamic_file,
+                                1,
+                            )
+                        )
+                    if not re.search(
+                        rf"\badd_dynamic_modifier\s*=\s*\{{\s*modifier\s*=\s*{re.escape(member)}\b",
+                        updater_body,
+                    ):
+                        findings.append(
+                            (
+                                f"{updater} never assigns dynamic modifier {member}",
+                                effect_file,
+                                1,
+                            )
+                        )
+                    remove_count = len(
+                        re.findall(
+                            rf"\bremove_dynamic_modifier\s*=\s*\{{\s*modifier\s*=\s*{re.escape(member)}\b",
+                            updater_body,
+                        )
+                    )
+                    if remove_count < len(members) + 1:
+                        findings.append(
+                            (
+                                f"{updater} must clear {member} in every {family_name} tier branch and Off cleanup",
+                                effect_file,
+                                1,
+                            )
+                        )
+                    if not re.search(
+                        rf"\bremove_dynamic_modifier\s*=\s*\{{\s*modifier\s*=\s*{re.escape(member)}\b",
+                        updater_body,
+                    ):
+                        findings.append(
+                            (
+                                f"{updater} never clears dynamic modifier {member}",
+                                effect_file,
+                                1,
+                            )
+                        )
+
+            programs = raw_layer["policy_programs"]
+            if not isinstance(programs, list) or len(programs) != 4:
+                findings.append(
+                    (
+                        f"{layer_name} requires exactly four policy programs",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                programs = []
+            program_ideas: List[str] = []
+            for program in programs:
+                if not isinstance(program, dict):
+                    continue
+                decision = str(program.get("decision", ""))
+                idea = str(program.get("idea", ""))
+                days = int(program.get("days", 0))
+                cooldown_days = int(program.get("cooldown_days", 0))
+                program_ideas.append(idea)
+                decision_match = re.search(
+                    rf"(?m)^\s*{re.escape(decision)}\s*=\s*\{{", decision_text
+                )
+                if decision_match is None:
+                    findings.append(
+                        (f"Missing policy decision {decision}", decision_file, 1)
+                    )
+                    continue
+                decision_body, end = extract_block_from_text(
+                    decision_text, decision_match.end() - 1
+                )
+                if end == -1:
+                    findings.append(
+                        (
+                            f"Could not parse policy decision {decision}",
+                            decision_file,
+                            1,
+                        )
+                    )
+                    continue
+                available_match = re.search(r"\bavailable\s*=\s*\{", decision_body)
+                available_body = ""
+                if available_match is not None:
+                    available_body, _ = extract_block_from_text(
+                        decision_body, available_match.end() - 1
+                    )
+                timed_pattern = re.compile(
+                    rf"\badd_timed_idea\s*=\s*\{{\s*idea\s*=\s*{re.escape(idea)}\s+days\s*=\s*{days}\s*\}}"
+                )
+                if len(timed_pattern.findall(decision_body)) != 1:
+                    findings.append(
+                        (
+                            f"{decision} must add {idea} once for {days} days",
+                            decision_file,
+                            self._line(decision_text, decision_match.start()),
+                        )
+                    )
+                cooldown_pattern = re.compile(
+                    rf"\bdays_re_enable\s*=\s*{cooldown_days}\b"
+                )
+                if len(cooldown_pattern.findall(decision_body)) != 1:
+                    findings.append(
+                        (
+                            f"{decision} must declare a {cooldown_days}-day cooldown",
+                            decision_file,
+                            self._line(decision_text, decision_match.start()),
+                        )
+                    )
+                if str(program.get("refresh_policy")) != "block_while_active":
+                    findings.append(
+                        (
+                            f"{decision} must declare block_while_active refresh policy",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                if not re.search(
+                    rf"NOT\s*=\s*\{{\s*has_idea\s*=\s*{re.escape(idea)}\s*\}}",
+                    available_body,
+                ):
+                    findings.append(
+                        (
+                            f"{decision} must block while {idea} is active",
+                            decision_file,
+                            self._line(decision_text, decision_match.start()),
+                        )
+                    )
+                if not re.search(
+                    r"NOT\s*=\s*\{\s*has_country_flag\s*=\s*collapsed_nation\s*\}",
+                    available_body,
+                ):
+                    findings.append(
+                        (
+                            f"{decision} must be unavailable after national collapse",
+                            decision_file,
+                            self._line(decision_text, decision_match.start()),
+                        )
+                    )
+                definitions = len(
+                    re.findall(rf"(?m)^\s*{re.escape(idea)}\s*=\s*\{{", idea_text)
+                )
+                if definitions != 1:
+                    findings.append(
+                        (
+                            f"Policy idea {idea} must be defined exactly once; found {definitions}",
+                            idea_file,
+                            1,
+                        )
+                    )
+                if not re.search(
+                    rf"\bremove_ideas\s*=\s*\{{[^}}]*\b{re.escape(idea)}\b",
+                    updater_body,
+                    re.DOTALL,
+                ):
+                    findings.append(
+                        (
+                            f"{updater} Off/collapse cleanup must remove {idea}",
+                            effect_file,
+                            1,
+                        )
+                    )
+
+            dashboard_text = decision_text + "\n" + localisation_text
+            for variable in raw_layer["dashboard_variables"]:
+                if str(variable) not in dashboard_text:
+                    findings.append(
+                        (
+                            f"{layer_name} dashboard does not read authoritative output {variable}",
+                            localisation_file,
+                            1,
+                        )
+                    )
+            for name in raw_layer["scripted_localisation"]:
+                if not re.search(
+                    rf"\bname\s*=\s*{re.escape(str(name))}\b", scripted_loc_text
+                ):
+                    findings.append(
+                        (
+                            f"Missing scripted localisation {name}",
+                            scripted_loc_file,
+                            1,
+                        )
+                    )
+
+            localisation_keys = set(raw_layer["localisation_keys"])
+            localisation_keys.update(program_ideas)
+            localisation_keys.update(f"{idea}_desc" for idea in program_ideas)
+            localisation_keys.update(all_modifier_members)
+            localisation_keys.update(
+                f"{member}_desc" for member in all_modifier_members
+            )
+            defined_loc_keys = {
+                match.group(1)
+                for line in localisation_text.splitlines()
+                if (match := _LOC_KEY_PREFIX_RE.match(line))
+            }
+            for key in sorted(localisation_keys):
+                if key not in defined_loc_keys:
+                    findings.append(
+                        (
+                            f"Missing English real-options localisation key {key}",
+                            localisation_file,
+                            1,
+                        )
+                    )
+
+            try:
+                localisation_bytes = (self._root / localisation_file).read_bytes()
+            except OSError:
+                localisation_bytes = b""
+            if localisation_bytes and not localisation_bytes.startswith(
+                b"\xef\xbb\xbf"
+            ):
+                findings.append(
+                    (
+                        f"{localisation_file} must retain its UTF-8 BOM",
+                        localisation_file,
+                        1,
+                    )
+                )
+
+        return findings
 
     def _validate_mode_contract(
         self, mode_defs: Dict[str, List[BlockDef]]
@@ -1607,11 +2245,14 @@ class Validator(BaseValidator):
                 reachable_clamps = self._reachable_chain_effects(
                     chain, clamp, effect_lookup
                 )
-                declared_bounds: Dict[str, Tuple[int, int]] = {}
+                declared_bounds: Dict[str, Tuple[Decimal, Decimal]] = {}
                 for effect in reachable_clamps.values():
                     declared_bounds.update(
                         {
-                            match.group(1): (int(match.group(2)), int(match.group(3)))
+                            match.group(1): (
+                                Decimal(match.group(2)),
+                                Decimal(match.group(3)),
+                            )
                             for match in _CLAMP_VAR_RE.finditer(effect.body)
                         }
                     )

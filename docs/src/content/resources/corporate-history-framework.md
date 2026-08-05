@@ -19,8 +19,40 @@ The authoritative chain list is `tools/corporate_history_contract.json`, enforce
 | Rule gates `corporate_history_full_enabled` / `corporate_history_outcomes_only_enabled`                                      | `common/scripted_triggers/MD_corporate_history_triggers.txt`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | Per-company wrappers (init/clamp/reconstruct/schedule/capstone)                                                              | `common/scripted_effects/USA_ibm_effects.txt`, `USA_apple_effects.txt`, `USA_microsoft_effects.txt`, `USA_nvidia_effects.txt`, `USA_dell_effects.txt`, `USA_e3_effects.txt`, `USA_google_effects.txt`, `USA_oracle_effects.txt`, `USA_hp_effects.txt`, `USA_ti_effects.txt`, `USA_micron_effects.txt`, `USA_motorola_effects.txt`, `USA_aig_effects.txt`, `CHI_lenovo_effects.txt`, `JAP_sony_effects.txt`, `JAP_nintendo_effects.txt`, `CAN_ati_effects.txt`, `CAN_matrox_effects.txt`, `FIN_nokia_effects.txt`, `TAI_tsmc_effects.txt`, `TAI_foxconn_effects.txt` |
 | National economic bridge; chain-to-axis map: `.claude/docs/usa-oem-economic-bridge-map.md`                                   | `common/scripted_effects/USA_corporate_systems_effects.txt`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| U.S. real-options economic layer, dynamic tiers, temporary programs, and reference simulator                                 | `common/scripted_effects/USA_oem_real_options_effects.txt`, `common/dynamic_modifiers/05_USA_oem_economic_dynamic_modifiers.txt`, `tools/analysis/simulate_oem_real_options.py`                                                                                                                                                                                                                                                                                                                                                                                     |
 | Machine-readable chain manifest                                                                                              | `tools/corporate_history_contract.json`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Game rule `rule_corporate_history`                                                                                           | `common/game_rules/00_game_rules.txt`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+
+# National Real-Options Economy
+
+The U.S. economic bridge delegates once to
+`USA_oem_update_real_options_economy` after it rebuilds the effective compute
+axes. That updater values the option to invest in national compute capacity,
+then derives exercise readiness, innovation diffusion, industrial depth, and
+infrastructure pressure. It assigns one member from each of four mutually
+exclusive dynamic-modifier families and clears every output and modifier when
+Corporate History is Off or the country is collapsed.
+
+HOI4 has no confirmed logarithm, exponential, square-root, or normal-CDF
+operator. The script therefore uses bounded arithmetic approximations. Variable
+bounds, CDF constants, tier thresholds, and policy timings are declared under
+the schema-v3 `economic_layers` section of
+`tools/corporate_history_contract.json`. The strict corporate-history validator
+checks ownership, clamps, bridge reachability, tier replacement, policy timing
+and non-stacking, dashboard parity, and English localisation.
+`tools/analysis/simulate_oem_real_options.py` compares the approximation against
+Python's high-precision reference and provides named balance scenarios. Those
+results are static evidence, not an in-game runtime test.
+
+The four U.S. policies now add visible programs: 365 days for procurement and
+security, and 730 days for capacity and consortium. They preserve their existing
+Political Power, Treasury, and corporate-state effects. AI weights use reserve,
+debt, interest, energy, labor, bankruptcy, and shared cadence guards.
+The three automation and employment-outlook scores are dashboard placeholders
+only; this layer does not alter employment laws.
+
+Full derivation, tier, policy, AI, and smoke-test notes are maintained in
+`.claude/docs/oem-real-options-economic-layer.md`.
 
 # Game Rule Semantics
 
