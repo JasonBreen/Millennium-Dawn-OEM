@@ -819,14 +819,30 @@ class Validator(BaseValidator):
             else:
                 knots = cdf.get("knots", [])
                 values = cdf.get("values", [])
-                if (
-                    not isinstance(knots, list)
-                    or not isinstance(values, list)
-                    or len(knots) != len(values)
-                    or len(knots) < 2
-                    or any(left >= right for left, right in zip(knots, knots[1:]))
-                    or any(left >= right for left, right in zip(values, values[1:]))
-                    or any(value < 0 or value > 1 for value in values)
+                cdf_lists = isinstance(knots, list) and isinstance(values, list)
+                cdf_numeric = cdf_lists and all(
+                    isinstance(value, (int, float))
+                    and not isinstance(value, bool)
+                    and Decimal(str(value)).is_finite()
+                    for value in (*knots, *values)
+                )
+                if cdf_lists and not cdf_numeric:
+                    findings.append(
+                        (
+                            f"{layer_name} CDF knots and values must contain only finite numbers",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                if not cdf_lists or (
+                    cdf_numeric
+                    and (
+                        len(knots) != len(values)
+                        or len(knots) < 2
+                        or any(left >= right for left, right in zip(knots, knots[1:]))
+                        or any(left >= right for left, right in zip(values, values[1:]))
+                        or any(value < 0 or value > 1 for value in values)
+                    )
                 ):
                     findings.append(
                         (
@@ -835,15 +851,16 @@ class Validator(BaseValidator):
                             1,
                         )
                     )
-                for value in values:
-                    if str(value) not in effect_text:
-                        findings.append(
-                            (
-                                f"{layer_name} CDF script is missing contracted value {value}",
-                                effect_file,
-                                1,
+                if cdf_numeric:
+                    for value in values:
+                        if str(value) not in effect_text:
+                            findings.append(
+                                (
+                                    f"{layer_name} CDF script is missing contracted value {value}",
+                                    effect_file,
+                                    1,
+                                )
                             )
-                        )
                 if not re.search(
                     r"clamp_temp_variable\s*=\s*\{\s*var\s*=\s*USA_oem_cdf_output\s+min\s*=\s*0\s+max\s*=\s*1",
                     effect_text,

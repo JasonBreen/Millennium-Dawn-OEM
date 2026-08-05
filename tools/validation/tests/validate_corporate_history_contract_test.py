@@ -2,6 +2,7 @@ import json
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
 from validate_corporate_history_contract import Validator
 
 
@@ -2163,6 +2164,24 @@ def test_real_options_requires_bounded_cdf_output(tmp_path):
 
     assert any(
         "CDF output must clamp to 0..1" in message for message in _messages(tmp_path)
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "replacement"),
+    (("knots", "0.5"), ("values", None), ("values", True)),
+)
+def test_real_options_rejects_nonnumeric_cdf_elements(tmp_path, field, replacement):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["economic_layers"][0]["cdf"][field][1] = replacement
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "CDF knots and values must contain only finite numbers" in message
+        for message in _messages(tmp_path)
     )
 
 
