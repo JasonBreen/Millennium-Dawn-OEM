@@ -1,9 +1,6 @@
-name: One-shot real upstream ancestry sync
+name: One-shot upstream-to-OEM sync
 
 on:
-  push:
-    branches:
-      - automation/real-upstream-ancestry-sync-2026-08-05
   pull_request_target:
     branches:
       - main
@@ -19,29 +16,23 @@ jobs:
   sync:
     if: >-
       github.actor != 'github-actions[bot]' &&
-      (
-        (github.event_name == 'push' && github.ref_name == 'automation/real-upstream-ancestry-sync-2026-08-05') ||
-        (
-          github.event_name == 'pull_request_target' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          github.event.pull_request.head.ref == 'automation/real-upstream-ancestry-sync-2026-08-05'
-        )
-      )
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'sync/upstream-main-2026-08-05-final'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout synchronization branch
+      - name: Checkout the isolated synchronization branch
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
-          ref: automation/real-upstream-ancestry-sync-2026-08-05
+          ref: sync/upstream-main-2026-08-05-final
 
-      - name: Merge pinned upstream main with real ancestry
+      - name: Merge upstream into the OEM fork branch
         shell: bash
         run: |
           set -euo pipefail
 
-          sync_branch="automation/real-upstream-ancestry-sync-2026-08-05"
-          target_upstream_sha="e84b43bef92d0417db9509c2777f005ebd89b387"
+          sync_branch="sync/upstream-main-2026-08-05-final"
+          upstream_sha="effafebe65ed9543e39d86f696352f36990c257a"
           report_path="runtime_evidence/upstream-sync-2026-08-05/conflicts.md"
 
           git config user.name "github-actions[bot]"
@@ -57,18 +48,11 @@ jobs:
           git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git 2>/dev/null || \
             git remote set-url upstream https://github.com/MillenniumDawn/Millennium-Dawn.git
           git fetch --no-tags upstream main
-          git cat-file -e "${target_upstream_sha}^{commit}"
-          git merge-base --is-ancestor "$target_upstream_sha" upstream/main
-
-          if git merge-base --is-ancestor "$target_upstream_sha" HEAD; then
-            echo "Pinned upstream commit is already an ancestor of the synchronization branch."
-            exit 0
-          fi
-
-          merge_base="$(git merge-base HEAD "$target_upstream_sha")"
+          git cat-file -e "${upstream_sha}^{commit}"
+          git merge-base --is-ancestor "$upstream_sha" upstream/main
 
           set +e
-          git merge --no-ff --no-commit "$target_upstream_sha"
+          git merge --no-ff --no-commit "$upstream_sha"
           merge_status=$?
           set -e
 
@@ -81,10 +65,9 @@ jobs:
 
             if [ "$resolver_status" -ne 0 ]; then
               report="$RUNNER_TEMP/upstream-sync-conflicts.md"
-              printf '# Upstream synchronization conflict report\n\n' > "$report"
+              printf '# Upstream-to-OEM synchronization conflict report\n\n' > "$report"
               printf -- '- Fork start: `%s`\n' "$fork_start" >> "$report"
-              printf -- '- Pinned upstream: `%s`\n' "$target_upstream_sha" >> "$report"
-              printf -- '- Merge base: `%s`\n' "$merge_base" >> "$report"
+              printf -- '- Upstream commit: `%s`\n' "$upstream_sha" >> "$report"
               printf -- '- Merge exit status: `%s`\n' "$merge_status" >> "$report"
               printf -- '- Resolver exit status: `%s`\n\n' "$resolver_status" >> "$report"
               printf '## Conflicted paths\n\n' >> "$report"
@@ -99,14 +82,12 @@ jobs:
               mkdir -p "$(dirname "$report_path")"
               cp "$report" "$report_path"
               git add "$report_path"
-              if ! git diff --cached --quiet; then
-                git commit -m "Update August 5 upstream synchronization conflicts"
-                git push origin "HEAD:$sync_branch"
-              fi
+              git commit -m "Record unresolved August 5 upstream sync conflicts"
+              git push origin "HEAD:$sync_branch"
               exit 1
             fi
           elif [ "$merge_status" -ne 0 ]; then
-            echo "Merge failed without a conflict list." >&2
+            echo "Merge failed without unresolved paths." >&2
             exit "$merge_status"
           fi
 
@@ -118,21 +99,23 @@ jobs:
           rm -f .github/upstream-sync-trigger-2026-08-05
           rm -f "$report_path"
           rmdir runtime_evidence/upstream-sync-2026-08-05 2>/dev/null || true
+          git rm -f .github/workflows/one-shot-real-upstream-sync.yml
+          git rm -f .github/scripts/resolve_upstream_sync.py
           git add -A
 
           git diff --check --cached
           if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)' -- \
             common/scripted_effects/00_yearly_effects.txt \
             localisation/english/MD_focus_JAP_l_english.yml; then
-            echo "Conflict marker remains in a resolved file." >&2
+            echo "A merge-conflict marker remains in a resolved file." >&2
             exit 1
           fi
 
-          git commit -m "Merge upstream Millennium Dawn main with real ancestry" \
-            -m "Upstream: $target_upstream_sha" \
-            -m "Preserve OEM corporate-history scheduling and English Sony/Nintendo localisation; accept exact upstream non-English translations and native Japan rewrites."
+          git commit -m "Merge upstream Millennium Dawn main into OEM fork" \
+            -m "Upstream: $upstream_sha" \
+            -m "Preserve OEM corporate-history and GPU scheduling, preserve OEM Sony/Nintendo localisation, and accept current upstream translations and native Japan rewrites."
 
           git merge-base --is-ancestor "$fork_start" HEAD
-          git merge-base --is-ancestor "$target_upstream_sha" HEAD
+          git merge-base --is-ancestor "$upstream_sha" HEAD
           test "$(git show --no-patch --format='%P' HEAD | wc -w)" -eq 2
           git push origin "HEAD:$sync_branch"
