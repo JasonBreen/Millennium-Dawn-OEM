@@ -1,5 +1,179 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
+  "economic_layers": [
+    {
+      "name": "USA OEM Real Options",
+      "tag": "USA",
+      "updater": "USA_oem_update_real_options_economy",
+      "bridge": "USA_corporate_systems_update_economic_bridge",
+      "effect_file": "common/scripted_effects/USA_oem_real_options_effects.txt",
+      "dynamic_modifier_file": "common/dynamic_modifiers/05_USA_oem_economic_dynamic_modifiers.txt",
+      "decision_file": "common/decisions/USA_corporate_systems_dashboard.txt",
+      "idea_file": "common/ideas/USA_corporate_systems_ideas.txt",
+      "scripted_localisation_file": "common/scripted_localisation/USA_corporate_systems_dashboard_scripted_localisation.txt",
+      "localisation_file": "localisation/english/MD_focus_USA_l_english.yml",
+      "initialized_flag": "USA_oem_real_options_initialized",
+      "variables": {
+        "USA_oem_option_underlying_value": { "min": 1, "max": 100 },
+        "USA_oem_option_irreversible_cost": { "min": 1, "max": 100 },
+        "USA_oem_option_discount_rate": { "min": 0.0, "max": 0.25 },
+        "USA_oem_option_volatility": { "min": 0.05, "max": 1.0 },
+        "USA_oem_option_horizon": { "min": 1, "max": 5 },
+        "USA_oem_option_call_value": { "min": 0, "max": 100 },
+        "USA_oem_option_value": { "min": 0, "max": 100 },
+        "USA_oem_option_value_normalized": { "min": 0, "max": 100 },
+        "USA_oem_innovation_diffusion": { "min": 0, "max": 100 },
+        "USA_oem_industrial_depth": { "min": 0, "max": 100 },
+        "USA_oem_compute_infrastructure_demand": { "min": 0, "max": 100 },
+        "USA_oem_compute_infrastructure_capacity": { "min": 0, "max": 100 },
+        "USA_oem_infrastructure_pressure": { "min": 0, "max": 100 },
+        "USA_oem_investment_readiness": { "min": 0, "max": 100 },
+        "USA_oem_automation_pressure": { "min": 0, "max": 100 },
+        "USA_oem_labor_displacement_pressure": { "min": 0, "max": 100 },
+        "USA_oem_high_skill_labor_demand": { "min": 0, "max": 100 }
+      },
+      "source_variables": [
+        "USA_oem_effective_open_standards",
+        "USA_oem_effective_vertical_integration",
+        "USA_oem_effective_supply_resilience",
+        "USA_oem_effective_security_control",
+        "USA_oem_effective_national_compute_stack",
+        "overall_productivity",
+        "debt_ratio",
+        "treasury",
+        "interest_rate",
+        "energy_balance_value_display",
+        "total_unemployed_percentage_display",
+        "internet_station_total",
+        "industrial_complex_total",
+        "microchip_plant_total",
+        "office_park_total",
+        "country_base_civilian_microchip_consumption_var"
+      ],
+      "cdf": {
+        "input_min": -3,
+        "input_max": 3,
+        "output_min": 0,
+        "output_max": 1,
+        "knots": [0, 0.5, 1, 1.5, 2, 2.5, 3],
+        "values": [0.5, 0.69146, 0.84134, 0.93319, 0.97725, 0.99379, 0.99865]
+      },
+      "modifier_families": [
+        {
+          "name": "investment_climate",
+          "score": "USA_oem_investment_readiness",
+          "thresholds": [20, 40, 60, 80],
+          "members": [
+            "USA_oem_investment_climate_1",
+            "USA_oem_investment_climate_2",
+            "USA_oem_investment_climate_3",
+            "USA_oem_investment_climate_4",
+            "USA_oem_investment_climate_5"
+          ]
+        },
+        {
+          "name": "innovation_diffusion",
+          "score": "USA_oem_innovation_diffusion",
+          "thresholds": [25, 50, 75],
+          "members": [
+            "USA_oem_innovation_diffusion_1",
+            "USA_oem_innovation_diffusion_2",
+            "USA_oem_innovation_diffusion_3",
+            "USA_oem_innovation_diffusion_4"
+          ]
+        },
+        {
+          "name": "industrial_depth",
+          "score": "USA_oem_industrial_depth",
+          "thresholds": [25, 50, 75],
+          "members": [
+            "USA_oem_industrial_depth_1",
+            "USA_oem_industrial_depth_2",
+            "USA_oem_industrial_depth_3",
+            "USA_oem_industrial_depth_4"
+          ]
+        },
+        {
+          "name": "infrastructure_pressure",
+          "score": "USA_oem_infrastructure_pressure",
+          "thresholds": [20, 40, 60, 80],
+          "members": [
+            "USA_oem_infrastructure_pressure_1",
+            "USA_oem_infrastructure_pressure_2",
+            "USA_oem_infrastructure_pressure_3",
+            "USA_oem_infrastructure_pressure_4",
+            "USA_oem_infrastructure_pressure_5"
+          ]
+        }
+      ],
+      "policy_programs": [
+        {
+          "decision": "USA_corporate_policy_open_systems_procurement",
+          "idea": "USA_oem_open_systems_procurement_program",
+          "days": 365,
+          "cooldown_days": 365,
+          "refresh_policy": "block_while_active"
+        },
+        {
+          "decision": "USA_corporate_policy_domestic_capacity_grants",
+          "idea": "USA_oem_domestic_capacity_grants_program",
+          "days": 730,
+          "cooldown_days": 365,
+          "refresh_policy": "block_while_active"
+        },
+        {
+          "decision": "USA_corporate_policy_secure_federal_systems",
+          "idea": "USA_oem_secure_federal_systems_program",
+          "days": 365,
+          "cooldown_days": 365,
+          "refresh_policy": "block_while_active"
+        },
+        {
+          "decision": "USA_corporate_policy_advanced_computing_consortium",
+          "idea": "USA_oem_advanced_computing_consortium_program",
+          "days": 730,
+          "cooldown_days": 365,
+          "refresh_policy": "block_while_active"
+        }
+      ],
+      "dashboard_variables": [
+        "USA_oem_option_value_display",
+        "USA_oem_investment_readiness_display",
+        "USA_oem_innovation_diffusion_display",
+        "USA_oem_industrial_depth_display",
+        "USA_oem_compute_infrastructure_demand_display",
+        "USA_oem_compute_infrastructure_capacity_display",
+        "USA_oem_infrastructure_pressure_display",
+        "USA_oem_automation_pressure_display",
+        "USA_oem_labor_displacement_pressure_display",
+        "USA_oem_high_skill_labor_demand_display"
+      ],
+      "scripted_localisation": [
+        "USA_oem_investment_climate_label",
+        "USA_oem_investment_readiness_label",
+        "USA_oem_innovation_diffusion_label",
+        "USA_oem_industrial_depth_label",
+        "USA_oem_infrastructure_pressure_label",
+        "USA_oem_open_program_status",
+        "USA_oem_capacity_program_status",
+        "USA_oem_secure_program_status",
+        "USA_oem_consortium_program_status",
+        "USA_oem_no_program_status"
+      ],
+      "localisation_keys": [
+        "USA_corporate_systems_real_options",
+        "USA_corporate_systems_real_options_desc",
+        "USA_oem_open_systems_procurement_program",
+        "USA_oem_open_systems_procurement_program_desc",
+        "USA_oem_domestic_capacity_grants_program",
+        "USA_oem_domestic_capacity_grants_program_desc",
+        "USA_oem_secure_federal_systems_program",
+        "USA_oem_secure_federal_systems_program_desc",
+        "USA_oem_advanced_computing_consortium_program",
+        "USA_oem_advanced_computing_consortium_program_desc"
+      ]
+    }
+  ],
   "chains": [
     {
       "name": "Apple",

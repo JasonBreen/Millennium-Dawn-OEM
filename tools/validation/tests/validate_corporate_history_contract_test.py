@@ -1,6 +1,8 @@
 import json
+from decimal import Decimal
 from pathlib import Path
 
+import pytest
 from validate_corporate_history_contract import Validator
 
 
@@ -589,6 +591,197 @@ USA_corporate_systems_update_economic_bridge = {{
 \t}}
 }}
 """,
+    )
+
+
+def _enable_economic_layer_fixture(root: Path):
+    manifest_path = root / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["schema_version"] = 3
+    manifest["economic_layers"] = [
+        {
+            "name": "Test Real Options",
+            "tag": "USA",
+            "updater": "USA_oem_update_real_options_economy",
+            "bridge": "USA_corporate_systems_update_economic_bridge",
+            "effect_file": "common/scripted_effects/USA_oem_real_options_effects.txt",
+            "dynamic_modifier_file": "common/dynamic_modifiers/05_USA_oem_test.txt",
+            "decision_file": "common/decisions/USA_oem_test.txt",
+            "idea_file": "common/ideas/USA_oem_test_ideas.txt",
+            "scripted_localisation_file": "common/scripted_localisation/USA_oem_test.txt",
+            "localisation_file": "localisation/english/MD_focus_USA_l_english.yml",
+            "initialized_flag": "USA_oem_real_options_initialized",
+            "variables": {"USA_oem_option_value": {"min": 0, "max": 100}},
+            "source_variables": ["USA_oem_effective_open_standards"],
+            "cdf": {
+                "input_min": -3,
+                "input_max": 3,
+                "output_min": 0,
+                "output_max": 1,
+                "knots": [0, 1],
+                "values": [0.5, 0.84134],
+            },
+            "modifier_families": [
+                {
+                    "name": "investment_climate",
+                    "score": "USA_oem_option_value",
+                    "thresholds": [50],
+                    "members": [
+                        "USA_oem_investment_climate_1",
+                        "USA_oem_investment_climate_2",
+                    ],
+                }
+            ],
+            "policy_programs": [
+                {
+                    "decision": f"USA_oem_policy_{number}",
+                    "idea": f"USA_oem_program_{number}",
+                    "days": 730 if number in {2, 4} else 365,
+                    "cooldown_days": 365,
+                    "refresh_policy": "block_while_active",
+                }
+                for number in range(1, 5)
+            ],
+            "dashboard_variables": ["USA_oem_option_value_display"],
+            "scripted_localisation": ["USA_oem_investment_climate_label"],
+            "localisation_keys": [
+                "USA_corporate_systems_real_options",
+                "USA_corporate_systems_real_options_desc",
+            ],
+        }
+    ]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    _write(
+        root,
+        "common/scripted_effects/USA_oem_real_options_effects.txt",
+        """USA_corporate_systems_update_economic_bridge = {
+	USA_oem_update_real_options_economy = yes
+}
+
+USA_oem_update_real_options_economy = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+		}
+		set_country_flag = USA_oem_real_options_initialized
+		set_temp_variable = { USA_oem_test_source = USA_oem_effective_open_standards }
+		set_variable = { USA_oem_option_value = { value = 50 clamp = { min = 0 max = 100 } } }
+		clamp_variable = { var = USA_oem_option_value min = 0 max = 100 }
+		set_variable = { USA_oem_option_value_display = { value = USA_oem_option_value round = yes } }
+		set_temp_variable = { USA_oem_cdf_output = 0.5 }
+		if = {
+			limit = { check_variable = { USA_oem_cdf_input > 0 } }
+			set_temp_variable = { USA_oem_cdf_output = 0.84134 }
+		}
+		clamp_temp_variable = { var = USA_oem_cdf_output min = 0 max = 1 }
+		if = {
+			limit = { check_variable = { USA_oem_option_value < 50 } }
+			remove_dynamic_modifier = { modifier = USA_oem_investment_climate_1 }
+			remove_dynamic_modifier = { modifier = USA_oem_investment_climate_2 }
+			add_dynamic_modifier = { modifier = USA_oem_investment_climate_1 }
+		}
+		else = {
+			remove_dynamic_modifier = { modifier = USA_oem_investment_climate_1 }
+			remove_dynamic_modifier = { modifier = USA_oem_investment_climate_2 }
+			add_dynamic_modifier = { modifier = USA_oem_investment_climate_2 }
+		}
+	}
+	else = {
+		clr_country_flag = USA_oem_real_options_initialized
+		remove_ideas = {
+			USA_oem_program_1
+			USA_oem_program_2
+			USA_oem_program_3
+			USA_oem_program_4
+		}
+		clear_variable = USA_oem_option_value
+		clear_variable = USA_oem_option_value_display
+		remove_dynamic_modifier = { modifier = USA_oem_investment_climate_1 }
+		remove_dynamic_modifier = { modifier = USA_oem_investment_climate_2 }
+	}
+}
+""",
+    )
+    _write(
+        root,
+        "common/dynamic_modifiers/05_USA_oem_test.txt",
+        """USA_oem_investment_climate_1 = {
+	enable = { always = yes }
+	productivity_growth_modifier = -0.01
+}
+
+USA_oem_investment_climate_2 = {
+	enable = { always = yes }
+	productivity_growth_modifier = 0.01
+}
+""",
+    )
+
+    decisions = []
+    idea_blocks = []
+    loc_lines = [
+        ' USA_corporate_systems_real_options: "Real Options"',
+        ' USA_corporate_systems_real_options_desc: "[?USA_oem_option_value_display|0]"',
+        ' USA_oem_investment_climate_1: "Frozen"',
+        ' USA_oem_investment_climate_1_desc: "Frozen investment."',
+        ' USA_oem_investment_climate_2: "Investable"',
+        ' USA_oem_investment_climate_2_desc: "Investable conditions."',
+    ]
+    for number in range(1, 5):
+        program_days = 730 if number in {2, 4} else 365
+        decisions.append(
+            f"""USA_oem_policy_{number} = {{
+	days_re_enable = 365
+
+	available = {{
+		NOT = {{ has_country_flag = collapsed_nation }}
+		NOT = {{ has_idea = USA_oem_program_{number} }}
+	}}
+	complete_effect = {{
+		add_timed_idea = {{ idea = USA_oem_program_{number} days = {program_days} }}
+	}}
+}}"""
+        )
+        idea_blocks.append(
+            f"""USA_oem_program_{number} = {{
+	picture = generic_economic_increase
+	allowed = {{ original_tag = USA }}
+	allowed_civil_war = {{ always = yes }}
+}}"""
+        )
+        loc_lines.extend(
+            [
+                f' USA_oem_program_{number}: "Program {number}"',
+                f' USA_oem_program_{number}_desc: "Program {number} description."',
+            ]
+        )
+    _write(root, "common/decisions/USA_oem_test.txt", "\n\n".join(decisions))
+    indented_ideas = "\n\n".join(
+        "\t\t" + block.replace("\n", "\n\t\t") for block in idea_blocks
+    )
+    _write(
+        root,
+        "common/ideas/USA_oem_test_ideas.txt",
+        f"ideas = {{\n\tcountry = {{\n{indented_ideas}\n\t}}\n}}\n",
+    )
+    _write(
+        root,
+        "common/scripted_localisation/USA_oem_test.txt",
+        """defined_text = {
+	name = USA_oem_investment_climate_label
+	text = { localization_key = USA_oem_investment_climate_1 }
+}
+""",
+    )
+    loc_path = root / "localisation/english/MD_focus_USA_l_english.yml"
+    existing_loc = loc_path.read_text(encoding="utf-8-sig")
+    _write_loc(
+        root,
+        "localisation/english/MD_focus_USA_l_english.yml",
+        existing_loc + "\n" + "\n".join(loc_lines) + "\n",
     )
 
 
@@ -1645,5 +1838,398 @@ def test_manifest_scheduler_requirement_matches_full_start_strategy(tmp_path):
     assert any(
         "requires_current_year_scheduler disagrees with full_start_strategies"
         in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_decimal_manifest_bounds_are_preserved(tmp_path):
+    _build_fixture(
+        tmp_path,
+        manifest_overrides={"variables": {"USA_test_state": {"min": 0.05, "max": 1.0}}},
+    )
+    validator = Validator(
+        mod_path=str(tmp_path), use_colors=False, workers=1, no_cache=True
+    )
+
+    chains = validator._load_manifest()
+
+    assert chains[0].variables["USA_test_state"].minimum == Decimal("0.05")
+    assert chains[0].variables["USA_test_state"].maximum == Decimal("1.0")
+
+
+def test_decimal_clamp_mismatch_is_rejected(tmp_path):
+    _build_fixture(
+        tmp_path,
+        manifest_overrides={"variables": {"USA_test_state": {"min": 0.05, "max": 1.0}}},
+    )
+
+    assert any(
+        "must clamp USA_test_state to manifest bounds 0.05..1.0" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_decimal_clamp_matching_manifest_is_accepted(tmp_path):
+    _build_fixture(
+        tmp_path,
+        manifest_overrides={"variables": {"USA_test_state": {"min": 0.05, "max": 1.0}}},
+    )
+    effects_path = tmp_path / "common/scripted_effects/USA_test_effects.txt"
+    effects_path.write_text(
+        effects_path.read_text(encoding="utf-8").replace(
+            "var = USA_test_state min = 0 max = 10",
+            "var = USA_test_state min = 0.05 max = 1.00",
+        ),
+        encoding="utf-8",
+    )
+
+    assert not any(
+        "must clamp USA_test_state to manifest bounds" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_valid_real_options_contract_fixture(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+
+    assert not any("real-options" in message.lower() for message in _messages(tmp_path))
+
+
+def test_real_options_requires_one_authoritative_updater(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/USA_oem_real_options_effects.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8")
+        + "\nUSA_oem_update_real_options_economy = { always = yes }\n",
+        encoding="utf-8",
+    )
+
+    assert any(
+        "requires exactly one authoritative updater" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_real_options_rejects_unsupported_script_math_operator(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/USA_oem_real_options_effects.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "set_temp_variable = { USA_oem_cdf_output = 0.5 }",
+            "set_temp_variable = { USA_oem_cdf_output = 0.5 exp = 2 }",
+        ),
+        encoding="utf-8",
+    )
+
+    assert any(
+        "uses unsupported scripted math operator exp" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_real_options_rejects_direct_on_action_hook(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/on_actions/MD_event_on_actions.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8")
+        + "\non_daily_USA = { effect = { USA_oem_update_real_options_economy = yes } }\n",
+        encoding="utf-8",
+    )
+
+    assert any(
+        "must be reached through the economic bridge, not an on-action" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_real_options_tier_family_requires_cleanup(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/USA_oem_real_options_effects.txt"
+    text = path.read_text(encoding="utf-8").replace(
+        "\t\t\tremove_dynamic_modifier = { modifier = USA_oem_investment_climate_1 }\n",
+        "",
+    )
+    text = text.replace(
+        "\t\tremove_dynamic_modifier = { modifier = USA_oem_investment_climate_1 }\n",
+        "",
+    )
+    path.write_text(text, encoding="utf-8")
+
+    assert any(
+        "never clears dynamic modifier USA_oem_investment_climate_1" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_policy_program_duration_must_match_contract(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/decisions/USA_oem_test.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace("days = 365", "days = 730", 1),
+        encoding="utf-8",
+    )
+
+    assert any(
+        "must add USA_oem_program_1 once for 365 days" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_major_policy_program_duration_must_match_contract(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/decisions/USA_oem_test.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace("days = 730", "days = 365", 1),
+        encoding="utf-8",
+    )
+
+    assert any(
+        "must add USA_oem_program_2 once for 730 days" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_policy_program_cooldown_must_match_contract(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/decisions/USA_oem_test.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "days_re_enable = 365", "days_re_enable = 180", 1
+        ),
+        encoding="utf-8",
+    )
+
+    assert any(
+        "USA_oem_policy_1 must declare a 365-day cooldown" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_policy_program_must_block_while_active(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/decisions/USA_oem_test.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "NOT = { has_idea = USA_oem_program_1 }", "always = yes", 1
+        ),
+        encoding="utf-8",
+    )
+
+    assert any(
+        "USA_oem_policy_1 must block while USA_oem_program_1 is active" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_policy_program_is_unavailable_after_collapse(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/decisions/USA_oem_test.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "\t\tNOT = { has_country_flag = collapsed_nation }\n", "", 1
+        ),
+        encoding="utf-8",
+    )
+
+    assert any(
+        "USA_oem_policy_1 must be unavailable after national collapse" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_real_options_cleanup_removes_policy_programs(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/USA_oem_real_options_effects.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace("\t\t\tUSA_oem_program_1\n", "", 1),
+        encoding="utf-8",
+    )
+
+    assert any(
+        "Off/collapse cleanup must remove USA_oem_program_1" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_real_options_dashboard_reads_authoritative_outputs(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "localisation/english/MD_focus_USA_l_english.yml"
+    text = path.read_text(encoding="utf-8-sig").replace(
+        "USA_oem_option_value_display", "USA_oem_stale_value_display"
+    )
+    path.write_bytes(b"\xef\xbb\xbf" + text.encode("utf-8"))
+
+    assert any(
+        "dashboard does not read authoritative output USA_oem_option_value_display"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_real_options_requires_program_localisation(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "localisation/english/MD_focus_USA_l_english.yml"
+    text = path.read_text(encoding="utf-8-sig").replace(
+        ' USA_oem_program_1_desc: "Program 1 description."\n', ""
+    )
+    path.write_bytes(b"\xef\xbb\xbf" + text.encode("utf-8"))
+
+    assert any(
+        "Missing English real-options localisation key USA_oem_program_1_desc"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_real_options_helpers_are_mode_neutral(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/USA_oem_real_options_effects.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "corporate_history_enabled = yes",
+            "corporate_history_enabled = yes\n\t\t\tcorporate_history_full_enabled = yes",
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    assert any("must be mode-neutral" in message for message in _messages(tmp_path))
+
+
+def test_real_options_rejects_company_owned_writes(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/USA_oem_real_options_effects.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "set_country_flag = USA_oem_real_options_initialized",
+            "set_country_flag = USA_oem_real_options_initialized\n"
+            "\t\tset_variable = { USA_test_state = 5 }",
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    assert any(
+        "writes company-owned variable USA_test_state" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_real_options_rejects_undeclared_persistent_writes(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/USA_oem_real_options_effects.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "set_country_flag = USA_oem_real_options_initialized",
+            "set_country_flag = USA_oem_real_options_initialized\n"
+            "\t\tset_variable = { USA_oem_untracked_state = 5 }",
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    assert any(
+        "writes undeclared persistent variable USA_oem_untracked_state" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_real_options_requires_bounded_cdf_output(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/USA_oem_real_options_effects.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "\t\tclamp_temp_variable = { var = USA_oem_cdf_output min = 0 max = 1 }\n",
+            "",
+        ),
+        encoding="utf-8",
+    )
+
+    assert any(
+        "CDF output must clamp to 0..1" in message for message in _messages(tmp_path)
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "replacement"),
+    (("knots", "0.5"), ("values", None), ("values", True)),
+)
+def test_real_options_rejects_nonnumeric_cdf_elements(tmp_path, field, replacement):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["economic_layers"][0]["cdf"][field][1] = replacement
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "CDF knots and values must contain only finite numbers" in message
+        for message in _messages(tmp_path)
+    )
+
+
+@pytest.mark.parametrize("replacement", ("40", None, True, float("nan")))
+def test_real_options_rejects_invalid_modifier_thresholds(tmp_path, replacement):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    family = manifest["economic_layers"][0]["modifier_families"][0]
+    family["thresholds"] = [20, replacement]
+    family["members"].append("USA_oem_investment_climate_3")
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "modifier family investment_climate thresholds must contain only finite numbers"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_real_options_rejects_non_object_policy_programs(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["economic_layers"][0]["policy_programs"] = [None, "invalid", 1, True]
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    messages = _messages(tmp_path)
+    assert {message for message in messages if "policy_programs[" in message} == {
+        f"Test Real Options policy_programs[{index}] must be an object"
+        for index in range(4)
+    }
+
+
+def test_real_options_requires_monthly_bridge_reachability(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/USA_oem_real_options_effects.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "\tUSA_oem_update_real_options_economy = yes\n", "", 1
+        ),
+        encoding="utf-8",
+    )
+
+    assert any(
+        "must call USA_oem_update_real_options_economy exactly once" in message
         for message in _messages(tmp_path)
     )
