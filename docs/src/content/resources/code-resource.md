@@ -35,7 +35,6 @@ Effect snippets (treasury, debt, buildings, factions, influence, party managemen
 - [Influence Effects](/dev-resources/scripted-effects-reference/#influence-effects) - Influence actions
 - [Political Effects](/dev-resources/scripted-effects-reference/#political-effects) - Party management
 - [Special System Effects](/dev-resources/scripted-effects-reference/#special-system-effects) - EU, Energy, Cartels
-- [Corporate History Framework](/dev-resources/corporate-history-framework/) - Company chains, game rule, tier budgets
 
 ## How-To Guides
 
@@ -335,6 +334,11 @@ These affect missile and satellite production.
 | `comsat_production_speed_modifier`       | Communications satellites                              |
 | `spysat_production_speed_modifier`       | Spy satellites                                         |
 | `killsat_production_speed_modifier`      | Kill satellites                                        |
+| `olv_production_cost_modifier`           | Orbital launch vehicle cost                            |
+| `gnss_production_cost_modifier`          | Navigation satellite cost                              |
+| `comsat_production_cost_modifier`        | Communications satellite cost                          |
+| `spysat_production_cost_modifier`        | Spy satellite cost                                     |
+| `killsat_production_cost_modifier`       | Kill satellite cost                                    |
 | `nuclear_reactor_fuel_production`        | Nuclear fuel production (base, kg/week)                |
 | `nuclear_reactor_fuel_production_factor` | Nuclear fuel production factor (percentage multiplier) |
 
