@@ -22,19 +22,15 @@ _COLLAPSED = "foo = {\n\tcustom_effect_tooltip = bar_tt\n}\n"
 
 
 def test_simplify_effect_tooltip_block_single_line():
-    src = "foo = {\n\teffect_tooltip = { custom_effect_tooltip = bar_tt }\n}\n"
-    lines = src.splitlines(keepends=True)
-    out, n = cet.simplify_effect_tooltip_block(lines)
+    out, n = cet.simplify_effect_tooltip_block(_WRAP_SINGLE.splitlines(keepends=True))
     assert n == 1
-    assert "".join(out) == "foo = {\n\tcustom_effect_tooltip = bar_tt\n}\n"
+    assert "".join(out) == _COLLAPSED
 
 
 def test_simplify_effect_tooltip_block_multi_line():
-    src = "foo = {\n\teffect_tooltip = {\n\t\tcustom_effect_tooltip = bar_tt\n\t}\n}\n"
-    lines = src.splitlines(keepends=True)
-    out, n = cet.simplify_effect_tooltip_block(lines)
+    out, n = cet.simplify_effect_tooltip_block(_WRAP_MULTI.splitlines(keepends=True))
     assert n == 1
-    assert "".join(out) == "foo = {\n\tcustom_effect_tooltip = bar_tt\n}\n"
+    assert "".join(out) == _COLLAPSED
 
 
 def test_simplify_effect_tooltip_block_inline():
@@ -45,10 +41,11 @@ def test_simplify_effect_tooltip_block_inline():
     assert "".join(out) == "foo = { custom_effect_tooltip = bar_tt }\n"
 
 
-def test_simplify_effect_tooltip_block_multiple_keys():
+def test_simplify_effect_tooltip_block_multiple_keys_block():
     src = "foo = {\n\teffect_tooltip = {\n\t\tcustom_effect_tooltip = a_tt\n\t\tcustom_effect_tooltip = b_tt\n\t}\n}\n"
     lines = src.splitlines(keepends=True)
     out, n = cet.simplify_effect_tooltip_block(lines)
+    # collapsed counts wrappers, not keys, so this is 1
     assert n == 1
     assert (
         "".join(out)
@@ -64,6 +61,25 @@ def test_simplify_effect_tooltip_block_inline_multiple_keys():
     assert (
         "".join(out)
         == "foo = { custom_effect_tooltip = a_tt custom_effect_tooltip = b_tt }\n"
+    )
+
+
+def test_simplify_effect_tooltip_block_is_idempotent():
+    for src in (_WRAP_SINGLE, _WRAP_MULTI):
+        once, n1 = cet.simplify_effect_tooltip_block(src.splitlines(keepends=True))
+        assert n1 == 1
+        twice, n2 = cet.simplify_effect_tooltip_block(once)
+        assert n2 == 0
+        assert twice == once
+
+
+def test_simplify_effect_tooltip_block_multiple_wrappers_one_line():
+    src = "foo = { effect_tooltip = { custom_effect_tooltip = a } effect_tooltip = { custom_effect_tooltip = b } }\n"
+    out, n = cet.simplify_effect_tooltip_block(src.splitlines(keepends=True))
+    assert n == 2
+    assert (
+        "".join(out)
+        == "foo = { custom_effect_tooltip = a custom_effect_tooltip = b }\n"
     )
 
 
