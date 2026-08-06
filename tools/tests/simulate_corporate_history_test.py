@@ -300,6 +300,26 @@ USA_corporate_trigger_year_2025 = {
         raise AssertionError("wrong scripted terminal guard was accepted")
 
 
+def test_script_index_reaches_idea_marker(tmp_path):
+    effects = tmp_path / "common/scripted_effects/test_effects.txt"
+    effects.parent.mkdir(parents=True)
+    effects.write_text(
+        """USA_test_reconstruct_history = {
+\tUSA_test_apply_outcome = yes
+}
+
+USA_test_apply_outcome = {
+\tadd_ideas = USA_test_outcome
+}
+""",
+        encoding="utf-8",
+    )
+
+    scripts = ScriptIndex.load(tmp_path)
+
+    assert scripts.reaches_marker("USA_test_reconstruct_history", "USA_test_outcome")
+
+
 def test_script_backed_simulation_detects_wrong_scheduler_window(tmp_path):
     effects = tmp_path / "common/scripted_effects/test_effects.txt"
     effects.parent.mkdir(parents=True)

@@ -154,7 +154,7 @@ There is no 2000 annual corporate dispatcher. Event 1 is startup-scheduler-only.
 | Outcomes Only | Reconstruct independently beside Lenovo at startup and monthly until `CHI_huawei_reconstruct_complete` exists; never queue a popup |
 | Off | Create no Huawei variables, route flags, ideas, events, terminal state, or dashboard surface |
 
-The visible event 15 sets `CHI_huawei_capstone_resolved` through its selected capstone applicator. It deliberately does not write `CHI_huawei_reconstruct_complete`; reconstruction is the sole producer and records completion after the visible-event grace window.
+The selected capstone idea is the authoritative resolution state. A derived scripted trigger checks the six mutually exclusive outcome ideas, so removing an outcome idea makes the resolver eligible to repair the state. Visible event 15 deliberately does not write `CHI_huawei_reconstruct_complete`; reconstruction is the sole producer and records completion after the visible-event grace window.
 
 ## Visible One-Shots
 

@@ -69,10 +69,14 @@ class ScriptIndex:
         if effect in seen or effect not in self.effects:
             return False
         body = self.effects[effect]
-        marker_pattern = re.compile(
+        flag_pattern = re.compile(
             rf"\bset_country_flag\s*=\s*(?:{re.escape(marker)}\b|\{{\s*flag\s*=\s*{re.escape(marker)}\b)"
         )
-        if marker_pattern.search(body):
+        idea_pattern = re.compile(
+            rf"\badd_ideas\s*=\s*(?:{re.escape(marker)}\b|\{{[^}}]*\b{re.escape(marker)}\b[^}}]*\}})",
+            re.DOTALL,
+        )
+        if flag_pattern.search(body) or idea_pattern.search(body):
             return True
         return any(
             self._reaches_marker(called, marker, seen | {effect})

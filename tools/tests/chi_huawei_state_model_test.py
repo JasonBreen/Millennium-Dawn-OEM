@@ -618,6 +618,11 @@ def test_scripted_capstone_thresholds_applicators_and_visible_priority():
     assert "NOT = { CHI_huawei_qualifies_any_threshold_capstone = yes }" in fallback
 
     outcomes = tuple(qualifiers) + ("resilient_technology_fortress",)
+    outcome_ideas = {f"CHI_huawei_{outcome}" for outcome in outcomes}
+    has_capstone = _named_block(triggers, "CHI_huawei_has_capstone_outcome")
+    assert set(
+        re.findall(r"has_idea\s*=\s*(CHI_huawei_[A-Za-z0-9_]+)", has_capstone)
+    ) == outcome_ideas
     for outcome in outcomes:
         idea = f"CHI_huawei_{outcome}"
         applicator = _named_block(effects, f"CHI_huawei_apply_{outcome}")
@@ -626,10 +631,13 @@ def test_scripted_capstone_thresholds_applicators_and_visible_priority():
         assert re.findall(
             r"add_ideas\s*=\s*(CHI_huawei_[A-Za-z0-9_]+)", applicator
         ) == [idea]
-        assert applicator.count("set_country_flag = CHI_huawei_capstone_resolved") == 1
         assert len(re.findall(rf"(?m)^\t\t{re.escape(idea)}\s*=\s*\{{", ideas)) == 1
 
+    assert "CHI_huawei_capstone_resolved" not in effects
+    assert "CHI_huawei_capstone_resolved" not in events
+
     capstone_event = _event_block(events, 15)
+    assert "NOT = { CHI_huawei_has_capstone_outcome = yes }" in capstone_event
     options = _option_blocks(capstone_event)
     expected_option_suffixes = ("a", "b", "c", "d_option", "e_option", "f_option")
     expected_qualifiers = qualifier_names + [
@@ -753,7 +761,7 @@ def test_reconstruction_owns_the_only_completion_marker_write():
     assert "NOT = { has_country_flag = CHI_huawei_state_initialized }" in initialize
     assert initialize.count("set_country_flag = CHI_huawei_state_initialized") == 1
     assert initialize.count("CHI_huawei_clamp_state = yes") == 1
-    assert "NOT = { has_country_flag = CHI_huawei_capstone_resolved }" in resolver
+    assert "NOT = { CHI_huawei_has_capstone_outcome = yes }" in resolver
     for event_number in range(1, 16):
         assert (
             reconstruction.count(
@@ -764,7 +772,7 @@ def test_reconstruction_owns_the_only_completion_marker_write():
     assert effects.count(completion_write) == 1
     assert completion_write in reconstruction
     assert "date > 2026.3.31" in reconstruction
-    assert "has_country_flag = CHI_huawei_capstone_resolved" in reconstruction
+    assert "CHI_huawei_has_capstone_outcome = yes" in reconstruction
     assert (
         "NOT = { has_country_flag = CHI_huawei_reconstruct_complete }" in reconstruction
     )
@@ -860,6 +868,11 @@ def test_dashboard_is_read_only_authoritative_and_off_gated():
         assert f"[?{axis}|0] / 10" in localisation
     assert "[CHI_corporate_systems_huawei_era]" in localisation
     assert "[CHI_corporate_systems_huawei_outcome]" in localisation
+    assert (
+        "trigger = { CHI_huawei_has_capstone_outcome = yes }"
+        in scripted_localisation
+    )
+    assert "CHI_huawei_capstone_resolved" not in scripted_localisation
     for idea in (
         "CHI_huawei_global_telecom_challenger",
         "CHI_huawei_integrated_ict_champion",
