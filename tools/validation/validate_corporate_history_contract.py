@@ -94,6 +94,14 @@ _WRITE_KEYWORDS = (
 _READ_KEYWORDS = ("has_country_flag", "has_idea", "check_variable")
 
 
+def _is_finite_number(value: object) -> bool:
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and Decimal(str(value)).is_finite()
+    )
+
+
 @dataclass(frozen=True)
 class Bound:
     minimum: Decimal
@@ -821,10 +829,7 @@ class Validator(BaseValidator):
                 values = cdf.get("values", [])
                 cdf_lists = isinstance(knots, list) and isinstance(values, list)
                 cdf_numeric = cdf_lists and all(
-                    isinstance(value, (int, float))
-                    and not isinstance(value, bool)
-                    and Decimal(str(value)).is_finite()
-                    for value in (*knots, *values)
+                    _is_finite_number(value) for value in (*knots, *values)
                 )
                 if cdf_lists and not cdf_numeric:
                     findings.append(
@@ -891,6 +896,17 @@ class Validator(BaseValidator):
                 members = family.get("members", [])
                 thresholds = family.get("thresholds", [])
                 score = str(family.get("score", ""))
+                if isinstance(thresholds, list) and not all(
+                    _is_finite_number(threshold) for threshold in thresholds
+                ):
+                    findings.append(
+                        (
+                            f"{layer_name} modifier family {family_name} thresholds must contain only finite numbers",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                    continue
                 if (
                     not isinstance(members, list)
                     or not isinstance(thresholds, list)
@@ -990,8 +1006,15 @@ class Validator(BaseValidator):
                 )
                 programs = []
             program_ideas: List[str] = []
-            for program in programs:
+            for program_index, program in enumerate(programs):
                 if not isinstance(program, dict):
+                    findings.append(
+                        (
+                            f"{layer_name} policy_programs[{program_index}] must be an object",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
                     continue
                 decision = str(program.get("decision", ""))
                 idea = str(program.get("idea", ""))

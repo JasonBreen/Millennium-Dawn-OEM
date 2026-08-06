@@ -2185,6 +2185,39 @@ def test_real_options_rejects_nonnumeric_cdf_elements(tmp_path, field, replaceme
     )
 
 
+@pytest.mark.parametrize("replacement", ("40", None, True, float("nan")))
+def test_real_options_rejects_invalid_modifier_thresholds(tmp_path, replacement):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    family = manifest["economic_layers"][0]["modifier_families"][0]
+    family["thresholds"] = [20, replacement]
+    family["members"].append("USA_oem_investment_climate_3")
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "modifier family investment_climate thresholds must contain only finite numbers"
+        in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_real_options_rejects_non_object_policy_programs(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["economic_layers"][0]["policy_programs"] = [None, "invalid", 1, True]
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    messages = _messages(tmp_path)
+    assert {message for message in messages if "policy_programs[" in message} == {
+        f"Test Real Options policy_programs[{index}] must be an object"
+        for index in range(4)
+    }
+
+
 def test_real_options_requires_monthly_bridge_reachability(tmp_path):
     _build_fixture(tmp_path)
     _enable_economic_layer_fixture(tmp_path)
