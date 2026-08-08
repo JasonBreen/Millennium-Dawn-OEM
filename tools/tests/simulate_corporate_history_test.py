@@ -274,13 +274,13 @@ def test_checked_in_sov_computing_scenarios_use_real_scripts():
         for scenario in scenarios["scenarios"]
         if scenario.get("chain") == "SOV_computing_sovereignty"
     ]
-    assert set(scenario_names) == {
+    assert scenario_names == [
         "sov_computing_full_2000_complete_lifecycle",
         "sov_computing_full_2015_current_year",
         "sov_computing_outcomes_only_2026_preterminal",
         "sov_computing_outcomes_only_2026_terminal",
         "sov_computing_disabled_2026",
-    }
+    ]
 
     results, passed = run_scenarios(
         manifest,

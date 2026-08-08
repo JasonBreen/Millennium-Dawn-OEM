@@ -1377,6 +1377,29 @@ def test_manifest_registers_the_national_ecosystem_contract():
     }
 
 
+def test_processor_event_tooltips_condition_deployability_on_foundry_routes():
+    localisation = LOCALISATION_PATH.read_text(encoding="utf-8-sig")
+    tooltip_values = dict(
+        re.findall(
+            r'(?m)^ (SOV_computing_sovereignty_events\.(?:6|11)\.a_tt): "([^"]+)"$',
+            localisation,
+        )
+    )
+
+    expected_capacity = {
+        "SOV_computing_sovereignty_events.6.a_tt": "Domestic 28 nm Capacity",
+        "SOV_computing_sovereignty_events.11.a_tt": "Domestic 16 nm Capacity",
+    }
+    assert tooltip_values.keys() == expected_capacity.keys()
+    for key, capacity in expected_capacity.items():
+        tooltip = tooltip_values[key]
+        assert "becomes deployable only when" in tooltip
+        assert capacity in tooltip
+        assert "valid external foundry route" in tooltip
+        assert "Without either" in tooltip
+        assert "Makes the Elbrus" not in tooltip
+
+
 def test_english_localisation_inventory_and_encoding():
     raw = LOCALISATION_PATH.read_bytes()
     assert raw.startswith(b"\xef\xbb\xbf")
