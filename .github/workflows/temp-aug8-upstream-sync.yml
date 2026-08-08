@@ -3,17 +3,25 @@ name: Temporary August 8 Upstream Sync Runner
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
   pull-requests: read
+  issues: read
 
 jobs:
   diagnose:
     if: >-
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.head.ref == 'sync/upstream-main-2026-08-08' &&
-      github.event.pull_request.base.ref == 'main'
+      (github.event_name == 'pull_request_target' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref == 'sync/upstream-main-2026-08-08' &&
+       github.event.pull_request.base.ref == 'main') ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.number == 160 &&
+       github.event.issue.pull_request &&
+       contains(github.event.comment.body, '/aug8-sync-diagnose'))
     runs-on: ubuntu-latest
     steps:
       - name: Check out trusted fork sync branch
