@@ -259,6 +259,40 @@ def test_checked_in_blackberry_usa_2009_scenario_uses_real_scripts():
     assert results[0]["actual"]["visible_events"] == ["blackberry_events.4"]
 
 
+def test_checked_in_sov_computing_scenarios_use_real_scripts():
+    mod_root = Path(__file__).resolve().parents[2]
+    manifest = json.loads(
+        (mod_root / "tools/corporate_history_contract.json").read_text(encoding="utf-8")
+    )
+    scenarios = json.loads(
+        (mod_root / "tools/corporate_history_scenarios.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    scenario_names = [
+        scenario["name"]
+        for scenario in scenarios["scenarios"]
+        if scenario.get("chain") == "SOV_computing_sovereignty"
+    ]
+    assert set(scenario_names) == {
+        "sov_computing_full_2000_complete_lifecycle",
+        "sov_computing_full_2015_current_year",
+        "sov_computing_outcomes_only_2026_preterminal",
+        "sov_computing_outcomes_only_2026_terminal",
+        "sov_computing_disabled_2026",
+    }
+
+    results, passed = run_scenarios(
+        manifest,
+        scenarios,
+        scenario_names,
+        ScriptIndex.load(mod_root),
+    )
+
+    assert passed
+    assert [result["name"] for result in results] == scenario_names
+
+
 def test_script_backed_simulation_rejects_wrong_terminal_guard(tmp_path):
     effects = tmp_path / "common/scripted_effects/test_effects.txt"
     effects.parent.mkdir(parents=True)
