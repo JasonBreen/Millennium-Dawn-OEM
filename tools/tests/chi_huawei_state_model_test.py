@@ -771,10 +771,18 @@ def test_reconstruction_owns_the_only_completion_marker_write():
         )
     assert effects.count(completion_write) == 1
     assert completion_write in reconstruction
-    assert "date > 2026.3.31" in reconstruction
-    assert "CHI_huawei_has_capstone_outcome = yes" in reconstruction
+    completion_branches = [
+        block
+        for match in re.finditer(r"(?m)^\t\tif\s*=\s*\{", reconstruction)
+        if completion_write in (block := _extract_block(reconstruction, match.start()))
+    ]
+    assert len(completion_branches) == 1
+    completion_branch = completion_branches[0]
+    assert "date > 2026.3.31" in completion_branch
+    assert "CHI_huawei_has_capstone_outcome = yes" in completion_branch
     assert (
-        "NOT = { has_country_flag = CHI_huawei_reconstruct_complete }" in reconstruction
+        "NOT = { has_country_flag = CHI_huawei_reconstruct_complete }"
+        in completion_branch
     )
     assert completion_write not in events
 
