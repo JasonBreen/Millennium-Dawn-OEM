@@ -30,9 +30,7 @@ ON_ACTIONS_PATH = (
 FRA_ON_ACTIONS_PATH = ROOT / "common" / "on_actions" / "99_FRA_on_actions.txt"
 CONTRACT_PATH = ROOT / "tools" / "corporate_history_contract.json"
 SCENARIOS_PATH = ROOT / "tools" / "corporate_history_scenarios.json"
-DASHBOARD_PATH = (
-    ROOT / "common" / "decisions" / "FRA_corporate_systems_dashboard.txt"
-)
+DASHBOARD_PATH = ROOT / "common" / "decisions" / "FRA_corporate_systems_dashboard.txt"
 
 AXES = {
     "sov": "FRA_corporate_strategic_sovereignty",
@@ -433,9 +431,7 @@ def test_state_matrix_baseline_clamps_and_historical_defaults():
     clamp = _named_block(effects, "FRA_corporate_systems_clamp_state")
 
     for short_name, variable in AXES.items():
-        assert (
-            f"set_variable = {{ {variable} = {BASELINE[short_name]} }}" in initialize
-        )
+        assert f"set_variable = {{ {variable} = {BASELINE[short_name]} }}" in initialize
         assert f"set_temp_variable = {{ corp_value = {variable} }}" in clamp
         assert f"set_variable = {{ {variable} = corp_value }}" in clamp
     assert initialize.count("set_variable = {") == 10
@@ -443,9 +439,7 @@ def test_state_matrix_baseline_clamps_and_historical_defaults():
 
     for event_id, routes in EXPECTED_ROUTES.items():
         for suffix, expected in routes:
-            effect = _named_block(
-                effects, f"FRA_corporate_systems_apply_{suffix}"
-            )
+            effect = _named_block(effects, f"FRA_corporate_systems_apply_{suffix}")
             assert _state_deltas(effect) == _expected_deltas(expected)
             assert f"set_country_flag = FRA_corporate_systems_{suffix}" in effect
             assert "FRA_corporate_systems_initialize_state = yes" in effect
@@ -454,9 +448,7 @@ def test_state_matrix_baseline_clamps_and_historical_defaults():
                 default=-1,
             )
 
-    historical_ids = tuple(
-        event_id for event_id in EXPECTED_ROUTES if event_id != 28
-    )
+    historical_ids = tuple(event_id for event_id in EXPECTED_ROUTES if event_id != 28)
     for event_id in historical_ids:
         historical = _named_block(
             effects, f"FRA_corporate_systems_apply_historical_step_{event_id}"
@@ -488,7 +480,9 @@ def test_reconstruction_is_reward_free_ordered_and_terminal():
             continue
         reachable.add(name)
         body = definitions[name]
-        for called in re.findall(r"\b(FRA_corporate_systems_[A-Za-z0-9_]+)\s*=\s*yes", body):
+        for called in re.findall(
+            r"\b(FRA_corporate_systems_[A-Za-z0-9_]+)\s*=\s*yes", body
+        ):
             if called in definitions:
                 pending.append(called)
 
@@ -515,7 +509,9 @@ def test_reconstruction_is_reward_free_ordered_and_terminal():
         in reconstruct
     )
     assert "date > 2020.7.22" in reconstruct
-    assert "set_country_flag = FRA_corporate_systems_reconstruct_complete" in reconstruct
+    assert (
+        "set_country_flag = FRA_corporate_systems_reconstruct_complete" in reconstruct
+    )
 
     complete = definitions["FRA_corporate_systems_complete_terminal_state"]
     assert "date > 2020.7.22" in complete
@@ -663,9 +659,7 @@ def test_all_capstones_are_reachable_with_priority_and_terminal_fallbacks():
         triggers, "FRA_corporate_systems_5g_route_terminal_ready"
     )
     assert "NOT = { FRA_corporate_systems_orange_operational = yes }" in terminal_ready
-    assert (
-        "value = 4.5 compare = less_than" in terminal_ready
-    )
+    assert "value = 4.5 compare = less_than" in terminal_ready
     assert "FRA_corporate_systems_huawei_authorization_resolved = yes" in terminal_ready
 
 
@@ -692,9 +686,7 @@ def test_event_surface_ai_fallback_and_atomic_route_contract():
             options, (50, 30, 20), EXPECTED_ROUTES[event_id]
         ):
             assert f"ai_chance = {{ base = {base} }}" in option
-            assert (
-                f"FRA_corporate_systems_apply_{suffix} = yes" in option
-            )
+            assert f"FRA_corporate_systems_apply_{suffix} = yes" in option
             gated_options += len(_child_blocks(option, "trigger"))
         assert not _child_blocks(options[2], "trigger")
     assert gated_options == 7
@@ -733,9 +725,7 @@ def test_nokia_bridge_is_idempotent_partner_safe_and_off_mode_safe():
         "block": {"sov": "0.8", "alu": "-0.8"},
     }
     for suffix, expected in adapters.items():
-        effect = _named_block(
-            effects, f"FRA_corporate_systems_record_nokia_{suffix}"
-        )
+        effect = _named_block(effects, f"FRA_corporate_systems_record_nokia_{suffix}")
         outer = _child_blocks(effect, "if")[0]
         assert "corporate_history_enabled = yes" in outer
         assert "original_tag = FRA" in outer
@@ -761,7 +751,9 @@ def test_nokia_bridge_is_idempotent_partner_safe_and_off_mode_safe():
 
     bridge_event = NOKIA_EVENTS_PATH.read_text(encoding="utf-8")
     event = _event_block(bridge_event, "FRA_nokia_response_events.1")
-    assert "NOT = { has_country_flag = FRA_corporate_systems_state_initialized }" in event
+    assert (
+        "NOT = { has_country_flag = FRA_corporate_systems_state_initialized }" in event
+    )
     assert "FRA_corporate_systems_nokia_offer_eligible = yes" in event
     for option, adapter, callback in zip(
         _child_blocks(event, "option"),
@@ -783,9 +775,7 @@ def test_current_year_yearly_and_monthly_delivery_paths_are_exact():
     scheduler = _named_block(
         effects, "FRA_corporate_systems_schedule_current_year_events"
     )
-    recovery = _named_block(
-        effects, "FRA_corporate_systems_recover_missing_events"
-    )
+    recovery = _named_block(effects, "FRA_corporate_systems_recover_missing_events")
 
     current_year_events = {20: (2000, 121)}
     for year, events in ANNUAL_EVENTS.items():
@@ -859,9 +849,7 @@ def test_current_year_yearly_and_monthly_delivery_paths_are_exact():
         )
 
     assert "FRA_corporate_systems_events.28" not in scheduler
-    huawei = _named_block(
-        effects, "FRA_corporate_systems_apply_orange_5g_huawei"
-    )
+    huawei = _named_block(effects, "FRA_corporate_systems_apply_orange_5g_huawei")
     assert "FRA_corporate_systems_events.28 days = 174" in huawei
 
 
@@ -903,12 +891,8 @@ def test_startup_modes_monthly_recovery_and_dashboard_state_are_registered():
     assert "FRA_corporate_history_monthly_outcomes = yes" in fra_on_actions
 
     triggers = TRIGGERS_PATH.read_text(encoding="utf-8")
-    meaningful = _named_block(
-        triggers, "FRA_corporate_systems_has_meaningful_state"
-    )
-    capstone = _named_block(
-        triggers, "FRA_corporate_systems_has_capstone_outcome"
-    )
+    meaningful = _named_block(triggers, "FRA_corporate_systems_has_meaningful_state")
+    capstone = _named_block(triggers, "FRA_corporate_systems_has_capstone_outcome")
     assert "FRA_corporate_systems_state_initialized" in meaningful
     assert "FRA_corporate_systems_reconstruct_complete" in meaningful
     assert "FRA_corporate_systems_has_capstone_outcome = yes" in meaningful
@@ -916,9 +900,12 @@ def test_startup_modes_monthly_recovery_and_dashboard_state_are_registered():
         assert f"has_idea = {idea}" in capstone
 
     dashboard = DASHBOARD_PATH.read_text(encoding="utf-8")
-    assert dashboard.count(
-        "visible = { FRA_corporate_systems_has_meaningful_state = yes }"
-    ) == 5
+    assert (
+        dashboard.count(
+            "visible = { FRA_corporate_systems_has_meaningful_state = yes }"
+        )
+        == 5
+    )
     for forbidden in ("set_variable", "set_country_flag", "add_ideas", "remove_ideas"):
         assert forbidden not in dashboard
 
