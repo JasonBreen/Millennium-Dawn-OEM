@@ -1,0 +1,59 @@
+name: Temporary August 8 Upstream Sync Diagnosis
+
+on:
+  push:
+    branches:
+      - sync/upstream-main-2026-08-08
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    if: ${{ !contains(github.event.head_commit.message, '[sync-diagnosis]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sync branch
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Diagnose upstream merge conflicts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git || true
+          git fetch upstream main
+
+          mkdir -p .sync
+          report=.sync/aug8-upstream-conflicts.txt
+          : > "$report"
+          echo "OEM_HEAD=$(git rev-parse HEAD)" >> "$report"
+          echo "UPSTREAM_HEAD=$(git rev-parse upstream/main)" >> "$report"
+          echo "MERGE_BASE=$(git merge-base HEAD upstream/main)" >> "$report"
+          echo >> "$report"
+
+          set +e
+          git merge --no-commit --no-ff upstream/main
+          merge_rc=$?
+          set -e
+
+          if [ "$merge_rc" -eq 0 ]; then
+            echo "STATUS=CLEAN" >> "$report"
+            git merge --abort
+          else
+            echo "STATUS=CONFLICTS" >> "$report"
+            echo >> "$report"
+            echo "CONFLICTED_PATHS:" >> "$report"
+            git diff --name-only --diff-filter=U | sort >> "$report"
+            echo >> "$report"
+            echo "PORCELAIN_STATUS:" >> "$report"
+            git status --porcelain=v1 >> "$report" || true
+            git merge --abort
+          fi
+
+          git add "$report"
+          git commit -m "[sync-diagnosis] Record August 8 upstream conflict set"
+          git push origin HEAD:sync/upstream-main-2026-08-08
