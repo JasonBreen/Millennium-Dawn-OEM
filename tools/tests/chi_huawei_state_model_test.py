@@ -3,7 +3,6 @@ import re
 from pathlib import Path
 from typing import List, Tuple
 
-
 ROOT = Path(__file__).resolve().parents[2]
 EVENTS_PATH = ROOT / "events" / "CHI_huawei_events.txt"
 EFFECTS_PATH = ROOT / "common" / "scripted_effects" / "CHI_huawei_effects.txt"
@@ -620,9 +619,10 @@ def test_scripted_capstone_thresholds_applicators_and_visible_priority():
     outcomes = tuple(qualifiers) + ("resilient_technology_fortress",)
     outcome_ideas = {f"CHI_huawei_{outcome}" for outcome in outcomes}
     has_capstone = _named_block(triggers, "CHI_huawei_has_capstone_outcome")
-    assert set(
-        re.findall(r"has_idea\s*=\s*(CHI_huawei_[A-Za-z0-9_]+)", has_capstone)
-    ) == outcome_ideas
+    assert (
+        set(re.findall(r"has_idea\s*=\s*(CHI_huawei_[A-Za-z0-9_]+)", has_capstone))
+        == outcome_ideas
+    )
     for outcome in outcomes:
         idea = f"CHI_huawei_{outcome}"
         applicator = _named_block(effects, f"CHI_huawei_apply_{outcome}")
@@ -869,8 +869,7 @@ def test_dashboard_is_read_only_authoritative_and_off_gated():
     assert "[CHI_corporate_systems_huawei_era]" in localisation
     assert "[CHI_corporate_systems_huawei_outcome]" in localisation
     assert (
-        "trigger = { CHI_huawei_has_capstone_outcome = yes }"
-        in scripted_localisation
+        "trigger = { CHI_huawei_has_capstone_outcome = yes }" in scripted_localisation
     )
     assert "CHI_huawei_capstone_resolved" not in scripted_localisation
     for idea in (

@@ -334,6 +334,22 @@ corporate_history_on_startup = {
 				country_event = { id = JAP_nintendo_events.90 days = 2 }
 			}
 		}
+
+		if = {
+			limit = {
+				country_exists = FRA
+				FRA = {
+					original_tag = FRA
+					NOT = { has_country_flag = collapsed_nation }
+				}
+			}
+			FRA = {
+				FRA_corporate_systems_initialize_state = yes
+				FRA_corporate_systems_sync_nokia_response = yes
+				FRA_corporate_systems_schedule_current_year_events = yes
+				country_event = { id = FRA_corporate_systems_events.90 days = 1 }
+			}
+		}
 	}
 	else_if = {
 		limit = { corporate_history_outcomes_only_enabled = yes }
@@ -404,6 +420,16 @@ corporate_history_on_startup = {
 				CHI_lenovo_reconstruct_history = yes
 				CHI_huawei_reconstruct_history = yes
 			}
+		}
+		if = {
+			limit = {
+				country_exists = FRA
+				FRA = {
+					original_tag = FRA
+					NOT = { has_country_flag = collapsed_nation }
+				}
+			}
+			FRA = { FRA_corporate_systems_reconstruct_history = yes }
 		}
 	}
 }
@@ -815,5 +841,31 @@ POL_corporate_history_monthly_outcomes = {
 			NOT = { has_country_flag = POL_industrial_sovereignty_reconstruct_complete }
 		}
 		POL_industrial_sovereignty_reconstruct_history = yes
+	}
+}
+
+# Effect: FRA_corporate_history_monthly_outcomes
+# Purpose: Advances silent reconstruction in Outcomes Only and retries expected
+#          France Corporate Systems deliveries in Full mode.
+FRA_corporate_history_monthly_outcomes = {
+	if = {
+		limit = {
+			corporate_history_outcomes_only_enabled = yes
+			original_tag = FRA
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = FRA_corporate_systems_reconstruct_complete }
+		}
+		FRA_corporate_systems_reconstruct_history = yes
+	}
+
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = FRA
+			NOT = { has_country_flag = collapsed_nation }
+		}
+		FRA_corporate_systems_sync_nokia_response = yes
+		FRA_corporate_systems_recover_missing_events = yes
+		FRA_corporate_systems_complete_terminal_state = yes
 	}
 }

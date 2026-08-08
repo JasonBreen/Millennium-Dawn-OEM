@@ -373,7 +373,7 @@ def test_tools_validation_triggers_for_consumed_configuration():
     } <= paths
 
 
-def test_tools_tests_checkout_consumed_workflows():
+def test_tools_tests_checkout_consumed_workflows_and_content():
     workflow = yaml.safe_load(TOOLS_WORKFLOW.read_text(encoding="utf-8"))
     checkout = next(
         step
@@ -384,7 +384,12 @@ def test_tools_tests_checkout_consumed_workflows():
     assert {
         ".github/workflows/validator-cache.yml",
         ".github/workflows/nightly-pr-validation.yml",
-        "common/scripted_effects",
+        "common",
+        "events",
+        "history",
+        "localisation",
+        "interface",
+        "gfx/flags",
     } <= sparse_paths
 
 
