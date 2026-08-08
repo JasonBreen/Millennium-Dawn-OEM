@@ -4,19 +4,27 @@ on:
   push:
     branches:
       - sync/upstream-main-2026-08-08
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
 
 jobs:
   diagnose:
-    if: ${{ !contains(github.event.head_commit.message, '[sync-diagnosis]') }}
+    if: >-
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[sync-diagnosis]')) ||
+      (github.event_name == 'pull_request' && github.head_ref == 'sync/upstream-main-2026-08-08')
     runs-on: ubuntu-latest
     steps:
       - name: Check out sync branch
         uses: actions/checkout@v7
         with:
+          ref: sync/upstream-main-2026-08-08
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Diagnose upstream merge conflicts
         shell: bash
@@ -29,11 +37,11 @@ jobs:
 
           mkdir -p .sync
           report=.sync/aug8-upstream-conflicts.txt
-          : > "$report"
-          echo "OEM_HEAD=$(git rev-parse HEAD)" >> "$report"
-          echo "UPSTREAM_HEAD=$(git rev-parse upstream/main)" >> "$report"
-          echo "MERGE_BASE=$(git merge-base HEAD upstream/main)" >> "$report"
-          echo >> "$report"
+          tmp=$(mktemp)
+          echo "OEM_HEAD=$(git rev-parse HEAD)" >> "$tmp"
+          echo "UPSTREAM_HEAD=$(git rev-parse upstream/main)" >> "$tmp"
+          echo "MERGE_BASE=$(git merge-base HEAD upstream/main)" >> "$tmp"
+          echo >> "$tmp"
 
           set +e
           git merge --no-commit --no-ff upstream/main
@@ -41,19 +49,23 @@ jobs:
           set -e
 
           if [ "$merge_rc" -eq 0 ]; then
-            echo "STATUS=CLEAN" >> "$report"
+            echo "STATUS=CLEAN" >> "$tmp"
             git merge --abort
           else
-            echo "STATUS=CONFLICTS" >> "$report"
-            echo >> "$report"
-            echo "CONFLICTED_PATHS:" >> "$report"
-            git diff --name-only --diff-filter=U | sort >> "$report"
-            echo >> "$report"
-            echo "PORCELAIN_STATUS:" >> "$report"
-            git status --porcelain=v1 >> "$report" || true
+            echo "STATUS=CONFLICTS" >> "$tmp"
+            echo >> "$tmp"
+            echo "CONFLICTED_PATHS:" >> "$tmp"
+            git diff --name-only --diff-filter=U | sort >> "$tmp"
+            echo >> "$tmp"
+            echo "PORCELAIN_STATUS:" >> "$tmp"
+            git status --porcelain=v1 >> "$tmp" || true
             git merge --abort
           fi
 
+          mv "$tmp" "$report"
           git add "$report"
+          if git diff --cached --quiet; then
+            exit 0
+          fi
           git commit -m "[sync-diagnosis] Record August 8 upstream conflict set"
           git push origin HEAD:sync/upstream-main-2026-08-08
