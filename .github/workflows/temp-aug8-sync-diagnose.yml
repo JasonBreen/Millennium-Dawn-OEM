@@ -1,9 +1,9 @@
-name: Temporary August 9 Upstream Sync Diagnosis
+name: Temporary August 8 Upstream Sync Diagnosis
 
 on:
   push:
     branches:
-      - sync/upstream-main-2026-08-09
+      - sync/upstream-main-2026-08-08
   pull_request:
     branches:
       - main
@@ -16,13 +16,13 @@ jobs:
   diagnose:
     if: >-
       (github.event_name == 'push' && !contains(github.event.head_commit.message, '[sync-diagnosis]')) ||
-      (github.event_name == 'pull_request' && github.head_ref == 'sync/upstream-main-2026-08-09')
+      (github.event_name == 'pull_request' && github.head_ref == 'sync/upstream-main-2026-08-08')
     runs-on: ubuntu-latest
     steps:
       - name: Check out sync branch
         uses: actions/checkout@v7
         with:
-          ref: sync/upstream-main-2026-08-09
+          ref: sync/upstream-main-2026-08-08
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -36,7 +36,7 @@ jobs:
           git fetch upstream main
 
           mkdir -p .sync
-          report=.sync/aug9-upstream-conflicts.txt
+          report=.sync/aug8-upstream-conflicts.txt
           tmp=$(mktemp)
           echo "OEM_HEAD=$(git rev-parse HEAD)" >> "$tmp"
           echo "UPSTREAM_HEAD=$(git rev-parse upstream/main)" >> "$tmp"
@@ -72,5 +72,5 @@ jobs:
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "[sync-diagnosis] Record August 9 upstream conflict set"
-          git push origin HEAD:sync/upstream-main-2026-08-09
+          git commit -m "[sync-diagnosis] Record August 8 upstream conflict set"
+          git push origin HEAD:sync/upstream-main-2026-08-08
