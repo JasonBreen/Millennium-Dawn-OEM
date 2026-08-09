@@ -61,6 +61,38 @@ def test_different_family_branch_not_flagged(tmp_path):
     assert not any("baz_1" in i.message for i in v._issues)
 
 
+def test_staged_only_limits_findings_to_staged_file(tmp_path):
+    _write_fixture(tmp_path)
+    other = tmp_path / "common" / "technologies" / "other.txt"
+    other.write_text(
+        """technologies = {
+\tqux_1 = {
+\t\tcategories = {
+\t\t\tCAT_q
+\t\t\tCAT_r
+\t\t}
+\t\tpath = {
+\t\t\tleads_to_tech = qux_2
+\t\t\tresearch_cost_coeff = 1
+\t\t}
+\t}
+\tqux_2 = {
+\t\tcategories = {
+\t\t\tCAT_q
+\t\t}
+\t}
+}
+""",
+        encoding="utf-8",
+    )
+    v = V.Validator(str(tmp_path), staged_only=True)
+    v.staged_files = [str(other)]
+    v.run_validations()
+    assert len(v._issues) == 1
+    assert "qux_2" in v._issues[0].message
+    assert "foo_2" not in v._issues[0].message
+
+
 def test_stem():
     assert V.stem("gen_4_large") == V.stem("gen_3_large")
     assert V.stem("nsb_engine_tech_6") == V.stem("nsb_engine_tech_5")
