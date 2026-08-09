@@ -68,9 +68,13 @@ Bugfixes:
 - [GER/SWE] Fixed Siemens and Ericsson late starts and Outcomes Only campaigns failing to reconstruct company history without replaying event rewards or overwriting Nokia's history.
 - [USA/CAN/FIN/GER/JAP/SWE/TAI] Prevented paid corporate-history choices from leaving the AI without a bankruptcy-safe option, while keeping AIG crisis intervention treasury-sensitive.
 - [USA] Fixed Corporate Systems economic integration waiting until the next monthly update after Apple, Dell, Google, HP, or Oracle changed its outcome contribution.
+- Fixed the corporate-history scenario simulator reading a milestone's start-date bounds from the whole scheduler block, so one milestone's lower bound could pair with a later milestone's upper bound and report the wrong January window.
 
 Performance improvements:
 - Optimized tag directory scanning in validate_scripted_params.py to read files only once per execution by adding a cache, improving performance.
+- Consolidated the corporate-history current-year schedulers across 17 chains, testing each chain's start-year guard once instead of repeating it on every milestone, and dropped six redundant flag writes from the E3 scheduler.
+- Reduced monthly tick work for the corporate-history drivers in the United States, Canada, China, Japan, Finland, France, and Taiwan, which re-tested the same country and collapsed-nation guard up to eight times per tick and now test it once.
+- [FRA] Simplified the France Corporate Systems triggers so each event's eligibility check reuses its matching resolved trigger instead of repeating that trigger's three outcome flags, and folded the scheduler's repeated game-rule, tag, and collapse gate into a single check.
 
 Graphics:
 - [USA] Added bespoke 400x150 event pictures for the Xbox corporate-history chain (original Xbox, Xbox 360, Red Ring of Death, Kinect, Xbox One, Series X), sourced from Wikimedia Commons CC-licensed photography.
