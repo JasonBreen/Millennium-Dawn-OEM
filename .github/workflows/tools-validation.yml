@@ -160,3 +160,102 @@ jobs:
         run: pylint tools --output-format=github --reports=no --score=no
       - name: Run mypy
         run: mypy
+
+  focus-standardizer-fix:
+    name: one-shot focus standardizer comment fix
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+          sparse-checkout: |
+            tools/standardization/standardize_focus_tree.py
+          sparse-checkout-cone-mode: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Patch and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("tools/standardization/standardize_focus_tree.py")
+          text = path.read_text(encoding="utf-8")
+          old = '''def _split_block(block_lines):
+              """Split an extracted block into (header, inner_lines, close_line).
+              Returns None when the shape isn't a recognizable block."""
+              first = block_lines[0]
+              if len(block_lines) == 1:
+                  code = strip_inline_comment(first)
+                  # A trailing comment may carry its own braces, so the split indices
+                  # would land inside it — bail and let the caller keep the line intact.
+                  if code != first or "{" not in code or code.count("{") != code.count("}"):
+                      return None
+                  open_idx = first.index("{")
+                  close_idx = first.rindex("}")
+                  indent = first[: len(first) - len(first.lstrip())]
+                  inner = first[open_idx + 1 : close_idx].strip()
+                  inner_lines = [f"{indent}\\t{inner}"] if inner else []
+                  return first[: open_idx + 1], inner_lines, f"{indent}}}"
+              if block_lines[-1].strip() != "}":
+                  return None
+              return first, block_lines[1:-1], block_lines[-1]
+          '''
+          new = '''def _split_block(block_lines, *, allow_trailing_comment=False):
+              """Split an extracted block into (header, inner_lines, close_line).
+
+              Returns ``None`` when the shape is not recognizable. A trailing
+              inline comment is split only when explicitly allowed: duplicate
+              block merging keeps commented lines opaque so braces inside the
+              comment cannot change merge semantics.
+              """
+              first = block_lines[0]
+              if len(block_lines) == 1:
+                  raw_code = strip_inline_comment(first)
+                  has_comment = raw_code != first
+                  if has_comment and not allow_trailing_comment:
+                      return None
+
+                  code = raw_code.rstrip("\\r\\n")
+                  if "{" not in code or code.count("{") != code.count("}"):
+                      return None
+
+                  open_idx = code.index("{")
+                  close_idx = code.rindex("}")
+                  indent = code[: len(code) - len(code.lstrip())]
+                  inner = code[open_idx + 1 : close_idx].strip()
+                  inner_lines = [f"{indent}\\t{inner}"] if inner else []
+                  close = f"{indent}}}"
+                  if has_comment:
+                      comment = first[len(raw_code) :].rstrip("\\r\\n")
+                      if comment:
+                          close = f"{close} {comment.lstrip()}"
+                  return code[: open_idx + 1], inner_lines, close
+              if block_lines[-1].strip() != "}":
+                  return None
+              return first, block_lines[1:-1], block_lines[-1]
+          '''
+          if old not in text:
+              raise SystemExit("expected _split_block implementation not found")
+          text = text.replace(old, new, 1)
+          old_call = "            split = _split_block(effect_block)\n"
+          new_call = (
+              "            split = _split_block(\n"
+              "                effect_block, allow_trailing_comment=True\n"
+              "            )\n"
+          )
+          if old_call not in text:
+              raise SystemExit("expected effect-block split call not found")
+          text = text.replace(old_call, new_call, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/standardization/standardize_focus_tree.py
+          git commit -m "Handle trailing comments in inline focus effects"
+          git push origin HEAD:${{ github.head_ref }}
