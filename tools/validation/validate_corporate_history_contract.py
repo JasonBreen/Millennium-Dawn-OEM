@@ -11,7 +11,17 @@ from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
-from typing import Dict, FrozenSet, Iterable, List, Mapping, Sequence, Set, Tuple
+from typing import (
+    Dict,
+    FrozenSet,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+)
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -1814,28 +1824,85 @@ class Validator(BaseValidator):
             dates.update(self._terminal_guard_dates(child, marker))
         return dates
 
+    def _start_date_window(self, block: str) -> Optional[int]:
+        """Year of the `NOT = { has_start_date < Y.1.1 } ... has_start_date < Y.1.2` pair.
+
+        The lower bound always sits in the block's own limit. The upper bound may
+        sit there too, or — where the block opens a whole-year window and its arms
+        split January 1 from the rest (Nintendo, Russian Computing Sovereignty) —
+        in the limit of a direct child arm. A sibling milestone's window is never
+        consulted.
+        """
+        own = self._direct_child_block(block, "limit") or ""
+        lower = re.search(
+            r"NOT\s*=\s*\{\s*has_start_date\s*<\s*(\d{4})\.1\.1\s*\}",
+            own,
+        )
+        if not lower:
+            return None
+        candidates = [own] + [
+            self._direct_child_block(child, "limit") or ""
+            for name, _s, _e, child in self._iter_direct_child_blocks(block)
+            if name in ("if", "else_if")
+        ]
+        for text in candidates:
+            upper = re.search(r"\bhas_start_date\s*<\s*(\d{4})\.1\.2\b", text)
+            if upper and upper.group(1) == lower.group(1):
+                return int(lower.group(1))
+        return None
+
     def _scheduler_window_years(self, scheduler: BlockDef, event_id: str) -> Set[int]:
         years: Set[int] = set()
-        for name, _start, _end, body in self._iter_direct_child_blocks(scheduler.body):
+        self._collect_window_years(
+            scheduler.body, scheduler.line, event_id, None, years
+        )
+        return years
+
+    def _collect_window_years(
+        self,
+        body: str,
+        line: int,
+        event_id: str,
+        inherited: Optional[int],
+        years: Set[int],
+    ) -> None:
+        """Walk if/else_if children tracking the innermost start-date window in scope.
+
+        Schedulers hoist their chain-level guard (`*_start_year_events_scheduled`,
+        and for France the whole rule/tag/collapse gate) into an outer `if`, so the
+        January-1 window can sit one or more levels above the block that queues the
+        event. Only the window matters here; the enclosing guards are checked
+        elsewhere.
+        """
+
+        def count_calls(text: str) -> int:
+            return sum(
+                1
+                for target, _line in self._find_event_calls(text, line, frozenset())
+                if target == event_id
+            )
+
+        for name, _start, _end, child in self._iter_direct_child_blocks(body):
             if name not in ("if", "else_if"):
                 continue
-            targets = {
-                target
-                for target, _line in self._find_event_calls(
-                    body, scheduler.line, frozenset()
-                )
-            }
-            if event_id not in targets:
+            total = count_calls(child)
+            if not total:
                 continue
-            limit = self._direct_child_block(body, "limit") or ""
-            lower = re.search(
-                r"NOT\s*=\s*\{\s*has_start_date\s*<\s*(\d{4})\.1\.1\s*\}",
-                limit,
+            window = self._start_date_window(child)
+            if window is None:
+                window = inherited
+            nested = sum(
+                count_calls(grandchild)
+                for grandname, _gs, _ge, grandchild in self._iter_direct_child_blocks(
+                    child
+                )
+                if grandname in ("if", "else_if")
             )
-            upper = re.search(r"\bhas_start_date\s*<\s*(\d{4})\.1\.2\b", limit)
-            if lower and upper and lower.group(1) == upper.group(1):
-                years.add(int(lower.group(1)))
-        return years
+            # Queued directly by this block rather than only by a nested one.
+            if total > nested and window is not None:
+                years.add(window)
+            if nested:
+                self._collect_window_years(child, line, event_id, window, years)
 
     def _validate_event_reachability(
         self,

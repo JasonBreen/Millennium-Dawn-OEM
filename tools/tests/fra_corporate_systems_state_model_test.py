@@ -800,13 +800,17 @@ def test_current_year_yearly_and_monthly_delivery_paths_are_exact():
             f"country_event = {{ id = FRA_corporate_systems_events.{event_id} "
             f"days = {days} }}"
         )
+        # The scheduler nests the chain gate and the scheduled-flag guard above
+        # the per-year windows, so several enclosing `if` blocks contain the call.
+        # The innermost one that still carries a start-date bound is the window.
+        assert scheduler.count(call) == 1
         windows = [
             block
             for block in _child_blocks(scheduler, "if")
             if call in block and "has_start_date" in block
         ]
-        assert len(windows) == 1
-        window = windows[0]
+        assert windows
+        window = min(windows, key=len)
         assert f"NOT = {{ has_start_date < {year}.1.1 }}" in window
         assert f"has_start_date < {year}.1.2" in window
         assert (

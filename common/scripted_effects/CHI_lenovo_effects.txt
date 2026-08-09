@@ -409,15 +409,19 @@ CHI_lenovo_recover_interrupted_stages = {
 
 CHI_lenovo_schedule_current_year_events = {
 	if = {
-		limit = {
-			NOT = { has_country_flag = CHI_lenovo_start_year_events_scheduled }
-			NOT = { has_start_date < 2014.1.1 }
-			has_start_date < 2014.1.2
-			NOT = { has_country_flag = CHI_lenovo_systemx_path_resolved }
-			NOT = { has_country_flag = CHI_lenovo_event_7_delivered }
+		limit = { NOT = { has_country_flag = CHI_lenovo_start_year_events_scheduled } }
+
+		if = {
+			limit = {
+				NOT = { has_start_date < 2014.1.1 }
+				has_start_date < 2014.1.2
+				NOT = { has_country_flag = CHI_lenovo_systemx_path_resolved }
+				NOT = { has_country_flag = CHI_lenovo_event_7_delivered }
+			}
+			set_country_flag = { flag = CHI_lenovo_event_7_pending value = 1 days = 230 }
+			country_event = { id = CHI_lenovo_events.7 days = 190 }
 		}
-		set_country_flag = { flag = CHI_lenovo_event_7_pending value = 1 days = 230 }
-		country_event = { id = CHI_lenovo_events.7 days = 190 }
 	}
+
 	set_country_flag = CHI_lenovo_start_year_events_scheduled
 }

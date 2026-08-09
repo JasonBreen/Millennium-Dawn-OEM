@@ -19,6 +19,9 @@ from shared_utils import extract_block_from_text, strip_comments
 
 LABEL = "STATIC SCENARIO SIMULATION"
 _BLOCK_RE = re.compile(r"(?m)^([A-Za-z0-9_.:@^\[\]-]+)\s*=\s*\{")
+# _BLOCK_RE is anchored to column 0 for top-level definitions; nested blocks are
+# indented, so walking inside an effect needs an unanchored form.
+_NESTED_BLOCK_RE = re.compile(r"([A-Za-z0-9_.:@^\[\]-]+)\s*=\s*\{")
 _EFFECT_RE = re.compile(r"\b([A-Za-z0-9_]+)\s*=\s*yes\b")
 _EVENT_SHORT_RE = re.compile(
     r"\b(?:country_event|news_event|state_event)\s*=\s*([A-Za-z0-9_.]+)\b(?!\s*\{)"
@@ -103,24 +106,99 @@ class ScriptIndex:
         return frozenset({latest})
 
     def scheduler_years(self, scheduler: str, event_id: str) -> FrozenSet[int]:
-        body = self.effects.get(scheduler, "")
         years: Set[int] = set()
-        for match in re.finditer(r"\b(?:if|else_if)\s*=\s*\{", body):
-            child, end = extract_block_from_text(body, match.end() - 1)
-            if end == -1 or event_id not in _event_calls(child):
-                continue
-            lower = re.search(
-                r"NOT\s*=\s*\{\s*has_start_date\s*<\s*(\d{4})\.1\.1\s*\}",
-                child,
-            )
-            upper = re.search(r"\bhas_start_date\s*<\s*(\d{4})\.1\.2\b", child)
-            if lower and upper and lower.group(1) == upper.group(1):
-                years.add(int(lower.group(1)))
+        _collect_scheduler_years(self.effects.get(scheduler, ""), event_id, None, years)
         return frozenset(years)
 
 
 def _event_calls(body: str) -> Set[str]:
     return set(_EVENT_SHORT_RE.findall(body)) | set(_EVENT_LONG_RE.findall(body))
+
+
+def _direct_child_blocks(body: str) -> List[Tuple[str, str]]:
+    """(name, body) of the blocks one level down, skipping nested ones."""
+    children: List[Tuple[str, str]] = []
+    pos = 0
+    while True:
+        match = _NESTED_BLOCK_RE.search(body, pos)
+        if not match:
+            return children
+        child, end = extract_block_from_text(body, match.end() - 1)
+        if end == -1:
+            pos = match.end()
+            continue
+        children.append((match.group(1), child))
+        pos = end
+
+
+def _block_limit(block: str) -> str:
+    return next(
+        (child for name, child in _direct_child_blocks(block) if name == "limit"), ""
+    )
+
+
+def _start_date_window(block: str) -> Optional[int]:
+    """Year of the `NOT = { has_start_date < Y.1.1 } ... has_start_date < Y.1.2` pair.
+
+    The lower bound always sits in the block's own limit. The upper bound may sit
+    there too, or — where the block opens a whole-year window and its arms split
+    January 1 from the rest (Nintendo, Russian Computing Sovereignty) — in the
+    limit of a direct child arm. A sibling milestone's window is never consulted.
+    """
+    own = _block_limit(block)
+    lower = re.search(
+        r"NOT\s*=\s*\{\s*has_start_date\s*<\s*(\d{4})\.1\.1\s*\}",
+        own,
+    )
+    if not lower:
+        return None
+    candidates = [own] + [
+        _block_limit(child)
+        for name, child in _direct_child_blocks(block)
+        if name in ("if", "else_if")
+    ]
+    for text in candidates:
+        upper = re.search(r"\bhas_start_date\s*<\s*(\d{4})\.1\.2\b", text)
+        if upper and upper.group(1) == lower.group(1):
+            return int(lower.group(1))
+    return None
+
+
+def _count_event_calls(body: str, event_id: str) -> int:
+    return sum(
+        1
+        for target in _EVENT_SHORT_RE.findall(body) + _EVENT_LONG_RE.findall(body)
+        if target == event_id
+    )
+
+
+def _collect_scheduler_years(
+    body: str, event_id: str, inherited: Optional[int], years: Set[int]
+) -> None:
+    """Walk if/else_if children tracking the innermost start-date window in scope.
+
+    Schedulers hoist their chain-level guard into an outer `if`, so a milestone's
+    January-1 window can sit above the block that queues the event. The window is
+    read from each block's own `limit`, never from a sibling milestone's.
+    """
+    for name, child in _direct_child_blocks(body):
+        if name not in ("if", "else_if"):
+            continue
+        total = _count_event_calls(child, event_id)
+        if not total:
+            continue
+        window = _start_date_window(child)
+        if window is None:
+            window = inherited
+        nested = sum(
+            _count_event_calls(grandchild, event_id)
+            for gname, grandchild in _direct_child_blocks(child)
+            if gname in ("if", "else_if")
+        )
+        if total > nested and window is not None:
+            years.add(window)
+        if nested:
+            _collect_scheduler_years(child, event_id, window, years)
 
 
 class ScenarioError(ValueError):
