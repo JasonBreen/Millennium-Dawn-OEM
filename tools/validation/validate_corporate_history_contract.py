@@ -2049,9 +2049,11 @@ class Validator(BaseValidator):
             findings.append(
                 (
                     f"corporate_history_on_startup requires exactly one on-action caller; found {len(startup_callers)}",
-                    startup_callers[0][0]
-                    if startup_callers
-                    else "common/on_actions/00_on_actions.txt",
+                    (
+                        startup_callers[0][0]
+                        if startup_callers
+                        else "common/on_actions/00_on_actions.txt"
+                    ),
                     startup_callers[0][1] if startup_callers else 0,
                 )
             )
