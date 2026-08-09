@@ -1,0 +1,5 @@
+- Added a new USA Oracle corporate-history event chain covering the PeopleSoft, Siebel, BEA, and Sun era through Oracle v. Google, the cloud pivot, TikTok bid, and AI infrastructure commitments, including major forks and integration-debt failure outcomes.
+- Rewrote every Oracle option tooltip to show concrete effects (Platform Scale, Integration Debt, Policy Access, Ecosystem Openness, Execution Discipline, Infrastructure Depth, treasury, and Political Power) instead of vague summaries, matching the other corporate-history chains.
+- Strengthened the two marquee forks: winning the Java API case now visibly closes the software commons and drags execution as the whole industry turns litigious, and the litigation weighting follows the earlier Sun stewardship-versus-monetization choice.
+- Made the terminal AI buildout a real reckoning: when integration debt was left unserviced, the compute commitments cannot be honored and inflict a stability and Political Power collapse.
+- Tied Oracle's government-facing choices (sovereign cloud and the TikTok bid) to the sitting US administration's posture through the shared corporate-history administration triggers.

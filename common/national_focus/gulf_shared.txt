@@ -18,15 +18,18 @@ shared_focus = {
 	offset = {
 		x = -38
 		y = -2
-		trigger = { tag = EGY }
+		trigger = {
+			tag = EGY
+		}
 	}
+
 	offset = {
 		x = -18
 		y = 2
-		trigger = { tag = IRQ }
+		trigger = {
+			tag = IRQ
+		}
 	}
-
-	cost = 5
 
 	allow_branch = {
 		OR = {
@@ -43,6 +46,8 @@ shared_focus = {
 			original_tag = OMA
 		}
 	}
+
+	cost = 5
 
 	search_filters = { FOCUS_FILTER_POLITICAL }
 
@@ -66,7 +71,9 @@ shared_focus = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_the_gcc executed"
 	}
 
-	ai_will_do = { base = 10 }
+	ai_will_do = {
+		base = 10
+	}
 }
 
 shared_focus = {
@@ -98,8 +105,9 @@ shared_focus = {
 	}
 
 	completion_reward = {
-		every_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			if = {
 				limit = { NOT = { original_tag = BHR } BHR = { has_idea = idea_gcc_member_state } }
 				add_opinion_modifier = {
@@ -184,7 +192,9 @@ shared_focus = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_economic_union executed"
 	}
 
-	ai_will_do = { base = 1 }
+	ai_will_do = {
+		base = 1
+	}
 }
 
 shared_focus = {
@@ -216,8 +226,9 @@ shared_focus = {
 	}
 
 	completion_reward = {
-		every_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			if = {
 				limit = { NOT = { original_tag = BHR } BHR = { has_idea = idea_gcc_member_state } }
 				add_opinion_modifier = {
@@ -304,7 +315,9 @@ shared_focus = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_intra_gcc_trade executed"
 	}
 
-	ai_will_do = { base = 1 }
+	ai_will_do = {
+		base = 1
+	}
 }
 
 shared_focus = {
@@ -336,26 +349,33 @@ shared_focus = {
 		has_idea = idea_gcc_member_state
 	}
 
+	select_effect = {
+		log = "[GetDateText]: [Root.GetName]: Focus GCC_standardize_regulations"
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
+			if = {
+				limit = { NOT = { tag = ROOT } }
+				country_event = { id = gcc.1 days = 7 }
+			}
+		}
+	}
+
 	completion_reward = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_standardize_regulations executed"
 		set_global_flag = GCC_standardize_regulations_completed
-		every_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			add_to_tech_sharing_group = GCC_Tech_Share
 		}
 		set_temp_variable = { temp_modify_gcc_unity = 5 }
 		modify_gcc_unity = yes
 	}
 
-	select_effect = {
-		log = "[GetDateText]: [Root.GetName]: Focus GCC_standardize_regulations"
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
-			country_event = { id = gcc.1 days = 7 }
-		}
+	ai_will_do = {
+		base = 1
 	}
-
-	ai_will_do = { base = 1 }
 }
 
 shared_focus = {
@@ -387,10 +407,23 @@ shared_focus = {
 		has_idea = idea_gcc_member_state
 	}
 
+	select_effect = {
+		log = "[GetDateText]: [Root.GetName]: Focus GCC_common_market"
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
+			if = {
+				limit = { NOT = { tag = ROOT } }
+				country_event = { id = gcc.2 days = 7 }
+			}
+		}
+	}
+
 	completion_reward = {
 		set_global_flag = GCC_common_market_completed
-		every_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			if = {
 				limit = { NOT = { original_tag = BHR } BHR = { has_idea = idea_gcc_member_state } }
 				add_opinion_modifier = {
@@ -469,10 +502,14 @@ shared_focus = {
 				}
 			}
 		}
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
-			set_temp_variable = { percent_change = 2 }
-			change_influence_percentage = yes
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
+			if = {
+				limit = { NOT = { tag = ROOT } }
+				set_temp_variable = { percent_change = 2 }
+				change_influence_percentage = yes
+			}
 		}
 		set_temp_variable = { temp_modify_gcc_unity = 5 }
 		modify_gcc_unity = yes
@@ -481,15 +518,9 @@ shared_focus = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_common_market executed"
 	}
 
-	select_effect = {
-		log = "[GetDateText]: [Root.GetName]: Focus GCC_common_market"
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
-			country_event = { id = gcc.2 days = 7 }
-		}
+	ai_will_do = {
+		base = 1
 	}
-
-	ai_will_do = { base = 1 }
 }
 
 shared_focus = {
@@ -521,32 +552,43 @@ shared_focus = {
 		has_idea = idea_gcc_member_state
 	}
 
+	select_effect = {
+		log = "[GetDateText]: [Root.GetName]: Focus GCC_monetary_union"
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
+			if = {
+				limit = { NOT = { tag = ROOT } }
+				country_event = { id = gcc.3 days = 7 }
+			}
+		}
+	}
+
 	completion_reward = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_monetary_union executed"
 		set_global_flag = GCC_monetary_union_completed
-		every_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			add_ideas = { khaleeji }
 		}
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
-			set_temp_variable = { percent_change = 2 }
-			change_influence_percentage = yes
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
+			if = {
+				limit = { NOT = { tag = ROOT } }
+				set_temp_variable = { percent_change = 2 }
+				change_influence_percentage = yes
+			}
 		}
 		set_temp_variable = { temp_modify_gcc_unity = 10 }
 		modify_gcc_unity = yes
 		news_event = gcc.14
 	}
 
-	select_effect = {
-		log = "[GetDateText]: [Root.GetName]: Focus GCC_monetary_union"
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
-			country_event = { id = gcc.3 days = 7 }
-		}
+	ai_will_do = {
+		base = 1
 	}
-
-	ai_will_do = { base = 1 }
 }
 
 shared_focus = {
@@ -619,10 +661,14 @@ shared_focus = {
 
 	completion_reward = {
 		set_global_flag = GCC_cross_border_transit_systems_completed
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
-			set_temp_variable = { percent_change = 2 }
-			change_influence_percentage = yes
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
+			if = {
+				limit = { NOT = { tag = ROOT } }
+				set_temp_variable = { percent_change = 2 }
+				change_influence_percentage = yes
+			}
 		}
 		set_temp_variable = { temp_modify_gcc_unity = 2 }
 		modify_gcc_unity = yes
@@ -631,7 +677,9 @@ shared_focus = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_cross_border_transit_systems executed"
 	}
 
-	ai_will_do = { base = 1 }
+	ai_will_do = {
+		base = 1
+	}
 }
 
 shared_focus = {
@@ -665,8 +713,9 @@ shared_focus = {
 	completion_reward = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_military_union executed"
 		set_global_flag = GCC_military_union_completed
-		every_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			army_experience = 15
 			navy_experience = 15
 			air_experience = 15
@@ -674,7 +723,9 @@ shared_focus = {
 		}
 	}
 
-	ai_will_do = { base = 10 }
+	ai_will_do = {
+		base = 10
+	}
 }
 
 shared_focus = {
@@ -687,9 +738,9 @@ shared_focus = {
 
 	cost = 10
 
-	prerequisite = { focus = GCC_military_union }
-
 	search_filters = { FOCUS_FILTER_MILITARY_LAWS FOCUS_FILTER_FOREIGN_POLICY }
+
+	prerequisite = { focus = GCC_military_union }
 
 	available = {
 		has_idea = idea_gcc_member_state
@@ -706,10 +757,23 @@ shared_focus = {
 		has_idea = idea_gcc_member_state
 	}
 
+	select_effect = {
+		log = "[GetDateText]: [Root.GetName]: Focus GCC_joint_defense_agreement"
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
+			if = {
+				limit = { NOT = { tag = ROOT } }
+				country_event = { id = gcc.4  days = 7 }
+			}
+		}
+	}
+
 	completion_reward = {
 		set_global_flag = GCC_joint_defense_agreement_completed
-		every_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			if = {
 				limit = { NOT = { original_tag = BHR } BHR = { has_idea = idea_gcc_member_state } }
 				give_guarantee = BHR
@@ -761,15 +825,9 @@ shared_focus = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_joint_defense_agreement executed"
 	}
 
-	select_effect = {
-		log = "[GetDateText]: [Root.GetName]: Focus GCC_joint_defense_agreement"
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
-			country_event = { id = gcc.4  days = 7 }
-		}
+	ai_will_do = {
+		base = 10
 	}
-
-	ai_will_do = { base = 10 }
 }
 
 shared_focus = {
@@ -793,6 +851,18 @@ shared_focus = {
 		gcc_no_veto = yes
 	}
 
+	select_effect = {
+		log = "[GetDateText]: [Root.GetName]: Focus GCC_gulf_academy"
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
+			if = {
+				limit = { NOT = { tag = ROOT } }
+				country_event = { id = gcc.6  days = 7 }
+			}
+		}
+	}
+
 	bypass = {
 		custom_trigger_tooltip = {
 			tooltip = gcc_focus_completed_tt
@@ -804,8 +874,9 @@ shared_focus = {
 	completion_reward = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_gulf_academy executed"
 		set_global_flag = GCC_gulf_academy_completed
-		every_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			if = {
 				limit = { has_idea = officer_baptism_by_fire }
 				swap_ideas = {
@@ -839,15 +910,9 @@ shared_focus = {
 		modify_gcc_unity = yes
 	}
 
-	select_effect = {
-		log = "[GetDateText]: [Root.GetName]: Focus GCC_gulf_academy"
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
-			country_event = { id = gcc.6  days = 7 }
-		}
+	ai_will_do = {
+		base = 10
 	}
-
-	ai_will_do = { base = 10 }
 }
 
 shared_focus = {
@@ -871,6 +936,18 @@ shared_focus = {
 		gcc_no_veto = yes
 	}
 
+	select_effect = {
+		log = "[GetDateText]: [Root.GetName]: Focus GCC_limited_unified_command"
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
+			if = {
+				limit = { NOT = { tag = ROOT } }
+				country_event = { id = gcc.7  days = 7 }
+			}
+		}
+	}
+
 	bypass = {
 		custom_trigger_tooltip = {
 			tooltip = gcc_focus_completed_tt
@@ -883,9 +960,12 @@ shared_focus = {
 		set_global_flag = GCC_limited_unified_command_completed
 		custom_effect_tooltip = GCC_limited_unified_command_tt
 		hidden_effect = {
-			every_other_country = {
-				limit = { has_idea = idea_gcc_member_state }
-				add_ai_strategy = { type = alliance id = ROOT value = 1200 }
+			for_each_scope_loop = {
+				array = global.gcc_member_state
+				if = {
+					limit = { NOT = { tag = ROOT } }
+					add_ai_strategy = { type = alliance id = ROOT value = 1200 }
+				}
 			}
 		}
 		set_temp_variable = { temp_modify_gcc_unity = 5 }
@@ -893,15 +973,9 @@ shared_focus = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_limited_unified_command executed"
 	}
 
-	select_effect = {
-		log = "[GetDateText]: [Root.GetName]: Focus GCC_limited_unified_command"
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
-			country_event = { id = gcc.7  days = 7 }
-		}
+	ai_will_do = {
+		base = 10
 	}
-
-	ai_will_do = { base = 10 }
 }
 
 shared_focus = {
@@ -936,8 +1010,9 @@ shared_focus = {
 
 	completion_reward = {
 		set_global_flag = GCC_joint_military_ventures_completed
-		every_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			add_ideas = joint_gcc_ventures
 		}
 		set_temp_variable = { temp_modify_gcc_unity = 5 }
@@ -945,7 +1020,9 @@ shared_focus = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_joint_military_ventures executed"
 	}
 
-	ai_will_do = { base = 1 }
+	ai_will_do = {
+		base = 1
+	}
 }
 
 shared_focus = {
@@ -970,6 +1047,18 @@ shared_focus = {
 		gcc_no_veto = yes
 	}
 
+	select_effect = {
+		log = "[GetDateText]: [Root.GetName]: Focus GCC_a_robust_alliance"
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
+			if = {
+				limit = { NOT = { tag = ROOT } }
+				country_event = { id = gcc.8  days = 7 }
+			}
+		}
+	}
+
 	bypass = {
 		custom_trigger_tooltip = {
 			tooltip = gcc_focus_completed_tt
@@ -982,9 +1071,12 @@ shared_focus = {
 		set_global_flag = GCC_a_robust_alliance_completed
 		create_faction_from_template = faction_template_gcc
 		hidden_effect = {
-			every_other_country = {
-				limit = { has_idea = idea_gcc_member_state }
-				add_ai_strategy = { type = alliance id = ROOT value = 1200 }
+			for_each_scope_loop = {
+				array = global.gcc_member_state
+				if = {
+					limit = { NOT = { tag = ROOT } }
+					add_ai_strategy = { type = alliance id = ROOT value = 1200 }
+				}
 			}
 		}
 		if = {
@@ -1036,15 +1128,9 @@ shared_focus = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_a_robust_alliance executed"
 	}
 
-	select_effect = {
-		log = "[GetDateText]: [Root.GetName]: Focus GCC_a_robust_alliance"
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
-			country_event = { id = gcc.8  days = 7 }
-		}
+	ai_will_do = {
+		base = 1
 	}
-
-	ai_will_do = { base = 1 }
 }
 
 shared_focus = {
@@ -1077,14 +1163,17 @@ shared_focus = {
 
 	completion_reward = {
 		set_global_flag = GCC_political_union_completed
-		every_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			add_political_power = 75
 		}
 		log = "[GetDateText]: [This.GetName]: focus GCC_political_union executed"
 	}
 
-	ai_will_do = { base = 1 }
+	ai_will_do = {
+		base = 1
+	}
 }
 
 shared_focus = {
@@ -1098,7 +1187,6 @@ shared_focus = {
 	cost = 8.58
 
 	prerequisite = { focus = GCC_political_union }
-
 	search_filters = { FOCUS_FILTER_FOREIGN_POLICY }
 
 	available = {
@@ -1125,23 +1213,18 @@ shared_focus = {
 	completion_reward = {
 		set_global_flag = GCC_solidify_pro_american_alignment_completed
 		USA = { country_event = { days = 1 id = gcc.11 } }
-		custom_effect_tooltip = TT_IF_THEY_ACCEPT
-		effect_tooltip = {
-			for_each_scope_loop = {
-				array = global.gcc_member_state
-				tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
-				USA = { give_guarantee = PREV }
-			}
-		}
 		set_temp_variable = { temp_opinion = 5 }
 		change_saudi_royal_family_opinion = yes
 		set_temp_variable = { temp_opinion = -5 }
 		change_the_wahabi_ulema_opinion = yes
 		change_the_ulema_opinion = yes
+
 		log = "[GetDateText]: [This.GetName]: focus GCC_solidify_pro_american_alignment executed"
 	}
 
-	ai_will_do = { base = 1 }
+	ai_will_do = {
+		base = 1
+	}
 }
 
 shared_focus = {
@@ -1193,8 +1276,9 @@ shared_focus = {
 
 	completion_reward = {
 		set_global_flag = GCC_increase_autonomy_completed
-		every_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			set_temp_variable = { percent_change = 2 }
 			change_domestic_influence_percentage = yes
 		}
@@ -1251,15 +1335,21 @@ shared_focus = {
 
 	completion_reward = {
 		set_global_flag = GCC_pursue_hegemony_completed
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
-			set_temp_variable = { percent_change = 2 }
-			change_influence_percentage = yes
+		for_each_scope_loop = {
+			array = global.gcc_member_state
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
+			if = {
+				limit = { NOT = { tag = ROOT } }
+				set_temp_variable = { percent_change = 2 }
+				change_influence_percentage = yes
+			}
 		}
 		log = "[GetDateText]: [This.GetName]: focus GCC_pursue_hegemony executed"
 	}
 
-	ai_will_do = { base = 1 }
+	ai_will_do = {
+		base = 1
+	}
 }
 
 shared_focus = {
@@ -1398,7 +1488,9 @@ shared_focus = {
 		news_event = gcc.16
 	}
 
-	ai_will_do = { base = 1 }
+	ai_will_do = {
+		base = 1
+	}
 }
 
 shared_focus = {
@@ -1457,7 +1549,9 @@ shared_focus = {
 		modify_gcc_unity = yes
 	}
 
-	ai_will_do = { base = 1 }
+	ai_will_do = {
+		base = 1
+	}
 }
 
 shared_focus = {
@@ -1493,14 +1587,26 @@ shared_focus = {
 	completion_reward = {
 		log = "[GetDateText]: [This.GetName]: focus GCC_gulf_super_state executed"
 		set_global_flag = GCC_gulf_super_state_completed
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		hidden_effect = {
+			clear_temp_array = gcc_annex_targets
+			for_each_scope_loop = {
+				array = global.gcc_member_state
+				if = {
+					limit = { NOT = { tag = ROOT } }
+					add_to_temp_array = { gcc_annex_targets = THIS }
+				}
+			}
+		}
+		for_each_scope_loop = {
+			array = gcc_annex_targets
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			every_owned_state = {
 				add_core_of = ROOT
 			}
 		}
-		every_other_country = {
-			limit = { has_idea = idea_gcc_member_state }
+		for_each_scope_loop = {
+			array = gcc_annex_targets
+			tooltip = TT_ALL_GCC_MEMBER_NATIONS_GAIN
 			ROOT = {
 				annex_country = {
 					target = PREV
@@ -1512,7 +1618,9 @@ shared_focus = {
 		news_event = gcc.17
 	}
 
-	ai_will_do = { base = 1 }
+	ai_will_do = {
+		base = 1
+	}
 }
 
 shared_focus = {
