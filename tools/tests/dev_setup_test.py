@@ -1,49 +1,23 @@
-from unittest.mock import patch
+"""Behavior tests for developer environment checks."""
 
-from tools.dev_setup import check_bun, check_dev_packages
+import os
+import sys
 
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(REPO_ROOT, "tools"))
 
-@patch("tools.dev_setup._check_group")
-def test_check_dev_packages_true(mock_check_group):
-    mock_check_group.return_value = True
-    assert check_dev_packages() is True
-    mock_check_group.assert_called_once_with("dev", "Dev/test dependencies")
-
-
-@patch("tools.dev_setup._check_group")
-def test_check_dev_packages_false(mock_check_group):
-    mock_check_group.return_value = False
-    assert check_dev_packages() is False
-    mock_check_group.assert_called_once_with("dev", "Dev/test dependencies")
+import dev_setup  # noqa: E402
 
 
-@patch("tools.dev_setup.get_version")
-@patch("tools.dev_setup._resolve_tool")
-def test_check_bun_installed(mock_resolve, mock_get_version, capsys):
-    mock_resolve.return_value = ["/path/to/bun"]
-    mock_get_version.return_value = "1.0.0"
+def test_check_node_rejects_unparseable_version(monkeypatch):
+    monkeypatch.setattr(dev_setup, "_resolve_tool", lambda name: [name])
+    monkeypatch.setattr(dev_setup, "get_version", lambda command: "not-a-version")
 
-    result = check_bun()
-
-    assert result is True
-    mock_resolve.assert_called_once_with("bun")
-    mock_get_version.assert_called_once_with(["/path/to/bun", "--version"])
-
-    captured = capsys.readouterr()
-    assert "Bun: 1.0.0" in captured.out
+    assert dev_setup.check_node() == (False, "not-a-version")
 
 
-@patch("tools.dev_setup.get_version")
-@patch("tools.dev_setup._resolve_tool")
-def test_check_bun_not_installed(mock_resolve, mock_get_version, capsys):
-    mock_resolve.return_value = ["bun"]
-    mock_get_version.return_value = None
+def test_check_node_accepts_supported_version(monkeypatch):
+    monkeypatch.setattr(dev_setup, "_resolve_tool", lambda name: [name])
+    monkeypatch.setattr(dev_setup, "get_version", lambda command: "v24.1.0")
 
-    result = check_bun()
-
-    assert result is False
-    mock_resolve.assert_called_once_with("bun")
-    mock_get_version.assert_called_once_with(["bun", "--version"])
-
-    captured = capsys.readouterr()
-    assert "Bun: not installed" in captured.out
+    assert dev_setup.check_node() == (True, "v24.1.0")

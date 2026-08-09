@@ -10,6 +10,7 @@ import os
 import re
 import sys
 import time
+from typing import Any
 
 from _common import format_elapsed
 from common_utils import PROP_NAME_RE, compact_icon, compact_search_filters
@@ -171,15 +172,16 @@ def _split_block(block_lines):
     first = block_lines[0]
     if len(block_lines) == 1:
         code = strip_inline_comment(first)
-        if "{" not in code or code.count("{") != code.count("}"):
+        # A trailing comment may carry its own braces, so the split indices
+        # would land inside it — bail and let the caller keep the line intact.
+        if code != first or "{" not in code or code.count("{") != code.count("}"):
             return None
-        open_idx = code.index("{")
-        close_idx = code.rindex("}")
+        open_idx = first.index("{")
+        close_idx = first.rindex("}")
         indent = first[: len(first) - len(first.lstrip())]
-        inner = code[open_idx + 1 : close_idx].strip()
+        inner = first[open_idx + 1 : close_idx].strip()
         inner_lines = [f"{indent}\t{inner}"] if inner else []
-        comment_suffix = first[len(code.rstrip()) :]
-        return code[: open_idx + 1], inner_lines, f"{indent}}}{comment_suffix}"
+        return first[: open_idx + 1], inner_lines, f"{indent}}}"
     if block_lines[-1].strip() != "}":
         return None
     return first, block_lines[1:-1], block_lines[-1]
@@ -189,12 +191,6 @@ def _merge_duplicate_blocks(first, second):
     """The engine ANDs duplicate trigger blocks and runs duplicate effect
     blocks in order, so concatenating inner lines under one header preserves
     semantics. Falls back to emitting both blocks when a shape is opaque."""
-    if any(
-        strip_inline_comment(line) != line
-        for block in (first, second)
-        for line in block
-    ):
-        return first + second
     a = _split_block(first)
     b = _split_block(second)
     if a is None or b is None:
@@ -205,7 +201,7 @@ def _merge_duplicate_blocks(first, second):
 
 def extract_focus_properties(focus_lines):
     """Extract properties from focus block lines"""
-    props = {
+    props: dict[str, Any] = {
         "id": "",
         "icon": "",
         "text_icon": "",
@@ -255,9 +251,11 @@ def extract_focus_properties(focus_lines):
             else:
                 entry = [line]
                 i += 1
-            if not isinstance(props["icon"], list):
-                props["icon"] = []
-            props["icon"].append(entry)
+            icon_entries = props["icon"]
+            if not isinstance(icon_entries, list):
+                icon_entries = []
+                props["icon"] = icon_entries
+            icon_entries.append(entry)
             continue
 
         if prop_name in _SINGLE_LINE_PROPS:
@@ -315,7 +313,9 @@ def emit_effect_block_with_log(lines, effect_block, focus_id):
     if focus_id and not any("log =" in line for line in effect_block):
         log_line = f'\t\t\tlog = "[GetDateText]: [Root.GetName]: Focus {focus_id}"'
         if len(effect_block) == 1:
-            # Expand `prop = { ... }` so the log lands inside the braces.
+            # Expand `prop = { ... }` so the log lands INSIDE the braces, not
+            # after them. _split_block bails on an inline comment (whose braces
+            # would misplace the split), leaving such a block unlogged.
             split = _split_block(effect_block)
             if split is not None:
                 header, inner_lines, close = split
@@ -977,7 +977,7 @@ def standardize_focus_tree(
 
     # Post-processing: ensure blank lines between consecutive focus/shared_focus/joint_focus blocks
     focus_block_pattern = re.compile(r"^\t?(focus|shared_focus|joint_focus)\s*=\s*{")
-    final_lines = []
+    final_lines: list[str] = []
     for idx, line in enumerate(output_lines):
         if focus_block_pattern.match(line) and final_lines:
             # Find the previous non-empty line
@@ -1007,7 +1007,7 @@ def standardize_focus_tree(
     # never leaves a truncated focus tree behind.
     tmp_path = f"{output_file}.tmp"
     try:
-        with open(tmp_path, "w", encoding="utf-8", newline="\n") as f:
+        with open(tmp_path, "w", encoding="utf-8") as f:
             for line in output_lines:
                 f.write(line + "\n")
         os.replace(tmp_path, output_file)
