@@ -218,6 +218,7 @@ def test_initialization_clamps_and_event_surface_are_exact():
 
 def test_route_families_and_capstones_are_exclusive():
     effects = EFFECTS_PATH.read_text(encoding="utf-8")
+    triggers = TRIGGERS_PATH.read_text(encoding="utf-8")
     events = _event_map(EVENTS_PATH.read_text(encoding="utf-8"))
     families = (
         (
@@ -266,6 +267,14 @@ def test_route_families_and_capstones_are_exclusive():
         block = _named_block(effects, effect_name)
         assert "UKR_strategic_industry_clear_terminal_outcome = yes" in block
         assert f"add_ideas = {idea}" in block
+
+    terminal_outcome = _named_block(
+        triggers, "UKR_strategic_industry_terminal_outcome_present"
+    )
+    for idea in CAPSTONES:
+        assert f"has_idea = {idea}" in terminal_outcome
+    finalize = _named_block(effects, "UKR_strategic_industry_finalize_terminal_state")
+    assert "set_country_flag = UKR_strategic_industry_event_15_resolved" in finalize
 
 
 def test_rupture_and_war_are_state_led_and_cover_split_russian_tags():
@@ -375,12 +384,24 @@ def test_peace_cleanup_preserves_a_later_one_time_war_response():
     war_delivery = _smallest_block_containing(
         monthly, "country_event = { id = UKR_strategic_industry_events.9 days = 1 }"
     )
-    assert "UKR_strategic_industry_terminal_resolved" not in war_delivery
-    assert "UKR_strategic_industry_terminal_resolved" not in _named_block(
+    assert "UKR_strategic_industry_terminal_outcome_present" not in war_delivery
+    assert "UKR_strategic_industry_terminal_outcome_present" not in _named_block(
         events[9], "trigger"
     )
     finalize = _named_block(effects, "UKR_strategic_industry_finalize_terminal_state")
     assert "UKR_strategic_industry_event_09_resolved" not in finalize
+
+    terminal_corpus = "\n".join(
+        (
+            effects,
+            EVENTS_PATH.read_text(encoding="utf-8"),
+            TRIGGERS_PATH.read_text(encoding="utf-8"),
+            CORPORATE_TRIGGERS_PATH.read_text(encoding="utf-8"),
+            DASHBOARD_LOC_PATH.read_text(encoding="utf-8"),
+        )
+    )
+    assert "UKR_strategic_industry_terminal_resolved" not in terminal_corpus
+    assert "UKR_strategic_industry_terminal_outcome_present = yes" in events[15]
 
     disruption = _named_block(effects, "UKR_strategic_industry_apply_war_disruption")
     assert (
@@ -452,8 +473,12 @@ def test_dispatch_modes_dashboard_and_contract_are_wired():
     assert "UKR = { UKR_strategic_industry_reconstruct_history = yes }" in startup
 
     monthly = _named_block(common, "UKR_corporate_history_monthly_outcomes")
-    assert "corporate_history_enabled = yes" in monthly
     assert "UKR_strategic_industry_monthly_driver = yes" in monthly
+    full_driver = _smallest_block_containing(
+        monthly, "UKR_strategic_industry_monthly_driver = yes"
+    )
+    assert "corporate_history_full_enabled = yes" in full_driver
+    assert "corporate_history_enabled = yes" not in full_driver
     assert "corporate_history_outcomes_only_enabled = yes" in monthly
     assert "UKR_strategic_industry_reconstruct_history = yes" in monthly
     assert "UKR_corporate_history_monthly_outcomes = yes" in monthly_on_actions
@@ -506,7 +531,7 @@ def test_dispatch_modes_dashboard_and_contract_are_wired():
     for forbidden in ("set_variable", "set_country_flag", "add_ideas", "remove_ideas"):
         assert forbidden not in dashboard_loc
     assert "UKR_strategic_industry_meaningful_state = yes" in corporate_triggers
-    assert "UKR_strategic_industry_terminal_resolved" in corporate_triggers
+    assert "UKR_strategic_industry_terminal_outcome_present = yes" in corporate_triggers
 
     manifest = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
     chain = next(

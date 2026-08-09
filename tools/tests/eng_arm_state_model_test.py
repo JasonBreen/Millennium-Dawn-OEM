@@ -258,12 +258,6 @@ def test_rejection_cannot_complete_and_acquisition_suppresses_the_ipo():
         "NOT = { has_country_flag = ENG_arm_holdings_nvidia_rejection }"
         in active_proposal
     )
-    active_proposal = _named_block(
-        triggers, "ENG_arm_holdings_has_active_nvidia_proposal"
-    )
-    assert "NOT = { has_country_flag = ENG_arm_holdings_nvidia_rejection }" in (
-        active_proposal
-    )
 
     for key, required_route in (
         ("ENG_arm_holdings_events.9.a", "ENG_arm_holdings_nvidia_support"),
@@ -273,7 +267,6 @@ def test_rejection_cannot_complete_and_acquisition_suppresses_the_ipo():
         trigger = _named_block(option, "trigger")
         assert f"has_country_flag = {required_route}" in trigger
         assert "ENG_arm_holdings_nvidia_rejection" not in trigger
-        assert "set_country_flag = ENG_arm_holdings_event_10_resolved" in option
         assert "set_country_flag = ENG_arm_holdings_event_10_resolved" in option
         assert "set_country_flag = ENG_arm_holdings_nvidia_control" in option
         assert "ENG_arm_holdings_apply_nvidia_control_capstone = yes" in option
