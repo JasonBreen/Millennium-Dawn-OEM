@@ -330,9 +330,7 @@ def emit_effect_block_with_log(lines, effect_block, focus_id):
             # Expand `prop = { ... }` so the log lands INSIDE the braces, not
             # after them. _split_block bails on an inline comment (whose braces
             # would misplace the split), leaving such a block unlogged.
-            split = _split_block(
-                effect_block, allow_trailing_comment=True
-            )
+            split = _split_block(effect_block, allow_trailing_comment=True)
             if split is not None:
                 header, inner_lines, close = split
                 effect_block = [header, log_line, *inner_lines, close]
