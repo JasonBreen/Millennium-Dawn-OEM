@@ -172,7 +172,11 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.head_ref }}
-          fetch-depth: 0
+          fetch-depth: 3
+          sparse-checkout: |
+            .github/workflows
+            tools
+          sparse-checkout-cone-mode: false
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
@@ -188,7 +192,7 @@ jobs:
             tools/tests/sov_computing_sovereignty_state_model_test.py \
             tools/validation/tests/validate_corporate_history_contract_test.py \
             tools/validation/validate_corporate_history_contract.py
-          git show HEAD^:.github/workflows/tools-validation.yml > .github/workflows/tools-validation.yml
+          git show dee4328917cbf1d301eb687937ef4f135175c0d1:.github/workflows/tools-validation.yml > .github/workflows/tools-validation.yml
           git rm .github/workflows/temp-aug9-black-fix.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
