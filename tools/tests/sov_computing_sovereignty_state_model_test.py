@@ -1431,8 +1431,7 @@ def test_english_localisation_inventory_and_encoding():
     )
     expected.update(
         re.findall(
-            r"\blocalization_key\s*=\s*"
-            r"(SOV_computing_sovereignty_[A-Za-z0-9_]+)",
+            r"\blocalization_key\s*=\s*" r"(SOV_computing_sovereignty_[A-Za-z0-9_]+)",
             scripted_localisation,
         )
     )

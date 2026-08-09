@@ -98,8 +98,7 @@ def _manifest(
 
 
 def _base_events(include_hidden_ninety=True, include_anchor=False):
-    blocks = [
-        """add_namespace = USA_test_events
+    blocks = ["""add_namespace = USA_test_events
 
 country_event = {
 \tid = USA_test_events.1
@@ -115,11 +114,9 @@ country_event = {
 \t\t}
 \t}
 }
-""".strip()
-    ]
+""".strip()]
     if include_anchor:
-        blocks.append(
-            """
+        blocks.append("""
 country_event = {
 \tid = USA_test_events.2
 \ttitle = USA_test_events.2.t
@@ -128,11 +125,9 @@ country_event = {
 \tis_triggered_only = yes
 \toption = { name = USA_test_events.2.a }
 }
-""".strip()
-        )
+""".strip())
     if include_hidden_ninety:
-        blocks.append(
-            """
+        blocks.append("""
 country_event = {
 \tid = USA_test_events.90
 \thidden = yes
@@ -140,8 +135,7 @@ country_event = {
 \tfire_only_once = yes
 \timmediate = { USA_test_reconstruct_history = yes }
 }
-""".strip()
-        )
+""".strip())
     return "\n\n".join(blocks) + "\n"
 
 
@@ -732,8 +726,7 @@ USA_oem_investment_climate_2 = {
     ]
     for number in range(1, 5):
         program_days = 730 if number in {2, 4} else 365
-        decisions.append(
-            f"""USA_oem_policy_{number} = {{
+        decisions.append(f"""USA_oem_policy_{number} = {{
 	days_re_enable = 365
 
 	available = {{
@@ -743,15 +736,12 @@ USA_oem_investment_climate_2 = {
 	complete_effect = {{
 		add_timed_idea = {{ idea = USA_oem_program_{number} days = {program_days} }}
 	}}
-}}"""
-        )
-        idea_blocks.append(
-            f"""USA_oem_program_{number} = {{
+}}""")
+        idea_blocks.append(f"""USA_oem_program_{number} = {{
 	picture = generic_economic_increase
 	allowed = {{ original_tag = USA }}
 	allowed_civil_war = {{ always = yes }}
-}}"""
-        )
+}}""")
         loc_lines.extend(
             [
                 f' USA_oem_program_{number}: "Program {number}"',
