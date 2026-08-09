@@ -189,6 +189,8 @@ The following page is a non-exhaustive list of contributors from over the years 
 | Natin                | @nothing4182                    | @NothingMD     | -             | -                             |
 | Ironfury             | -                               | -              | -             | -                             |
 | JasonBreen           | -                               | @JasonBreen    | jasonbreen    | -                             |
+| Calvin C.            | -                               | @cal-chu       | -             | -                             |
+| Imperialist          | @x_imperialist                  | @imperialistx2 | -             | -                             |
 
 # Fellow Modders/Teams
 
