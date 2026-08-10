@@ -182,10 +182,80 @@ GER_siemens_reconstruct_history = {
 	}
 }
 
+OEM_corporate_history_startup_bootstrap = {
+	if = {
+		limit = {
+			NOT = { has_global_flag = GLOBAL_oem_corporate_history_startup_dispatched }
+		}
+
+		set_global_flag = GLOBAL_oem_corporate_history_startup_dispatched
+		corporate_history_on_startup = yes
+
+		if = {
+			limit = { country_exists = ISR }
+			ISR = { country_event = ISR_oem_events.90 }
+		}
+
+		if = {
+			limit = { country_exists = USA }
+			USA = {
+				gpu_development_reconstruct_history = yes
+				gpu_development_schedule_current_year_events = yes
+				if = {
+					limit = {
+						date < 2001.1.1
+						corporate_history_full_enabled = yes
+					}
+					country_event = { id = USA_oem_events.13 days = 90 }
+				}
+			}
+		}
+
+		if = {
+			limit = { country_exists = CAN }
+			CAN = {
+				gpu_development_reconstruct_history = yes
+				gpu_development_schedule_current_year_events = yes
+			}
+		}
+
+		if = {
+			limit = { country_exists = TAI }
+			TAI = {
+				gpu_development_reconstruct_history = yes
+				gpu_development_schedule_current_year_events = yes
+			}
+		}
+
+		if = {
+			limit = { country_exists = KOR }
+			KOR = {
+				gpu_development_reconstruct_history = yes
+				gpu_development_schedule_current_year_events = yes
+			}
+		}
+
+		if = {
+			limit = { country_exists = CHI }
+			CHI = {
+				gpu_development_reconstruct_history = yes
+				gpu_development_schedule_current_year_events = yes
+			}
+		}
+
+		if = {
+			limit = { country_exists = JAP }
+			JAP = {
+				gpu_development_reconstruct_history = yes
+				gpu_development_schedule_current_year_events = yes
+			}
+		}
+	}
+}
+
 # Effect: corporate_history_on_startup
-# Purpose: Startup dispatcher for the corporate-history chains; sole caller is
-#          MD_event_on_startup_events, which runs in the ABK init scope - every
-#          action below must stay inside an explicit TAG = { } block.
+# Purpose: Startup dispatcher for Corporate History chains. Its bootstrap caller
+#          runs in ABK scope, so every action stays inside an explicit TAG = { } block.
 corporate_history_on_startup = {
 	if = {
 		limit = { corporate_history_full_enabled = yes }
