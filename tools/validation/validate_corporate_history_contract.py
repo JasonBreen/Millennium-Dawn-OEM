@@ -161,7 +161,7 @@ _NATIVE_WRITE_PATTERNS = (
         r"(?:\{\s*focus\s*=\s*)?" + _SCRIPT_TOKEN_CAPTURE
     ),
     re.compile(
-        r"\b(?:country_event|news_event)\s*=\s*"
+        r"\b(?:" + _EVENT_ALT + r")\s*=\s*"
         r"(?:\{[^{}]*?\bid\s*=\s*)?" + _SCRIPT_TOKEN_CAPTURE,
         re.DOTALL,
     ),

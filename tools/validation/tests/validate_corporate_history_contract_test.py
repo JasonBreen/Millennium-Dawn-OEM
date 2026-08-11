@@ -2312,6 +2312,26 @@ news_event = GER_native_news.1
     }
 
 
+@pytest.mark.parametrize(
+    ("event_dispatch", "expected_token"),
+    (
+        ("state_event = USA_native_state_events.1", "USA_native_state_events"),
+        (
+            "unit_leader_event = { id = USA_native_unit_events.1 days = 1 }",
+            "USA_native_unit_events",
+        ),
+        (
+            "operative_leader_event = { days = 1 id = USA_native_operative_events.1 }",
+            "USA_native_operative_events",
+        ),
+    ),
+)
+def test_shared_system_native_write_scanner_covers_all_event_dispatch_effects(
+    event_dispatch, expected_token
+):
+    assert _collect_native_write_tokens(event_dispatch, ("USA_",)) == {expected_token}
+
+
 def test_shared_system_native_write_scanner_covers_canonical_persistent_operators():
     assert _NATIVE_VARIABLE_BLOCK_EFFECTS == (
         "set_variable",
