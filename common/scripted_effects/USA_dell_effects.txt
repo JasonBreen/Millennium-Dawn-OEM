@@ -84,8 +84,410 @@ USA_dell_apply_hardware_focus_path = {
 	set_country_flag = USA_oem_hardware_core
 }
 
+USA_oem_storage_import_legacy_linux_state = {
+	if = {
+		limit = {
+			linux_system_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = linux_system_usa_storage_legacy_imported }
+		}
+		clr_country_flag = linux_system_usa_storage_legacy_route_upstream
+		clr_country_flag = linux_system_usa_storage_legacy_route_enterprise
+		set_variable = { linux_system_usa_storage_legacy_import_level = 0 }
+		if = {
+			limit = { check_variable = { USA_oem_storage_policy > 0 } }
+			set_variable = { linux_system_usa_storage_legacy_import_level = USA_oem_storage_policy }
+			clamp_variable = { var = linux_system_usa_storage_legacy_import_level min = 1 max = 2 }
+			set_country_flag = linux_system_usa_storage_legacy_route_upstream
+		}
+		else_if = {
+			limit = { check_variable = { USA_oem_storage_policy < 0 } }
+			subtract_from_variable = { linux_system_usa_storage_legacy_import_level = USA_oem_storage_policy }
+			clamp_variable = { var = linux_system_usa_storage_legacy_import_level min = 1 max = 2 }
+			set_country_flag = linux_system_usa_storage_legacy_route_enterprise
+		}
+		set_country_flag = linux_system_usa_storage_legacy_imported
+		linux_system_mark_dirty = yes
+	}
+}
+
+USA_oem_storage_repair_delivery_markers = {
+	if = {
+		limit = {
+			has_country_flag = USA_oem_storage_event_16_pending
+			NOT = { has_country_flag = USA_oem_storage_event_16_expected }
+			NOT = { has_country_flag = USA_oem_storage_event_16_resolved }
+		}
+		set_country_flag = USA_oem_storage_event_16_expected
+	}
+	if = {
+		limit = {
+			has_country_flag = USA_oem_storage_event_17_pending
+			NOT = { has_country_flag = USA_oem_storage_event_17_expected }
+			NOT = { has_country_flag = USA_oem_storage_event_17_resolved }
+		}
+		set_country_flag = USA_oem_storage_event_17_expected
+	}
+	if = {
+		limit = {
+			has_country_flag = USA_oem_storage_event_18_pending
+			NOT = { has_country_flag = USA_oem_storage_event_18_expected }
+			NOT = { has_country_flag = USA_oem_storage_event_18_resolved }
+		}
+		set_country_flag = USA_oem_storage_event_18_expected
+	}
+	if = {
+		limit = {
+			has_country_flag = USA_oem_storage_event_19_pending
+			NOT = { has_country_flag = USA_oem_storage_event_19_expected }
+			NOT = { has_country_flag = USA_oem_storage_event_19_resolved }
+		}
+		set_country_flag = USA_oem_storage_event_19_expected
+	}
+	if = {
+		limit = {
+			has_country_flag = USA_oem_storage_event_20_pending
+			NOT = { has_country_flag = USA_oem_storage_event_20_expected }
+			NOT = { has_country_flag = USA_oem_storage_event_20_resolved }
+		}
+		set_country_flag = USA_oem_storage_event_20_expected
+	}
+	if = {
+		limit = {
+			has_country_flag = USA_oem_storage_event_21_pending
+			NOT = { has_country_flag = USA_oem_storage_event_21_expected }
+			NOT = { has_country_flag = USA_oem_storage_event_21_resolved }
+		}
+		set_country_flag = USA_oem_storage_event_21_expected
+	}
+	if = {
+		limit = {
+			has_country_flag = USA_oem_storage_event_22_pending
+			NOT = { has_country_flag = USA_oem_storage_event_22_expected }
+			NOT = { has_country_flag = USA_oem_storage_event_22_resolved }
+		}
+		set_country_flag = USA_oem_storage_event_22_expected
+	}
+	if = {
+		limit = {
+			has_country_flag = USA_oem_storage_event_23_pending
+			NOT = { has_country_flag = USA_oem_storage_event_23_expected }
+			NOT = { has_country_flag = USA_oem_storage_event_23_resolved }
+		}
+		set_country_flag = USA_oem_storage_event_23_expected
+	}
+}
+
+USA_oem_storage_recover_pending_events = {
+	USA_oem_storage_repair_delivery_markers = yes
+
+	if = {
+		limit = {
+			linux_system_full_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+		}
+		if = {
+			limit = {
+				date > 2001.12.20
+				has_country_flag = USA_oem_storage_event_16_expected
+				NOT = { has_country_flag = USA_oem_storage_event_16_pending }
+				NOT = { has_country_flag = USA_oem_storage_event_16_resolved }
+			}
+			set_country_flag = { flag = USA_oem_storage_event_16_pending value = 1 days = 60 }
+			country_event = { id = USA_oem_events.16 days = 1 }
+		}
+		if = {
+			limit = {
+				date > 2005.2.14
+				has_country_flag = USA_oem_storage_event_17_expected
+				NOT = { has_country_flag = USA_oem_storage_event_17_pending }
+				NOT = { has_country_flag = USA_oem_storage_event_17_resolved }
+			}
+			set_country_flag = { flag = USA_oem_storage_event_17_pending value = 1 days = 60 }
+			country_event = { id = USA_oem_events.17 days = 1 }
+		}
+		if = {
+			limit = {
+				date > 2012.10.25
+				has_country_flag = USA_oem_storage_event_18_expected
+				NOT = { has_country_flag = USA_oem_storage_event_18_pending }
+				NOT = { has_country_flag = USA_oem_storage_event_18_resolved }
+			}
+			set_country_flag = { flag = USA_oem_storage_event_18_pending value = 1 days = 60 }
+			country_event = { id = USA_oem_events.18 days = 1 }
+		}
+		if = {
+			limit = {
+				date > 2015.12.9
+				has_country_flag = USA_oem_storage_event_19_expected
+				NOT = { has_country_flag = USA_oem_storage_event_19_pending }
+				NOT = { has_country_flag = USA_oem_storage_event_19_resolved }
+			}
+			set_country_flag = { flag = USA_oem_storage_event_19_pending value = 1 days = 60 }
+			country_event = { id = USA_oem_events.19 days = 1 }
+		}
+		if = {
+			limit = {
+				date > 2019.11.5
+				has_country_flag = USA_oem_storage_event_20_expected
+				NOT = { has_country_flag = USA_oem_storage_event_20_pending }
+				NOT = { has_country_flag = USA_oem_storage_event_20_resolved }
+			}
+			set_country_flag = { flag = USA_oem_storage_event_20_pending value = 1 days = 60 }
+			country_event = { id = USA_oem_events.20 days = 1 }
+		}
+		if = {
+			limit = {
+				date > 2022.10.24
+				has_country_flag = USA_oem_storage_event_21_expected
+				NOT = { has_country_flag = USA_oem_storage_event_21_pending }
+				NOT = { has_country_flag = USA_oem_storage_event_21_resolved }
+			}
+			set_country_flag = { flag = USA_oem_storage_event_21_pending value = 1 days = 60 }
+			country_event = { id = USA_oem_events.21 days = 1 }
+		}
+		if = {
+			limit = {
+				date > 2024.5.16
+				has_country_flag = USA_oem_storage_event_22_expected
+				NOT = { has_country_flag = USA_oem_storage_event_22_pending }
+				NOT = { has_country_flag = USA_oem_storage_event_22_resolved }
+			}
+			set_country_flag = { flag = USA_oem_storage_event_22_pending value = 1 days = 60 }
+			country_event = { id = USA_oem_events.22 days = 1 }
+		}
+		if = {
+			limit = {
+				date > 2026.5.7
+				has_country_flag = USA_oem_storage_event_23_expected
+				NOT = { has_country_flag = USA_oem_storage_event_23_pending }
+				NOT = { has_country_flag = USA_oem_storage_event_23_resolved }
+			}
+			set_country_flag = { flag = USA_oem_storage_event_23_pending value = 1 days = 60 }
+			country_event = { id = USA_oem_events.23 days = 1 }
+		}
+	}
+}
+
+USA_oem_storage_clear_linux_pending_markers = {
+	clr_country_flag = USA_oem_storage_event_16_expected
+	clr_country_flag = USA_oem_storage_event_16_pending
+	clr_country_flag = USA_oem_storage_event_17_expected
+	clr_country_flag = USA_oem_storage_event_17_pending
+	clr_country_flag = USA_oem_storage_event_18_expected
+	clr_country_flag = USA_oem_storage_event_18_pending
+	clr_country_flag = USA_oem_storage_event_19_expected
+	clr_country_flag = USA_oem_storage_event_19_pending
+	clr_country_flag = USA_oem_storage_event_20_expected
+	clr_country_flag = USA_oem_storage_event_20_pending
+	clr_country_flag = USA_oem_storage_event_21_expected
+	clr_country_flag = USA_oem_storage_event_21_pending
+	clr_country_flag = USA_oem_storage_event_22_expected
+	clr_country_flag = USA_oem_storage_event_22_pending
+	clr_country_flag = USA_oem_storage_event_23_expected
+	clr_country_flag = USA_oem_storage_event_23_pending
+}
+
+USA_oem_storage_reconstruct_linux_history = {
+	if = {
+		limit = {
+			linux_system_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+		}
+
+		set_temp_variable = { USA_oem_storage_history_changed = 0 }
+		if = {
+			limit = { NOT = { has_country_flag = linux_system_initialized } }
+			set_temp_variable = { USA_oem_storage_history_changed = 1 }
+		}
+		linux_system_initialize_state = yes
+		if = {
+			limit = { NOT = { has_country_flag = linux_system_usa_storage_legacy_imported } }
+			set_temp_variable = { USA_oem_storage_history_changed = 1 }
+		}
+		USA_oem_storage_import_legacy_linux_state = yes
+
+		if = {
+			limit = {
+				date > 2001.12.20
+				NOT = { has_country_flag = USA_oem_storage_event_16_resolved }
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					AND = {
+						NOT = { has_country_flag = USA_oem_storage_event_16_expected }
+						NOT = { has_country_flag = USA_oem_storage_event_16_pending }
+					}
+				}
+			}
+			clr_country_flag = USA_oem_storage_event_16_route_upstream
+			clr_country_flag = USA_oem_storage_event_16_route_enterprise
+			set_country_flag = USA_oem_storage_event_16_route_upstream
+			clr_country_flag = USA_oem_storage_event_16_expected
+			clr_country_flag = USA_oem_storage_event_16_pending
+			set_country_flag = USA_oem_storage_event_16_resolved
+			set_temp_variable = { USA_oem_storage_history_changed = 1 }
+		}
+
+		if = {
+			limit = {
+				date > 2005.2.14
+				NOT = { has_country_flag = USA_oem_storage_event_17_resolved }
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					AND = {
+						NOT = { has_country_flag = USA_oem_storage_event_17_expected }
+						NOT = { has_country_flag = USA_oem_storage_event_17_pending }
+					}
+				}
+			}
+			clr_country_flag = USA_oem_storage_event_17_route_upstream
+			clr_country_flag = USA_oem_storage_event_17_route_enterprise
+			set_country_flag = USA_oem_storage_event_17_route_upstream
+			clr_country_flag = USA_oem_storage_event_17_expected
+			clr_country_flag = USA_oem_storage_event_17_pending
+			set_country_flag = USA_oem_storage_event_17_resolved
+			set_temp_variable = { USA_oem_storage_history_changed = 1 }
+		}
+
+		if = {
+			limit = {
+				date > 2012.10.25
+				NOT = { has_country_flag = USA_oem_storage_event_18_resolved }
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					AND = {
+						NOT = { has_country_flag = USA_oem_storage_event_18_expected }
+						NOT = { has_country_flag = USA_oem_storage_event_18_pending }
+					}
+				}
+			}
+			clr_country_flag = USA_oem_storage_event_18_route_upstream
+			clr_country_flag = USA_oem_storage_event_18_route_enterprise
+			set_country_flag = USA_oem_storage_event_18_route_enterprise
+			clr_country_flag = USA_oem_storage_event_18_expected
+			clr_country_flag = USA_oem_storage_event_18_pending
+			set_country_flag = USA_oem_storage_event_18_resolved
+			set_temp_variable = { USA_oem_storage_history_changed = 1 }
+		}
+
+		if = {
+			limit = {
+				date > 2015.12.9
+				NOT = { has_country_flag = USA_oem_storage_event_19_resolved }
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					AND = {
+						NOT = { has_country_flag = USA_oem_storage_event_19_expected }
+						NOT = { has_country_flag = USA_oem_storage_event_19_pending }
+					}
+				}
+			}
+			clr_country_flag = USA_oem_storage_event_19_route_upstream
+			clr_country_flag = USA_oem_storage_event_19_route_enterprise
+			set_country_flag = USA_oem_storage_event_19_route_upstream
+			clr_country_flag = USA_oem_storage_event_19_expected
+			clr_country_flag = USA_oem_storage_event_19_pending
+			set_country_flag = USA_oem_storage_event_19_resolved
+			set_temp_variable = { USA_oem_storage_history_changed = 1 }
+		}
+
+		if = {
+			limit = {
+				date > 2019.11.5
+				NOT = { has_country_flag = USA_oem_storage_event_20_resolved }
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					AND = {
+						NOT = { has_country_flag = USA_oem_storage_event_20_expected }
+						NOT = { has_country_flag = USA_oem_storage_event_20_pending }
+					}
+				}
+			}
+			clr_country_flag = USA_oem_storage_event_20_route_upstream
+			clr_country_flag = USA_oem_storage_event_20_route_enterprise
+			set_country_flag = USA_oem_storage_event_20_route_upstream
+			clr_country_flag = USA_oem_storage_event_20_expected
+			clr_country_flag = USA_oem_storage_event_20_pending
+			set_country_flag = USA_oem_storage_event_20_resolved
+			set_temp_variable = { USA_oem_storage_history_changed = 1 }
+		}
+
+		if = {
+			limit = {
+				date > 2022.10.24
+				NOT = { has_country_flag = USA_oem_storage_event_21_resolved }
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					AND = {
+						NOT = { has_country_flag = USA_oem_storage_event_21_expected }
+						NOT = { has_country_flag = USA_oem_storage_event_21_pending }
+					}
+				}
+			}
+			clr_country_flag = USA_oem_storage_event_21_route_upstream
+			clr_country_flag = USA_oem_storage_event_21_route_enterprise
+			set_country_flag = USA_oem_storage_event_21_route_upstream
+			clr_country_flag = USA_oem_storage_event_21_expected
+			clr_country_flag = USA_oem_storage_event_21_pending
+			set_country_flag = USA_oem_storage_event_21_resolved
+			set_temp_variable = { USA_oem_storage_history_changed = 1 }
+		}
+
+		if = {
+			limit = {
+				date > 2024.5.16
+				NOT = { has_country_flag = USA_oem_storage_event_22_resolved }
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					AND = {
+						NOT = { has_country_flag = USA_oem_storage_event_22_expected }
+						NOT = { has_country_flag = USA_oem_storage_event_22_pending }
+					}
+				}
+			}
+			clr_country_flag = USA_oem_storage_event_22_route_upstream
+			clr_country_flag = USA_oem_storage_event_22_route_enterprise
+			set_country_flag = USA_oem_storage_event_22_route_upstream
+			clr_country_flag = USA_oem_storage_event_22_expected
+			clr_country_flag = USA_oem_storage_event_22_pending
+			set_country_flag = USA_oem_storage_event_22_resolved
+			set_temp_variable = { USA_oem_storage_history_changed = 1 }
+		}
+
+		if = {
+			limit = {
+				date > 2026.5.7
+				NOT = { has_country_flag = USA_oem_storage_event_23_resolved }
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					AND = {
+						NOT = { has_country_flag = USA_oem_storage_event_23_expected }
+						NOT = { has_country_flag = USA_oem_storage_event_23_pending }
+					}
+				}
+			}
+			clr_country_flag = USA_oem_storage_event_23_route_upstream
+			clr_country_flag = USA_oem_storage_event_23_route_enterprise
+			set_country_flag = USA_oem_storage_event_23_route_upstream
+			clr_country_flag = USA_oem_storage_event_23_expected
+			clr_country_flag = USA_oem_storage_event_23_pending
+			set_country_flag = USA_oem_storage_event_23_resolved
+			set_temp_variable = { USA_oem_storage_history_changed = 1 }
+		}
+
+		if = {
+			limit = { check_variable = { USA_oem_storage_history_changed > 0 } }
+			linux_system_mark_dirty = yes
+			linux_system_recalculate_state = yes
+		}
+	}
+}
+
 USA_dell_reconstruct_history = {
 	USA_dell_initialize_state = yes
+	USA_oem_storage_reconstruct_linux_history = yes
 
 	if = {
 		limit = {
@@ -295,15 +697,6 @@ USA_dell_reconstruct_history = {
 		limit = {
 			date > 2015.12.10
 			NOT = { has_country_flag = USA_oem_storage_firmware_2015_resolved }
-		}
-		if = {
-			limit = {
-				OR = {
-					has_country_flag = USA_dell_storage_bridge_initialized
-					NOT = { has_start_date < 2015.1.1 }
-				}
-			}
-			add_to_variable = { USA_oem_storage_policy = 1 }
 		}
 		set_country_flag = USA_dell_storage_bridge_initialized
 		set_country_flag = USA_oem_storage_firmware_2015_resolved
@@ -574,8 +967,12 @@ USA_dell_schedule_current_year_events = {
 			limit = {
 				NOT = { has_start_date < 2015.1.1 }
 				has_start_date < 2015.1.2
-				NOT = { has_country_flag = USA_oem_storage_firmware_2015_resolved }
+				linux_system_full_enabled = yes
+				NOT = { has_country_flag = USA_oem_storage_event_19_resolved }
+				NOT = { has_country_flag = USA_oem_storage_event_19_pending }
 			}
+			set_country_flag = USA_oem_storage_event_19_expected
+			set_country_flag = { flag = USA_oem_storage_event_19_pending value = 1 days = 403 }
 			country_event = { id = USA_oem_events.19 days = 343 }
 		}
 
