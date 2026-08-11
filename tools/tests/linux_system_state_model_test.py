@@ -594,6 +594,7 @@ def test_program_cost_duration_slot_cooldown_and_bankruptcy_contract():
 
 
 def test_storage_chain_has_complete_lifecycle_and_safe_reconstruction():
+    assert not STORAGE_EVENTS_PATH.read_bytes().startswith(b"\xef\xbb\xbf")
     event_text = STORAGE_EVENTS_PATH.read_text(encoding="utf-8")
     events = _event_map(event_text, "USA_oem_events")
     effects = STORAGE_EFFECTS_PATH.read_text(encoding="utf-8")
@@ -615,6 +616,12 @@ def test_storage_chain_has_complete_lifecycle_and_safe_reconstruction():
             f"NOT = {{ has_country_flag = USA_oem_storage_event_{index}_resolved }}"
             in event
         )
+        immediate = _named_block(event, "immediate")
+        initialize = "linux_system_initialize_state = yes"
+        recalculate = "linux_system_recalculate_state = yes"
+        assert immediate.count(initialize) == 1
+        assert immediate.count(recalculate) == 1
+        assert immediate.index(initialize) < immediate.index(recalculate)
         for option in _option_blocks(event):
             assert (
                 f"clr_country_flag = USA_oem_storage_event_{index}_expected" in option
