@@ -1,0 +1,131 @@
+# ABK is the date dispatcher only. Country state remains scoped to the bounded
+# global.linux_system_participants array.
+
+on_actions = {
+	on_startup = {
+		effect = {
+			ABK = { linux_system_startup_bootstrap = yes }
+		}
+	}
+
+	on_daily_ABK = {
+		effect = {
+			if = {
+				limit = { linux_system_enabled = yes }
+
+				if = {
+					limit = {
+						date > 2000.12.31
+						date < 2001.1.2
+					}
+					linux_system_trigger_year_2001 = yes
+				}
+				if = {
+					limit = {
+						date > 2007.12.31
+						date < 2008.1.2
+					}
+					linux_system_trigger_year_2008 = yes
+				}
+				if = {
+					limit = {
+						date > 2014.12.31
+						date < 2015.1.2
+					}
+					linux_system_trigger_year_2015 = yes
+				}
+				if = {
+					limit = {
+						date > 2018.12.31
+						date < 2019.1.2
+					}
+					linux_system_trigger_year_2019 = yes
+				}
+				if = {
+					limit = {
+						date > 2023.12.31
+						date < 2024.1.2
+					}
+					linux_system_trigger_year_2024 = yes
+				}
+
+				if = {
+					limit = {
+						date > 2001.1.3
+						NOT = { has_global_flag = GLOBAL_linux_system_milestone_1_reached }
+					}
+					set_global_flag = GLOBAL_linux_system_milestone_1_reached
+					linux_system_reach_milestone_1 = yes
+				}
+				if = {
+					limit = {
+						date > 2008.5.31
+						NOT = { has_global_flag = GLOBAL_linux_system_milestone_2_reached }
+					}
+					set_global_flag = GLOBAL_linux_system_milestone_2_reached
+					linux_system_reach_milestone_2 = yes
+				}
+				if = {
+					limit = {
+						date > 2015.12.9
+						NOT = { has_global_flag = GLOBAL_linux_system_milestone_3_reached }
+					}
+					set_global_flag = GLOBAL_linux_system_milestone_3_reached
+					linux_system_reach_milestone_3 = yes
+				}
+				if = {
+					limit = {
+						date > 2019.7.8
+						NOT = { has_global_flag = GLOBAL_linux_system_milestone_4_reached }
+					}
+					set_global_flag = GLOBAL_linux_system_milestone_4_reached
+					linux_system_reach_milestone_4 = yes
+				}
+				if = {
+					limit = {
+						date > 2024.4.29
+						NOT = { has_global_flag = GLOBAL_linux_system_milestone_5_reached }
+					}
+					set_global_flag = GLOBAL_linux_system_milestone_5_reached
+					linux_system_reach_milestone_5 = yes
+				}
+			}
+		}
+	}
+
+	on_weekly = {
+		effect = {
+			if = {
+				limit = {
+					linux_system_enabled = yes
+					exists = yes
+					NOT = { tag = ABK }
+					NOT = { tag = ZOM }
+					NOT = { MD_special_countries = yes }
+					NOT = { has_country_flag = collapsed_nation }
+					OR = {
+						NOT = { has_country_flag = linux_system_initialized }
+						NOT = { is_in_array = { global.linux_system_participants = THIS } }
+					}
+				}
+				linux_system_register_country = yes
+			}
+			else_if = {
+				limit = {
+					NOT = { linux_system_enabled = yes }
+					OR = {
+						linux_system_is_participant = yes
+						linux_system_has_owned_artifacts = yes
+					}
+				}
+				linux_system_clear_owned_artifacts = yes
+			}
+		}
+	}
+
+	on_monthly_ABK = {
+		effect = {
+			linux_system_monthly_driver = yes
+		}
+	}
+}

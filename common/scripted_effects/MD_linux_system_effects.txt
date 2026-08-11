@@ -1,0 +1,1287 @@
+# Shared Linux-system authority. ABK dispatches dates, while every durable value
+# and lifecycle marker remains on the participant country.
+
+linux_system_pay_gdp_0_1_percent = {
+	set_temp_variable = { treasury_change = { value = gdp_total multiply = -0.001 } }
+	modify_treasury_effect = yes
+}
+
+linux_system_pay_gdp_0_2_percent = {
+	set_temp_variable = { treasury_change = { value = gdp_total multiply = -0.002 } }
+	modify_treasury_effect = yes
+}
+
+linux_system_mark_dirty = {
+	set_country_flag = linux_system_dirty
+}
+
+linux_system_clear_adoption_ideas = {
+	remove_ideas = linux_system_experimental_adoption
+	remove_ideas = linux_system_institutional_adoption
+	remove_ideas = linux_system_infrastructure_standard
+	remove_ideas = linux_system_broad_economic_adoption
+}
+
+linux_system_clear_support_ideas = {
+	remove_ideas = linux_system_mixed_linux_estate
+	remove_ideas = linux_system_upstream_partnership
+	remove_ideas = linux_system_enterprise_distribution
+	remove_ideas = linux_system_national_baseline
+}
+
+linux_system_update_adoption_idea = {
+	if = {
+		limit = { original_tag = USA }
+		linux_system_clear_adoption_ideas = yes
+	}
+	else_if = {
+		limit = { check_variable = { linux_system_effective_deployment < 3 } }
+		if = {
+			limit = { NOT = { has_idea = linux_system_experimental_adoption } }
+			linux_system_clear_adoption_ideas = yes
+			add_ideas = linux_system_experimental_adoption
+		}
+	}
+	else_if = {
+		limit = { check_variable = { linux_system_effective_deployment < 6 } }
+		if = {
+			limit = { NOT = { has_idea = linux_system_institutional_adoption } }
+			linux_system_clear_adoption_ideas = yes
+			add_ideas = linux_system_institutional_adoption
+		}
+	}
+	else_if = {
+		limit = { check_variable = { linux_system_effective_deployment < 9 } }
+		if = {
+			limit = { NOT = { has_idea = linux_system_infrastructure_standard } }
+			linux_system_clear_adoption_ideas = yes
+			add_ideas = linux_system_infrastructure_standard
+		}
+	}
+	else = {
+		if = {
+			limit = { NOT = { has_idea = linux_system_broad_economic_adoption } }
+			linux_system_clear_adoption_ideas = yes
+			add_ideas = linux_system_broad_economic_adoption
+		}
+	}
+}
+
+linux_system_update_support_idea = {
+	if = {
+		limit = { original_tag = USA }
+		linux_system_clear_support_ideas = yes
+	}
+	else_if = {
+		limit = { check_variable = { linux_system_effective_support_model < 1 } }
+		if = {
+			limit = { NOT = { has_idea = linux_system_mixed_linux_estate } }
+			linux_system_clear_support_ideas = yes
+			add_ideas = linux_system_mixed_linux_estate
+		}
+	}
+	else_if = {
+		limit = { check_variable = { linux_system_effective_support_model < 2 } }
+		if = {
+			limit = { NOT = { has_idea = linux_system_upstream_partnership } }
+			linux_system_clear_support_ideas = yes
+			add_ideas = linux_system_upstream_partnership
+		}
+	}
+	else_if = {
+		limit = { check_variable = { linux_system_effective_support_model < 3 } }
+		if = {
+			limit = { NOT = { has_idea = linux_system_enterprise_distribution } }
+			linux_system_clear_support_ideas = yes
+			add_ideas = linux_system_enterprise_distribution
+		}
+	}
+	else = {
+		if = {
+			limit = { NOT = { has_idea = linux_system_national_baseline } }
+			linux_system_clear_support_ideas = yes
+			add_ideas = linux_system_national_baseline
+		}
+	}
+}
+
+linux_system_refresh_ideas = {
+	if = {
+		limit = { original_tag = USA }
+		linux_system_clear_adoption_ideas = yes
+		linux_system_clear_support_ideas = yes
+	}
+	else_if = {
+		limit = { NOT = { original_tag = USA } }
+		linux_system_update_adoption_idea = yes
+		linux_system_update_support_idea = yes
+	}
+}
+
+# Native USA outcomes are read-only inputs. The corporate bridge reads Linux base
+# values, so deriving this adapter from native state cannot feed back into itself.
+linux_system_refresh_usa_adapter = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			has_country_flag = USA_ibm_state_initialized
+		}
+
+		if = { limit = { has_country_flag = USA_ibm_common_layer_strategy } add_to_variable = { linux_system_adapter_stewardship = 1 } set_variable = { linux_system_adapter_support_model = 1 } }
+		if = { limit = { has_country_flag = USA_ibm_proprietary_linux_strategy } subtract_from_variable = { linux_system_adapter_stewardship = 1 } set_variable = { linux_system_adapter_support_model = 2 } }
+		if = { limit = { has_country_flag = USA_ibm_linux_federal_distribution } add_to_variable = { linux_system_adapter_assurance = 1 } set_variable = { linux_system_adapter_support_model = 3 } }
+		if = { limit = { has_country_flag = USA_ibm_community_boundary_protected } add_to_variable = { linux_system_adapter_stewardship = 1 } }
+		if = { limit = { has_country_flag = USA_ibm_corporate_boundary_enforced } add_to_variable = { linux_system_adapter_deployment = 1 } set_variable = { linux_system_adapter_support_model = 2 } }
+		if = { limit = { has_country_flag = USA_ibm_consulting_led_accounts } add_to_variable = { linux_system_adapter_deployment = 1 } set_variable = { linux_system_adapter_support_model = 2 } }
+		if = { limit = { has_country_flag = USA_ibm_product_led_accounts } add_to_variable = { linux_system_adapter_stewardship = 1 } }
+		if = { limit = { has_country_flag = USA_ibm_linuxone_established } add_to_variable = { linux_system_adapter_stewardship = 1 } add_to_variable = { linux_system_adapter_assurance = 1 } }
+		if = { limit = { has_country_flag = USA_ibm_proprietary_mainframe_retained } set_variable = { linux_system_adapter_support_model = 2 } }
+		if = { limit = { has_country_flag = USA_ibm_subscription_model } add_to_variable = { linux_system_adapter_deployment = 1 } set_variable = { linux_system_adapter_support_model = 2 } }
+		if = { limit = { has_country_flag = USA_ibm_balanced_portfolio } add_to_variable = { linux_system_adapter_assurance = 1 } }
+		if = { limit = { has_country_flag = USA_ibm_maintainer_governance_protected } add_to_variable = { linux_system_adapter_stewardship = 1 } }
+		if = { limit = { has_country_flag = USA_ibm_maintainer_crisis_exposed } subtract_from_variable = { linux_system_adapter_assurance = 1 } }
+		if = { limit = { has_country_flag = USA_ibm_staffed_continuity } add_to_variable = { linux_system_adapter_assurance = 1 } }
+		if = { limit = { has_country_flag = USA_ibm_automated_continuity } subtract_from_variable = { linux_system_adapter_assurance = 1 } }
+		if = { limit = { has_country_flag = USA_ibm_retreat_to_software_platform } subtract_from_variable = { linux_system_adapter_deployment = 1 } }
+		if = { limit = { has_country_flag = USA_ibm_integrated_stack_retained } add_to_variable = { linux_system_adapter_deployment = 1 } set_variable = { linux_system_adapter_support_model = 2 } }
+	}
+
+	if = {
+		limit = { has_country_flag = linux_system_usa_storage_legacy_route_upstream }
+		add_to_variable = { linux_system_adapter_stewardship = linux_system_usa_storage_legacy_import_level }
+		if = { limit = { check_variable = { linux_system_adapter_support_model < 1 } } set_variable = { linux_system_adapter_support_model = 1 } }
+	}
+	else_if = {
+		limit = { has_country_flag = linux_system_usa_storage_legacy_route_enterprise }
+		add_to_variable = { linux_system_adapter_deployment = linux_system_usa_storage_legacy_import_level }
+		add_to_variable = { linux_system_adapter_assurance = linux_system_usa_storage_legacy_import_level }
+		if = { limit = { check_variable = { linux_system_adapter_support_model < 2 } } set_variable = { linux_system_adapter_support_model = 2 } }
+	}
+
+	if = {
+		limit = {
+			OR = {
+				has_country_flag = USA_oem_storage_event_16_route_upstream
+				has_country_flag = USA_oem_storage_event_17_route_upstream
+				has_country_flag = USA_oem_storage_event_19_route_upstream
+				has_country_flag = USA_oem_storage_event_20_route_upstream
+				has_country_flag = USA_oem_storage_event_21_route_upstream
+				has_country_flag = USA_oem_storage_event_22_route_upstream
+				has_country_flag = USA_oem_storage_event_23_route_upstream
+			}
+		}
+		add_to_variable = { linux_system_adapter_stewardship = 1 }
+		add_to_variable = { linux_system_adapter_assurance = 1 }
+		if = { limit = { check_variable = { linux_system_adapter_support_model < 1 } } set_variable = { linux_system_adapter_support_model = 1 } }
+	}
+	if = {
+		limit = {
+			OR = {
+				has_country_flag = USA_oem_storage_event_16_route_enterprise
+				has_country_flag = USA_oem_storage_event_17_route_enterprise
+				has_country_flag = USA_oem_storage_event_19_route_enterprise
+				has_country_flag = USA_oem_storage_event_20_route_enterprise
+				has_country_flag = USA_oem_storage_event_21_route_enterprise
+				has_country_flag = USA_oem_storage_event_22_route_enterprise
+				has_country_flag = USA_oem_storage_event_23_route_enterprise
+			}
+		}
+		add_to_variable = { linux_system_adapter_deployment = 1 }
+		if = { limit = { check_variable = { linux_system_adapter_support_model < 2 } } set_variable = { linux_system_adapter_support_model = 2 } }
+	}
+	if = {
+		limit = { has_country_flag = USA_oem_storage_event_18_route_enterprise }
+		subtract_from_variable = { linux_system_adapter_stewardship = 1 }
+		add_to_variable = { linux_system_adapter_assurance = 1 }
+		if = { limit = { check_variable = { linux_system_adapter_support_model < 2 } } set_variable = { linux_system_adapter_support_model = 2 } }
+	}
+	if = {
+		limit = { has_country_flag = USA_oem_storage_event_18_route_upstream }
+		add_to_variable = { linux_system_adapter_deployment = 1 }
+		add_to_variable = { linux_system_adapter_stewardship = 1 }
+		subtract_from_variable = { linux_system_adapter_assurance = 1 }
+		if = { limit = { check_variable = { linux_system_adapter_support_model < 1 } } set_variable = { linux_system_adapter_support_model = 1 } }
+	}
+}
+
+linux_system_refresh_adapter = {
+	set_variable = { linux_system_adapter_deployment = 0 }
+	set_variable = { linux_system_adapter_stewardship = 0 }
+	set_variable = { linux_system_adapter_assurance = 0 }
+	set_variable = { linux_system_adapter_support_model = 0 }
+
+	if = {
+		limit = { original_tag = USA }
+		linux_system_refresh_usa_adapter = yes
+	}
+
+	clamp_variable = { var = linux_system_adapter_deployment min = -2 max = 2 }
+	clamp_variable = { var = linux_system_adapter_stewardship min = -2 max = 2 }
+	clamp_variable = { var = linux_system_adapter_assurance min = -2 max = 2 }
+	clamp_variable = { var = linux_system_adapter_support_model min = 0 max = 3 }
+}
+
+linux_system_recalculate_state = {
+	if = {
+		limit = {
+			linux_system_enabled = yes
+			has_country_flag = linux_system_initialized
+		}
+
+		clamp_variable = { var = linux_system_base_deployment min = 0 max = 10 }
+		clamp_variable = { var = linux_system_base_stewardship min = 0 max = 10 }
+		clamp_variable = { var = linux_system_base_assurance min = 0 max = 10 }
+		clamp_variable = { var = linux_system_base_support_model min = 0 max = 3 }
+
+		linux_system_refresh_adapter = yes
+
+		set_variable = { linux_system_effective_deployment = linux_system_base_deployment }
+		add_to_variable = { linux_system_effective_deployment = linux_system_adapter_deployment }
+		set_variable = { linux_system_effective_stewardship = linux_system_base_stewardship }
+		add_to_variable = { linux_system_effective_stewardship = linux_system_adapter_stewardship }
+		set_variable = { linux_system_effective_assurance = linux_system_base_assurance }
+		add_to_variable = { linux_system_effective_assurance = linux_system_adapter_assurance }
+		if = {
+			limit = { check_variable = { linux_system_base_support_model > 0 } }
+			set_variable = { linux_system_effective_support_model = linux_system_base_support_model }
+		}
+		else = { set_variable = { linux_system_effective_support_model = linux_system_adapter_support_model } }
+
+		clamp_variable = { var = linux_system_effective_deployment min = 0 max = 10 }
+		clamp_variable = { var = linux_system_effective_stewardship min = 0 max = 10 }
+		clamp_variable = { var = linux_system_effective_assurance min = 0 max = 10 }
+		clamp_variable = { var = linux_system_effective_support_model min = 0 max = 3 }
+
+		set_variable = { linux_system_milestone_stage = 0 }
+		if = { limit = { has_country_flag = linux_system_event_1_resolved } set_variable = { linux_system_milestone_stage = 1 } }
+		if = { limit = { has_country_flag = linux_system_event_2_resolved } set_variable = { linux_system_milestone_stage = 2 } }
+		if = { limit = { has_country_flag = linux_system_event_3_resolved } set_variable = { linux_system_milestone_stage = 3 } }
+		if = { limit = { has_country_flag = linux_system_event_4_resolved } set_variable = { linux_system_milestone_stage = 4 } }
+		if = { limit = { has_country_flag = linux_system_event_5_resolved } set_variable = { linux_system_milestone_stage = 5 } }
+		clamp_variable = { var = linux_system_milestone_stage min = 0 max = 5 }
+
+		linux_system_refresh_ideas = yes
+		if = {
+			limit = { original_tag = USA }
+			USA_corporate_systems_update_economic_bridge = yes
+		}
+		clr_country_flag = linux_system_dirty
+	}
+}
+
+linux_system_initialize_state = {
+	if = {
+		limit = {
+			linux_system_enabled = yes
+			NOT = { has_country_flag = linux_system_initialized }
+		}
+		set_variable = { linux_system_base_deployment = 2 }
+		set_variable = { linux_system_base_stewardship = 3 }
+		set_variable = { linux_system_base_assurance = 3 }
+		set_variable = { linux_system_base_support_model = 0 }
+		set_variable = { linux_system_adapter_deployment = 0 }
+		set_variable = { linux_system_adapter_stewardship = 0 }
+		set_variable = { linux_system_adapter_assurance = 0 }
+		set_variable = { linux_system_adapter_support_model = 0 }
+		set_variable = { linux_system_effective_deployment = 2 }
+		set_variable = { linux_system_effective_stewardship = 3 }
+		set_variable = { linux_system_effective_assurance = 3 }
+		set_variable = { linux_system_effective_support_model = 0 }
+		set_variable = { linux_system_milestone_stage = 0 }
+		set_country_flag = linux_system_initialized
+		set_country_flag = linux_system_dirty
+	}
+}
+
+linux_system_reconstruct_event_1 = {
+	if = {
+		limit = { NOT = { has_country_flag = linux_system_event_1_resolved } }
+		if = {
+			limit = { original_tag = USA }
+			set_variable = { linux_system_base_deployment = 4 }
+			set_variable = { linux_system_base_stewardship = 3 }
+			set_variable = { linux_system_base_assurance = 4 }
+			set_variable = { linux_system_base_support_model = 2 }
+		}
+		else = {
+			set_variable = { linux_system_base_deployment = 3 }
+			set_variable = { linux_system_base_stewardship = 3 }
+			set_variable = { linux_system_base_assurance = 3 }
+			set_variable = { linux_system_base_support_model = 0 }
+		}
+		clr_country_flag = linux_system_event_1_expected
+		clr_country_flag = linux_system_event_1_pending
+		set_country_flag = linux_system_event_1_resolved
+		linux_system_mark_dirty = yes
+	}
+}
+
+linux_system_reconstruct_event_2 = {
+	if = {
+		limit = { NOT = { has_country_flag = linux_system_event_2_resolved } }
+		clr_country_flag = linux_system_event_2_route_upstream
+		clr_country_flag = linux_system_event_2_route_enterprise
+		clr_country_flag = linux_system_event_2_route_national
+		clr_country_flag = linux_system_event_2_route_mixed
+		if = {
+			limit = { original_tag = USA }
+			set_country_flag = linux_system_event_2_route_enterprise
+			set_variable = { linux_system_base_deployment = 5 }
+			set_variable = { linux_system_base_stewardship = 3 }
+			set_variable = { linux_system_base_assurance = 6 }
+			set_variable = { linux_system_base_support_model = 2 }
+		}
+		else = {
+			set_variable = { linux_system_base_deployment = 4 }
+			set_variable = { linux_system_base_stewardship = 3 }
+			set_variable = { linux_system_base_assurance = 3 }
+			set_variable = { linux_system_base_support_model = 0 }
+		}
+		clr_country_flag = linux_system_event_2_expected
+		clr_country_flag = linux_system_event_2_pending
+		set_country_flag = linux_system_event_2_resolved
+		linux_system_mark_dirty = yes
+	}
+}
+
+linux_system_reconstruct_event_3 = {
+	if = {
+		limit = { NOT = { has_country_flag = linux_system_event_3_resolved } }
+		clr_country_flag = linux_system_event_3_route_upstream
+		clr_country_flag = linux_system_event_3_route_enterprise
+		clr_country_flag = linux_system_event_3_route_national
+		clr_country_flag = linux_system_event_3_route_mixed
+		if = {
+			limit = { original_tag = USA }
+			set_country_flag = linux_system_event_3_route_enterprise
+			set_variable = { linux_system_base_deployment = 6 }
+			set_variable = { linux_system_base_stewardship = 3 }
+			set_variable = { linux_system_base_assurance = 8 }
+			set_variable = { linux_system_base_support_model = 2 }
+		}
+		else = {
+			set_variable = { linux_system_base_deployment = 5 }
+			set_variable = { linux_system_base_stewardship = 3 }
+			set_variable = { linux_system_base_assurance = 4 }
+			set_variable = { linux_system_base_support_model = 0 }
+		}
+		clr_country_flag = linux_system_event_3_expected
+		clr_country_flag = linux_system_event_3_pending
+		set_country_flag = linux_system_event_3_resolved
+		linux_system_mark_dirty = yes
+	}
+}
+
+linux_system_reconstruct_event_4 = {
+	if = {
+		limit = { NOT = { has_country_flag = linux_system_event_4_resolved } }
+		clr_country_flag = linux_system_event_4_route_upstream
+		clr_country_flag = linux_system_event_4_route_enterprise
+		clr_country_flag = linux_system_event_4_route_national
+		if = {
+			limit = { original_tag = USA }
+			set_country_flag = linux_system_event_4_route_enterprise
+			set_variable = { linux_system_base_deployment = 8 }
+			set_variable = { linux_system_base_stewardship = 3 }
+			set_variable = { linux_system_base_assurance = 10 }
+			set_variable = { linux_system_base_support_model = 2 }
+		}
+		else = {
+			set_variable = { linux_system_base_deployment = 6 }
+			set_variable = { linux_system_base_stewardship = 3 }
+			set_variable = { linux_system_base_assurance = 4 }
+			set_variable = { linux_system_base_support_model = 0 }
+		}
+		clr_country_flag = linux_system_event_4_expected
+		clr_country_flag = linux_system_event_4_pending
+		set_country_flag = linux_system_event_4_resolved
+		linux_system_mark_dirty = yes
+	}
+}
+
+linux_system_reconstruct_event_5 = {
+	if = {
+		limit = { NOT = { has_country_flag = linux_system_event_5_resolved } }
+		if = {
+			limit = { original_tag = USA }
+			set_variable = { linux_system_base_deployment = 8 }
+			set_variable = { linux_system_base_stewardship = 3 }
+			set_variable = { linux_system_base_assurance = 10 }
+			set_variable = { linux_system_base_support_model = 2 }
+		}
+		else = {
+			set_variable = { linux_system_base_deployment = 7 }
+			set_variable = { linux_system_base_stewardship = 3 }
+			set_variable = { linux_system_base_assurance = 5 }
+			set_variable = { linux_system_base_support_model = 0 }
+		}
+		clr_country_flag = linux_system_event_5_expected
+		clr_country_flag = linux_system_event_5_pending
+		set_country_flag = linux_system_event_5_resolved
+		linux_system_mark_dirty = yes
+	}
+}
+
+linux_system_suppress_event_1 = {
+	if = {
+		limit = { NOT = { has_country_flag = linux_system_event_1_resolved } }
+		clr_country_flag = linux_system_event_1_expected
+		clr_country_flag = linux_system_event_1_pending
+		add_to_variable = { linux_system_base_deployment = 2 }
+		add_to_variable = { linux_system_base_assurance = 1 }
+		set_variable = { linux_system_base_support_model = 2 }
+		set_country_flag = linux_system_event_1_resolved
+		linux_system_mark_dirty = yes
+	}
+}
+
+linux_system_suppress_event_3 = {
+	if = {
+		limit = { NOT = { has_country_flag = linux_system_event_3_resolved } }
+		clr_country_flag = linux_system_event_3_expected
+		clr_country_flag = linux_system_event_3_pending
+		clr_country_flag = linux_system_event_3_route_upstream
+		clr_country_flag = linux_system_event_3_route_national
+		clr_country_flag = linux_system_event_3_route_mixed
+		set_country_flag = linux_system_event_3_route_enterprise
+		add_to_variable = { linux_system_base_deployment = 1 }
+		add_to_variable = { linux_system_base_assurance = 2 }
+		set_variable = { linux_system_base_support_model = 2 }
+		set_country_flag = linux_system_event_3_resolved
+		linux_system_mark_dirty = yes
+	}
+}
+
+linux_system_suppress_event_4 = {
+	if = {
+		limit = { NOT = { has_country_flag = linux_system_event_4_resolved } }
+		clr_country_flag = linux_system_event_4_expected
+		clr_country_flag = linux_system_event_4_pending
+		clr_country_flag = linux_system_event_4_route_upstream
+		clr_country_flag = linux_system_event_4_route_national
+		set_country_flag = linux_system_event_4_route_enterprise
+		add_to_variable = { linux_system_base_deployment = 2 }
+		add_to_variable = { linux_system_base_assurance = 2 }
+		set_variable = { linux_system_base_support_model = 2 }
+		set_country_flag = linux_system_event_4_resolved
+		linux_system_mark_dirty = yes
+	}
+}
+
+# Backfill applies only durable route state. It never fires events, spends money,
+# grants political power, or adds the temporary option ideas used by live events.
+linux_system_reconstruct_country = {
+	if = {
+		limit = {
+			linux_system_enabled = yes
+			has_country_flag = linux_system_initialized
+			linux_system_country_needs_reconstruction = yes
+		}
+
+		if = {
+			limit = {
+				original_tag = USA
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					date > 2000.1.2
+				}
+			}
+			USA_oem_storage_reconstruct_linux_history = yes
+		}
+
+		if = {
+			limit = {
+				has_global_flag = GLOBAL_linux_system_milestone_1_reached
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					NOT = {
+						OR = {
+							has_country_flag = linux_system_event_1_expected
+							has_country_flag = linux_system_event_1_pending
+						}
+					}
+				}
+			}
+			linux_system_reconstruct_event_1 = yes
+		}
+		if = {
+			limit = {
+				has_global_flag = GLOBAL_linux_system_milestone_2_reached
+				has_country_flag = linux_system_event_1_resolved
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					NOT = {
+						OR = {
+							has_country_flag = linux_system_event_2_expected
+							has_country_flag = linux_system_event_2_pending
+						}
+					}
+				}
+			}
+			linux_system_reconstruct_event_2 = yes
+		}
+		if = {
+			limit = {
+				has_global_flag = GLOBAL_linux_system_milestone_3_reached
+				has_country_flag = linux_system_event_2_resolved
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					NOT = {
+						OR = {
+							has_country_flag = linux_system_event_3_expected
+							has_country_flag = linux_system_event_3_pending
+						}
+					}
+				}
+			}
+			linux_system_reconstruct_event_3 = yes
+		}
+		if = {
+			limit = {
+				has_global_flag = GLOBAL_linux_system_milestone_4_reached
+				has_country_flag = linux_system_event_3_resolved
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					NOT = {
+						OR = {
+							has_country_flag = linux_system_event_4_expected
+							has_country_flag = linux_system_event_4_pending
+						}
+					}
+				}
+			}
+			linux_system_reconstruct_event_4 = yes
+		}
+		if = {
+			limit = {
+				has_global_flag = GLOBAL_linux_system_milestone_5_reached
+				has_country_flag = linux_system_event_4_resolved
+				OR = {
+					linux_system_outcomes_only_enabled = yes
+					NOT = {
+						OR = {
+							has_country_flag = linux_system_event_5_expected
+							has_country_flag = linux_system_event_5_pending
+						}
+					}
+				}
+			}
+			linux_system_reconstruct_event_5 = yes
+		}
+
+		if = {
+			limit = {
+				OR = {
+					NOT = { has_global_flag = GLOBAL_linux_system_milestone_1_reached }
+					has_country_flag = linux_system_event_1_resolved
+				}
+				OR = {
+					NOT = { has_global_flag = GLOBAL_linux_system_milestone_2_reached }
+					has_country_flag = linux_system_event_2_resolved
+				}
+				OR = {
+					NOT = { has_global_flag = GLOBAL_linux_system_milestone_3_reached }
+					has_country_flag = linux_system_event_3_resolved
+				}
+				OR = {
+					NOT = { has_global_flag = GLOBAL_linux_system_milestone_4_reached }
+					has_country_flag = linux_system_event_4_resolved
+				}
+				OR = {
+					NOT = { has_global_flag = GLOBAL_linux_system_milestone_5_reached }
+					has_country_flag = linux_system_event_5_resolved
+				}
+			}
+			set_country_flag = linux_system_reconstruction_complete
+		}
+		linux_system_recalculate_state = yes
+	}
+}
+
+linux_system_register_country = {
+	if = {
+		limit = {
+			linux_system_enabled = yes
+			exists = yes
+			NOT = { tag = ABK }
+			NOT = { tag = ZOM }
+			NOT = { MD_special_countries = yes }
+			NOT = { has_country_flag = collapsed_nation }
+		}
+		if = {
+			limit = { NOT = { is_in_array = { global.linux_system_participants = THIS } } }
+			add_to_array = { global.linux_system_participants = THIS }
+		}
+		linux_system_initialize_state = yes
+		linux_system_reconstruct_country = yes
+		linux_system_prepare_future_delivery = yes
+		linux_system_recalculate_state = yes
+	}
+}
+
+# A participant released or restored after January 1 still owns any milestone
+# that remains in the future. The due-date dispatcher converts expected-only
+# state into one queued delivery; milestones already reached reconstruct instead.
+linux_system_prepare_future_delivery = {
+	if = {
+		limit = {
+			linux_system_full_enabled = yes
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2000.12.31
+			date < 2001.1.5
+			NOT = { has_global_flag = GLOBAL_linux_system_milestone_1_reached }
+			NOT = { has_country_flag = linux_system_event_1_expected }
+			NOT = { has_country_flag = linux_system_event_1_resolved }
+		}
+		set_country_flag = linux_system_event_1_expected
+	}
+	if = {
+		limit = {
+			linux_system_full_enabled = yes
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2007.12.31
+			date < 2008.6.2
+			NOT = { has_global_flag = GLOBAL_linux_system_milestone_2_reached }
+			NOT = { has_country_flag = linux_system_event_2_expected }
+			NOT = { has_country_flag = linux_system_event_2_resolved }
+		}
+		set_country_flag = linux_system_event_2_expected
+	}
+	if = {
+		limit = {
+			linux_system_full_enabled = yes
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2014.12.31
+			date < 2015.12.11
+			NOT = { has_global_flag = GLOBAL_linux_system_milestone_3_reached }
+			NOT = { has_country_flag = linux_system_event_3_expected }
+			NOT = { has_country_flag = linux_system_event_3_resolved }
+		}
+		set_country_flag = linux_system_event_3_expected
+	}
+	if = {
+		limit = {
+			linux_system_full_enabled = yes
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2018.12.31
+			date < 2019.7.10
+			NOT = { has_global_flag = GLOBAL_linux_system_milestone_4_reached }
+			NOT = { has_country_flag = linux_system_event_4_expected }
+			NOT = { has_country_flag = linux_system_event_4_resolved }
+		}
+		set_country_flag = linux_system_event_4_expected
+	}
+	if = {
+		limit = {
+			linux_system_full_enabled = yes
+			NOT = { has_country_flag = collapsed_nation }
+			date > 2023.12.31
+			date < 2024.5.1
+			NOT = { has_global_flag = GLOBAL_linux_system_milestone_5_reached }
+			NOT = { has_country_flag = linux_system_event_5_expected }
+			NOT = { has_country_flag = linux_system_event_5_resolved }
+		}
+		set_country_flag = linux_system_event_5_expected
+	}
+}
+
+linux_system_schedule_event_1 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = linux_system_event_1_resolved }
+		}
+		if = {
+			limit = { linux_system_usa_suppresses_event_1 = yes }
+			linux_system_suppress_event_1 = yes
+			linux_system_recalculate_state = yes
+		}
+		else_if = {
+			limit = { NOT = { has_country_flag = linux_system_event_1_pending } }
+			set_country_flag = linux_system_event_1_expected
+			set_country_flag = { flag = linux_system_event_1_pending days = 63 value = 1 }
+			country_event = { id = linux_system_events.1 days = 3 }
+		}
+	}
+}
+
+linux_system_schedule_event_2 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = linux_system_event_2_resolved }
+			NOT = { has_country_flag = linux_system_event_2_pending }
+		}
+		set_country_flag = linux_system_event_2_expected
+		set_country_flag = { flag = linux_system_event_2_pending days = 212 value = 1 }
+		country_event = { id = linux_system_events.2 days = 152 }
+	}
+}
+
+linux_system_schedule_event_3 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = linux_system_event_3_resolved }
+		}
+		if = {
+			limit = { linux_system_usa_suppresses_event_3 = yes }
+			linux_system_suppress_event_3 = yes
+			linux_system_recalculate_state = yes
+		}
+		else_if = {
+			limit = { NOT = { has_country_flag = linux_system_event_3_pending } }
+			set_country_flag = linux_system_event_3_expected
+			set_country_flag = { flag = linux_system_event_3_pending days = 403 value = 1 }
+			country_event = { id = linux_system_events.3 days = 343 }
+		}
+	}
+}
+
+linux_system_schedule_event_4 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = linux_system_event_4_resolved }
+		}
+		if = {
+			limit = { linux_system_usa_suppresses_event_4 = yes }
+			linux_system_suppress_event_4 = yes
+			linux_system_recalculate_state = yes
+		}
+		else_if = {
+			limit = { NOT = { has_country_flag = linux_system_event_4_pending } }
+			set_country_flag = linux_system_event_4_expected
+			set_country_flag = { flag = linux_system_event_4_pending days = 249 value = 1 }
+			country_event = { id = linux_system_events.4 days = 189 }
+		}
+	}
+}
+
+linux_system_schedule_event_5 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = linux_system_event_5_resolved }
+			NOT = { has_country_flag = linux_system_event_5_pending }
+		}
+		set_country_flag = linux_system_event_5_expected
+		set_country_flag = { flag = linux_system_event_5_pending days = 180 value = 1 }
+		country_event = { id = linux_system_events.5 days = 120 }
+	}
+}
+
+linux_system_trigger_year_2001 = {
+	if = {
+		limit = { linux_system_full_enabled = yes }
+		for_each_scope_loop = {
+			array = global.linux_system_participants
+			linux_system_schedule_event_1 = yes
+		}
+	}
+}
+
+linux_system_trigger_year_2008 = {
+	if = {
+		limit = { linux_system_full_enabled = yes }
+		for_each_scope_loop = {
+			array = global.linux_system_participants
+			linux_system_schedule_event_2 = yes
+		}
+	}
+}
+
+linux_system_trigger_year_2015 = {
+	if = {
+		limit = { linux_system_full_enabled = yes }
+		for_each_scope_loop = {
+			array = global.linux_system_participants
+			linux_system_schedule_event_3 = yes
+		}
+	}
+}
+
+linux_system_trigger_year_2019 = {
+	if = {
+		limit = { linux_system_full_enabled = yes }
+		for_each_scope_loop = {
+			array = global.linux_system_participants
+			linux_system_schedule_event_4 = yes
+		}
+	}
+}
+
+linux_system_trigger_year_2024 = {
+	if = {
+		limit = { linux_system_full_enabled = yes }
+		for_each_scope_loop = {
+			array = global.linux_system_participants
+			linux_system_schedule_event_5 = yes
+		}
+	}
+}
+
+linux_system_activate_event_1 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = linux_system_event_1_resolved }
+		}
+		if = {
+			limit = { linux_system_outcomes_only_enabled = yes }
+			linux_system_reconstruct_event_1 = yes
+			linux_system_recalculate_state = yes
+		}
+		else_if = {
+			limit = { linux_system_usa_suppresses_event_1 = yes }
+			linux_system_suppress_event_1 = yes
+			linux_system_recalculate_state = yes
+		}
+		else_if = {
+			limit = {
+				has_country_flag = linux_system_event_1_expected
+				NOT = { has_country_flag = linux_system_event_1_pending }
+			}
+			set_country_flag = { flag = linux_system_event_1_pending days = 60 value = 1 }
+			country_event = { id = linux_system_events.1 days = 1 }
+		}
+		else_if = {
+			limit = { NOT = { has_country_flag = linux_system_event_1_expected } }
+			linux_system_reconstruct_event_1 = yes
+			linux_system_recalculate_state = yes
+		}
+	}
+}
+
+linux_system_activate_event_2 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = linux_system_event_2_resolved }
+		}
+		if = {
+			limit = { linux_system_outcomes_only_enabled = yes }
+			linux_system_reconstruct_event_2 = yes
+			linux_system_recalculate_state = yes
+		}
+		else_if = {
+			limit = {
+				has_country_flag = linux_system_event_2_expected
+				NOT = { has_country_flag = linux_system_event_2_pending }
+			}
+			set_country_flag = { flag = linux_system_event_2_pending days = 60 value = 1 }
+			country_event = { id = linux_system_events.2 days = 1 }
+		}
+		else_if = {
+			limit = { NOT = { has_country_flag = linux_system_event_2_expected } }
+			linux_system_reconstruct_event_2 = yes
+			linux_system_recalculate_state = yes
+		}
+	}
+}
+
+linux_system_activate_event_3 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = linux_system_event_3_resolved }
+		}
+		if = {
+			limit = { linux_system_outcomes_only_enabled = yes }
+			linux_system_reconstruct_event_3 = yes
+			linux_system_recalculate_state = yes
+		}
+		else_if = {
+			limit = { linux_system_usa_suppresses_event_3 = yes }
+			linux_system_suppress_event_3 = yes
+			linux_system_recalculate_state = yes
+		}
+		else_if = {
+			limit = {
+				has_country_flag = linux_system_event_3_expected
+				NOT = { has_country_flag = linux_system_event_3_pending }
+			}
+			set_country_flag = { flag = linux_system_event_3_pending days = 60 value = 1 }
+			country_event = { id = linux_system_events.3 days = 1 }
+		}
+		else_if = {
+			limit = { NOT = { has_country_flag = linux_system_event_3_expected } }
+			linux_system_reconstruct_event_3 = yes
+			linux_system_recalculate_state = yes
+		}
+	}
+}
+
+linux_system_activate_event_4 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = linux_system_event_4_resolved }
+		}
+		if = {
+			limit = { linux_system_outcomes_only_enabled = yes }
+			linux_system_reconstruct_event_4 = yes
+			linux_system_recalculate_state = yes
+		}
+		else_if = {
+			limit = { linux_system_usa_suppresses_event_4 = yes }
+			linux_system_suppress_event_4 = yes
+			linux_system_recalculate_state = yes
+		}
+		else_if = {
+			limit = {
+				has_country_flag = linux_system_event_4_expected
+				NOT = { has_country_flag = linux_system_event_4_pending }
+			}
+			set_country_flag = { flag = linux_system_event_4_pending days = 60 value = 1 }
+			country_event = { id = linux_system_events.4 days = 1 }
+		}
+		else_if = {
+			limit = { NOT = { has_country_flag = linux_system_event_4_expected } }
+			linux_system_reconstruct_event_4 = yes
+			linux_system_recalculate_state = yes
+		}
+	}
+}
+
+linux_system_activate_event_5 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = linux_system_event_5_resolved }
+		}
+		if = {
+			limit = { linux_system_outcomes_only_enabled = yes }
+			linux_system_reconstruct_event_5 = yes
+			linux_system_recalculate_state = yes
+		}
+		else_if = {
+			limit = {
+				has_country_flag = linux_system_event_5_expected
+				NOT = { has_country_flag = linux_system_event_5_pending }
+			}
+			set_country_flag = { flag = linux_system_event_5_pending days = 60 value = 1 }
+			country_event = { id = linux_system_events.5 days = 1 }
+		}
+		else_if = {
+			limit = { NOT = { has_country_flag = linux_system_event_5_expected } }
+			linux_system_reconstruct_event_5 = yes
+			linux_system_recalculate_state = yes
+		}
+	}
+}
+
+linux_system_reach_milestone_1 = {
+	for_each_scope_loop = {
+		array = global.linux_system_participants
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			linux_system_activate_event_1 = yes
+		}
+	}
+}
+
+linux_system_reach_milestone_2 = {
+	for_each_scope_loop = {
+		array = global.linux_system_participants
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			linux_system_activate_event_2 = yes
+		}
+	}
+}
+
+linux_system_reach_milestone_3 = {
+	for_each_scope_loop = {
+		array = global.linux_system_participants
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			linux_system_activate_event_3 = yes
+		}
+	}
+}
+
+linux_system_reach_milestone_4 = {
+	for_each_scope_loop = {
+		array = global.linux_system_participants
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			linux_system_activate_event_4 = yes
+		}
+	}
+}
+
+linux_system_reach_milestone_5 = {
+	for_each_scope_loop = {
+		array = global.linux_system_participants
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			linux_system_activate_event_5 = yes
+		}
+	}
+}
+
+linux_system_repair_delivery_markers = {
+	if = {
+		limit = {
+			has_country_flag = linux_system_event_1_pending
+			NOT = { has_country_flag = linux_system_event_1_expected }
+			NOT = { has_country_flag = linux_system_event_1_resolved }
+		}
+		set_country_flag = linux_system_event_1_expected
+	}
+	if = {
+		limit = {
+			has_country_flag = linux_system_event_2_pending
+			NOT = { has_country_flag = linux_system_event_2_expected }
+			NOT = { has_country_flag = linux_system_event_2_resolved }
+		}
+		set_country_flag = linux_system_event_2_expected
+	}
+	if = {
+		limit = {
+			has_country_flag = linux_system_event_3_pending
+			NOT = { has_country_flag = linux_system_event_3_expected }
+			NOT = { has_country_flag = linux_system_event_3_resolved }
+		}
+		set_country_flag = linux_system_event_3_expected
+	}
+	if = {
+		limit = {
+			has_country_flag = linux_system_event_4_pending
+			NOT = { has_country_flag = linux_system_event_4_expected }
+			NOT = { has_country_flag = linux_system_event_4_resolved }
+		}
+		set_country_flag = linux_system_event_4_expected
+	}
+	if = {
+		limit = {
+			has_country_flag = linux_system_event_5_pending
+			NOT = { has_country_flag = linux_system_event_5_expected }
+			NOT = { has_country_flag = linux_system_event_5_resolved }
+		}
+		set_country_flag = linux_system_event_5_expected
+	}
+}
+
+linux_system_recover_pending_events = {
+	linux_system_repair_delivery_markers = yes
+
+	if = {
+		limit = {
+			has_global_flag = GLOBAL_linux_system_milestone_1_reached
+			has_country_flag = linux_system_event_1_expected
+			NOT = { has_country_flag = linux_system_event_1_resolved }
+		}
+		if = {
+			limit = { NOT = { has_country_flag = linux_system_event_1_pending } }
+			set_country_flag = { flag = linux_system_event_1_pending days = 60 value = 1 }
+			country_event = { id = linux_system_events.1 days = 1 }
+		}
+	}
+
+	if = {
+		limit = {
+			has_global_flag = GLOBAL_linux_system_milestone_2_reached
+			has_country_flag = linux_system_event_2_expected
+			NOT = { has_country_flag = linux_system_event_2_resolved }
+		}
+		if = {
+			limit = { NOT = { has_country_flag = linux_system_event_2_pending } }
+			set_country_flag = { flag = linux_system_event_2_pending days = 60 value = 1 }
+			country_event = { id = linux_system_events.2 days = 1 }
+		}
+	}
+
+	if = {
+		limit = {
+			has_global_flag = GLOBAL_linux_system_milestone_3_reached
+			has_country_flag = linux_system_event_3_expected
+			NOT = { has_country_flag = linux_system_event_3_resolved }
+		}
+		if = {
+			limit = { NOT = { has_country_flag = linux_system_event_3_pending } }
+			set_country_flag = { flag = linux_system_event_3_pending days = 60 value = 1 }
+			country_event = { id = linux_system_events.3 days = 1 }
+		}
+	}
+
+	if = {
+		limit = {
+			has_global_flag = GLOBAL_linux_system_milestone_4_reached
+			has_country_flag = linux_system_event_4_expected
+			NOT = { has_country_flag = linux_system_event_4_resolved }
+		}
+		if = {
+			limit = { NOT = { has_country_flag = linux_system_event_4_pending } }
+			set_country_flag = { flag = linux_system_event_4_pending days = 60 value = 1 }
+			country_event = { id = linux_system_events.4 days = 1 }
+		}
+	}
+
+	if = {
+		limit = {
+			has_global_flag = GLOBAL_linux_system_milestone_5_reached
+			has_country_flag = linux_system_event_5_expected
+			NOT = { has_country_flag = linux_system_event_5_resolved }
+		}
+		if = {
+			limit = { NOT = { has_country_flag = linux_system_event_5_pending } }
+			set_country_flag = { flag = linux_system_event_5_pending days = 60 value = 1 }
+			country_event = { id = linux_system_events.5 days = 1 }
+		}
+	}
+}
+
+linux_system_apply_upstream_maintenance_program = {
+	linux_system_pay_gdp_0_1_percent = yes
+	add_to_variable = { linux_system_base_stewardship = 1 }
+	add_to_variable = { linux_system_base_assurance = 1 }
+	add_timed_idea = { idea = linux_system_upstream_maintenance_program days = 365 }
+	linux_system_mark_dirty = yes
+	linux_system_recalculate_state = yes
+}
+
+linux_system_apply_enterprise_support_program = {
+	linux_system_pay_gdp_0_1_percent = yes
+	add_to_variable = { linux_system_base_deployment = 1 }
+	add_to_variable = { linux_system_base_assurance = 1 }
+	set_variable = { linux_system_base_support_model = 2 }
+	add_timed_idea = { idea = linux_system_enterprise_support_program days = 365 }
+	linux_system_mark_dirty = yes
+	linux_system_recalculate_state = yes
+}
+
+linux_system_apply_lifecycle_hardening_program = {
+	linux_system_pay_gdp_0_1_percent = yes
+	add_to_variable = { linux_system_base_assurance = 2 }
+	add_timed_idea = { idea = linux_system_lifecycle_hardening_program days = 365 }
+	linux_system_mark_dirty = yes
+	linux_system_recalculate_state = yes
+}
+
+linux_system_apply_public_procurement_program = {
+	linux_system_pay_gdp_0_2_percent = yes
+	add_to_variable = { linux_system_base_deployment = 1 }
+	add_to_variable = { linux_system_base_stewardship = 1 }
+	add_to_variable = { linux_system_base_assurance = 1 }
+	add_timed_idea = { idea = linux_system_public_procurement_program days = 730 }
+	linux_system_mark_dirty = yes
+	linux_system_recalculate_state = yes
+}
+
+linux_system_clear_country_state = {
+	linux_system_clear_adoption_ideas = yes
+	linux_system_clear_support_ideas = yes
+	if = {
+		limit = { original_tag = USA }
+		USA_oem_storage_clear_linux_pending_markers = yes
+	}
+	remove_ideas = linux_system_shared_updates_program
+	remove_ideas = linux_system_national_signing_program
+	remove_ideas = linux_system_fragile_estate
+	remove_ideas = linux_system_upstream_maintenance_program
+	remove_ideas = linux_system_enterprise_support_program
+	remove_ideas = linux_system_lifecycle_hardening_program
+	remove_ideas = linux_system_public_procurement_program
+
+	clr_country_flag = linux_system_dirty
+	clr_country_flag = linux_system_program_cooldown
+
+	clr_country_flag = linux_system_event_1_expected
+	clr_country_flag = linux_system_event_1_pending
+	clr_country_flag = linux_system_event_2_expected
+	clr_country_flag = linux_system_event_2_pending
+	clr_country_flag = linux_system_event_3_expected
+	clr_country_flag = linux_system_event_3_pending
+	clr_country_flag = linux_system_event_4_expected
+	clr_country_flag = linux_system_event_4_pending
+	clr_country_flag = linux_system_event_5_expected
+	clr_country_flag = linux_system_event_5_pending
+}
+
+linux_system_clear_owned_artifacts = {
+	linux_system_clear_country_state = yes
+	if = {
+		limit = { is_in_array = { global.linux_system_participants = THIS } }
+		remove_from_array = { global.linux_system_participants = THIS }
+	}
+}
+
+linux_system_cleanup_all = {
+	for_each_scope_loop = {
+		array = global.linux_system_participants
+		linux_system_clear_country_state = yes
+	}
+	clear_array = global.linux_system_participants
+	clr_global_flag = GLOBAL_linux_system_startup_dispatched
+}
+
+linux_system_restore_global_milestones = {
+	if = { limit = { date > 2001.1.3 } set_global_flag = GLOBAL_linux_system_milestone_1_reached }
+	if = { limit = { date > 2008.5.31 } set_global_flag = GLOBAL_linux_system_milestone_2_reached }
+	if = { limit = { date > 2015.12.9 } set_global_flag = GLOBAL_linux_system_milestone_3_reached }
+	if = { limit = { date > 2019.7.8 } set_global_flag = GLOBAL_linux_system_milestone_4_reached }
+	if = { limit = { date > 2024.4.29 } set_global_flag = GLOBAL_linux_system_milestone_5_reached }
+}
+
+linux_system_startup_bootstrap = {
+	if = {
+		limit = { linux_system_enabled = yes }
+		if = {
+			limit = { NOT = { has_global_flag = GLOBAL_linux_system_startup_dispatched } }
+			set_global_flag = GLOBAL_linux_system_startup_dispatched
+			linux_system_restore_global_milestones = yes
+		}
+		if = {
+			limit = { linux_system_full_enabled = yes }
+			for_each_scope_loop = {
+				array = global.linux_system_participants
+				if = {
+					limit = { NOT = { has_country_flag = collapsed_nation } }
+					linux_system_recover_pending_events = yes
+					if = {
+						limit = { original_tag = USA }
+						USA_oem_storage_recover_pending_events = yes
+					}
+				}
+			}
+		}
+	}
+	else = { linux_system_cleanup_all = yes }
+}
+
+linux_system_monthly_driver = {
+	if = {
+		limit = { linux_system_enabled = yes }
+		if = {
+			limit = { NOT = { has_global_flag = GLOBAL_linux_system_startup_dispatched } }
+			linux_system_startup_bootstrap = yes
+		}
+		for_each_scope_loop = {
+			array = global.linux_system_participants
+			if = {
+				limit = { NOT = { has_country_flag = collapsed_nation } }
+				linux_system_initialize_state = yes
+				linux_system_prepare_future_delivery = yes
+				linux_system_reconstruct_country = yes
+				if = {
+					limit = { has_country_flag = linux_system_dirty }
+					linux_system_recalculate_state = yes
+				}
+				if = {
+					limit = { linux_system_full_enabled = yes }
+					linux_system_recover_pending_events = yes
+					if = {
+						limit = { original_tag = USA }
+						USA_oem_storage_recover_pending_events = yes
+					}
+				}
+			}
+		}
+	}
+	else_if = {
+		limit = { has_global_flag = GLOBAL_linux_system_startup_dispatched }
+		linux_system_cleanup_all = yes
+	}
+}

@@ -199,6 +199,95 @@ USA_corporate_systems_oracle_contribution = {
 	}
 }
 
+# Linux contributes from generic base state only. Native IBM and storage outcomes
+# feed the adapter layer, so reading effective state here would create feedback.
+USA_corporate_systems_linux_contribution = {
+	if = {
+		limit = {
+			linux_system_enabled = yes
+			has_country_flag = linux_system_initialized
+			check_variable = { linux_system_base_deployment > 5 }
+		}
+		add_to_temp_variable = { USA_oem_contribution_national_compute_stack = 1 }
+	}
+	if = {
+		limit = {
+			linux_system_enabled = yes
+			has_country_flag = linux_system_initialized
+			check_variable = { linux_system_base_stewardship > 6 }
+		}
+		add_to_temp_variable = { USA_oem_contribution_open_standards = 1 }
+	}
+	else_if = {
+		limit = {
+			linux_system_enabled = yes
+			has_country_flag = linux_system_initialized
+			check_variable = { linux_system_base_stewardship < 3 }
+		}
+		subtract_from_temp_variable = { USA_oem_contribution_open_standards = 1 }
+	}
+	if = {
+		limit = {
+			linux_system_enabled = yes
+			has_country_flag = linux_system_initialized
+			check_variable = { linux_system_base_assurance > 6 }
+		}
+		add_to_temp_variable = { USA_oem_contribution_supply_resilience = 1 }
+	}
+	else_if = {
+		limit = {
+			linux_system_enabled = yes
+			has_country_flag = linux_system_initialized
+			check_variable = { linux_system_base_assurance < 3 }
+		}
+		subtract_from_temp_variable = { USA_oem_contribution_supply_resilience = 1 }
+	}
+	if = {
+		limit = {
+			linux_system_enabled = yes
+			has_country_flag = linux_system_initialized
+			check_variable = { linux_system_base_support_model = 2 }
+		}
+		add_to_temp_variable = { USA_oem_contribution_vertical_integration = 1 }
+	}
+	else_if = {
+		limit = {
+			linux_system_enabled = yes
+			has_country_flag = linux_system_initialized
+			check_variable = { linux_system_base_support_model = 3 }
+		}
+		add_to_temp_variable = { USA_oem_contribution_security_control = 1 }
+	}
+}
+
+# Corporate History Off has no authoritative company axes. Keep those native
+# bases untouched and rebuild only the bridge-owned derived layer from the
+# neutral 5/5/5/5/5 baseline used by IBM initialization.
+USA_corporate_systems_rebuild_linux_only_axes = {
+	set_temp_variable = { USA_oem_contribution_open_standards = 0 }
+	set_temp_variable = { USA_oem_contribution_vertical_integration = 0 }
+	set_temp_variable = { USA_oem_contribution_supply_resilience = 0 }
+	set_temp_variable = { USA_oem_contribution_security_control = 0 }
+	set_temp_variable = { USA_oem_contribution_national_compute_stack = 0 }
+	USA_corporate_systems_linux_contribution = yes
+
+	set_variable = { USA_oem_effective_open_standards = 5 }
+	add_to_variable = { USA_oem_effective_open_standards = USA_oem_contribution_open_standards }
+	set_variable = { USA_oem_applied_open_standards = USA_oem_contribution_open_standards }
+	set_variable = { USA_oem_effective_vertical_integration = 5 }
+	add_to_variable = { USA_oem_effective_vertical_integration = USA_oem_contribution_vertical_integration }
+	set_variable = { USA_oem_applied_vertical_integration = USA_oem_contribution_vertical_integration }
+	set_variable = { USA_oem_effective_supply_resilience = 5 }
+	add_to_variable = { USA_oem_effective_supply_resilience = USA_oem_contribution_supply_resilience }
+	set_variable = { USA_oem_applied_supply_resilience = USA_oem_contribution_supply_resilience }
+	set_variable = { USA_oem_effective_security_control = 5 }
+	add_to_variable = { USA_oem_effective_security_control = USA_oem_contribution_security_control }
+	set_variable = { USA_oem_applied_security_control = USA_oem_contribution_security_control }
+	set_variable = { USA_oem_effective_national_compute_stack = 5 }
+	add_to_variable = { USA_oem_effective_national_compute_stack = USA_oem_contribution_national_compute_stack }
+	set_variable = { USA_oem_applied_national_compute_stack = USA_oem_contribution_national_compute_stack }
+}
+
 # Rebuilt from zero on every call, so monthly ticks and reloads cannot stack.
 USA_corporate_systems_rebuild_company_contributions = {
 	set_temp_variable = { USA_oem_contribution_open_standards = 0 }
@@ -216,6 +305,7 @@ USA_corporate_systems_rebuild_company_contributions = {
 	USA_corporate_systems_motorola_contribution = yes
 	USA_corporate_systems_google_contribution = yes
 	USA_corporate_systems_oracle_contribution = yes
+	USA_corporate_systems_linux_contribution = yes
 
 	clamp_temp_variable = { var = USA_oem_contribution_open_standards min = -3 max = 3 }
 	clamp_temp_variable = { var = USA_oem_contribution_vertical_integration min = -3 max = 3 }
@@ -257,14 +347,32 @@ USA_corporate_systems_rebuild_effective_axes = {
 USA_corporate_systems_update_economic_bridge = {
 	if = {
 		limit = {
-			corporate_history_enabled = yes
 			original_tag = USA
 			NOT = { has_country_flag = collapsed_nation }
-			has_country_flag = USA_ibm_state_initialized
-			USA_corporate_systems_has_meaningful_state = yes
+			OR = {
+				AND = {
+					corporate_history_enabled = yes
+					has_country_flag = USA_ibm_state_initialized
+					USA_corporate_systems_has_meaningful_state = yes
+				}
+				AND = {
+					linux_system_enabled = yes
+					has_country_flag = linux_system_initialized
+				}
+			}
 		}
-		USA_corporate_systems_rebuild_company_contributions = yes
-		USA_corporate_systems_rebuild_effective_axes = yes
+		if = {
+			limit = {
+				corporate_history_enabled = yes
+				has_country_flag = USA_ibm_state_initialized
+				USA_corporate_systems_has_meaningful_state = yes
+			}
+			USA_corporate_systems_rebuild_company_contributions = yes
+			USA_corporate_systems_rebuild_effective_axes = yes
+		}
+		else = {
+			USA_corporate_systems_rebuild_linux_only_axes = yes
+		}
 
 		set_temp_variable = { USA_corporate_systems_economic_integration_score = USA_oem_effective_open_standards }
 		add_to_temp_variable = { USA_corporate_systems_economic_integration_score = USA_oem_effective_vertical_integration }
@@ -354,7 +462,12 @@ USA_corporate_systems_update_economic_bridge = {
 	}
 	else = {
 		if = {
-			limit = { has_country_flag = USA_ibm_state_initialized }
+			limit = {
+				OR = {
+					has_country_flag = USA_ibm_state_initialized
+					has_country_flag = linux_system_initialized
+				}
+			}
 			USA_corporate_systems_clear_derived_axes = yes
 		}
 		if = {

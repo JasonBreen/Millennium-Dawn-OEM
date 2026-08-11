@@ -9,6 +9,7 @@ changing `common/scripted_effects/USA_corporate_systems_effects.txt` or any
 ```
 base axes (USA_oem_*)            written by the IBM and Sun/Microsoft chains
   + company contributions        USA_oem_contribution_* temp vars, rebuilt every bridge call, capped -3..+3
+  + Linux base contribution      generic linux_system_base_* only, at most one point per affected axis
   = effective axes               USA_oem_effective_*, clamped 0..10
   -> integration score           sum of the five effective axes (0..50)
   -> one economic idea           USA_corporate_systems_economic_integration_1..5
@@ -27,6 +28,33 @@ variables and never persist.
 computed. It never writes the base axes, so every existing event, policy,
 reconstruction effect and tooltip that mutates `USA_oem_*` keeps working
 unchanged.
+
+### Global Linux contribution
+
+The global Linux system contributes from its generic base state only. IBM and
+storage outcomes feed `linux_system_adapter_*`; the bridge must never read that
+adapter or the derived `linux_system_effective_*` state because doing so would
+let native IBM state feed Linux and amplify itself on the return path.
+
+| Generic Linux base state                 | U.S. axis contribution |
+| ---------------------------------------- | ---------------------- |
+| deployment at least 6                    | NCS +1                 |
+| stewardship at least 7                   | OS +1                  |
+| stewardship at most 2                    | OS -1                  |
+| assurance at least 7                     | SR +1                  |
+| assurance at most 2                      | SR -1                  |
+| support model is Enterprise Distribution | VI +1                  |
+| support model is National Baseline       | SC +1                  |
+
+Each Linux condition can move an affected axis by only one point. The existing
+combined company-contribution clamp remains `-3..+3`; Linux does not receive a
+separate cap or write any `USA_oem_*` base variable.
+
+When Corporate History is Off, the bridge ignores all saved native company
+state and rebuilds only its derived axes from the neutral `5/5/5/5/5` baseline
+used by IBM initialization plus the base-only Linux contribution. This keeps
+Linux economically active in every rule combination without initializing or
+changing IBM, storage, or authoritative Corporate Systems state.
 
 ### Idempotency
 

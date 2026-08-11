@@ -2223,3 +2223,32 @@ def test_real_options_requires_monthly_bridge_reachability(tmp_path):
         "must call USA_oem_update_real_options_economy exactly once" in message
         for message in _messages(tmp_path)
     )
+
+
+def test_schema_v4_requires_shared_systems(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["schema_version"] = 4
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "Schema v4 requires a non-empty shared_systems list" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_schema_v4_rejects_incomplete_shared_system_declarations(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["schema_version"] = 4
+    manifest["shared_systems"] = [{}]
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "shared_systems[0] is missing required fields" in message
+        for message in _messages(tmp_path)
+    )

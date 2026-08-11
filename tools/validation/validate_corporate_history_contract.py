@@ -411,6 +411,14 @@ class Validator(BaseValidator):
             category="Corporate-history real-options economic layer",
         )
 
+        self._log_section("shared systems")
+        self._report(
+            self._validate_shared_systems(effect_defs, event_defs),
+            "Shared-system contracts are coherent",
+            "Shared-system contract issues:",
+            category="Shared-system contract",
+        )
+
     def _load_manifest(self) -> List[ChainConfig]:
         if not self._manifest_path.exists():
             self.add_error(
@@ -563,6 +571,1232 @@ class Validator(BaseValidator):
                 )
             chains.append(chain)
         return chains
+
+    def _validate_shared_systems(
+        self,
+        effect_defs: Dict[str, List[BlockDef]],
+        event_defs: Dict[str, EventDef],
+    ) -> List[Tuple[str, str, int]]:
+        findings: List[Tuple[str, str, int]] = []
+        schema_version = int(self._manifest_payload.get("schema_version", 1))
+        raw_systems = self._manifest_payload.get("shared_systems")
+        if raw_systems is None and schema_version < 4:
+            return findings
+        if not isinstance(raw_systems, list) or not raw_systems:
+            return [
+                (
+                    "Schema v4 requires a non-empty shared_systems list",
+                    "tools/corporate_history_contract.json",
+                    1,
+                )
+            ]
+
+        required_fields = (
+            "name",
+            "root",
+            "namespace",
+            "game_rule",
+            "dispatcher_host",
+            "participant_array",
+            "event_ids",
+            "variables",
+            "initial_state",
+            "support_model_codes",
+            "support_model_precedence",
+            "reconstruction_baseline",
+            "historical_routes",
+            "scripted_effects",
+            "files",
+            "lifecycle_markers",
+            "storage_lifecycle_markers",
+            "adoption_ideas",
+            "support_ideas",
+            "persistent_idea_modifiers",
+            "owned_timed_ideas",
+            "timed_idea_modifiers",
+            "programs",
+            "excluded_generic_idea_tags",
+            "reconstruction_effect",
+            "cleanup_effect",
+            "refresh_ideas_effect",
+            "allowed_native_reads",
+            "native_write_prefixes",
+            "localisation_keys",
+            "usa_bridge_effect",
+        )
+        required_files = (
+            "rule",
+            "trigger",
+            "effect",
+            "on_action",
+            "event",
+            "idea",
+            "decision",
+            "category",
+            "bridge",
+            "ibm_event",
+        )
+
+        for index, raw_system in enumerate(raw_systems):
+            if not isinstance(raw_system, dict):
+                findings.append(
+                    (
+                        f"shared_systems[{index}] must be an object",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                continue
+            missing = [field for field in required_fields if field not in raw_system]
+            if missing:
+                findings.append(
+                    (
+                        f"shared_systems[{index}] is missing required fields: {', '.join(missing)}",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                continue
+
+            name = str(raw_system["name"])
+            root = str(raw_system["root"])
+            namespace = str(raw_system["namespace"])
+            files = raw_system["files"]
+            if not isinstance(files, dict):
+                findings.append(
+                    (
+                        f"{name} files must be an object",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                continue
+            missing_files = [field for field in required_files if field not in files]
+            if missing_files:
+                findings.append(
+                    (
+                        f"{name} files is missing: {', '.join(missing_files)}",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                continue
+
+            declared_text: Dict[str, str] = {}
+            for role, relative in files.items():
+                if role in ("localisation", "integration"):
+                    continue
+                path = self._root / str(relative)
+                if not path.is_file():
+                    findings.append(
+                        (f"{name} missing {role} file {relative}", str(relative), 1)
+                    )
+                    continue
+                try:
+                    declared_text[role] = path.read_text(
+                        encoding="utf-8-sig", errors="replace"
+                    )
+                except OSError as exc:
+                    findings.append(
+                        (
+                            f"{name} cannot read {role} file {relative}: {exc}",
+                            str(relative),
+                            1,
+                        )
+                    )
+
+            game_rule = raw_system["game_rule"]
+            if not isinstance(game_rule, dict):
+                findings.append(
+                    (
+                        f"{name} game_rule must be an object",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+            else:
+                rule_id = str(game_rule.get("id", ""))
+                options = game_rule.get("options")
+                default = str(game_rule.get("default", ""))
+                mode_defs = self._load_top_level_blocks(
+                    [str(files["rule"]), str(files["trigger"])]
+                )
+                rule_defs = mode_defs.get(rule_id, [])
+                if len(rule_defs) != 1:
+                    findings.append(
+                        (
+                            f"{name} requires exactly one {rule_id}; found {len(rule_defs)}",
+                            str(files["rule"]),
+                            rule_defs[0].line if rule_defs else 1,
+                        )
+                    )
+                elif options != ["full", "outcomes_only", "off"] or default != "full":
+                    findings.append(
+                        (
+                            f"{name} game rule must declare Full, Outcomes Only, and Off with Full default",
+                            str(files["rule"]),
+                            rule_defs[0].line,
+                        )
+                    )
+                elif not all(
+                    re.search(rf"\bname\s*=\s*{re.escape(option)}\b", rule_defs[0].body)
+                    for option in options
+                ):
+                    findings.append(
+                        (
+                            f"{name} game-rule script does not contain all declared options",
+                            rule_defs[0].file,
+                            rule_defs[0].line,
+                        )
+                    )
+                trigger_names = (
+                    f"{root}_full_enabled",
+                    f"{root}_outcomes_only_enabled",
+                    f"{root}_enabled",
+                )
+                for trigger_name in trigger_names:
+                    definitions = mode_defs.get(trigger_name, [])
+                    if len(definitions) != 1:
+                        findings.append(
+                            (
+                                f"{name} requires exactly one {trigger_name}; found {len(definitions)}",
+                                str(files["trigger"]),
+                                definitions[0].line if definitions else 1,
+                            )
+                        )
+
+            expected_variable_bounds = {
+                f"{root}_base_deployment": (0, 10),
+                f"{root}_base_stewardship": (0, 10),
+                f"{root}_base_assurance": (0, 10),
+                f"{root}_adapter_deployment": (-2, 2),
+                f"{root}_adapter_stewardship": (-2, 2),
+                f"{root}_adapter_assurance": (-2, 2),
+                f"{root}_effective_deployment": (0, 10),
+                f"{root}_effective_stewardship": (0, 10),
+                f"{root}_effective_assurance": (0, 10),
+                f"{root}_base_support_model": (0, 3),
+                f"{root}_adapter_support_model": (0, 3),
+                f"{root}_effective_support_model": (0, 3),
+                f"{root}_milestone_stage": (0, 5),
+            }
+            raw_variables = raw_system["variables"]
+            normalized_bounds: Dict[str, Tuple[Decimal, Decimal]] = {}
+            if isinstance(raw_variables, dict):
+                for variable, bounds in raw_variables.items():
+                    if (
+                        not isinstance(bounds, dict)
+                        or "min" not in bounds
+                        or "max" not in bounds
+                    ):
+                        continue
+                    try:
+                        normalized_bounds[str(variable)] = (
+                            Decimal(str(bounds["min"])),
+                            Decimal(str(bounds["max"])),
+                        )
+                    except (ValueError, TypeError):
+                        pass
+            expected_normalized = {
+                variable: (Decimal(str(bounds[0])), Decimal(str(bounds[1])))
+                for variable, bounds in expected_variable_bounds.items()
+            }
+            if normalized_bounds != expected_normalized:
+                findings.append(
+                    (
+                        f"{name} must declare the exact bounded base, adapter, effective, support, and milestone variables",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+
+            expected_initial_state = {
+                "deployment": 2,
+                "stewardship": 3,
+                "assurance": 3,
+                "support_model": 0,
+                "milestone_stage": 0,
+            }
+            if raw_system["initial_state"] != expected_initial_state:
+                findings.append(
+                    (
+                        f"{name} must declare the approved 2/3/3 Mixed initial state",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+
+            if raw_system["support_model_codes"] != {
+                "mixed": 0,
+                "upstream": 1,
+                "enterprise": 2,
+                "national": 3,
+            } or raw_system["support_model_precedence"] != (
+                "non_mixed_base_else_adapter"
+            ):
+                findings.append(
+                    (
+                        f"{name} must declare support codes 0..3 and base-first precedence",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+
+            expected_baseline = [
+                {
+                    "stage": stage,
+                    "deployment": deployment,
+                    "stewardship": stewardship,
+                    "assurance": assurance,
+                    "support_model": 0,
+                }
+                for stage, deployment, stewardship, assurance in (
+                    (0, 2, 3, 3),
+                    (1, 3, 3, 3),
+                    (2, 4, 3, 3),
+                    (3, 5, 3, 4),
+                    (4, 6, 3, 4),
+                    (5, 7, 3, 5),
+                )
+            ]
+            if raw_system["reconstruction_baseline"] != expected_baseline:
+                findings.append(
+                    (
+                        f"{name} must declare the approved neutral reconstruction baseline",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+            historical_routes = raw_system["historical_routes"]
+            if (
+                not isinstance(historical_routes, dict)
+                or historical_routes.get("USA") != "enterprise"
+            ):
+                findings.append(
+                    (
+                        f"{name} must declare the USA Enterprise historical route",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+
+            effect_text = declared_text.get("effect", "")
+            effect_lookup = {
+                effect_name: definitions[0]
+                for effect_name, definitions in effect_defs.items()
+                if len(definitions) == 1
+            }
+
+            def reachable_effects(effect_name: str) -> Dict[str, BlockDef]:
+                reachable: Dict[str, BlockDef] = {}
+                pending = (
+                    [effect_lookup[effect_name]] if effect_name in effect_lookup else []
+                )
+                while pending:
+                    effect = pending.pop()
+                    if effect.name in reachable:
+                        continue
+                    reachable[effect.name] = effect
+                    for call in _EFFECT_YES_RE.finditer(effect.body):
+                        target = call.group(1)
+                        if (
+                            target.startswith(root)
+                            and target in effect_lookup
+                            and target not in reachable
+                        ):
+                            pending.append(effect_lookup[target])
+                return reachable
+
+            clamp_bounds = {
+                match.group(1): (Decimal(match.group(2)), Decimal(match.group(3)))
+                for match in _CLAMP_VAR_RE.finditer(strip_comments(effect_text))
+            }
+            for variable, bounds in expected_normalized.items():
+                if clamp_bounds.get(variable) != bounds:
+                    findings.append(
+                        (
+                            f"{name} must clamp {variable} to {bounds[0]}..{bounds[1]}",
+                            str(files["effect"]),
+                            1,
+                        )
+                    )
+
+            scripted_effects = raw_system["scripted_effects"]
+            if not isinstance(scripted_effects, list) or not scripted_effects:
+                findings.append(
+                    (
+                        f"{name} scripted_effects must be a non-empty list",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+            else:
+                for effect_name in scripted_effects:
+                    definitions = effect_defs.get(str(effect_name), [])
+                    if len(definitions) != 1:
+                        findings.append(
+                            (
+                                f"{name} requires exactly one {effect_name}; found {len(definitions)}",
+                                str(files["effect"]),
+                                definitions[0].line if definitions else 1,
+                            )
+                        )
+
+            event_ids = raw_system["event_ids"]
+            if event_ids != [f"{namespace}.{number}" for number in range(1, 6)]:
+                findings.append(
+                    (
+                        f"{name} must reserve exactly {namespace}.1 through {namespace}.5",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                event_ids = []
+            for event_id in event_ids:
+                event = event_defs.get(str(event_id))
+                if event is None:
+                    findings.append(
+                        (f"{name} missing event {event_id}", str(files["event"]), 1)
+                    )
+                    continue
+                if event.file.replace("\\", "/") != str(files["event"]).replace(
+                    "\\", "/"
+                ):
+                    findings.append(
+                        (
+                            f"{event_id} is outside its declared event file",
+                            event.file,
+                            event.line,
+                        )
+                    )
+                if "is_triggered_only = yes" not in event.body:
+                    findings.append(
+                        (f"{event_id} must be triggered-only", event.file, event.line)
+                    )
+                if not event.options:
+                    findings.append(
+                        (
+                            f"{event_id} requires at least one option",
+                            event.file,
+                            event.line,
+                        )
+                    )
+            event_text = declared_text.get("event", "")
+            if re.search(r"\bnews_event\s*=", event_text):
+                findings.append(
+                    (
+                        f"{name} must not define global news events",
+                        str(files["event"]),
+                        1,
+                    )
+                )
+            undeclared_events = {
+                event_id
+                for event_id in event_defs
+                if event_id.startswith(f"{namespace}.")
+                and event_id not in set(event_ids)
+            }
+            if undeclared_events:
+                findings.append(
+                    (
+                        f"{name} has undeclared events: {', '.join(sorted(undeclared_events))}",
+                        str(files["event"]),
+                        1,
+                    )
+                )
+
+            system_text = "\n".join(
+                declared_text.get(role, "") for role in ("effect", "on_action", "event")
+            )
+            for event_id, markers in raw_system["lifecycle_markers"].items():
+                if (
+                    event_id not in event_ids
+                    or not isinstance(markers, list)
+                    or len(markers) != 3
+                ):
+                    findings.append(
+                        (
+                            f"{name} lifecycle declaration for {event_id} must list expected, pending, and resolved markers",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                    continue
+                for marker in markers:
+                    if str(marker) not in system_text:
+                        findings.append(
+                            (
+                                f"{event_id} never uses lifecycle marker {marker}",
+                                str(files["effect"]),
+                                1,
+                            )
+                        )
+
+            if re.search(r"\b(?:every_country|random_country)\s*=", system_text):
+                findings.append(
+                    (
+                        f"{name} may not use every_country or random_country",
+                        str(files["effect"]),
+                        1,
+                    )
+                )
+            participant_array = str(raw_system["participant_array"])
+            if (
+                participant_array not in effect_text
+                or "is_in_array" not in effect_text
+                or "add_to_array" not in effect_text
+                or "remove_from_array" not in effect_text
+            ):
+                findings.append(
+                    (
+                        f"{name} participant registry must deduplicate registration and support removal",
+                        str(files["effect"]),
+                        1,
+                    )
+                )
+            on_action_text = declared_text.get("on_action", "")
+            dispatcher_host = str(raw_system["dispatcher_host"])
+            if (
+                f"{dispatcher_host} =" not in on_action_text
+                or "on_monthly" not in on_action_text
+            ):
+                findings.append(
+                    (
+                        f"{name} must use {dispatcher_host} as its monthly dispatcher host",
+                        str(files["on_action"]),
+                        1,
+                    )
+                )
+            if re.search(
+                rf"\boriginal_tag\s*=\s*{re.escape(dispatcher_host)}\b", system_text
+            ):
+                findings.append(
+                    (
+                        f"{dispatcher_host} may dispatch {name} but may not own gameplay state",
+                        str(files["effect"]),
+                        1,
+                    )
+                )
+
+            reconstruction_name = str(raw_system["reconstruction_effect"])
+            reconstruction_defs = effect_defs.get(reconstruction_name, [])
+            if len(reconstruction_defs) == 1:
+                forbidden_reconstruction = (
+                    "add_political_power",
+                    "modify_treasury_effect",
+                    "add_tech_bonus",
+                    "add_timed_idea",
+                    "add_stability",
+                    "add_war_support",
+                    "add_building_construction",
+                )
+                for effect in reachable_effects(reconstruction_name).values():
+                    for token in forbidden_reconstruction:
+                        if re.search(rf"\b{token}\b", effect.body):
+                            findings.append(
+                                (
+                                    f"{reconstruction_name} transitively contains forbidden side effect {token} through {effect.name}",
+                                    effect.file,
+                                    effect.line,
+                                )
+                            )
+
+            adoption_ideas = raw_system["adoption_ideas"]
+            support_ideas = raw_system["support_ideas"]
+            idea_ids = (
+                adoption_ideas + support_ideas
+                if isinstance(adoption_ideas, list) and isinstance(support_ideas, list)
+                else []
+            )
+            idea_text = declared_text.get("idea", "")
+            owned_timed_ideas = raw_system["owned_timed_ideas"]
+            if not isinstance(owned_timed_ideas, list):
+                owned_timed_ideas = []
+                findings.append(
+                    (
+                        f"{name} owned_timed_ideas must be a list",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+            all_owned_ideas = [*idea_ids, *owned_timed_ideas]
+            for idea_id in all_owned_ideas:
+                if (
+                    len(
+                        re.findall(
+                            rf"(?m)^\s*{re.escape(str(idea_id))}\s*=\s*\{{", idea_text
+                        )
+                    )
+                    != 1
+                ):
+                    findings.append(
+                        (f"{name} missing idea {idea_id}", str(files["idea"]), 1)
+                    )
+
+            def normalize_modifier_contract(
+                payload: object,
+            ) -> Dict[str, Dict[str, Decimal]]:
+                normalized: Dict[str, Dict[str, Decimal]] = {}
+                if not isinstance(payload, dict):
+                    return normalized
+                for idea_id, modifiers in payload.items():
+                    if not isinstance(modifiers, dict):
+                        continue
+                    try:
+                        normalized[str(idea_id)] = {
+                            str(modifier): Decimal(str(value))
+                            for modifier, value in modifiers.items()
+                        }
+                    except (ValueError, TypeError):
+                        continue
+                return normalized
+
+            expected_persistent_modifiers = {
+                f"{root}_experimental_adoption": {},
+                f"{root}_institutional_adoption": {
+                    "research_speed_factor": Decimal("0.005"),
+                    "offices_productivity": Decimal("0.005"),
+                },
+                f"{root}_infrastructure_standard": {
+                    "research_speed_factor": Decimal("0.005"),
+                    "country_productivity_growth_modifier": Decimal("0.005"),
+                    "offices_productivity": Decimal("0.01"),
+                    "cyber_defense_rating_modifier": Decimal("1"),
+                },
+                f"{root}_broad_economic_adoption": {
+                    "research_speed_factor": Decimal("0.01"),
+                    "country_productivity_growth_modifier": Decimal("0.01"),
+                    "offices_productivity": Decimal("0.02"),
+                    "corporate_tax_income_multiplier_modifier": Decimal("0.01"),
+                },
+                f"{root}_mixed_linux_estate": {
+                    "research_speed_factor": Decimal("-0.01"),
+                    "cyber_defense_rating_modifier": Decimal("-1"),
+                    "bureaucracy_cost_multiplier_modifier": Decimal("0.01"),
+                },
+                f"{root}_upstream_partnership": {
+                    "research_speed_factor": Decimal("0.01"),
+                    "receiving_investment_cost_modifier": Decimal("-0.025"),
+                    "bureaucracy_cost_multiplier_modifier": Decimal("0.01"),
+                },
+                f"{root}_enterprise_distribution": {
+                    "offices_productivity": Decimal("0.01"),
+                    "corporate_tax_income_multiplier_modifier": Decimal("0.01"),
+                    "internal_investments_money_cost_modifier": Decimal("0.025"),
+                },
+                f"{root}_national_baseline": {
+                    "cyber_defense_rating_modifier": Decimal("2"),
+                    "research_speed_factor": Decimal("-0.005"),
+                    "bureaucracy_cost_multiplier_modifier": Decimal("0.02"),
+                },
+            }
+            persistent_modifiers = normalize_modifier_contract(
+                raw_system["persistent_idea_modifiers"]
+            )
+            if persistent_modifiers != expected_persistent_modifiers:
+                findings.append(
+                    (
+                        f"{name} must declare the approved persistent economic modifier matrix",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+
+            expected_timed_modifiers = {
+                f"{root}_shared_updates_program": {
+                    "research_speed_factor": Decimal("0.01"),
+                    "bureaucracy_cost_multiplier_modifier": Decimal("0.01"),
+                },
+                f"{root}_national_signing_program": {
+                    "bureaucracy_cost_multiplier_modifier": Decimal("0.02")
+                },
+                f"{root}_upstream_maintenance_program": {
+                    "research_speed_factor": Decimal("0.01"),
+                    "bureaucracy_cost_multiplier_modifier": Decimal("0.01"),
+                },
+                f"{root}_enterprise_support_program": {
+                    "country_productivity_growth_modifier": Decimal("0.01"),
+                    "bureaucracy_cost_multiplier_modifier": Decimal("-0.01"),
+                },
+                f"{root}_lifecycle_hardening_program": {
+                    "cyber_defense_rating_modifier": Decimal("2"),
+                    "bureaucracy_cost_multiplier_modifier": Decimal("0.01"),
+                },
+                f"{root}_public_procurement_program": {
+                    "research_speed_factor": Decimal("0.01"),
+                    "country_productivity_growth_modifier": Decimal("0.01"),
+                    "bureaucracy_cost_multiplier_modifier": Decimal("0.02"),
+                },
+            }
+            timed_modifiers = normalize_modifier_contract(
+                raw_system["timed_idea_modifiers"]
+            )
+            if timed_modifiers != expected_timed_modifiers:
+                findings.append(
+                    (
+                        f"{name} must declare the approved timed economic modifier matrix",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+
+            declared_modifier_contract = {
+                **persistent_modifiers,
+                **timed_modifiers,
+            }
+            for idea_id, expected_modifiers in declared_modifier_contract.items():
+                match = re.search(rf"(?m)^\s*{re.escape(idea_id)}\s*=\s*\{{", idea_text)
+                if match is None:
+                    continue
+                idea_body, _ = extract_block_from_text(idea_text, match.end() - 1)
+                modifier_match = re.search(r"\bmodifier\s*=\s*\{", idea_body)
+                modifier_body = ""
+                if modifier_match is not None:
+                    modifier_body, _ = extract_block_from_text(
+                        idea_body, modifier_match.end() - 1
+                    )
+                actual_modifiers = {
+                    modifier: Decimal(value)
+                    for modifier, value in re.findall(
+                        r"(?m)^\s*([a-z][a-z0-9_]*)\s*=\s*"
+                        r"(-?(?:\d+(?:\.\d*)?|\.\d+))\s*$",
+                        strip_comments(modifier_body),
+                    )
+                }
+                if actual_modifiers != expected_modifiers:
+                    findings.append(
+                        (
+                            f"{idea_id} modifiers do not match the shared-system contract",
+                            str(files["idea"]),
+                            1,
+                        )
+                    )
+
+            expected_programs = {
+                f"{root}_fund_upstream_maintenance": {
+                    "political_power": 25,
+                    "gdp_fraction": 0.001,
+                    "duration_days": 365,
+                    "cooldown_days": 365,
+                    "deployment": 0,
+                    "stewardship": 1,
+                    "assurance": 1,
+                    "support_model": None,
+                    "idea": f"{root}_upstream_maintenance_program",
+                },
+                f"{root}_contract_enterprise_support": {
+                    "political_power": 25,
+                    "gdp_fraction": 0.001,
+                    "duration_days": 365,
+                    "cooldown_days": 365,
+                    "deployment": 1,
+                    "stewardship": 0,
+                    "assurance": 1,
+                    "support_model": 2,
+                    "idea": f"{root}_enterprise_support_program",
+                },
+                f"{root}_harden_lifecycle": {
+                    "political_power": 35,
+                    "gdp_fraction": 0.001,
+                    "duration_days": 365,
+                    "cooldown_days": 365,
+                    "deployment": 0,
+                    "stewardship": 0,
+                    "assurance": 2,
+                    "support_model": None,
+                    "idea": f"{root}_lifecycle_hardening_program",
+                },
+                f"{root}_public_procurement": {
+                    "political_power": 50,
+                    "gdp_fraction": 0.002,
+                    "duration_days": 730,
+                    "cooldown_days": 365,
+                    "deployment": 1,
+                    "stewardship": 1,
+                    "assurance": 1,
+                    "support_model": None,
+                    "idea": f"{root}_public_procurement_program",
+                },
+            }
+            if raw_system["programs"] != expected_programs:
+                findings.append(
+                    (
+                        f"{name} must declare the approved program costs, durations, and state changes",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+
+            program_effects = {
+                f"{root}_fund_upstream_maintenance": (
+                    f"{root}_apply_upstream_maintenance_program"
+                ),
+                f"{root}_contract_enterprise_support": (
+                    f"{root}_apply_enterprise_support_program"
+                ),
+                f"{root}_harden_lifecycle": (
+                    f"{root}_apply_lifecycle_hardening_program"
+                ),
+                f"{root}_public_procurement": (
+                    f"{root}_apply_public_procurement_program"
+                ),
+            }
+            decision_text = declared_text.get("decision", "")
+            trigger_text = declared_text.get("trigger", "")
+            category_text = declared_text.get("category", "")
+            if f"{root}_full_enabled = yes" not in category_text:
+                findings.append(
+                    (
+                        f"{name} decision category must be visible only in Full mode",
+                        str(files["category"]),
+                        1,
+                    )
+                )
+            for program_id, program in expected_programs.items():
+                match = re.search(
+                    rf"(?m)^\s*{re.escape(program_id)}\s*=\s*\{{", decision_text
+                )
+                if match is None:
+                    findings.append(
+                        (
+                            f"{name} missing program {program_id}",
+                            str(files["decision"]),
+                            1,
+                        )
+                    )
+                    continue
+                decision_body, _ = extract_block_from_text(
+                    decision_text, match.end() - 1
+                )
+                if not re.search(
+                    rf"\bcost\s*=\s*{program['political_power']}\b", decision_body
+                ) or not re.search(
+                    rf"\bdays_remove\s*=\s*{program['duration_days']}\b",
+                    decision_body,
+                ):
+                    findings.append(
+                        (
+                            f"{program_id} must use its declared PP cost and active duration",
+                            str(files["decision"]),
+                            1,
+                        )
+                    )
+                for block_name in ("complete_effect", "remove_effect"):
+                    block_match = re.search(rf"\b{block_name}\s*=\s*\{{", decision_body)
+                    if block_match is None:
+                        findings.append(
+                            (
+                                f"{program_id} is missing {block_name}",
+                                str(files["decision"]),
+                                1,
+                            )
+                        )
+                        continue
+                    block_body, _ = extract_block_from_text(
+                        decision_body, block_match.end() - 1
+                    )
+                    if not re.match(r"\s*log\s*=", strip_comments(block_body)):
+                        findings.append(
+                            (
+                                f"{program_id} {block_name} must log first",
+                                str(files["decision"]),
+                                1,
+                            )
+                        )
+                    if block_name == "remove_effect" and not re.search(
+                        rf"set_country_flag\s*=\s*\{{\s*flag\s*=\s*{root}_program_cooldown\s+days\s*=\s*{program['cooldown_days']}\b",
+                        block_body,
+                    ):
+                        findings.append(
+                            (
+                                f"{program_id} must begin its declared cooldown when it ends",
+                                str(files["decision"]),
+                                1,
+                            )
+                        )
+                if f"{root}_full_enabled = yes" not in decision_body:
+                    findings.append(
+                        (
+                            f"{program_id} must be exposed only in Full mode",
+                            str(files["decision"]),
+                            1,
+                        )
+                    )
+                if (
+                    "has_active_mission = bankruptcy_incoming_collapse"
+                    not in decision_body
+                ):
+                    findings.append(
+                        (
+                            f"{program_id} must block AI during bankruptcy collapse",
+                            str(files["decision"]),
+                            1,
+                        )
+                    )
+
+                apply_name = program_effects[program_id]
+                apply_defs = effect_defs.get(apply_name, [])
+                if len(apply_defs) != 1:
+                    findings.append(
+                        (
+                            f"{program_id} requires exactly one {apply_name}",
+                            str(files["effect"]),
+                            1,
+                        )
+                    )
+                    continue
+                apply_body = apply_defs[0].body
+                gdp_suffix = "0_1" if program["gdp_fraction"] == 0.001 else "0_2"
+                if f"{root}_pay_gdp_{gdp_suffix}_percent = yes" not in apply_body:
+                    findings.append(
+                        (
+                            f"{apply_name} does not charge its declared GDP fraction",
+                            apply_defs[0].file,
+                            apply_defs[0].line,
+                        )
+                    )
+                for axis in ("deployment", "stewardship", "assurance"):
+                    delta = program[axis]
+                    change = rf"add_to_variable\s*=\s*\{{\s*{root}_base_{axis}\s*=\s*{delta}\s*\}}"
+                    if delta and not re.search(change, apply_body):
+                        findings.append(
+                            (
+                                f"{apply_name} is missing {axis} {delta:+d}",
+                                apply_defs[0].file,
+                                apply_defs[0].line,
+                            )
+                        )
+                support_model = program["support_model"]
+                support_pattern = (
+                    rf"set_variable\s*=\s*\{{\s*{root}_base_support_model\s*="
+                )
+                if support_model is None and re.search(support_pattern, apply_body):
+                    findings.append(
+                        (
+                            f"{apply_name} may not change the support model",
+                            apply_defs[0].file,
+                            apply_defs[0].line,
+                        )
+                    )
+                elif support_model is not None and not re.search(
+                    support_pattern + rf"\s*{support_model}\s*\}}", apply_body
+                ):
+                    findings.append(
+                        (
+                            f"{apply_name} must set support model {support_model}",
+                            apply_defs[0].file,
+                            apply_defs[0].line,
+                        )
+                    )
+                if not re.search(
+                    rf"add_timed_idea\s*=\s*\{{\s*idea\s*=\s*{re.escape(str(program['idea']))}\s+days\s*=\s*{program['duration_days']}\s*\}}",
+                    apply_body,
+                ):
+                    findings.append(
+                        (
+                            f"{apply_name} must apply its declared timed idea",
+                            apply_defs[0].file,
+                            apply_defs[0].line,
+                        )
+                    )
+                if f"{root}_program_cooldown" in apply_body:
+                    findings.append(
+                        (
+                            f"{apply_name} may not start cooldown before the program ends",
+                            apply_defs[0].file,
+                            apply_defs[0].line,
+                        )
+                    )
+
+            if not all(
+                str(program["idea"]) in trigger_text
+                for program in expected_programs.values()
+            ):
+                findings.append(
+                    (
+                        f"{name} active-program trigger must cover all four program ideas",
+                        str(files["trigger"]),
+                        1,
+                    )
+                )
+            procurement_match = re.search(
+                rf"(?m)^\s*{root}_public_procurement\s*=\s*\{{", decision_text
+            )
+            if procurement_match is not None:
+                procurement_body, _ = extract_block_from_text(
+                    decision_text, procurement_match.end() - 1
+                )
+                if not re.search(
+                    r"NOT\s*=\s*\{\s*original_tag\s*=\s*USA\s*\}",
+                    procurement_body,
+                ):
+                    findings.append(
+                        (
+                            f"{root}_public_procurement must be hidden for USA",
+                            str(files["decision"]),
+                            1,
+                        )
+                    )
+            refresh_name = str(raw_system["refresh_ideas_effect"])
+            refresh_defs = effect_defs.get(refresh_name, [])
+            if len(refresh_defs) == 1:
+                refresh_body = refresh_defs[0].body
+                refresh_owned_text = "\n".join(
+                    effect.body for effect in reachable_effects(refresh_name).values()
+                )
+                missing_ideas = [
+                    idea for idea in idea_ids if str(idea) not in refresh_owned_text
+                ]
+                if missing_ideas:
+                    findings.append(
+                        (
+                            f"{refresh_name} does not own every declared idea: {', '.join(missing_ideas)}",
+                            refresh_defs[0].file,
+                            refresh_defs[0].line,
+                        )
+                    )
+                if raw_system["excluded_generic_idea_tags"] != ["USA"] or not re.search(
+                    r"NOT\s*=\s*\{\s*original_tag\s*=\s*USA\s*\}", refresh_body
+                ):
+                    findings.append(
+                        (
+                            f"{refresh_name} must exclude USA from both generic idea families",
+                            refresh_defs[0].file,
+                            refresh_defs[0].line,
+                        )
+                    )
+
+            cleanup_name = str(raw_system["cleanup_effect"])
+            cleanup_defs = effect_defs.get(cleanup_name, [])
+            if len(cleanup_defs) == 1:
+                cleanup_body = cleanup_defs[0].body
+                cleanup_owned_text = "\n".join(
+                    effect.body for effect in reachable_effects(cleanup_name).values()
+                )
+                cleanup_missing = [
+                    idea
+                    for idea in all_owned_ideas
+                    if str(idea) not in cleanup_owned_text
+                ]
+                if cleanup_missing or participant_array not in cleanup_body:
+                    findings.append(
+                        (
+                            f"{cleanup_name} must remove every owned idea and the participant entry",
+                            cleanup_defs[0].file,
+                            cleanup_defs[0].line,
+                        )
+                    )
+
+            prefixes = tuple(
+                str(prefix) for prefix in raw_system["native_write_prefixes"]
+            )
+            allowed_reads = {str(token) for token in raw_system["allowed_native_reads"]}
+            native_contract_text = strip_comments(
+                "\n".join(
+                    declared_text.get(role, "")
+                    for role in ("effect", "trigger", "on_action", "event")
+                )
+            )
+            native_reads: Set[str] = set()
+            for pattern in (
+                re.compile(
+                    r"\b(?:has_country_flag|has_idea|has_completed_focus)\s*=\s*"
+                    r"([A-Za-z0-9_]+)"
+                ),
+                re.compile(r"\bcheck_variable\s*=\s*\{\s*([A-Za-z0-9_]+)"),
+            ):
+                native_reads.update(
+                    token
+                    for token in pattern.findall(native_contract_text)
+                    if token.startswith(prefixes)
+                )
+            undeclared_reads = native_reads - allowed_reads
+            if undeclared_reads:
+                findings.append(
+                    (
+                        f"{name} has undeclared native reads: {', '.join(sorted(undeclared_reads))}",
+                        str(files["effect"]),
+                        1,
+                    )
+                )
+            unused_reads = allowed_reads - native_reads
+            if unused_reads:
+                findings.append(
+                    (
+                        f"{name} declares unused native reads: {', '.join(sorted(unused_reads))}",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+            native_write_patterns = (
+                re.compile(
+                    r"\b(?:set_country_flag|clr_country_flag)\s*=\s*([A-Za-z0-9_]+)"
+                ),
+                re.compile(
+                    r"\b(?:set_variable|add_to_variable|subtract_from_variable|multiply_variable|divide_variable|clamp_variable)\s*=\s*\{\s*(?:var\s*=\s*)?([A-Za-z0-9_]+)"
+                ),
+            )
+            native_writes: Set[str] = set()
+            for pattern in native_write_patterns:
+                native_writes.update(
+                    token
+                    for token in pattern.findall(native_contract_text)
+                    if token.startswith(prefixes)
+                )
+            if native_writes:
+                findings.append(
+                    (
+                        f"{name} writes native-system state: {', '.join(sorted(native_writes))}",
+                        str(files["effect"]),
+                        1,
+                    )
+                )
+
+            localisation_files = files.get("localisation")
+            if not isinstance(localisation_files, list) or not localisation_files:
+                findings.append(
+                    (
+                        f"{name} requires declared English localisation files",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+            else:
+                localisation_text = ""
+                for relative in localisation_files:
+                    path = self._root / str(relative)
+                    if not path.is_file():
+                        findings.append(
+                            (
+                                f"{name} missing localisation file {relative}",
+                                str(relative),
+                                1,
+                            )
+                        )
+                        continue
+                    raw_bytes = path.read_bytes()
+                    if not raw_bytes.startswith(b"\xef\xbb\xbf"):
+                        findings.append(
+                            (f"{relative} must retain a UTF-8 BOM", str(relative), 1)
+                        )
+                    localisation_text += (
+                        raw_bytes.decode("utf-8-sig", errors="replace") + "\n"
+                    )
+                for key in raw_system["localisation_keys"]:
+                    if not re.search(
+                        rf"(?m)^ {re.escape(str(key))}:\d*\s", localisation_text
+                    ):
+                        findings.append(
+                            (
+                                f"{name} missing localisation key {key}",
+                                str(localisation_files[0]),
+                                1,
+                            )
+                        )
+
+            integration_files = files.get("integration")
+            integration_text = ""
+            if isinstance(integration_files, list):
+                for relative in integration_files:
+                    path = self._root / str(relative)
+                    if path.is_file():
+                        integration_text += (
+                            path.read_text(encoding="utf-8-sig", errors="replace")
+                            + "\n"
+                        )
+            for event_id, markers in raw_system["storage_lifecycle_markers"].items():
+                if not isinstance(markers, list) or len(markers) != 3:
+                    findings.append(
+                        (
+                            f"{name} storage lifecycle declaration for {event_id} must list expected, pending, and resolved markers",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                    continue
+                for marker in markers:
+                    if str(marker) not in integration_text:
+                        findings.append(
+                            (
+                                f"{event_id} never uses lifecycle marker {marker}",
+                                str(files["integration"][0]),
+                                1,
+                            )
+                        )
+
+            ibm_event_text = declared_text.get("ibm_event", "")
+            added_ibm_events = sorted(
+                number
+                for number in (
+                    int(value)
+                    for value in re.findall(
+                        r"\bid\s*=\s*USA_ibm_events\.(\d+)", ibm_event_text
+                    )
+                )
+                if number > 50 and number != 90
+            )
+            if added_ibm_events:
+                findings.append(
+                    (
+                        f"IBM story events may not extend beyond .50: {added_ibm_events}",
+                        str(files["ibm_event"]),
+                        1,
+                    )
+                )
+
+            bridge_name = str(raw_system["usa_bridge_effect"])
+            bridge_defs = effect_defs.get(bridge_name, [])
+            if len(bridge_defs) != 1:
+                findings.append(
+                    (
+                        f"{name} requires exactly one {bridge_name}; found {len(bridge_defs)}",
+                        str(files["bridge"]),
+                        bridge_defs[0].line if bridge_defs else 1,
+                    )
+                )
+            else:
+                bridge_body = bridge_defs[0].body
+                required_base_reads = (
+                    f"{root}_base_deployment",
+                    f"{root}_base_stewardship",
+                    f"{root}_base_assurance",
+                    f"{root}_base_support_model",
+                )
+                if not all(token in bridge_body for token in required_base_reads):
+                    findings.append(
+                        (
+                            f"{bridge_name} must read all four generic base-state inputs",
+                            bridge_defs[0].file,
+                            bridge_defs[0].line,
+                        )
+                    )
+                if (
+                    f"{root}_adapter_" in bridge_body
+                    or f"{root}_effective_" in bridge_body
+                ):
+                    findings.append(
+                        (
+                            f"{bridge_name} may not read adapter or effective Linux state",
+                            bridge_defs[0].file,
+                            bridge_defs[0].line,
+                        )
+                    )
+                contribution_changes = re.findall(
+                    r"(?:add_to_temp_variable|subtract_from_temp_variable)\s*=\s*\{\s*"
+                    r"USA_oem_contribution_[A-Za-z0-9_]+\s*=\s*"
+                    r"(-?(?:\d+(?:\.\d*)?|\.\d+))\s*\}",
+                    bridge_body,
+                )
+                if any(abs(float(value)) > 1 for value in contribution_changes):
+                    findings.append(
+                        (
+                            f"{bridge_name} contributions must be limited to one point per axis",
+                            bridge_defs[0].file,
+                            bridge_defs[0].line,
+                        )
+                    )
+
+        return findings
 
     def _validate_economic_layers(
         self,
