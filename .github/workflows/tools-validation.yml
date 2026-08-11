@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - "tools/**"
+      - ".claude/docs/linux-system-reference.md"
+      - ".claude/docs/linux-national-adapters.md"
       - ".claude/docs/typo-watchlist.md"
       - ".pre-commit-config.yaml"
       - "pyproject.toml"
@@ -68,12 +70,14 @@ jobs:
           # config_drift_test reads the pre-commit config and these workflows to
           # compare the validator set declared in each, and to check the
           # pipeline wiring around them. pyproject.toml supplies the pytest
-          # testpaths so all six test dirs are collected. typo-watchlist.md is
-          # read by loc_typo_watchlist_test's doc-sync guard.
+          # testpaths so all six test dirs are collected. The Linux and typo
+          # reference docs are read by their contract doc-sync guards.
           sparse-checkout: |
             tools
             pyproject.toml
             .pre-commit-config.yaml
+            .claude/docs/linux-system-reference.md
+            .claude/docs/linux-national-adapters.md
             .claude/docs/typo-watchlist.md
             .github/workflows/coding-pipeline.yml
             .github/workflows/nightly-pr-validation.yml

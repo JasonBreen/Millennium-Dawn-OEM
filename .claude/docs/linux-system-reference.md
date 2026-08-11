@@ -39,7 +39,7 @@ Support Model values are:
 - 2: Enterprise Distribution
 - 3: National Baseline
 
-`linux_system_mark_dirty` sets `linux_system_dirty`. `linux_system_recalculate_state` clamps base state, calls `linux_system_refresh_adapter`, rebuilds effective state, derives `linux_system_milestone_stage` from resolved flags, refreshes ideas, and clears the dirty flag. USA recalculation immediately refreshes `USA_corporate_systems_update_economic_bridge` after Linux effective state is current.
+`linux_system_mark_dirty` sets `linux_system_dirty`. `linux_system_recalculate_state` clamps base state, calls `linux_system_refresh_adapter`, rebuilds effective state, derives `linux_system_milestone_stage` from resolved flags, refreshes ideas, and clears the dirty flag. USA recalculation immediately refreshes `USA_corporate_systems_update_economic_bridge` after Linux effective state is current. The monthly bounded-array recovery pass compares current and newly computed adapter values, then marks state dirty only when a native adapter changed.
 
 Cross-system consumers read Linux base variables. National adapters may read native state into Linux adapter variables. This one-way direction prevents effective-state feedback loops.
 
@@ -57,16 +57,18 @@ A fresh late participant with no delivery markers receives state-only reconstruc
 | 4     | `linux_system_events.4` | 2019-07-09 |              189 |                 249 days |
 | 5     | `linux_system_events.5` | 2024-04-30 |              120 |                 180 days |
 
-Generic reconstruction uses a neutral absolute baseline. USA reconstruction uses its historical Enterprise route state. The values below are base Deployment, Stewardship, Assurance, and Support Model after each due milestone.
+Generic reconstruction uses a neutral absolute baseline. Sourced historical countries reconstruct their route's durable state without costs or temporary rewards. The values below are base Deployment, Stewardship, Assurance, and Support Model after each due milestone.
 
-| Date band         | Generic state | USA state      | USA route  |
-| ----------------- | ------------- | -------------- | ---------- |
-| Before 2001-01-04 | 2 / 3 / 3 / 0 | 2 / 3 / 3 / 0  | None       |
-| From 2001-01-04   | 3 / 3 / 3 / 0 | 4 / 3 / 4 / 2  | Enterprise |
-| From 2008-06-01   | 4 / 3 / 3 / 0 | 5 / 3 / 6 / 2  | Enterprise |
-| From 2015-12-10   | 5 / 3 / 4 / 0 | 6 / 3 / 8 / 2  | Enterprise |
-| From 2019-07-09   | 6 / 3 / 4 / 0 | 8 / 3 / 10 / 2 | Enterprise |
-| From 2024-04-30   | 7 / 3 / 5 / 0 | 8 / 3 / 10 / 2 | Enterprise |
+| Date band         | Generic state | Upstream state | National state | USA Enterprise state |
+| ----------------- | ------------- | -------------- | -------------- | -------------------- |
+| Before 2001-01-04 | 2 / 3 / 3 / 0 | 2 / 3 / 3 / 0  | 2 / 3 / 3 / 0  | 2 / 3 / 3 / 0        |
+| From 2001-01-04   | 3 / 3 / 3 / 0 | 3 / 5 / 3 / 1  | 4 / 3 / 4 / 2  | 4 / 3 / 4 / 2        |
+| From 2008-06-01   | 4 / 3 / 3 / 0 | 4 / 6 / 4 / 1  | 5 / 3 / 6 / 3  | 5 / 3 / 6 / 2        |
+| From 2015-12-10   | 5 / 3 / 4 / 0 | 4 / 7 / 5 / 1  | 5 / 3 / 8 / 3  | 6 / 3 / 8 / 2        |
+| From 2019-07-09   | 6 / 3 / 4 / 0 | 6 / 9 / 6 / 1  | 6 / 3 / 10 / 3 | 8 / 3 / 10 / 2       |
+| From 2024-04-30   | 7 / 3 / 5 / 0 | 6 / 10 / 7 / 1 | 6 / 3 / 10 / 3 | 8 / 3 / 10 / 2       |
+
+ENG, GER, and BRA use the Upstream route. FRA, RAJ, SOV, and CHI use Enterprise for milestone 1 because no National option exists, then National for milestones 2 through 5. USA uses Enterprise throughout. Exact native reads, adapter bounds, and sources are documented in `linux-national-adapters.md`.
 
 Each event `N` owns `linux_system_event_N_expected`, `_pending`, and `_resolved`. Authored live options and sourced historical variants for milestones 2 through 4 also set one route flag from the choices that milestone actually offers; neutral reconstruction leaves route flags unset. Milestone 1 has no route-specific downstream presentation, and milestone 5 is terminal, so their support-model variables and resolved markers are authoritative instead of duplicate route flags. ABK owns `GLOBAL_linux_system_milestone_N_reached`. Terminal historical state is `linux_system_milestone_stage = 5` together with `linux_system_event_5_resolved`.
 
@@ -135,7 +137,7 @@ The treasury helpers are `linux_system_pay_gdp_0_1_percent` and `linux_system_pa
 
 ## Source register
 
-Only approved official sources belong in this core reference. National adapter research belongs with its owning content.
+Only approved official sources belong in this core reference. National adapter research and repository-native read contracts are recorded in `linux-national-adapters.md`.
 
 | Source                                                                  | Contract use                                          |
 | ----------------------------------------------------------------------- | ----------------------------------------------------- |

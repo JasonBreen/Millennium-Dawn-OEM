@@ -3,7 +3,14 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from validate_corporate_history_contract import Validator
+from validate_corporate_history_contract import (
+    _NATIVE_ARRAY_BLOCK_EFFECTS,
+    _NATIVE_CONTRACT_ROLES,
+    _NATIVE_VARIABLE_BLOCK_EFFECTS,
+    _NATIVE_VARIABLE_SCALAR_OR_BLOCK_EFFECTS,
+    Validator,
+    _collect_native_write_tokens,
+)
 
 
 def _write(root: Path, relative: str, text: str):
@@ -2251,4 +2258,110 @@ def test_schema_v4_rejects_incomplete_shared_system_declarations(tmp_path):
     assert any(
         "shared_systems[0] is missing required fields" in message
         for message in _messages(tmp_path)
+    )
+
+
+def test_shared_system_native_write_scanner_covers_structured_mutations():
+    text = """
+set_country_flag = { flag = POL_native_flag days = 30 }
+set_global_flag = { flag = USA_native_global_flag }
+modify_country_flag = { value = 2 flag = FRA_native_numeric_flag }
+set_mio_flag = ENG_native_mio_flag
+set_variable = { var = THIS.SOV_native_meter value = 1 }
+modulo_variable = { var = FRA_native_modulo value = 2 }
+set_variable_to_random = { max = 5 var = ENG_native_random min = -5 integer = yes }
+clear_variable = ROOT.CHI_native_meter
+round_variable = THIS.SOV_native_rounded
+randomize_variable = { distribution = uniform var = ROOT.CHI_native_random min = 0 max = 1 }
+add_to_array = { array = ROOT.POL_native_array value = 1 }
+clear_array = THIS.RAJ_native_array
+find_highest_in_array = { array = values value = CHI_native_max index = SOV_native_index }
+add_ideas = FRA_native_idea
+add_timed_idea = { days = 365 idea = RAJ_native_timed_idea }
+remove_ideas = { ENG_native_idea CHI_native_idea }
+complete_national_focus = { focus = GER_native_focus }
+country_event = { days = 1 id = VEN_native_events.1 }
+news_event = GER_native_news.1
+"""
+
+    assert _collect_native_write_tokens(
+        text,
+        ("CHI_", "ENG_", "FRA_", "GER_", "POL_", "RAJ_", "SOV_", "USA_", "VEN_"),
+    ) == {
+        "CHI_native_meter",
+        "CHI_native_max",
+        "CHI_native_random",
+        "CHI_native_idea",
+        "ENG_native_idea",
+        "ENG_native_mio_flag",
+        "ENG_native_random",
+        "FRA_native_idea",
+        "FRA_native_modulo",
+        "FRA_native_numeric_flag",
+        "GER_native_news",
+        "GER_native_focus",
+        "POL_native_array",
+        "POL_native_flag",
+        "RAJ_native_array",
+        "RAJ_native_timed_idea",
+        "SOV_native_index",
+        "SOV_native_meter",
+        "SOV_native_rounded",
+        "USA_native_global_flag",
+        "VEN_native_events",
+    }
+
+
+@pytest.mark.parametrize(
+    ("event_dispatch", "expected_token"),
+    (
+        ("state_event = USA_native_state_events.1", "USA_native_state_events"),
+        (
+            "unit_leader_event = { id = USA_native_unit_events.1 days = 1 }",
+            "USA_native_unit_events",
+        ),
+        (
+            "operative_leader_event = { days = 1 id = USA_native_operative_events.1 }",
+            "USA_native_operative_events",
+        ),
+    ),
+)
+def test_shared_system_native_write_scanner_covers_all_event_dispatch_effects(
+    event_dispatch, expected_token
+):
+    assert _collect_native_write_tokens(event_dispatch, ("USA_",)) == {expected_token}
+
+
+def test_shared_system_native_write_scanner_covers_canonical_persistent_operators():
+    assert _NATIVE_VARIABLE_BLOCK_EFFECTS == (
+        "set_variable",
+        "add_to_variable",
+        "subtract_from_variable",
+        "multiply_variable",
+        "divide_variable",
+        "modulo_variable",
+        "clamp_variable",
+        "randomize_variable",
+        "set_variable_to_random",
+    )
+    assert _NATIVE_VARIABLE_SCALAR_OR_BLOCK_EFFECTS == (
+        "clear_variable",
+        "round_variable",
+    )
+    assert _NATIVE_ARRAY_BLOCK_EFFECTS == (
+        "add_to_array",
+        "remove_from_array",
+        "resize_array",
+    )
+
+
+def test_shared_system_native_write_scanner_covers_every_executable_owned_role():
+    assert _NATIVE_CONTRACT_ROLES == (
+        "effect",
+        "trigger",
+        "on_action",
+        "event",
+        "idea",
+        "decision",
+        "category",
     )

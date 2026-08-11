@@ -51,6 +51,17 @@ NEUTRAL_BASELINE = [
     {"stage": 5, "deployment": 7, "stewardship": 3, "assurance": 5, "support_model": 0},
 ]
 
+HISTORICAL_ROUTES = {
+    "BRA": "upstream",
+    "CHI": "national",
+    "ENG": "upstream",
+    "FRA": "national",
+    "GER": "upstream",
+    "RAJ": "national",
+    "SOV": "national",
+    "USA": "enterprise",
+}
+
 EVENT_DELTAS = {
     1: [(1, 2, 0, 1), (2, 0, 1, 2), (0, -1, -1, 0)],
     2: [(1, 1, 1, 1), (1, 0, 2, 2), (1, 0, 2, 3), (0, 0, -1, 0)],
@@ -174,6 +185,7 @@ def test_schema_v4_declares_the_public_linux_contract_exactly():
     }
     assert system["support_model_precedence"] == "non_mixed_base_else_adapter"
     assert system["reconstruction_baseline"] == NEUTRAL_BASELINE
+    assert system["historical_routes"] == HISTORICAL_ROUTES
     assert system["event_ids"] == [
         f"linux_system_events.{index}" for index in range(1, 6)
     ]
@@ -791,20 +803,20 @@ def test_ibm_linux_markers_conditionals_and_event_ceiling_are_stable():
 
 def test_english_localisation_is_bom_prefixed_unique_and_complete():
     system = _shared_system()
-    paths = (GLOBAL_LOC_PATH, RULE_LOC_PATH, USA_LOC_PATH)
-    all_keys = []
+    paths = tuple(ROOT / path for path in system["files"]["localisation"])
+    declared_keys = set(system["localisation_keys"])
+    declared_key_counts = {key: 0 for key in declared_keys}
 
     for path in paths:
         assert path.read_bytes().startswith(b"\xef\xbb\xbf")
         text = path.read_text(encoding="utf-8-sig")
         assert re.search(r"(?m)^l_english:\s*$", text)
         assert not re.search(r"(?m)^ {2,}[^ #\r\n][^:]*:", text)
-        keys = _localisation_keys(path)
-        assert len(keys) == len(set(keys))
-        all_keys.extend(keys)
+        for key in _localisation_keys(path):
+            if key in declared_key_counts:
+                declared_key_counts[key] += 1
 
-    assert len(all_keys) == len(set(all_keys))
-    assert set(system["localisation_keys"]) <= set(all_keys)
+    assert set(declared_key_counts.values()) == {1}
     global_text = GLOBAL_LOC_PATH.read_text(encoding="utf-8-sig")
     assert "linux_system_status:" not in global_text
     assert "—" not in global_text
@@ -814,28 +826,132 @@ def test_english_localisation_is_bom_prefixed_unique_and_complete():
     )
 
 
-def test_declared_native_reads_are_exact_and_core_never_writes_native_state():
+def test_declared_native_reads_are_exact_and_system_never_writes_native_state():
     system = _shared_system()
     core_text = "\n".join(
         path.read_text(encoding="utf-8")
-        for path in (EFFECTS_PATH, TRIGGERS_PATH, ON_ACTIONS_PATH, EVENTS_PATH)
+        for path in (
+            EFFECTS_PATH,
+            TRIGGERS_PATH,
+            ON_ACTIONS_PATH,
+            EVENTS_PATH,
+            IDEAS_PATH,
+            DECISIONS_PATH,
+            CATEGORY_PATH,
+        )
     )
+    native_token = r"(?:USA|ENG|GER|FRA|BRA|RAJ|SOV|CHI|POL|VEN)_[A-Za-z0-9_]+"
+    native_target = rf"(?:[A-Za-z0-9_]+[.:])*({native_token})"
+    flag_write = (
+        r"(?:set|clr|modify)_"
+        r"(?:character|country|country_pmc|global|mio|project|state|unit_leader)_flag"
+    )
+    variable_block_write = (
+        r"(?:set_variable|add_to_variable|subtract_from_variable|multiply_variable|"
+        r"divide_variable|modulo_variable|clamp_variable|randomize_variable|"
+        r"set_variable_to_random)"
+    )
+    array_block_write = r"(?:add_to_array|remove_from_array|resize_array)"
     actual_reads = set()
     for pattern in (
-        r"(?:has_country_flag|has_idea|has_completed_focus)\s*=\s*(USA_[A-Za-z0-9_]+)",
-        r"check_variable\s*=\s*\{\s*(USA_[A-Za-z0-9_]+)",
+        rf"(?:has_country_flag|has_idea|has_completed_focus)\s*=\s*{native_target}",
+        rf"check_variable\s*=\s*\{{\s*(?:var\s*=\s*)?{native_target}",
     ):
         actual_reads.update(re.findall(pattern, core_text))
     assert actual_reads == set(system["allowed_native_reads"])
 
     writes = re.findall(
-        r"(?:set|clr)_country_flag\s*=\s*(USA_[A-Za-z0-9_]+)", core_text
+        rf"{flag_write}\s*=\s*(?:\{{\s*flag\s*=\s*)?{native_target}",
+        core_text,
     )
     writes.extend(
         re.findall(
-            r"(?:set|add_to|subtract_from|multiply|divide)_variable\s*=\s*"
-            r"\{\s*(USA_[A-Za-z0-9_]+)\s*=",
+            rf"{flag_write}\s*=\s*\{{[^{{}}]*?\bflag\s*=\s*{native_target}",
+            core_text,
+            re.DOTALL,
+        )
+    )
+    writes.extend(
+        re.findall(
+            rf"{variable_block_write}\s*=\s*\{{\s*(?:var\s*=\s*)?{native_target}",
             core_text,
         )
     )
+    writes.extend(
+        re.findall(
+            rf"{variable_block_write}\s*=\s*\{{[^{{}}]*?\bvar\s*=\s*{native_target}",
+            core_text,
+            re.DOTALL,
+        )
+    )
+    writes.extend(
+        re.findall(
+            rf"(?:clear|round)_variable\s*=\s*"
+            rf"(?:\{{[^{{}}]*?\b(?:var|which)\s*=\s*)?{native_target}",
+            core_text,
+            re.DOTALL,
+        )
+    )
+    writes.extend(
+        re.findall(
+            rf"{array_block_write}\s*=\s*\{{\s*(?:array\s*=\s*)?{native_target}",
+            core_text,
+        )
+    )
+    writes.extend(
+        re.findall(
+            rf"{array_block_write}\s*=\s*\{{[^{{}}]*?\barray\s*=\s*{native_target}",
+            core_text,
+            re.DOTALL,
+        )
+    )
+    writes.extend(
+        re.findall(
+            rf"clear_array\s*=\s*" rf"(?:\{{[^{{}}]*?\barray\s*=\s*)?{native_target}",
+            core_text,
+            re.DOTALL,
+        )
+    )
+    for output in ("value", "index"):
+        writes.extend(
+            re.findall(
+                rf"(?:find_highest_in_array|find_lowest_in_array)\s*=\s*"
+                rf"\{{[^{{}}]*?\b{output}\s*=\s*{native_target}",
+                core_text,
+                re.DOTALL,
+            )
+        )
+    writes.extend(
+        re.findall(
+            rf"(?:add_ideas|remove_ideas|add_idea|remove_idea)\s*=\s*"
+            rf"{native_target}",
+            core_text,
+        )
+    )
+    writes.extend(
+        re.findall(
+            rf"add_timed_idea\s*=\s*\{{[^{{}}]*?\bidea\s*=\s*{native_target}",
+            core_text,
+            re.DOTALL,
+        )
+    )
+    writes.extend(
+        re.findall(
+            rf"(?:complete_national_focus|uncomplete_national_focus|unlock_national_focus)"
+            rf"\s*=\s*(?:\{{\s*focus\s*=\s*)?{native_target}",
+            core_text,
+        )
+    )
+    writes.extend(
+        re.findall(
+            rf"(?:country_event|news_event)\s*=\s*"
+            rf"(?:\{{[^{{}}]*?\bid\s*=\s*)?{native_target}",
+            core_text,
+            re.DOTALL,
+        )
+    )
+    for idea_block in re.findall(
+        r"(?:add_ideas|remove_ideas)\s*=\s*\{([^{}]*)\}", core_text, re.DOTALL
+    ):
+        writes.extend(re.findall(native_token, idea_block))
     assert writes == []

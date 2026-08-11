@@ -66,6 +66,118 @@ _BLOCK_HEADER_RE = re.compile(r"([A-Za-z0-9_.:@^\[\]-]+)\s*=\s*\{")
 _MARKER_TRIGGER_RE = re.compile(r"\b(?:has_country_flag|has_idea)\s*=")
 _LOC_KEY_PREFIX_RE = re.compile(r"^\s*([^\s:#]+):\d*(?:\s+.*)?$")
 _VALID_LOC_VALUE_RE = re.compile(r'^\s*[^\s:#]+:\d*\s+"(?:\\.|[^"\\])*"\s*(?:#.*)?$')
+_SCRIPT_TOKEN_CAPTURE = r"([A-Za-z0-9_.:@^\[\]-]+)"
+_SCRIPT_TOKEN_RE = re.compile(r"[A-Za-z0-9_.:@^\[\]-]+")
+_NATIVE_FLAG_WRITE_EFFECT_PATTERN = (
+    r"(?:set|clr|modify)_"
+    r"(?:character|country|country_pmc|global|mio|project|state|unit_leader)_flag"
+)
+_NATIVE_VARIABLE_BLOCK_EFFECTS = (
+    "set_variable",
+    "add_to_variable",
+    "subtract_from_variable",
+    "multiply_variable",
+    "divide_variable",
+    "modulo_variable",
+    "clamp_variable",
+    "randomize_variable",
+    "set_variable_to_random",
+)
+_NATIVE_VARIABLE_BLOCK_EFFECT_PATTERN = (
+    r"(?:" + "|".join(_NATIVE_VARIABLE_BLOCK_EFFECTS) + r")"
+)
+_NATIVE_VARIABLE_SCALAR_OR_BLOCK_EFFECTS = ("clear_variable", "round_variable")
+_NATIVE_VARIABLE_SCALAR_OR_BLOCK_EFFECT_PATTERN = (
+    r"(?:" + "|".join(_NATIVE_VARIABLE_SCALAR_OR_BLOCK_EFFECTS) + r")"
+)
+_NATIVE_ARRAY_BLOCK_EFFECTS = ("add_to_array", "remove_from_array", "resize_array")
+_NATIVE_ARRAY_BLOCK_EFFECT_PATTERN = (
+    r"(?:" + "|".join(_NATIVE_ARRAY_BLOCK_EFFECTS) + r")"
+)
+_NATIVE_WRITE_PATTERNS = (
+    re.compile(
+        r"\b" + _NATIVE_FLAG_WRITE_EFFECT_PATTERN + r"\s*=\s*"
+        r"(?:\{\s*flag\s*=\s*)?" + _SCRIPT_TOKEN_CAPTURE
+    ),
+    re.compile(
+        r"\b" + _NATIVE_FLAG_WRITE_EFFECT_PATTERN + r"\s*=\s*\{[^{}]*?"
+        r"\bflag\s*=\s*" + _SCRIPT_TOKEN_CAPTURE,
+        re.DOTALL,
+    ),
+    re.compile(
+        r"\b" + _NATIVE_VARIABLE_BLOCK_EFFECT_PATTERN + r"\s*=\s*\{\s*"
+        r"(?:var\s*=\s*)?" + _SCRIPT_TOKEN_CAPTURE
+    ),
+    re.compile(
+        r"\b" + _NATIVE_VARIABLE_BLOCK_EFFECT_PATTERN + r"\s*=\s*\{[^{}]*?"
+        r"\bvar\s*=\s*" + _SCRIPT_TOKEN_CAPTURE,
+        re.DOTALL,
+    ),
+    re.compile(
+        r"\b"
+        + _NATIVE_VARIABLE_SCALAR_OR_BLOCK_EFFECT_PATTERN
+        + r"\s*=\s*"
+        + _SCRIPT_TOKEN_CAPTURE
+    ),
+    re.compile(
+        r"\b" + _NATIVE_VARIABLE_SCALAR_OR_BLOCK_EFFECT_PATTERN + r"\s*=\s*\{[^{}]*?"
+        r"\b(?:var|which)\s*=\s*" + _SCRIPT_TOKEN_CAPTURE,
+        re.DOTALL,
+    ),
+    re.compile(
+        r"\b" + _NATIVE_ARRAY_BLOCK_EFFECT_PATTERN + r"\s*=\s*\{\s*"
+        r"(?:array\s*=\s*)?" + _SCRIPT_TOKEN_CAPTURE
+    ),
+    re.compile(
+        r"\b" + _NATIVE_ARRAY_BLOCK_EFFECT_PATTERN + r"\s*=\s*\{[^{}]*?"
+        r"\barray\s*=\s*" + _SCRIPT_TOKEN_CAPTURE,
+        re.DOTALL,
+    ),
+    re.compile(r"\bclear_array\s*=\s*" + _SCRIPT_TOKEN_CAPTURE),
+    re.compile(
+        r"\bclear_array\s*=\s*\{[^{}]*?\barray\s*=\s*" + _SCRIPT_TOKEN_CAPTURE,
+        re.DOTALL,
+    ),
+    re.compile(
+        r"\b(?:find_highest_in_array|find_lowest_in_array)\s*=\s*\{[^{}]*?"
+        r"\bvalue\s*=\s*" + _SCRIPT_TOKEN_CAPTURE,
+        re.DOTALL,
+    ),
+    re.compile(
+        r"\b(?:find_highest_in_array|find_lowest_in_array)\s*=\s*\{[^{}]*?"
+        r"\bindex\s*=\s*" + _SCRIPT_TOKEN_CAPTURE,
+        re.DOTALL,
+    ),
+    re.compile(
+        r"\b(?:add_ideas|remove_ideas|add_idea|remove_idea)\s*=\s*"
+        + _SCRIPT_TOKEN_CAPTURE
+    ),
+    re.compile(
+        r"\badd_timed_idea\s*=\s*\{[^{}]*?\bidea\s*=\s*" + _SCRIPT_TOKEN_CAPTURE,
+        re.DOTALL,
+    ),
+    re.compile(
+        r"\b(?:complete_national_focus|uncomplete_national_focus|unlock_national_focus)\s*=\s*"
+        r"(?:\{\s*focus\s*=\s*)?" + _SCRIPT_TOKEN_CAPTURE
+    ),
+    re.compile(
+        r"\b(?:" + _EVENT_ALT + r")\s*=\s*"
+        r"(?:\{[^{}]*?\bid\s*=\s*)?" + _SCRIPT_TOKEN_CAPTURE,
+        re.DOTALL,
+    ),
+)
+_NATIVE_IDEA_BLOCK_RE = re.compile(
+    r"\b(?:add_ideas|remove_ideas)\s*=\s*\{([^{}]*)\}", re.DOTALL
+)
+_NATIVE_CONTRACT_ROLES = (
+    "effect",
+    "trigger",
+    "on_action",
+    "event",
+    "idea",
+    "decision",
+    "category",
+)
 _CUSTOM_EFFECT_REWARDS: Tuple[Tuple[str, re.Pattern[str]], ...] = (
     ("Political Power", re.compile(r"\badd_political_power\b")),
     ("Stability", re.compile(r"\badd_stability\b")),
@@ -89,6 +201,30 @@ _CUSTOM_EFFECT_REWARDS: Tuple[Tuple[str, re.Pattern[str]], ...] = (
         re.compile(r"\badd_extra_state_shared_building_slots\b|\badd_resource\b"),
     ),
 )
+
+
+def _native_token_fragment(token: str, prefixes: Tuple[str, ...]) -> Optional[str]:
+    for fragment in re.split(r"[.:@^\[\]]+", token):
+        if fragment.startswith(prefixes):
+            return fragment
+    return None
+
+
+def _collect_native_write_tokens(text: str, prefixes: Tuple[str, ...]) -> Set[str]:
+    native_writes: Set[str] = set()
+    for pattern in _NATIVE_WRITE_PATTERNS:
+        for token in pattern.findall(text):
+            fragment = _native_token_fragment(token, prefixes)
+            if fragment:
+                native_writes.add(fragment)
+    for idea_block in _NATIVE_IDEA_BLOCK_RE.findall(text):
+        for token in _SCRIPT_TOKEN_RE.findall(idea_block):
+            fragment = _native_token_fragment(token, prefixes)
+            if fragment:
+                native_writes.add(fragment)
+    return native_writes
+
+
 _WRITE_KEYWORDS = (
     "set_country_flag",
     "clr_country_flag",
@@ -867,14 +1003,20 @@ class Validator(BaseValidator):
                         1,
                     )
                 )
-            historical_routes = raw_system["historical_routes"]
-            if (
-                not isinstance(historical_routes, dict)
-                or historical_routes.get("USA") != "enterprise"
-            ):
+            expected_historical_routes = {
+                "BRA": "upstream",
+                "CHI": "national",
+                "ENG": "upstream",
+                "FRA": "national",
+                "GER": "upstream",
+                "RAJ": "national",
+                "SOV": "national",
+                "USA": "enterprise",
+            }
+            if raw_system["historical_routes"] != expected_historical_routes:
                 findings.append(
                     (
-                        f"{name} must declare the USA Enterprise historical route",
+                        f"{name} must declare the approved national historical routes",
                         "tools/corporate_history_contract.json",
                         1,
                     )
@@ -1593,23 +1735,24 @@ class Validator(BaseValidator):
             allowed_reads = {str(token) for token in raw_system["allowed_native_reads"]}
             native_contract_text = strip_comments(
                 "\n".join(
-                    declared_text.get(role, "")
-                    for role in ("effect", "trigger", "on_action", "event")
+                    declared_text.get(role, "") for role in _NATIVE_CONTRACT_ROLES
                 )
             )
             native_reads: Set[str] = set()
             for pattern in (
                 re.compile(
                     r"\b(?:has_country_flag|has_idea|has_completed_focus)\s*=\s*"
-                    r"([A-Za-z0-9_]+)"
+                    + _SCRIPT_TOKEN_CAPTURE
                 ),
-                re.compile(r"\bcheck_variable\s*=\s*\{\s*([A-Za-z0-9_]+)"),
+                re.compile(
+                    r"\bcheck_variable\s*=\s*\{\s*(?:var\s*=\s*)?"
+                    + _SCRIPT_TOKEN_CAPTURE
+                ),
             ):
-                native_reads.update(
-                    token
-                    for token in pattern.findall(native_contract_text)
-                    if token.startswith(prefixes)
-                )
+                for token in pattern.findall(native_contract_text):
+                    fragment = _native_token_fragment(token, prefixes)
+                    if fragment:
+                        native_reads.add(fragment)
             undeclared_reads = native_reads - allowed_reads
             if undeclared_reads:
                 findings.append(
@@ -1628,21 +1771,7 @@ class Validator(BaseValidator):
                         1,
                     )
                 )
-            native_write_patterns = (
-                re.compile(
-                    r"\b(?:set_country_flag|clr_country_flag)\s*=\s*([A-Za-z0-9_]+)"
-                ),
-                re.compile(
-                    r"\b(?:set_variable|add_to_variable|subtract_from_variable|multiply_variable|divide_variable|clamp_variable)\s*=\s*\{\s*(?:var\s*=\s*)?([A-Za-z0-9_]+)"
-                ),
-            )
-            native_writes: Set[str] = set()
-            for pattern in native_write_patterns:
-                native_writes.update(
-                    token
-                    for token in pattern.findall(native_contract_text)
-                    if token.startswith(prefixes)
-                )
+            native_writes = _collect_native_write_tokens(native_contract_text, prefixes)
             if native_writes:
                 findings.append(
                     (
