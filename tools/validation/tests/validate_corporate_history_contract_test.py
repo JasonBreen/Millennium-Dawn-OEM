@@ -32,8 +32,12 @@ def _write_loc(root: Path, relative: str, text: str):
     (
         ("fire_only_once = no", True),
         ("fire_only_once=no", True),
+        ("fire_only_once = no # reusable decision", True),
         ("fire_only_once = yes", False),
         ("# fire_only_once = no", False),
+        ('log = "fire_only_once = no"', False),
+        ('log = "start\nfire_only_once = no\nend"', False),
+        ('log = "fire_only_once = no"\nfire_only_once = no', True),
         ("", False),
     ),
 )
@@ -49,6 +53,12 @@ def test_repeatable_decision_requires_an_active_no_declaration(text, expected):
         ("remove_decision = linux_system_other_program", False),
         ("# remove_decision = linux_system_program", False),
         ('log = "remove_decision = linux_system_program"', False),
+        ('log = "start\nremove_decision = linux_system_program\nend"', False),
+        (
+            'log = "remove_decision = linux_system_program"\n'
+            "remove_decision = linux_system_program",
+            True,
+        ),
         ("", False),
     ),
 )

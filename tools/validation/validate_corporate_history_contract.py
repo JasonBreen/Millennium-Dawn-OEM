@@ -262,14 +262,16 @@ def _is_finite_number(value: object) -> bool:
 
 
 def _is_repeatable_decision(text: str) -> bool:
-    return bool(re.search(r"\bfire_only_once\s*=\s*no\b", strip_comments(text)))
+    code = blank_quoted_strings(strip_comments(text))
+    return bool(re.search(r"(?m)^\s*fire_only_once\s*=\s*no\s*$", code))
 
 
 def _removes_active_decision(text: str, decision_id: str) -> bool:
+    code = blank_quoted_strings(strip_comments(text))
     return bool(
         re.search(
             rf"(?m)^\s*remove_decision\s*=\s*{re.escape(decision_id)}\s*$",
-            strip_comments(text),
+            code,
         )
     )
 
