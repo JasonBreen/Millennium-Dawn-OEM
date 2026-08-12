@@ -757,6 +757,8 @@ def test_project_lifecycle_is_serial_retryable_and_bankruptcy_safe():
             project, "SOV_computing_sovereignty_project_slot_available"
         )
         assert f"{gate} = yes" in block
+        assert "days_re_enable = 30" in block
+        assert "fire_only_once = no" in block
         assert "fixed_random_seed = no" in block
         assert "has_active_mission = bankruptcy_incoming_collapse" in block
         assert "ai_will_do = {" in block

@@ -10,6 +10,8 @@ from validate_corporate_history_contract import (
     _NATIVE_VARIABLE_SCALAR_OR_BLOCK_EFFECTS,
     Validator,
     _collect_native_write_tokens,
+    _is_repeatable_decision,
+    _removes_active_decision,
 )
 
 
@@ -23,6 +25,35 @@ def _write_loc(root: Path, relative: str, text: str):
     path = root / relative
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(b"\xef\xbb\xbf" + text.encode("utf-8"))
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    (
+        ("fire_only_once = no", True),
+        ("fire_only_once=no", True),
+        ("fire_only_once = yes", False),
+        ("# fire_only_once = no", False),
+        ("", False),
+    ),
+)
+def test_repeatable_decision_requires_an_active_no_declaration(text, expected):
+    assert _is_repeatable_decision(text) is expected
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    (
+        ("remove_decision = linux_system_program", True),
+        ("remove_decision=linux_system_program", True),
+        ("remove_decision = linux_system_other_program", False),
+        ("# remove_decision = linux_system_program", False),
+        ('log = "remove_decision = linux_system_program"', False),
+        ("", False),
+    ),
+)
+def test_active_decision_cleanup_requires_an_executable_removal(text, expected):
+    assert _removes_active_decision(text, "linux_system_program") is expected
 
 
 def _manifest(
@@ -735,6 +766,8 @@ USA_oem_investment_climate_2 = {
         program_days = 730 if number in {2, 4} else 365
         decisions.append(f"""USA_oem_policy_{number} = {{
 	days_re_enable = 365
+
+	fire_only_once = no
 
 	available = {{
 		NOT = {{ has_country_flag = collapsed_nation }}
@@ -2006,6 +2039,21 @@ def test_policy_program_cooldown_must_match_contract(tmp_path):
 
     assert any(
         "USA_oem_policy_1 must declare a 365-day cooldown" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_policy_program_must_remain_reusable(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "common/decisions/USA_oem_test.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace("\n\tfire_only_once = no\n", "", 1),
+        encoding="utf-8",
+    )
+
+    assert any(
+        "USA_oem_policy_1 must remain reusable after its declared cooldown" in message
         for message in _messages(tmp_path)
     )
 

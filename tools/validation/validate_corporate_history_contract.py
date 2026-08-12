@@ -261,6 +261,19 @@ def _is_finite_number(value: object) -> bool:
     )
 
 
+def _is_repeatable_decision(text: str) -> bool:
+    return bool(re.search(r"\bfire_only_once\s*=\s*no\b", strip_comments(text)))
+
+
+def _removes_active_decision(text: str, decision_id: str) -> bool:
+    return bool(
+        re.search(
+            rf"(?m)^\s*remove_decision\s*=\s*{re.escape(decision_id)}\s*$",
+            strip_comments(text),
+        )
+    )
+
+
 @dataclass(frozen=True)
 class Bound:
     minimum: Decimal
@@ -1523,6 +1536,14 @@ class Validator(BaseValidator):
                             1,
                         )
                     )
+                if not _is_repeatable_decision(decision_body):
+                    findings.append(
+                        (
+                            f"{program_id} must remain reusable after its declared cooldown",
+                            str(files["decision"]),
+                            1,
+                        )
+                    )
                 for block_name in ("complete_effect", "remove_effect"):
                     block_match = re.search(rf"\b{block_name}\s*=\s*\{{", decision_body)
                     if block_match is None:
@@ -1724,6 +1745,20 @@ class Validator(BaseValidator):
                     findings.append(
                         (
                             f"{cleanup_name} must remove every owned idea and the participant entry",
+                            cleanup_defs[0].file,
+                            cleanup_defs[0].line,
+                        )
+                    )
+                active_decisions_missing = [
+                    program_id
+                    for program_id in expected_programs
+                    if not _removes_active_decision(cleanup_owned_text, program_id)
+                ]
+                if active_decisions_missing:
+                    findings.append(
+                        (
+                            f"{cleanup_name} must cancel every active program decision: "
+                            f"{', '.join(active_decisions_missing)}",
                             cleanup_defs[0].file,
                             cleanup_defs[0].line,
                         )
@@ -2466,6 +2501,14 @@ class Validator(BaseValidator):
                     findings.append(
                         (
                             f"{decision} must declare a {cooldown_days}-day cooldown",
+                            decision_file,
+                            self._line(decision_text, decision_match.start()),
+                        )
+                    )
+                if not _is_repeatable_decision(decision_body):
+                    findings.append(
+                        (
+                            f"{decision} must remain reusable after its declared cooldown",
                             decision_file,
                             self._line(decision_text, decision_match.start()),
                         )

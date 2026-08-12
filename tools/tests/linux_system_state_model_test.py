@@ -349,8 +349,13 @@ def test_reconstruction_has_no_cost_or_reward_side_effects():
 
 def test_off_cleanup_removes_only_owned_artifacts_and_preserves_history():
     effects = EFFECTS_PATH.read_text(encoding="utf-8")
+    triggers = TRIGGERS_PATH.read_text(encoding="utf-8")
     clear = _named_block(effects, "linux_system_clear_country_state")
+    owned = _named_block(triggers, "linux_system_has_owned_artifacts")
 
+    for decision in _shared_system()["programs"]:
+        assert f"remove_decision = {decision}" in clear
+        assert f"has_decision = {decision}" in owned
     for index in range(1, 6):
         assert f"clr_country_flag = linux_system_event_{index}_expected" in clear
         assert f"clr_country_flag = linux_system_event_{index}_pending" in clear
@@ -582,6 +587,7 @@ def test_program_cost_duration_slot_cooldown_and_bankruptcy_contract():
         block = _named_block(decisions, decision)
         assert f"cost = {contract['political_power']}" in block
         assert f"days_remove = {contract['duration_days']}" in block
+        assert "fire_only_once = no" in block
         assert "linux_system_full_enabled = yes" in block
         assert "linux_system_program_slot_available = yes" in block
         assert f"remove_ideas = {contract['idea']}" in block
