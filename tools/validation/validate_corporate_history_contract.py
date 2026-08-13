@@ -1051,9 +1051,15 @@ class Validator(BaseValidator):
                         (f"Missing reusable decision {decision}", decision_file, 1)
                     )
                     continue
-                decision_line = self._line(
+                _decision_match = re.search(
+                    r"^" + "\t" * decision_indent + re.escape(decision) + r"\s*=\s*\{",
                     decision_text,
-                    decision_text.find("\t" * decision_indent + f"{decision} = {{"),
+                    re.MULTILINE,
+                )
+                decision_line = (
+                    self._line(decision_text, _decision_match.start())
+                    if _decision_match
+                    else 1
                 )
                 if not _is_repeatable_decision(decision_body):
                     findings.append(
