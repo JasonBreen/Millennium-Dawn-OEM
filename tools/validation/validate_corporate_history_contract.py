@@ -333,7 +333,11 @@ def _program_lifecycle_findings(
                 1,
             )
         )
-    lockout = duration + cooldown if lockout_model == "sequential" else max(duration, cooldown)
+    lockout = (
+        duration + cooldown
+        if lockout_model == "sequential"
+        else max(duration, cooldown)
+    )
     if lockout > REUSABLE_PROGRAM_MAX_LOCKOUT_DAYS:
         findings.append(
             (
@@ -886,9 +890,7 @@ class Validator(BaseValidator):
             decision_blocks_by_indent: Dict[int, Dict[str, str]] = {0: {}, 1: {}}
             offset = 0
             for line in decision_text.splitlines(keepends=True):
-                match = re.match(
-                    r"^(\t?)([^\t#][A-Za-z0-9_.:-]*)\s*=\s*\{", line
-                )
+                match = re.match(r"^(\t?)([^\t#][A-Za-z0-9_.:-]*)\s*=\s*\{", line)
                 if match is not None:
                     opening_brace = offset + line.index("{")
                     block, end = extract_block_from_text(decision_text, opening_brace)
@@ -914,9 +916,7 @@ class Validator(BaseValidator):
                     )
                 else:
                     for line in localisation_text.splitlines():
-                        match = re.match(
-                            r'^\s*([^\s:#]+):\d*\s+"(.*)"\s*$', line
-                        )
+                        match = re.match(r'^\s*([^\s:#]+):\d*\s+"(.*)"\s*$', line)
                         if match is not None:
                             localisation_values[match.group(1)] = match.group(2)
 
@@ -1047,7 +1047,9 @@ class Validator(BaseValidator):
 
                 decision_body = decision_blocks.get(decision, "")
                 if not decision_body:
-                    findings.append((f"Missing reusable decision {decision}", decision_file, 1))
+                    findings.append(
+                        (f"Missing reusable decision {decision}", decision_file, 1)
+                    )
                     continue
                 decision_line = self._line(
                     decision_text,
@@ -1130,9 +1132,9 @@ class Validator(BaseValidator):
                                     cleanup_defs[0].line,
                                 )
                             )
-                        if program.get("cleanup_decision") and not _removes_active_decision(
-                            cleanup_body, decision
-                        ):
+                        if program.get(
+                            "cleanup_decision"
+                        ) and not _removes_active_decision(cleanup_body, decision):
                             findings.append(
                                 (
                                     f"{cleanup_effect} must remove active decision {decision}",
@@ -1228,9 +1230,10 @@ class Validator(BaseValidator):
                                 decision_line,
                             )
                         )
-                    if project_days > 365 and not str(
-                        program.get("long_duration_reason", "")
-                    ).strip():
+                    if (
+                        project_days > 365
+                        and not str(program.get("long_duration_reason", "")).strip()
+                    ):
                         findings.append(
                             (
                                 f"{decision} construction timer over 365 days needs a reason",
@@ -1247,7 +1250,11 @@ class Validator(BaseValidator):
                     value = localisation_values.get(key)
                     if value is None:
                         findings.append(
-                            (f"Missing lifecycle localisation key {key}", localisation_file, 1)
+                            (
+                                f"Missing lifecycle localisation key {key}",
+                                localisation_file,
+                                1,
+                            )
                         )
                         continue
                     if str(expected_localisation_days) not in value:

@@ -2065,9 +2065,7 @@ def test_reusable_temporary_program_cannot_exceed_365_days(tmp_path):
     _enable_reusable_lifecycle_fixture(tmp_path)
     path = tmp_path / "tools/corporate_history_contract.json"
     manifest = json.loads(path.read_text(encoding="utf-8"))
-    manifest["reusable_decision_lifecycles"][0]["programs"][0][
-        "active_days"
-    ] = 730
+    manifest["reusable_decision_lifecycles"][0]["programs"][0]["active_days"] = 730
     path.write_text(json.dumps(manifest), encoding="utf-8")
 
     assert any(
@@ -2088,7 +2086,9 @@ def test_reusable_program_localisation_must_match_duration(tmp_path):
     )
 
     messages = _messages(tmp_path)
-    assert any("USA_oem_policy_1_desc must state 180 days" in message for message in messages)
+    assert any(
+        "USA_oem_policy_1_desc must state 180 days" in message for message in messages
+    )
     assert any(
         "USA_oem_policy_1_desc still claims a 730-day lifecycle" in message
         for message in messages
@@ -2100,9 +2100,7 @@ def test_reusable_program_reenable_period_must_equal_active_duration(tmp_path):
     _enable_reusable_lifecycle_fixture(tmp_path)
     path = tmp_path / "tools/corporate_history_contract.json"
     manifest = json.loads(path.read_text(encoding="utf-8"))
-    manifest["reusable_decision_lifecycles"][0]["programs"][0][
-        "cooldown_days"
-    ] = 365
+    manifest["reusable_decision_lifecycles"][0]["programs"][0]["cooldown_days"] = 365
     path.write_text(json.dumps(manifest), encoding="utf-8")
 
     assert any(
