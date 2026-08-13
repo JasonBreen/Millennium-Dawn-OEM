@@ -124,14 +124,14 @@ Adoption is selected from effective Deployment. Support is selected from effecti
 
 ## Economic programs
 
-`common/decisions/categories/MD_linux_system_categories.txt` owns the `linux_system_programs` category. The container has exactly four repeatable Full-mode programs. Only one can be active. A decision remains active for its program duration; its `remove_effect` removes any surviving program idea and starts `linux_system_program_cooldown` for 365 days. Availability also requires no bankruptcy-collapse mission. Public procurement is not visible to USA.
+`common/decisions/categories/MD_linux_system_categories.txt` owns the `linux_system_programs` category. The container has exactly four repeatable Full-mode programs. Only one can be active. A decision remains active for its program duration, and its `remove_effect` removes any surviving program idea. The shared slot reopens when that lifecycle ends; no separate post-program cooldown extends the lock. Availability also requires no bankruptcy-collapse mission. Public procurement is not visible to USA.
 
 | Decision                                   |  PP | Treasury | Duration | Durable base change   | Active modifier                                             |
 | ------------------------------------------ | --: | -------: | -------: | --------------------- | ----------------------------------------------------------- |
-| `linux_system_fund_upstream_maintenance`   |  25 | 0.1% GDP | 365 days | S +1, A +1            | Research +1%; bureaucracy cost +1%                          |
-| `linux_system_contract_enterprise_support` |  25 | 0.1% GDP | 365 days | D +1, A +1, Support 2 | Productivity growth +1%; bureaucracy cost -1%               |
+| `linux_system_fund_upstream_maintenance`   |  25 | 0.1% GDP | 180 days | S +1, A +1            | Research +1%; bureaucracy cost +1%                          |
+| `linux_system_contract_enterprise_support` |  25 | 0.1% GDP | 180 days | D +1, A +1, Support 2 | Productivity growth +1%; bureaucracy cost -1%               |
 | `linux_system_harden_lifecycle`            |  35 | 0.1% GDP | 365 days | A +2                  | Cyber defense +2; bureaucracy cost +1%                      |
-| `linux_system_public_procurement`          |  50 | 0.2% GDP | 730 days | D +1, S +1, A +1      | Research +1%; productivity growth +1%; bureaucracy cost +2% |
+| `linux_system_public_procurement`          |  50 | 0.2% GDP | 180 days | D +1, S +1, A +1      | Research +1%; productivity growth +1%; bureaucracy cost +2% |
 
 The treasury helpers are `linux_system_pay_gdp_0_1_percent` and `linux_system_pay_gdp_0_2_percent`. Matching affordability triggers include the bankruptcy guard.
 

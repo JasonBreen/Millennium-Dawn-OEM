@@ -148,7 +148,7 @@ def _localisation_keys(path: Path) -> list[str]:
 
 def _shared_system() -> dict:
     manifest = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
-    assert manifest["schema_version"] == 4
+    assert manifest["schema_version"] == 5
     systems = [
         system
         for system in manifest["shared_systems"]
@@ -158,7 +158,7 @@ def _shared_system() -> dict:
     return systems[0]
 
 
-def test_schema_v4_declares_the_public_linux_contract_exactly():
+def test_schema_v5_declares_the_public_linux_contract_exactly():
     system = _shared_system()
 
     assert system["root"] == "linux_system"
@@ -370,6 +370,8 @@ def test_off_cleanup_removes_only_owned_artifacts_and_preserves_history():
     assert "set_variable" not in clear
     assert "clr_global_flag = GLOBAL_linux_system_milestone_" not in effects
     assert "USA_oem_storage_clear_linux_pending_markers = yes" in clear
+    assert "linux_system_program_cooldown" not in clear
+    assert "linux_system_program_cooldown" not in owned
 
 
 def test_global_events_have_exact_lifecycle_and_state_deltas():
@@ -570,7 +572,7 @@ def test_persistent_and_timed_ideas_match_the_manifest_exactly():
     assert "linux_system_clear_support_ideas = yes" in refresh
 
 
-def test_program_cost_duration_slot_cooldown_and_bankruptcy_contract():
+def test_program_cost_duration_slot_and_bankruptcy_contract():
     decisions = DECISIONS_PATH.read_text(encoding="utf-8")
     triggers = TRIGGERS_PATH.read_text(encoding="utf-8")
     category = CATEGORY_PATH.read_text(encoding="utf-8")
@@ -580,7 +582,7 @@ def test_program_cost_duration_slot_cooldown_and_bankruptcy_contract():
         category, "linux_system_programs"
     )
     slot = _named_block(triggers, "linux_system_program_slot_available")
-    assert "NOT = { has_country_flag = linux_system_program_cooldown }" in slot
+    assert "linux_system_program_cooldown" not in slot
     assert "NOT = { linux_system_has_active_program = yes }" in slot
 
     for decision, contract in system["programs"].items():
@@ -591,7 +593,8 @@ def test_program_cost_duration_slot_cooldown_and_bankruptcy_contract():
         assert "linux_system_full_enabled = yes" in block
         assert "linux_system_program_slot_available = yes" in block
         assert f"remove_ideas = {contract['idea']}" in block
-        assert f"days = {contract['cooldown_days']}" in block
+        assert contract["cooldown_days"] == 0
+        assert "linux_system_program_cooldown" not in block
         assert block.count("log = ") >= 2
         assert "has_active_mission = bankruptcy_incoming_collapse" in block
 

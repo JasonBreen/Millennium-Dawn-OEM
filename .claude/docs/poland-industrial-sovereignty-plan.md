@@ -75,9 +75,10 @@ initialized. Its five entries expose score bands, resolved route markers, system
 boundaries, outcome readiness, and the current terminal idea. They have no effects
 and AI weight zero.
 
-Four Full-only policies are repeatable on a 365-day cooldown: Industrial Credit
-(50 PP, 10.0B treasury), Strategic Procurement (75 PP, 25.0B), Regional Export
-Finance (50 PP, 15.0B), and an Applied-Research Consortium (50 PP, 20.0B). Each
+Four Full-only policies use intervention-appropriate cooldowns: Industrial Credit
+(50 PP, 10.0B treasury) and the Applied-Research Consortium (50 PP, 20.0B) use
+365 days; Strategic Procurement (75 PP, 25.0B) and Regional Export Finance
+(50 PP, 15.0B) use 180 days. Each
 requires the initialized, non-bankrupt Polish state, clamps its stated score deltas,
 and cannot set routes or terminal outcomes. Outcomes Only and Disabled hide the
 entire category.

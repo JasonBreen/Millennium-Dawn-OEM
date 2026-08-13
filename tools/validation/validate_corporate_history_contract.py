@@ -266,6 +266,94 @@ def _is_repeatable_decision(text: str) -> bool:
     return bool(re.search(r"(?m)^\s*fire_only_once\s*=\s*no\s*$", code))
 
 
+# Reusable corporate/computing policy programs are recurring government
+# programmes, not construction projects: six months for operational levers,
+# one year for major commitments, and never a two-year hold on the decision.
+PROGRAM_CLASS_DURATION_DAYS: Mapping[str, int] = {
+    "operational": 180,
+    "major_commitment": 365,
+}
+REUSABLE_PROGRAM_MAX_DURATION_DAYS = 365
+REUSABLE_PROGRAM_MAX_LOCKOUT_DAYS = 365
+
+
+def _program_lifecycle_findings(
+    label: str,
+    program: Mapping[str, object],
+    duration_key: str,
+    lockout_model: str,
+    source: str,
+) -> List[Tuple[str, str, int]]:
+    """Check one declared program against the approved duration classes.
+
+    ``lockout_model`` is ``concurrent`` when the re-enable timer runs alongside
+    the timed idea (``days_re_enable``) and ``sequential`` when the cooldown
+    only starts once the active program ends (``days_remove`` + cooldown flag).
+    """
+
+    findings: List[Tuple[str, str, int]] = []
+    program_class = str(program.get("program_class", ""))
+    expected = PROGRAM_CLASS_DURATION_DAYS.get(program_class)
+    if expected is None:
+        findings.append(
+            (
+                f"{label} must declare program_class as one of "
+                + ", ".join(sorted(PROGRAM_CLASS_DURATION_DAYS)),
+                source,
+                1,
+            )
+        )
+        return findings
+
+    duration = int(program.get(duration_key, 0))
+    cooldown = int(program.get("cooldown_days", 0))
+    if duration != expected:
+        findings.append(
+            (
+                f"{label} is class {program_class} and must last {expected} days, not {duration}",
+                source,
+                1,
+            )
+        )
+    if duration > REUSABLE_PROGRAM_MAX_DURATION_DAYS:
+        findings.append(
+            (
+                f"{label} is a reusable policy and must not impose a "
+                f"{duration}-day active program",
+                source,
+                1,
+            )
+        )
+    if cooldown > duration:
+        findings.append(
+            (
+                f"{label} cooldown ({cooldown} days) must not outlast its "
+                f"{duration}-day program",
+                source,
+                1,
+            )
+        )
+    lockout = (
+        duration + cooldown
+        if lockout_model == "sequential"
+        else max(duration, cooldown)
+    )
+    if lockout > REUSABLE_PROGRAM_MAX_LOCKOUT_DAYS:
+        findings.append(
+            (
+                f"{label} locks the player out for {lockout} days; reusable "
+                "policies must return within one year",
+                source,
+                1,
+            )
+        )
+    if not str(program.get("cleanup_owner", "")):
+        findings.append(
+            (f"{label} must declare the effect that owns its cleanup", source, 1)
+        )
+    return findings
+
+
 def _removes_active_decision(text: str, decision_id: str) -> bool:
     code = blank_quoted_strings(strip_comments(text))
     return bool(
@@ -464,6 +552,14 @@ class Validator(BaseValidator):
             "Corporate-history lifecycle metadata matches scripted behavior",
             "Corporate-history lifecycle metadata issues:",
             category="Corporate-history manifest",
+        )
+
+        self._log_section("reusable decision lifecycles")
+        self._report(
+            self._validate_reusable_decision_lifecycles(effect_defs),
+            "Reusable corporate and computing decision lifecycles are coherent",
+            "Reusable corporate and computing decision lifecycle issues:",
+            category="Corporate-history reusable decision lifecycles",
         )
 
         self._log_section("event reachability")
@@ -722,6 +818,469 @@ class Validator(BaseValidator):
                 )
             chains.append(chain)
         return chains
+
+    def _validate_reusable_decision_lifecycles(
+        self, effect_defs: Dict[str, List[BlockDef]]
+    ) -> List[Tuple[str, str, int]]:
+        findings: List[Tuple[str, str, int]] = []
+        schema_version = int(self._manifest_payload.get("schema_version", 1))
+        raw_systems = self._manifest_payload.get("reusable_decision_lifecycles")
+        if raw_systems is None:
+            if schema_version >= 5:
+                findings.append(
+                    (
+                        "Schema v5 requires reusable_decision_lifecycles",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+            return findings
+        if not isinstance(raw_systems, list) or not raw_systems:
+            return [
+                (
+                    "reusable_decision_lifecycles must be a non-empty list",
+                    "tools/corporate_history_contract.json",
+                    1,
+                )
+            ]
+
+        seen_decisions: Set[str] = set()
+        valid_kinds = {"timed_idea", "cadence_only", "construction_project"}
+        valid_cooldown_modes = {"days_re_enable", "active_duration"}
+
+        for system_index, raw_system in enumerate(raw_systems):
+            if not isinstance(raw_system, dict):
+                findings.append(
+                    (
+                        f"reusable_decision_lifecycles[{system_index}] must be an object",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                continue
+            missing_system_fields = [
+                field
+                for field in ("name", "decision_file", "programs")
+                if field not in raw_system
+            ]
+            if missing_system_fields:
+                findings.append(
+                    (
+                        f"reusable_decision_lifecycles[{system_index}] is missing: "
+                        + ", ".join(missing_system_fields),
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                continue
+
+            system_name = str(raw_system["name"])
+            decision_file = str(raw_system["decision_file"])
+            decision_path = self._root / decision_file
+            try:
+                decision_text = decision_path.read_text(
+                    encoding="utf-8-sig", errors="replace"
+                )
+            except OSError:
+                findings.append(
+                    (f"{system_name} is missing {decision_file}", decision_file, 1)
+                )
+                continue
+
+            decision_blocks_by_indent: Dict[int, Dict[str, str]] = {0: {}, 1: {}}
+            offset = 0
+            for line in decision_text.splitlines(keepends=True):
+                match = re.match(r"^(\t?)([^\t#][A-Za-z0-9_.:-]*)\s*=\s*\{", line)
+                if match is not None:
+                    opening_brace = offset + line.index("{")
+                    block, end = extract_block_from_text(decision_text, opening_brace)
+                    if end != -1:
+                        indent = len(match.group(1))
+                        decision_blocks_by_indent[indent][match.group(2)] = block
+                offset += len(line)
+
+            localisation_file = str(raw_system.get("localisation_file", ""))
+            localisation_values: Dict[str, str] = {}
+            if localisation_file:
+                try:
+                    localisation_text = (self._root / localisation_file).read_text(
+                        encoding="utf-8-sig", errors="replace"
+                    )
+                except OSError:
+                    findings.append(
+                        (
+                            f"{system_name} is missing {localisation_file}",
+                            localisation_file,
+                            1,
+                        )
+                    )
+                else:
+                    for line in localisation_text.splitlines():
+                        match = re.match(r'^\s*([^\s:#]+):\d*\s+"(.*)"\s*$', line)
+                        if match is not None:
+                            localisation_values[match.group(1)] = match.group(2)
+
+            programs = raw_system["programs"]
+            if not isinstance(programs, list) or not programs:
+                findings.append(
+                    (
+                        f"{system_name} programs must be a non-empty list",
+                        "tools/corporate_history_contract.json",
+                        1,
+                    )
+                )
+                continue
+
+            declared_decisions = {
+                str(program.get("decision", ""))
+                for program in programs
+                if isinstance(program, dict)
+            }
+            matching_indents = [
+                indent
+                for indent, blocks in decision_blocks_by_indent.items()
+                if declared_decisions & blocks.keys()
+            ]
+            decision_indent = matching_indents[0] if matching_indents else 1
+            decision_blocks = decision_blocks_by_indent[decision_indent]
+            actionable_decisions = {
+                decision
+                for decision, body in decision_blocks.items()
+                if "complete_effect = {" in body
+            }
+            if actionable_decisions != declared_decisions:
+                missing = sorted(actionable_decisions - declared_decisions)
+                extra = sorted(declared_decisions - actionable_decisions)
+                details = []
+                if missing:
+                    details.append(f"undeclared: {', '.join(missing)}")
+                if extra:
+                    details.append(f"not actionable: {', '.join(extra)}")
+                findings.append(
+                    (
+                        f"{system_name} reusable decision coverage differs from its file"
+                        + (f" ({'; '.join(details)})" if details else ""),
+                        decision_file,
+                        1,
+                    )
+                )
+
+            cooldown_markers = {
+                str(marker)
+                for marker in raw_system.get("forbidden_cooldown_markers", [])
+            }
+            for program_index, program in enumerate(programs):
+                if not isinstance(program, dict):
+                    findings.append(
+                        (
+                            f"{system_name} programs[{program_index}] must be an object",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                    continue
+                missing_program_fields = [
+                    field
+                    for field in (
+                        "decision",
+                        "kind",
+                        "active_days",
+                        "cooldown_mode",
+                        "cooldown_days",
+                    )
+                    if field not in program
+                ]
+                if missing_program_fields:
+                    findings.append(
+                        (
+                            f"{system_name} programs[{program_index}] is missing: "
+                            + ", ".join(missing_program_fields),
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                    continue
+
+                decision = str(program["decision"])
+                kind = str(program["kind"])
+                cooldown_mode = str(program["cooldown_mode"])
+                try:
+                    active_days = int(program["active_days"])
+                    cooldown_days = int(program["cooldown_days"])
+                except (TypeError, ValueError):
+                    findings.append(
+                        (
+                            f"{decision} lifecycle durations must be integers",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                    continue
+
+                if decision in seen_decisions:
+                    findings.append(
+                        (
+                            f"Reusable decision {decision} is declared more than once",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                seen_decisions.add(decision)
+                if kind not in valid_kinds:
+                    findings.append(
+                        (
+                            f"{decision} has unsupported lifecycle kind {kind}",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                    continue
+                if cooldown_mode not in valid_cooldown_modes:
+                    findings.append(
+                        (
+                            f"{decision} has unsupported cooldown mode {cooldown_mode}",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+                    continue
+
+                decision_body = decision_blocks.get(decision, "")
+                if not decision_body:
+                    findings.append(
+                        (f"Missing reusable decision {decision}", decision_file, 1)
+                    )
+                    continue
+                _decision_match = re.search(
+                    r"^" + "\t" * decision_indent + re.escape(decision) + r"\s*=\s*\{",
+                    decision_text,
+                    re.MULTILINE,
+                )
+                decision_line = (
+                    self._line(decision_text, _decision_match.start())
+                    if _decision_match
+                    else 1
+                )
+                if not _is_repeatable_decision(decision_body):
+                    findings.append(
+                        (
+                            f"{decision} must declare fire_only_once = no",
+                            decision_file,
+                            decision_line,
+                        )
+                    )
+
+                if kind == "timed_idea":
+                    if not 1 <= active_days <= 365:
+                        findings.append(
+                            (
+                                f"{decision} temporary program must last 1 to 365 days",
+                                "tools/corporate_history_contract.json",
+                                1,
+                            )
+                        )
+                    idea = str(program.get("idea", ""))
+                    duration_source = str(program.get("duration_source", ""))
+                    source_body = decision_body
+                    source_file = decision_file
+                    if duration_source and duration_source != "decision":
+                        source_defs = effect_defs.get(duration_source, [])
+                        if len(source_defs) != 1:
+                            findings.append(
+                                (
+                                    f"{decision} requires exactly one duration source "
+                                    f"{duration_source}",
+                                    str(raw_system.get("effect_file", decision_file)),
+                                    1,
+                                )
+                            )
+                            source_body = ""
+                        else:
+                            source_body = source_defs[0].body
+                            source_file = source_defs[0].file
+                    timed_pattern = re.compile(
+                        rf"\badd_timed_idea\s*=\s*\{{\s*idea\s*=\s*"
+                        rf"{re.escape(idea)}\s+days\s*=\s*{active_days}\s*\}}"
+                    )
+                    if len(timed_pattern.findall(strip_comments(source_body))) != 1:
+                        findings.append(
+                            (
+                                f"{decision} must apply {idea} once for {active_days} days",
+                                source_file,
+                                1,
+                            )
+                        )
+
+                    cleanup_effect = str(program.get("cleanup_effect", ""))
+                    cleanup_defs = effect_defs.get(cleanup_effect, [])
+                    if len(cleanup_defs) != 1:
+                        findings.append(
+                            (
+                                f"{decision} requires exactly one cleanup effect "
+                                f"{cleanup_effect}",
+                                "tools/corporate_history_contract.json",
+                                1,
+                            )
+                        )
+                    else:
+                        cleanup_body = strip_comments(cleanup_defs[0].body)
+                        removes_idea = re.search(
+                            rf"\bremove_ideas\s*=\s*(?:{re.escape(idea)}|"
+                            rf"\{{[^}}]*\b{re.escape(idea)}\b)",
+                            cleanup_body,
+                            re.DOTALL,
+                        )
+                        if removes_idea is None:
+                            findings.append(
+                                (
+                                    f"{cleanup_effect} must remove {idea}",
+                                    cleanup_defs[0].file,
+                                    cleanup_defs[0].line,
+                                )
+                            )
+                        if program.get(
+                            "cleanup_decision"
+                        ) and not _removes_active_decision(cleanup_body, decision):
+                            findings.append(
+                                (
+                                    f"{cleanup_effect} must remove active decision {decision}",
+                                    cleanup_defs[0].file,
+                                    cleanup_defs[0].line,
+                                )
+                            )
+                elif active_days != 0:
+                    findings.append(
+                        (
+                            f"{decision} {kind} lifecycle must use active_days = 0",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
+
+                if cooldown_mode == "days_re_enable":
+                    if not 1 <= cooldown_days <= 365:
+                        findings.append(
+                            (
+                                f"{decision} re-enable period must last 1 to 365 days",
+                                "tools/corporate_history_contract.json",
+                                1,
+                            )
+                        )
+                    cooldown_pattern = re.compile(
+                        rf"\bdays_re_enable\s*=\s*{cooldown_days}\b"
+                    )
+                    if len(cooldown_pattern.findall(decision_body)) != 1:
+                        findings.append(
+                            (
+                                f"{decision} must declare a {cooldown_days}-day re-enable period",
+                                decision_file,
+                                decision_line,
+                            )
+                        )
+                    if kind == "timed_idea" and cooldown_days != active_days:
+                        findings.append(
+                            (
+                                f"{decision} re-enable period must equal its active duration",
+                                "tools/corporate_history_contract.json",
+                                1,
+                            )
+                        )
+                else:
+                    if kind != "timed_idea" or cooldown_days != 0:
+                        findings.append(
+                            (
+                                f"{decision} active-duration cadence requires a timed idea "
+                                "and zero post-program cooldown",
+                                "tools/corporate_history_contract.json",
+                                1,
+                            )
+                        )
+                    duration_pattern = re.compile(
+                        rf"\bdays_remove\s*=\s*{active_days}\b"
+                    )
+                    if len(duration_pattern.findall(decision_body)) != 1:
+                        findings.append(
+                            (
+                                f"{decision} must remain active for {active_days} days",
+                                decision_file,
+                                decision_line,
+                            )
+                        )
+                    for cooldown_marker in sorted(cooldown_markers):
+                        if cooldown_marker in decision_body:
+                            findings.append(
+                                (
+                                    f"{decision} may not start post-program cooldown "
+                                    f"{cooldown_marker}",
+                                    decision_file,
+                                    decision_line,
+                                )
+                            )
+
+                if kind == "construction_project":
+                    mission = str(program.get("mission", ""))
+                    try:
+                        project_days = int(program.get("project_days", 0))
+                    except (TypeError, ValueError):
+                        project_days = 0
+                    mission_body = decision_blocks.get(mission, "")
+                    if not mission_body or not re.search(
+                        rf"\bdays_mission_timeout\s*=\s*{project_days}\b",
+                        mission_body,
+                    ):
+                        findings.append(
+                            (
+                                f"{decision} construction mission {mission} must last "
+                                f"{project_days} days",
+                                decision_file,
+                                decision_line,
+                            )
+                        )
+                    if (
+                        project_days > 365
+                        and not str(program.get("long_duration_reason", "")).strip()
+                    ):
+                        findings.append(
+                            (
+                                f"{decision} construction timer over 365 days needs a reason",
+                                "tools/corporate_history_contract.json",
+                                1,
+                            )
+                        )
+
+                expected_localisation_days = (
+                    active_days if kind == "timed_idea" else cooldown_days
+                )
+                for key in program.get("localisation_keys", []):
+                    key = str(key)
+                    value = localisation_values.get(key)
+                    if value is None:
+                        findings.append(
+                            (
+                                f"Missing lifecycle localisation key {key}",
+                                localisation_file,
+                                1,
+                            )
+                        )
+                        continue
+                    if str(expected_localisation_days) not in value:
+                        findings.append(
+                            (
+                                f"{key} must state {expected_localisation_days} days",
+                                localisation_file,
+                                1,
+                            )
+                        )
+                    if expected_localisation_days != 730 and "730" in value:
+                        findings.append(
+                            (
+                                f"{key} still claims a 730-day lifecycle",
+                                localisation_file,
+                                1,
+                            )
+                        )
+
+        return findings
 
     def _validate_shared_systems(
         self,
@@ -1433,46 +1992,54 @@ class Validator(BaseValidator):
                 f"{root}_fund_upstream_maintenance": {
                     "political_power": 25,
                     "gdp_fraction": 0.001,
-                    "duration_days": 365,
-                    "cooldown_days": 365,
+                    "program_class": "operational",
+                    "duration_days": 180,
+                    "cooldown_days": 0,
                     "deployment": 0,
                     "stewardship": 1,
                     "assurance": 1,
                     "support_model": None,
                     "idea": f"{root}_upstream_maintenance_program",
+                    "cleanup_owner": f"{root}_clear_country_state",
                 },
                 f"{root}_contract_enterprise_support": {
                     "political_power": 25,
                     "gdp_fraction": 0.001,
-                    "duration_days": 365,
-                    "cooldown_days": 365,
+                    "program_class": "operational",
+                    "duration_days": 180,
+                    "cooldown_days": 0,
                     "deployment": 1,
                     "stewardship": 0,
                     "assurance": 1,
                     "support_model": 2,
                     "idea": f"{root}_enterprise_support_program",
+                    "cleanup_owner": f"{root}_clear_country_state",
                 },
                 f"{root}_harden_lifecycle": {
                     "political_power": 35,
                     "gdp_fraction": 0.001,
+                    "program_class": "major_commitment",
                     "duration_days": 365,
-                    "cooldown_days": 365,
+                    "cooldown_days": 0,
                     "deployment": 0,
                     "stewardship": 0,
                     "assurance": 2,
                     "support_model": None,
                     "idea": f"{root}_lifecycle_hardening_program",
+                    "cleanup_owner": f"{root}_clear_country_state",
                 },
                 f"{root}_public_procurement": {
                     "political_power": 50,
                     "gdp_fraction": 0.002,
-                    "duration_days": 730,
-                    "cooldown_days": 365,
+                    "program_class": "operational",
+                    "duration_days": 180,
+                    "cooldown_days": 0,
                     "deployment": 1,
                     "stewardship": 1,
                     "assurance": 1,
                     "support_model": None,
                     "idea": f"{root}_public_procurement_program",
+                    "cleanup_owner": f"{root}_clear_country_state",
                 },
             }
             if raw_system["programs"] != expected_programs:
@@ -1510,6 +2077,15 @@ class Validator(BaseValidator):
                     )
                 )
             for program_id, program in expected_programs.items():
+                findings.extend(
+                    _program_lifecycle_findings(
+                        program_id,
+                        program,
+                        "duration_days",
+                        "sequential",
+                        "tools/corporate_history_contract.json",
+                    )
+                )
                 match = re.search(
                     rf"(?m)^\s*{re.escape(program_id)}\s*=\s*\{{", decision_text
                 )
@@ -1568,17 +2144,34 @@ class Validator(BaseValidator):
                                 1,
                             )
                         )
-                    if block_name == "remove_effect" and not re.search(
-                        rf"set_country_flag\s*=\s*\{{\s*flag\s*=\s*{root}_program_cooldown\s+days\s*=\s*{program['cooldown_days']}\b",
-                        block_body,
-                    ):
-                        findings.append(
-                            (
-                                f"{program_id} must begin its declared cooldown when it ends",
-                                str(files["decision"]),
-                                1,
-                            )
+                    if block_name == "remove_effect":
+                        cooldown_pattern = re.compile(
+                            rf"set_country_flag\s*=\s*\{{\s*flag\s*=\s*"
+                            rf"{root}_program_cooldown\s+days\s*=\s*"
+                            rf"{program['cooldown_days']}\b"
                         )
+                        if program["cooldown_days"] and not cooldown_pattern.search(
+                            block_body
+                        ):
+                            findings.append(
+                                (
+                                    f"{program_id} must begin its declared cooldown "
+                                    "when it ends",
+                                    str(files["decision"]),
+                                    1,
+                                )
+                            )
+                        elif not program["cooldown_days"] and (
+                            f"{root}_program_cooldown" in strip_comments(block_body)
+                        ):
+                            findings.append(
+                                (
+                                    f"{program_id} may not extend the shared slot after "
+                                    "its active lifecycle",
+                                    str(files["decision"]),
+                                    1,
+                                )
+                            )
                 if f"{root}_full_enabled = yes" not in decision_body:
                     findings.append(
                         (
@@ -2459,6 +3052,23 @@ class Validator(BaseValidator):
                 days = int(program.get("days", 0))
                 cooldown_days = int(program.get("cooldown_days", 0))
                 program_ideas.append(idea)
+                findings.extend(
+                    _program_lifecycle_findings(
+                        decision,
+                        program,
+                        "days",
+                        "concurrent",
+                        "tools/corporate_history_contract.json",
+                    )
+                )
+                if str(program.get("cleanup_owner", "")) != updater:
+                    findings.append(
+                        (
+                            f"{decision} must declare {updater} as its cleanup owner",
+                            "tools/corporate_history_contract.json",
+                            1,
+                        )
+                    )
                 decision_match = re.search(
                     rf"(?m)^\s*{re.escape(decision)}\s*=\s*\{{", decision_text
                 )
