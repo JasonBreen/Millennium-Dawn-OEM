@@ -120,9 +120,9 @@ adding exactly one tier. No `force_update_dynamic_modifier` is used.
 
 Each Corporate Systems policy preserves its existing Political Power, Treasury,
 and long-term company-state effects, and now grants one visible timed idea.
-Procurement and security run for 365 days; the larger capacity and consortium
-programs run for 730 days. A policy cannot be purchased again while its program
-is active, so timed ideas never stack.
+Procurement and security run for 180 days; the larger capacity and consortium
+programs run for 365 days. Each decision uses the same re-enable period as its
+timed idea and blocks renewal while active, so timed ideas never stack.
 
 | Policy                        | Temporary emphasis                                     | Principal tradeoff                       |
 | ----------------------------- | ------------------------------------------------------ | ---------------------------------------- |

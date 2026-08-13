@@ -678,9 +678,13 @@ def _enable_economic_layer_fixture(root: Path):
                 {
                     "decision": f"USA_oem_policy_{number}",
                     "idea": f"USA_oem_program_{number}",
-                    "days": 730 if number in {2, 4} else 365,
-                    "cooldown_days": 365,
+                    "program_class": (
+                        "major_commitment" if number in {2, 4} else "operational"
+                    ),
+                    "days": 365 if number in {2, 4} else 180,
+                    "cooldown_days": 365 if number in {2, 4} else 180,
                     "refresh_policy": "block_while_active",
+                    "cleanup_owner": "USA_oem_update_real_options_economy",
                 }
                 for number in range(1, 5)
             ],
@@ -773,9 +777,9 @@ USA_oem_investment_climate_2 = {
         ' USA_oem_investment_climate_2_desc: "Investable conditions."',
     ]
     for number in range(1, 5):
-        program_days = 730 if number in {2, 4} else 365
+        program_days = 365 if number in {2, 4} else 180
         decisions.append(f"""USA_oem_policy_{number} = {{
-	days_re_enable = 365
+	days_re_enable = {program_days}
 
 	fire_only_once = no
 
@@ -794,6 +798,8 @@ USA_oem_investment_climate_2 = {
 }}""")
         loc_lines.extend(
             [
+                f' USA_oem_policy_{number}_desc: "Runs for {program_days} days."',
+                f' USA_oem_policy_{number}_tt: "Temporary program for {program_days} days."',
                 f' USA_oem_program_{number}: "Program {number}"',
                 f' USA_oem_program_{number}_desc: "Program {number} description."',
             ]
@@ -823,6 +829,39 @@ USA_oem_investment_climate_2 = {
         "localisation/english/MD_focus_USA_l_english.yml",
         existing_loc + "\n" + "\n".join(loc_lines) + "\n",
     )
+
+
+def _enable_reusable_lifecycle_fixture(root: Path):
+    _enable_economic_layer_fixture(root)
+    manifest_path = root / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    layer = manifest["economic_layers"][0]
+    manifest["reusable_decision_lifecycles"] = [
+        {
+            "name": "Test Real Options",
+            "decision_file": layer["decision_file"],
+            "effect_file": layer["effect_file"],
+            "localisation_file": layer["localisation_file"],
+            "programs": [
+                {
+                    "decision": program["decision"],
+                    "kind": "timed_idea",
+                    "idea": program["idea"],
+                    "active_days": program["days"],
+                    "cooldown_mode": "days_re_enable",
+                    "cooldown_days": program["cooldown_days"],
+                    "duration_source": "decision",
+                    "localisation_keys": [
+                        f"{program['decision']}_desc",
+                        f"{program['decision']}_tt",
+                    ],
+                    "cleanup_effect": "USA_oem_update_real_options_economy",
+                }
+                for program in layer["policy_programs"]
+            ],
+        }
+    ]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
 
 def test_visible_event_with_no_caller(tmp_path):
@@ -2011,12 +2050,86 @@ def test_policy_program_duration_must_match_contract(tmp_path):
     _enable_economic_layer_fixture(tmp_path)
     path = tmp_path / "common/decisions/USA_oem_test.txt"
     path.write_text(
-        path.read_text(encoding="utf-8").replace("days = 365", "days = 730", 1),
+        path.read_text(encoding="utf-8").replace("days = 180", "days = 730", 1),
         encoding="utf-8",
     )
 
     assert any(
-        "must add USA_oem_program_1 once for 365 days" in message
+        "must add USA_oem_program_1 once for 180 days" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_reusable_temporary_program_cannot_exceed_365_days(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_reusable_lifecycle_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["reusable_decision_lifecycles"][0]["programs"][0][
+        "active_days"
+    ] = 730
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "USA_oem_policy_1 temporary program must last 1 to 365 days" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_reusable_program_localisation_must_match_duration(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_reusable_lifecycle_fixture(tmp_path)
+    path = tmp_path / "localisation/english/MD_focus_USA_l_english.yml"
+    path.write_text(
+        path.read_text(encoding="utf-8-sig").replace(
+            "Runs for 180 days.", "Runs for 730 days.", 1
+        ),
+        encoding="utf-8-sig",
+    )
+
+    messages = _messages(tmp_path)
+    assert any("USA_oem_policy_1_desc must state 180 days" in message for message in messages)
+    assert any(
+        "USA_oem_policy_1_desc still claims a 730-day lifecycle" in message
+        for message in messages
+    )
+
+
+def test_reusable_program_reenable_period_must_equal_active_duration(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_reusable_lifecycle_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["reusable_decision_lifecycles"][0]["programs"][0][
+        "cooldown_days"
+    ] = 365
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "USA_oem_policy_1 re-enable period must equal its active duration" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_long_construction_timer_requires_a_manifest_reason(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_reusable_lifecycle_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    program = manifest["reusable_decision_lifecycles"][0]["programs"][0]
+    program.update(
+        {
+            "kind": "construction_project",
+            "active_days": 0,
+            "cooldown_days": 180,
+            "mission": "USA_oem_policy_2",
+            "project_days": 730,
+        }
+    )
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "USA_oem_policy_1 construction timer over 365 days needs a reason" in message
         for message in _messages(tmp_path)
     )
 
@@ -2026,12 +2139,12 @@ def test_major_policy_program_duration_must_match_contract(tmp_path):
     _enable_economic_layer_fixture(tmp_path)
     path = tmp_path / "common/decisions/USA_oem_test.txt"
     path.write_text(
-        path.read_text(encoding="utf-8").replace("days = 730", "days = 365", 1),
+        path.read_text(encoding="utf-8").replace("days = 365", "days = 180", 1),
         encoding="utf-8",
     )
 
     assert any(
-        "must add USA_oem_program_2 once for 730 days" in message
+        "must add USA_oem_program_2 once for 365 days" in message
         for message in _messages(tmp_path)
     )
 
@@ -2042,13 +2155,13 @@ def test_policy_program_cooldown_must_match_contract(tmp_path):
     path = tmp_path / "common/decisions/USA_oem_test.txt"
     path.write_text(
         path.read_text(encoding="utf-8").replace(
-            "days_re_enable = 365", "days_re_enable = 180", 1
+            "days_re_enable = 180", "days_re_enable = 365", 1
         ),
         encoding="utf-8",
     )
 
     assert any(
-        "USA_oem_policy_1 must declare a 365-day cooldown" in message
+        "USA_oem_policy_1 must declare a 180-day cooldown" in message
         for message in _messages(tmp_path)
     )
 
@@ -2300,6 +2413,20 @@ def test_schema_v4_requires_shared_systems(tmp_path):
 
     assert any(
         "Schema v4 requires a non-empty shared_systems list" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_schema_v5_requires_reusable_decision_lifecycles(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["schema_version"] = 5
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "Schema v5 requires reusable_decision_lifecycles" in message
         for message in _messages(tmp_path)
     )
 
