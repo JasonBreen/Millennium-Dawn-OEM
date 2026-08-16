@@ -3,8 +3,6 @@ title: Taiwan's PC Giants source map
 description: Sources and scheduling notes for Taiwan's PC Giants corporate-history chain.
 ---
 
-# Taiwan's PC Giants source map
-
 This chain treats its four scores as a national design model, not historical statistics. January 2000 begins at component depth 7, global brand reach 4, platform independence 3, and systems breadth 4. Taiwan already had a deep motherboard and chipset cluster, Acer had international systems reach, and VIA had acquired x86 design capability, but the cluster did not yet control a broad independent platform.
 
 Dates described as scheduling anchors are gameplay abstractions for milestones whose primary corporate histories provide only a year. They are not represented as exact historical action dates in event text. The final ecosystem assessment is also a designed synthesis checkpoint rather than a corporate action.

@@ -10,21 +10,14 @@ sys.path.insert(0, str(ROOT / "tools" / "analysis"))
 from simulate_corporate_history import ScriptIndex, run_scenarios
 
 EVENTS_PATH = ROOT / "events" / "TAI_pc_industry_events.txt"
-EFFECTS_PATH = (
-    ROOT / "common" / "scripted_effects" / "TAI_pc_industry_effects.txt"
-)
+EFFECTS_PATH = ROOT / "common" / "scripted_effects" / "TAI_pc_industry_effects.txt"
 IDEAS_PATH = ROOT / "common" / "ideas" / "TAI_pc_industry_ideas.txt"
-LOCALISATION_PATH = (
-    ROOT / "localisation" / "english" / "MD_focus_TAI_l_english.yml"
-)
+LOCALISATION_PATH = ROOT / "localisation" / "english" / "MD_focus_TAI_l_english.yml"
 COMMON_EFFECTS_PATH = (
     ROOT / "common" / "scripted_effects" / "00_corporate_history_effects.txt"
 )
 DISPATCH_PATH = (
-    ROOT
-    / "common"
-    / "scripted_effects"
-    / "00_corporate_history_dispatch_effects.txt"
+    ROOT / "common" / "scripted_effects" / "00_corporate_history_dispatch_effects.txt"
 )
 ON_ACTIONS_PATH = (
     ROOT / "common" / "on_actions" / "01_oem_corporate_history_on_actions.txt"
@@ -134,9 +127,7 @@ MILESTONES = (
 OUTCOMES = {
     "global_component_commonwealth": "TAI_pc_global_component_commonwealth",
     "branded_systems_powerhouse": "TAI_pc_branded_systems_powerhouse",
-    "full_spectrum_computing_ecosystem": (
-        "TAI_pc_full_spectrum_computing_ecosystem"
-    ),
+    "full_spectrum_computing_ecosystem": ("TAI_pc_full_spectrum_computing_ecosystem"),
     "fragmented_margin_squeeze": "TAI_pc_fragmented_margin_squeeze",
 }
 
@@ -206,8 +197,7 @@ def _axis_writes(text: str) -> List[Tuple[str, int]]:
     return [
         (axis, int(value))
         for axis, value in re.findall(
-            r"add_to_variable\s*=\s*\{\s*"
-            r"(TAI_pc_[A-Za-z0-9_]+)\s*=\s*(-?\d+)\s*\}",
+            r"add_to_variable\s*=\s*\{\s*" r"(TAI_pc_[A-Za-z0-9_]+)\s*=\s*(-?\d+)\s*\}",
             text,
         )
         if axis in AXES
@@ -221,10 +211,7 @@ def _apply_route(route: str) -> Tuple[Tuple[int, ...], Set[str]]:
         choice_index = ord(letter) - ord("A")
         flag, delta = ROUTES[event_index][choice_index]
         flags.add(flag)
-        state = [
-            max(0, min(10, value + change))
-            for value, change in zip(state, delta)
-        ]
+        state = [max(0, min(10, value + change)) for value, change in zip(state, delta)]
     return tuple(state), flags
 
 
@@ -234,10 +221,8 @@ def _resolve(state: Tuple[int, ...], flags: Set[str]) -> str:
         min(state) >= 8
         and "TAI_via_third_x86_ecosystem" in flags
         and "TAI_gigabyte_independent_systems" in flags
-        and flags
-        & {"TAI_asus_brand_oem_separation", "TAI_asus_vertical_integration"}
-        and flags
-        & {"TAI_msi_consumer_notebooks", "TAI_msi_professional_systems"}
+        and flags & {"TAI_asus_brand_oem_separation", "TAI_asus_vertical_integration"}
+        and flags & {"TAI_msi_consumer_notebooks", "TAI_msi_professional_systems"}
         and flags & {"TAI_acer_premium_systems_reset", "TAI_acer_margin_reset"}
     ):
         return "full_spectrum_computing_ecosystem"
@@ -246,8 +231,7 @@ def _resolve(state: Tuple[int, ...], flags: Set[str]) -> str:
         and systems >= 8
         and "TAI_acer_profitability_discipline" in flags
         and "TAI_asus_brand_oem_separation" in flags
-        and flags
-        & {"TAI_msi_consumer_notebooks", "TAI_msi_professional_systems"}
+        and flags & {"TAI_msi_consumer_notebooks", "TAI_msi_professional_systems"}
         and flags & {"TAI_acer_margin_reset", "TAI_acer_premium_systems_reset"}
     ):
         return "branded_systems_powerhouse"
@@ -261,16 +245,14 @@ def _resolve(state: Tuple[int, ...], flags: Set[str]) -> str:
             "TAI_gigabyte_joint_venture_suspended",
             "TAI_gigabyte_independent_systems",
         }
-        and flags
-        & {"TAI_asus_component_oem_retreat", "TAI_asus_brand_oem_separation"}
+        and flags & {"TAI_asus_component_oem_retreat", "TAI_asus_brand_oem_separation"}
         and flags
         & {
             "TAI_msi_gaming_notebooks",
             "TAI_msi_consumer_notebooks",
             "TAI_msi_professional_systems",
         }
-        and flags
-        & {"TAI_via_nano_focused_platform", "TAI_via_ip_licensing_platform"}
+        and flags & {"TAI_via_nano_focused_platform", "TAI_via_ip_licensing_platform"}
     ):
         return "global_component_commonwealth"
     return "fragmented_margin_squeeze"
@@ -341,8 +323,7 @@ def test_visible_event_routes_are_distinct_clamped_and_consumed_later():
             )
 
         later_events = "\n".join(
-            _event_block(events, later)
-            for later in range(event_number + 1, 15)
+            _event_block(events, later) for later in range(event_number + 1, 15)
         )
         consumer_text = later_events + "\n" + resolver
         for option_index, (option, (flag, delta)) in enumerate(
@@ -501,9 +482,7 @@ def test_delivery_markers_recovery_and_dispatch_cover_every_milestone():
     events = EVENTS_PATH.read_text(encoding="utf-8")
     dispatch = DISPATCH_PATH.read_text(encoding="utf-8")
     on_actions = ON_ACTIONS_PATH.read_text(encoding="utf-8")
-    current_year = _named_block(
-        effects, "TAI_pc_industry_schedule_current_year_events"
-    )
+    current_year = _named_block(effects, "TAI_pc_industry_schedule_current_year_events")
     recovery = _named_block(effects, "TAI_pc_industry_recover_missing_events")
 
     for event_number, year, date, delay in MILESTONES:
@@ -514,14 +493,11 @@ def test_delivery_markers_recovery_and_dispatch_cover_every_milestone():
             )
             assert f"NOT = {{ has_country_flag = {prefix}_resolved }}" in wrapper
             assert (
-                f"NOT = {{ has_country_flag = {prefix}_delivery_expected }}"
-                in wrapper
+                f"NOT = {{ has_country_flag = {prefix}_delivery_expected }}" in wrapper
             )
             assert f"NOT = {{ has_country_flag = {prefix}_pending }}" in wrapper
             assert f"set_country_flag = {prefix}_delivery_expected" in wrapper
-            assert (
-                f"flag = {prefix}_pending value = 1 days = {delay + 60}" in wrapper
-            )
+            assert f"flag = {prefix}_pending value = 1 days = {delay + 60}" in wrapper
             assert (
                 f"country_event = {{ id = TAI_pc_industry_events.{event_number} "
                 f"days = {delay} }}" in wrapper
@@ -544,7 +520,9 @@ def test_delivery_markers_recovery_and_dispatch_cover_every_milestone():
         assert f"has_start_date < {year}.1.2" in current_year
 
     assert "TAI_pc_industry_start_year_events_scheduled" in current_year
-    assert "set_country_flag = TAI_pc_industry_start_year_events_scheduled" in current_year
+    assert (
+        "set_country_flag = TAI_pc_industry_start_year_events_scheduled" in current_year
+    )
 
     events_by_year = {}
     for event_number, year, _date, _delay in MILESTONES[1:]:
@@ -573,7 +551,9 @@ def test_startup_modes_monthly_terminal_and_scenarios_match_contract():
     assert "TAI_pc_industry_reconstruct_history = yes" in startup
     assert "corporate_history_full_enabled = yes" in monthly
     assert "corporate_history_outcomes_only_enabled = yes" in monthly
-    assert "NOT = { has_country_flag = TAI_pc_industry_reconstruct_complete }" in monthly
+    assert (
+        "NOT = { has_country_flag = TAI_pc_industry_reconstruct_complete }" in monthly
+    )
     assert "TAI_pc_industry_monthly_driver = yes" in monthly
 
     manifest = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
@@ -649,8 +629,7 @@ def test_localisation_inventory_encoding_and_chain_ownership_are_clean():
         r"TAI_(?:asrock|wistron|benq|pegatron)_[A-Za-z0-9_]+", combined
     )
     persistent_writes = re.findall(
-        r"(?:set|clr)_country_flag\s*=\s*"
-        r"(TAI_[A-Za-z0-9_]+)",
+        r"(?:set|clr)_country_flag\s*=\s*" r"(TAI_[A-Za-z0-9_]+)",
         combined,
     )
     allowed_prefixes = (
