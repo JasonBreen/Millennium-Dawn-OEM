@@ -13,7 +13,7 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[sync-diagnosis]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Check out only conflicted paths
+      - name: Check out minimal sync metadata
         uses: actions/checkout@v7
         with:
           ref: sync/upstream-2026-08-16
@@ -23,12 +23,9 @@ jobs:
           sparse-checkout: |
             /.github/
             /.sync/
-            /Changelog.txt
-            /common/decisions/War on Terror.txt
-            /localisation/english/MD_focus_ISR_l_english.yml
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Capture exact upstream conflict hunks
+      - name: Compare semantic deltas on conflicted files
         shell: bash
         run: |
           set -euo pipefail
@@ -38,37 +35,31 @@ jobs:
           git fetch --filter=blob:none upstream main
 
           mkdir -p .sync
-          report=.sync/aug16-conflict-details.patch
+          report=.sync/aug16-semantic-deltas.patch
+          base=$(git merge-base HEAD upstream/main)
           tmp=$(mktemp)
           echo "OEM_HEAD=$(git rev-parse HEAD)" >> "$tmp"
           echo "UPSTREAM_HEAD=$(git rev-parse upstream/main)" >> "$tmp"
-          echo "MERGE_BASE=$(git merge-base HEAD upstream/main)" >> "$tmp"
+          echo "MERGE_BASE=$base" >> "$tmp"
           echo >> "$tmp"
 
-          set +e
-          git merge --no-commit --no-ff upstream/main
-          merge_rc=$?
-          set -e
-
-          echo "MERGE_RC=$merge_rc" >> "$tmp"
-          echo >> "$tmp"
-          echo "UNMERGED_PATHS:" >> "$tmp"
-          git diff --name-only --diff-filter=U | sort >> "$tmp" || true
-          echo >> "$tmp"
-          echo "COMBINED_DIFF:" >> "$tmp"
-          git diff --cc -- \
+          echo "===== OEM VS MERGE BASE (WHITESPACE IGNORED) =====" >> "$tmp"
+          git diff -w --find-renames "$base"..HEAD -- \
             "Changelog.txt" \
             "common/decisions/War on Terror.txt" \
             "localisation/english/MD_focus_ISR_l_english.yml" >> "$tmp" || true
+          echo >> "$tmp"
 
-          if git rev-parse -q --verify MERGE_HEAD >/dev/null; then
-            git merge --abort
-          fi
+          echo "===== UPSTREAM VS MERGE BASE (WHITESPACE IGNORED) =====" >> "$tmp"
+          git diff -w --find-renames "$base"..upstream/main -- \
+            "Changelog.txt" \
+            "common/decisions/War on Terror.txt" \
+            "localisation/english/MD_focus_ISR_l_english.yml" >> "$tmp" || true
 
           mv "$tmp" "$report"
           git add "$report"
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "[sync-diagnosis] Record August 16 conflict hunks"
+          git commit -m "[sync-diagnosis] Record August 16 semantic deltas"
           git push origin HEAD:sync/upstream-2026-08-16
