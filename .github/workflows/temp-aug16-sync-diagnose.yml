@@ -13,18 +13,22 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[sync-diagnosis]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Check out minimal sync metadata
+      - name: Check out only conflicted paths
         uses: actions/checkout@v7
         with:
           ref: sync/upstream-2026-08-16
           fetch-depth: 1000
           filter: blob:none
+          sparse-checkout-cone-mode: false
           sparse-checkout: |
-            .github
-            .sync
+            /.github/
+            /.sync/
+            /Changelog.txt
+            /common/decisions/War on Terror.txt
+            /localisation/english/MD_focus_ISR_l_english.yml
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Diagnose upstream merge conflicts without a full worktree merge
+      - name: Capture exact upstream conflict hunks
         shell: bash
         run: |
           set -euo pipefail
@@ -34,7 +38,7 @@ jobs:
           git fetch --filter=blob:none upstream main
 
           mkdir -p .sync
-          report=.sync/aug16-upstream-conflicts.txt
+          report=.sync/aug16-conflict-details.patch
           tmp=$(mktemp)
           echo "OEM_HEAD=$(git rev-parse HEAD)" >> "$tmp"
           echo "UPSTREAM_HEAD=$(git rev-parse upstream/main)" >> "$tmp"
@@ -42,23 +46,29 @@ jobs:
           echo >> "$tmp"
 
           set +e
-          merge_output=$(git merge-tree --write-tree --name-only --messages HEAD upstream/main 2>&1)
+          git merge --no-commit --no-ff upstream/main
           merge_rc=$?
           set -e
 
-          if [ "$merge_rc" -eq 0 ]; then
-            echo "STATUS=CLEAN" >> "$tmp"
-          else
-            echo "STATUS=CONFLICTS" >> "$tmp"
-          fi
+          echo "MERGE_RC=$merge_rc" >> "$tmp"
           echo >> "$tmp"
-          echo "MERGE_TREE_OUTPUT:" >> "$tmp"
-          printf '%s\n' "$merge_output" >> "$tmp"
+          echo "UNMERGED_PATHS:" >> "$tmp"
+          git diff --name-only --diff-filter=U | sort >> "$tmp" || true
+          echo >> "$tmp"
+          echo "COMBINED_DIFF:" >> "$tmp"
+          git diff --cc -- \
+            "Changelog.txt" \
+            "common/decisions/War on Terror.txt" \
+            "localisation/english/MD_focus_ISR_l_english.yml" >> "$tmp" || true
+
+          if git rev-parse -q --verify MERGE_HEAD >/dev/null; then
+            git merge --abort
+          fi
 
           mv "$tmp" "$report"
           git add "$report"
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "[sync-diagnosis] Record August 16 upstream conflict set"
+          git commit -m "[sync-diagnosis] Record August 16 conflict hunks"
           git push origin HEAD:sync/upstream-2026-08-16
