@@ -13,15 +13,18 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[sync-diagnosis]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Check out sync staging branch
+      - name: Check out minimal sync metadata
         uses: actions/checkout@v7
         with:
           ref: sync/upstream-2026-08-16
           fetch-depth: 1000
           filter: blob:none
+          sparse-checkout: |
+            .github
+            .sync
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Diagnose upstream merge conflicts
+      - name: Diagnose upstream merge conflicts without a full worktree merge
         shell: bash
         run: |
           set -euo pipefail
@@ -39,25 +42,18 @@ jobs:
           echo >> "$tmp"
 
           set +e
-          git merge --no-commit --no-ff upstream/main
+          merge_output=$(git merge-tree --write-tree --name-only --messages HEAD upstream/main 2>&1)
           merge_rc=$?
           set -e
 
           if [ "$merge_rc" -eq 0 ]; then
             echo "STATUS=CLEAN" >> "$tmp"
-            if git rev-parse -q --verify MERGE_HEAD >/dev/null; then
-              git merge --abort
-            fi
           else
             echo "STATUS=CONFLICTS" >> "$tmp"
-            echo >> "$tmp"
-            echo "CONFLICTED_PATHS:" >> "$tmp"
-            git diff --name-only --diff-filter=U | sort >> "$tmp"
-            echo >> "$tmp"
-            echo "PORCELAIN_STATUS:" >> "$tmp"
-            git status --porcelain=v1 >> "$tmp" || true
-            git merge --abort
           fi
+          echo >> "$tmp"
+          echo "MERGE_TREE_OUTPUT:" >> "$tmp"
+          printf '%s\n' "$merge_output" >> "$tmp"
 
           mv "$tmp" "$report"
           git add "$report"
