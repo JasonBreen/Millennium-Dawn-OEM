@@ -1,3 +1,4 @@
+import datetime
 import json
 import re
 import sys
@@ -169,6 +170,12 @@ def _named_block(text: str, name: str) -> str:
     match = re.search(rf"(?m)^{re.escape(name)}\s*=\s*\{{", text)
     assert match, f"Missing block {name}"
     return _extract_block(text, match.start())
+
+
+def _script_day_after(value: str) -> str:
+    year, month, day = (int(part) for part in value.split("."))
+    next_day = datetime.date(year, month, day) + datetime.timedelta(days=1)
+    return f"{next_day.year}.{next_day.month}.{next_day.day}"
 
 
 def _event_block(text: str, event_number: int) -> str:
@@ -536,6 +543,31 @@ def test_delivery_markers_recovery_and_dispatch_cover_every_milestone():
             )
         assert on_actions.count(f"TAI_corporate_trigger_year_{year} = yes") == 1
     assert "TAI_pc_industry_events." not in on_actions
+
+
+def test_exact_milestone_start_dates_are_marked_for_reconstruction():
+    effects = EFFECTS_PATH.read_text(encoding="utf-8")
+    current_year = _named_block(effects, "TAI_pc_industry_schedule_current_year_events")
+    skipped_blocks = {}
+    for match in re.finditer(r"(?m)^[ \t]*else_if\s*=\s*\{", current_year):
+        block = _extract_block(current_year, match.start())
+        marker = re.search(
+            r"set_country_flag\s*=\s*" r"TAI_pc_industry_event_(\d{2})_startup_skipped",
+            block,
+        )
+        if marker:
+            event_number = int(marker.group(1))
+            assert event_number not in skipped_blocks
+            skipped_blocks[event_number] = block
+
+    assert set(skipped_blocks) == set(range(1, len(MILESTONES) + 1))
+    for event_number, _year, milestone, _delay in MILESTONES:
+        block = skipped_blocks[event_number]
+        assert f"has_start_date < {_script_day_after(milestone)}" in block
+        assert (
+            f"NOT = {{ has_country_flag = "
+            f"TAI_pc_industry_event_{event_number:02d}_resolved }}" in block
+        )
 
 
 def test_startup_modes_monthly_terminal_and_scenarios_match_contract():
