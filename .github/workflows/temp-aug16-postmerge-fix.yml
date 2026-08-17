@@ -1,0 +1,61 @@
+name: Temporary August 16 Post-Merge Fix
+
+on:
+  push:
+    branches:
+      - sync/upstream-2026-08-16
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, '[sync-postfix]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out affected file
+        uses: actions/checkout@v7
+        with:
+          ref: sync/upstream-2026-08-16
+          fetch-depth: 50
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/
+            /common/decisions/War on Terror.txt
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove duplicate Australia dispatch and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("common/decisions/War on Terror.txt")
+          text = path.read_text(encoding="utf-8")
+          redundant = (
+              "\n\t\t\tAST = {\n"
+              "\t\t\t\tcountry_event = { id = wot.12 days = 2 random_hours = 24 }\n"
+              "\t\t\t}\n"
+          )
+          count = text.count(redundant)
+          if count != 1:
+              raise RuntimeError(f"expected exactly one redundant wot.12 AST block, found {count}")
+          text = text.replace(redundant, "", 1)
+          if "tag = AST\n\t\t\t\t\tNOT = { has_idea = NATO_member }" not in text:
+              raise RuntimeError("duplicate-safe Australia fallback was not preserved")
+          if text.count("tooltip = TT_ALL_NATO_MEMBER_NATIONS_GAIN") < 2:
+              raise RuntimeError("NATO tooltip loops were not preserved")
+          if text.count("{") != text.count("}"):
+              raise RuntimeError("brace count mismatch after cleanup")
+          path.write_text(text, encoding="utf-8")
+          PY
+
+          git add -- "common/decisions/War on Terror.txt"
+          git rm -f -- .github/workflows/temp-aug16-postmerge-fix.yml
+          git commit -m "[sync-postfix] Avoid duplicate Australian War on Terror event"
+          git push origin HEAD:sync/upstream-2026-08-16
