@@ -368,6 +368,9 @@ corporate_history_on_startup = {
 				TAI_tsmc_schedule_current_year_events = yes
 				country_event = TAI_foxconn_events.90
 				TAI_foxconn_schedule_current_year_events = yes
+				country_event = TAI_pc_industry_events.90
+				set_temp_variable = { pc_schedule_mode = 0 }
+				TAI_pc_industry_schedule_current_year_events = yes
 				country_event = { id = TAI_tsmc_events.90 days = 3 }
 			}
 		}
@@ -513,6 +516,7 @@ corporate_history_on_startup = {
 			TAI = {
 				TAI_tsmc_reconstruct_history = yes
 				TAI_foxconn_reconstruct_history = yes
+				TAI_pc_industry_reconstruct_history = yes
 			}
 		}
 		if = {
@@ -920,8 +924,8 @@ SWE_corporate_history_monthly_outcomes = {
 }
 
 # Effect: TAI_corporate_history_monthly_outcomes
-# Purpose: Outcomes Only driver for the TSMC and Foxconn chains; terminates
-#          once both 2026 capstones set their completion flags.
+# Purpose: Outcomes Only driver for the TSMC, Foxconn, and PC-industry chains,
+#          plus bounded Full-mode recovery for queued PC-industry milestones.
 TAI_corporate_history_monthly_outcomes = {
 	if = {
 		limit = {
@@ -935,10 +939,20 @@ TAI_corporate_history_monthly_outcomes = {
 				OR = {
 					NOT = { has_country_flag = TAI_tsmc_reconstruct_complete }
 					NOT = { has_country_flag = TAI_foxconn_reconstruct_complete }
+					NOT = { has_country_flag = TAI_pc_industry_reconstruct_complete }
 				}
 			}
 			TAI_tsmc_reconstruct_history = yes
 			TAI_foxconn_reconstruct_history = yes
+			TAI_pc_industry_reconstruct_history = yes
+		}
+
+		if = {
+			limit = {
+				corporate_history_full_enabled = yes
+				NOT = { has_country_flag = TAI_pc_industry_reconstruct_complete }
+			}
+			TAI_pc_industry_monthly_driver = yes
 		}
 
 		if = {
