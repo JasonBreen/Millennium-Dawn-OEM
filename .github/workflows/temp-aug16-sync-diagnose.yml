@@ -1,4 +1,4 @@
-name: Temporary August 16 Upstream Sync Diagnosis
+name: Temporary August 16 Upstream Sync Apply
 
 on:
   push:
@@ -9,11 +9,11 @@ permissions:
   contents: write
 
 jobs:
-  diagnose:
-    if: ${{ !contains(github.event.head_commit.message, '[sync-diagnosis]') }}
+  apply:
+    if: ${{ !contains(github.event.head_commit.message, '[sync-apply]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Check out minimal sync metadata
+      - name: Check out merge paths
         uses: actions/checkout@v7
         with:
           ref: sync/upstream-2026-08-16
@@ -23,43 +23,148 @@ jobs:
           sparse-checkout: |
             /.github/
             /.sync/
+            /Changelog.txt
+            /common/decisions/War on Terror.txt
+            /localisation/english/MD_focus_ISR_l_english.yml
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Compare semantic deltas on conflicted files
+      - name: Merge pinned upstream and resolve known conflicts
         shell: bash
+        env:
+          UPSTREAM_SHA: 17b6988d51a1a4429a7fa357936062e2f9fb0b11
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/MillenniumDawn/Millennium-Dawn.git || true
           git fetch --filter=blob:none upstream main
+          git cat-file -e "${UPSTREAM_SHA}^{commit}"
 
-          mkdir -p .sync
-          report=.sync/aug16-semantic-deltas.patch
-          base=$(git merge-base HEAD upstream/main)
-          tmp=$(mktemp)
-          echo "OEM_HEAD=$(git rev-parse HEAD)" >> "$tmp"
-          echo "UPSTREAM_HEAD=$(git rev-parse upstream/main)" >> "$tmp"
-          echo "MERGE_BASE=$base" >> "$tmp"
-          echo >> "$tmp"
+          git show HEAD:"localisation/english/MD_focus_ISR_l_english.yml" > /tmp/isr-oem.yml
 
-          echo "===== OEM VS MERGE BASE (WHITESPACE IGNORED) =====" >> "$tmp"
-          git diff -w --find-renames "$base"..HEAD -- \
-            "Changelog.txt" \
-            "common/decisions/War on Terror.txt" \
-            "localisation/english/MD_focus_ISR_l_english.yml" >> "$tmp" || true
-          echo >> "$tmp"
-
-          echo "===== UPSTREAM VS MERGE BASE (WHITESPACE IGNORED) =====" >> "$tmp"
-          git diff -w --find-renames "$base"..upstream/main -- \
-            "Changelog.txt" \
-            "common/decisions/War on Terror.txt" \
-            "localisation/english/MD_focus_ISR_l_english.yml" >> "$tmp" || true
-
-          mv "$tmp" "$report"
-          git add "$report"
-          if git diff --cached --quiet; then
-            exit 0
+          set +e
+          git merge --no-commit --no-ff "$UPSTREAM_SHA"
+          merge_rc=$?
+          set -e
+          if [ "$merge_rc" -ne 0 ] && [ "$merge_rc" -ne 1 ]; then
+            echo "Unexpected merge return code: $merge_rc" >&2
+            exit "$merge_rc"
           fi
-          git commit -m "[sync-diagnosis] Record August 16 semantic deltas"
+
+          mapfile -t actual_conflicts < <(git diff --name-only --diff-filter=U | sort)
+          expected_conflicts=(
+            "Changelog.txt"
+            "common/decisions/War on Terror.txt"
+            "localisation/english/MD_focus_ISR_l_english.yml"
+          )
+          if [ "${actual_conflicts[*]}" != "${expected_conflicts[*]}" ]; then
+            printf 'Unexpected conflict set. Actual:\n%s\n' "${actual_conflicts[*]}" >&2
+            exit 1
+          fi
+
+          python - <<'PY'
+          from pathlib import Path
+
+          def resolve_markers(path: str, mode: str) -> None:
+              p = Path(path)
+              lines = p.read_text(encoding="utf-8").splitlines(keepends=True)
+              out = []
+              i = 0
+              while i < len(lines):
+                  if not lines[i].startswith("<<<<<<< "):
+                      out.append(lines[i])
+                      i += 1
+                      continue
+                  i += 1
+                  ours = []
+                  while i < len(lines) and not lines[i].startswith("======="):
+                      ours.append(lines[i])
+                      i += 1
+                  if i >= len(lines):
+                      raise RuntimeError(f"unterminated conflict in {path}")
+                  i += 1
+                  theirs = []
+                  while i < len(lines) and not lines[i].startswith(">>>>>>> "):
+                      theirs.append(lines[i])
+                      i += 1
+                  if i >= len(lines):
+                      raise RuntimeError(f"unterminated conflict in {path}")
+                  i += 1
+                  if mode == "ours":
+                      out.extend(ours)
+                  elif mode == "both":
+                      out.extend(ours)
+                      for line in theirs:
+                          if line not in ours:
+                              out.append(line)
+                  else:
+                      raise ValueError(mode)
+              p.write_text("".join(out), encoding="utf-8")
+
+          resolve_markers("Changelog.txt", "both")
+          resolve_markers("common/decisions/War on Terror.txt", "ours")
+          PY
+
+          python - <<'PY'
+          import os
+          import subprocess
+          from pathlib import Path
+
+          path = Path("localisation/english/MD_focus_ISR_l_english.yml")
+          upstream_sha = os.environ["UPSTREAM_SHA"]
+          upstream = subprocess.check_output(
+              ["git", "show", f"{upstream_sha}:{path.as_posix()}"],
+          ).decode("utf-8")
+          ours = Path("/tmp/isr-oem.yml").read_text(encoding="utf-8")
+          marker = "PAL_arafat_dead_TT:"
+          pos = ours.find(marker)
+          if pos < 0:
+              raise RuntimeError("OEM localization tail marker not found")
+          line_start = ours.rfind("\n", 0, pos) + 1
+          tail = ours[line_start:].splitlines()
+          if tail and not tail[0].startswith(" "):
+              tail[0] = " " + tail[0]
+          merged = upstream.rstrip("\n") + "\n" + "\n".join(tail).rstrip("\n") + "\n"
+          path.write_text(merged, encoding="utf-8")
+          PY
+
+          git add -- \
+            "Changelog.txt" \
+            "common/decisions/War on Terror.txt" \
+            "localisation/english/MD_focus_ISR_l_english.yml"
+
+          if git diff --name-only --diff-filter=U | grep -q .; then
+            echo "Unresolved merge conflicts remain" >&2
+            git diff --name-only --diff-filter=U >&2
+            exit 1
+          fi
+
+          python - <<'PY'
+          from pathlib import Path
+
+          changelog = Path("Changelog.txt").read_text(encoding="utf-8")
+          wot = Path("common/decisions/War on Terror.txt").read_text(encoding="utf-8")
+          isr = Path("localisation/english/MD_focus_ISR_l_english.yml").read_text(encoding="utf-8-sig")
+
+          assert changelog.count("Fixed Corporate History startup scheduling") == 1
+          assert changelog.count("Fixed light-fighter doctrine bonuses") == 1
+          assert "id = usa.101" in wot
+          assert wot.count("tooltip = TT_ALL_NATO_MEMBER_NATIONS_GAIN") >= 2
+          assert wot.count("{") == wot.count("}")
+          assert "ISR_cyber_attack_iran_desc: \"We must cyber attack Iran's government agencies to ensure that no piece of their malicious plan goes out of our watch.\"" in isr
+          assert isr.count("PAL_arafat_dead_TT:") == 1
+          assert isr.count("ISR_oem_events.10.c_tt:") == 1
+          assert "<<<<<<<" not in changelog + wot + isr
+          assert "=======" not in changelog + wot + isr
+          assert ">>>>>>>" not in changelog + wot + isr
+          PY
+
+          git rm -f -- .github/workflows/temp-aug16-sync-diagnose.yml
+          git rm -f --ignore-unmatch \
+            .sync/aug16-upstream-conflicts.txt \
+            .sync/aug16-conflict-details.patch \
+            .sync/aug16-semantic-deltas.patch
+
+          git status --short
+          git commit -m "[sync-apply] Merge Millennium Dawn upstream through 17b6988"
           git push origin HEAD:sync/upstream-2026-08-16
