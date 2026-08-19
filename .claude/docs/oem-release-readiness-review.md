@@ -29,9 +29,11 @@ verified independently, not taken from the contract validator's word.
 | Read-only dashboard effect-bearing | CLEAN | 10/11 dashboards have zero stateful ops; USA's 7 display decisions are `cost = 0` with no `complete_effect` |
 | Adapter mutating source subsystem | CLEAN | Contract declares 91 `allowed_native_reads` / 10 `native_write_prefixes`, enforced by `validate_corporate_history_contract.py` and `linux_national_adapter_contract_test.py` |
 
-The blockers below are release-hygiene and isolation-contract failures, plus a
-contribution shape no maintainer will accept. They are not core-engineering
-failures.
+What blocks the release is not core engineering. It is one release-hygiene
+failure that would damage upstream on merge (G1), a player-facing scope boundary
+that is deliberate but undocumented (B1), a single point of failure in the
+dispatch host (B2), and a contribution shape no maintainer will accept
+(section 9).
 
 ---
 
@@ -56,33 +58,53 @@ on_daily_ABK --+-- 26 yearly blocks 2000-2026, each latched on
 on_monthly_TAG -> TAG_corporate_history_monthly_outcomes   SPLIT AUTHORITY <-- B3
 ```
 
-### B1 - BLOCKER: Corporate History "Off" does not disable the ISR chain
+### B1 - SERIOUS: "Off" does not mean off to a player
 
-`events/ISR_oem_events.txt` and `common/scripted_effects/ISR_oem_effects.txt`
-contain zero occurrences of `corporate_history_*` or `has_game_rule`. Both
-dispatch sites are ungated:
+Three OEM namespaces fire visible events regardless of the Corporate History
+rule, including when it is set to `disabled`:
+
+| Namespace | Visible events | Dispatched from | Rule-gated? |
+| --- | --- | --- | --- |
+| `ISR_oem_events` | 10 of 11 | CH bootstrap + CH yearly dispatcher | No |
+| `USA_oem_events` | `.1-.12` mostly | CH yearly dispatcher | Partial - `.13`/`.14` gate on `corporate_history_full_enabled`, `.16-.23` on `linux_system_full_enabled`, the rest not at all |
+| `gpu_development` | `.1-.9` | CH bootstrap + CH yearly dispatcher | No, by design - its *bridge* into CH is gated (`00_gpu_development_effects.txt:113`, `events/00_gpu_development.txt:752`) |
+
+Dispatch sites for ISR:
 
 - `common/scripted_effects/00_corporate_history_effects.txt:196` -
   `ISR = { country_event = ISR_oem_events.90 }`, outside the mode gate
 - `common/on_actions/01_oem_corporate_history_on_actions.txt:44` -
   `ISR = { ISR_oem_schedule_2001_events = yes }`
 
-`ISR_oem_events.90` is `hidden = yes`; its `immediate` runs
-`ISR_oem_reconstruct_history`, `ISR_oem_schedule_current_year_events` and
-`ISR_oem_resolve_strategy`. The file holds 11 events, 1 hidden, so **10 visible
-events fire with the rule set to `disabled`**.
+`events/ISR_oem_events.txt` and `common/scripted_effects/ISR_oem_effects.txt`
+contain zero occurrences of `corporate_history_*` or `has_game_rule`.
 
-ISR is also absent from all 32 chains in `tools/corporate_history_contract.json`,
-which is why the contract validator does not catch this.
+**This is deliberate, not an oversight.**
+`.claude/docs/noncontract-oem-chain-audit.md:24` classifies `ISR_oem_events` as
+decision **5, standalone historical flavour** ("a national multi-company
+electronics survey rather than one corporate owner"), and `USA_oem_events` as
+decision 5 likewise; `gpu_development` is decision 2. The scope boundary was
+chosen on purpose.
 
-Contrast the GPU chain, which is genuinely independent and correctly designed:
-it never gates itself, but gates its bridge into Corporate History
-(`00_gpu_development_effects.txt:113`, `events/00_gpu_development.txt:752`).
-ISR has neither a rule nor a bridge gate.
+The defect is therefore **player-facing, not architectural.** The rule reads
+"Corporate History: Off", and its description
+(`localisation/english/MD_game_rules_l_english.yml:879`) says *"Rule-gated
+corporate-history chains are fully disabled"*. That sentence is circular -
+rule-gated chains are disabled by the rule - and tells a player nothing about
+the three namespaces that keep firing. Someone who switches Corporate History off
+to get a cleaner campaign will still receive the Israeli electronics survey, the
+legacy USA OEM events and the GPU chain, with no way to predict that from the UI.
 
-**Fix:** register ISR in the contract and gate it on
-`corporate_history_full_enabled` / `corporate_history_outcomes_only_enabled`, or
-give it its own rule. Do not leave it ungated.
+**Fix (pick one, do not leave it implicit):**
+
+1. Reword `RULE_CORPORATE_HISTORY_OFF_DESC` to name what stays on, and add the
+   same clarification to the Outcomes Only description; or
+2. Extend the rule with a fourth option, or add a companion rule, that also
+   suppresses the standalone namespaces; or
+3. Fold ISR and `USA_oem_events` under the existing gate and accept the
+   reclassification.
+
+Whichever is chosen, the boundary must be machine-checked - see H3.
 
 ### B2 - SERIOUS: both dispatchers hosted on an annexable micronation
 
@@ -100,8 +122,26 @@ only partial catch-up: `USA_corporate_history_monthly_outcomes` documents itself
 as recovering Google/Oracle/IBM-Lenovo/TI/Micron/Motorola/Dell specifically, not
 the whole schedule.
 
-**Fix:** move both dispatchers to a host that cannot be removed, or restructure
-as a date check inside an existing global on_action.
+**Fix - must stay country-scoped.** AGENTS.md:35 requires `on_daily_TAG` over
+global triggers, so moving these date checks into a global on_action trades one
+defect for a worse one (a daily poll for every country). Two options that respect
+the rule:
+
+1. **Distribute the dispatch to the chain owners.** Each participating tag
+   already has an `on_monthly_TAG` hook running its
+   `TAG_corporate_history_monthly_outcomes` driver. Move that country's slice of
+   the yearly dispatch into it, latched on the existing
+   `OEM_upstream_sync_year_YYYY_dispatched` global flags. This removes the shared
+   host entirely, adds no new hook, and degrades per-country instead of globally.
+   Cost: up to ~30 days of dispatch latency, which the chains already tolerate -
+   the monthly drivers are documented as "<= ~31 days lag".
+2. **Keep a daily host, add bounded recovery.** Leave `on_daily_ABK` as the fast
+   path but teach the existing per-country monthly drivers to detect a missing
+   `OEM_upstream_sync_year_YYYY_dispatched` flag for an elapsed year and run the
+   catch-up. A lost host then degrades to monthly instead of failing silently.
+
+Option 1 is preferred: it eliminates the single point of failure rather than
+compensating for it.
 
 ### B3 - SERIOUS: split monthly dispatch authority
 
@@ -341,16 +381,42 @@ defect is not - see section 6.3.
 | P4 | Outcomes Only reconstructs every chain Full does | Partial | Yes | New game Outcomes Only; `tag USA`; open dashboard | Same 32 chains reconstructed | No | Contract enforces both branches; HP/Google/Oracle/Sun-MS have empty `outcome_idea_prefixes` - verify intentional |
 | P5 | Save before a scheduled event, reload, fires once | No | Yes | Full; `tag CHI`; save 2014-06-01 (`CHI_lenovo_events.7` pending, fires +190d, flag +230d); reload; advance 250d | Fires exactly once | Yes - this is the test | 353/353 pending pairs have positive margin |
 | P6 | Save after a selection, reload, no replay | No | Yes | Pick a capstone option; save; reload; advance 60d | No duplicate idea, no doubled variable | Yes | 113 capstone grants all sibling-guarded |
-| P7 | Run hidden reconstruction twice | YES - proven idempotent | Optional confirm | `event USA_ibm_events.90 USA` twice; compare dashboard | Identical state both runs | No | 390/390 relative writes flag-guarded. Confirm, do not discover |
+| P7 | Run hidden reconstruction twice | YES - proven idempotent | Optional confirm | See note below - **not** `event USA_ibm_events.90` | Identical state both runs | No | 390/390 relative writes flag-guarded. Confirm, do not discover |
 | P8 | Cross-country receiver, remove secondary country | No | Yes | `tag SWE`; annex/release FIN; advance a Nokia->Ericsson beat | Ericsson reads Finland without writing it; no error on missing tag | No | Contract declares read-only adapters; #24 requires this for Sony/Sweden |
 | P9 | Collapse event recipient mid-chain | Partial | Yes | Force `collapsed_nation` on FRA; advance | FRA chain halts cleanly | No | FRA startup guards on `collapsed_nation` + `original_tag`; other chains uneven |
 | P10 | 2005 / 2017 / 2026 starts | N/A - no such bookmark | Yes | Only `blitzkrieg.txt` @ 2000.1.1 exists (`default = yes`) | - | - | Retarget to `.90` reconstruction events fired at date |
 
-**On P10:** MD ships exactly one bookmark, so the "2005/2017/2026 start"
-requirement in #24-#28 cannot be executed as written. The equivalent real test is
-to advance to the date, fire the chain's `.90` reconstruction event, and verify
-state matches an unbroken playthrough. That is what the reconstruction layer is
-for and is the correct acceptance criterion.
+**On P7 - `.90` events cannot be re-fired.** 27 of the 44 `.90` reconstruction
+events carry `fire_only_once = yes`, `USA_ibm_events.90` among them
+(`events/USA_ibm_events.txt`). A second console invocation is suppressed by the
+engine, so unchanged state proves nothing about idempotence - it only proves the
+event did not run. HOI4's console has no command to invoke a scripted effect
+directly. To confirm the property at runtime, add a scratch debug event in a
+local build with no `fire_only_once` whose `immediate` calls the reconstruct
+effect, fire it twice, and diff the dashboard. Note this is confirmation only:
+idempotence is already statically proven at 390/390 guarded writes, so a runtime
+failure here would indicate a *new* unguarded write, not a flaw in the existing
+analysis.
+
+**On P10 - late-start reconstruction needs a clean state.** MD ships exactly one
+bookmark, so the "2005/2017/2026 start" requirement in #24-#28 cannot be executed
+as written. Advancing a normal 2000 campaign to the target date is **not** an
+equivalent: the campaign sets the same `*_resolved` / `*_delivered` flags that
+guard every reconstruction write, so a later `.90` would hit no-op branches even
+if it could fire. What that tests is "reconstruction is inert over already-lived
+history", which is worth knowing but is not the late-start property.
+
+The real test needs a state where the elapsed history was never dispatched:
+
+1. Add a temporary local bookmark at the target date (test build only, not
+   shipped).
+2. Start there and let the startup bootstrap reconstruct.
+3. Compare the resulting chain state against a control save advanced normally
+   from 2000 to the same date.
+
+Equivalence between the two is the acceptance criterion. Without the temporary
+bookmark, the late-start path is untestable in game and only the static
+reconstruction analysis stands behind it.
 
 **Execution order:** P1, P2, P3, P7, P5, P6, P4, P8, P9. P1 and P2 are
 known-or-suspected failures and should be fixed before any branch-level testing;
@@ -456,8 +522,16 @@ compatibility layer. The `.gitignore` entries mean a sync cannot restore them -
 the deletion is self-sealing. The `music/*.txt` entries in the same block are
 legitimately absent upstream and can stay ignored; these six cannot.
 
-**Fix:** revert both commits, restore the six files, and narrow the `.gitignore`
-block to the vanilla music files only.
+**Fix - do not revert both commits.** `761cbca6f2` is a merge commit whose
+parents are `[ac3fcbd35e, c90a85fea1]`; the deletion enters main exactly once,
+through that merge. Reverting both would apply the same inverse deletion twice
+and conflict. Either:
+
+- `git revert -m 1 761cbca6f2` (revert the merge once against the correct
+  mainline), or
+- **preferred:** restore the six paths and narrow the `.gitignore` block in a
+  single new commit. `761cbca6f2` is GPG-signed by GitHub's merge machinery, and
+  a forward-fixing commit is easier to review than a merge revert.
 
 ### G2 - tracked but gitignored (OEM-only)
 
@@ -519,9 +593,13 @@ Exclude entirely from the contribution branch.
 
 ### G7 - fork-local changelog
 
-`Changelog-OEM.txt` is OEM-only. Fold its entries into upstream `Changelog.txt`
-per-PR at submission time; do not ship the parallel file. `changelog.d/google.md`
-and `changelog.d/oracle.md` are two orphaned fragments - merge or delete.
+`Changelog-OEM.txt` is OEM-only and should not ship upstream as a parallel
+changelog. Do **not** pre-emptively write entries into `Changelog.txt`: AGENTS.md
+prohibits touching that file unless explicitly asked, and notes a system new in
+2.0.0 needs no entry for its own changes. Leave changelog wording to whatever the
+maintainers request at submission time, and drop `Changelog-OEM.txt` from the
+contribution branch. `changelog.d/google.md` and `changelog.d/oracle.md` are two
+orphaned fragments - delete them.
 
 ---
 
@@ -529,10 +607,10 @@ and `changelog.d/oracle.md` are two orphaned fragments - merge or delete.
 
 | # | Sev | Fix | Where |
 | --- | --- | --- | --- |
-| H1 | BLOCKER | Revert the two "Ignore upstream-only compatibility" commits; restore 6 upstream files; narrow `.gitignore` to vanilla music only | `.gitignore`, 6 files |
-| H2 | BLOCKER | Gate the ISR chain on the Corporate History rule (or give it its own) and register it in the contract | `00_corporate_history_effects.txt:196`, `01_oem_..._on_actions.txt:44`, ISR files |
-| H3 | BLOCKER | Make the contract validator fail on any OEM chain not registered - the ISR gap existed because it only checks registered chains | `validate_corporate_history_contract.py` |
-| H4 | SERIOUS | Move both dispatchers off `on_daily_ABK` to a non-removable host | `01_oem_..._on_actions.txt:12`, `02_linux_system_on_actions.txt:12` |
+| H1 | BLOCKER | Restore the 6 upstream files and narrow `.gitignore` in one forward-fixing commit (not a double revert - see G1) | `.gitignore`, 6 files |
+| H2 | SERIOUS | Resolve the "Off is not off" boundary for `ISR_oem_events`, `USA_oem_events` and `gpu_development`: reword the rule descriptions, add a suppressing option, or fold the first two under the gate | `MD_game_rules_l_english.yml:876-879`, `00_corporate_history_effects.txt:196`, `01_oem_..._on_actions.txt:44` |
+| H3 | SERIOUS | Add an explicit `independent_subsystems` allowlist to the contract and make the validator fail on any namespace dispatched from a Corporate History entry point that is neither registered nor allowlisted | `corporate_history_contract.json`, `validate_corporate_history_contract.py` |
+| H4 | SERIOUS | Move the yearly dispatch off `on_daily_ABK` into the per-country monthly drivers (country-scoped per AGENTS.md:35 - do not use a global on_action) | `01_oem_..._on_actions.txt:12`, `02_linux_system_on_actions.txt:12` |
 | H5 | SERIOUS | Delete the duplicated `USA_ibm_state_initialized` from inside the `OR` in 3 policy `visible` blocks | `USA_corporate_systems_dashboard.txt:149,356,460` |
 | H6 | SERIOUS | Consolidate all 13 monthly drivers into `02_oem_corporate_history_monthly_on_actions.txt` | 7 x `99_TAG_on_actions.txt` |
 | H7 | SERIOUS | Recast Google and Huawei option verbs to government instruments (~30 loc strings) | `MD_OEM_google_l_english.yml`, Huawei loc |
@@ -582,8 +660,8 @@ before a single company chain arrives.
 All fourteen must be true. Current state: 0 of 14.
 
 1. Six upstream files restored; `.gitignore` no longer deletes upstream content (H1)
-2. Corporate History = Off produces zero OEM events, ISR included, verified in game (H2, P1)
-3. Contract validator fails on any unregistered OEM chain (H3)
+2. Corporate History = Off either produces zero OEM events, or the rule text states exactly what stays on; verified in game (H2, P1)
+3. Contract carries an explicit `independent_subsystems` allowlist and the validator fails on anything dispatched from a CH entry point that is neither registered nor allowlisted (H3)
 4. Yearly dispatch survives the loss of its host country (H4, P2)
 5. `error.log` clean after 10 in-game days in each of Full / Outcomes Only / Off (P3)
 6. Save before scheduled event, reload, fires exactly once (P5)
@@ -608,8 +686,17 @@ on the validator's word. That infrastructure is the strongest argument for this
 contribution and should lead the upstream conversation.
 
 What blocks it is everything around the code: a `.gitignore` that silently
-deletes upstream content, one chain that escaped the gate because the validator
-only checks chains that opted in, a dispatcher parked on a country the player can
-erase, and a diff no human will read. All are fixable in days, not months.
+deletes upstream content, a scope boundary that is deliberate in the design docs
+but invisible to the player at the rule switch, a dispatcher parked on a country
+the player can erase, and a diff no human will read. All are fixable in days, not
+months.
+
+One structural note worth carrying forward. The contract validator is the reason
+this system's hard properties hold, and it is also the reason B1 went unnoticed
+for so long: it validates the 32 chains that opted in, so the three namespaces
+that opted out are invisible to it. A contract that only checks its own members
+cannot tell you what it is not covering. H3 exists to close that specifically -
+the allowlist matters less as a gate than as a forced, reviewable statement of
+what sits outside the rule.
 
 Fix H1-H6, land PRs 1-5, and this becomes a strong contribution.
