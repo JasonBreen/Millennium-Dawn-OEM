@@ -87,6 +87,17 @@ def test_parse_unknown_format_returns_as_message():
     assert msg == "free-form message with no path"
 
 
+def test_issue_normalizes_windows_path_separators():
+    issue = Issue(
+        severity=Severity.ERROR,
+        category="paths",
+        message="portable path",
+        file=r"common\national_focus\test.txt",
+    )
+    assert issue.file == "common/national_focus/test.txt"
+    assert issue.to_dict()["file"] == "common/national_focus/test.txt"
+
+
 # ---------------------------------------------------------------------------
 # _report input shapes
 # ---------------------------------------------------------------------------

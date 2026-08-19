@@ -2,7 +2,7 @@
 
 ## Local Documentation (`resources/documentation/`)
 
-Authoritative offline references for HOI4 scripting. Read these to look up valid effects, triggers, modifiers, or other engine features.
+Offline references for HOI4 scripting, copied verbatim from the game's own `documentation/` folder. Read these to look up valid effects, triggers, modifiers, or other engine features. Refresh them after a HOI4 version bump with `python3 tools/validation/refresh_vanilla_data.py --only docs`.
 
 | File                                 | Contents                                                                          |
 | ------------------------------------ | --------------------------------------------------------------------------------- |
@@ -15,6 +15,7 @@ Authoritative offline references for HOI4 scripting. Read these to look up valid
 | `script_collection_input.md`         | Collection inputs (`game:all_countries`, `game:all_states`, `game:scope`, etc.)   |
 | `script_collection_operator.md`      | Collection operators (`faction_members`, `owned_states`, `limit`, etc.)           |
 | `script_concept_documentation.md`    | Script concepts: bindable loc, formatted loc, collections, script constants       |
+| `script_math_functions.md`           | Math functions usable inside `value = { ... }` expressions                        |
 | `console_commands_documentation.md`  | Console commands and tweakable variables                                          |
 
 ## External Wiki References
