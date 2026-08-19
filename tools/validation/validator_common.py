@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Shared validation infrastructure: common classes, helpers, and the base validator."""
 
 import glob
@@ -381,6 +380,9 @@ class Issue:
     message: str
     file: str = ""
     line: int = 0
+
+    def __post_init__(self):
+        self.file = self.file.replace("\\", "/")
 
     def to_dict(self) -> dict:
         return {

@@ -3,9 +3,19 @@ title: Corporate History Framework
 description: Millennium Dawn corporate-history chains - framework effects, game rule, start-date policy, tier budgets, and integration rules
 ---
 
-The corporate-history framework powers the dated company chains (IBM, Sun/Microsoft, HP, Apple, NVIDIA, Dell, Google, Oracle, E3, Texas Instruments, Micron, Motorola, AIG, Lenovo, Huawei, Sony, Nintendo, ATI/AMD, Matrox, Nokia, France Corporate Systems, TSMC, Foxconn, Taiwan's PC Giants, and Russian Computing Sovereignty, plus Siemens, Ericsson, and BlackBerry at dispatch level only). France Corporate Systems combines Alcatel, STMicroelectronics, and France Télécom/Orange under one national state model. Taiwan's PC Giants combines ASUS, Gigabyte, Acer, MSI, and VIA under one Taiwanese PC-industry ecosystem model. The framework centralizes control flow, value bounds, and game-rule gating; each company or national ecosystem binds its own names, dates, and deltas in thin wrapper effects.
+The corporate-history framework centralizes dated company and national-industry chains, value bounds, game-rule gating, catch-up, and silent historical reconstruction. The schema-v5 manifest currently declares 32 chains:
+
+- **USA**: Apple, Dell, E3, Google, Texas Instruments, Micron, Motorola, AIG, HP, IBM, NVIDIA, Oracle, Sun/Microsoft, and Xbox.
+- **Canada and Europe**: ATI/AMD, Matrox, BlackBerry, Arm Holdings, Nokia, France Corporate Systems, Siemens, Ericsson, and Polish Industrial Sovereignty.
+- **Asia and Eurasia**: Lenovo, Huawei, Nintendo, Sony, Foxconn, Taiwan's PC Giants, TSMC, Russian Computing Sovereignty, and Ukrainian Strategic Industry.
+
+France Corporate Systems combines Alcatel, STMicroelectronics, and France Télécom/Orange under one national state model. Taiwan's PC Giants combines ASUS, Gigabyte, Acer, MSI, and VIA under one Taiwanese PC-industry ecosystem model. Each chain binds its own names, dates, and deltas through thin wrapper effects.
 
 The authoritative chain list is `tools/corporate_history_contract.json`, enforced by `tools/validation/validate_corporate_history_contract.py`. This page must match the manifest; the validator gates the manifest, not the prose.
+
+Runtime acceptance is tracked separately in the [OEM release-candidate runtime matrix](/dev-resources/oem-release-candidate-runtime-matrix/). Static validation and console-forced fixtures do not substitute for its natural chronology, save/reload, log, and presentation checks.
+
+The [OEM upstream packaging plan](/dev-resources/oem-upstream-packaging-plan/) defines the dependency-ordered pull-request series. The current 32-chain implementation is not intended for submission as one monolithic change.
 
 # File Map
 
@@ -36,7 +46,7 @@ Corporate History is Off or the country is collapsed.
 HOI4 has no confirmed logarithm, exponential, square-root, or normal-CDF
 operator. The script therefore uses bounded arithmetic approximations. Variable
 bounds, CDF constants, tier thresholds, and policy timings are declared under
-the schema-v3 `economic_layers` section of
+the schema-v5 `economic_layers` section of
 `tools/corporate_history_contract.json`. The strict corporate-history validator
 checks ownership, clamps, bridge reachability, tier replacement, policy timing
 and non-stacking, dashboard parity, and English localisation.
@@ -44,10 +54,11 @@ and non-stacking, dashboard parity, and English localisation.
 Python's high-precision reference and provides named balance scenarios. Those
 results are static evidence, not an in-game runtime test.
 
-The four U.S. policies now add visible programs: 365 days for procurement and
-security, and 730 days for capacity and consortium. They preserve their existing
-Political Power, Treasury, and corporate-state effects. AI weights use reserve,
-debt, interest, energy, labor, bankruptcy, and shared cadence guards.
+The four U.S. policies add visible programs: 180 days for procurement and
+security, and 365 days for capacity and consortium. Each decision's re-enable
+period matches its program duration. They preserve their Political Power,
+Treasury, and corporate-state effects. AI weights use reserve, debt, interest,
+energy, labor, bankruptcy, and shared cadence guards.
 The three automation and employment-outlook scores are dashboard placeholders
 only; this layer does not alter employment laws.
 
@@ -59,7 +70,7 @@ Full derivation, tier, policy, AI, and smoke-test notes are maintained in
 `rule_corporate_history` has three options, fixed at game setup (no mid-game transitions):
 
 - **Full** (default): story events, decision windows, and the IBM crisis engine run exactly as authored.
-- **Outcomes Only**: no corporate story events fire. The historical path (flags, state variables, outcome ideas, national technologies, and monotonic delivery stages) is applied silently by the per-chain `*_reconstruct_history` effects, invoked at startup and then from per-country monthly drivers. Each milestone lands on the **first monthly tick after its historical date** (≤ ~31 days lag, the same order of slop as the yearly dispatcher's early-January day offsets). Lenovo's reconstruction terminates after its PC route, brand route, and System x route are resolved. Huawei independently reconstructs its seven bounded axes and resolves Sovereign Full Stack after its 2026 terminal date. Russian Computing Sovereignty reconstructs its historical design, software, procurement, and foundry state but never grants advanced domestic HVM by date. France reconstructs the reward-free historical Alcatel, STMicroelectronics, Orange, and Nokia transaction state before resolving its national outcome. Taiwan's PC Giants reconstructs fourteen company milestones and silently resolves its 2013 ecosystem assessment. The IBM crisis engine is Full-only (its events are popups), so no crisis ideas appear in this mode. ATI/AMD reconstructs after the global GPU history so its compatibility bridge sees the generic acquisition choice. HP, Google, and Oracle reconstruct silently; Siemens, Ericsson, and BlackBerry are suppressed without replacement because they have no reconstruction effects.
+- **Outcomes Only**: no corporate story events fire. All 32 declared chains use silent reconstruction for their historical path: flags, bounded state, outcome ideas, national technologies, and monotonic delivery stages are applied by per-chain `*_reconstruct_history` effects at startup and from per-country monthly drivers. Each milestone lands on the **first monthly tick after its historical date** (≤ ~31 days lag, the same order of slop as the yearly dispatcher's early-January day offsets). The IBM crisis engine remains Full-only because its effects are popup-driven. Russian Computing Sovereignty reconstructs historical design, software, procurement, and foundry state but never grants advanced domestic HVM by date. France, Taiwan's PC Giants, ATI/AMD, HP, Google, Oracle, Siemens, Ericsson, and BlackBerry all reconstruct without replaying visible events or one-time player rewards.
 - **Off**: rule-gated dispatchers never run, so those chains create no story events, reconstructed state, or outcome ideas.
 
 **Gating happens only at dispatcher level**: the startup driver, the `<TAG>_corporate_trigger_year_*` effects, the monthly drivers, and the `USA_ibm_monthly_crisis_checks` call site in `99_USA_on_actions.txt`. Never add rule checks inside individual events: an event that was never scheduled needs no gate, and per-event gates rot.
@@ -259,7 +270,7 @@ Classification of the existing chains (chains predating the budgets are marked _
 | Google (USA)                                        | 2 _(grandfathered)_           | 20 events and 3 bounded variables, over the Tier-2 event budget; no outcome ideas; reconstruction covers the historical path. In Full mode, events 16-20 run on `USA_google_extension_catchup` while 1-15 stay on the yearly dispatchers                       |
 | Oracle (USA)                                        | 2 _(grandfathered)_           | 12 events, over the Tier-2 event budget; no outcome ideas; marker-based reconstruction covers the historical path. Its state variables are undeclared in the manifest and therefore unclamped. In Full mode the whole chain runs on `USA_oracle_chain_catchup` |
 | HP (USA)                                            | 3 _(grandfathered)_           | 13 events with flag-based historical reconstruction but no bounded variables or outcome ideas; flavor economics only                                                                                                                                           |
-| Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA) | 2                             | Dispatch-moved + rule-gated only; internals not yet on the framework                                                                                                                                                                                           |
+| Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA) | 2                             | Yearly dispatch, current-year scheduler and reward-free historical reconstruction; Ericsson retains its hidden reconstruction anchor                                                                                                                           |
 
 ## Poland: Industrial Sovereignty
 
@@ -333,12 +344,10 @@ scheduling anchors are recorded in
 6. Guard audit on every reconstruct step: `date >` gate; `NOT` on the step's own marker **and all sibling markers**; `add_ideas` guarded by `NOT has_idea` on all alternatives; no event fires inside reconstruction; single-child `NOT`s only.
 7. Cross-links declared in the table above; localisation; changelog.
 
-# TODO Register
+# Known Follow-ups
 
-- **Siemens / Ericsson / BlackBerry**: no reconstruction effects; Outcomes Only suppresses their events with no silent replacement. Ericsson's existing `SWE_ericsson_events.90` is the natural first extraction; Siemens and BlackBerry have no `.90` at all and need ladders authored from their option effects.
 - **Google / Oracle reconstruction parity**: both have Outcomes Only reconstruction. Oracle's reconstruction records milestone resolution and its historical cloud route without replaying every event-side variable or reward. Google's reconstruction covers the historical flags and bounded state. In Full mode, Oracle 1-12 remains fully covered by its catch-up driver, while Google 1-15 remains yearly-dispatch only and can be missed by a late Full-mode start.
 - **Oracle state variables** (`USA_oracle_platform_scale`, `policy_access`, `integration_debt`, `ecosystem_openness`, `execution_discipline`, `infrastructure_depth`): mutated by every event, never initialized and never clamped, and undeclared in the manifest so the contract's clamp check skips them. Only `policy_access` and `integration_debt` are ever read, and only against one-sided thresholds, so the drift is currently inert. Declaring them in the manifest requires an `USA_oracle_initialize_state` / `USA_oracle_clamp_state` pair first.
-- **Google extension variables** (`USA_google_ecosystem_openness`, `USA_google_policy_access`, `USA_google_platform_scale`): written by events 18-20, never read, never initialized, and not covered by `USA_google_clamp_state`. Either wire them into the clamp and the manifest or drop the writes.
 - **`USA_google_events` namespace** is declared in two files (`USA_google_events.txt` and `USA_google_events_extension.txt`), the only split namespace in the repo. The contract discovers every file from its event definitions, so both files receive the same ownership checks.
 - **Start-year schedulers** for IBM, Sun/Microsoft, Sony, and Matrox (Apple-pattern; inert while MD ships only the 2000.1.1 bookmark).
 - **HP**: flag-based reconstruction exists, but the chain has no bounded variables or outcome idea; decide whether to keep its grandfathered Tier-3 classification or extend it to Tier 2.

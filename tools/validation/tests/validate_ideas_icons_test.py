@@ -9,6 +9,7 @@ from validate_ideas import (
     _IDEA_REF_BLOCK,
     _IDEA_REF_GENEROUS,
     _WORD_TOKEN,
+    Validator,
     _idea_categories_frame_count,
     _missing_icon_message,
     _parse_ideas_from_text,
@@ -101,6 +102,21 @@ def test_icon_dynamic_picture_skipped():
         _missing_icon_message("X", "country", None, "[GetIcon]", SPRITES, HIDDEN)
         is None
     )
+
+
+def test_sprite_set_extracts_names_from_gfx_records(tmp_path, monkeypatch):
+    interface = tmp_path / "interface"
+    interface.mkdir()
+    (interface / "ideas.gfx").write_text(
+        'spriteType = {\n name = "GFX_idea_TEST"\n'
+        ' texturefile = "gfx/interface/ideas/test.dds"\n}\n',
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr("validate_gfx_references._vanilla_gfx_files", lambda: [])
+    validator = Validator(mod_path=str(tmp_path), use_colors=False, workers=1)
+
+    assert validator._build_idea_sprite_set() == frozenset({"GFX_idea_TEST"})
 
 
 def test_parser_captures_picture():

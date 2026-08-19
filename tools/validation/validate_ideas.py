@@ -947,8 +947,8 @@ class Validator(BaseValidator):
             _parse_gfx_file, [(f, self.mod_path) for f in gfx_files]
         )
         defined: Set[str] = set()
-        for s in results:
-            defined.update(s)
+        for batch in results:
+            defined.update(name for name, _filepath, _texture, _line in batch)
         self.log(
             f"  Found {len(defined)} GFX sprites across {len(gfx_files)} mod .gfx files"
         )
@@ -958,8 +958,8 @@ class Validator(BaseValidator):
             vanilla_results = self._pool_map(
                 _parse_gfx_file, [(f, self.mod_path) for f in vanilla_gfx]
             )
-            for s in vanilla_results:
-                defined.update(s)
+            for batch in vanilla_results:
+                defined.update(name for name, _filepath, _texture, _line in batch)
             self.log(f"  Added vanilla sprites from {len(vanilla_gfx)} .gfx files")
         else:
             self.log(
