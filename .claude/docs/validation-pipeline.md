@@ -105,10 +105,12 @@ CI has no HOI4 install, so five checked-in files stand in for the game. `tools/v
 
 ```bash
 python3 tools/validation/refresh_vanilla_data.py
-python3 tools/validation/refresh_vanilla_data.py --only docs sprites
+python3 tools/validation/refresh_vanilla_data.py --only docs
 ```
 
-Run it after every HOI4 version bump and commit the diff. Stale data does not fail CI. It produces false positives instead, which is worse: a modifier Paradox added after the last refresh reads as a typo, and a sprite added in the same patch reads as an undefined reference.
+The default command rebuilds the four manifests under `tools/validation/` and does not modify `resources/`. The `docs` target is explicit opt-in because it replaces reference material with the installed game's documentation; run it only when that resource refresh is in scope.
+
+Run the default refresh after every HOI4 version bump and commit the diff. Stale data does not fail CI. It produces false positives instead, which is worse: a modifier Paradox added after the last refresh reads as a typo, and a sprite added in the same patch reads as an undefined reference.
 
 The `docs` target is a straight file copy with no reformatting, so `diff -r resources/documentation "$HOI4_PATH/documentation"` is the staleness check.
 

@@ -193,7 +193,16 @@ OEM_corporate_history_startup_bootstrap = {
 
 		if = {
 			limit = { country_exists = ISR }
-			ISR = { country_event = ISR_oem_events.90 }
+			ISR = {
+				if = {
+					limit = { corporate_history_full_enabled = yes }
+					country_event = ISR_oem_events.90
+				}
+				else_if = {
+					limit = { corporate_history_outcomes_only_enabled = yes }
+					ISR_oem_reconstruct_history = yes
+				}
+			}
 		}
 
 		if = {

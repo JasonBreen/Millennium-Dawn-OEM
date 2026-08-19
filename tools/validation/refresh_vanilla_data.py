@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh every vanilla-derived file the validators read, from a local HOI4 install.
+"""Refresh vanilla-derived validator data from a local HOI4 install.
 
 CI has no game installed, so validate_defines, validate_file_paths,
 validate_gfx_references and validate_modifiers fall back to committed copies of
@@ -8,8 +8,10 @@ the last refresh reads as a typo. Run this after a HOI4 version bump, from the
 mod root:
 
     python3 tools/validation/refresh_vanilla_data.py
-    python3 tools/validation/refresh_vanilla_data.py --only docs sprites
+    python3 tools/validation/refresh_vanilla_data.py --only docs
 
+The default refresh does not modify reference-only resources/. Select the docs
+target explicitly when an authorized game-version refresh includes those files.
 Requires the game installed (auto-detected, or set $HOI4_PATH).
 """
 
@@ -160,7 +162,7 @@ _TARGETS: Dict[str, Callable[[], str]] = {
 }
 
 
-def main() -> int:
+def _parse_targets(argv: List[str] | None = None) -> List[str]:
     targets = sorted(_TARGETS)
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
@@ -168,10 +170,14 @@ def main() -> int:
         nargs="+",
         choices=targets,
         metavar="TARGET",
-        default=targets,
-        help=f"refresh a subset ({', '.join(targets)})",
+        default=[name for name in targets if name != "docs"],
+        help=f"refresh a subset ({', '.join(targets)}); docs requires explicit selection",
     )
-    args = parser.parse_args()
+    return parser.parse_args(argv).only
+
+
+def main() -> int:
+    targets = _parse_targets()
 
     install = find_hoi4_install()
     if not install:
@@ -180,7 +186,7 @@ def main() -> int:
     print(f"Refreshing from {install}")
 
     failed = False
-    for name in args.only:
+    for name in targets:
         try:
             print(f"  {_TARGETS[name]()}")
         except RefreshError as exc:
