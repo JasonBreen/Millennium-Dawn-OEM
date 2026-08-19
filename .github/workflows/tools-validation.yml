@@ -7,6 +7,7 @@ on:
       - ".claude/docs/linux-system-reference.md"
       - ".claude/docs/linux-national-adapters.md"
       - ".claude/docs/typo-watchlist.md"
+      - "resources/documentation/modifiers_documentation.md"
       - ".pre-commit-config.yaml"
       - "pyproject.toml"
       - ".github/workflows/coding-pipeline.yml"
@@ -71,7 +72,9 @@ jobs:
           # compare the validator set declared in each, and to check the
           # pipeline wiring around them. pyproject.toml supplies the pytest
           # testpaths so all six test dirs are collected. The Linux and typo
-          # reference docs are read by their contract doc-sync guards.
+          # reference docs are read by their contract doc-sync guards;
+          # modifiers_documentation.md by validate_modifiers_test's parse guard;
+          # and common/national_focus by focus_pp_malus_test's exemption guard.
           sparse-checkout: |
             tools
             pyproject.toml
@@ -79,6 +82,8 @@ jobs:
             .claude/docs/linux-system-reference.md
             .claude/docs/linux-national-adapters.md
             .claude/docs/typo-watchlist.md
+            resources/documentation/modifiers_documentation.md
+            common/national_focus
             .github/workflows/coding-pipeline.yml
             .github/workflows/nightly-pr-validation.yml
             .github/workflows/tools-validation.yml
