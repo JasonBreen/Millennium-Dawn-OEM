@@ -202,7 +202,7 @@ def write_yaml_file(
     try:
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(filepath, "w", encoding="utf-8") as f:
+        with open(filepath, "w", encoding="utf-8", newline="") as f:
             # Write UTF-8 BOM for HOI4 compatibility
             f.write("\ufeff")
 
@@ -270,7 +270,7 @@ def split_file(
             print(f"  Warning: Could not create backup: {e}", file=sys.stderr)
 
         # Write new master file that includes the split files
-        with open(master_path, "w", encoding="utf-8") as f:
+        with open(master_path, "w", encoding="utf-8", newline="") as f:
             f.write(
                 "\ufeff# This file has been split into multiple files for better maintainability\n"
             )
