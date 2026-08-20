@@ -222,7 +222,7 @@ def write_category_file(
     output_path = output_dir / f"equipment_{category}_l_english.yml"
 
     try:
-        with open(output_path, "w", encoding="utf-8") as f:
+        with open(output_path, "w", encoding="utf-8", newline="") as f:
             # Write UTF-8 BOM for HOI4 compatibility
             f.write("\ufeffl_english:\n\n")
 
@@ -305,7 +305,7 @@ def split_equipment_file(dry_run: bool = False) -> Tuple[int, Dict[str, int]]:
         print(f"Warning: Could not create backup: {e}", file=sys.stderr)
 
     # Write new master file
-    with open(EQUIPMENT_FILE, "w", encoding="utf-8") as f:
+    with open(EQUIPMENT_FILE, "w", encoding="utf-8", newline="") as f:
         f.write("\ufeff# Equipment Localisation\n")
         f.write(
             "# This file has been split into multiple category files for better maintainability.\n"
