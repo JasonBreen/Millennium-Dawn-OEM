@@ -25,7 +25,10 @@ DISPATCH_PATH = (
     ROOT / "common" / "scripted_effects" / "00_corporate_history_dispatch_effects.txt"
 )
 ON_ACTIONS_PATH = (
-    ROOT / "common" / "on_actions" / "01_oem_corporate_history_on_actions.txt"
+    ROOT
+    / "common"
+    / "scripted_effects"
+    / "00_corporate_history_monthly_dispatch_effects.txt"
 )
 FRA_ON_ACTIONS_PATH = ROOT / "common" / "on_actions" / "99_FRA_on_actions.txt"
 CONTRACT_PATH = ROOT / "tools" / "corporate_history_contract.json"
@@ -672,10 +675,11 @@ def test_event_surface_ai_fallback_and_atomic_route_contract():
     for event_id in visible_ids:
         event = _event_block(events, f"FRA_corporate_systems_events.{event_id}")
         assert "is_triggered_only = yes" in event
-        assert (
-            f"trigger = {{ FRA_corporate_systems_event_{event_id}_eligible = yes }}"
-            in event
-        )
+        trigger = _child_blocks(event, "trigger")[0]
+        assert "corporate_history_full_enabled = yes" in trigger
+        assert "original_tag = FRA" in trigger
+        assert "NOT = { has_country_flag = collapsed_nation }" in trigger
+        assert f"FRA_corporate_systems_event_{event_id}_eligible = yes" in trigger
         assert (
             f"immediate = {{ FRA_corporate_systems_mark_event_{event_id}_delivered = yes }}"
             in event
@@ -793,7 +797,11 @@ def test_current_year_yearly_and_monthly_delivery_paths_are_exact():
                 f"country_event = {{ id = FRA_corporate_systems_events.{event_id} "
                 f"days = {days} }}" in wrapper
             )
-        assert f"FRA_corporate_trigger_year_{year} = yes" in on_actions
+        year_router = _named_block(
+            on_actions, f"corporate_history_dispatch_year_{year}"
+        )
+        assert "original_tag = FRA" in year_router
+        assert f"FRA_corporate_trigger_year_{year} = yes" in year_router
 
     for event_id, (year, days) in current_year_events.items():
         call = (
@@ -859,29 +867,30 @@ def test_current_year_yearly_and_monthly_delivery_paths_are_exact():
 
 def test_startup_modes_monthly_recovery_and_dashboard_state_are_registered():
     common = COMMON_EFFECTS_PATH.read_text(encoding="utf-8")
-    startup = _named_block(common, "corporate_history_on_startup")
-    full = next(
-        block
-        for block in _child_blocks(startup, "if")
-        if "corporate_history_full_enabled = yes" in block
+    dispatch_text = ON_ACTIONS_PATH.read_text(encoding="utf-8")
+    bootstrap = _named_block(dispatch_text, "corporate_history_country_bootstrap")
+    fra = min(
+        (
+            block
+            for block in _child_blocks(bootstrap, "if")
+            if "original_tag = FRA" in block
+            and "FRA_corporate_systems_reconstruct_history = yes" in block
+        ),
+        key=len,
     )
-    outcomes = next(
-        block
-        for block in _child_blocks(startup, "else_if")
-        if "corporate_history_outcomes_only_enabled = yes" in block
-    )
-    full_calls = (
+    bootstrap_calls = (
         "FRA_corporate_systems_initialize_state = yes",
-        "FRA_corporate_systems_sync_nokia_response = yes",
-        "FRA_corporate_systems_schedule_current_year_events = yes",
-        "id = FRA_corporate_systems_events.90 days = 1",
+        "FRA_corporate_systems_reconstruct_history = yes",
     )
-    assert [full.index(call) for call in full_calls] == sorted(
-        full.index(call) for call in full_calls
+    assert [fra.index(call) for call in bootstrap_calls] == sorted(
+        fra.index(call) for call in bootstrap_calls
     )
-    assert "FRA_corporate_systems_reconstruct_history = yes" in outcomes
-    assert "FRA_corporate_systems_schedule_current_year_events = yes" not in outcomes
-    assert "FRA_corporate_systems_events.90" not in outcomes
+    assert "FRA_corporate_systems_events.90" not in bootstrap
+    dispatch = _named_block(dispatch_text, "corporate_history_monthly_dispatch")
+    assert "corporate_history_enabled = yes" in dispatch
+    assert "corporate_history_country_bootstrap = yes" in dispatch
+    assert "corporate_history_initialize_midyear_recovery = yes" in dispatch
+    assert "corporate_history_recover_midyear_events = yes" in dispatch
 
     monthly = _named_block(common, "FRA_corporate_history_monthly_outcomes")
     assert "corporate_history_outcomes_only_enabled = yes" in monthly

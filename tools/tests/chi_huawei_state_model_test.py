@@ -16,7 +16,10 @@ DISPATCH_PATH = (
     ROOT / "common" / "scripted_effects" / "00_corporate_history_dispatch_effects.txt"
 )
 ON_ACTIONS_PATH = (
-    ROOT / "common" / "on_actions" / "01_oem_corporate_history_on_actions.txt"
+    ROOT
+    / "common"
+    / "scripted_effects"
+    / "00_corporate_history_monthly_dispatch_effects.txt"
 )
 CONTRACT_PATH = ROOT / "tools" / "corporate_history_contract.json"
 DASHBOARD_PATH = ROOT / "common" / "decisions" / "CHI_corporate_systems_dashboard.txt"
@@ -408,7 +411,12 @@ def test_initial_state_and_all_visible_routes_match_the_contract():
         assert "fire_only_once = yes" in event
         assert "original_tag = CHI" in trigger
         assert "NOT = { has_country_flag = collapsed_nation }" in trigger
-        assert "immediate = { CHI_huawei_initialize_state = yes }" in event
+        immediate = _first_indented_block(event, "immediate")
+        assert "CHI_huawei_initialize_state = yes" in immediate
+        assert (
+            f"set_country_flag = CHI_corporate_history_midyear_huawei_events_"
+            f"{event_number}_resolved" in immediate
+        )
         sibling_flags = {route[0] for route in expected_routes}
         trigger_flags = set(
             re.findall(r"has_country_flag\s*=\s*(CHI_huawei_[A-Za-z0-9_]+)", trigger)
@@ -900,31 +908,37 @@ def test_dashboard_is_read_only_authoritative_and_off_gated():
 
 def test_startup_modes_and_full_terminal_grace_match_delivery_contract():
     common_effects = COMMON_EFFECTS_PATH.read_text(encoding="utf-8")
-    startup = _named_block(common_effects, "corporate_history_on_startup")
-    mode_blocks = [
-        _extract_block(startup, match.start())
-        for match in re.finditer(r"(?m)^\t(?:if|else_if)\s*=\s*\{", startup)
-    ]
-    full = next(
-        block
-        for block in mode_blocks
-        if "corporate_history_full_enabled = yes" in block
+    dispatch_text = ON_ACTIONS_PATH.read_text(encoding="utf-8")
+    bootstrap = _named_block(dispatch_text, "corporate_history_country_bootstrap")
+    dispatch = _named_block(dispatch_text, "corporate_history_monthly_dispatch")
+    chi = min(
+        (
+            block
+            for match in re.finditer(r"(?m)^\tif\s*=\s*\{", bootstrap)
+            if "original_tag = CHI"
+            in (block := _extract_block(bootstrap, match.start()))
+        ),
+        key=len,
     )
-    outcomes_only = next(
-        block
-        for block in mode_blocks
-        if "corporate_history_outcomes_only_enabled = yes" in block
+    full = min(
+        (
+            block
+            for match in re.finditer(r"(?m)^\t\tif\s*=\s*\{", chi)
+            if "corporate_history_full_enabled = yes"
+            in (block := _extract_block(chi, match.start()))
+        ),
+        key=len,
     )
-    reconstruct_at = full.index("CHI_huawei_reconstruct_history = yes")
-    scheduler_at = full.index("CHI_huawei_schedule_current_year_events = yes")
-    anchor_at = full.index("id = CHI_huawei_events.90 days = 3")
 
-    assert reconstruct_at < scheduler_at < anchor_at
-    assert "CHI_huawei_reconstruct_history = yes" in outcomes_only
-    assert "CHI_huawei_schedule_current_year_events = yes" not in outcomes_only
-    assert "CHI_huawei_events.90" not in outcomes_only
-    assert startup.count("corporate_history_full_enabled = yes") == 1
-    assert startup.count("corporate_history_outcomes_only_enabled = yes") == 1
+    assert chi.index("CHI_huawei_reconstruct_history = yes") < chi.index(
+        "corporate_history_full_enabled = yes"
+    )
+    assert "CHI_huawei_schedule_current_year_events = yes" in full
+    assert "CHI_huawei_events.90" not in bootstrap
+    assert "corporate_history_enabled = yes" in dispatch
+    assert "corporate_history_country_bootstrap = yes" in dispatch
+    assert "corporate_history_initialize_midyear_recovery = yes" in dispatch
+    assert "corporate_history_recover_midyear_events = yes" in dispatch
 
     monthly = _named_block(common_effects, "CHI_corporate_history_monthly_outcomes")
     assert "date > 2026.4.30" in monthly
@@ -1001,7 +1015,6 @@ def test_manifest_registers_the_huawei_tier_one_contract():
     assert chain["full_start_strategies"] == [
         "yearly_dispatcher",
         "current_year_scheduler",
-        "hidden_anchor",
         "reconstruction",
     ]
     assert chain["outcomes_only_strategy"] == "reconstruction"
@@ -1009,9 +1022,7 @@ def test_manifest_registers_the_huawei_tier_one_contract():
     assert chain["terminal_marker"] == "CHI_huawei_reconstruct_complete"
     assert chain["terminal_date"] == "2026-03-31"
     assert set(chain["outcome_ideas"]) == outcomes
-    assert chain["expected_callers"] == {
-        "CHI_huawei_events.90": ["effect:corporate_history_on_startup"]
-    }
+    assert chain["expected_callers"] == {"CHI_huawei_events.90": []}
     assert chain["effect_preview_policy"] == "explicit"
     assert chain["bridge_refresh_policy"] == "none"
     assert chain["ai_bankruptcy_exceptions"] == []

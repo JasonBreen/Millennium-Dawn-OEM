@@ -18,8 +18,11 @@ COMMON_EFFECTS_PATH = (
 DISPATCH_PATH = (
     ROOT / "common" / "scripted_effects" / "00_corporate_history_dispatch_effects.txt"
 )
-YEARLY_ON_ACTIONS_PATH = (
-    ROOT / "common" / "on_actions" / "01_oem_corporate_history_on_actions.txt"
+MONTHLY_DISPATCH_PATH = (
+    ROOT
+    / "common"
+    / "scripted_effects"
+    / "00_corporate_history_monthly_dispatch_effects.txt"
 )
 MONTHLY_ON_ACTIONS_PATH = (
     ROOT / "common" / "on_actions" / "02_oem_corporate_history_monthly_on_actions.txt"
@@ -455,22 +458,28 @@ def test_dynamic_modifier_backing_state_and_existing_rewards_are_read_only():
 def test_dispatch_modes_dashboard_and_contract_are_wired():
     common = COMMON_EFFECTS_PATH.read_text(encoding="utf-8")
     dispatch = DISPATCH_PATH.read_text(encoding="utf-8")
-    yearly_on_actions = YEARLY_ON_ACTIONS_PATH.read_text(encoding="utf-8")
+    monthly_dispatch_text = MONTHLY_DISPATCH_PATH.read_text(encoding="utf-8")
     monthly_on_actions = MONTHLY_ON_ACTIONS_PATH.read_text(encoding="utf-8")
     dashboard = DASHBOARD_PATH.read_text(encoding="utf-8")
     category = DASHBOARD_CATEGORY_PATH.read_text(encoding="utf-8")
     dashboard_loc = DASHBOARD_LOC_PATH.read_text(encoding="utf-8")
     corporate_triggers = CORPORATE_TRIGGERS_PATH.read_text(encoding="utf-8")
 
-    startup = _named_block(common, "corporate_history_on_startup")
+    bootstrap = _named_block(
+        monthly_dispatch_text, "corporate_history_country_bootstrap"
+    )
     for call in (
         "UKR_strategic_industry_initialize_state = yes",
         "UKR_strategic_industry_reconstruct_history = yes",
-        "UKR_strategic_industry_schedule_current_year_events = yes",
-        "country_event = { id = UKR_strategic_industry_events.90 days = 3 }",
     ):
-        assert call in startup
-    assert "UKR = { UKR_strategic_industry_reconstruct_history = yes }" in startup
+        assert call in bootstrap
+    assert "UKR_strategic_industry_events.90" not in bootstrap
+    monthly_dispatch = _named_block(
+        monthly_dispatch_text, "corporate_history_monthly_dispatch"
+    )
+    assert "corporate_history_country_bootstrap = yes" in monthly_dispatch
+    assert "corporate_history_initialize_midyear_recovery = yes" in monthly_dispatch
+    assert "corporate_history_recover_midyear_events = yes" in monthly_dispatch
 
     monthly = _named_block(common, "UKR_corporate_history_monthly_outcomes")
     assert "UKR_strategic_industry_monthly_driver = yes" in monthly
@@ -505,7 +514,11 @@ def test_dispatch_modes_dashboard_and_contract_are_wired():
         assert f"UKR_strategic_industry_schedule_event_{event_number:02d} = yes" in (
             delivery
         )
-        assert f"UKR_corporate_trigger_year_{year} = yes" in yearly_on_actions
+        year_router = _named_block(
+            monthly_dispatch_text, f"corporate_history_dispatch_year_{year}"
+        )
+        assert "original_tag = UKR" in year_router
+        assert f"UKR_corporate_trigger_year_{year} = yes" in year_router
     assert "UKR_strategic_industry_schedule_event_06" not in dispatch
     assert "UKR_strategic_industry_schedule_event_09" not in dispatch
 
@@ -548,7 +561,6 @@ def test_dispatch_modes_dashboard_and_contract_are_wired():
     assert chain["full_start_strategies"] == [
         "yearly_dispatcher",
         "current_year_scheduler",
-        "hidden_anchor",
         "reconstruction",
     ]
     assert chain["outcomes_only_strategy"] == "reconstruction"
@@ -556,9 +568,7 @@ def test_dispatch_modes_dashboard_and_contract_are_wired():
     assert chain["terminal_marker"] == "UKR_strategic_industry_reconstruct_complete"
     assert chain["terminal_date"] == "2026-01-01"
     assert chain["allowed_writes"] == []
-    assert chain["expected_callers"]["UKR_strategic_industry_events.90"] == [
-        "effect:corporate_history_on_startup"
-    ]
+    assert chain["expected_callers"]["UKR_strategic_industry_events.90"] == []
 
 
 def test_new_english_surface_contains_no_banned_dash_character():

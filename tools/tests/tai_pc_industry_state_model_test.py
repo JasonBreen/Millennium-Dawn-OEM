@@ -21,7 +21,13 @@ DISPATCH_PATH = (
     ROOT / "common" / "scripted_effects" / "00_corporate_history_dispatch_effects.txt"
 )
 ON_ACTIONS_PATH = (
-    ROOT / "common" / "on_actions" / "01_oem_corporate_history_on_actions.txt"
+    ROOT / "common" / "on_actions" / "02_oem_corporate_history_monthly_on_actions.txt"
+)
+MONTHLY_DISPATCH_PATH = (
+    ROOT
+    / "common"
+    / "scripted_effects"
+    / "00_corporate_history_monthly_dispatch_effects.txt"
 )
 CONTRACT_PATH = ROOT / "tools" / "corporate_history_contract.json"
 SCENARIOS_PATH = ROOT / "tools" / "corporate_history_scenarios.json"
@@ -192,6 +198,27 @@ def _option_blocks(event: str) -> List[str]:
         _extract_block(event, match.start())
         for match in re.finditer(r"(?m)^\toption\s*=\s*\{", event)
     ]
+
+
+def _assignment_blocks(text: str, key: str) -> List[str]:
+    return [
+        _extract_block(text, match.start())
+        for match in re.finditer(rf"\b{re.escape(key)}\s*=\s*\{{", text)
+    ]
+
+
+def _has_bankruptcy_zero_modifier(option: str) -> bool:
+    ai_chance_blocks = _assignment_blocks(option, "ai_chance")
+    assert len(ai_chance_blocks) == 1
+    for modifier in _assignment_blocks(ai_chance_blocks[0], "modifier"):
+        factor_zero = re.search(r"\bfactor\s*=\s*0(?:\.0+)?(?=\s|\})", modifier)
+        bankruptcy = re.search(
+            r"\bhas_active_mission\s*=\s*bankruptcy_incoming_collapse\b",
+            modifier,
+        )
+        if factor_zero and bankruptcy:
+            return True
+    return False
 
 
 def _idea_block(text: str, idea: str) -> str:
@@ -378,10 +405,7 @@ def test_material_costs_are_bankruptcy_safe_and_via_premium_is_gated():
                 r"treasury_change\s*=\s*-(?:[5-9]|\d{2,})\.\d+", option
             )
             if material_cost:
-                assert (
-                    "factor = 0 has_active_mission = "
-                    "bankruptcy_incoming_collapse" in option
-                )
+                assert _has_bankruptcy_zero_modifier(option)
 
     via_premium = _option_blocks(_event_block(events, 13))[1]
     for required in (
@@ -397,6 +421,32 @@ def test_material_costs_are_bankruptcy_safe_and_via_premium_is_gated():
     )
     assert "treasury_change = -8.00" in via_premium
     assert "add_political_power = -25" in via_premium
+
+
+def test_bankruptcy_guard_requires_zero_factor_and_predicate_in_same_modifier():
+    split_guard = """
+option = {
+	ai_chance = {
+		modifier = { factor = 0 has_country_flag = unrelated }
+		modifier = {
+			factor = 2
+			has_active_mission = bankruptcy_incoming_collapse
+		}
+	}
+}
+"""
+    combined_guard = """
+option = {
+	ai_chance = {
+		modifier = {
+			factor = 0
+			has_active_mission = bankruptcy_incoming_collapse
+		}
+	}
+}
+"""
+    assert not _has_bankruptcy_zero_modifier(split_guard)
+    assert _has_bankruptcy_zero_modifier(combined_guard)
 
 
 def test_historical_reconstruction_is_idempotent_reward_free_and_fragmented():
@@ -489,6 +539,7 @@ def test_delivery_markers_recovery_and_dispatch_cover_every_milestone():
     events = EVENTS_PATH.read_text(encoding="utf-8")
     dispatch = DISPATCH_PATH.read_text(encoding="utf-8")
     on_actions = ON_ACTIONS_PATH.read_text(encoding="utf-8")
+    monthly_dispatch = MONTHLY_DISPATCH_PATH.read_text(encoding="utf-8")
     current_year = _named_block(effects, "TAI_pc_industry_schedule_current_year_events")
     recovery = _named_block(effects, "TAI_pc_industry_recover_missing_events")
 
@@ -541,8 +592,9 @@ def test_delivery_markers_recovery_and_dispatch_cover_every_milestone():
                 f"TAI_pc_industry_schedule_event_{event_number:02d} = yes"
                 in year_effect
             )
-        assert on_actions.count(f"TAI_corporate_trigger_year_{year} = yes") == 1
-    assert "TAI_pc_industry_events." not in on_actions
+        assert monthly_dispatch.count(f"TAI_corporate_trigger_year_{year} = yes") == 1
+    assert on_actions.count("TAI_corporate_history_monthly_outcomes = yes") == 1
+    assert "TAI_pc_industry_events." not in monthly_dispatch
 
 
 def test_exact_milestone_start_dates_are_marked_for_reconstruction():
@@ -572,15 +624,21 @@ def test_exact_milestone_start_dates_are_marked_for_reconstruction():
 
 def test_startup_modes_monthly_terminal_and_scenarios_match_contract():
     common = COMMON_EFFECTS_PATH.read_text(encoding="utf-8")
-    startup = _named_block(common, "corporate_history_on_startup")
+    monthly_dispatch_text = MONTHLY_DISPATCH_PATH.read_text(encoding="utf-8")
+    bootstrap = _named_block(
+        monthly_dispatch_text, "corporate_history_country_bootstrap"
+    )
+    dispatch = _named_block(monthly_dispatch_text, "corporate_history_monthly_dispatch")
     monthly = _named_block(common, "TAI_corporate_history_monthly_outcomes")
 
-    assert "corporate_history_full_enabled = yes" in startup
-    assert "country_event = TAI_pc_industry_events.90" in startup
-    assert "set_temp_variable = { pc_schedule_mode = 0 }" in startup
-    assert "TAI_pc_industry_schedule_current_year_events = yes" in startup
-    assert "corporate_history_outcomes_only_enabled = yes" in startup
-    assert "TAI_pc_industry_reconstruct_history = yes" in startup
+    assert "corporate_history_enabled = yes" in dispatch
+    assert "corporate_history_country_bootstrap = yes" in dispatch
+    assert "corporate_history_initialize_midyear_recovery = yes" in dispatch
+    assert "corporate_history_full_enabled = yes" in bootstrap
+    assert "country_event = TAI_pc_industry_events.90" not in bootstrap
+    assert "set_temp_variable = { pc_schedule_mode = 0 }" in bootstrap
+    assert "TAI_pc_industry_schedule_current_year_events = yes" in bootstrap
+    assert "TAI_pc_industry_reconstruct_history = yes" in bootstrap
     assert "corporate_history_full_enabled = yes" in monthly
     assert "corporate_history_outcomes_only_enabled = yes" in monthly
     assert (
@@ -600,7 +658,6 @@ def test_startup_modes_monthly_terminal_and_scenarios_match_contract():
     assert chain["full_start_strategies"] == [
         "yearly_dispatcher",
         "current_year_scheduler",
-        "hidden_anchor",
         "reconstruction",
     ]
     assert chain["outcomes_only_strategy"] == "reconstruction"
@@ -612,7 +669,14 @@ def test_startup_modes_monthly_terminal_and_scenarios_match_contract():
             for caller in callers
             if caller.startswith("effect:")
         }
-        assert set(scripts.event_callers.get(event_id, ())) == expected_effects
+        actual_effects = set(scripts.event_callers.get(event_id, ()))
+        recovery_effects = {
+            caller
+            for caller in actual_effects
+            if caller == "TAI_corporate_history_recover_midyear_events"
+            or caller.startswith("TAI_pc_industry_recover_")
+        }
+        assert actual_effects == expected_effects | recovery_effects
 
     scenario_names = [
         item["name"]

@@ -286,6 +286,9 @@ def _simulate_bridge(scenario: Mapping[str, object]) -> Dict[str, object]:
 
 def _chain_index(manifest: Mapping[str, object]) -> Dict[str, Mapping[str, object]]:
     result: Dict[str, Mapping[str, object]] = {}
+    schema_version = manifest.get("schema_version", 1)
+    if type(schema_version) is not int or schema_version < 1:
+        raise ScenarioError("manifest schema_version must be a positive integer")
     chains = manifest.get("chains", [])
     if not isinstance(chains, list):
         raise ScenarioError("manifest chains must be a list")
@@ -297,7 +300,9 @@ def _chain_index(manifest: Mapping[str, object]) -> Dict[str, Mapping[str, objec
         root = raw_chain["root"]
         if root in result:
             raise ScenarioError(f"duplicate manifest chain root: {root}")
-        result[root] = raw_chain
+        chain = dict(raw_chain)
+        chain["_schema_version"] = schema_version
+        result[root] = chain
         for auxiliary in raw_chain.get("auxiliary_lifecycles", []):
             if not isinstance(auxiliary, dict) or not isinstance(
                 auxiliary.get("root"), str
@@ -324,8 +329,27 @@ def _chain_index(manifest: Mapping[str, object]) -> Dict[str, Mapping[str, objec
                 "reconstruction_effect": auxiliary.get("reconstruction_effect"),
                 "scheduler_effect": auxiliary.get("scheduler_effect"),
                 "expected_yearly_callers": auxiliary.get("expected_yearly_callers", {}),
+                "_schema_version": schema_version,
             }
     return result
+
+
+def _recovery_callers(
+    chain: Mapping[str, object], actual_callers: Set[str]
+) -> Set[str]:
+    owner = chain.get("tag")
+    root = chain.get("root")
+    generic = (
+        f"{owner}_corporate_history_recover_midyear_events"
+        if isinstance(owner, str)
+        else ""
+    )
+    native_prefix = f"{root}_recover_" if isinstance(root, str) else ""
+    return {
+        caller
+        for caller in actual_callers
+        if caller == generic or (native_prefix and caller.startswith(native_prefix))
+    }
 
 
 def _simulate_history(
@@ -362,6 +386,14 @@ def _simulate_history(
         )
 
     start = _parse_date(scenario.get("start_date"), "start_date")
+    raw_owner_available = scenario.get("owner_available_from")
+    owner_available = (
+        start
+        if raw_owner_available is None
+        else _parse_date(raw_owner_available, "owner_available_from")
+    )
+    activation = max(start, owner_available)
+    schema_version = int(chain.get("_schema_version", 1))
     initial_markers = set(scenario.get("initial_markers", []))
     strategies = set(chain.get("full_start_strategies", []))
     outcomes_strategy = chain.get("outcomes_only_strategy")
@@ -413,10 +445,15 @@ def _simulate_history(
                     for caller in declared_callers
                     if isinstance(caller, str) and caller.startswith("effect:")
                 }
-                if actual_callers != declared_effect_callers:
+                effective_declared_callers = set(declared_effect_callers)
+                if schema_version >= 6:
+                    effective_declared_callers.update(
+                        _recovery_callers(chain, actual_callers)
+                    )
+                if actual_callers != effective_declared_callers:
                     raise ScenarioError(
                         f"{event_id} scripted callers differ from the contract: "
-                        f"expected {sorted(declared_effect_callers)}, found {sorted(actual_callers)}"
+                        f"expected {sorted(effective_declared_callers)}, found {sorted(actual_callers)}"
                     )
                 declared_years = {
                     int(match.group(1))
@@ -465,28 +502,35 @@ def _simulate_history(
         )
         if mode == "outcomes_only":
             if (
-                milestone_date < start
+                milestone_date < activation
                 and outcomes_strategy == "reconstruction"
                 and marker_reconstructable
             ):
                 reconstructed.append(marker)
             continue
-        if milestone_date < start:
+        if milestone_date < activation:
             (
                 reconstructed
                 if can_reconstruct and marker_reconstructable
                 else stranded
             ).append(marker)
-        elif milestone_date.year == start.year:
-            january_first = start.month == 1 and start.day == 1
+        elif milestone_date.year == activation.year:
+            january_first = activation.month == 1 and activation.day == 1
+            actual_callers = (
+                set()
+                if scripts is None
+                else set(scripts.event_callers.get(event_id, frozenset()))
+            )
             scheduler_matches = scripts is None or (
-                start.year in scripts.scheduler_years(scheduler_effect, event_id)
+                activation.year in scripts.scheduler_years(scheduler_effect, event_id)
                 and scheduler_effect in scripts.event_callers.get(event_id, frozenset())
             )
-            if (
-                "current_year_scheduler" in strategies
-                and january_first
-                and scheduler_matches
+            recovery_matches = scripts is None or bool(
+                _recovery_callers(chain, actual_callers)
+            )
+            if "current_year_scheduler" in strategies and (
+                (schema_version >= 6 and (scheduler_matches or recovery_matches))
+                or (schema_version < 6 and january_first and scheduler_matches)
             ):
                 visible.append(event_id)
             else:
@@ -518,7 +562,7 @@ def _simulate_history(
                 f"expected date > {expected_terminal}, found {actual}"
             )
         if (
-            start > terminal
+            activation > terminal
             and terminal_matches
             and (
                 (mode == "outcomes_only" and outcomes_strategy == "reconstruction")

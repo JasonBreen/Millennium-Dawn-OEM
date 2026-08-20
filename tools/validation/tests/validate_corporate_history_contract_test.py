@@ -1536,6 +1536,60 @@ def test_dispatcher_requires_the_matching_trigger_year_caller(tmp_path):
     )
 
 
+def _schema_v6_dispatcher_messages(root: Path) -> list[str]:
+    validator = Validator(str(root), no_color=True)
+    chains = validator._load_manifest()
+    validator._manifest_payload["schema_version"] = 6
+    effect_defs = validator._load_top_level_blocks(["common/scripted_effects/**/*.txt"])
+    event_defs = validator._load_events()
+    return [
+        message
+        for message, _file, _line in validator._validate_dispatchers(
+            chains, effect_defs, event_defs, {}
+        )
+    ]
+
+
+def test_schema_v6_dispatcher_requires_central_monthly_year_owner(tmp_path):
+    _build_fixture(tmp_path)
+
+    messages = _schema_v6_dispatcher_messages(tmp_path)
+
+    assert any(
+        "USA_corporate_trigger_year_2001 must be called by "
+        "corporate_history_dispatch_year_2001" in message
+        for message in messages
+    )
+
+
+def test_schema_v6_dispatcher_accepts_central_monthly_year_owner(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/00_yearly_effects.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "trigger_year_2001_events = {\n"
+            "\tUSA_corporate_trigger_year_2001 = yes\n"
+            "}",
+            "trigger_year_2001_events = {\n"
+            "\tcorporate_history_dispatch_year_2001 = yes\n"
+            "}\n\n"
+            "corporate_history_dispatch_year_2001 = {\n"
+            "\tUSA_corporate_trigger_year_2001 = yes\n"
+            "}",
+        ),
+        encoding="utf-8",
+    )
+
+    messages = _schema_v6_dispatcher_messages(tmp_path)
+
+    assert not any(
+        "USA_corporate_trigger_year_2001 requires exactly one yearly-dispatch caller"
+        in message
+        or "USA_corporate_trigger_year_2001 must be called by" in message
+        for message in messages
+    )
+
+
 def test_dispatcher_event_calls_must_be_inside_the_full_gate(tmp_path):
     _build_fixture(tmp_path)
     path = (
@@ -2425,6 +2479,20 @@ def test_schema_v5_requires_reusable_decision_lifecycles(tmp_path):
 
     assert any(
         "Schema v5 requires reusable_decision_lifecycles" in message
+        for message in _messages(tmp_path)
+    )
+
+
+def test_schema_v6_requires_independent_subsystems(tmp_path):
+    _build_fixture(tmp_path)
+    _enable_economic_layer_fixture(tmp_path)
+    path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["schema_version"] = 6
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    assert any(
+        "Schema v6 requires a non-empty independent_subsystems list" in message
         for message in _messages(tmp_path)
     )
 

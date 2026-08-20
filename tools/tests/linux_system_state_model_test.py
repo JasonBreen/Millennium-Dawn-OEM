@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import re
 from pathlib import Path
@@ -17,8 +19,8 @@ CATEGORY_PATH = (
 BRIDGE_PATH = ROOT / "common" / "scripted_effects" / "USA_corporate_systems_effects.txt"
 STORAGE_EFFECTS_PATH = ROOT / "common" / "scripted_effects" / "USA_dell_effects.txt"
 STORAGE_EVENTS_PATH = ROOT / "events" / "United States.txt"
-STORAGE_DISPATCH_PATH = (
-    ROOT / "common" / "on_actions" / "01_oem_corporate_history_on_actions.txt"
+STORAGE_DRIVER_PATH = (
+    ROOT / "common" / "scripted_effects" / "USA_oem_legacy_effects.txt"
 )
 IBM_EFFECTS_PATH = ROOT / "common" / "scripted_effects" / "USA_ibm_effects.txt"
 IBM_EVENTS_PATH = ROOT / "events" / "USA_ibm_events.txt"
@@ -148,7 +150,7 @@ def _localisation_keys(path: Path) -> list[str]:
 
 def _shared_system() -> dict:
     manifest = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
-    assert manifest["schema_version"] == 5
+    assert manifest["schema_version"] == 6
     systems = [
         system
         for system in manifest["shared_systems"]
@@ -158,12 +160,12 @@ def _shared_system() -> dict:
     return systems[0]
 
 
-def test_schema_v5_declares_the_public_linux_contract_exactly():
+def test_schema_v6_declares_the_public_linux_contract_exactly():
     system = _shared_system()
 
     assert system["root"] == "linux_system"
-    assert system["dispatcher_host"] == "ABK"
-    assert system["participant_array"] == "global.linux_system_participants"
+    assert system["dispatcher_host"] == "country_local"
+    assert system["participant_array"] == ""
     assert system["game_rule"] == {
         "id": "rule_linux_ecosystem",
         "options": ["full", "outcomes_only", "off"],
@@ -214,53 +216,48 @@ def test_rule_modes_and_public_effect_surface_are_stable():
     assert "linux_system_outcomes_only_enabled = yes" in enabled
 
     assert set(system["scripted_effects"]) == {
-        "linux_system_register_country",
-        "linux_system_mark_dirty",
         "linux_system_reconstruct_country",
-        "linux_system_refresh_adapter",
-        "linux_system_recalculate_state",
-        "linux_system_refresh_ideas",
+        *(f"linux_system_schedule_event_{index}" for index in range(1, 6)),
+        "linux_system_schedule_year_events",
+        *(f"linux_system_activate_event_{index}" for index in range(1, 6)),
+        "linux_system_recover_due_events",
         "linux_system_clear_owned_artifacts",
+        "linux_system_monthly_driver",
     }
     for effect in system["scripted_effects"]:
         assert len(re.findall(rf"(?m)^{re.escape(effect)}\s*=\s*\{{", effects)) == 1
 
 
-def test_registry_is_deduplicated_country_scoped_and_bounded():
+def test_driver_is_country_local_monthly_and_has_no_global_registry():
     effects = EFFECTS_PATH.read_text(encoding="utf-8")
     on_actions = ON_ACTIONS_PATH.read_text(encoding="utf-8")
     combined = effects + on_actions
 
     assert "every_country" not in combined
     assert "random_country" not in combined
-    register = _named_block(effects, "linux_system_register_country")
-    assert (
-        "NOT = { is_in_array = { global.linux_system_participants = THIS } }"
-        in register
-    )
-    assert "add_to_array = { global.linux_system_participants = THIS }" in register
+    assert "global.linux_system_participants" not in combined
+    assert not re.search(r"\b(?:add_to|remove_from|clear)_array\b", combined)
+
+    monthly_host = _named_block(on_actions, "on_monthly")
+    assert monthly_host.count("linux_system_monthly_driver = yes") == 1
+    for forbidden_host in ("on_startup", "on_daily", "on_weekly", "on_daily_ABK"):
+        assert forbidden_host not in on_actions
+    assert "ABK =" not in on_actions
+
+    monthly = _named_block(effects, "linux_system_monthly_driver")
     for excluded in (
         "tag = ABK",
         "tag = ZOM",
         "MD_special_countries = yes",
         "collapsed_nation",
     ):
-        assert excluded in register
-
-    weekly = _named_block(on_actions, "on_weekly")
-    assert "linux_system_register_country = yes" in weekly
-    assert "NOT = { has_country_flag = linux_system_initialized }" in weekly
-    assert (
-        "NOT = { is_in_array = { global.linux_system_participants = THIS } }" in weekly
-    )
-
-    monthly = _named_block(effects, "linux_system_monthly_driver")
-    assert "array = global.linux_system_participants" in monthly
-    assert "NOT = { has_country_flag = collapsed_nation }" in monthly
-    assert "linux_system_recover_pending_events = yes" in monthly
-    cleanup = _named_block(effects, "linux_system_cleanup_all")
-    assert "for_each_scope_loop" in cleanup
-    assert "clear_array = global.linux_system_participants" in cleanup
+        assert excluded in monthly
+    assert "linux_system_initialize_state = yes" in monthly
+    assert "linux_system_reconstruct_country = yes" in monthly
+    assert "linux_system_full_enabled = yes" in monthly
+    assert "linux_system_schedule_year_events = yes" in monthly
+    assert "linux_system_recover_due_events = yes" in monthly
+    assert "linux_system_clear_owned_artifacts = yes" in monthly
 
 
 def test_country_lifecycle_skips_collapsed_and_restores_missed_or_future_state():
@@ -270,48 +267,31 @@ def test_country_lifecycle_skips_collapsed_and_restores_missed_or_future_state()
     needs_reconstruction = _named_block(
         triggers, "linux_system_country_needs_reconstruction"
     )
-    assert "NOT = { has_country_flag = linux_system_reconstruction_complete }" in (
-        needs_reconstruction
-    )
     for index in range(1, 6):
-        assert (
-            f"has_global_flag = GLOBAL_linux_system_milestone_{index}_reached"
-            in needs_reconstruction
-        )
+        assert f"GLOBAL_linux_system_milestone_{index}_reached" not in effects
+        assert f"GLOBAL_linux_system_milestone_{index}_reached" not in triggers
         assert (
             f"NOT = {{ has_country_flag = linux_system_event_{index}_resolved }}"
             in needs_reconstruction
         )
-        assert (
-            f"NOT = {{ has_country_flag = linux_system_event_{index}_expected }}"
-            in needs_reconstruction
-        )
-        assert (
-            f"NOT = {{ has_country_flag = linux_system_event_{index}_pending }}"
-            in needs_reconstruction
-        )
-
-    prepare = _named_block(effects, "linux_system_prepare_future_delivery")
-    assert prepare.count("linux_system_full_enabled = yes") == 5
-    assert prepare.count("NOT = { has_country_flag = collapsed_nation }") == 5
-    for index in range(1, 6):
-        assert (
-            f"NOT = {{ has_global_flag = GLOBAL_linux_system_milestone_{index}_reached }}"
-            in prepare
-        )
-        assert f"set_country_flag = linux_system_event_{index}_expected" in prepare
 
         schedule = _named_block(effects, f"linux_system_schedule_event_{index}")
         activate = _named_block(effects, f"linux_system_activate_event_{index}")
-        reach = _named_block(effects, f"linux_system_reach_milestone_{index}")
+        assert "linux_system_full_enabled = yes" in schedule
         assert "NOT = { has_country_flag = collapsed_nation }" in schedule
         assert "NOT = { has_country_flag = collapsed_nation }" in activate
-        assert "NOT = { has_country_flag = collapsed_nation }" in reach
+        assert f"id = linux_system_events.{index}" in schedule
+        assert f"id = linux_system_events.{index}" in activate
 
-    register = _named_block(effects, "linux_system_register_country")
+    schedule_year = _named_block(effects, "linux_system_schedule_year_events")
+    recovery = _named_block(effects, "linux_system_recover_due_events")
     monthly = _named_block(effects, "linux_system_monthly_driver")
-    assert "linux_system_prepare_future_delivery = yes" in register
-    assert "linux_system_prepare_future_delivery = yes" in monthly
+    for index in range(1, 6):
+        assert f"linux_system_schedule_event_{index} = yes" in schedule_year
+        assert f"linux_system_activate_event_{index} = yes" in recovery
+    assert monthly.index("linux_system_reconstruct_country = yes") < monthly.index(
+        "linux_system_schedule_year_events = yes"
+    )
     assert "linux_system_country_needs_reconstruction = yes" in _named_block(
         effects, "linux_system_reconstruct_country"
     )
@@ -325,7 +305,7 @@ def test_reconstruction_has_no_cost_or_reward_side_effects():
         _named_block(effects, f"linux_system_reconstruct_event_{index}")
         for index in range(1, 6)
     )
-    blocks.append(_named_block(storage, "USA_oem_storage_reconstruct_linux_history"))
+    blocks.append(_named_block(storage, "USA_oem_storage_reconstruct_history"))
     reconstruction = "\n".join(blocks)
 
     for forbidden in (
@@ -347,7 +327,7 @@ def test_reconstruction_has_no_cost_or_reward_side_effects():
         assert f"linux_system_base_support_model = {stage['support_model']}" in block
 
 
-def test_off_cleanup_removes_only_owned_artifacts_and_preserves_history():
+def test_off_cleanup_removes_all_linux_owned_state_but_not_storage_state():
     effects = EFFECTS_PATH.read_text(encoding="utf-8")
     triggers = TRIGGERS_PATH.read_text(encoding="utf-8")
     clear = _named_block(effects, "linux_system_clear_country_state")
@@ -359,17 +339,21 @@ def test_off_cleanup_removes_only_owned_artifacts_and_preserves_history():
     for index in range(1, 6):
         assert f"clr_country_flag = linux_system_event_{index}_expected" in clear
         assert f"clr_country_flag = linux_system_event_{index}_pending" in clear
-        assert f"clr_country_flag = linux_system_event_{index}_resolved" not in clear
-        assert f"linux_system_event_{index}_route_" not in clear
-    for preserved in (
+        assert f"clr_country_flag = linux_system_event_{index}_resolved" in clear
+    for cleared in (
         "linux_system_initialized",
+        "linux_system_country_bootstrapped",
         "linux_system_reconstruction_complete",
-        "linux_system_usa_storage_legacy_imported",
+        "linux_system_dirty",
     ):
-        assert f"clr_country_flag = {preserved}" not in clear
+        assert f"clr_country_flag = {cleared}" in clear
+    for variable in VARIABLE_BOUNDS:
+        assert f"clear_variable = {variable}" in clear
     assert "set_variable" not in clear
-    assert "clr_global_flag = GLOBAL_linux_system_milestone_" not in effects
-    assert "USA_oem_storage_clear_linux_pending_markers = yes" in clear
+    assert "global." not in effects
+    assert "GLOBAL_linux_system_milestone_" not in effects
+    assert "USA_oem_storage_" not in clear
+    assert "linux_system_usa_storage_legacy_" not in clear
     assert "linux_system_program_cooldown" not in clear
     assert "linux_system_program_cooldown" not in owned
 
@@ -393,7 +377,7 @@ def test_global_events_have_exact_lifecycle_and_state_deltas():
         )
         options = _option_blocks(event)
         assert len(options) == len(expected_deltas)
-        for option, expected in zip(options, expected_deltas, strict=True):
+        for option, expected in zip(options, expected_deltas):
             actual = (
                 _axis_delta(option, "linux_system_base_deployment"),
                 _axis_delta(option, "linux_system_base_stewardship"),
@@ -469,11 +453,13 @@ def test_event_costs_rewards_and_fallbacks_match_the_design():
     assert "linux_system_national_signing_program days = 365" in event_3[2]
     assert "modifier = { factor = 0 }" in event_3[3]
 
-    for option, category in zip(
-        event_4,
-        ("CAT_internet_tech", "CAT_internet_tech", "CAT_encryption_tech"),
-        strict=True,
-    ):
+    event_4_categories = (
+        "CAT_internet_tech",
+        "CAT_internet_tech",
+        "CAT_encryption_tech",
+    )
+    assert len(event_4) == len(event_4_categories)
+    for option, category in zip(event_4, event_4_categories):
         assert "bonus = 0.05" in option
         assert "uses = 1" in option
         assert f"category = {category}" in option
@@ -511,7 +497,11 @@ def test_dispatch_and_recovery_own_every_expected_pending_resolved_marker():
     on_actions = ON_ACTIONS_PATH.read_text(encoding="utf-8")
     system = _shared_system()
 
-    assert "on_daily_ABK" in on_actions
+    assert "on_monthly" in on_actions
+    assert on_actions.count("linux_system_monthly_driver = yes") == 1
+    assert "on_daily" not in on_actions
+    assert "on_startup" not in on_actions
+    assert "ABK =" not in on_actions
     for index in range(1, 6):
         markers = system["lifecycle_markers"][f"linux_system_events.{index}"]
         assert markers == [
@@ -523,9 +513,9 @@ def test_dispatch_and_recovery_own_every_expected_pending_resolved_marker():
         assert f"set_country_flag = linux_system_event_{index}_expected" in schedule
         assert f"flag = linux_system_event_{index}_pending" in schedule
         assert f"id = linux_system_events.{index}" in schedule
-        assert f"GLOBAL_linux_system_milestone_{index}_reached" in effects
+        assert f"GLOBAL_linux_system_milestone_{index}_reached" not in effects
 
-    recovery = _named_block(effects, "linux_system_recover_pending_events")
+    recovery = _named_block(effects, "linux_system_recover_due_events")
     repair = _named_block(effects, "linux_system_repair_delivery_markers")
     assert "linux_system_repair_delivery_markers = yes" in recovery
     for index in range(1, 6):
@@ -535,20 +525,24 @@ def test_dispatch_and_recovery_own_every_expected_pending_resolved_marker():
             in repair
         )
         assert f"set_country_flag = linux_system_event_{index}_expected" in repair
-        assert f"has_country_flag = linux_system_event_{index}_expected" in recovery
-        assert (
-            f"NOT = {{ has_country_flag = linux_system_event_{index}_pending }}"
-            in recovery
-        )
         assert (
             f"NOT = {{ has_country_flag = linux_system_event_{index}_resolved }}"
             in recovery
         )
-        assert f"id = linux_system_events.{index} days = 1" in recovery
+        assert f"linux_system_activate_event_{index} = yes" in recovery
+        activation = _named_block(effects, f"linux_system_activate_event_{index}")
+        assert "linux_system_outcomes_only_enabled = yes" in activation
+        assert f"linux_system_reconstruct_event_{index} = yes" in activation
+        assert f"id = linux_system_events.{index} days = 1" in activation
 
-    startup = _named_block(effects, "linux_system_startup_bootstrap")
-    assert "linux_system_recover_pending_events = yes" in startup
-    assert "USA_oem_storage_recover_pending_events = yes" in startup
+    monthly = _named_block(effects, "linux_system_monthly_driver")
+    assert "linux_system_full_enabled = yes" in monthly
+    assert "linux_system_schedule_year_events = yes" in monthly
+    assert "linux_system_recover_due_events = yes" in monthly
+    assert "linux_system_outcomes_only_enabled = yes" in monthly
+    assert "linux_system_reconstruct_country = yes" in monthly
+    assert "linux_system_clear_owned_artifacts = yes" in monthly
+    assert "linux_system_startup_bootstrap" not in effects
 
 
 def test_persistent_and_timed_ideas_match_the_manifest_exactly():
@@ -607,7 +601,7 @@ def test_storage_chain_has_complete_lifecycle_and_safe_reconstruction():
     event_text = STORAGE_EVENTS_PATH.read_text(encoding="utf-8")
     events = _event_map(event_text, "USA_oem_events")
     effects = STORAGE_EFFECTS_PATH.read_text(encoding="utf-8")
-    dispatch = STORAGE_DISPATCH_PATH.read_text(encoding="utf-8")
+    driver_effects = STORAGE_DRIVER_PATH.read_text(encoding="utf-8")
     system = _shared_system()
 
     for index in range(16, 24):
@@ -618,6 +612,7 @@ def test_storage_chain_has_complete_lifecycle_and_safe_reconstruction():
             f"USA_oem_storage_event_{index}_pending",
             f"USA_oem_storage_event_{index}_resolved",
         ]
+        assert "corporate_history_full_enabled = yes" in event
         assert "linux_system_full_enabled = yes" in event
         assert f"has_country_flag = USA_oem_storage_event_{index}_expected" in event
         assert f"has_country_flag = USA_oem_storage_event_{index}_pending" in event
@@ -641,16 +636,14 @@ def test_storage_chain_has_complete_lifecycle_and_safe_reconstruction():
             )
             assert "linux_system_recalculate_state = yes" in option
 
-        assert (
-            f"NOT = {{ has_country_flag = USA_oem_storage_event_{index}_resolved }}"
-            in dispatch
-        )
-        assert (
-            f"NOT = {{ has_country_flag = USA_oem_storage_event_{index}_pending }}"
-            in dispatch
-        )
+        schedule = _named_block(driver_effects, "USA_oem_storage_schedule_year_events")
+        due = _named_block(driver_effects, "USA_oem_storage_schedule_due_events")
+        assert f"USA_oem_events.{index}" in schedule
+        assert f"USA_oem_storage_event_{index}_resolved" in schedule
+        assert f"USA_oem_storage_event_{index}_pending" in schedule
+        assert f"USA_oem_storage_event_{index}_expected" in due
 
-    reconstruct = _named_block(effects, "USA_oem_storage_reconstruct_linux_history")
+    reconstruct = _named_block(effects, "USA_oem_storage_reconstruct_history")
     for forbidden in (
         "add_political_power",
         "modify_treasury_effect",
@@ -671,6 +664,17 @@ def test_storage_chain_has_complete_lifecycle_and_safe_reconstruction():
             in repair
         )
         assert f"set_country_flag = USA_oem_storage_event_{index}_expected" in repair
+
+    monthly = _named_block(driver_effects, "USA_oem_storage_monthly_driver")
+    assert "corporate_history_enabled = yes" in monthly
+    assert "linux_system_enabled = yes" in monthly
+    assert "corporate_history_full_enabled = yes" in monthly
+    assert "linux_system_full_enabled = yes" in monthly
+    assert "USA_oem_storage_schedule_year_events = yes" in monthly
+    assert "USA_oem_storage_schedule_due_events = yes" in monthly
+    assert "USA_oem_storage_reconstruct_history = yes" in monthly
+    assert "USA_oem_storage_clear_linux_pending_markers = yes" in monthly
+    assert "USA_oem_storage_clear_legacy_linux_adapter_state = yes" in monthly
 
 
 def test_storage_legacy_import_is_once_only_read_only_and_bounded():

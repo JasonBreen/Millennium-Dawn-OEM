@@ -1,5 +1,7 @@
 # OEM Release Readiness Review
 
+> **Historical pre-remediation snapshot.** The topology, findings, and line references below describe the audited `761cbca6f2` tree and are intentionally preserved as review evidence. The OEM 2.0 RC remediation replaced the ABK/global dispatcher with target-local monthly ownership, brought GPU/Israel/legacy U.S. OEM under the Corporate History rule, and introduced the schema-v6 registry. Use `corporate-history-framework.md`, `linux-system-reference.md`, and `noncontract-oem-chain-audit.md` for the current architecture.
+
 Adversarial pre-contribution review of Millennium Dawn OEM against
 `MillenniumDawn/Millennium-Dawn`. Scope: upstream compatibility, architecture
 consistency, runtime risk, save/reload risk, Corporate History lifecycle,
@@ -20,14 +22,14 @@ historical wording, PR reviewability.
 These are the properties most likely to be wrong in a system this size. Each was
 verified independently, not taken from the contract validator's word.
 
-| Property | Result | Evidence |
-| --- | --- | --- |
-| Reconstruction idempotence | CLEAN | 390/390 relative writes inside `*_reconstruct_history` sit inside an `if` whose `limit` negates a flag the same branch sets |
-| Double-fire of visible events | CLEAN | 353 `_pending` / `country_event` pairs all have positive margin including `random_days`; the only 19 zero-margin pairs are upstream files |
-| Monthly updater inflating state | CLEAN | 0 `add_to_variable` and 0 reward effects across all 13 `*_monthly_outcomes` |
-| Capstone ideas mutually exclusive | CLEAN | 113 declared outcome ideas, all granted, all sibling-guarded; every chain has a terminal marker |
-| Read-only dashboard effect-bearing | CLEAN | 10/11 dashboards have zero stateful ops; USA's 7 display decisions are `cost = 0` with no `complete_effect` |
-| Adapter mutating source subsystem | CLEAN | Contract declares 91 `allowed_native_reads` / 10 `native_write_prefixes`, enforced by `validate_corporate_history_contract.py` and `linux_national_adapter_contract_test.py` |
+| Property                           | Result | Evidence                                                                                                                                                                     |
+| ---------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reconstruction idempotence         | CLEAN  | 390/390 relative writes inside `*_reconstruct_history` sit inside an `if` whose `limit` negates a flag the same branch sets                                                  |
+| Double-fire of visible events      | CLEAN  | 353 `_pending` / `country_event` pairs all have positive margin including `random_days`; the only 19 zero-margin pairs are upstream files                                    |
+| Monthly updater inflating state    | CLEAN  | 0 `add_to_variable` and 0 reward effects across all 13 `*_monthly_outcomes`                                                                                                  |
+| Capstone ideas mutually exclusive  | CLEAN  | 113 declared outcome ideas, all granted, all sibling-guarded; every chain has a terminal marker                                                                              |
+| Read-only dashboard effect-bearing | CLEAN  | 10/11 dashboards have zero stateful ops; USA's 7 display decisions are `cost = 0` with no `complete_effect`                                                                  |
+| Adapter mutating source subsystem  | CLEAN  | Contract declares 91 `allowed_native_reads` / 10 `native_write_prefixes`, enforced by `validate_corporate_history_contract.py` and `linux_national_adapter_contract_test.py` |
 
 What blocks the release is not core engineering. It is one release-hygiene
 failure that would damage upstream on merge (G1), a player-facing scope boundary
@@ -63,11 +65,11 @@ on_monthly_TAG -> TAG_corporate_history_monthly_outcomes   SPLIT AUTHORITY <-- B
 Three OEM namespaces fire visible events regardless of the Corporate History
 rule, including when it is set to `disabled`:
 
-| Namespace | Visible events | Dispatched from | Rule-gated? |
-| --- | --- | --- | --- |
-| `ISR_oem_events` | 10 of 11 | CH bootstrap + CH yearly dispatcher | No |
-| `USA_oem_events` | `.1-.12` mostly | CH yearly dispatcher | Partial - `.13`/`.14` gate on `corporate_history_full_enabled`, `.16-.23` on `linux_system_full_enabled`, the rest not at all |
-| `gpu_development` | `.1-.9` | CH bootstrap + CH yearly dispatcher | No, by design - its *bridge* into CH is gated (`00_gpu_development_effects.txt:113`, `events/00_gpu_development.txt:752`) |
+| Namespace         | Visible events  | Dispatched from                     | Rule-gated?                                                                                                                   |
+| ----------------- | --------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `ISR_oem_events`  | 10 of 11        | CH bootstrap + CH yearly dispatcher | No                                                                                                                            |
+| `USA_oem_events`  | `.1-.12` mostly | CH yearly dispatcher                | Partial - `.13`/`.14` gate on `corporate_history_full_enabled`, `.16-.23` on `linux_system_full_enabled`, the rest not at all |
+| `gpu_development` | `.1-.9`         | CH bootstrap + CH yearly dispatcher | No, by design - its _bridge_ into CH is gated (`00_gpu_development_effects.txt:113`, `events/00_gpu_development.txt:752`)     |
 
 Dispatch sites for ISR:
 
@@ -88,8 +90,8 @@ chosen on purpose.
 
 The defect is therefore **player-facing, not architectural.** The rule reads
 "Corporate History: Off", and its description
-(`localisation/english/MD_game_rules_l_english.yml:879`) says *"Rule-gated
-corporate-history chains are fully disabled"*. That sentence is circular -
+(`localisation/english/MD_game_rules_l_english.yml:879`) says _"Rule-gated
+corporate-history chains are fully disabled"_. That sentence is circular -
 rule-gated chains are disabled by the rule - and tells a player nothing about
 the three namespaces that keep firing. Someone who switches Corporate History off
 to get a cleaner campaign will still receive the Israeli electronics survey, the
@@ -150,15 +152,15 @@ exists so upstream changes do not repeatedly conflict with Corporate History. It
 wires 6 countries (FIN, TAI, JAP, CAN, ENG, UKR). The other 7 are wired inside
 upstream-owned files:
 
-| File | Line |
-| --- | --- |
-| `common/on_actions/99_CHI_on_actions.txt` | 64 |
-| `common/on_actions/99_FRA_on_actions.txt` | 49 |
-| `common/on_actions/99_GER_on_actions.txt` | 772 |
-| `common/on_actions/99_POL_on_actions.txt` | 103 |
-| `common/on_actions/99_SOV_on_actions.txt` | 74 |
-| `common/on_actions/99_SWE_on_actions.txt` | 4 |
-| `common/on_actions/99_USA_on_actions.txt` | 76 |
+| File                                      | Line |
+| ----------------------------------------- | ---- |
+| `common/on_actions/99_CHI_on_actions.txt` | 64   |
+| `common/on_actions/99_FRA_on_actions.txt` | 49   |
+| `common/on_actions/99_GER_on_actions.txt` | 772  |
+| `common/on_actions/99_POL_on_actions.txt` | 103  |
+| `common/on_actions/99_SOV_on_actions.txt` | 74   |
+| `common/on_actions/99_SWE_on_actions.txt` | 4    |
+| `common/on_actions/99_USA_on_actions.txt` | 76   |
 
 The stated conflict-isolation benefit is only half realised, and no single file
 answers "where is the monthly driver registered?". Note also that
@@ -345,7 +347,7 @@ so `tools/` changes ship on CI's word alone.
   `[unused-scripted-trigger] FIN_nokia_has_customer_concentration_risk`,
   `FIN_nokia_has_china_exposure`.
 - `events/CAN_matrox_events.txt:861` - `[simplification] NOT with 5 children is
-  ambiguous`. Per `.claude/rules/general-rules.md`, `NOT = { A B C D E }` is NAND,
+ambiguous`. Per `.claude/rules/general-rules.md`, `NOT = { A B C D E }` is NAND,
   almost never intended. **This is the one OEM warning that can be a real logic
   bug - read it.**
 
@@ -373,18 +375,18 @@ On current main they render `GFX_matrox_g400` and `GFX_matrox_parhelia`
 (`events/CAN_matrox_events.txt:8,69`). The specific defect is fixed; the class of
 defect is not - see section 6.3.
 
-| # | Test | Statically provable? | Requires game? | Console command | Expected state | Save/reload? | Evidence |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| P1 | Corporate History = Off produces no OEM content | No - proven false statically for ISR | Yes | New game rule Off; `tag ISR`; advance to 2001-06 | Zero ISR OEM events. Currently fails (B1) | No | 0 `has_game_rule` in ISR files; 10 visible events |
-| P2 | Annex ABK, yearly dispatch survives | No | Yes | `tag GEO`; annex ABK; advance past next 1 Jan | Next `OEM_upstream_sync_year_YYYY_dispatched` set. Expected to fail (B2) | Yes, before/after annex | Sole `on_daily_ABK` host for both subsystems |
-| P3 | Full-mode startup, `error.log` clean | Partial | Yes | New game Full; wait 10 days; read `logs/error.log` | No unknown-modifier, unknown-effect or script_math errors | No | Contract validator clean; engine side unproven |
-| P4 | Outcomes Only reconstructs every chain Full does | Partial | Yes | New game Outcomes Only; `tag USA`; open dashboard | Same 32 chains reconstructed | No | Contract enforces both branches; HP/Google/Oracle/Sun-MS have empty `outcome_idea_prefixes` - verify intentional |
-| P5 | Save before a scheduled event, reload, fires once | No | Yes | Full; `tag CHI`; save 2014-06-01 (`CHI_lenovo_events.7` pending, fires +190d, flag +230d); reload; advance 250d | Fires exactly once | Yes - this is the test | 353/353 pending pairs have positive margin |
-| P6 | Save after a selection, reload, no replay | No | Yes | Pick a capstone option; save; reload; advance 60d | No duplicate idea, no doubled variable | Yes | 113 capstone grants all sibling-guarded |
-| P7 | Run hidden reconstruction twice | YES - proven idempotent | Optional confirm | See note below - **not** `event USA_ibm_events.90` | Identical state both runs | No | 390/390 relative writes flag-guarded. Confirm, do not discover |
-| P8 | Cross-country receiver, remove secondary country | No | Yes | `tag SWE`; annex/release FIN; advance a Nokia->Ericsson beat | Ericsson reads Finland without writing it; no error on missing tag | No | Contract declares read-only adapters; #24 requires this for Sony/Sweden |
-| P9 | Collapse event recipient mid-chain | Partial | Yes | Force `collapsed_nation` on FRA; advance | FRA chain halts cleanly | No | FRA startup guards on `collapsed_nation` + `original_tag`; other chains uneven |
-| P10 | 2005 / 2017 / 2026 starts | N/A - no such bookmark | Yes | Only `blitzkrieg.txt` @ 2000.1.1 exists (`default = yes`) | - | - | Retarget to `.90` reconstruction events fired at date |
+| #   | Test                                              | Statically provable?                 | Requires game?   | Console command                                                                                                 | Expected state                                                           | Save/reload?            | Evidence                                                                                                         |
+| --- | ------------------------------------------------- | ------------------------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| P1  | Corporate History = Off produces no OEM content   | No - proven false statically for ISR | Yes              | New game rule Off; `tag ISR`; advance to 2001-06                                                                | Zero ISR OEM events. Currently fails (B1)                                | No                      | 0 `has_game_rule` in ISR files; 10 visible events                                                                |
+| P2  | Annex ABK, yearly dispatch survives               | No                                   | Yes              | `tag GEO`; annex ABK; advance past next 1 Jan                                                                   | Next `OEM_upstream_sync_year_YYYY_dispatched` set. Expected to fail (B2) | Yes, before/after annex | Sole `on_daily_ABK` host for both subsystems                                                                     |
+| P3  | Full-mode startup, `error.log` clean              | Partial                              | Yes              | New game Full; wait 10 days; read `logs/error.log`                                                              | No unknown-modifier, unknown-effect or script_math errors                | No                      | Contract validator clean; engine side unproven                                                                   |
+| P4  | Outcomes Only reconstructs every chain Full does  | Partial                              | Yes              | New game Outcomes Only; `tag USA`; open dashboard                                                               | Same 32 chains reconstructed                                             | No                      | Contract enforces both branches; HP/Google/Oracle/Sun-MS have empty `outcome_idea_prefixes` - verify intentional |
+| P5  | Save before a scheduled event, reload, fires once | No                                   | Yes              | Full; `tag CHI`; save 2014-06-01 (`CHI_lenovo_events.7` pending, fires +190d, flag +230d); reload; advance 250d | Fires exactly once                                                       | Yes - this is the test  | 353/353 pending pairs have positive margin                                                                       |
+| P6  | Save after a selection, reload, no replay         | No                                   | Yes              | Pick a capstone option; save; reload; advance 60d                                                               | No duplicate idea, no doubled variable                                   | Yes                     | 113 capstone grants all sibling-guarded                                                                          |
+| P7  | Run hidden reconstruction twice                   | YES - proven idempotent              | Optional confirm | See note below - **not** `event USA_ibm_events.90`                                                              | Identical state both runs                                                | No                      | 390/390 relative writes flag-guarded. Confirm, do not discover                                                   |
+| P8  | Cross-country receiver, remove secondary country  | No                                   | Yes              | `tag SWE`; annex/release FIN; advance a Nokia->Ericsson beat                                                    | Ericsson reads Finland without writing it; no error on missing tag       | No                      | Contract declares read-only adapters; #24 requires this for Sony/Sweden                                          |
+| P9  | Collapse event recipient mid-chain                | Partial                              | Yes              | Force `collapsed_nation` on FRA; advance                                                                        | FRA chain halts cleanly                                                  | No                      | FRA startup guards on `collapsed_nation` + `original_tag`; other chains uneven                                   |
+| P10 | 2005 / 2017 / 2026 starts                         | N/A - no such bookmark               | Yes              | Only `blitzkrieg.txt` @ 2000.1.1 exists (`default = yes`)                                                       | -                                                                        | -                       | Retarget to `.90` reconstruction events fired at date                                                            |
 
 **On P7 - `.90` events cannot be re-fired.** 27 of the 44 `.90` reconstruction
 events carry `fire_only_once = yes`, `USA_ibm_events.90` among them
@@ -395,7 +397,7 @@ directly. To confirm the property at runtime, add a scratch debug event in a
 local build with no `fire_only_once` whose `immediate` calls the reconstruct
 effect, fire it twice, and diff the dashboard. Note this is confirmation only:
 idempotence is already statically proven at 390/390 guarded writes, so a runtime
-failure here would indicate a *new* unguarded write, not a flaw in the existing
+failure here would indicate a _new_ unguarded write, not a flaw in the existing
 analysis.
 
 **On P10 - late-start reconstruction needs a clean state.** MD ships exactly one
@@ -473,13 +475,13 @@ which in each case restates the option set the buttons already show.
 493 picture assignments across OEM event files use 111 distinct sprites. Three
 generic images cover roughly 53%:
 
-| Sprite | Uses |
-| --- | --- |
-| `GFX_computer` | 131 |
-| `GFX_generic_factory` | 65 |
-| `GFX_stock_market` | 65 |
-| `GFX_cyber_attack` | 18 |
-| `GFX_USA_generic` | 15 |
+| Sprite                | Uses |
+| --------------------- | ---- |
+| `GFX_computer`        | 131  |
+| `GFX_generic_factory` | 65   |
+| `GFX_stock_market`    | 65   |
+| `GFX_cyber_attack`    | 18   |
+| `GFX_USA_generic`     | 15   |
 
 Issue #112 was filed against exactly this pattern for Matrox and was fixed by
 adding three dedicated sprites. 131 uses of `GFX_computer` is the same defect at
@@ -508,14 +510,14 @@ The two most recent commits on main (`761cbca6f2`, `c90a85fea1`, "Ignore
 upstream-only compatibility and vanilla music files") delete these and add them
 to `.gitignore`:
 
-| File | In upstream/main? |
-| --- | --- |
-| `events/Vietnam.txt` | YES |
-| `common/on_actions/99_VIE_on_actions.txt` | YES |
-| `common/national_focus/00_music_dlc_compatibility.txt` | YES |
-| `common/scripted_triggers/00_music_dlc_compatibility_triggers.txt` | YES |
-| `common/special_projects/projects/zz_vanilla_music_compatibility_projects.txt` | YES |
-| `localisation/english/replace/replaced_from_constructions_l_english.yml` | YES |
+| File                                                                           | In upstream/main? |
+| ------------------------------------------------------------------------------ | ----------------- |
+| `events/Vietnam.txt`                                                           | YES               |
+| `common/on_actions/99_VIE_on_actions.txt`                                      | YES               |
+| `common/national_focus/00_music_dlc_compatibility.txt`                         | YES               |
+| `common/scripted_triggers/00_music_dlc_compatibility_triggers.txt`             | YES               |
+| `common/special_projects/projects/zz_vanilla_music_compatibility_projects.txt` | YES               |
+| `localisation/english/replace/replaced_from_constructions_l_english.yml`       | YES               |
 
 Contributing OEM's tree upstream would delete Vietnam's content and the music-DLC
 compatibility layer. The `.gitignore` entries mean a sync cannot restore them -
@@ -535,21 +537,21 @@ and conflict. Either:
 
 ### G2 - tracked but gitignored (OEM-only)
 
-| File | Why it must go |
-| --- | --- |
-| `.mcp.json` | Local MCP server config (`md-mcp serve --mod-root .`). Editor tooling, not mod content. Already ignored - untrack it. |
-| `.vscode/hoi4_millennium_dawn.code-workspace` | Personal editor workspace. Already ignored - untrack it. |
+| File                                          | Why it must go                                                                                                        |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `.mcp.json`                                   | Local MCP server config (`md-mcp serve --mod-root .`). Editor tooling, not mod content. Already ignored - untrack it. |
+| `.vscode/hoi4_millennium_dawn.code-workspace` | Personal editor workspace. Already ignored - untrack it.                                                              |
 
 The three tracked `.psd` files matching `*.psd` are upstream-inherited art
 sources - leave them.
 
 ### G3 - fork-specific automation
 
-| Path | Why |
-| --- | --- |
-| `.github/workflows/temp-aug8-upstream-sync.yml` | Named "temp". One-off fork sync automation, meaningless upstream. |
-| `.github/workflows/temp-aug8-sync-diagnose.yml` | Same. |
-| `.github/workflows/pylint.yml` | OEM-added. Upstream has its own lint policy - propose, do not impose. |
+| Path                                            | Why                                                                   |
+| ----------------------------------------------- | --------------------------------------------------------------------- |
+| `.github/workflows/temp-aug8-upstream-sync.yml` | Named "temp". One-off fork sync automation, meaningless upstream.     |
+| `.github/workflows/temp-aug8-sync-diagnose.yml` | Same.                                                                 |
+| `.github/workflows/pylint.yml`                  | OEM-added. Upstream has its own lint policy - propose, do not impose. |
 
 ### G4 - generated diagnostics with developer-machine paths
 
@@ -576,15 +578,15 @@ already documents the ISR gap in B1.
 
 ### G6 - `resources/` dump: 658 files
 
-| Directory | Files |
-| --- | --- |
-| `deprecated-tech-graphics` | 263 |
-| `Old Tank Builder Icons` | 149 |
-| `deprecated-missile-graphics` | 70 |
-| `GFX Counter Icons` | 65 |
-| `Old MD Tech Icons - Bird Save` | 53 |
-| `consolidated-graphics-branch` | 36 |
-| `User Interface`, `Power projection`, misc | 22 |
+| Directory                                  | Files |
+| ------------------------------------------ | ----- |
+| `deprecated-tech-graphics`                 | 263   |
+| `Old Tank Builder Icons`                   | 149   |
+| `deprecated-missile-graphics`              | 70    |
+| `GFX Counter Icons`                        | 65    |
+| `Old MD Tech Icons - Bird Save`            | 53    |
+| `consolidated-graphics-branch`             | 36    |
+| `User Interface`, `Power projection`, misc | 22    |
 
 `resources/` is reference-only and unshipped, so this is not a runtime risk. But
 658 files under directories named "Old" and "deprecated-" in an upstream PR reads
@@ -605,24 +607,24 @@ orphaned fragments - delete them.
 
 ## 8. Fixes in priority order
 
-| # | Sev | Fix | Where |
-| --- | --- | --- | --- |
-| H1 | BLOCKER | Restore the 6 upstream files and narrow `.gitignore` in one forward-fixing commit (not a double revert - see G1) | `.gitignore`, 6 files |
-| H2 | SERIOUS | Resolve the "Off is not off" boundary for `ISR_oem_events`, `USA_oem_events` and `gpu_development`: reword the rule descriptions, add a suppressing option, or fold the first two under the gate | `MD_game_rules_l_english.yml:876-879`, `00_corporate_history_effects.txt:196`, `01_oem_..._on_actions.txt:44` |
-| H3 | SERIOUS | Add an explicit `independent_subsystems` allowlist to the contract and make the validator fail on any namespace dispatched from a Corporate History entry point that is neither registered nor allowlisted | `corporate_history_contract.json`, `validate_corporate_history_contract.py` |
-| H4 | SERIOUS | Move the yearly dispatch off `on_daily_ABK` into the per-country monthly drivers (country-scoped per AGENTS.md:35 - do not use a global on_action) | `01_oem_..._on_actions.txt:12`, `02_linux_system_on_actions.txt:12` |
-| H5 | SERIOUS | Delete the duplicated `USA_ibm_state_initialized` from inside the `OR` in 3 policy `visible` blocks | `USA_corporate_systems_dashboard.txt:149,356,460` |
-| H6 | SERIOUS | Consolidate all 13 monthly drivers into `02_oem_corporate_history_monthly_on_actions.txt` | 7 x `99_TAG_on_actions.txt` |
-| H7 | SERIOUS | Recast Google and Huawei option verbs to government instruments (~30 loc strings) | `MD_OEM_google_l_english.yml`, Huawei loc |
-| H8 | SERIOUS | Dedicated art for the top `GFX_computer` beats; state a policy for the rest | `events/`, `MD_eventpictures.gfx` |
-| H9 | POLISH | Read `CAN_matrox_events.txt:861` - 5-child `NOT` is NAND, likely a real bug | `events/CAN_matrox_events.txt:861` |
-| H10 | POLISH | Resolve `POL_industrial_sovereignty_resolve_terminal` and 2 unused FIN triggers | POL / FIN files |
-| H11 | POLISH | Trim 9 Oracle descriptions to 3 sentences | `MD_OEM_oracle_l_english.yml` |
-| H12 | POLISH | Unify rule option naming (`disabled` vs `off`) | `00_game_rules.txt`, both trigger files |
-| H13 | POLISH | Split policy decisions out of `*_dashboard.txt` into `USA_corporate_policies.txt` | `common/decisions/` |
-| H14 | POLISH | Remove `gpu_development_reconstruct_history` from either CAN_ati or the bootstrap | `CAN_ati_effects.txt:188` |
-| H15 | POLISH | Delete `runtime_evidence/`, `temp-aug8-*.yml`; untrack `.mcp.json`, `.vscode/*`; drop 8 planning docs | repo root |
-| H16 | POLISH | Make pytest path assertions OS-agnostic so the AGENTS.md gate is runnable on Windows | `tools/**/tests/` |
+| #   | Sev     | Fix                                                                                                                                                                                                        | Where                                                                                                         |
+| --- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| H1  | BLOCKER | Restore the 6 upstream files and narrow `.gitignore` in one forward-fixing commit (not a double revert - see G1)                                                                                           | `.gitignore`, 6 files                                                                                         |
+| H2  | SERIOUS | Resolve the "Off is not off" boundary for `ISR_oem_events`, `USA_oem_events` and `gpu_development`: reword the rule descriptions, add a suppressing option, or fold the first two under the gate           | `MD_game_rules_l_english.yml:876-879`, `00_corporate_history_effects.txt:196`, `01_oem_..._on_actions.txt:44` |
+| H3  | SERIOUS | Add an explicit `independent_subsystems` allowlist to the contract and make the validator fail on any namespace dispatched from a Corporate History entry point that is neither registered nor allowlisted | `corporate_history_contract.json`, `validate_corporate_history_contract.py`                                   |
+| H4  | SERIOUS | Move the yearly dispatch off `on_daily_ABK` into the per-country monthly drivers (country-scoped per AGENTS.md:35 - do not use a global on_action)                                                         | `01_oem_..._on_actions.txt:12`, `02_linux_system_on_actions.txt:12`                                           |
+| H5  | SERIOUS | Delete the duplicated `USA_ibm_state_initialized` from inside the `OR` in 3 policy `visible` blocks                                                                                                        | `USA_corporate_systems_dashboard.txt:149,356,460`                                                             |
+| H6  | SERIOUS | Consolidate all 13 monthly drivers into `02_oem_corporate_history_monthly_on_actions.txt`                                                                                                                  | 7 x `99_TAG_on_actions.txt`                                                                                   |
+| H7  | SERIOUS | Recast Google and Huawei option verbs to government instruments (~30 loc strings)                                                                                                                          | `MD_OEM_google_l_english.yml`, Huawei loc                                                                     |
+| H8  | SERIOUS | Dedicated art for the top `GFX_computer` beats; state a policy for the rest                                                                                                                                | `events/`, `MD_eventpictures.gfx`                                                                             |
+| H9  | POLISH  | Read `CAN_matrox_events.txt:861` - 5-child `NOT` is NAND, likely a real bug                                                                                                                                | `events/CAN_matrox_events.txt:861`                                                                            |
+| H10 | POLISH  | Resolve `POL_industrial_sovereignty_resolve_terminal` and 2 unused FIN triggers                                                                                                                            | POL / FIN files                                                                                               |
+| H11 | POLISH  | Trim 9 Oracle descriptions to 3 sentences                                                                                                                                                                  | `MD_OEM_oracle_l_english.yml`                                                                                 |
+| H12 | POLISH  | Unify rule option naming (`disabled` vs `off`)                                                                                                                                                             | `00_game_rules.txt`, both trigger files                                                                       |
+| H13 | POLISH  | Split policy decisions out of `*_dashboard.txt` into `USA_corporate_policies.txt`                                                                                                                          | `common/decisions/`                                                                                           |
+| H14 | POLISH  | Remove `gpu_development_reconstruct_history` from either CAN_ati or the bootstrap                                                                                                                          | `CAN_ati_effects.txt:188`                                                                                     |
+| H15 | POLISH  | Delete `runtime_evidence/`, `temp-aug8-*.yml`; untrack `.mcp.json`, `.vscode/*`; drop 8 planning docs                                                                                                      | repo root                                                                                                     |
+| H16 | POLISH  | Make pytest path assertions OS-agnostic so the AGENTS.md gate is runnable on Windows                                                                                                                       | `tools/**/tests/`                                                                                             |
 
 ---
 
@@ -636,18 +638,18 @@ PR1 FRAMEWORK --+-- PR2 VALIDATORS --+-- PR4 GPU --+-- PR6 USA CHAINS -- PR7 USA
                 +-- PR3 GFX ---------+-- PR5 LINUX-+-- PR8 ASIA -- PR9 EUROPE -- PR10 DOCS
 ```
 
-| PR | Purpose | Depends on | Scope | Risky files | Validation evidence | Runtime evidence | Reviewable independently because |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 FRAMEWORK | Game rules, gate triggers, dispatch skeleton, bootstrap, `corporate_history_apply_delta` / `clamp_value`. No chains. | - | `00_game_rules.txt` (+46), `MD_corporate_history_triggers.txt`, `01/02_oem_*_on_actions.txt`, framework half of `00_corporate_history_effects.txt`. ~6 files, ~800 lines | `00_game_rules.txt` (upstream also edits), dispatcher host | run_all_validators clean | P1, P2, P3 | Two rules and an empty dispatch skeleton; pure infrastructure with no content to judge |
-| 2 VALIDATORS | Contract validator + contract JSON + 11 model tests | 1 | `validate_corporate_history_contract.py`, `corporate_history_contract.json`, `tools/tests/*` (~28k lines, tool-only) | The 7k-line validator itself | `python -m pytest` green on Linux | none | Pure tooling, gated by `tools-validation.yml`, zero game impact - mergeable on tests alone |
-| 3 GFX | 80 event pictures + `MD_eventpictures.gfx` entries | - | `gfx/event_pictures/**`, `interface/MD_eventpictures.gfx` (+367) | `MD_eventpictures.gfx` (upstream +246 concurrently) | `validate_gfx_references.py`, `validate_unused_textures.py` | none | Verified zero sprite-name collision with upstream's 62 additions |
-| 4 GPU | `gpu_development` chain - cross-national, no CH dependency | 1, 3 | `00_gpu_development.txt`, `00_gpu_development_effects.txt`, `MD_gpu_development_l_english.yml`. ~3 files | Bridge gates at `:113` / `:752` | contract validator | P3 | Self-contained; its CH bridge is already correctly gated - good exemplar to land first |
-| 5 LINUX | Shared Linux ecosystem + national adapters | 1, 2, 3 | `MD_linux_system_*`, `02_linux_system_on_actions.txt`, `MD_linux_system_triggers.txt`. ~6 files | Adapter read/write boundary | `linux_national_adapter_contract_test.py` (91 reads / 10 write prefixes) | P8 | Contract-enforced read-only adapters make the blast radius provable |
-| 6 USA CHAINS | IBM, Microsoft/Sun, Apple, Google, Oracle, HP, Dell, NVIDIA, Micron, TI, Motorola, AIG, Xbox, E3, BlackBerry | 1-5 | 16 event + 16 effect files + loc. ~40 files, ~50k lines | `USA_ibm_effects.txt`, cross-chain `USA_ibm_faction_*` writes from Microsoft | contract cross-chain ownership check | #25, #28, P5-P7 | Still large - split by chain if maintainers ask. IBM + Sun/Microsoft must land together (shared faction vars); the rest are independent |
-| 7 USA ECONOMY | Real-options layer, dynamic modifiers, dashboard, 4 policy decisions | 6 | `USA_oem_real_options_effects.txt`, `05_USA_oem_economic_dynamic_modifiers.txt`, `USA_corporate_systems_dashboard.txt`, `USA_corporate_systems_ideas.txt`. ~6 files | Policy `visible` gates (fix H5 first), `modify_treasury_effect` balance | contract real-options check | P4 | Sits entirely on PR6's state; balance is the whole review and is isolated to one file |
-| 8 ASIA | Nintendo, Sony, TSMC, Foxconn, TAI PC Giants, Lenovo, Huawei | 1-5 | ~14 files | `TAI_pc_industry` (merged via #198) | contract validator | #24, P8 | No dependency on USA chains |
-| 9 EUROPE + ISR | Nokia, Ericsson, Siemens, ARM, France, Poland, Ukraine, Russia, ATI/Matrox, ISR | 1-5 | ~22 files | ISR (fix H2 first), FRA `collapsed_nation` guards | contract validator | #26, #27, P9 | No dependency on USA/Asia. ISR must be gated before this PR opens |
-| 10 DOCS | 4 reference docs + `validation-pipeline.md` refresh | all | `.claude/docs/` x4, `docs/src/content/resources/` x2 | - | `docs-quality.yml` | - | Documentation only |
+| PR             | Purpose                                                                                                              | Depends on | Scope                                                                                                                                                                    | Risky files                                                                  | Validation evidence                                                      | Runtime evidence | Reviewable independently because                                                                                                        |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 FRAMEWORK    | Game rules, gate triggers, dispatch skeleton, bootstrap, `corporate_history_apply_delta` / `clamp_value`. No chains. | -          | `00_game_rules.txt` (+46), `MD_corporate_history_triggers.txt`, `01/02_oem_*_on_actions.txt`, framework half of `00_corporate_history_effects.txt`. ~6 files, ~800 lines | `00_game_rules.txt` (upstream also edits), dispatcher host                   | run_all_validators clean                                                 | P1, P2, P3       | Two rules and an empty dispatch skeleton; pure infrastructure with no content to judge                                                  |
+| 2 VALIDATORS   | Contract validator + contract JSON + 11 model tests                                                                  | 1          | `validate_corporate_history_contract.py`, `corporate_history_contract.json`, `tools/tests/*` (~28k lines, tool-only)                                                     | The 7k-line validator itself                                                 | `python -m pytest` green on Linux                                        | none             | Pure tooling, gated by `tools-validation.yml`, zero game impact - mergeable on tests alone                                              |
+| 3 GFX          | 80 event pictures + `MD_eventpictures.gfx` entries                                                                   | -          | `gfx/event_pictures/**`, `interface/MD_eventpictures.gfx` (+367)                                                                                                         | `MD_eventpictures.gfx` (upstream +246 concurrently)                          | `validate_gfx_references.py`, `validate_unused_textures.py`              | none             | Verified zero sprite-name collision with upstream's 62 additions                                                                        |
+| 4 GPU          | `gpu_development` chain - cross-national, no CH dependency                                                           | 1, 3       | `00_gpu_development.txt`, `00_gpu_development_effects.txt`, `MD_gpu_development_l_english.yml`. ~3 files                                                                 | Bridge gates at `:113` / `:752`                                              | contract validator                                                       | P3               | Self-contained; its CH bridge is already correctly gated - good exemplar to land first                                                  |
+| 5 LINUX        | Shared Linux ecosystem + national adapters                                                                           | 1, 2, 3    | `MD_linux_system_*`, `02_linux_system_on_actions.txt`, `MD_linux_system_triggers.txt`. ~6 files                                                                          | Adapter read/write boundary                                                  | `linux_national_adapter_contract_test.py` (91 reads / 10 write prefixes) | P8               | Contract-enforced read-only adapters make the blast radius provable                                                                     |
+| 6 USA CHAINS   | IBM, Microsoft/Sun, Apple, Google, Oracle, HP, Dell, NVIDIA, Micron, TI, Motorola, AIG, Xbox, E3, BlackBerry         | 1-5        | 16 event + 16 effect files + loc. ~40 files, ~50k lines                                                                                                                  | `USA_ibm_effects.txt`, cross-chain `USA_ibm_faction_*` writes from Microsoft | contract cross-chain ownership check                                     | #25, #28, P5-P7  | Still large - split by chain if maintainers ask. IBM + Sun/Microsoft must land together (shared faction vars); the rest are independent |
+| 7 USA ECONOMY  | Real-options layer, dynamic modifiers, dashboard, 4 policy decisions                                                 | 6          | `USA_oem_real_options_effects.txt`, `05_USA_oem_economic_dynamic_modifiers.txt`, `USA_corporate_systems_dashboard.txt`, `USA_corporate_systems_ideas.txt`. ~6 files      | Policy `visible` gates (fix H5 first), `modify_treasury_effect` balance      | contract real-options check                                              | P4               | Sits entirely on PR6's state; balance is the whole review and is isolated to one file                                                   |
+| 8 ASIA         | Nintendo, Sony, TSMC, Foxconn, TAI PC Giants, Lenovo, Huawei                                                         | 1-5        | ~14 files                                                                                                                                                                | `TAI_pc_industry` (merged via #198)                                          | contract validator                                                       | #24, P8          | No dependency on USA chains                                                                                                             |
+| 9 EUROPE + ISR | Nokia, Ericsson, Siemens, ARM, France, Poland, Ukraine, Russia, ATI/Matrox, ISR                                      | 1-5        | ~22 files                                                                                                                                                                | ISR (fix H2 first), FRA `collapsed_nation` guards                            | contract validator                                                       | #26, #27, P9     | No dependency on USA/Asia. ISR must be gated before this PR opens                                                                       |
+| 10 DOCS        | 4 reference docs + `validation-pipeline.md` refresh                                                                  | all        | `.claude/docs/` x4, `docs/src/content/resources/` x2                                                                                                                     | -                                                                            | `docs-quality.yml`                                                       | -                | Documentation only                                                                                                                      |
 
 **Landing order:** 1, 2, 3, 4, 5, 6, 7, then 8 and 9 in parallel, then 10.
 PRs 1-5 are about 45 files total and give maintainers the whole architecture

@@ -2,23 +2,23 @@
 
 ## Authority and modes
 
-The Linux system is a shared country-scoped framework. ABK owns date dispatch only. Country state remains on each participant, and the bounded registry is `global.linux_system_participants`.
+The Linux system is a shared country-scoped framework. Each eligible country runs `linux_system_monthly_driver` from the generic country-scope `on_monthly` pulse. There is no singleton date host, participant array, or global milestone latch.
 
 `rule_linux_ecosystem` has these options in this order:
 
 1. `full`: authored events and economic programs are available.
 2. `outcomes_only`: due history is reconstructed without events, political power or treasury changes, technology bonuses, or temporary option ideas.
-3. `off`: Linux-owned ideas, expected and pending delivery flags, dirty and cooldown flags, active-program artifacts, and participant entries are removed.
+3. `off`: Linux-owned ideas, decisions, delivery and route flags, active-program artifacts, and state variables are removed.
 
-Off preserves initialization and reconstruction markers, resolved and route history, imported native state, all state variables, milestone stage, and `GLOBAL_linux_system_milestone_N_reached`. This keeps an existing save reversible without erasing authoritative history.
+Off preserves native non-Linux state and the one-time legacy-storage import metadata, but it leaves no initialized Linux participant, milestone history, effective variables, or program state. Re-enabling the rule in a migrated save therefore reconstructs from the current date and native route inputs instead of relying on global history.
 
-The public gates are `linux_system_full_enabled`, `linux_system_outcomes_only_enabled`, and `linux_system_enabled`. They read the game rule directly because cached game-rule flags are unavailable during early startup on-actions.
+The public gates are `linux_system_full_enabled`, `linux_system_outcomes_only_enabled`, and `linux_system_enabled`. They read the game rule directly on the country-local monthly path.
 
 ## Registration and dispatch
 
-`linux_system_register_country` is the public country-scope entry point. It accepts every normal existing playable country except ABK, ZOM, `MD_special_countries`, and countries carrying `collapsed_nation`. It deduplicates `THIS` before adding it to `global.linux_system_participants`.
+`linux_system_monthly_driver` is the authoritative country-scope entry point. It accepts every normal existing playable country except ABK, ZOM, `MD_special_countries`, and countries carrying `collapsed_nation`. The country-local `linux_system_initialized` flag is the participation marker.
 
-Generic `on_weekly` self-registration discovers new and missing-array participants without `every_country` or `random_country`. Collapsed participants remain in the array and retain state, while milestone scheduling, activation, and the monthly driver skip all active work for them. On restoration, the next monthly bounded-array pass reconstructs milestones missed during collapse and prepares an expected-only marker for any milestone still due later that year. ABK runs only startup, daily date dispatch, and the monthly bounded-array driver.
+Generic `on_monthly` reaches each current country without `every_country` or `random_country`. Collapsed countries retain state but perform no initialization, reconstruction, scheduling, or event recovery. A restored or recreated country catches up from its own date and markers on its next monthly pass; no other country can consume that work.
 
 ## State model
 
@@ -39,15 +39,15 @@ Support Model values are:
 - 2: Enterprise Distribution
 - 3: National Baseline
 
-`linux_system_mark_dirty` sets `linux_system_dirty`. `linux_system_recalculate_state` clamps base state, calls `linux_system_refresh_adapter`, rebuilds effective state, derives `linux_system_milestone_stage` from resolved flags, refreshes ideas, and clears the dirty flag. USA recalculation immediately refreshes `USA_corporate_systems_update_economic_bridge` after Linux effective state is current. The monthly bounded-array recovery pass compares current and newly computed adapter values, then marks state dirty only when a native adapter changed.
+`linux_system_mark_dirty` sets `linux_system_dirty`. `linux_system_recalculate_state` clamps base state, calls `linux_system_refresh_adapter`, rebuilds effective state, derives `linux_system_milestone_stage` from resolved flags, refreshes ideas, and clears the dirty flag. USA recalculation refreshes `USA_corporate_systems_update_economic_bridge` after Linux effective state is current only while Corporate History is enabled. The country-local monthly pass compares current and newly computed adapter values, then marks state dirty only when a native adapter changed.
 
 Cross-system consumers read Linux base variables. National adapters may read native state into Linux adapter variables. This one-way direction prevents effective-state feedback loops.
 
 ## Historical milestones
 
-Full-mode January 1 scheduling sets permanent `expected`, sets timed `pending` for the offset plus a 60-day delivery window, and queues the authored event. The due-date dispatcher does nothing while expected and pending still represent that queue. Startup and monthly recovery restore a missing `expected` marker when an older save retains only `pending`. If expected survives after pending expires, recovery sets a new 60-day pending flag and queues one delivery for the next day.
+Full-mode January scheduling sets permanent `expected`, sets timed `pending` for the offset plus a 60-day delivery window, and queues the authored event. Monthly due-date recovery does nothing while expected and pending still represent that queue. It restores a missing `expected` marker when an older save retains only `pending`. If expected survives after pending expires, recovery sets a new 60-day pending flag and queues one delivery for the next day.
 
-A fresh late participant with no delivery markers receives state-only reconstruction and sees only future events. A country registered or restored after January 1 receives an expected-only marker for a milestone still due later that year; the due-date dispatcher then queues its single delivery. Outcomes Only also reconstructs due state. Full preserves an old save's expected or pending authored delivery instead of replacing it. Reconstruction never spends money or political power, grants technology bonuses, adds temporary event ideas, or replays native rewards.
+A fresh late participant with no delivery markers receives state-only reconstruction for passed milestones and sees only future events. A country present before a future due date receives its expected marker and single delivery from the local schedule/recovery path. Full preserves an old save's expected or pending authored delivery instead of replacing it. Outcomes Only reconstructs due state on its next monthly pass. Reconstruction never spends money or political power, grants technology bonuses, adds temporary event ideas, or replays native rewards.
 
 | Stage | Event                   | Due date   | January 1 offset | Initial pending duration |
 | ----- | ----------------------- | ---------- | ---------------: | -----------------------: |
@@ -70,7 +70,7 @@ Generic reconstruction uses a neutral absolute baseline. Sourced historical coun
 
 ENG, GER, and BRA use the Upstream route. FRA, RAJ, SOV, and CHI use Enterprise for milestone 1 because no National option exists, then National for milestones 2 through 5. USA uses Enterprise throughout. Exact native reads, adapter bounds, and sources are documented in `linux-national-adapters.md`.
 
-Each event `N` owns `linux_system_event_N_expected`, `_pending`, and `_resolved`. Authored live options and sourced historical variants for milestones 2 through 4 also set one route flag from the choices that milestone actually offers; neutral reconstruction leaves route flags unset. Milestone 1 has no route-specific downstream presentation, and milestone 5 is terminal, so their support-model variables and resolved markers are authoritative instead of duplicate route flags. ABK owns `GLOBAL_linux_system_milestone_N_reached`. Terminal historical state is `linux_system_milestone_stage = 5` together with `linux_system_event_5_resolved`.
+Each event `N` owns country-local `linux_system_event_N_expected`, `_pending`, and `_resolved` markers. Authored live options and sourced historical variants for milestones 2 through 4 also set one route flag from the choices that milestone actually offers; neutral reconstruction leaves route flags unset. Milestone 1 has no route-specific downstream presentation, and milestone 5 is terminal, so their support-model variables and resolved markers are authoritative instead of duplicate route flags. Dates and local resolved markers replace the retired global milestone flags. Terminal historical state is `linux_system_milestone_stage = 5` together with `linux_system_event_5_resolved`.
 
 The authored live-event deltas are:
 
@@ -88,7 +88,9 @@ USA never receives the four generic adoption ideas or four support-model ideas. 
 
 If Corporate History is Off, the bridge ignores native company outcomes and uses its own neutral derived-axis baseline of 5 on each axis plus the Linux contribution. It does not initialize or write IBM or Corporate Systems base state. This preserves USA economic integration while keeping the two rules independent.
 
-`linux_system_refresh_usa_adapter` reads IBM outcomes only while Corporate History is enabled. Corporate History Off yields no IBM adapter contribution. Storage events 16 through 23 are Linux-owned and may contribute whenever Linux is enabled. Adapter refresh never writes IBM or storage state.
+`linux_system_refresh_usa_adapter` reads IBM and legacy storage outcomes only while Corporate History is enabled. Corporate History Off yields no IBM or storage adapter contribution. Adapter refresh never writes IBM or storage state.
+
+Legacy storage history is governed by the intersection of both rules. Corporate History Full plus Linux Full permits its authored events. If both systems are enabled and either selects Outcomes Only, reached storage history reconstructs silently. Corporate History Off or Linux Off leaves storage scheduling, reconstruction, and adapter state inert; the generic Linux base route remains available whenever the Linux rule itself is enabled.
 
 The one-time storage import preserves an old save's `USA_oem_storage_policy` without continuing to read that legacy scalar. A nonzero legacy value becomes `linux_system_usa_storage_legacy_import_level`, an absolute value clamped from 1 through 2; zero creates no route. Its Upstream route adds that level to Stewardship and supplies Support 1 when base support is Mixed. Its Enterprise route adds that level to Deployment and Assurance and supplies Support 2. The imported marker, level, and route survive Linux Off.
 
@@ -100,9 +102,9 @@ Full-mode generic-event suppression is limited to these native overlaps:
 - Event 3: `USA_ibm_event_31_scheduled`, `USA_ibm_event_31_resolved`, `USA_oem_storage_event_19_pending`, or `USA_oem_storage_event_19_resolved`
 - Event 4: `USA_ibm_event_34_scheduled` or `USA_ibm_event_34_resolved`
 
-Suppression resolves the generic milestone through its Enterprise route and applies that event's durable Enterprise delta only. This preserves any earlier live choice. Event 2 always remains available. Event 5 remains one settlement event after `USA_ibm_event_39_resolved`. Corporate History Off allows every unresolved generic milestone.
+Suppression resolves the generic milestone through its Enterprise route and applies that event's durable Enterprise delta only. This preserves any earlier live choice. Event 2 always remains available. Event 5 remains one settlement event after `USA_ibm_event_39_resolved`. Corporate History Off allows every unresolved generic Linux milestone without creating IBM or storage state.
 
-`USA_oem_storage_reconstruct_linux_history` is the only coordinated native-state reconstruction call. Registration calls it for USA in Outcomes Only or late-start state recovery, then refreshes the read-only adapter. The monthly Full-mode USA pass calls `USA_oem_storage_recover_pending_events`. Linux Off calls `USA_oem_storage_clear_linux_pending_markers`, which clears expected and pending delivery state but preserves resolved routes and the one-time import.
+`USA_oem_storage_reconstruct_history` is the only coordinated native-state reconstruction call. The USA monthly owner reaches it only through the enabled-rule intersection, then refreshes the read-only adapter. Full/Full calls `USA_oem_storage_schedule_due_events`, which repairs pending deliveries through `USA_oem_storage_recover_pending_events`; an Outcomes Only selection on either enabled rule reconstructs without event calls. Off cleanup may clear old pending artifacts for save compatibility, but it may not initialize, schedule, reconstruct, or adapt new storage state.
 
 ## Persistent ideas
 

@@ -3,17 +3,14 @@
 # Chains: IBM, Sun/Microsoft, HP, Apple, NVIDIA, Dell, TI, Micron, Motorola (USA),
 # Lenovo and Huawei (CHI), Sony (JAP), ATI/AMD and Matrox (CAN), Nokia (FIN), TSMC and Foxconn (TAI),
 # Industrial Sovereignty (POL), Siemens (GER), Ericsson (SWE), and BlackBerry (CAN/USA).
-# The rule_corporate_history game rule gates chains ONLY at dispatcher level: the
-# startup driver below, the TAG_corporate_trigger_year_* effects
-# (00_corporate_history_dispatch_effects.txt), the monthly outcome drivers below,
-# and the USA_ibm_monthly_crisis_checks call site - never inside individual events.
+# The rule_corporate_history game rule gates the country-owned dispatchers, monthly
+# outcome drivers, and popup event triggers. Event-level gates also stop a queued
+# Full-mode popup if the rule is no longer Full when delivery occurs.
 #
-# Start-date invariant: every milestone day offset assumes scheduling from January 1
-# (startup at the 2000.1.1 bookmark) or from the first monthly tick of the year
-# (yearly dispatch). Start-year schedulers therefore stay behind a per-year window
-# (NOT = { has_start_date < Y.1.1 } + has_start_date < Y.1.2, see
-# USA_apple_schedule_current_year_events); non-January starts get passed milestones
-# from the reconstruct effects and deliberately do not queue the start year's rest.
+# Start-date invariant: milestone day offsets are scheduled only from a January
+# window. Where a chain has local recovery, it reconstructs elapsed milestones
+# first, then queues due unresolved events with a short delay; it never replays a
+# January offset from a mid-year date.
 
 # Effect: corporate_history_apply_delta
 # Purpose: Applies a signed delta to a corporate state value and clamps it to the
@@ -182,394 +179,16 @@ GER_siemens_reconstruct_history = {
 	}
 }
 
-OEM_corporate_history_startup_bootstrap = {
-	if = {
-		limit = {
-			NOT = { has_global_flag = GLOBAL_oem_corporate_history_startup_dispatched }
-		}
-
-		set_global_flag = GLOBAL_oem_corporate_history_startup_dispatched
-		corporate_history_on_startup = yes
-
-		if = {
-			limit = { country_exists = ISR }
-			ISR = {
-				if = {
-					limit = { corporate_history_full_enabled = yes }
-					country_event = ISR_oem_events.90
-				}
-				else_if = {
-					limit = { corporate_history_outcomes_only_enabled = yes }
-					ISR_oem_reconstruct_history = yes
-				}
-			}
-		}
-
-		if = {
-			limit = { country_exists = USA }
-			USA = {
-				gpu_development_reconstruct_history = yes
-				gpu_development_schedule_current_year_events = yes
-				if = {
-					limit = {
-						date < 2001.1.1
-						corporate_history_full_enabled = yes
-					}
-					country_event = { id = USA_oem_events.13 days = 90 }
-				}
-			}
-		}
-
-		if = {
-			limit = { country_exists = CAN }
-			CAN = {
-				gpu_development_reconstruct_history = yes
-				gpu_development_schedule_current_year_events = yes
-			}
-		}
-
-		if = {
-			limit = { country_exists = TAI }
-			TAI = {
-				gpu_development_reconstruct_history = yes
-				gpu_development_schedule_current_year_events = yes
-			}
-		}
-
-		if = {
-			limit = { country_exists = KOR }
-			KOR = {
-				gpu_development_reconstruct_history = yes
-				gpu_development_schedule_current_year_events = yes
-			}
-		}
-
-		if = {
-			limit = { country_exists = CHI }
-			CHI = {
-				gpu_development_reconstruct_history = yes
-				gpu_development_schedule_current_year_events = yes
-			}
-		}
-
-		if = {
-			limit = { country_exists = JAP }
-			JAP = {
-				gpu_development_reconstruct_history = yes
-				gpu_development_schedule_current_year_events = yes
-			}
-		}
-	}
-}
-
-# Effect: corporate_history_on_startup
-# Purpose: Startup dispatcher for Corporate History chains. Its bootstrap caller
-#          runs in ABK scope, so every action stays inside an explicit TAG = { } block.
-corporate_history_on_startup = {
-	if = {
-		limit = { corporate_history_full_enabled = yes }
-		if = {
-			limit = { country_exists = USA }
-			USA = {
-				USA_microsoft_reconstruct_history = yes
-				USA_apple_reconstruct_history = yes
-				USA_hp_reconstruct_history = yes
-				USA_google_reconstruct_history = yes
-				USA_blackberry_reconstruct_history = yes
-				USA_apple_schedule_current_year_events = yes
-				USA_nvidia_schedule_current_year_events = yes
-				USA_google_schedule_current_year_events = yes
-				USA_blackberry_schedule_current_year_events = yes
-				country_event = USA_micron_events.90
-				country_event = USA_ti_events.90
-				country_event = USA_motorola_events.90
-				USA_ti_schedule_current_year_events = yes
-				USA_micron_schedule_current_year_events = yes
-				USA_motorola_schedule_current_year_events = yes
-				USA_ibm_schedule_pc_decision = yes
-				USA_ibm_schedule_x86_decision = yes
-				country_event = { id = USA_e3_events.90 days = 1 }
-				country_event = { id = USA_ibm_events.90 days = 1 }
-				country_event = { id = USA_nvidia_events.90 days = 4 }
-				USA_dell_schedule_current_year_events = yes
-				country_event = { id = USA_dell_events.90 days = 5 }
-				set_temp_variable = { aig_schedule_mode = 0 }
-				USA_aig_schedule_current_year_events = yes
-				country_event = { id = USA_aig_events.90 days = 6 }
-				country_event = { id = USA_xbox_events.90 days = 1 }
-				USA_corporate_systems_update_economic_bridge = yes
-			}
-		}
-
-		if = {
-			limit = { country_exists = CHI }
-			CHI = {
-				CHI_lenovo_schedule_current_year_events = yes
-				country_event = { id = CHI_lenovo_events.90 days = 2 }
-				CHI_huawei_reconstruct_history = yes
-				CHI_huawei_schedule_current_year_events = yes
-				country_event = { id = CHI_huawei_events.90 days = 3 }
-			}
-		}
-
-		if = {
-			limit = { country_exists = CAN }
-			CAN = {
-				CAN_ati_reconstruct_history = yes
-				CAN_blackberry_reconstruct_history = yes
-				CAN_ati_schedule_current_year_events = yes
-				CAN_blackberry_schedule_current_year_events = yes
-			}
-		}
-		# Reconstructs synchronously before scheduling so the current-year scheduler
-		# sees every elapsed milestone already resolved. At the 2000.1.1 bookmark every
-		# dated branch is still in the future, so this is a no-op there.
-		if = {
-			limit = { country_exists = POL }
-			POL = {
-				POL_industrial_sovereignty_initialize_state = yes
-				POL_industrial_sovereignty_reconstruct_history = yes
-				POL_industrial_sovereignty_schedule_current_year_events = yes
-			}
-		}
-
-		if = {
-			limit = {
-				country_exists = USA
-				NOT = { has_start_date < 2000.1.1 }
-				has_start_date < 2000.1.2
-			}
-			USA = { country_event = { id = USA_hp_events.1 days = 153 } }
-		}
-
-		if = {
-			limit = {
-				country_exists = CAN
-				date > 2000.3.15
-			}
-			CAN = { country_event = { id = CAN_matrox_events.90 days = 1 } }
-		}
-		else_if = {
-			limit = { country_exists = CAN }
-			CAN = { country_event = { id = CAN_matrox_events.1 days = 75 } }
-		}
-
-		if = {
-			limit = { country_exists = FIN }
-			FIN = {
-				FIN_nokia_reconstruct_history = yes
-				FIN_nokia_schedule_current_year_events = yes
-				country_event = { id = FIN_nokia_events.90 days = 1 }
-			}
-		}
-
-		if = {
-			limit = { country_exists = GER }
-			GER = {
-				GER_siemens_reconstruct_history = yes
-				GER_siemens_schedule_current_year_events = yes
-			}
-		}
-
-		if = {
-			limit = { country_exists = TAI }
-			TAI = {
-				TAI_tsmc_schedule_current_year_events = yes
-				country_event = TAI_foxconn_events.90
-				TAI_foxconn_schedule_current_year_events = yes
-				country_event = TAI_pc_industry_events.90
-				set_temp_variable = { pc_schedule_mode = 0 }
-				TAI_pc_industry_schedule_current_year_events = yes
-				country_event = { id = TAI_tsmc_events.90 days = 3 }
-			}
-		}
-
-		if = {
-			limit = { country_exists = SWE }
-			SWE = {
-				SWE_ericsson_schedule_current_year_events = yes
-				country_event = { id = SWE_ericsson_events.90 days = 1 }
-			}
-		}
-
-		if = {
-			limit = {
-				country_exists = JAP
-				date > 2000.3.3
-			}
-			JAP = { country_event = { id = JAP_sony_events.90 days = 2 } }
-		}
-		else_if = {
-			limit = { country_exists = JAP }
-			JAP = { country_event = { id = JAP_sony_events.1 days = 63 } }
-		}
-
-		# Nintendo reconstructs synchronously before scheduling so the current-year
-		# scheduler sees every prior-year predecessor already resolved.
-		if = {
-			limit = { country_exists = JAP }
-			JAP = {
-				JAP_nintendo_initialize_state = yes
-				JAP_nintendo_reconstruct_history = yes
-				set_temp_variable = { nin_schedule_mode = 0 }
-				JAP_nintendo_schedule_current_year_events = yes
-				country_event = { id = JAP_nintendo_events.90 days = 2 }
-			}
-		}
-
-		if = {
-			limit = { country_exists = SOV }
-			SOV = {
-				SOV_computing_sovereignty_initialize_state = yes
-				SOV_computing_sovereignty_reconstruct_history = yes
-				set_temp_variable = { SOV_computing_sovereignty_schedule_mode = 0 }
-				SOV_computing_sovereignty_schedule_current_year_events = yes
-				country_event = { id = SOV_computing_sovereignty_events.90 days = 1 }
-			}
-		}
-
-		if = {
-			limit = {
-				country_exists = FRA
-				FRA = {
-					original_tag = FRA
-					NOT = { has_country_flag = collapsed_nation }
-				}
-			}
-			FRA = {
-				FRA_corporate_systems_initialize_state = yes
-				FRA_corporate_systems_sync_nokia_response = yes
-				FRA_corporate_systems_schedule_current_year_events = yes
-				country_event = { id = FRA_corporate_systems_events.90 days = 1 }
-			}
-		}
-
-		if = {
-			limit = { country_exists = ENG }
-			ENG = {
-				ENG_arm_holdings_initialize_state = yes
-				ENG_arm_holdings_reconstruct_history = yes
-				ENG_arm_holdings_schedule_current_year_events = yes
-				country_event = { id = ENG_arm_holdings_events.90 days = 2 }
-			}
-		}
-
-		if = {
-			limit = { country_exists = UKR }
-			UKR = {
-				UKR_strategic_industry_initialize_state = yes
-				UKR_strategic_industry_reconstruct_history = yes
-				UKR_strategic_industry_schedule_current_year_events = yes
-				country_event = { id = UKR_strategic_industry_events.90 days = 3 }
-			}
-		}
-	}
-	else_if = {
-		limit = { corporate_history_outcomes_only_enabled = yes }
-		if = {
-			limit = { country_exists = USA }
-			USA = {
-				USA_microsoft_reconstruct_history = yes
-				USA_apple_reconstruct_history = yes
-				USA_ibm_reconstruct_history = yes
-				USA_nvidia_reconstruct_history = yes
-				USA_google_reconstruct_history = yes
-				USA_oracle_reconstruct_history = yes
-				USA_hp_reconstruct_history = yes
-				USA_e3_reconstruct_history = yes
-				USA_dell_reconstruct_history = yes
-				USA_micron_reconstruct_history = yes
-				USA_ti_reconstruct_history = yes
-				USA_motorola_reconstruct_history = yes
-				USA_aig_reconstruct_history = yes
-				USA_xbox_reconstruct_history = yes
-				USA_blackberry_reconstruct_history = yes
-				USA_corporate_systems_update_economic_bridge = yes
-			}
-		}
-		if = {
-			limit = { country_exists = JAP }
-			JAP = {
-				JAP_sony_reconstruct_history = yes
-				JAP_nintendo_reconstruct_history = yes
-			}
-		}
-		if = {
-			limit = { country_exists = CAN }
-			CAN = {
-				CAN_ati_reconstruct_history = yes
-				CAN_matrox_reconstruct_history = yes
-				CAN_blackberry_reconstruct_history = yes
-			}
-		}
-		if = {
-			limit = { country_exists = POL }
-			POL = {
-				POL_industrial_sovereignty_reconstruct_history = yes
-			}
-		}
-		if = {
-			limit = { country_exists = FIN }
-			FIN = { FIN_nokia_reconstruct_history = yes }
-		}
-		if = {
-			limit = { country_exists = GER }
-			GER = { GER_siemens_reconstruct_history = yes }
-		}
-		if = {
-			limit = { country_exists = SWE }
-			SWE = { SWE_ericsson_reconstruct_history = yes }
-		}
-		if = {
-			limit = { country_exists = TAI }
-			TAI = {
-				TAI_tsmc_reconstruct_history = yes
-				TAI_foxconn_reconstruct_history = yes
-				TAI_pc_industry_reconstruct_history = yes
-			}
-		}
-		if = {
-			limit = { country_exists = CHI }
-			CHI = {
-				CHI_lenovo_reconstruct_history = yes
-				CHI_huawei_reconstruct_history = yes
-			}
-		}
-		if = {
-			limit = { country_exists = SOV }
-			SOV = {
-				SOV_computing_sovereignty_reconstruct_history = yes
-				country_event = { id = SOV_computing_sovereignty_events.90 days = 1 }
-			}
-		}
-
-		if = {
-			limit = {
-				country_exists = FRA
-				FRA = {
-					original_tag = FRA
-					NOT = { has_country_flag = collapsed_nation }
-				}
-			}
-			FRA = { FRA_corporate_systems_reconstruct_history = yes }
-		}
-		if = {
-			limit = { country_exists = ENG }
-			ENG = { ENG_arm_holdings_reconstruct_history = yes }
-		}
-		if = {
-			limit = { country_exists = UKR }
-			UKR = { UKR_strategic_industry_reconstruct_history = yes }
-		}
-	}
-}
-
 # Effect: USA_corporate_history_monthly_outcomes
 # Purpose: Outcomes Only driver for USA corporate chains on the first monthly tick
 #          after each historical milestone (<= ~31 days lag). In Full mode it owns
 #          visible Google/Oracle catch-up, retries the IBM-to-Lenovo handoff, and
 #          recovers missed TI/Micron/Motorola/Dell terminal outcomes.
 USA_corporate_history_monthly_outcomes = {
+	corporate_history_monthly_dispatch = yes
+	USA_oem_legacy_monthly_driver = yes
+	USA_oem_storage_monthly_driver = yes
+
 	if = {
 		limit = {
 			original_tag = USA
@@ -712,13 +331,18 @@ USA_corporate_history_monthly_outcomes = {
 		}
 	}
 
-	USA_corporate_systems_update_economic_bridge = yes
+	if = {
+		limit = { corporate_history_enabled = yes }
+		USA_corporate_systems_update_economic_bridge = yes
+	}
 }
 
 # Effect: CHI_corporate_history_monthly_outcomes
 # Purpose: Outcomes Only reconstruction plus Full-mode recovery for missed
 #          Lenovo delivery windows and Huawei's terminal outcome.
 CHI_corporate_history_monthly_outcomes = {
+	corporate_history_monthly_dispatch = yes
+
 	if = {
 		limit = {
 			original_tag = CHI
@@ -784,6 +408,8 @@ CHI_corporate_history_monthly_outcomes = {
 #          it advances Nintendo milestones a non-January start skipped and recovers a
 #          Nintendo delivery that was queued but never arrived.
 JAP_corporate_history_monthly_outcomes = {
+	corporate_history_monthly_dispatch = yes
+
 	if = {
 		limit = {
 			original_tag = JAP
@@ -821,6 +447,8 @@ JAP_corporate_history_monthly_outcomes = {
 # Purpose: Outcomes Only driver for ATI/AMD and Matrox, plus Full-mode recovery
 #          for ATI/AMD's terminal outcome.
 CAN_corporate_history_monthly_outcomes = {
+	corporate_history_monthly_dispatch = yes
+
 	if = {
 		limit = {
 			original_tag = CAN
@@ -875,6 +503,8 @@ CAN_corporate_history_monthly_outcomes = {
 # Purpose: Reconstructs Nokia in Outcomes Only and processes externally confirmed
 #          future stages in Full mode.
 FIN_corporate_history_monthly_outcomes = {
+	corporate_history_monthly_dispatch = yes
+
 	if = {
 		limit = {
 			original_tag = FIN
@@ -897,6 +527,8 @@ FIN_corporate_history_monthly_outcomes = {
 }
 
 GER_corporate_history_monthly_outcomes = {
+	corporate_history_monthly_dispatch = yes
+
 	if = {
 		limit = {
 			OR = {
@@ -915,6 +547,8 @@ GER_corporate_history_monthly_outcomes = {
 }
 
 SWE_corporate_history_monthly_outcomes = {
+	corporate_history_monthly_dispatch = yes
+
 	if = {
 		limit = {
 			OR = {
@@ -936,6 +570,8 @@ SWE_corporate_history_monthly_outcomes = {
 # Purpose: Outcomes Only driver for the TSMC, Foxconn, and PC-industry chains,
 #          plus bounded Full-mode recovery for queued PC-industry milestones.
 TAI_corporate_history_monthly_outcomes = {
+	corporate_history_monthly_dispatch = yes
+
 	if = {
 		limit = {
 			original_tag = TAI
@@ -980,6 +616,17 @@ TAI_corporate_history_monthly_outcomes = {
 # Purpose: Retries the silent Polish Industrial Sovereignty reconstruction only in
 #          Outcomes Only mode until its dated 2026 terminal result exists.
 POL_corporate_history_monthly_outcomes = {
+	corporate_history_monthly_dispatch = yes
+
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = POL
+			NOT = { has_country_flag = collapsed_nation }
+		}
+		POL_industrial_sovereignty_recover_due_events = yes
+	}
+
 	if = {
 		limit = {
 			corporate_history_outcomes_only_enabled = yes
@@ -995,6 +642,8 @@ POL_corporate_history_monthly_outcomes = {
 # Purpose: Advances silent reconstruction in Outcomes Only and retries expected
 #          France Corporate Systems deliveries in Full mode.
 FRA_corporate_history_monthly_outcomes = {
+	corporate_history_monthly_dispatch = yes
+
 	if = {
 		limit = {
 			original_tag = FRA
@@ -1022,6 +671,8 @@ FRA_corporate_history_monthly_outcomes = {
 # Purpose: Reconstructs Arm milestones in Outcomes Only and recovers visible
 # deliveries in Full mode.
 ENG_corporate_history_monthly_outcomes = {
+	corporate_history_monthly_dispatch = yes
+
 	if = {
 		limit = {
 			corporate_history_outcomes_only_enabled = yes
@@ -1045,6 +696,8 @@ ENG_corporate_history_monthly_outcomes = {
 # Purpose: Runs state-led rupture, war, peace, and recovery progression in Full
 # mode while Outcomes Only remains on silent reconstruction.
 UKR_corporate_history_monthly_outcomes = {
+	corporate_history_monthly_dispatch = yes
+
 	if = {
 		limit = {
 			corporate_history_full_enabled = yes

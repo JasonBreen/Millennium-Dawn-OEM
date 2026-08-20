@@ -2,12 +2,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-CORPORATE_EFFECTS_PATH = (
-    ROOT / "common" / "scripted_effects" / "00_corporate_history_effects.txt"
-)
-CORPORATE_ON_ACTIONS_PATH = (
-    ROOT / "common" / "on_actions" / "01_oem_corporate_history_on_actions.txt"
-)
+ISR_EFFECTS_PATH = ROOT / "common" / "scripted_effects" / "ISR_oem_effects.txt"
 LINUX_ON_ACTIONS_PATH = (
     ROOT / "common" / "on_actions" / "02_linux_system_on_actions.txt"
 )
@@ -41,37 +36,20 @@ def _named_block(text: str, name: str) -> str:
 
 
 def test_isr_dispatch_respects_corporate_history_modes():
-    effects = CORPORATE_EFFECTS_PATH.read_text(encoding="utf-8")
-    yearly = CORPORATE_ON_ACTIONS_PATH.read_text(encoding="utf-8")
+    effects = ISR_EFFECTS_PATH.read_text(encoding="utf-8")
     isr_on_actions = ISR_ON_ACTIONS_PATH.read_text(encoding="utf-8")
     events = ISR_EVENTS_PATH.read_text(encoding="utf-8")
 
-    bootstrap = _named_block(effects, "OEM_corporate_history_startup_bootstrap")
-    startup = _named_block(effects, "corporate_history_on_startup")
-    isr_startup = min(
-        (
-            block
-            for block in _blocks(bootstrap, "if")
-            if "country_exists = ISR" in block and "ISR_oem_events.90" in block
-        ),
-        key=len,
-    )
-    full = next(
-        block
-        for block in _blocks(isr_startup, "if")
-        if "limit = { corporate_history_full_enabled = yes }" in block
-    )
-    outcomes_only = next(
-        block
-        for block in _blocks(isr_startup, "else_if")
-        if "limit = { corporate_history_outcomes_only_enabled = yes }" in block
-    )
-
-    assert full.count("country_event = ISR_oem_events.90") == 1
-    assert "ISR_oem_events.90" not in outcomes_only
-    assert "ISR_oem_reconstruct_history = yes" in outcomes_only
-    assert "ISR_oem_events.90" not in startup
-    assert "ISR_oem_reconstruct_history" not in startup
+    monthly_driver = _named_block(effects, "ISR_oem_monthly_driver")
+    assert "corporate_history_enabled = yes" in monthly_driver
+    assert "original_tag = ISR" in monthly_driver
+    assert "NOT = { has_country_flag = collapsed_nation }" in monthly_driver
+    assert "country_event = ISR_oem_events.90" not in monthly_driver
+    assert "corporate_history_outcomes_only_enabled = yes" in monthly_driver
+    assert monthly_driver.count("ISR_oem_reconstruct_history = yes") == 2
+    assert "corporate_history_full_enabled = yes" in monthly_driver
+    assert "ISR_oem_schedule_current_year_events = yes" in monthly_driver
+    assert "ISR_oem_schedule_due_events = yes" in monthly_driver
 
     event_90 = next(
         block
@@ -82,35 +60,20 @@ def test_isr_dispatch_respects_corporate_history_modes():
     assert "ISR_oem_reconstruct_history = yes" in immediate
     assert "ISR_oem_schedule_current_year_events = yes" in immediate
 
-    yearly_dispatch = _named_block(yearly, "on_daily_ABK")
-    yearly_isr_gate = min(
-        (
-            block
-            for block in _blocks(yearly_dispatch, "if")
-            if "ISR_oem_schedule_2001_events = yes" in block
-        ),
-        key=len,
-    )
-    assert "corporate_history_full_enabled = yes" in yearly_isr_gate
-
-    daily = _named_block(isr_on_actions, "on_daily_ISR")
     monthly = _named_block(isr_on_actions, "on_monthly_ISR")
-    assert "corporate_history_full_enabled = yes" in daily
-    assert "ISR_oem_schedule_due_events = yes" in daily
-    assert "corporate_history_outcomes_only_enabled = yes" in monthly
-    assert "ISR_oem_reconstruct_history = yes" in monthly
+    assert monthly.count("ISR_oem_monthly_driver = yes") == 1
 
 
-def test_abk_hooks_remain_intentional_singleton_dispatchers():
-    corporate = CORPORATE_ON_ACTIONS_PATH.read_text(encoding="utf-8")
+def test_country_local_hooks_replace_abk_singleton_dispatchers():
+    isr = ISR_ON_ACTIONS_PATH.read_text(encoding="utf-8")
     linux = LINUX_ON_ACTIONS_PATH.read_text(encoding="utf-8")
 
-    for on_actions in (corporate, linux):
-        assert len(_blocks(on_actions, "on_daily_ABK")) == 1
-        assert re.search(r"(?m)^\s*on_daily\s*=", on_actions) is None
-
-    assert "limit = { tag = ABK }" in _named_block(corporate, "on_daily_ABK")
-    assert "ABK is the date dispatcher only" in linux
+    assert len(_blocks(isr, "on_monthly_ISR")) == 1
+    assert len(_blocks(linux, "on_monthly")) == 1
+    assert "ISR_oem_monthly_driver = yes" in isr
+    assert "linux_system_monthly_driver = yes" in linux
+    assert "ABK" not in isr
+    assert "ABK" not in linux
 
 
 def test_usa_policy_visibility_keeps_ibm_outside_recipient_or():
