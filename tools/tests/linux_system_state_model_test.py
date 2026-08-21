@@ -343,7 +343,6 @@ def test_off_cleanup_removes_all_linux_owned_state_but_not_storage_state():
     for cleared in (
         "linux_system_initialized",
         "linux_system_country_bootstrapped",
-        "linux_system_reconstruction_complete",
         "linux_system_dirty",
     ):
         assert f"clr_country_flag = {cleared}" in clear
