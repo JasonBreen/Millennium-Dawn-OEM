@@ -709,3 +709,17 @@ def test_mod_changes_reach_structural_lint():
         "structural-lint"
     ]
     assert "needs.detect-changes.outputs.mod == 'true'" in structural["if"]
+
+
+def test_style_check_filters_deleted_paths_before_validation():
+    workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
+    steps = workflow["jobs"]["styling-check"]["steps"]
+    collect = next(
+        step for step in steps if step.get("name") == "Collect style-relevant files"
+    )
+    script = collect["run"]
+
+    assert "while IFS= read -r path" in script
+    assert 'if [ -f "$path" ]; then' in script
+    assert "printf '%s\\n' \"$path\"" in script
+    assert "done > style_files.txt" in script
