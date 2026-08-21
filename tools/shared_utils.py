@@ -277,12 +277,12 @@ _COMPARISON_OPS = {"!=", "==", ">=", "<="}
 
 
 def normalize_spacing(line: str) -> str:
-    """Put single spaces around braces, assignments and comparisons in one line.
+    """Put single spaces around ``{``, ``}`` and ``=`` in one line of script.
 
     Leading indentation, ``"..."`` string interiors and any trailing ``#``
     comment are left byte-exact; a whole-line comment is returned unchanged.
-    Comparison operators are padded without splitting their two-character forms,
-    and an empty block keeps its written spacing (``{}`` and ``{ }`` both survive).
+    ``!=``/``==``/``>=``/``<=`` are padded as one operator, and an empty block
+    keeps the spacing it was written with (``{}`` and ``{ }`` both survive).
     Idempotent.
     """
     code = strip_inline_comment(line)
@@ -308,7 +308,7 @@ def normalize_spacing(line: str) -> str:
             out.append(f" {code[i : i + 2]} ")
             i += 2
             continue
-        elif c in "{}=<>":
+        elif c in "{}=":
             out.append(f" {c} ")
         else:
             out.append(c)

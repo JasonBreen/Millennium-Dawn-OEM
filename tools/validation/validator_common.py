@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Shared validation infrastructure: common classes, helpers, and the base validator."""
 
 import glob
