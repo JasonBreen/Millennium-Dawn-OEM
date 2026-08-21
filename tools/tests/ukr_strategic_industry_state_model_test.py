@@ -24,9 +24,7 @@ MONTHLY_DISPATCH_PATH = (
     / "scripted_effects"
     / "00_corporate_history_monthly_dispatch_effects.txt"
 )
-MONTHLY_ON_ACTIONS_PATH = (
-    ROOT / "common" / "on_actions" / "02_oem_corporate_history_monthly_on_actions.txt"
-)
+MONTHLY_ON_ACTIONS_PATH = ROOT / "common" / "on_actions" / "99_UKR_on_actions.txt"
 CORPORATE_TRIGGERS_PATH = (
     ROOT / "common" / "scripted_triggers" / "MD_corporate_history_triggers.txt"
 )

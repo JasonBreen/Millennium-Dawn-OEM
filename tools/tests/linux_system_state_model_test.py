@@ -612,7 +612,7 @@ def test_storage_chain_has_complete_lifecycle_and_safe_reconstruction():
             f"USA_oem_storage_event_{index}_resolved",
         ]
         assert "corporate_history_full_enabled = yes" in event
-        assert "linux_system_full_enabled = yes" in event
+        assert "linux_system_full_enabled = yes" not in event
         assert f"has_country_flag = USA_oem_storage_event_{index}_expected" in event
         assert f"has_country_flag = USA_oem_storage_event_{index}_pending" in event
         assert (
@@ -643,6 +643,9 @@ def test_storage_chain_has_complete_lifecycle_and_safe_reconstruction():
         assert f"USA_oem_storage_event_{index}_expected" in due
 
     reconstruct = _named_block(effects, "USA_oem_storage_reconstruct_history")
+    assert "corporate_history_enabled = yes" in reconstruct
+    assert "linux_system_enabled = yes" not in reconstruct
+    assert "linux_system_outcomes_only_enabled = yes" not in reconstruct
     for forbidden in (
         "add_political_power",
         "modify_treasury_effect",
@@ -655,6 +658,8 @@ def test_storage_chain_has_complete_lifecycle_and_safe_reconstruction():
 
     repair = _named_block(effects, "USA_oem_storage_repair_delivery_markers")
     recovery = _named_block(effects, "USA_oem_storage_recover_pending_events")
+    assert "corporate_history_full_enabled = yes" in recovery
+    assert "linux_system_full_enabled = yes" not in recovery
     assert "USA_oem_storage_repair_delivery_markers = yes" in recovery
     for index in range(16, 24):
         assert f"has_country_flag = USA_oem_storage_event_{index}_pending" in repair
@@ -666,14 +671,19 @@ def test_storage_chain_has_complete_lifecycle_and_safe_reconstruction():
 
     monthly = _named_block(driver_effects, "USA_oem_storage_monthly_driver")
     assert "corporate_history_enabled = yes" in monthly
-    assert "linux_system_enabled = yes" in monthly
+    assert "linux_system_enabled = yes" not in monthly
     assert "corporate_history_full_enabled = yes" in monthly
-    assert "linux_system_full_enabled = yes" in monthly
+    assert "linux_system_full_enabled = yes" not in monthly
     assert "USA_oem_storage_schedule_year_events = yes" in monthly
     assert "USA_oem_storage_schedule_due_events = yes" in monthly
     assert "USA_oem_storage_reconstruct_history = yes" in monthly
     assert "USA_oem_storage_clear_linux_pending_markers = yes" in monthly
     assert "USA_oem_storage_clear_legacy_linux_adapter_state = yes" in monthly
+
+    mark_dirty = _named_block(
+        EFFECTS_PATH.read_text(encoding="utf-8"), "linux_system_mark_dirty"
+    )
+    assert "linux_system_enabled = yes" in mark_dirty
 
 
 def test_storage_legacy_import_is_once_only_read_only_and_bounded():

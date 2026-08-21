@@ -288,6 +288,73 @@ def test_schema_v6_rejects_outcomes_and_off_mode_bypasses(tmp_path):
     assert any("gpu_test.1 is reachable in outcomes_only mode" in m for m in messages)
 
 
+def test_schema_v6_explores_else_after_mixed_off_and_runtime_limit(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/independent_test_effects.txt"
+    text = path.read_text(encoding="utf-8")
+    text = text.replace(
+        "gpu_test_monthly_driver = {\n",
+        "gpu_test_monthly_driver = {\n"
+        "\tif = { limit = { corporate_history_enabled = no "
+        "has_country_flag = gpu_runtime_gate } }\n"
+        "\telse = { gpu_test_reconstruct = yes }\n",
+        1,
+    )
+    path.write_text(text, encoding="utf-8")
+
+    _validator, messages = _validator_findings(tmp_path)
+
+    assert any("gpu_test_reconstruct is reachable in Off mode" in m for m in messages)
+
+
+def test_schema_v6_explores_else_after_mixed_else_if_limit(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/independent_test_effects.txt"
+    text = path.read_text(encoding="utf-8")
+    text = text.replace(
+        "gpu_test_monthly_driver = {\n",
+        "gpu_test_monthly_driver = {\n"
+        "\tif = { limit = { corporate_history_full_enabled = yes } }\n"
+        "\telse_if = { limit = { corporate_history_outcomes_only_enabled = yes "
+        "has_country_flag = gpu_runtime_gate } }\n"
+        "\telse = { gpu_test_schedule = yes }\n",
+        1,
+    )
+    path.write_text(text, encoding="utf-8")
+
+    _validator, messages = _validator_findings(tmp_path)
+
+    assert any(
+        "gpu_test_schedule is reachable in outcomes_only mode" in m for m in messages
+    )
+
+
+def test_schema_v6_explores_or_with_unresolved_runtime_disjunct(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "common/scripted_effects/independent_test_effects.txt"
+    text = path.read_text(encoding="utf-8")
+    text = text.replace(
+        "gpu_test_monthly_driver = {\n",
+        "gpu_test_monthly_driver = {\n"
+        "\tif = {\n"
+        "\t\tlimit = {\n"
+        "\t\t\tOR = {\n"
+        "\t\t\t\tcorporate_history_enabled = yes\n"
+        "\t\t\t\thas_country_flag = gpu_runtime_gate\n"
+        "\t\t\t}\n"
+        "\t\t}\n"
+        "\t\tgpu_test_schedule = yes\n"
+        "\t}\n",
+        1,
+    )
+    path.write_text(text, encoding="utf-8")
+
+    _validator, messages = _validator_findings(tmp_path)
+
+    assert any("gpu_test_schedule is reachable in off mode" in m for m in messages)
+    assert any("gpu_test.1 is reachable in off mode" in m for m in messages)
+
+
 def test_schema_v6_rejects_direct_gpu_and_usa_event_dispatch(tmp_path):
     _build_fixture(tmp_path)
     path = tmp_path / "common/on_actions/02_independent_test_on_actions.txt"
@@ -402,7 +469,7 @@ def test_schema_v6_scans_foreign_writes_through_reachable_helpers(tmp_path):
     )
 
 
-def test_schema_v6_treats_event_namespaces_as_leaf_nodes(tmp_path):
+def test_schema_v6_rejects_cross_subsystem_event_dispatch(tmp_path):
     _build_fixture(tmp_path)
     path = tmp_path / "events/independent_test_events.txt"
     text = path.read_text(encoding="utf-8").replace(
@@ -414,7 +481,110 @@ def test_schema_v6_treats_event_namespaces_as_leaf_nodes(tmp_path):
 
     _validator, messages = _validator_findings(tmp_path)
 
+    assert any(
+        "USA_test.1 is dispatched outside legacy_usa_oem_storage_history "
+        "scheduler entrypoints by gpu_test.1" in message
+        for message in messages
+    )
+
+
+def test_schema_v6_accepts_reachable_intra_subsystem_event_dispatch(tmp_path):
+    _build_fixture(tmp_path)
+    manifest_path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["independent_subsystems"][0]["event_ids"].append("gpu_test.2")
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    events_path = tmp_path / "events/independent_test_events.txt"
+    events_path.write_text(
+        events_path.read_text(encoding="utf-8").replace(
+            "country_event = { id = gpu_test.1 is_triggered_only = yes }",
+            "country_event = { id = gpu_test.1 is_triggered_only = yes "
+            "immediate = { country_event = gpu_test.2 } }\n"
+            "country_event = { id = gpu_test.2 is_triggered_only = yes }",
+        ),
+        encoding="utf-8",
+    )
+
+    _validator, messages = _validator_findings(tmp_path)
+
     assert messages == []
+
+
+def test_schema_v6_accepts_event_effect_event_dispatch_within_subsystem(tmp_path):
+    _build_fixture(tmp_path)
+    manifest_path = tmp_path / "tools/corporate_history_contract.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["independent_subsystems"][0]["event_ids"].append("gpu_test.2")
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    events_path = tmp_path / "events/independent_test_events.txt"
+    events_path.write_text(
+        events_path.read_text(encoding="utf-8").replace(
+            "country_event = { id = gpu_test.1 is_triggered_only = yes }",
+            "country_event = { id = gpu_test.1 is_triggered_only = yes "
+            "immediate = { gpu_test_event_followup = yes } }\n"
+            "country_event = { id = gpu_test.2 is_triggered_only = yes }",
+        ),
+        encoding="utf-8",
+    )
+    effects_path = tmp_path / "common/scripted_effects/independent_test_effects.txt"
+    effects_path.write_text(
+        effects_path.read_text(encoding="utf-8")
+        + "\ngpu_test_event_followup = { country_event = gpu_test.2 }\n",
+        encoding="utf-8",
+    )
+
+    _validator, messages = _validator_findings(tmp_path)
+
+    assert messages == []
+
+
+def test_schema_v6_rejects_foreign_write_in_declared_event_body(tmp_path):
+    _build_fixture(tmp_path)
+    path = tmp_path / "events/independent_test_events.txt"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "country_event = { id = gpu_test.1 is_triggered_only = yes }",
+            "country_event = { id = gpu_test.1 is_triggered_only = yes "
+            "immediate = { set_country_flag = ISR_foreign_owned } }",
+        ),
+        encoding="utf-8",
+    )
+
+    _validator, messages = _validator_findings(tmp_path)
+
+    assert any(
+        "cross_tag_gpu_development event gpu_test.1 writes foreign-owner state "
+        "ISR_foreign_owned" in message
+        for message in messages
+    )
+
+
+def test_schema_v6_rejects_foreign_write_through_event_helper(tmp_path):
+    _build_fixture(tmp_path)
+    events_path = tmp_path / "events/independent_test_events.txt"
+    events_path.write_text(
+        events_path.read_text(encoding="utf-8").replace(
+            "country_event = { id = gpu_test.1 is_triggered_only = yes }",
+            "country_event = { id = gpu_test.1 is_triggered_only = yes "
+            "immediate = { gpu_test_event_foreign_helper = yes } }",
+        ),
+        encoding="utf-8",
+    )
+    effects_path = tmp_path / "common/scripted_effects/independent_test_effects.txt"
+    effects_path.write_text(
+        effects_path.read_text(encoding="utf-8")
+        + "\ngpu_test_event_foreign_helper = { "
+        "set_country_flag = ISR_event_helper_foreign_owned }\n",
+        encoding="utf-8",
+    )
+
+    _validator, messages = _validator_findings(tmp_path)
+
+    assert any(
+        "reaches foreign-owner write ISR_event_helper_foreign_owned through "
+        "gpu_test_event_foreign_helper" in message
+        for message in messages
+    )
 
 
 def test_schema_v6_rejects_extra_independent_subsystem_fields(tmp_path):

@@ -90,7 +90,7 @@ If Corporate History is Off, the bridge ignores native company outcomes and uses
 
 `linux_system_refresh_usa_adapter` reads IBM and legacy storage outcomes only while Corporate History is enabled. Corporate History Off yields no IBM or storage adapter contribution. Adapter refresh never writes IBM or storage state.
 
-Legacy storage history is governed by the intersection of both rules. Corporate History Full plus Linux Full permits its authored events. If both systems are enabled and either selects Outcomes Only, reached storage history reconstructs silently. Corporate History Off or Linux Off leaves storage scheduling, reconstruction, and adapter state inert; the generic Linux base route remains available whenever the Linux rule itself is enabled.
+Legacy storage history is governed only by the Corporate History rule. Corporate History Full permits its authored events even when Linux is Off, Outcomes Only reconstructs reached storage history silently, and Corporate History Off leaves storage scheduling and reconstruction inert. When Linux is enabled, it reads the resulting storage state through its adapter. Linux Off does not initialize Linux state through storage events, while Corporate History Off leaves the independent generic Linux base route available.
 
 The one-time storage import preserves an old save's `USA_oem_storage_policy` without continuing to read that legacy scalar. A nonzero legacy value becomes `linux_system_usa_storage_legacy_import_level`, an absolute value clamped from 1 through 2; zero creates no route. Its Upstream route adds that level to Stewardship and supplies Support 1 when base support is Mixed. Its Enterprise route adds that level to Deployment and Assurance and supplies Support 2. The imported marker, level, and route survive Linux Off.
 
@@ -104,7 +104,7 @@ Full-mode generic-event suppression is limited to these native overlaps:
 
 Suppression resolves the generic milestone through its Enterprise route and applies that event's durable Enterprise delta only. This preserves any earlier live choice. Event 2 always remains available. Event 5 remains one settlement event after `USA_ibm_event_39_resolved`. Corporate History Off allows every unresolved generic Linux milestone without creating IBM or storage state.
 
-`USA_oem_storage_reconstruct_history` is the only coordinated native-state reconstruction call. The USA monthly owner reaches it only through the enabled-rule intersection, then refreshes the read-only adapter. Full/Full calls `USA_oem_storage_schedule_due_events`, which repairs pending deliveries through `USA_oem_storage_recover_pending_events`; an Outcomes Only selection on either enabled rule reconstructs without event calls. Off cleanup may clear old pending artifacts for save compatibility, but it may not initialize, schedule, reconstruct, or adapt new storage state.
+`USA_oem_storage_reconstruct_history` is the only coordinated native-state reconstruction call. The USA monthly owner reaches it whenever Corporate History is enabled. Full calls `USA_oem_storage_schedule_due_events`, which repairs pending deliveries through `USA_oem_storage_recover_pending_events`; Outcomes Only reconstructs without event calls. Linux initialization, dirty markers, and recalculation remain guarded by the Linux rule, so storage history can run without synthesizing Linux state. Off cleanup may clear old pending artifacts for save compatibility, but it may not initialize, schedule, reconstruct, or adapt new storage state.
 
 ## Persistent ideas
 

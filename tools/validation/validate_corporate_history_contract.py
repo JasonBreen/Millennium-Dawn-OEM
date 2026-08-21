@@ -1290,13 +1290,30 @@ class Validator(BaseValidator):
             )
 
         direct_calls = self._independent_event_call_sites(
-            effect_defs, set(event_owners)
+            effect_defs, event_defs, set(event_owners)
         )
+        scheduler_reachability = {
+            subsystem.subsystem_id: self._independent_scheduler_reachability(
+                dispatch_closures[subsystem.subsystem_id],
+                effect_defs,
+                event_defs,
+                set(event_owners),
+            )
+            for subsystem in subsystems
+        }
+        scheduler_effects = {
+            subsystem_id: reachable[0]
+            for subsystem_id, reachable in scheduler_reachability.items()
+        }
+        scheduler_events = {
+            subsystem_id: reachable[1]
+            for subsystem_id, reachable in scheduler_reachability.items()
+        }
         callerless_compatibility_anchors: Set[str] = set()
         for subsystem in subsystems:
             if subsystem.mode_policy != _INDEPENDENT_EVENT_POLICY:
                 continue
-            scheduler_closure = dispatch_closures[subsystem.subsystem_id]
+            scheduler_closure = scheduler_effects[subsystem.subsystem_id]
             for event_id in subsystem.event_ids:
                 sites = direct_calls.get(event_id, [])
                 if not sites:
@@ -1320,17 +1337,18 @@ class Validator(BaseValidator):
                 owner_subsystems = {
                     owner.subsystem_id
                     for owner in subsystems
-                    if any(
-                        site.kind == "effect"
-                        and site.owner
-                        in dispatch_closures.get(owner.subsystem_id, set())
-                        for site in sites
-                    )
+                    if event_id in scheduler_events.get(owner.subsystem_id, set())
                 }
                 bypasses = [
                     site
                     for site in sites
-                    if site.kind != "effect" or site.owner not in scheduler_closure
+                    if (site.kind == "effect" and site.owner not in scheduler_closure)
+                    or (
+                        site.kind == "event"
+                        and site.owner
+                        not in scheduler_events.get(subsystem.subsystem_id, set())
+                    )
+                    or site.kind not in {"effect", "event"}
                 ]
                 if owner_subsystems != {subsystem.subsystem_id}:
                     rendered = ", ".join(sorted(owner_subsystems)) or "none"
@@ -1356,12 +1374,21 @@ class Validator(BaseValidator):
             event_modes,
             effect_traces,
             event_traces,
-        ) = self._independent_mode_graph(effect_defs, set(event_owners), direct_calls)
+        ) = self._independent_mode_graph(
+            effect_defs,
+            set(event_owners),
+            direct_calls,
+            event_defs_for_expansion=event_defs,
+        )
         for subsystem in subsystems:
             closure = root_closures[subsystem.subsystem_id]
             findings.extend(
                 self._independent_foreign_write_findings(
-                    subsystem, closure, effect_defs, set(event_owners)
+                    subsystem,
+                    closure,
+                    effect_defs,
+                    event_defs,
+                    set(event_owners),
                 )
             )
             if subsystem.mode_policy == _INDEPENDENT_DERIVED_POLICY:
@@ -1528,9 +1555,53 @@ class Validator(BaseValidator):
             pending.extend(children.get(effect_name, ()))
         return reachable
 
+    def _independent_scheduler_reachability(
+        self,
+        dispatch_effects: Set[str],
+        effect_defs: Dict[str, List[BlockDef]],
+        event_defs: Mapping[str, EventDef],
+        tracked_event_ids: Set[str],
+    ) -> Tuple[Set[str], Set[str]]:
+        """Follow effect/event edges from one subsystem's declared dispatchers."""
+        children = self._effect_call_children(effect_defs)
+        reachable_effects = self._effect_descendants(dispatch_effects, children)
+        reachable_events: Set[str] = set()
+        changed = True
+        while changed:
+            changed = False
+            for effect_name in tuple(reachable_effects):
+                for definition in effect_defs.get(effect_name, []):
+                    for event_id, _line in self._find_event_calls(
+                        definition.body, definition.line, tracked_event_ids
+                    ):
+                        if event_id not in reachable_events:
+                            reachable_events.add(event_id)
+                            changed = True
+            for event_id in tuple(reachable_events):
+                event = event_defs.get(event_id)
+                if event is None:
+                    continue
+                for child_event, _line in self._find_event_calls(
+                    event.body, event.line, tracked_event_ids
+                ):
+                    if child_event not in reachable_events:
+                        reachable_events.add(child_event)
+                        changed = True
+                event_effects = {
+                    match.group(1)
+                    for match in _EFFECT_YES_RE.finditer(event.body)
+                    if match.group(1) in effect_defs
+                }
+                expanded_effects = self._effect_descendants(event_effects, children)
+                if not expanded_effects.issubset(reachable_effects):
+                    reachable_effects.update(expanded_effects)
+                    changed = True
+        return reachable_effects, reachable_events
+
     def _independent_event_call_sites(
         self,
         effect_defs: Dict[str, List[BlockDef]],
+        event_defs: Mapping[str, EventDef],
         tracked_ids: Set[str],
     ) -> Dict[str, List[CallSite]]:
         sites: Dict[str, List[CallSite]] = defaultdict(list)
@@ -1542,6 +1613,13 @@ class Validator(BaseValidator):
                     sites[event_id].append(
                         CallSite(event_id, definition.file, line, "effect", owner)
                     )
+        for owner, event in event_defs.items():
+            for event_id, line in self._find_event_calls(
+                event.body, event.line, tracked_ids
+            ):
+                sites[event_id].append(
+                    CallSite(event_id, event.file, line, "event", owner)
+                )
         for filepath in self._collect_text_files(
             ["common/**/*.txt", "history/**/*.txt"]
         ):
@@ -1566,32 +1644,52 @@ class Validator(BaseValidator):
         subsystem: IndependentSubsystemConfig,
         reachable_effects: Set[str],
         effect_defs: Dict[str, List[BlockDef]],
+        event_defs: Mapping[str, EventDef],
         declared_event_ids: Set[str],
     ) -> List[Tuple[str, str, int]]:
         findings: List[Tuple[str, str, int]] = []
-        for effect_name in reachable_effects:
-            for definition in effect_defs.get(effect_name, []):
-                prefixes = tuple(
-                    sorted(
-                        {
-                            f"{match.group(1)}_"
-                            for match in re.finditer(
-                                r"\b([A-Z][A-Z0-9]{2})_[A-Za-z0-9_]+",
-                                definition.body,
-                            )
-                        }
-                    )
+        owned_events = [
+            event_defs[event_id]
+            for event_id in subsystem.event_ids
+            if event_id in event_defs
+        ]
+        event_effect_roots = {
+            match.group(1)
+            for event in owned_events
+            for match in _EFFECT_YES_RE.finditer(event.body)
+            if match.group(1) in effect_defs
+        }
+        expanded_effects = set(reachable_effects)
+        expanded_effects.update(
+            self._effect_descendants(
+                event_effect_roots, self._effect_call_children(effect_defs)
+            )
+        )
+
+        def foreign_tokens(body: str) -> List[str]:
+            prefixes = tuple(
+                sorted(
+                    {
+                        f"{match.group(1)}_"
+                        for match in re.finditer(
+                            r"\b([A-Z][A-Z0-9]{2})_[A-Za-z0-9_]+", body
+                        )
+                    }
                 )
-                if not prefixes:
-                    continue
-                for token in sorted(
-                    _collect_native_write_tokens(definition.body, prefixes)
-                ):
-                    if token in declared_event_ids:
-                        continue
-                    tag_match = re.match(r"([A-Z][A-Z0-9]{2})_", token)
-                    if not tag_match or tag_match.group(1) in subsystem.owner_tags:
-                        continue
+            )
+            if not prefixes:
+                return []
+            return [
+                token
+                for token in sorted(_collect_native_write_tokens(body, prefixes))
+                if token not in declared_event_ids
+                and (tag_match := re.match(r"([A-Z][A-Z0-9]{2})_", token))
+                and tag_match.group(1) not in subsystem.owner_tags
+            ]
+
+        for effect_name in expanded_effects:
+            for definition in effect_defs.get(effect_name, []):
+                for token in foreign_tokens(definition.body):
                     findings.append(
                         (
                             f"{subsystem.subsystem_id} reaches foreign-owner write {token} through {effect_name}",
@@ -1599,81 +1697,99 @@ class Validator(BaseValidator):
                             definition.line,
                         )
                     )
+        for event in owned_events:
+            for token in foreign_tokens(event.body):
+                findings.append(
+                    (
+                        f"{subsystem.subsystem_id} event {event.event_id} writes foreign-owner state {token}",
+                        event.file,
+                        event.line,
+                    )
+                )
         return findings
 
-    def _mode_constraint(self, text: str, union: bool = False) -> Optional[Set[str]]:
+    @staticmethod
+    def _combine_condition_truth(
+        values: Sequence[Optional[bool]], union: bool
+    ) -> Optional[bool]:
+        if union:
+            if any(value is True for value in values):
+                return True
+            if any(value is None for value in values):
+                return None
+            return False
+        if any(value is False for value in values):
+            return False
+        if any(value is None for value in values):
+            return None
+        return True
+
+    def _mode_tag_condition_truth(
+        self,
+        text: str,
+        mode: Optional[str],
+        host_tag: Optional[str],
+        union: bool = False,
+    ) -> Tuple[Optional[bool], bool]:
+        """Evaluate known mode/tag atoms while preserving unknown runtime predicates."""
+        values: List[Optional[bool]] = []
+        has_mode_atom = False
         residual: List[str] = []
-        constraints: List[Set[str]] = []
         cursor = 0
         for name, start, end, body in self._iter_direct_child_blocks(text):
             residual.append(text[cursor:start])
             cursor = end
             upper = name.upper()
-            nested: Optional[Set[str]] = None
-            if upper == "NOT":
-                inner = self._mode_constraint(body)
-                if inner is not None:
-                    nested = set(_CORPORATE_MODES) - inner
-            elif upper == "OR":
-                nested = self._mode_constraint(body, union=True)
-            elif upper == "AND":
-                nested = self._mode_constraint(body)
-            if nested is not None:
-                constraints.append(nested)
+            if upper in {"NOT", "OR", "AND"}:
+                nested, nested_has_mode = self._mode_tag_condition_truth(
+                    body, mode, host_tag, union=upper == "OR"
+                )
+                has_mode_atom = has_mode_atom or nested_has_mode
+                if upper == "NOT" and nested is not None:
+                    nested = not nested
+                values.append(nested)
+            else:
+                values.append(None)
         residual.append(text[cursor:])
         direct = "".join(residual)
+
         trigger_modes = {
             "corporate_history_full_enabled": {"full"},
             "corporate_history_outcomes_only_enabled": {"outcomes_only"},
             "corporate_history_enabled": {"full", "outcomes_only"},
         }
-        for trigger, modes in trigger_modes.items():
-            for match in re.finditer(
-                rf"\b{re.escape(trigger)}\s*=\s*(yes|no)\b", direct
-            ):
-                constraint = set(modes)
-                if match.group(1) == "no":
-                    constraint = set(_CORPORATE_MODES) - constraint
-                constraints.append(constraint)
-        if not constraints:
-            return None
-        if union:
-            return set().union(*constraints)
-        result = set(_CORPORATE_MODES)
-        for constraint in constraints:
-            result.intersection_update(constraint)
-        return result
+        mode_pattern = re.compile(
+            r"\b(corporate_history_full_enabled|corporate_history_outcomes_only_enabled|corporate_history_enabled)\s*=\s*(yes|no)\b"
+        )
+        for match in mode_pattern.finditer(direct):
+            has_mode_atom = True
+            if mode is None:
+                values.append(None)
+                continue
+            value = mode in trigger_modes[match.group(1)]
+            values.append(value if match.group(2) == "yes" else not value)
+        direct = mode_pattern.sub("", direct)
 
-    def _tag_constraint_allows(
-        self, text: str, host_tag: Optional[str], union: bool = False
-    ) -> Optional[bool]:
-        if host_tag is None:
-            return None
-        results: List[bool] = []
-        residual: List[str] = []
-        cursor = 0
-        for name, start, end, body in self._iter_direct_child_blocks(text):
-            residual.append(text[cursor:start])
-            cursor = end
-            upper = name.upper()
-            nested: Optional[bool] = None
-            if upper == "NOT":
-                inner = self._tag_constraint_allows(body, host_tag)
-                if inner is not None:
-                    nested = not inner
-            elif upper == "OR":
-                nested = self._tag_constraint_allows(body, host_tag, union=True)
-            elif upper == "AND":
-                nested = self._tag_constraint_allows(body, host_tag)
-            if nested is not None:
-                results.append(nested)
-        residual.append(text[cursor:])
-        direct = "".join(residual)
-        for match in re.finditer(r"\boriginal_tag\s*=\s*([A-Z0-9]{3})\b", direct):
-            results.append(match.group(1) == host_tag)
-        if not results:
-            return None
-        return any(results) if union else all(results)
+        tag_pattern = re.compile(r"\boriginal_tag\s*=\s*([A-Z0-9]{3})\b")
+        for match in tag_pattern.finditer(direct):
+            values.append(None if host_tag is None else match.group(1) == host_tag)
+        direct = tag_pattern.sub("", direct)
+        if direct.strip():
+            values.append(None)
+
+        return self._combine_condition_truth(values, union), has_mode_atom
+
+    def _mode_constraint(self, text: str, union: bool = False) -> Optional[Set[str]]:
+        possible: Set[str] = set()
+        has_mode_atom = False
+        for mode in _CORPORATE_MODES:
+            truth, mode_atom = self._mode_tag_condition_truth(
+                text, mode, None, union=union
+            )
+            has_mode_atom = has_mode_atom or mode_atom
+            if truth is not False:
+                possible.add(mode)
+        return possible if has_mode_atom else None
 
     def _independent_mode_graph(
         self,
@@ -1706,7 +1822,10 @@ class Validator(BaseValidator):
         visited: Set[Tuple[str, str, str, str]] = set()
         visited_events: Set[Tuple[str, str, str, str]] = set()
         relevant_effects = self._mode_graph_relevant_effects(
-            effect_defs, tracked_event_ids, direct_event_calls
+            effect_defs,
+            tracked_event_ids,
+            direct_event_calls,
+            event_defs_for_expansion,
         )
 
         def record_event(
@@ -1822,27 +1941,19 @@ class Validator(BaseValidator):
                     remaining = {mode}
                     conditional_chain = True
                     limit = self._direct_child_block(nested, "limit") or ""
-                    constraint = self._mode_constraint(limit)
-                    tag_allowed = self._tag_constraint_allows(limit, host_tag)
-                    branch = (
-                        {mode}
-                        if (constraint is None or mode in constraint)
-                        and tag_allowed is not False
-                        else set()
+                    truth, _has_mode_atom = self._mode_tag_condition_truth(
+                        limit, mode, host_tag
                     )
-                    if (constraint is not None or tag_allowed is not None) and branch:
+                    branch = {mode} if truth is not False else set()
+                    if truth is True and branch:
                         remaining.clear()
                 elif name == "else_if" and conditional_chain:
                     limit = self._direct_child_block(nested, "limit") or ""
-                    constraint = self._mode_constraint(limit)
-                    tag_allowed = self._tag_constraint_allows(limit, host_tag)
-                    branch = (
-                        set(remaining)
-                        if (constraint is None or mode in constraint)
-                        and tag_allowed is not False
-                        else set()
+                    truth, _has_mode_atom = self._mode_tag_condition_truth(
+                        limit, mode, host_tag
                     )
-                    if (constraint is not None or tag_allowed is not None) and branch:
+                    branch = set(remaining) if truth is not False else set()
+                    if truth is True and branch:
                         remaining.clear()
                 elif name == "else" and conditional_chain:
                     branch = set(remaining)
@@ -1972,6 +2083,7 @@ class Validator(BaseValidator):
         effect_defs: Dict[str, List[BlockDef]],
         tracked_event_ids: Set[str],
         direct_event_calls: Optional[Mapping[str, Sequence[CallSite]]],
+        event_defs_for_expansion: Optional[Mapping[str, EventDef]],
     ) -> Set[str]:
         """Effects that can lead from an on-action to a contract-owned target.
 
@@ -2038,6 +2150,20 @@ class Validator(BaseValidator):
                 for sites in direct_event_calls.values()
                 for site in sites
                 if site.kind == "effect"
+            )
+
+        if event_defs_for_expansion is not None:
+            event_effect_roots = {
+                match.group(1)
+                for event_id in tracked_event_ids
+                if (event := event_defs_for_expansion.get(event_id)) is not None
+                for match in _EFFECT_YES_RE.finditer(event.body)
+                if match.group(1) in effect_defs
+            }
+            targets.update(
+                self._effect_descendants(
+                    event_effect_roots, self._effect_call_children(effect_defs)
+                )
             )
 
         parents = self._effect_call_parents(effect_defs)

@@ -6,6 +6,7 @@ from typing import List, Tuple
 ROOT = Path(__file__).resolve().parents[2]
 EVENTS_PATH = ROOT / "events" / "CHI_huawei_events.txt"
 EFFECTS_PATH = ROOT / "common" / "scripted_effects" / "CHI_huawei_effects.txt"
+LENOVO_EFFECTS_PATH = ROOT / "common" / "scripted_effects" / "CHI_lenovo_effects.txt"
 TRIGGERS_PATH = ROOT / "common" / "scripted_triggers" / "CHI_huawei_triggers.txt"
 IDEAS_PATH = ROOT / "common" / "ideas" / "CHI_huawei_ideas.txt"
 LOCALISATION_PATH = ROOT / "localisation" / "english" / "MD_focus_CHI_l_english.yml"
@@ -853,6 +854,19 @@ def test_huawei_and_lenovo_use_independent_monthly_completion_guards():
     assert (
         "CHI_lenovo_reconstruct_complete CHI_huawei_reconstruct_complete" not in monthly
     )
+
+
+def test_lenovo_missing_usa_fallbacks_guard_foreign_checks():
+    effects = LENOVO_EFFECTS_PATH.read_text(encoding="utf-8")
+    guarded_fallback = re.compile(
+        r"NOT = \{ country_exists = USA \}\s+"
+        r"AND = \{\s+country_exists = USA\s+has_war_with = USA\s+\}\s+"
+        r"AND = \{\s+country_exists = USA\s+"
+        r"USA = \{ has_country_flag = collapsed_nation \}\s+\}"
+    )
+
+    assert len(guarded_fallback.findall(effects)) == 3
+    assert effects.count("USA = { has_country_flag = collapsed_nation }") == 3
 
 
 def test_dashboard_is_read_only_authoritative_and_off_gated():
