@@ -512,7 +512,7 @@ def _check_file_for_unknown_modifiers(
     Returns a list of (modifier_name, rel_path, line_number) tuples.
     """
     filepath, known_good, mod_path = args
-    if should_skip_file(filepath):
+    if should_skip_file(filepath, root=mod_path):
         return []
     text = FileOpener.open_text_file(
         filepath, lowercase=False, strip_comments_flag=True
