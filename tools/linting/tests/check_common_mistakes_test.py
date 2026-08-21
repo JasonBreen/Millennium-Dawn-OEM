@@ -34,6 +34,7 @@ Unit tests for the checks added to check_common_mistakes.py (in file order):
   31. create_faction is deprecated (use create_faction_from_template)
   32. add_building_construction of a provincial building with no province
   33. event AI choices cannot all be zero under historical bankruptcy
+  34. is_at_war is not a valid trigger (use has_war)
 """
 
 import os
@@ -67,6 +68,7 @@ from check_common_mistakes import (
     _check_has_idea_mutex_in_not_block,
     _check_hidden_trigger_in_ctt,
     _check_influence_setter_scope,
+    _check_invalid_is_at_war,
     _check_leader_rotation,
     _check_mutually_exclusive_contradictions,
     _check_on_add_array_symmetry,
@@ -3378,6 +3380,42 @@ assert_eq(
     ),
     (False, False),
     "brace-valued conditions are not treated as unconditional zero modifiers",
+)
+
+# 34. is_at_war is not a valid trigger.
+
+print("\n── invalid is_at_war trigger ──")
+
+assert_finds(
+    _check_invalid_is_at_war,
+    ["\tlimit = { is_at_war = yes }\n", "\tis_at_war = no\n"],
+    2,
+    "is_at_war assignments flagged",
+)
+
+assert_finds(
+    _check_invalid_is_at_war,
+    [
+        "\t# is_at_war = yes\n",
+        '\tlog = "is_at_war = no"\n',
+        "\thas_war = yes\n",
+    ],
+    0,
+    "comments, quoted strings, and has_war are not flagged",
+)
+
+with tempfile.NamedTemporaryFile(
+    mode="w", encoding="utf-8", newline="", suffix=".txt", delete=False
+) as _invalid_war_fixture:
+    _invalid_war_fixture.write("trigger = { is_at_war = yes }\n")
+try:
+    _invalid_war_issues = check_file(_invalid_war_fixture.name)
+finally:
+    os.unlink(_invalid_war_fixture.name)
+assert_eq(
+    len(_invalid_war_issues),
+    1,
+    "check_file dispatches the invalid is_at_war check",
 )
 
 

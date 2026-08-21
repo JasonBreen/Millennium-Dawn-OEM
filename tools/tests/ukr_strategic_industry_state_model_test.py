@@ -296,7 +296,8 @@ def test_rupture_and_war_are_state_led_and_cover_split_russian_tags():
     qualifying_war = _named_block(
         triggers, "UKR_strategic_industry_qualifying_major_war_trigger"
     )
-    assert "is_at_war = yes" in qualifying_war
+    assert "is_at_war" not in triggers
+    assert "has_war = yes" in qualifying_war
     assert "any_enemy_country" in qualifying_war
     assert "original_tag = SOV" in qualifying_war
     assert "is_major = yes" in qualifying_war
