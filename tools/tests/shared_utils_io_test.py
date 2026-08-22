@@ -30,7 +30,9 @@ def test_mod_root_still_excludes_real_ignored_content(tmp_path):
     (root / "tools").mkdir()
     (root / "resources").mkdir()
 
-    assert U.should_skip_file(str(root / ".claude" / "docs" / "plan.md"), root=str(root))
+    assert U.should_skip_file(
+        str(root / ".claude" / "docs" / "plan.md"), root=str(root)
+    )
     assert U.should_skip_file(str(root / "tools" / "run.py"), root=str(root))
     assert U.should_skip_file(str(root / "resources" / "ref.txt"), root=str(root))
 

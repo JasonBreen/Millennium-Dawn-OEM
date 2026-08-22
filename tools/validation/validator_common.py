@@ -37,6 +37,7 @@ from shared_utils import (
     timing_enabled,
 )
 
+
 def _init_worker(mod_path, initializer, initargs):
     """Seed the worker's mod root before running the caller's initializer.
 
