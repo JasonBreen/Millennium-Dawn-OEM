@@ -19,6 +19,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      pages_setup: ${{ steps.setup_pages.outcome }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -30,6 +32,9 @@ jobs:
       - name: Setup Pages
         id: setup_pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
+        # Fails when Pages is not enabled on the repository (forks, fresh
+        # clones). The build still publishes an artifact; only deploy is skipped.
+        continue-on-error: true
         with:
           enablement: false
 
@@ -61,6 +66,7 @@ jobs:
           path: ./docs/dist
 
   deploy:
+    if: needs.build.result == 'success' && needs.build.outputs.pages_setup == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
