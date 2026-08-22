@@ -63,3 +63,40 @@ Sourced from Wikimedia Commons, cropped and resized to the HOI4 event-picture fo
 | `GFX_ericsson_kista`        | [Ericsson Kista.jpg](https://commons.wikimedia.org/wiki/File:Ericsson_Kista.jpg)                                                                                                 | I99pema                            | CC BY-SA 3.0  |
 | `GFX_siemens_himbeerpalast` | [Siemens-Verwaltung in Erlangen 2014 'Himbeerpalast' retusche.jpg](https://commons.wikimedia.org/wiki/File:Siemens-Verwaltung_in_Erlangen_2014_%27Himbeerpalast%27_retusche.jpg) | Guido Radig; retouch by Lämpel     | CC BY 3.0     |
 | `GFX_siemens_somatom_ct`    | [Siemens Somatom CT scanner.jpg](https://commons.wikimedia.org/wiki/File:Siemens_Somatom_CT_scanner.jpg)                                                                         | USDA Rural Development / Sarah Sol | Public domain |
+
+## Russian computing sovereignty event pictures (`SOV_computing_sovereignty_events`)
+
+Sourced from Wikimedia Commons, cropped to the 217x163 event-picture ratio and stored as DDS textures. Full derivation steps and source hashes are recorded with the chain.
+
+| Sprite | Source file | Author | License |
+| ------ | ----------- | ------ | ------- |
+| `GFX_SOV_computing_sovereignty_processor` | [MCST Elbrus-8S/Elbrus-8C die photograph](<https://commons.wikimedia.org/wiki/File:MCST@28nmTSMC@Gen4-VLIW@Elbrus-8S@%D0%AD%D0%BB%D1%8C%D0%B1%D1%80%D1%83%D1%81-8C_1891BM028_T6H656.00.01_2018_DSC04702-DSC04702_(51771296532).jpg>) | Fritzchens Fritz | CC0 1.0 |
+| `GFX_SOV_computing_sovereignty_fabrication` | [A Look Into the Northrop Grumman Cleanroom](https://commons.wikimedia.org/wiki/File:A_Look_Into_the_Northrop_Grumman_Cleanroom.jpg) | Northrop Grumman | CC BY 2.0 |
+| `GFX_SOV_computing_sovereignty_systems` | [Front of server racks at NERSC](https://commons.wikimedia.org/wiki/File:Front_of_server_racks_at_NERSC.jpg) | Derrick Coetzee | CC0 1.0 |
+| `GFX_SOV_computing_sovereignty_consumer` | [YOTAPHONE II](https://commons.wikimedia.org/wiki/File:YOTAPHONE_II.jpg) | gilipollastv | CC BY 2.0 |
+| `GFX_SOV_computing_sovereignty_supply_chain` | [Containers, Port of Rotterdam](<https://commons.wikimedia.org/wiki/File:Containers,_Port_of_Rotterdam_(9703431992).jpg>) | Luke Price | CC BY 2.0 |
+| `GFX_SOV_computing_sovereignty_sovereignty` | [White Printed Circuit Board](https://commons.wikimedia.org/wiki/File:White_Printed_Circuit_Board.JPG) | gunthercox | CC0 1.0 |
+
+## French corporate systems event pictures (`FRA_corporate_systems_events`)
+
+Sourced from Wikimedia Commons, cropped and resized to the HOI4 event-picture format.
+
+| Sprite | Source file | Author | License |
+| ------ | ----------- | ------ | ------- |
+| `GFX_FRA_corporate_alcatel` | [Alcatel-Lucent Boulogne](https://commons.wikimedia.org/wiki/File:Alcatel-Lucent_Boulogne.jpg) | AnaBé, 2014 | CC BY-SA 3.0 |
+| `GFX_FRA_corporate_stmicroelectronics` | [STMicroelectronics building](https://commons.wikimedia.org/wiki/File:STMicroelectronics-building.JPG) | Alexey M., 2015 | CC BY-SA 4.0 |
+| `GFX_FRA_corporate_cleanroom` | [Clean room](https://commons.wikimedia.org/wiki/File:Clean_room.jpg) | NASA Glenn Research Center, 2004 | Public domain, U.S. government |
+| `GFX_FRA_corporate_wafer` | [Silicon wafer](https://commons.wikimedia.org/wiki/File:Silicon_wafer.jpg) | Inductiveload, 2010 | Public-domain dedication |
+| `GFX_FRA_corporate_france_telecom` | [France Télécom 1999 logo](<https://commons.wikimedia.org/wiki/File:Logo_of_France_Telecom_(1999).svg>) | unknown author, 960-pixel PNG preview | Public-domain text logo |
+| `GFX_FRA_corporate_orange_labs` | [Orange Labs Rennes](https://commons.wikimedia.org/wiki/File:Orange_Labs_Rennes.JPG) | Sylenius, 1,280-pixel preview | CC BY-SA 3.0 |
+| `GFX_FRA_corporate_fiber` | [Fiber deployment in Lannion](<https://commons.wikimedia.org/wiki/File:Pose_fibre_optique_Lannion_(18198103421).jpg>) | missbutterflies, 960-pixel preview, 2015 | CC BY-SA 2.0 |
+| `GFX_FRA_corporate_5g` | [Cellular 5G equipment](https://commons.wikimedia.org/wiki/File:Cellular_5G_Equipment_-_Cell_Tower_Antennas.jpg) | Tony Webster, 1,280-pixel preview, 2019 | CC BY 2.0 |
+
+## Polish industrial sovereignty event pictures (`POL_industrial_sovereignty_events`)
+
+Sourced from Wikimedia Commons, cropped and resized to the HOI4 event-picture format.
+
+| Sprite | Source file | Author | License |
+| ------ | ----------- | ------ | ------- |
+| `GFX_POL_industrial_pesa` | [PESA assembly hall, 8 February 2014](https://commons.wikimedia.org/wiki/File:Bdg_Pesa_1_02-2014.jpg) | Pit1233 | CC0 1.0 |
+| `GFX_POL_industrial_swinoujscie_lng` | [Świnoujście LNG terminal, 18 June 2016](https://commons.wikimedia.org/wiki/File:Terminal_LNG_im._Prezydenta_Lecha_Kaczy%C5%84skiego_w_%C5%9Awinouj%C5%9Bciu.jpg) | KPRM source | public-domain mark as supplied by the copyright holder |

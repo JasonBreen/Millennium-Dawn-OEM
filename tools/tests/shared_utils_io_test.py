@@ -12,6 +12,54 @@ def test_normalized_traversal_exclusions_handle_both_separators():
     assert not U.should_skip_file("common/resources/game-data.txt")
 
 
+def test_mod_root_under_ignored_ancestor_still_yields_content(tmp_path):
+    """A checkout inside `.claude/worktrees/<name>/` must not filter itself out."""
+    root = tmp_path / ".claude" / "worktrees" / "test-worktree"
+    (root / "common" / "decisions").mkdir(parents=True)
+    kept = root / "common" / "decisions" / "live.txt"
+
+    assert U.should_skip_file(str(kept))  # no root: ancestor `.claude` wins
+    assert not U.should_skip_file(str(kept), root=str(root))
+    assert not U.should_skip_file(str(kept.parent / "live.txt"), root=str(root))
+
+
+def test_mod_root_still_excludes_real_ignored_content(tmp_path):
+    """Scoping to the mod root must not stop excluding `.claude` inside it."""
+    root = tmp_path / ".claude" / "worktrees" / "test-worktree"
+    (root / ".claude" / "docs").mkdir(parents=True)
+    (root / "tools").mkdir()
+    (root / "resources").mkdir()
+
+    assert U.should_skip_file(
+        str(root / ".claude" / "docs" / "plan.md"), root=str(root)
+    )
+    assert U.should_skip_file(str(root / "tools" / "run.py"), root=str(root))
+    assert U.should_skip_file(str(root / "resources" / "ref.txt"), root=str(root))
+
+
+def test_set_mod_root_supplies_the_default(tmp_path):
+    root = tmp_path / ".claude" / "worktrees" / "test-worktree"
+    (root / "events").mkdir(parents=True)
+    target = str(root / "events" / "x.txt")
+    previous = U._MOD_ROOT
+    try:
+        U.set_mod_root(None)
+        assert U.should_skip_file(target)
+        U.set_mod_root(str(root))
+        assert not U.should_skip_file(target)
+        assert U.should_skip_file(str(root / ".claude" / "notes.txt"))
+    finally:
+        U.set_mod_root(previous)
+
+
+def test_path_within_root_leaves_outside_paths_alone(tmp_path):
+    root = tmp_path / "mod"
+    root.mkdir()
+    outside = str(tmp_path / "elsewhere" / "x.txt")
+    assert U.path_within_root(outside, str(root)) == outside
+    assert U.path_within_root("common/x.txt", None) == "common/x.txt"
+
+
 def test_strict_read_rejects_malformed_bytes(tmp_path):
     path = tmp_path / "bad.txt"
     path.write_bytes(b"ok\xff")

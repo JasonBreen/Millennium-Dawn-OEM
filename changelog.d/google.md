@@ -1,4 +1,0 @@
-- Added a new USA Google corporate-history event chain covering AdWords, IPO governance, Android, YouTube, China market entry/exit policy choices, Motorola, Snowden, Alphabet, DeepMind, antitrust, TPUs, and submarine cables.
-- Added workforce-consent tracking with veto behavior that can lock out future government contracting after repeated defense or censorship concessions.
-- Added dedicated English localisation for every Google chain event, option, and effect tooltip.
-- Added post-mutation `USA_google_clamp_state` calls to all 48 Google event options to ensure bounded variables (`USA_google_workforce_consent`, `USA_google_infrastructure_depth`, `USA_google_sovereign_posture`) are properly clamped after every mutation.

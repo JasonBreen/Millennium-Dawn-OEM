@@ -576,7 +576,7 @@ def _scan_idea_refs_for_unused(args: Tuple[str, str]) -> List[str]:
     (`idea = X`) and swap (`add_idea`/`remove_idea`) forms. Content-cached.
     """
     filepath, mod_path = args
-    if should_skip_file(filepath):
+    if should_skip_file(filepath, root=mod_path):
         return []
     text = FileOpener.open_text_file(
         filepath, lowercase=False, strip_comments_flag=True

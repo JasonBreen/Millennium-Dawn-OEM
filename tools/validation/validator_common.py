@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Shared validation infrastructure: common classes, helpers, and the base validator."""
 
 import glob
@@ -27,12 +28,26 @@ from shared_utils import (
     get_staged_files,
     line_for_offset,
     log_message,
+    path_within_root,
     print_timing_summary,
     run_validator_main,
+    set_mod_root,
     should_skip_file,
     strip_comments,
     timing_enabled,
 )
+
+
+def _init_worker(mod_path, initializer, initargs):
+    """Seed the worker's mod root before running the caller's initializer.
+
+    Workers re-import the module, so the root recorded in the parent does not
+    carry over; without it every path filter in the worker judges the
+    checkout's own ancestors.
+    """
+    set_mod_root(mod_path)
+    initializer(*initargs)
+
 
 # Generic type for the cross-pass result cache accessor (see BaseValidator.cached).
 T = TypeVar("T")
@@ -507,6 +522,7 @@ class BaseValidator:
         if not mod_path.endswith(os.sep):
             mod_path += os.sep
         self.mod_path = mod_path
+        set_mod_root(mod_path)
         self.errors_found = 0
         self.warnings_found = 0
         self.output_file = output_file
@@ -845,7 +861,7 @@ class BaseValidator:
         def _build():
             index: Dict[str, List[str]] = {}
             for filename in tracked:
-                if should_skip_file(filename):
+                if should_skip_file(path_within_root(filename, self.mod_path)):
                     continue
                 index.setdefault(os.path.basename(filename), []).append(filename)
             return index
@@ -878,7 +894,11 @@ class BaseValidator:
         if self.workers <= 1:
             return None
         if self._pool is None:
-            self._pool = Pool(processes=self.workers)
+            self._pool = Pool(
+                processes=self.workers,
+                initializer=set_mod_root,
+                initargs=(self.mod_path,),
+            )
         return self._pool
 
     def _pool_map(self, func: Callable, args_list: List, chunksize: int = 50) -> List:
@@ -909,7 +929,9 @@ class BaseValidator:
             initializer(*initargs)
             return [func(it) for it in items]
         with Pool(
-            processes=self.workers, initializer=initializer, initargs=initargs
+            processes=self.workers,
+            initializer=_init_worker,
+            initargs=(self.mod_path, initializer, initargs),
         ) as pool:
             return pool.map(func, items, chunksize=chunksize)
 
@@ -986,9 +1008,18 @@ class BaseValidator:
                         seen.add(f)
                         files.append(f)
 
-        result = [f for f in files if not should_skip_file(f)]
-        if extra_skip is not None:
-            result = [f for f in result if not extra_skip(f)]
+        # Skip decisions are made on the mod-relative path so a checkout sitting
+        # under an ignored ancestor (e.g. `<repo>/.claude/worktrees/<name>/`)
+        # does not filter out its own contents; the caller still gets full paths.
+        # `extra_skip` keeps receiving the full path: callbacks match on anchored
+        # fragments like `/<ORG_DIR>/`, which a mod-relative path never contains.
+        result = []
+        for f in files:
+            if should_skip_file(path_within_root(f, self.mod_path)):
+                continue
+            if extra_skip is not None and extra_skip(f):
+                continue
+            result.append(f)
         return result
 
     def _load_localisation_keys(self) -> frozenset:

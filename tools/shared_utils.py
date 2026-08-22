@@ -277,12 +277,12 @@ _COMPARISON_OPS = {"!=", "==", ">=", "<="}
 
 
 def normalize_spacing(line: str) -> str:
-    """Put single spaces around braces, assignments and comparisons in one line.
+    """Put single spaces around ``{``, ``}`` and ``=`` in one line of script.
 
     Leading indentation, ``"..."`` string interiors and any trailing ``#``
     comment are left byte-exact; a whole-line comment is returned unchanged.
-    Comparison operators are padded without splitting their two-character forms,
-    and an empty block keeps its written spacing (``{}`` and ``{ }`` both survive).
+    ``!=``/``==``/``>=``/``<=`` are padded as one operator, and an empty block
+    keeps the spacing it was written with (``{}`` and ``{ }`` both survive).
     Idempotent.
     """
     code = strip_inline_comment(line)
@@ -308,7 +308,7 @@ def normalize_spacing(line: str) -> str:
             out.append(f" {code[i : i + 2]} ")
             i += 2
             continue
-        elif c in "{}=<>":
+        elif c in "{}=":
             out.append(f" {c} ")
         else:
             out.append(c)
@@ -422,13 +422,54 @@ def create_backup(filename: str) -> str:
         return ""
 
 
+_MOD_ROOT: Optional[str] = None
+
+
+def set_mod_root(root: Optional[str]) -> None:
+    """Record the mod root used to resolve absolute paths in this process.
+
+    Validators are constructed with a resolved ``--path``; worker processes get
+    it through the pool initializer. Without it every ``should_skip_file`` call
+    that receives an absolute path judges the checkout's own ancestors.
+    """
+    global _MOD_ROOT
+    _MOD_ROOT = root
+
+
+def path_within_root(filename: str, root: Optional[str]) -> str:
+    """Return *filename* relative to *root*, or unchanged if it sits outside.
+
+    Only the segments below the mod root describe mod content. The checkout
+    itself can live under a directory the traversal filters ignore — a Claude
+    Code worktree is ``<repo>/.claude/worktrees/<name>/`` — and judging the
+    absolute path there discards every file in the tree.
+    """
+    if not root:
+        return filename
+    try:
+        rel = os.path.relpath(filename, root)
+    except ValueError:  # different drives on Windows
+        return filename
+    if os.path.isabs(rel) or rel.split(os.sep)[0] == os.pardir:
+        return filename
+    return rel
+
+
 def should_skip_file(
-    filename: str, extra_skip_patterns: Optional[List[str]] = None
+    filename: str,
+    extra_skip_patterns: Optional[List[str]] = None,
+    root: Optional[str] = None,
 ) -> bool:
-    """Check if a file should be skipped during processing."""
+    """Check if a file should be skipped during processing.
+
+    Pass ``root`` whenever *filename* is absolute, so the decision is made on
+    the mod-relative path (see :func:`path_within_root`).
+    """
     ignored_dirs = {".git", ".claude", "gfx", "tools", "resources", "docs", "map"}
     content_roots = {"common", "events", "history", "interface", "localisation"}
-    normalized_path = filename.replace("\\", "/").strip("/")
+    normalized_path = (
+        path_within_root(filename, root or _MOD_ROOT).replace("\\", "/").strip("/")
+    )
     parts = normalized_path.split("/")
     for index, part in enumerate(parts):
         if part not in ignored_dirs:
