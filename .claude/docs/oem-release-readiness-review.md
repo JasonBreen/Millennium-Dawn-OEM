@@ -1,6 +1,6 @@
 # OEM Release Readiness Review
 
-> **Historical pre-remediation snapshot.** The topology, findings, and line references below describe the audited `761cbca6f2` tree and are intentionally preserved as review evidence. The OEM 2.0 RC remediation replaced the ABK/global dispatcher with target-local monthly ownership, brought GPU/Israel/legacy U.S. OEM under the Corporate History rule, and introduced the schema-v6 registry. Use `corporate-history-framework.md`, `linux-system-reference.md`, and `noncontract-oem-chain-audit.md` for the current architecture.
+> **Historical pre-remediation snapshot.** The topology, findings, and line references below describe the audited `761cbca6f2` tree and are intentionally preserved as review evidence. The OEM 2.0 RC remediation replaced the ABK/global dispatcher with target-local monthly ownership, brought GPU/Israel/legacy U.S. OEM under the Corporate History rule, and introduced the schema-v6 registry. Use `corporate-history-framework.md`, `linux-system-reference.md`, and `noncontract-oem-chain-audit.md` for the current architecture. The `Release state: NO-GO` verdict below is scoped to `761cbca6f2` and is not the current release decision; `docs/src/content/resources/oem-release-candidate-runtime-matrix.md` is the authority for release-candidate status, recovered runtime evidence, and the remaining acceptance set.
 
 Adversarial pre-contribution review of Millennium Dawn OEM against
 `MillenniumDawn/Millennium-Dawn`. Scope: upstream compatibility, architecture
