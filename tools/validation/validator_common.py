@@ -1011,12 +1011,13 @@ class BaseValidator:
         # Skip decisions are made on the mod-relative path so a checkout sitting
         # under an ignored ancestor (e.g. `<repo>/.claude/worktrees/<name>/`)
         # does not filter out its own contents; the caller still gets full paths.
+        # `extra_skip` keeps receiving the full path: callbacks match on anchored
+        # fragments like `/<ORG_DIR>/`, which a mod-relative path never contains.
         result = []
         for f in files:
-            probe = path_within_root(f, self.mod_path)
-            if should_skip_file(probe):
+            if should_skip_file(path_within_root(f, self.mod_path)):
                 continue
-            if extra_skip is not None and extra_skip(probe):
+            if extra_skip is not None and extra_skip(f):
                 continue
             result.append(f)
         return result
