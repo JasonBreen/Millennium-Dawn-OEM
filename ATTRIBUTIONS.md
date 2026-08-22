@@ -51,3 +51,15 @@ Sourced from Wikimedia Commons, resized to the HOI4 event-picture format, and st
 | `GFX_matrox_g400`     | [Matrox Millennium G400.jpg](https://commons.wikimedia.org/wiki/File:Matrox_Millennium_G400.jpg)       | kashichan | Public domain |
 | `GFX_matrox_parhelia` | [Matrox Parhelia 256MB PCI.jpg](https://commons.wikimedia.org/wiki/File:Matrox_Parhelia_256MB_PCI.jpg) | kashichan | Public domain |
 | `GFX_matrox_qid`      | [Matrox QID 128MB.jpg](https://commons.wikimedia.org/wiki/File:Matrox_QID_128MB.jpg)                   | kashichan | Public domain |
+
+## OEM 2.0 release-candidate event pictures
+
+Sourced from Wikimedia Commons, cropped and resized to the HOI4 event-picture format. The Sony Ericsson joint-venture picture reuses the existing licensed `GFX_JAP_sony_ericsson` texture. The new Corporate History terminal-idea and U.S. dashboard sprites are interface-sized derivatives of the event textures credited here or in the IBM and Matrox sections above; they introduce no additional source imagery.
+
+| Sprite                      | Source file                                                                                                                                                                      | Author                             | License       |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | ------------- |
+| `GFX_nokia_3310`            | [Nokia 3310 phone.jpg](https://commons.wikimedia.org/wiki/File:Nokia_3310_phone.jpg)                                                                                             | Santeri Viinamäki                  | CC BY-SA 4.0  |
+| `GFX_nokia_headquarters`    | [Nokia HQ.jpg](https://commons.wikimedia.org/wiki/File:Nokia_HQ.jpg)                                                                                                             | -Majestic-                         | CC BY-SA 3.0  |
+| `GFX_ericsson_kista`        | [Ericsson Kista.jpg](https://commons.wikimedia.org/wiki/File:Ericsson_Kista.jpg)                                                                                                 | I99pema                            | CC BY-SA 3.0  |
+| `GFX_siemens_himbeerpalast` | [Siemens-Verwaltung in Erlangen 2014 'Himbeerpalast' retusche.jpg](https://commons.wikimedia.org/wiki/File:Siemens-Verwaltung_in_Erlangen_2014_%27Himbeerpalast%27_retusche.jpg) | Guido Radig; retouch by Lämpel     | CC BY 3.0     |
+| `GFX_siemens_somatom_ct`    | [Siemens Somatom CT scanner.jpg](https://commons.wikimedia.org/wiki/File:Siemens_Somatom_CT_scanner.jpg)                                                                         | USDA Rural Development / Sarah Sol | Public domain |

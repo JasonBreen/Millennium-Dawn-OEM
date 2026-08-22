@@ -2,8 +2,8 @@
 
 ## Purpose and boundaries
 
-This document defines a Tier 1 corporate-history chain for Nintendo before any
-gameplay implementation begins. The chain belongs to Japan, models public policy
+This document records the implemented Tier 1 corporate-history design for Nintendo.
+The chain belongs to Japan, models public policy
 around a privately directed entertainment company, and must not let the Japanese
 government directly dictate Nintendo's product decisions.
 
@@ -13,7 +13,7 @@ This design reserves:
 - Root prefix: `JAP_nintendo`
 - Canonical owner: `JAP`
 - Visible events: `JAP_nintendo_events.1` through `.15`
-- Hidden startup event: `JAP_nintendo_events.90`
+- Legacy hidden save-compatibility event: `JAP_nintendo_events.90` (never newly scheduled)
 
 The implementation must not create a separate country, tag, MIO, character, or
 decision category for Nintendo. It must not reuse the existing
@@ -23,18 +23,16 @@ focus identifiers. English text belongs in the unified
 
 ## Repository findings
 
-Nintendo currently appears in two player-facing systems:
+Before this implementation, Nintendo appeared in two player-facing systems:
 
 - `JAP_games_are_fun` treats Nintendo and Sony as parts of Japan's broader
   entertainment industry.
 - `nintendo_world_domination` is an achievement identifier.
 
-No Nintendo event namespace, ideas, variables, MIO, characters, or decisions
-exist. The neighboring Sony chain provides the relevant Japanese architecture:
-startup dispatch through `corporate_history_on_startup`, annual dispatch effects,
-silent reconstruction, and the single `JAP_corporate_history_monthly_outcomes`
-hook. Japanese GPU history and the Sony chain already demonstrate guarded reads
-of foreign or sibling state.
+The neighboring Sony chain provided the relevant Japanese architecture. The implemented
+Nintendo module uses the target-local Japan bootstrap, annual dispatch effects, silent
+reconstruction, and the single `JAP_corporate_history_monthly_outcomes` hook. Japanese
+GPU history and the Sony chain demonstrate guarded reads of foreign or sibling state.
 
 The future chain may reuse only verified generic picture categories already used
 by neighboring event files: `GFX_computer`, `GFX_generic_factory`,
@@ -179,16 +177,16 @@ speculative dependency.
 
 ### Full
 
-- `corporate_history_on_startup` initializes Nintendo state and synchronously
-  reconstructs every passed milestone before any current-year scheduling.
+- Japan's country-local monthly bootstrap initializes Nintendo state and
+  synchronously reconstructs every passed milestone before any current-year scheduling.
 - A January 2000 start schedules `.1` once through the normal 2001 corporate
   dispatcher.
-- Every later start invokes the current-year scheduler directly from startup
-  after synchronous reconstruction. Its January 1 mode queues future milestones
+- Every later start invokes reconstruction on Japan's next monthly pass. Its January 1
+  bootstrap mode queues future milestones
   with calendar-anchored `days` offsets; its non-January startup mode records
   those milestones as startup-skipped without queuing them.
-- A later start fires `.90` after two days as an idempotent reconstruction
-  safety pass. It does not own current-year scheduling.
+- The legacy `.90` event remains an idempotent reconstruction sink for queued saves. No
+  bootstrap, yearly dispatcher, or recovery path schedules it.
 - The current-year scheduler queues still-future milestones only when the
   campaign began on January 1, so its `days` offsets remain calendar-correct,
   then sets `JAP_nintendo_start_year_events_scheduled`. A non-January start
@@ -222,8 +220,8 @@ speculative dependency.
 
 ### Outcomes Only
 
-- Startup initializes state and calls `JAP_nintendo_reconstruct_history`
-  directly.
+- Japan's next monthly pass initializes state and calls
+  `JAP_nintendo_reconstruct_history` directly.
 - The existing `JAP_corporate_history_monthly_outcomes` effect calls Nintendo's
   reconstruction effect while `JAP_nintendo_reconstruct_complete` is absent.
 - Reconstruction applies markers and state only. It never fires a visible
@@ -233,11 +231,11 @@ speculative dependency.
 
 ### Disabled
 
-- Startup, annual dispatch, current-year scheduling, and monthly reconstruction
+- Bootstrap, annual dispatch, current-year scheduling, and monthly reconstruction
   do nothing.
 - No `JAP_nintendo_*` variable, flag, idea, or queued event is created.
-- Existing Japanese focuses, Sony events, GPU history, technologies, and the
-  achievement remain unaffected.
+- Existing non-Corporate-History Japanese focuses, technologies, and the achievement
+  remain unaffected. Sony and GPU Corporate History stay inert with the rule.
 
 ### Dispatch ownership
 

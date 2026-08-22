@@ -6,6 +6,7 @@ constants from here so the docs root is resolved in exactly one place.
 
 from __future__ import annotations
 
+import os
 import subprocess
 import time
 from dataclasses import dataclass
@@ -17,15 +18,17 @@ DOCS_ROOT = REPO_ROOT / "docs"
 CONTENT_ROOT = DOCS_ROOT / "src" / "content"
 DIST_DIR = DOCS_ROOT / "dist"
 
-# Must match SITE_BASE_PATH in docs/src/shared/config/site.ts. The built site
-# prefixes every internal URL with this, so the link/OG checks need it to map a
-# URL back to a file in dist/.
-SITE_BASEURL = "/Millennium-Dawn"
+# Must match SITE_BASE_PATH in docs/src/shared/config/site.ts. The Pages workflow
+# supplies the repository-specific values; local and upstream CI keep the
+# canonical defaults when those variables are absent.
+SITE_BASEURL = os.environ.get("PUBLIC_SITE_BASE_PATH", "/Millennium-Dawn")
 
 # Must match SITE_FALLBACK_ORIGIN in docs/src/shared/config/site.ts. Used to tell
 # a same-origin absolute URL (which maps to a file in dist/) from a genuinely
 # external one (a CDN, say) that shouldn't be checked against the local build.
-SITE_ORIGIN = "https://millenniumdawn.github.io"
+SITE_ORIGIN = os.environ.get(
+    "PUBLIC_SITE_FALLBACK_ORIGIN", "https://millenniumdawn.github.io"
+)
 
 MARKDOWN_GLOBS = ("**/*.md", "**/*.mdx")
 

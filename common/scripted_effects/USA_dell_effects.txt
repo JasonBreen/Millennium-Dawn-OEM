@@ -88,6 +88,7 @@ USA_oem_storage_import_legacy_linux_state = {
 	if = {
 		limit = {
 			linux_system_enabled = yes
+			corporate_history_enabled = yes
 			original_tag = USA
 			NOT = { has_country_flag = linux_system_usa_storage_legacy_imported }
 		}
@@ -183,7 +184,7 @@ USA_oem_storage_recover_pending_events = {
 
 	if = {
 		limit = {
-			linux_system_full_enabled = yes
+			corporate_history_full_enabled = yes
 			original_tag = USA
 			NOT = { has_country_flag = collapsed_nation }
 		}
@@ -289,10 +290,17 @@ USA_oem_storage_clear_linux_pending_markers = {
 	clr_country_flag = USA_oem_storage_event_23_pending
 }
 
-USA_oem_storage_reconstruct_linux_history = {
+USA_oem_storage_clear_legacy_linux_adapter_state = {
+	clr_country_flag = linux_system_usa_storage_legacy_imported
+	clr_country_flag = linux_system_usa_storage_legacy_route_upstream
+	clr_country_flag = linux_system_usa_storage_legacy_route_enterprise
+	clear_variable = linux_system_usa_storage_legacy_import_level
+}
+
+USA_oem_storage_reconstruct_history = {
 	if = {
 		limit = {
-			linux_system_enabled = yes
+			corporate_history_enabled = yes
 			original_tag = USA
 			NOT = { has_country_flag = collapsed_nation }
 		}
@@ -314,7 +322,7 @@ USA_oem_storage_reconstruct_linux_history = {
 				date > 2001.12.20
 				NOT = { has_country_flag = USA_oem_storage_event_16_resolved }
 				OR = {
-					linux_system_outcomes_only_enabled = yes
+					corporate_history_outcomes_only_enabled = yes
 					AND = {
 						NOT = { has_country_flag = USA_oem_storage_event_16_expected }
 						NOT = { has_country_flag = USA_oem_storage_event_16_pending }
@@ -335,7 +343,7 @@ USA_oem_storage_reconstruct_linux_history = {
 				date > 2005.2.14
 				NOT = { has_country_flag = USA_oem_storage_event_17_resolved }
 				OR = {
-					linux_system_outcomes_only_enabled = yes
+					corporate_history_outcomes_only_enabled = yes
 					AND = {
 						NOT = { has_country_flag = USA_oem_storage_event_17_expected }
 						NOT = { has_country_flag = USA_oem_storage_event_17_pending }
@@ -356,7 +364,7 @@ USA_oem_storage_reconstruct_linux_history = {
 				date > 2012.10.25
 				NOT = { has_country_flag = USA_oem_storage_event_18_resolved }
 				OR = {
-					linux_system_outcomes_only_enabled = yes
+					corporate_history_outcomes_only_enabled = yes
 					AND = {
 						NOT = { has_country_flag = USA_oem_storage_event_18_expected }
 						NOT = { has_country_flag = USA_oem_storage_event_18_pending }
@@ -377,7 +385,7 @@ USA_oem_storage_reconstruct_linux_history = {
 				date > 2015.12.9
 				NOT = { has_country_flag = USA_oem_storage_event_19_resolved }
 				OR = {
-					linux_system_outcomes_only_enabled = yes
+					corporate_history_outcomes_only_enabled = yes
 					AND = {
 						NOT = { has_country_flag = USA_oem_storage_event_19_expected }
 						NOT = { has_country_flag = USA_oem_storage_event_19_pending }
@@ -398,7 +406,7 @@ USA_oem_storage_reconstruct_linux_history = {
 				date > 2019.11.5
 				NOT = { has_country_flag = USA_oem_storage_event_20_resolved }
 				OR = {
-					linux_system_outcomes_only_enabled = yes
+					corporate_history_outcomes_only_enabled = yes
 					AND = {
 						NOT = { has_country_flag = USA_oem_storage_event_20_expected }
 						NOT = { has_country_flag = USA_oem_storage_event_20_pending }
@@ -419,7 +427,7 @@ USA_oem_storage_reconstruct_linux_history = {
 				date > 2022.10.24
 				NOT = { has_country_flag = USA_oem_storage_event_21_resolved }
 				OR = {
-					linux_system_outcomes_only_enabled = yes
+					corporate_history_outcomes_only_enabled = yes
 					AND = {
 						NOT = { has_country_flag = USA_oem_storage_event_21_expected }
 						NOT = { has_country_flag = USA_oem_storage_event_21_pending }
@@ -440,7 +448,7 @@ USA_oem_storage_reconstruct_linux_history = {
 				date > 2024.5.16
 				NOT = { has_country_flag = USA_oem_storage_event_22_resolved }
 				OR = {
-					linux_system_outcomes_only_enabled = yes
+					corporate_history_outcomes_only_enabled = yes
 					AND = {
 						NOT = { has_country_flag = USA_oem_storage_event_22_expected }
 						NOT = { has_country_flag = USA_oem_storage_event_22_pending }
@@ -461,7 +469,7 @@ USA_oem_storage_reconstruct_linux_history = {
 				date > 2026.5.7
 				NOT = { has_country_flag = USA_oem_storage_event_23_resolved }
 				OR = {
-					linux_system_outcomes_only_enabled = yes
+					corporate_history_outcomes_only_enabled = yes
 					AND = {
 						NOT = { has_country_flag = USA_oem_storage_event_23_expected }
 						NOT = { has_country_flag = USA_oem_storage_event_23_pending }
@@ -487,7 +495,6 @@ USA_oem_storage_reconstruct_linux_history = {
 
 USA_dell_reconstruct_history = {
 	USA_dell_initialize_state = yes
-	USA_oem_storage_reconstruct_linux_history = yes
 
 	if = {
 		limit = {
@@ -794,24 +801,10 @@ USA_dell_reconstruct_history = {
 	}
 }
 
-# Queue unelapsed Dell and retained OEM milestones for January 1 starts skipped by the yearly dispatcher.
+# Queue unelapsed Dell milestones for January 1 starts skipped by the yearly dispatcher.
 USA_dell_schedule_current_year_events = {
 	if = {
 		limit = { NOT = { has_country_flag = USA_dell_start_year_events_scheduled } }
-
-		if = {
-			limit = {
-				NOT = { has_start_date < 2001.1.1 }
-				has_start_date < 2001.1.2
-				NOT = {
-					OR = {
-						has_country_flag = USA_lone_star_server_ecosystem
-						has_country_flag = USA_oem_global_supply_chain
-					}
-				}
-			}
-			country_event = { id = USA_oem_events.14 days = 120 }
-		}
 
 		if = {
 			limit = {
@@ -961,19 +954,6 @@ USA_dell_schedule_current_year_events = {
 				}
 			}
 			country_event = { id = USA_dell_events.10 days = 284 }
-		}
-
-		if = {
-			limit = {
-				NOT = { has_start_date < 2015.1.1 }
-				has_start_date < 2015.1.2
-				linux_system_full_enabled = yes
-				NOT = { has_country_flag = USA_oem_storage_event_19_resolved }
-				NOT = { has_country_flag = USA_oem_storage_event_19_pending }
-			}
-			set_country_flag = USA_oem_storage_event_19_expected
-			set_country_flag = { flag = USA_oem_storage_event_19_pending value = 1 days = 403 }
-			country_event = { id = USA_oem_events.19 days = 343 }
 		}
 
 		if = {

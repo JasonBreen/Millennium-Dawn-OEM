@@ -32,6 +32,8 @@ jobs:
       - name: Setup Pages
         id: setup_pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
+        # Fails when Pages is not enabled on the repository (forks, fresh
+        # clones). The build still publishes an artifact; only deploy is skipped.
         continue-on-error: true
         with:
           enablement: false
@@ -52,6 +54,10 @@ jobs:
 
       - name: Build with Astro
         working-directory: ./docs
+        env:
+          PUBLIC_SITE_BASE_PATH: ${{ steps.setup_pages.outputs.base_path }}
+          PUBLIC_SITE_FALLBACK_ORIGIN: ${{ steps.setup_pages.outputs.origin }}
+          PUBLIC_SITE_REPO_EDIT_BASE: https://github.com/${{ github.repository }}/edit/${{ github.event.repository.default_branch }}/docs
         run: bun run build
 
       - name: Upload artifact

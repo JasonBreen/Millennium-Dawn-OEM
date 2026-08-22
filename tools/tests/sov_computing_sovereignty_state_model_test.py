@@ -1374,9 +1374,7 @@ def test_manifest_registers_the_national_ecosystem_contract():
     assert set(chain["allowed_reads"]) == ALLOWED_READS
     assert chain["monthly_driver"] == "SOV_corporate_history_monthly_outcomes"
     assert chain["terminal_marker"] == "SOV_computing_sovereignty_reconstruct_complete"
-    assert chain["expected_callers"] == {
-        "SOV_computing_sovereignty_events.90": ["effect:corporate_history_on_startup"]
-    }
+    assert chain["expected_callers"] == {"SOV_computing_sovereignty_events.90": []}
 
 
 def test_processor_event_tooltips_condition_deployability_on_foundry_routes():

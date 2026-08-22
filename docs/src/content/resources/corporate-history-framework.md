@@ -3,15 +3,19 @@ title: Corporate History Framework
 description: Millennium Dawn corporate-history chains - framework effects, game rule, start-date policy, tier budgets, and integration rules
 ---
 
-The corporate-history framework centralizes dated company and national-industry chains, value bounds, game-rule gating, catch-up, and silent historical reconstruction. The schema-v5 manifest currently declares 32 chains:
+The corporate-history framework centralizes dated company and national-industry chains, value bounds, game-rule gating, catch-up, and silent historical reconstruction. The schema-v6 manifest declares 32 owner chains and four explicitly registered independent subsystems:
 
 - **USA**: Apple, Dell, E3, Google, Texas Instruments, Micron, Motorola, AIG, HP, IBM, NVIDIA, Oracle, Sun/Microsoft, and Xbox.
 - **Canada and Europe**: ATI/AMD, Matrox, BlackBerry, Arm Holdings, Nokia, France Corporate Systems, Siemens, Ericsson, and Polish Industrial Sovereignty.
 - **Asia and Eurasia**: Lenovo, Huawei, Nintendo, Sony, Foxconn, Taiwan's PC Giants, TSMC, Russian Computing Sovereignty, and Ukrainian Strategic Industry.
+- **Independent event systems**: cross-tag GPU Development, Israel OEM historical flavour, and legacy U.S. OEM/storage history.
+- **Derived aggregate**: the Physical Compute Stack, which has no independent event scheduler.
 
 France Corporate Systems combines Alcatel, STMicroelectronics, and France Télécom/Orange under one national state model. Taiwan's PC Giants combines ASUS, Gigabyte, Acer, MSI, and VIA under one Taiwanese PC-industry ecosystem model. Each chain binds its own names, dates, and deltas through thin wrapper effects.
 
 The authoritative chain list is `tools/corporate_history_contract.json`, enforced by `tools/validation/validate_corporate_history_contract.py`. This page must match the manifest; the validator gates the manifest, not the prose.
+
+Schema v6 adds `independent_subsystems[]`. Every entry declares `id`, `kind`, `namespaces`, explicit `event_ids`, `owner_tags`, `reconstruction_effects`, `scheduler_entrypoints`, `effect_roots`, and `mode_policy`. GPU Development, Israel OEM historical flavour, and legacy U.S. OEM/storage use `full_events_outcomes_reconstruct_off_inert`. The Physical Compute Stack uses `derived_only`, has no event IDs or scheduler entrypoint, and is reached only from its declared producer roots. Wildcard event ownership and undeclared on-action dispatch are invalid.
 
 Runtime acceptance is tracked separately in the [OEM release-candidate runtime matrix](/dev-resources/oem-release-candidate-runtime-matrix/). Static validation and console-forced fixtures do not substitute for its natural chronology, save/reload, log, and presentation checks.
 
@@ -21,17 +25,18 @@ The [OEM upstream packaging plan](/dev-resources/oem-upstream-packaging-plan/) d
 
 > **Location**: `common/scripted_effects/00_corporate_history_effects.txt` (core), `00_corporate_history_dispatch_effects.txt` (yearly dispatch), `common/scripted_triggers/MD_corporate_history_triggers.txt` (rule gates)
 
-| Piece                                                                                                                        | File                                                                                                                                                                                                          |
-| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Primitives (`corporate_history_apply_delta`, `corporate_history_clamp_value`), startup driver, monthly Outcomes-Only drivers | `common/scripted_effects/00_corporate_history_effects.txt`                                                                                                                                                    |
-| `<TAG>_corporate_trigger_year_<YYYY>` yearly dispatch (one effect per country per year)                                      | `common/scripted_effects/00_corporate_history_dispatch_effects.txt`                                                                                                                                           |
-| Google/Oracle catch-up drivers (`USA_google_extension_catchup`, `USA_oracle_chain_catchup`)                                  | `common/scripted_effects/00_corporate_history_dispatch_effects.txt`                                                                                                                                           |
-| Rule gates `corporate_history_full_enabled` / `corporate_history_outcomes_only_enabled`                                      | `common/scripted_triggers/MD_corporate_history_triggers.txt`                                                                                                                                                  |
-| Per-company wrappers (init/clamp/reconstruct/schedule/capstone)                                                              | Per-chain files in `common/scripted_effects/`, including `FRA_corporate_systems_effects.txt`, `SOV_computing_sovereignty_effects.txt`; exact inventory is enforced by `tools/corporate_history_contract.json` |
-| National economic bridge; chain-to-axis map: `.claude/docs/usa-oem-economic-bridge-map.md`                                   | `common/scripted_effects/USA_corporate_systems_effects.txt`                                                                                                                                                   |
-| U.S. real-options economic layer, dynamic tiers, temporary programs, and reference simulator                                 | `common/scripted_effects/USA_oem_real_options_effects.txt`, `common/dynamic_modifiers/05_USA_oem_economic_dynamic_modifiers.txt`, `tools/analysis/simulate_oem_real_options.py`                               |
-| Machine-readable chain manifest                                                                                              | `tools/corporate_history_contract.json`                                                                                                                                                                       |
-| Game rule `rule_corporate_history`                                                                                           | `common/game_rules/00_game_rules.txt`                                                                                                                                                                         |
+| Piece                                                                                                     | File                                                                                                                                                                                                          |
+| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Primitives (`corporate_history_apply_delta`, `corporate_history_clamp_value`) and per-tag monthly drivers | `common/scripted_effects/00_corporate_history_effects.txt`                                                                                                                                                    |
+| Target-local bootstrap and year dispatch                                                                  | `common/scripted_effects/00_corporate_history_monthly_dispatch_effects.txt`                                                                                                                                   |
+| `<TAG>_corporate_trigger_year_<YYYY>` yearly dispatch (one effect per country per year)                   | `common/scripted_effects/00_corporate_history_dispatch_effects.txt`                                                                                                                                           |
+| Google/Oracle catch-up drivers (`USA_google_extension_catchup`, `USA_oracle_chain_catchup`)               | `common/scripted_effects/00_corporate_history_dispatch_effects.txt`                                                                                                                                           |
+| Rule gates `corporate_history_full_enabled` / `corporate_history_outcomes_only_enabled`                   | `common/scripted_triggers/MD_corporate_history_triggers.txt`                                                                                                                                                  |
+| Per-company wrappers (init/clamp/reconstruct/schedule/capstone)                                           | Per-chain files in `common/scripted_effects/`, including `FRA_corporate_systems_effects.txt`, `SOV_computing_sovereignty_effects.txt`; exact inventory is enforced by `tools/corporate_history_contract.json` |
+| National economic bridge; chain-to-axis map: `.claude/docs/usa-oem-economic-bridge-map.md`                | `common/scripted_effects/USA_corporate_systems_effects.txt`                                                                                                                                                   |
+| U.S. real-options economic layer, dynamic tiers, temporary programs, and reference simulator              | `common/scripted_effects/USA_oem_real_options_effects.txt`, `common/dynamic_modifiers/05_USA_oem_economic_dynamic_modifiers.txt`, `tools/analysis/simulate_oem_real_options.py`                               |
+| Machine-readable chain manifest                                                                           | `tools/corporate_history_contract.json`                                                                                                                                                                       |
+| Game rule `rule_corporate_history`                                                                        | `common/game_rules/00_game_rules.txt`                                                                                                                                                                         |
 
 # National Real-Options Economy
 
@@ -46,7 +51,7 @@ Corporate History is Off or the country is collapsed.
 HOI4 has no confirmed logarithm, exponential, square-root, or normal-CDF
 operator. The script therefore uses bounded arithmetic approximations. Variable
 bounds, CDF constants, tier thresholds, and policy timings are declared under
-the schema-v5 `economic_layers` section of
+the schema-v6 `economic_layers` section of
 `tools/corporate_history_contract.json`. The strict corporate-history validator
 checks ownership, clamps, bridge reachability, tier replacement, policy timing
 and non-stacking, dashboard parity, and English localisation.
@@ -67,13 +72,13 @@ Full derivation, tier, policy, AI, and smoke-test notes are maintained in
 
 # Game Rule Semantics
 
-`rule_corporate_history` has three options, fixed at game setup (no mid-game transitions):
+`rule_corporate_history` has three save-compatible options, fixed at game setup. The internal Off identifier remains `disabled`:
 
-- **Full** (default): story events, decision windows, and the IBM crisis engine run exactly as authored.
-- **Outcomes Only**: no corporate story events fire. All 32 declared chains use silent reconstruction for their historical path: flags, bounded state, outcome ideas, national technologies, and monotonic delivery stages are applied by per-chain `*_reconstruct_history` effects at startup and from per-country monthly drivers. Each milestone lands on the **first monthly tick after its historical date** (≤ ~31 days lag, the same order of slop as the yearly dispatcher's early-January day offsets). The IBM crisis engine remains Full-only because its effects are popup-driven. Russian Computing Sovereignty reconstructs historical design, software, procurement, and foundry state but never grants advanced domestic HVM by date. France, Taiwan's PC Giants, ATI/AMD, HP, Google, Oracle, Siemens, Ericsson, and BlackBerry all reconstruct without replaying visible events or one-time player rewards.
-- **Off**: rule-gated dispatchers never run, so those chains create no story events, reconstructed state, or outcome ideas.
+- **Full** (default): reconstructs already-passed history when required, schedules future authored events exactly once, enables Corporate History crises, decisions, and dashboards, and recovers interrupted deliveries.
+- **Outcomes Only**: applies every reached historical flag, variable, outcome idea, national technology, and monotonic delivery stage silently on the next owner-country monthly pass. It fires no Corporate History `country_event`, `news_event`, crisis, or choice popup and replays no one-time option reward.
+- **Off**: schedules and reconstructs nothing and creates no Corporate History variables, flags, ideas, decisions, crises, dashboards, pending markers, or popups. Native BRI and the base Linux route remain functional, but neither may synthesize Corporate History state through an adapter.
 
-**Gating happens only at dispatcher level**: the startup driver, the `<TAG>_corporate_trigger_year_*` effects, the monthly drivers, and the `USA_ibm_monthly_crisis_checks` call site in `99_USA_on_actions.txt`. Never add rule checks inside individual events: an event that was never scheduled needs no gate, and per-event gates rot.
+**Gating is enforced at both declared owner entrypoints and event definitions**: each native `<TAG>` monthly on-action, target-local yearly effect, scheduler, reconstruction root, Full-only crisis/recovery call, and visible event verifies the selected mode, declared owner, and collapse state. Schema v6 traces direct and effect-mediated calls from startup, daily, yearly, and monthly roots and rejects undeclared, duplicate, or mode-bypassing dispatch.
 
 Two mechanisms are easy to confuse, and they are not interchangeable:
 
@@ -86,22 +91,21 @@ Two mechanisms are easy to confuse, and they are not interchangeable:
 
 Catch-up never runs in Outcomes Only or Off: it is called from the `corporate_history_full_enabled` arm of `USA_corporate_history_monthly_outcomes`, so both non-Full modes stay popup-free.
 
-Dell also preserves four older `USA_oem_events` interfaces. Full mode alone schedules `.13`, `.14`, and `.19`; its January-start scheduler covers `.14` and `.19` when the yearly block is skipped. The duplicated Perot event `.15` has no active caller. Dell reconstruction silently supplies the historical Round Rock, server-ecosystem, Perot-services, and 2015 firmware-policy state for Outcomes Only and late starts. The Perot path uses `USA_dell_apply_perot_services_path` / `USA_dell_apply_hardware_focus_path`, so both the Dell-owned outcome and the legacy consumer flag are set once. A queued `.15` from an old save calls the same wrappers and is blocked when either sibling path already exists.
+Dell also preserves four older `USA_oem_events` interfaces. The schema-v6 legacy U.S. subsystem gives every explicit OEM/storage event one USA owner and one Full-mode scheduling path. Outcomes Only reconstructs its reached durable history silently, and Off leaves the namespace inert. The duplicated Perot event `.15` has no active caller. Dell reconstruction supplies the historical Round Rock, server-ecosystem, Perot-services, and 2015 firmware-policy state without replaying event rewards. The Perot path uses `USA_dell_apply_perot_services_path` / `USA_dell_apply_hardware_focus_path`, so both the Dell-owned outcome and the legacy consumer flag are set once. A queued `.15` from an old save calls the same wrappers and is blocked when either sibling path already exists.
 
 The firmware-policy bridge uses `USA_oem_storage_firmware_2015_resolved` as its resolution marker and `USA_dell_storage_bridge_initialized` to distinguish a campaign that loaded Dell before the milestone from an older save first updated afterward. Both visible `.19` options set the resolution marker alongside their signed policy delta. When it is absent, a campaign initialized before the milestone or started in 2015 or later receives the historical `+1`; an older pre-2015 save first updated after the milestone sets only the markers, conservatively avoiding a second delta where `.19` may already have fired.
 
 After 2026-06-15, the Full-mode USA monthly driver calls Dell's reward-free reconstruction only while `USA_dell_reconstruct_complete` is absent and the country is not collapsed. This recovers a lost or collapse-blocked capstone without adding a second visible caller.
 
-# Start-Date Policy (January-1 Invariant)
+# Target-Local Chronology and Start Dates
 
-The yearly dispatcher (`on_monthly` → `trigger_year_[year]_events`) fires on the first monthly tick of each calendar year, and **the start year's own block never runs**; startup scheduling covers it. Every milestone `days = N` offset therefore assumes its clock starts on January 1 (bookmark start) or the early-January dispatch tick.
+Corporate History has no ABK host and no shared global year-consumption flags. Every participating country reaches `corporate_history_monthly_dispatch` from its native monthly on-action. Its bootstrap marker and last-dispatched year are country-local, so an absent country cannot consume another country's milestone.
 
-The framework handles start dates with a **hard guard, not day-of-year math**:
-
-- A chain that has milestones in a potential start year ships a `*_schedule_current_year_events` effect whose blocks are guarded by the per-year window `NOT = { has_start_date < Y.1.1 }` + `has_start_date < Y.1.2` (i.e. they only queue events when the campaign starts **exactly on January 1 of that year**), keeping all offsets calendar-correct. `USA_apple_schedule_current_year_events` is the reference implementation.
-- The chain-level guard is **hoisted, not repeated**: `NOT = { has_country_flag = <chain>_start_year_events_scheduled }` sits in one outer `if` wrapping every per-year block, and the trailing `set_country_flag` stays outside it. Mode-switched schedulers (Nintendo, Russian Computing Sovereignty) hoist `check_variable = { <mode var> = 0 }` alongside it, so the recovery arms stay untouched siblings; France additionally hoists its rule/tag/collapse gate. Per-year blocks therefore contain only their own window and outcome guards. The window may consequently sit above the block that queues the event, so `_scheduler_window_years` (contract validator) and `scheduler_years` (scenario simulator) both walk nested arms.
-- For any later start, the per-company `*_reconstruct_history` effects silently apply every milestone whose date has passed (each step is `date >` + marker-flag guarded, idempotent, and event-free).
-- Non-January-1 starts are **deliberately not scheduled**: passed milestones reconstruct; the start year's remaining milestones are skipped rather than fired on wrong dates. MD ships a single 2000.1.1 bookmark, so this path is theoretical.
+- On a fresh January start, the owner schedules its current-year authored events with the canonical day offsets.
+- On a later start or first monthly pass after restoration, reconstruction applies every already-passed milestone idempotently and the owner schedules or recovers the remaining current-year delivery exactly once.
+- A collapsed owner performs no scheduling, reconstruction, crisis, or economic work. Its next monthly pass after recovery resumes from its own pending and resolved markers.
+- Cross-tag scopes require `country_exists = TAG` and execute only the receiving owner's declared handoff. No global `every_country` loop participates in chronology.
+- Full and Outcomes Only share reconstruction effects but never event-dispatch paths; Off reaches neither.
 
 ## Per-event delivery markers (Nintendo)
 
@@ -135,7 +139,7 @@ In Full mode, Google and Oracle use persistent monthly drivers, `USA_google_exte
 
 The two drivers cover different spans, and the reason is structural:
 
-- **Google** owns events **16-20** only. Event 16's arm needs no predecessor (its guard is "no cables outcome yet"), so the extension seeds itself from any start date. Events 1-15 stay on the yearly dispatchers and are simply missed by a campaign that starts after their milestone year.
+- **Google** owns popup catch-up for events **16-20** only. Event 16's arm needs no predecessor (its guard is "no cables outcome yet"), so the extension seeds itself from any start date. Events 1-15 stay on the target-local yearly dispatcher; passed durable history is applied silently by reconstruction, and the owner-local recovery path handles an unresolved milestone in its current year.
 - **Oracle** owns the **whole chain, 1-12**. Event 1 seeds the ladder; events 3-4 run only when Sun was acquired by Oracle, while a terminal independent or Microsoft Sun path lets the ladder reconverge at event 5. Moving the whole ladder off the yearly dispatchers prevents late starts from missing event 1 and stranding every dependent event.
 
 Each ladder step is a single `else_if` arm gated on three things: the predecessor outcome flags, the step's own fire marker (`USA_<co>_event_<N>_resolved`, set in the event's `immediate`), and `date >` the last day before its milestone year. Within an arm:
@@ -179,7 +183,7 @@ HOI4 cannot parameterize identifier names (variables, flags, ideas, event ids) w
 | `<TAG>_<co>_initialize_state`             | flag-guarded `set_variable` defaults + trailing clamp call                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `<TAG>_<co>_clamp_state`                  | per variable: `set_temp_variable = { corp_value = X }` → `corporate_history_clamp_value = yes` → `set_variable = { X = corp_value }`                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `<TAG>_<co>_reconstruct_history`          | date-ascending ladder; every step `date > D` + `NOT` on **all** sibling outcome markers; `add_ideas` steps guarded by `NOT has_idea` on all alternatives; no event fires; ends with silent capstone resolution where the chain has one, then sets `<TAG>_<co>_reconstruct_complete` once the final milestone date has passed (the monthly driver's only terminal check). A ladder can end _after_ its capstone (IBM's integrations run to 2027.6.1, past the 2026.6.2 capstone), so the completion date is the last step's date, not the capstone's |
-| `<TAG>_<co>_events.90`                    | optional hidden, `fire_only_once` event whose immediate is a thin call to the reconstruct effect; a chain reconstructed synchronously from startup does not need this anchor                                                                                                                                                                                                                                                                                                                                                                        |
+| `<TAG>_<co>_events.90`                    | optional legacy, hidden, `fire_only_once` save-compatibility sink whose immediate is a thin call to the reconstruct effect; schema v6 bootstrap and chronology do not queue these anchors                                                                                                                                                                                                                                                                                                                                                           |
 | `<TAG>_<co>_schedule_current_year_events` | per-year Jan-1 window guard + `country_event` offsets (implemented for Apple, Dell, E3, Texas Instruments, Micron, Motorola, Lenovo, Huawei, NVIDIA, ATI/AMD, Nokia, TSMC, Foxconn, Taiwan's PC Giants, Arm Holdings, and Ukrainian strategic industry, matching `requires_current_year_scheduler` in the manifest)                                                                                                                                                                                                                                 |
 | capstone family                           | `clear_capstone_outcome` (remove all competing ideas + flags) / `apply_*_capstone` (clear, add one idea, set outcome + resolved flags) / `resolve_capstone` (threshold ladder)                                                                                                                                                                                                                                                                                                                                                                      |
 
@@ -227,7 +231,7 @@ A chain may read **only its own flags and variables**, plus the cross-links decl
 | OEM bridge             | Read-only terminal outcomes of Apple, HP, NVIDIA, Dell, TI, Micron, Motorola, Google and Oracle, plus the IBM-owned `USA_oem_*` base axes. Writes only its own derived variables and the five `USA_corporate_systems_economic_integration_*` ideas, never chain state. Chain-to-axis table: `.claude/docs/usa-oem-economic-bridge-map.md`                                                                                                                                                                                                      | `common/scripted_effects/USA_corporate_systems_effects.txt`                                              |
 | IBM (inbound)          | US politics via `USA_ibm_*_administration` triggers, reads non-corporate state, allowed                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `common/scripted_triggers/MD_oem_triggers.txt`                                                           |
 
-`gpu_development`, BlackBerry, and Ericsson read **no** state of the covered chains, so gating the chains cannot strand them. The Dell bridge above is the only retained `USA_oem_events` write-through. The global GPU chain is independent of `rule_corporate_history`; its USA/TAI mirrors are inputs only. The three Nokia NSN flags are a stable API; Siemens depends on them; do not rename.
+BlackBerry and Ericsson read **no** state of the other covered chains, so gating those chains cannot strand them. GPU Development is registered as a cross-tag independent subsystem but is governed by `rule_corporate_history`: Full owns its visible events, Outcomes Only uses the shared GPU reconstruction path, and Off is inert. The shared GPU dispatcher is the sole reconstruction and scheduling owner; ATI/AMD may read normalized GPU outcomes but may not run a second GPU reconstruction. The Dell bridge above is the only retained `USA_oem_events` write-through. The three Nokia NSN flags are a stable API; Siemens depends on them; do not rename.
 
 Nokia's `FIN_nokia_fwa_cpe_sale_confirmed` and `FIN_nokia_ai_ran_trial_confirmed` flags are future external confirmations. No dated event or reconstruction step sets them. In Full mode, the Finnish monthly driver dispatches `.106` or `.107` only after another system supplies the matching confirmation; it never infers a close, trial, or deployment date.
 
@@ -270,14 +274,14 @@ Classification of the existing chains (chains predating the budgets are marked _
 | Google (USA)                                        | 2 _(grandfathered)_           | 20 events and 3 bounded variables, over the Tier-2 event budget; no outcome ideas; reconstruction covers the historical path. In Full mode, events 16-20 run on `USA_google_extension_catchup` while 1-15 stay on the yearly dispatchers                       |
 | Oracle (USA)                                        | 2 _(grandfathered)_           | 12 events, over the Tier-2 event budget; no outcome ideas; marker-based reconstruction covers the historical path. Its state variables are undeclared in the manifest and therefore unclamped. In Full mode the whole chain runs on `USA_oracle_chain_catchup` |
 | HP (USA)                                            | 3 _(grandfathered)_           | 13 events with flag-based historical reconstruction but no bounded variables or outcome ideas; flavor economics only                                                                                                                                           |
-| Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA) | 2                             | Yearly dispatch, current-year scheduler and reward-free historical reconstruction; Ericsson retains its hidden reconstruction anchor                                                                                                                           |
+| Siemens (GER), Ericsson (SWE), BlackBerry (CAN/USA) | 2                             | Yearly dispatch, current-year scheduler and reward-free historical reconstruction; Ericsson's legacy hidden anchor remains load-safe but is not scheduled                                                                                                      |
 
 ## Poland: Industrial Sovereignty
 
 Poland's Tier 1 chain is intentionally state-policy-only. Its five bounded values are domestic
 control, technological depth, export capacity, systems integration, and supply resilience.
-`corporate_history_on_startup` initializes and schedules its current year in Full mode, while
-Outcomes Only invokes hidden `POL_industrial_sovereignty_events.90` and the existing Polish
+Poland's country-local bootstrap initializes and schedules its current year in Full mode, while
+Outcomes Only invokes the authoritative reconstruction effect synchronously and the existing Polish
 monthly hook retries the silent dated ladder. The yearly file calls only the
 `POL_corporate_trigger_year_<year>` wrappers; it never schedules visible Polish events itself.
 The chain has no external contract reads or writes: pre-existing Polish procurement, MIO,
@@ -294,9 +298,9 @@ exclusive national outcome ideas. The source specification's larger 0-100 deltas
 it represents concentrated supplier lock-in and nonlinear replacement exposure; this sole scale
 exception keeps the China-connected outcome reachable without a repeatable policy.
 
-`corporate_history_on_startup` initializes France and schedules the current start year in Full
-mode, then uses hidden `FRA_corporate_systems_events.90` to reconstruct earlier milestones.
-Outcomes Only reconstructs synchronously without firing an event; `on_monthly_FRA` retries
+France's country-local bootstrap initializes the module, reconstructs passed milestones, and schedules
+the remaining current-year events in Full mode. Outcomes Only calls that reconstruction synchronously
+without firing an event; `on_monthly_FRA` retries
 reward-free reconstruction and Full-mode lost-delivery repair. The yearly dispatcher calls only
 `FRA_corporate_trigger_year_<year>` wrappers. The existing `FRA_nokia_response_events.1` ID and
 FIN callbacks remain stable, with France-owned adapter effects translating its three choices into
@@ -317,7 +321,8 @@ Yandex, Kaspersky Lab, and Parallel Import decision as authoritative external co
 
 Full mode enables the 18 events, research branch, industrial projects, and policy decisions.
 Outcomes Only reconstructs historical state and SOV-only technologies without popups or projects;
-Off creates no state or technology access. The hidden `.90` event remains the reconstruction anchor.
+Off creates no state or technology access. Russia's country-local bootstrap and monthly path call the
+authoritative reconstruction effect directly; the legacy `.90` definition is retained only for queued saves.
 
 ## Taiwan: PC Giants
 
@@ -336,9 +341,9 @@ scheduling anchors are recorded in
 
 # New-Chain Checklist
 
-1. Wrapper effect file in `common/scripted_effects/` with the contract set above (init, clamp, reconstruct; capstone family for Tier 1; scheduler if the chain has potential start-year milestones).
-2. Hidden `.90` event whose immediate is a thin reconstruct call, or a direct synchronous startup reconstruct call.
-3. Schedule entries added to the matching `<TAG>_corporate_trigger_year_<YYYY>` effects (create new ones as needed; never schedule inline in `00_yearly_effects.txt`), plus the startup entry in `corporate_history_on_startup` (both branches).
+1. Wrapper effect file in `common/scripted_effects/` with the contract set above (init, clamp, reconstruct; capstone family for Tier 1; scheduler if the chain has current-year milestones).
+2. Direct target-local bootstrap and monthly reconstruction calls. Retain an existing hidden `.90` event only as a save-compatible queued-event sink; never add it as a new scheduling path.
+3. Schedule entries added to the matching `<TAG>_corporate_trigger_year_<YYYY>` effects and the target-local bootstrap/recovery path. Never add an ABK host, a shared global year flag, or an inline call in `00_yearly_effects.txt`.
 4. Monthly-driver coverage: add the reconstruct call to `<TAG>_corporate_history_monthly_outcomes`; the driver terminates on the chain's `*_reconstruct_complete` flag, so the ladder must set that flag at its true final milestone (create the `on_monthly_<TAG>` hook if the country has none).
 5. Outcome ideas: `allowed = { original_tag = <TAG> }` **and** `allowed_civil_war = { always = yes }`.
 6. Guard audit on every reconstruct step: `date >` gate; `NOT` on the step's own marker **and all sibling markers**; `add_ideas` guarded by `NOT has_idea` on all alternatives; no event fires inside reconstruction; single-child `NOT`s only.
@@ -346,10 +351,9 @@ scheduling anchors are recorded in
 
 # Known Follow-ups
 
-- **Google / Oracle reconstruction parity**: both have Outcomes Only reconstruction. Oracle's reconstruction records milestone resolution and its historical cloud route without replaying every event-side variable or reward. Google's reconstruction covers the historical flags and bounded state. In Full mode, Oracle 1-12 remains fully covered by its catch-up driver, while Google 1-15 remains yearly-dispatch only and can be missed by a late Full-mode start.
+- **Google / Oracle reconstruction parity**: both have reward-free reconstruction. Oracle records milestone resolution and its historical cloud route without replaying every event-side variable or reward; Google covers its historical flags and bounded state. Their Full-mode catch-up remains popup-driven, while passed history is reconstructed before future events schedule.
 - **Oracle state variables** (`USA_oracle_platform_scale`, `policy_access`, `integration_debt`, `ecosystem_openness`, `execution_discipline`, `infrastructure_depth`): mutated by every event, never initialized and never clamped, and undeclared in the manifest so the contract's clamp check skips them. Only `policy_access` and `integration_debt` are ever read, and only against one-sided thresholds, so the drift is currently inert. Declaring them in the manifest requires an `USA_oracle_initialize_state` / `USA_oracle_clamp_state` pair first.
 - **`USA_google_events` namespace** is declared in two files (`USA_google_events.txt` and `USA_google_events_extension.txt`), the only split namespace in the repo. The contract discovers every file from its event definitions, so both files receive the same ownership checks.
-- **Start-year schedulers** for IBM, Sun/Microsoft, Sony, and Matrox (Apple-pattern; inert while MD ships only the 2000.1.1 bookmark).
 - **HP**: flag-based reconstruction exists, but the chain has no bounded variables or outcome idea; decide whether to keep its grandfathered Tier-3 classification or extend it to Tier 2.
 - **Sun/Microsoft**: consider its own capstone/state if ever split from the IBM substrate; the current write-through is the declared exception.
 

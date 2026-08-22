@@ -112,6 +112,13 @@ def _named_block(text: str, name: str) -> str:
     return _extract_block(text, text.index("{", match.start()))
 
 
+def _blocks(text: str, name: str) -> list[str]:
+    return [
+        _extract_block(text, text.index("{", match.start()))
+        for match in re.finditer(rf"(?m)^\s*{re.escape(name)}\s*=\s*\{{", text)
+    ]
+
+
 def _event_map(text: str) -> dict[int, str]:
     events = {}
     for match in re.finditer(r"(?m)^country_event\s*=\s*\{", text):
@@ -246,7 +253,20 @@ def test_national_adapters_are_bounded_read_only_and_change_driven():
 
     for country in countries:
         assert f"linux_system_refresh_{country}_adapter = yes" in refresh
-    assert refresh.count("corporate_history_enabled = yes") == len(countries)
+    assert refresh.count("corporate_history_enabled = yes") == 5
+    for tag in ("USA", "FRA", "SOV", "CHI", "POL"):
+        gated = min(
+            (
+                block
+                for block in _blocks(refresh, "if") + _blocks(refresh, "else_if")
+                if f"original_tag = {tag}" in block
+            ),
+            key=len,
+        )
+        assert "corporate_history_enabled = yes" in gated
+    eng_adapter = _named_block(effects, "linux_system_refresh_eng_adapter")
+    assert "corporate_history_enabled = yes" in eng_adapter
+    assert "ENG_arm_holdings_terminal_resolved" in eng_adapter
     assert "original_tag = BRA" not in refresh
     for variable in ("deployment", "stewardship", "assurance"):
         assert (
@@ -452,11 +472,10 @@ def test_polish_native_overlap_suppresses_only_the_2008_delivery():
     assert "linux_system_pol_suppresses_event_2 = yes" in schedule
     assert "set_country_flag = linux_system_event_2_expected" in schedule
     assert "linux_system_suppress_event_2_pol = yes" not in schedule
-    for owner in (
-        "linux_system_activate_event_2",
-        "linux_system_recover_pending_events",
-    ):
-        assert "linux_system_suppress_event_2_pol = yes" in _named_block(effects, owner)
+    activate = _named_block(effects, "linux_system_activate_event_2")
+    recovery = _named_block(effects, "linux_system_recover_due_events")
+    assert "linux_system_suppress_event_2_pol = yes" in activate
+    assert "linux_system_activate_event_2 = yes" in recovery
     for event_number in (1, 3, 4, 5):
         assert "linux_system_pol_suppresses_event_2" not in events[event_number]
 

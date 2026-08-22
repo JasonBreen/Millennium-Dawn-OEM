@@ -433,7 +433,13 @@ jobs:
           printf '%s' "$STYLE_FILES_JSON" | jq -r '.[]' \
             | grep -vE \
               '(^|/)(Changelog|AUTHORS)\.txt$|/descriptions[^/]*\.txt$' \
-            > style_files.txt || true
+            | while IFS= read -r path; do
+                # list-files includes deletions, which are absent from the
+                # restored merge tree and cannot be parsed by either tool.
+                if [ -f "$path" ]; then
+                  printf '%s\n' "$path"
+                fi
+              done > style_files.txt || true
           if [ -s style_files.txt ]; then
             echo "has-files=true" >> "$GITHUB_OUTPUT"
           else

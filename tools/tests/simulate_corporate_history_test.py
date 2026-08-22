@@ -16,8 +16,9 @@ from simulate_corporate_history import (
 )
 
 
-def _manifest():
+def _manifest(schema_version=6):
     return {
+        "schema_version": schema_version,
         "chains": [
             {
                 "root": "USA_test",
@@ -47,7 +48,7 @@ def _manifest():
                 "terminal_date": "2025-01-01",
                 "dependency_order": [],
             },
-        ]
+        ],
     }
 
 
@@ -86,12 +87,58 @@ def test_full_late_start_reconstructs_past_and_schedules_remaining():
     assert results[0]["passed"]
 
 
-def test_non_january_start_cannot_use_current_year_scheduler():
+def test_schema_v6_non_january_start_uses_monthly_recovery():
+    scenario = _history(start_date="2024-02-01")
+    scenario["expected"] = {
+        "completion_markers": [],
+        "reconstructed_markers": ["past"],
+        "stranded_markers": [],
+        "visible_events": ["USA_test_events.2", "USA_test_events.3"],
+    }
+
+    _results, passed = run_scenarios(_manifest(), {"scenarios": [scenario]})
+
+    assert passed
+
+
+def test_schema_v5_non_january_start_keeps_legacy_scheduler_behavior():
     scenario = _history(start_date="2024-02-01")
     scenario["expected"] = {
         "completion_markers": [],
         "reconstructed_markers": ["past"],
         "stranded_markers": ["current"],
+        "visible_events": ["USA_test_events.3"],
+    }
+
+    _results, passed = run_scenarios(
+        _manifest(schema_version=5), {"scenarios": [scenario]}
+    )
+
+    assert passed
+
+
+def test_schema_v6_owner_restoration_bootstraps_and_recovers_locally():
+    scenario = _history()
+    scenario["owner_available_from"] = "2024-02-01"
+    scenario["expected"] = {
+        "completion_markers": [],
+        "reconstructed_markers": ["past"],
+        "stranded_markers": [],
+        "visible_events": ["USA_test_events.2", "USA_test_events.3"],
+    }
+
+    _results, passed = run_scenarios(_manifest(), {"scenarios": [scenario]})
+
+    assert passed
+
+
+def test_schema_v6_owner_restoration_reconstructs_elapsed_current_year_event():
+    scenario = _history()
+    scenario["owner_available_from"] = "2024-07-01"
+    scenario["expected"] = {
+        "completion_markers": [],
+        "reconstructed_markers": ["current", "past"],
+        "stranded_markers": [],
         "visible_events": ["USA_test_events.3"],
     }
 

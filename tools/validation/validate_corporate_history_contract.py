@@ -7,6 +7,7 @@ import json
 import os
 import re
 import sys
+from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 from decimal import Decimal
@@ -251,6 +252,22 @@ _USA_2000_STARTUP_EVENTS = (
     "USA_e3_events.90",
     "USA_hp_events.1",
 )
+_INDEPENDENT_SUBSYSTEM_FIELDS = frozenset(
+    {
+        "id",
+        "kind",
+        "namespaces",
+        "event_ids",
+        "owner_tags",
+        "reconstruction_effects",
+        "scheduler_entrypoints",
+        "effect_roots",
+        "mode_policy",
+    }
+)
+_INDEPENDENT_EVENT_POLICY = "full_events_outcomes_reconstruct_off_inert"
+_INDEPENDENT_DERIVED_POLICY = "derived_only"
+_CORPORATE_MODES = frozenset({"full", "outcomes_only", "off"})
 
 
 def _is_finite_number(value: object) -> bool:
@@ -382,6 +399,37 @@ class AuxiliaryLifecycleConfig:
     expected_yearly_callers: Mapping[str, str]
 
 
+@dataclass(frozen=True)
+class IndependentSubsystemConfig:
+    subsystem_id: str
+    kind: str
+    namespaces: Tuple[str, ...]
+    event_ids: Tuple[str, ...]
+    owner_tags: Tuple[str, ...]
+    reconstruction_effects: Tuple[str, ...]
+    scheduler_entrypoints: Tuple[str, ...]
+    effect_roots: Tuple[str, ...]
+    mode_policy: str
+
+
+@dataclass(frozen=True)
+class ModeTrace:
+    owner: str
+    file: str
+    line: int
+    host: str
+    host_file: str
+    block_path: Tuple[str, ...]
+
+
+ModeGraphResult = Tuple[
+    Dict[str, Set[str]],
+    Dict[str, Set[str]],
+    Dict[Tuple[str, str], List[ModeTrace]],
+    Dict[Tuple[str, str], List[ModeTrace]],
+]
+
+
 @dataclass
 class ChainConfig:
     name: str
@@ -496,9 +544,15 @@ class Validator(BaseValidator):
         self._root = Path(self.mod_path)
         self._manifest_path = self._root / "tools" / "corporate_history_contract.json"
         self._manifest_payload: Dict[str, object] = {}
+        self._independent_subsystems: Tuple[IndependentSubsystemConfig, ...] = ()
         self._effect_call_parents_cache: Optional[Dict[str, Set[str]]] = None
         self._effect_call_children_cache: Optional[Dict[str, List[str]]] = None
-        self._on_action_texts_cache: Optional[List[Tuple[str, str]]] = None
+        self._on_action_effect_calls_cache: Optional[
+            Dict[str, List[Tuple[str, int, int]]]
+        ] = None
+        self._independent_mode_graph_cache: Dict[
+            Tuple[int, FrozenSet[str], bool], ModeGraphResult
+        ] = {}
 
     def run_validations(self):
         self._log_section("loading manifest")
@@ -518,6 +572,12 @@ class Validator(BaseValidator):
             effect_defs.get("corporate_history_on_startup", []),
             effect_defs,
         )
+        independent_namespaces = {
+            namespace
+            for subsystem in self._independent_subsystems
+            for namespace in subsystem.namespaces
+        }
+        core_namespaces.difference_update(independent_namespaces)
         call_sites = self._load_event_call_sites(
             event_defs, effect_defs, core_namespaces
         )
@@ -534,6 +594,16 @@ class Validator(BaseValidator):
             "Corporate-history game-rule modes are exact",
             "Corporate-history game-rule mode issues:",
             category="Corporate-history mode contract",
+        )
+
+        self._log_section("independent subsystems")
+        self._report(
+            self._validate_independent_subsystems(
+                self._independent_subsystems, chains, effect_defs, event_defs
+            ),
+            "Independent subsystem ownership and mode paths are coherent",
+            "Independent subsystem contract issues:",
+            category="Corporate-history independent subsystems",
         )
 
         self._log_section("manifest coverage")
@@ -572,13 +642,23 @@ class Validator(BaseValidator):
             category="Corporate-history event reachability",
         )
 
-        self._log_section("OEM startup architecture")
+        self._log_section("core-chain mode paths")
+        self._report(
+            self._validate_core_chain_mode_paths(
+                chains, effect_defs, event_defs, call_sites
+            ),
+            "Core-chain events and reconstruction obey the mode contract",
+            "Corporate-history core-chain mode issues:",
+            category="Corporate-history core-chain modes",
+        )
+
+        self._log_section("corporate-history host architecture")
         self._report(
             self._validate_oem_startup_architecture(
                 effect_defs, event_defs, call_sites
             ),
-            "OEM startup bootstrap and USA 2000 schedule are intact",
-            "OEM startup architecture issues:",
+            "Corporate-history host architecture is intact",
+            "Corporate-history host architecture issues:",
             category="OEM startup architecture",
         )
 
@@ -683,6 +763,7 @@ class Validator(BaseValidator):
             return []
 
         self._manifest_payload = payload
+        self._independent_subsystems = ()
 
         raw_chains = payload.get("chains")
         if not isinstance(raw_chains, list) or not raw_chains:
@@ -693,6 +774,9 @@ class Validator(BaseValidator):
             return []
 
         contract_version = int(payload.get("schema_version", 1))
+        self._independent_subsystems = self._load_independent_subsystems(
+            payload, contract_version
+        )
         required_v2 = (
             "full_start_strategies",
             "outcomes_only_strategy",
@@ -818,6 +902,1280 @@ class Validator(BaseValidator):
                 )
             chains.append(chain)
         return chains
+
+    def _load_independent_subsystems(
+        self, payload: Mapping[str, object], contract_version: int
+    ) -> Tuple[IndependentSubsystemConfig, ...]:
+        raw_subsystems = payload.get("independent_subsystems")
+        if raw_subsystems is None and contract_version < 6:
+            return ()
+        if not isinstance(raw_subsystems, list) or not raw_subsystems:
+            self.add_error(
+                "Corporate-history manifest",
+                "Schema v6 requires a non-empty independent_subsystems list",
+            )
+            return ()
+
+        configs: List[IndependentSubsystemConfig] = []
+        array_fields = (
+            "namespaces",
+            "event_ids",
+            "owner_tags",
+            "reconstruction_effects",
+            "scheduler_entrypoints",
+            "effect_roots",
+        )
+        for index, raw in enumerate(raw_subsystems):
+            label = f"independent_subsystems[{index}]"
+            if not isinstance(raw, dict):
+                self.add_error(
+                    "Corporate-history manifest", f"{label} must be an object"
+                )
+                continue
+            actual_fields = set(raw)
+            missing = sorted(_INDEPENDENT_SUBSYSTEM_FIELDS - actual_fields)
+            extra = sorted(actual_fields - _INDEPENDENT_SUBSYSTEM_FIELDS)
+            if missing or extra:
+                details = []
+                if missing:
+                    details.append(f"missing required fields: {', '.join(missing)}")
+                if extra:
+                    details.append(f"has unsupported fields: {', '.join(extra)}")
+                self.add_error(
+                    "Corporate-history manifest", f"{label} {'; '.join(details)}"
+                )
+                continue
+            if not all(
+                isinstance(raw[field], list)
+                and all(isinstance(value, str) and value for value in raw[field])
+                for field in array_fields
+            ):
+                self.add_error(
+                    "Corporate-history manifest",
+                    f"{label} list fields must contain only non-empty strings",
+                )
+                continue
+            subsystem_id = raw["id"]
+            kind = raw["kind"]
+            mode_policy = raw["mode_policy"]
+            if not all(
+                isinstance(value, str) and value
+                for value in (subsystem_id, kind, mode_policy)
+            ):
+                self.add_error(
+                    "Corporate-history manifest",
+                    f"{label} id, kind, and mode_policy must be non-empty strings",
+                )
+                continue
+            duplicate_fields = [
+                field
+                for field in array_fields
+                if len(raw[field]) != len(set(raw[field]))
+            ]
+            if duplicate_fields:
+                self.add_error(
+                    "Corporate-history manifest",
+                    f"{label} contains duplicate values in: {', '.join(duplicate_fields)}",
+                )
+                continue
+            configs.append(
+                IndependentSubsystemConfig(
+                    subsystem_id=subsystem_id,
+                    kind=kind,
+                    namespaces=tuple(raw["namespaces"]),
+                    event_ids=tuple(raw["event_ids"]),
+                    owner_tags=tuple(raw["owner_tags"]),
+                    reconstruction_effects=tuple(raw["reconstruction_effects"]),
+                    scheduler_entrypoints=tuple(raw["scheduler_entrypoints"]),
+                    effect_roots=tuple(raw["effect_roots"]),
+                    mode_policy=mode_policy,
+                )
+            )
+        return tuple(configs)
+
+    def _validate_independent_subsystems(
+        self,
+        subsystems: Sequence[IndependentSubsystemConfig],
+        chains: Sequence[ChainConfig],
+        effect_defs: Dict[str, List[BlockDef]],
+        event_defs: Dict[str, EventDef],
+    ) -> List[Tuple[str, str, int]]:
+        if int(self._manifest_payload.get("schema_version", 1)) < 6:
+            return []
+
+        findings: List[Tuple[str, str, int]] = []
+        manifest = "tools/corporate_history_contract.json"
+        expected_contracts = {
+            "cross_tag_gpu_development": (
+                "cross_tag_event_system",
+                _INDEPENDENT_EVENT_POLICY,
+            ),
+            "israel_oem_historical_flavour": (
+                "country_event_system",
+                _INDEPENDENT_EVENT_POLICY,
+            ),
+            "legacy_usa_oem_storage_history": (
+                "country_event_system",
+                _INDEPENDENT_EVENT_POLICY,
+            ),
+            "physical_compute_stack": (
+                "derived_aggregate",
+                _INDEPENDENT_DERIVED_POLICY,
+            ),
+        }
+        ids = [subsystem.subsystem_id for subsystem in subsystems]
+        for subsystem_id in sorted(set(ids)):
+            count = ids.count(subsystem_id)
+            if count != 1:
+                findings.append(
+                    (
+                        f"Independent subsystem id {subsystem_id} is declared {count} times",
+                        manifest,
+                        1,
+                    )
+                )
+        missing_contracts = sorted(set(expected_contracts) - set(ids))
+        unexpected_contracts = sorted(set(ids) - set(expected_contracts))
+        if missing_contracts:
+            findings.append(
+                (
+                    "Schema v6 is missing independent subsystems: "
+                    + ", ".join(missing_contracts),
+                    manifest,
+                    1,
+                )
+            )
+        if unexpected_contracts:
+            findings.append(
+                (
+                    "Schema v6 has unexpected independent subsystems: "
+                    + ", ".join(unexpected_contracts),
+                    manifest,
+                    1,
+                )
+            )
+
+        namespace_owners: Dict[str, List[str]] = defaultdict(list)
+        for chain in chains:
+            namespace_owners[chain.namespace].append(f"chain:{chain.root}")
+        raw_shared = self._manifest_payload.get("shared_systems", [])
+        if isinstance(raw_shared, list):
+            for index, raw_system in enumerate(raw_shared):
+                if not isinstance(raw_system, dict):
+                    continue
+                namespace = raw_system.get("namespace")
+                if isinstance(namespace, str) and namespace:
+                    root = raw_system.get("root", index)
+                    namespace_owners[namespace].append(f"shared:{root}")
+        for subsystem in subsystems:
+            for namespace in subsystem.namespaces:
+                namespace_owners[namespace].append(
+                    f"independent:{subsystem.subsystem_id}"
+                )
+        for namespace, owners in sorted(namespace_owners.items()):
+            if len(owners) != 1:
+                findings.append(
+                    (
+                        f"Namespace {namespace} requires exactly one contract owner; found {', '.join(owners)}",
+                        manifest,
+                        1,
+                    )
+                )
+
+        event_owners: Dict[str, List[str]] = defaultdict(list)
+        effect_root_owners: Dict[str, List[str]] = defaultdict(list)
+        for subsystem in subsystems:
+            expected = expected_contracts.get(subsystem.subsystem_id)
+            if expected and (subsystem.kind, subsystem.mode_policy) != expected:
+                findings.append(
+                    (
+                        f"{subsystem.subsystem_id} must use kind {expected[0]} and mode_policy {expected[1]}",
+                        manifest,
+                        1,
+                    )
+                )
+            for event_id in subsystem.event_ids:
+                event_owners[event_id].append(subsystem.subsystem_id)
+            for effect_root in subsystem.effect_roots:
+                effect_root_owners[effect_root].append(subsystem.subsystem_id)
+
+            if subsystem.mode_policy == _INDEPENDENT_EVENT_POLICY:
+                required_lists = {
+                    "namespaces": subsystem.namespaces,
+                    "event_ids": subsystem.event_ids,
+                    "owner_tags": subsystem.owner_tags,
+                    "reconstruction_effects": subsystem.reconstruction_effects,
+                    "scheduler_entrypoints": subsystem.scheduler_entrypoints,
+                    "effect_roots": subsystem.effect_roots,
+                }
+                empty = [name for name, values in required_lists.items() if not values]
+                if empty:
+                    findings.append(
+                        (
+                            f"{subsystem.subsystem_id} requires non-empty declarations for: {', '.join(empty)}",
+                            manifest,
+                            1,
+                        )
+                    )
+                if (
+                    subsystem.subsystem_id == "cross_tag_gpu_development"
+                    and len(subsystem.effect_roots) != 1
+                ):
+                    findings.append(
+                        (
+                            f"{subsystem.subsystem_id} requires exactly one authoritative effect root; found {len(subsystem.effect_roots)}",
+                            manifest,
+                            1,
+                        )
+                    )
+            elif subsystem.mode_policy == _INDEPENDENT_DERIVED_POLICY:
+                nonempty = [
+                    name
+                    for name, values in (
+                        ("namespaces", subsystem.namespaces),
+                        ("event_ids", subsystem.event_ids),
+                        ("reconstruction_effects", subsystem.reconstruction_effects),
+                        ("scheduler_entrypoints", subsystem.scheduler_entrypoints),
+                    )
+                    if values
+                ]
+                if nonempty:
+                    findings.append(
+                        (
+                            f"{subsystem.subsystem_id} is derived-only and must leave these declarations empty: {', '.join(nonempty)}",
+                            manifest,
+                            1,
+                        )
+                    )
+                if not subsystem.owner_tags or len(subsystem.effect_roots) != 1:
+                    findings.append(
+                        (
+                            f"{subsystem.subsystem_id} requires owner_tags and exactly one derived effect root",
+                            manifest,
+                            1,
+                        )
+                    )
+            else:
+                findings.append(
+                    (
+                        f"{subsystem.subsystem_id} has unsupported mode_policy {subsystem.mode_policy}",
+                        manifest,
+                        1,
+                    )
+                )
+
+            invalid_tags = [
+                tag
+                for tag in subsystem.owner_tags
+                if not re.fullmatch(r"[A-Z0-9]{3}", tag)
+            ]
+            if invalid_tags:
+                findings.append(
+                    (
+                        f"{subsystem.subsystem_id} has invalid owner tags: {', '.join(invalid_tags)}",
+                        manifest,
+                        1,
+                    )
+                )
+            wildcard_ids = [
+                event_id
+                for event_id in subsystem.event_ids
+                if any(char in event_id for char in "*?[]")
+            ]
+            if wildcard_ids:
+                findings.append(
+                    (
+                        f"{subsystem.subsystem_id} event_ids must be explicit: {', '.join(wildcard_ids)}",
+                        manifest,
+                        1,
+                    )
+                )
+            wrong_namespace = [
+                event_id
+                for event_id in subsystem.event_ids
+                if "." not in event_id
+                or event_id.split(".", 1)[0] not in subsystem.namespaces
+            ]
+            if wrong_namespace:
+                findings.append(
+                    (
+                        f"{subsystem.subsystem_id} has event IDs outside its namespaces: {', '.join(wrong_namespace)}",
+                        manifest,
+                        1,
+                    )
+                )
+
+            declared = set(subsystem.event_ids)
+            defined = {
+                event_id
+                for event_id in event_defs
+                if "." in event_id and event_id.split(".", 1)[0] in subsystem.namespaces
+            }
+            missing_events = sorted(declared - set(event_defs))
+            undeclared_events = sorted(defined - declared)
+            if missing_events:
+                findings.append(
+                    (
+                        f"{subsystem.subsystem_id} declares missing events: {', '.join(missing_events)}",
+                        "events",
+                        1,
+                    )
+                )
+            if undeclared_events:
+                findings.append(
+                    (
+                        f"{subsystem.subsystem_id} omits explicit namespace events: {', '.join(undeclared_events)}",
+                        "events",
+                        1,
+                    )
+                )
+
+            for effect_name in (
+                *subsystem.reconstruction_effects,
+                *subsystem.scheduler_entrypoints,
+                *subsystem.effect_roots,
+            ):
+                definitions = effect_defs.get(effect_name, [])
+                if len(definitions) != 1:
+                    findings.append(
+                        (
+                            f"{subsystem.subsystem_id} requires exactly one declared effect {effect_name}; found {len(definitions)}",
+                            (
+                                definitions[0].file
+                                if definitions
+                                else "common/scripted_effects"
+                            ),
+                            definitions[0].line if definitions else 1,
+                        )
+                    )
+
+        for event_id, owners in sorted(event_owners.items()):
+            if len(owners) != 1:
+                findings.append(
+                    (
+                        f"Event {event_id} requires exactly one independent subsystem owner; found {', '.join(owners)}",
+                        manifest,
+                        1,
+                    )
+                )
+        for effect_root, owners in sorted(effect_root_owners.items()):
+            if len(owners) != 1:
+                findings.append(
+                    (
+                        f"Effect root {effect_root} requires exactly one independent subsystem owner; found {', '.join(owners)}",
+                        manifest,
+                        1,
+                    )
+                )
+
+        children = self._effect_call_children(effect_defs)
+        scheduler_closures: Dict[str, Set[str]] = {}
+        dispatch_closures: Dict[str, Set[str]] = {}
+        root_closures: Dict[str, Set[str]] = {}
+        for subsystem in subsystems:
+            scheduler_closures[subsystem.subsystem_id] = self._effect_descendants(
+                subsystem.scheduler_entrypoints, children
+            )
+            dispatch_closures[subsystem.subsystem_id] = {
+                *scheduler_closures[subsystem.subsystem_id],
+                *subsystem.effect_roots,
+            }
+            root_closures[subsystem.subsystem_id] = self._effect_descendants(
+                (
+                    *subsystem.effect_roots,
+                    *subsystem.scheduler_entrypoints,
+                    *subsystem.reconstruction_effects,
+                ),
+                children,
+            )
+
+        direct_calls = self._independent_event_call_sites(
+            effect_defs, event_defs, set(event_owners)
+        )
+        scheduler_reachability = {
+            subsystem.subsystem_id: self._independent_scheduler_reachability(
+                dispatch_closures[subsystem.subsystem_id],
+                effect_defs,
+                event_defs,
+                set(event_owners),
+            )
+            for subsystem in subsystems
+        }
+        scheduler_effects = {
+            subsystem_id: reachable[0]
+            for subsystem_id, reachable in scheduler_reachability.items()
+        }
+        scheduler_events = {
+            subsystem_id: reachable[1]
+            for subsystem_id, reachable in scheduler_reachability.items()
+        }
+        callerless_compatibility_anchors: Set[str] = set()
+        for subsystem in subsystems:
+            if subsystem.mode_policy != _INDEPENDENT_EVENT_POLICY:
+                continue
+            scheduler_closure = scheduler_effects[subsystem.subsystem_id]
+            for event_id in subsystem.event_ids:
+                sites = direct_calls.get(event_id, [])
+                if not sites:
+                    event = event_defs.get(event_id)
+                    if (
+                        event is not None
+                        and event_id.endswith(".90")
+                        and event.hidden
+                        and re.search(r"\bis_triggered_only\s*=\s*yes\b", event.body)
+                    ):
+                        callerless_compatibility_anchors.add(event_id)
+                        continue
+                    findings.append(
+                        (
+                            f"{event_id} has no declared scheduler path",
+                            event.file if event else "events",
+                            event.line if event else 1,
+                        )
+                    )
+                    continue
+                owner_subsystems = {
+                    owner.subsystem_id
+                    for owner in subsystems
+                    if event_id in scheduler_events.get(owner.subsystem_id, set())
+                }
+                bypasses = [
+                    site
+                    for site in sites
+                    if (site.kind == "effect" and site.owner not in scheduler_closure)
+                    or (
+                        site.kind == "event"
+                        and site.owner
+                        not in scheduler_events.get(subsystem.subsystem_id, set())
+                    )
+                    or site.kind not in {"effect", "event"}
+                ]
+                if owner_subsystems != {subsystem.subsystem_id}:
+                    rendered = ", ".join(sorted(owner_subsystems)) or "none"
+                    event = event_defs.get(event_id)
+                    findings.append(
+                        (
+                            f"{event_id} requires one declared scheduler owner {subsystem.subsystem_id}; found {rendered}",
+                            event.file if event else "events",
+                            event.line if event else 1,
+                        )
+                    )
+                for bypass in bypasses:
+                    findings.append(
+                        (
+                            f"{event_id} is dispatched outside {subsystem.subsystem_id} scheduler entrypoints by {bypass.owner}",
+                            bypass.file,
+                            bypass.line,
+                        )
+                    )
+
+        (
+            effect_modes,
+            event_modes,
+            effect_traces,
+            event_traces,
+        ) = self._independent_mode_graph(
+            effect_defs,
+            set(event_owners),
+            direct_calls,
+            event_defs_for_expansion=event_defs,
+        )
+        for subsystem in subsystems:
+            closure = root_closures[subsystem.subsystem_id]
+            findings.extend(
+                self._independent_foreign_write_findings(
+                    subsystem,
+                    closure,
+                    effect_defs,
+                    event_defs,
+                    set(event_owners),
+                )
+            )
+            if subsystem.mode_policy == _INDEPENDENT_DERIVED_POLICY:
+                called_events = sorted(
+                    {
+                        event_id
+                        for effect_name in closure
+                        for definition in effect_defs.get(effect_name, [])
+                        for event_id, _line in self._find_event_calls(
+                            definition.body, definition.line, frozenset()
+                        )
+                    }
+                )
+                if called_events:
+                    findings.append(
+                        (
+                            f"{subsystem.subsystem_id} is derived-only but reaches events: {', '.join(called_events)}",
+                            manifest,
+                            1,
+                        )
+                    )
+                continue
+
+            for effect_root in subsystem.effect_roots:
+                modes = effect_modes.get(effect_root, set())
+                missing_modes = {"full", "outcomes_only"} - modes
+                if missing_modes:
+                    findings.append(
+                        (
+                            f"{effect_root} is not reachable from a monthly on_action in: {', '.join(sorted(missing_modes))}",
+                            effect_defs.get(
+                                effect_root,
+                                [BlockDef(effect_root, "common/on_actions", 1, "")],
+                            )[0].file,
+                            1,
+                        )
+                    )
+                traces = [
+                    trace
+                    for mode in _CORPORATE_MODES
+                    for trace in effect_traces.get((effect_root, mode), [])
+                ]
+                hosts: Dict[str, Set[str]] = defaultdict(set)
+                for trace in traces:
+                    hosts[trace.host].add(trace.host_file)
+                expected_hosts = {f"on_monthly_{tag}" for tag in subsystem.owner_tags}
+                if set(hosts) != expected_hosts or any(
+                    len(files) != 1 for files in hosts.values()
+                ):
+                    rendered = ", ".join(
+                        f"{path}:{host}"
+                        for host, paths in sorted(hosts.items())
+                        for path in sorted(paths)
+                    )
+                    findings.append(
+                        (
+                            f"{effect_root} requires one authoritative tag-local monthly host per owner ({', '.join(sorted(expected_hosts))}); found {rendered or 'none'}",
+                            traces[0].file if traces else "common/on_actions",
+                            traces[0].line if traces else 1,
+                        )
+                    )
+                for trace in traces:
+                    if not trace.host.startswith("on_monthly"):
+                        findings.append(
+                            (
+                                f"{effect_root} is reached from forbidden host {trace.host}",
+                                trace.host_file,
+                                trace.line,
+                            )
+                        )
+                    if any(block == "ABK" for block in trace.block_path):
+                        findings.append(
+                            (
+                                f"{effect_root} must not use ABK as a singleton host",
+                                trace.host_file,
+                                trace.line,
+                            )
+                        )
+
+            for reconstruction in subsystem.reconstruction_effects:
+                modes = effect_modes.get(reconstruction, set())
+                if "outcomes_only" not in modes:
+                    findings.append(
+                        (
+                            f"{reconstruction} is unreachable in outcomes_only",
+                            effect_defs.get(
+                                reconstruction,
+                                [
+                                    BlockDef(
+                                        reconstruction, "common/scripted_effects", 1, ""
+                                    )
+                                ],
+                            )[0].file,
+                            1,
+                        )
+                    )
+                if "off" in modes:
+                    trace = effect_traces[(reconstruction, "off")][0]
+                    findings.append(
+                        (
+                            f"{reconstruction} is reachable in Off mode",
+                            trace.file,
+                            trace.line,
+                        )
+                    )
+            for scheduler in subsystem.scheduler_entrypoints:
+                modes = effect_modes.get(scheduler, set())
+                if "full" not in modes:
+                    findings.append(
+                        (
+                            f"{scheduler} is unreachable in Full mode",
+                            effect_defs.get(
+                                scheduler,
+                                [BlockDef(scheduler, "common/scripted_effects", 1, "")],
+                            )[0].file,
+                            1,
+                        )
+                    )
+                for forbidden_mode in ("outcomes_only", "off"):
+                    if forbidden_mode in modes:
+                        trace = effect_traces[(scheduler, forbidden_mode)][0]
+                        findings.append(
+                            (
+                                f"{scheduler} is reachable in {forbidden_mode} mode",
+                                trace.file,
+                                trace.line,
+                            )
+                        )
+            for event_id in subsystem.event_ids:
+                if event_id in callerless_compatibility_anchors:
+                    continue
+                modes = event_modes.get(event_id, set())
+                if "full" not in modes:
+                    event = event_defs.get(event_id)
+                    findings.append(
+                        (
+                            f"{event_id} is unreachable in Full mode",
+                            event.file if event else "events",
+                            event.line if event else 1,
+                        )
+                    )
+                for forbidden_mode in ("outcomes_only", "off"):
+                    if forbidden_mode in modes:
+                        trace = event_traces[(event_id, forbidden_mode)][0]
+                        findings.append(
+                            (
+                                f"{event_id} is reachable in {forbidden_mode} mode",
+                                trace.file,
+                                trace.line,
+                            )
+                        )
+        return self._dedupe_findings(findings)
+
+    def _effect_descendants(
+        self, roots: Iterable[str], children: Mapping[str, Sequence[str]]
+    ) -> Set[str]:
+        reachable: Set[str] = set()
+        pending = list(roots)
+        while pending:
+            effect_name = pending.pop()
+            if effect_name in reachable:
+                continue
+            reachable.add(effect_name)
+            pending.extend(children.get(effect_name, ()))
+        return reachable
+
+    def _independent_scheduler_reachability(
+        self,
+        dispatch_effects: Set[str],
+        effect_defs: Dict[str, List[BlockDef]],
+        event_defs: Mapping[str, EventDef],
+        tracked_event_ids: Set[str],
+    ) -> Tuple[Set[str], Set[str]]:
+        """Follow effect/event edges from one subsystem's declared dispatchers."""
+        children = self._effect_call_children(effect_defs)
+        reachable_effects = self._effect_descendants(dispatch_effects, children)
+        reachable_events: Set[str] = set()
+        changed = True
+        while changed:
+            changed = False
+            for effect_name in tuple(reachable_effects):
+                for definition in effect_defs.get(effect_name, []):
+                    for event_id, _line in self._find_event_calls(
+                        definition.body, definition.line, tracked_event_ids
+                    ):
+                        if event_id not in reachable_events:
+                            reachable_events.add(event_id)
+                            changed = True
+            for event_id in tuple(reachable_events):
+                event = event_defs.get(event_id)
+                if event is None:
+                    continue
+                for child_event, _line in self._find_event_calls(
+                    event.body, event.line, tracked_event_ids
+                ):
+                    if child_event not in reachable_events:
+                        reachable_events.add(child_event)
+                        changed = True
+                event_effects = {
+                    match.group(1)
+                    for match in _EFFECT_YES_RE.finditer(event.body)
+                    if match.group(1) in effect_defs
+                }
+                expanded_effects = self._effect_descendants(event_effects, children)
+                if not expanded_effects.issubset(reachable_effects):
+                    reachable_effects.update(expanded_effects)
+                    changed = True
+        return reachable_effects, reachable_events
+
+    def _independent_event_call_sites(
+        self,
+        effect_defs: Dict[str, List[BlockDef]],
+        event_defs: Mapping[str, EventDef],
+        tracked_ids: Set[str],
+    ) -> Dict[str, List[CallSite]]:
+        sites: Dict[str, List[CallSite]] = defaultdict(list)
+        for owner, definitions in effect_defs.items():
+            for definition in definitions:
+                for event_id, line in self._find_event_calls(
+                    definition.body, definition.line, tracked_ids
+                ):
+                    sites[event_id].append(
+                        CallSite(event_id, definition.file, line, "effect", owner)
+                    )
+        for owner, event in event_defs.items():
+            for event_id, line in self._find_event_calls(
+                event.body, event.line, tracked_ids
+            ):
+                sites[event_id].append(
+                    CallSite(event_id, event.file, line, "event", owner)
+                )
+        for filepath in self._collect_text_files(
+            ["common/**/*.txt", "history/**/*.txt"]
+        ):
+            rel = self._relpath(filepath)
+            normalized = rel.replace("\\", "/")
+            if normalized.startswith("common/scripted_effects/"):
+                continue
+            try:
+                text = strip_comments(
+                    Path(filepath).read_text(encoding="utf-8-sig", errors="replace")
+                )
+            except OSError:
+                continue
+            for event_id, line in self._find_event_calls(text, 1, tracked_ids):
+                sites[event_id].append(
+                    CallSite(event_id, rel, line, "script", f"{rel}:{line}")
+                )
+        return sites
+
+    def _independent_foreign_write_findings(
+        self,
+        subsystem: IndependentSubsystemConfig,
+        reachable_effects: Set[str],
+        effect_defs: Dict[str, List[BlockDef]],
+        event_defs: Mapping[str, EventDef],
+        declared_event_ids: Set[str],
+    ) -> List[Tuple[str, str, int]]:
+        findings: List[Tuple[str, str, int]] = []
+        owned_events = [
+            event_defs[event_id]
+            for event_id in subsystem.event_ids
+            if event_id in event_defs
+        ]
+        event_effect_roots = {
+            match.group(1)
+            for event in owned_events
+            for match in _EFFECT_YES_RE.finditer(event.body)
+            if match.group(1) in effect_defs
+        }
+        expanded_effects = set(reachable_effects)
+        expanded_effects.update(
+            self._effect_descendants(
+                event_effect_roots, self._effect_call_children(effect_defs)
+            )
+        )
+
+        def foreign_tokens(body: str) -> List[str]:
+            prefixes = tuple(
+                sorted(
+                    {
+                        f"{match.group(1)}_"
+                        for match in re.finditer(
+                            r"\b([A-Z][A-Z0-9]{2})_[A-Za-z0-9_]+", body
+                        )
+                    }
+                )
+            )
+            if not prefixes:
+                return []
+            return [
+                token
+                for token in sorted(_collect_native_write_tokens(body, prefixes))
+                if token not in declared_event_ids
+                and (tag_match := re.match(r"([A-Z][A-Z0-9]{2})_", token))
+                and tag_match.group(1) not in subsystem.owner_tags
+            ]
+
+        for effect_name in expanded_effects:
+            for definition in effect_defs.get(effect_name, []):
+                for token in foreign_tokens(definition.body):
+                    findings.append(
+                        (
+                            f"{subsystem.subsystem_id} reaches foreign-owner write {token} through {effect_name}",
+                            definition.file,
+                            definition.line,
+                        )
+                    )
+        for event in owned_events:
+            for token in foreign_tokens(event.body):
+                findings.append(
+                    (
+                        f"{subsystem.subsystem_id} event {event.event_id} writes foreign-owner state {token}",
+                        event.file,
+                        event.line,
+                    )
+                )
+        return findings
+
+    @staticmethod
+    def _combine_condition_truth(
+        values: Sequence[Optional[bool]], union: bool
+    ) -> Optional[bool]:
+        if union:
+            if any(value is True for value in values):
+                return True
+            if any(value is None for value in values):
+                return None
+            return False
+        if any(value is False for value in values):
+            return False
+        if any(value is None for value in values):
+            return None
+        return True
+
+    def _mode_tag_condition_truth(
+        self,
+        text: str,
+        mode: Optional[str],
+        host_tag: Optional[str],
+        union: bool = False,
+    ) -> Tuple[Optional[bool], bool]:
+        """Evaluate known mode/tag atoms while preserving unknown runtime predicates."""
+        values: List[Optional[bool]] = []
+        has_mode_atom = False
+        residual: List[str] = []
+        cursor = 0
+        for name, start, end, body in self._iter_direct_child_blocks(text):
+            residual.append(text[cursor:start])
+            cursor = end
+            upper = name.upper()
+            if upper in {"NOT", "OR", "AND"}:
+                nested, nested_has_mode = self._mode_tag_condition_truth(
+                    body, mode, host_tag, union=upper == "OR"
+                )
+                has_mode_atom = has_mode_atom or nested_has_mode
+                if upper == "NOT" and nested is not None:
+                    nested = not nested
+                values.append(nested)
+            else:
+                values.append(None)
+        residual.append(text[cursor:])
+        direct = "".join(residual)
+
+        trigger_modes = {
+            "corporate_history_full_enabled": {"full"},
+            "corporate_history_outcomes_only_enabled": {"outcomes_only"},
+            "corporate_history_enabled": {"full", "outcomes_only"},
+        }
+        mode_pattern = re.compile(
+            r"\b(corporate_history_full_enabled|corporate_history_outcomes_only_enabled|corporate_history_enabled)\s*=\s*(yes|no)\b"
+        )
+        for match in mode_pattern.finditer(direct):
+            has_mode_atom = True
+            if mode is None:
+                values.append(None)
+                continue
+            value = mode in trigger_modes[match.group(1)]
+            values.append(value if match.group(2) == "yes" else not value)
+        direct = mode_pattern.sub("", direct)
+
+        tag_pattern = re.compile(r"\boriginal_tag\s*=\s*([A-Z0-9]{3})\b")
+        for match in tag_pattern.finditer(direct):
+            values.append(None if host_tag is None else match.group(1) == host_tag)
+        direct = tag_pattern.sub("", direct)
+        if direct.strip():
+            values.append(None)
+
+        return self._combine_condition_truth(values, union), has_mode_atom
+
+    def _mode_constraint(self, text: str, union: bool = False) -> Optional[Set[str]]:
+        possible: Set[str] = set()
+        has_mode_atom = False
+        for mode in _CORPORATE_MODES:
+            truth, mode_atom = self._mode_tag_condition_truth(
+                text, mode, None, union=union
+            )
+            has_mode_atom = has_mode_atom or mode_atom
+            if truth is not False:
+                possible.add(mode)
+        return possible if has_mode_atom else None
+
+    def _independent_mode_graph(
+        self,
+        effect_defs: Dict[str, List[BlockDef]],
+        tracked_event_ids: Set[str],
+        direct_event_calls: Optional[Mapping[str, Sequence[CallSite]]] = None,
+        event_defs_for_expansion: Optional[Mapping[str, EventDef]] = None,
+    ) -> ModeGraphResult:
+        tracked = frozenset(tracked_event_ids)
+        expands_events = event_defs_for_expansion is not None
+        cache_key = (id(effect_defs), tracked, expands_events)
+        cached = self._independent_mode_graph_cache.get(cache_key)
+        if cached is not None:
+            return cached
+        if not tracked and not expands_events:
+            for (
+                cached_effects_id,
+                _cached_tracked,
+                cached_expands,
+            ), cached_result in self._independent_mode_graph_cache.items():
+                if cached_effects_id == id(effect_defs) and not cached_expands:
+                    return cached_result[0], {}, cached_result[2], {}
+
+        effect_modes: Dict[str, Set[str]] = defaultdict(set)
+        event_modes: Dict[str, Set[str]] = defaultdict(set)
+        effect_traces: Dict[Tuple[str, str], List[ModeTrace]] = defaultdict(list)
+        event_traces: Dict[Tuple[str, str], List[ModeTrace]] = defaultdict(list)
+        pending = deque()
+        pending_events = deque()
+        visited: Set[Tuple[str, str, str, str]] = set()
+        visited_events: Set[Tuple[str, str, str, str]] = set()
+        relevant_effects = self._mode_graph_relevant_effects(
+            effect_defs,
+            tracked_event_ids,
+            direct_event_calls,
+            event_defs_for_expansion,
+        )
+
+        def record_event(
+            event_id: str,
+            mode: str,
+            owner: str,
+            file: str,
+            line: int,
+            host: str,
+            host_file: str,
+            block_path: Tuple[str, ...],
+        ) -> None:
+            if event_id not in tracked_event_ids:
+                return
+            trace = ModeTrace(owner, file, line, host, host_file, block_path)
+            event_modes[event_id].add(mode)
+            event_traces[(event_id, mode)].append(trace)
+            if event_defs_for_expansion is not None:
+                pending_events.append(
+                    (event_id, mode, host, host_file, block_path + (event_id,))
+                )
+
+        def record_effect(
+            effect_name: str,
+            mode: str,
+            owner: str,
+            file: str,
+            line: int,
+            host: str,
+            host_file: str,
+            block_path: Tuple[str, ...],
+        ) -> None:
+            if effect_name not in effect_defs or effect_name not in relevant_effects:
+                return
+            trace = ModeTrace(owner, file, line, host, host_file, block_path)
+            effect_modes[effect_name].add(mode)
+            effect_traces[(effect_name, mode)].append(trace)
+            pending.append(
+                (effect_name, mode, host, host_file, block_path + (effect_name,))
+            )
+
+        def walk(
+            body: str,
+            mode: str,
+            owner: str,
+            file: str,
+            base_line: int,
+            host: str,
+            host_file: str,
+            host_tag: Optional[str],
+            block_path: Tuple[str, ...],
+        ) -> None:
+            children = list(self._iter_direct_child_blocks(body))
+            segments: List[Tuple[int, str]] = []
+            cursor = 0
+            for _name, start, end, _nested in children:
+                segments.append((cursor, body[cursor:start]))
+                cursor = end
+            segments.append((cursor, body[cursor:]))
+            for segment_start, segment in segments:
+                for match in _EFFECT_YES_RE.finditer(segment):
+                    line = (
+                        base_line + self._line(body, segment_start + match.start()) - 1
+                    )
+                    record_effect(
+                        match.group(1),
+                        mode,
+                        owner,
+                        file,
+                        line,
+                        host,
+                        host_file,
+                        block_path,
+                    )
+                for match in _EVENT_SHORT_CALL_RE.finditer(segment):
+                    line = (
+                        base_line + self._line(body, segment_start + match.start()) - 1
+                    )
+                    record_event(
+                        match.group(1),
+                        mode,
+                        owner,
+                        file,
+                        line,
+                        host,
+                        host_file,
+                        block_path,
+                    )
+
+            remaining = {mode}
+            conditional_chain = False
+            for name, start, _end, nested in children:
+                child_line = base_line + self._line(body, start) - 1
+                if name in _EVENT_KEYWORDS:
+                    id_match = _ID_RE.search(nested)
+                    if id_match:
+                        record_event(
+                            id_match.group(1),
+                            mode,
+                            owner,
+                            file,
+                            child_line,
+                            host,
+                            host_file,
+                            block_path,
+                        )
+                    conditional_chain = False
+                    remaining = {mode}
+                    continue
+                if name == "limit":
+                    continue
+                if name == "if":
+                    remaining = {mode}
+                    conditional_chain = True
+                    limit = self._direct_child_block(nested, "limit") or ""
+                    truth, _has_mode_atom = self._mode_tag_condition_truth(
+                        limit, mode, host_tag
+                    )
+                    branch = {mode} if truth is not False else set()
+                    if truth is True and branch:
+                        remaining.clear()
+                elif name == "else_if" and conditional_chain:
+                    limit = self._direct_child_block(nested, "limit") or ""
+                    truth, _has_mode_atom = self._mode_tag_condition_truth(
+                        limit, mode, host_tag
+                    )
+                    branch = set(remaining) if truth is not False else set()
+                    if truth is True and branch:
+                        remaining.clear()
+                elif name == "else" and conditional_chain:
+                    branch = set(remaining)
+                    remaining.clear()
+                else:
+                    conditional_chain = False
+                    remaining = {mode}
+                    branch = {mode}
+                if mode in branch:
+                    walk(
+                        nested,
+                        mode,
+                        owner,
+                        file,
+                        child_line,
+                        host,
+                        host_file,
+                        host_tag,
+                        block_path + (name,),
+                    )
+
+        for filepath in self._collect_text_files(["common/on_actions/**/*.txt"]):
+            try:
+                text = strip_comments(
+                    Path(filepath).read_text(encoding="utf-8-sig", errors="replace")
+                )
+            except OSError:
+                continue
+            rel = self._relpath(filepath)
+            for match in _TOP_LEVEL_BLOCK_RE.finditer(text):
+                outer_body, end = extract_block_from_text(text, match.end() - 1)
+                if end == -1:
+                    continue
+                outer_name = match.group(1)
+                hosts: List[Tuple[str, int, str]] = []
+                if outer_name == "on_actions":
+                    hosts.extend(
+                        (name, start, body)
+                        for name, start, _child_end, body in self._iter_direct_child_blocks(
+                            outer_body
+                        )
+                        if name.startswith("on_")
+                    )
+                elif outer_name.startswith("on_"):
+                    hosts.append((outer_name, 0, outer_body))
+                for host, host_start, host_body in hosts:
+                    host_line = (
+                        self._line(text, match.start())
+                        + self._line(outer_body, host_start)
+                        - 1
+                    )
+                    host_tag_match = re.fullmatch(
+                        r"on_(?:daily|weekly|monthly|yearly)_([A-Z0-9]{3})",
+                        host,
+                    )
+                    host_tag = host_tag_match.group(1) if host_tag_match else None
+                    for mode in _CORPORATE_MODES:
+                        walk(
+                            host_body,
+                            mode,
+                            f"on_action:{host}",
+                            rel,
+                            host_line,
+                            host,
+                            rel,
+                            host_tag,
+                            (outer_name, host),
+                        )
+
+        while pending or pending_events:
+            while pending:
+                effect_name, mode, host, host_file, block_path = pending.popleft()
+                key = (effect_name, mode, host, host_file)
+                if key in visited:
+                    continue
+                visited.add(key)
+                host_tag_match = re.fullmatch(
+                    r"on_(?:daily|weekly|monthly|yearly)_([A-Z0-9]{3})", host
+                )
+                host_tag = host_tag_match.group(1) if host_tag_match else None
+                for definition in effect_defs.get(effect_name, []):
+                    walk(
+                        definition.body,
+                        mode,
+                        effect_name,
+                        definition.file,
+                        definition.line,
+                        host,
+                        host_file,
+                        host_tag,
+                        block_path,
+                    )
+            while pending_events:
+                event_id, mode, host, host_file, block_path = pending_events.popleft()
+                key = (event_id, mode, host, host_file)
+                if key in visited_events:
+                    continue
+                visited_events.add(key)
+                event = (
+                    event_defs_for_expansion.get(event_id)
+                    if event_defs_for_expansion is not None
+                    else None
+                )
+                if event is None:
+                    continue
+                host_tag_match = re.fullmatch(
+                    r"on_(?:daily|weekly|monthly|yearly)_([A-Z0-9]{3})", host
+                )
+                host_tag = host_tag_match.group(1) if host_tag_match else None
+                walk(
+                    event.body,
+                    mode,
+                    event_id,
+                    event.file,
+                    event.line,
+                    host,
+                    host_file,
+                    host_tag,
+                    block_path,
+                )
+        result = effect_modes, event_modes, effect_traces, event_traces
+        self._independent_mode_graph_cache[cache_key] = result
+        return result
+
+    def _mode_graph_relevant_effects(
+        self,
+        effect_defs: Dict[str, List[BlockDef]],
+        tracked_event_ids: Set[str],
+        direct_event_calls: Optional[Mapping[str, Sequence[CallSite]]],
+        event_defs_for_expansion: Optional[Mapping[str, EventDef]],
+    ) -> Set[str]:
+        """Effects that can lead from an on-action to a contract-owned target.
+
+        Walking every effect reachable from every on-action expands most of the mod's
+        scripted-effect graph three times.  The mode contract only needs ancestors of
+        declared subsystem/core targets and effects that directly dispatch tracked
+        events; direct-event ownership is validated separately across the repository.
+        """
+        targets = {
+            "corporate_history_country_bootstrap",
+            "corporate_history_monthly_dispatch",
+            "corporate_history_initialize_midyear_recovery",
+            "corporate_history_recover_midyear_events",
+        }
+        for subsystem in self._independent_subsystems:
+            targets.update(subsystem.effect_roots)
+            targets.update(subsystem.scheduler_entrypoints)
+            targets.update(subsystem.reconstruction_effects)
+
+        raw_chains = self._manifest_payload.get("chains", [])
+        if isinstance(raw_chains, list):
+            for raw_chain in raw_chains:
+                if not isinstance(raw_chain, dict):
+                    continue
+                root = raw_chain.get("root")
+                monthly_driver = raw_chain.get("monthly_driver")
+                if isinstance(root, str) and root:
+                    targets.update(
+                        {
+                            f"{root}_reconstruct_history",
+                            f"{root}_schedule_current_year_events",
+                        }
+                    )
+                if isinstance(monthly_driver, str) and monthly_driver:
+                    targets.add(monthly_driver)
+                auxiliary_lifecycles = raw_chain.get("auxiliary_lifecycles", [])
+                if not isinstance(auxiliary_lifecycles, list):
+                    continue
+                for lifecycle in auxiliary_lifecycles:
+                    if not isinstance(lifecycle, dict):
+                        continue
+                    for field in (
+                        "reconstruction_effect",
+                        "scheduler_effect",
+                        "monthly_driver",
+                    ):
+                        value = lifecycle.get(field)
+                        if isinstance(value, str) and value:
+                            targets.add(value)
+
+        if direct_event_calls is None:
+            if tracked_event_ids:
+                for owner, definitions in effect_defs.items():
+                    if any(
+                        self._find_event_calls(
+                            definition.body, definition.line, tracked_event_ids
+                        )
+                        for definition in definitions
+                    ):
+                        targets.add(owner)
+        else:
+            targets.update(
+                site.owner
+                for sites in direct_event_calls.values()
+                for site in sites
+                if site.kind == "effect"
+            )
+
+        if event_defs_for_expansion is not None:
+            event_effect_roots = {
+                match.group(1)
+                for event_id in tracked_event_ids
+                if (event := event_defs_for_expansion.get(event_id)) is not None
+                for match in _EFFECT_YES_RE.finditer(event.body)
+                if match.group(1) in effect_defs
+            }
+            targets.update(
+                self._effect_descendants(
+                    event_effect_roots, self._effect_call_children(effect_defs)
+                )
+            )
+
+        parents = self._effect_call_parents(effect_defs)
+        relevant: Set[str] = set()
+        pending = list(targets)
+        while pending:
+            effect_name = pending.pop()
+            if effect_name in relevant:
+                continue
+            relevant.add(effect_name)
+            pending.extend(parents.get(effect_name, ()))
+        return relevant
 
     def _validate_reusable_decision_lifecycles(
         self, effect_defs: Dict[str, List[BlockDef]]
@@ -1757,42 +3115,73 @@ class Validator(BaseValidator):
                     )
                 )
             participant_array = str(raw_system["participant_array"])
-            if (
-                participant_array not in effect_text
-                or "is_in_array" not in effect_text
-                or "add_to_array" not in effect_text
-                or "remove_from_array" not in effect_text
-            ):
-                findings.append(
-                    (
-                        f"{name} participant registry must deduplicate registration and support removal",
-                        str(files["effect"]),
-                        1,
-                    )
-                )
             on_action_text = declared_text.get("on_action", "")
             dispatcher_host = str(raw_system["dispatcher_host"])
-            if (
-                f"{dispatcher_host} =" not in on_action_text
-                or "on_monthly" not in on_action_text
-            ):
-                findings.append(
-                    (
-                        f"{name} must use {dispatcher_host} as its monthly dispatcher host",
-                        str(files["on_action"]),
-                        1,
+            if schema_version >= 6:
+                if participant_array or re.search(
+                    r"\bglobal\.linux_system_participants\b", system_text
+                ):
+                    findings.append(
+                        (
+                            f"{name} must use country-local participation state without a global registry",
+                            str(files["effect"]),
+                            1,
+                        )
                     )
-                )
-            if re.search(
-                rf"\boriginal_tag\s*=\s*{re.escape(dispatcher_host)}\b", system_text
-            ):
-                findings.append(
-                    (
-                        f"{dispatcher_host} may dispatch {name} but may not own gameplay state",
-                        str(files["effect"]),
-                        1,
+                if (
+                    dispatcher_host != "country_local"
+                    or not re.search(
+                        r"\bon_monthly\s*=\s*\{[\s\S]*?\blinux_system_monthly_driver\s*=\s*yes\b",
+                        on_action_text,
                     )
-                )
+                    or re.search(
+                        r"\bon_(?:startup|daily)(?:_[A-Z0-9]+)?\s*=", on_action_text
+                    )
+                    or re.search(r"\bABK\s*=", on_action_text)
+                ):
+                    findings.append(
+                        (
+                            f"{name} must use its country-local on_monthly driver with no startup, daily, or ABK host",
+                            str(files["on_action"]),
+                            1,
+                        )
+                    )
+            else:
+                if (
+                    participant_array not in effect_text
+                    or "is_in_array" not in effect_text
+                    or "add_to_array" not in effect_text
+                    or "remove_from_array" not in effect_text
+                ):
+                    findings.append(
+                        (
+                            f"{name} participant registry must deduplicate registration and support removal",
+                            str(files["effect"]),
+                            1,
+                        )
+                    )
+                if (
+                    f"{dispatcher_host} =" not in on_action_text
+                    or "on_monthly" not in on_action_text
+                ):
+                    findings.append(
+                        (
+                            f"{name} must use {dispatcher_host} as its monthly dispatcher host",
+                            str(files["on_action"]),
+                            1,
+                        )
+                    )
+                if re.search(
+                    rf"\boriginal_tag\s*=\s*{re.escape(dispatcher_host)}\b",
+                    system_text,
+                ):
+                    findings.append(
+                        (
+                            f"{dispatcher_host} may dispatch {name} but may not own gameplay state",
+                            str(files["effect"]),
+                            1,
+                        )
+                    )
 
             reconstruction_name = str(raw_system["reconstruction_effect"])
             reconstruction_defs = effect_defs.get(reconstruction_name, [])
@@ -2336,10 +3725,18 @@ class Validator(BaseValidator):
                     for idea in all_owned_ideas
                     if str(idea) not in cleanup_owned_text
                 ]
-                if cleanup_missing or participant_array not in cleanup_body:
+                missing_participant_cleanup = (
+                    schema_version < 6 and participant_array not in cleanup_body
+                )
+                if cleanup_missing or missing_participant_cleanup:
                     findings.append(
                         (
-                            f"{cleanup_name} must remove every owned idea and the participant entry",
+                            f"{cleanup_name} must remove every owned idea"
+                            + (
+                                " and the participant entry"
+                                if schema_version < 6
+                                else ""
+                            ),
                             cleanup_defs[0].file,
                             cleanup_defs[0].line,
                         )
@@ -3677,6 +5074,7 @@ class Validator(BaseValidator):
         call_sites: Dict[str, List[CallSite]],
     ) -> List[Tuple[str, str, int]]:
         findings: List[Tuple[str, str, int]] = []
+        schema_v6 = int(self._manifest_payload.get("schema_version", 1)) >= 6
         startup_defs = effect_defs.get("corporate_history_on_startup", [])
         startup_full_branches = [
             self._startup_full_branch(startup.body) for startup in startup_defs
@@ -3684,6 +5082,19 @@ class Validator(BaseValidator):
         startup_outcomes_branches = [
             self._startup_outcomes_branch(startup.body) for startup in startup_defs
         ]
+        bootstrap_defs = effect_defs.get("corporate_history_country_bootstrap", [])
+        bootstrap_branches: Dict[str, List[str]] = {}
+
+        def country_branches(tag: str) -> List[str]:
+            if tag not in bootstrap_branches:
+                bootstrap_branches[tag] = [
+                    branch
+                    for bootstrap in bootstrap_defs
+                    for branch in self._country_bootstrap_tag_branches(
+                        bootstrap.body, tag
+                    )
+                ]
+            return bootstrap_branches[tag]
 
         for chain in chains:
             if (
@@ -3728,39 +5139,78 @@ class Validator(BaseValidator):
                         )
                     )
                     continue
-                if not any(
-                    f"{lifecycle.reconstruction_effect} = yes" in branch
-                    for branch in startup_full_branches
-                ):
-                    findings.append(
-                        (
-                            f"{lifecycle.reconstruction_effect} is not registered in the Full startup branch",
-                            "common/scripted_effects/00_corporate_history_effects.txt",
-                            0,
+                if schema_v6:
+                    local_branches = country_branches(lifecycle.tag)
+                    reconstruction_calls = sum(
+                        self._direct_effect_call_count(
+                            branch, lifecycle.reconstruction_effect
                         )
+                        for branch in local_branches
                     )
-                if not any(
-                    f"{lifecycle.reconstruction_effect} = yes" in branch
-                    for branch in startup_outcomes_branches
-                ):
-                    findings.append(
-                        (
-                            f"{lifecycle.reconstruction_effect} is not registered in the Outcomes Only startup branch",
-                            "common/scripted_effects/00_corporate_history_effects.txt",
-                            0,
+                    if reconstruction_calls != 1:
+                        findings.append(
+                            (
+                                f"{lifecycle.reconstruction_effect} requires exactly one direct {lifecycle.tag} country-bootstrap registration; found {reconstruction_calls}",
+                                "common/scripted_effects/00_corporate_history_monthly_dispatch_effects.txt",
+                                bootstrap_defs[0].line if bootstrap_defs else 0,
+                            )
                         )
-                    )
-                if not any(
-                    f"{lifecycle.scheduler_effect} = yes" in branch
-                    for branch in startup_full_branches
-                ):
-                    findings.append(
-                        (
-                            f"{lifecycle.scheduler_effect} is not registered in the Full startup branch",
-                            "common/scripted_effects/00_corporate_history_effects.txt",
-                            0,
+                    full_branches = [
+                        full_branch
+                        for branch in local_branches
+                        for full_branch in self._country_bootstrap_full_branches(branch)
+                    ]
+                    scheduler_calls = sum(
+                        len(
+                            re.findall(
+                                rf"\b{re.escape(lifecycle.scheduler_effect)}\s*=\s*yes\b",
+                                branch,
+                            )
                         )
+                        for branch in full_branches
                     )
+                    if scheduler_calls != 1:
+                        findings.append(
+                            (
+                                f"{lifecycle.scheduler_effect} requires exactly one Full-mode {lifecycle.tag} country-bootstrap registration; found {scheduler_calls}",
+                                "common/scripted_effects/00_corporate_history_monthly_dispatch_effects.txt",
+                                bootstrap_defs[0].line if bootstrap_defs else 0,
+                            )
+                        )
+                else:
+                    if not any(
+                        f"{lifecycle.reconstruction_effect} = yes" in branch
+                        for branch in startup_full_branches
+                    ):
+                        findings.append(
+                            (
+                                f"{lifecycle.reconstruction_effect} is not registered in the Full startup branch",
+                                "common/scripted_effects/00_corporate_history_effects.txt",
+                                0,
+                            )
+                        )
+                    if not any(
+                        f"{lifecycle.reconstruction_effect} = yes" in branch
+                        for branch in startup_outcomes_branches
+                    ):
+                        findings.append(
+                            (
+                                f"{lifecycle.reconstruction_effect} is not registered in the Outcomes Only startup branch",
+                                "common/scripted_effects/00_corporate_history_effects.txt",
+                                0,
+                            )
+                        )
+                    if not any(
+                        f"{lifecycle.scheduler_effect} = yes" in branch
+                        for branch in startup_full_branches
+                    ):
+                        findings.append(
+                            (
+                                f"{lifecycle.scheduler_effect} is not registered in the Full startup branch",
+                                "common/scripted_effects/00_corporate_history_effects.txt",
+                                0,
+                            )
+                        )
                 monthly = effect_defs.get(lifecycle.monthly_driver, [])
                 if (
                     len(monthly) != 1
@@ -3985,15 +5435,55 @@ class Validator(BaseValidator):
         effect_defs: Dict[str, List[BlockDef]],
     ) -> List[Tuple[str, str, int]]:
         findings = []
+        schema_v6 = int(self._manifest_payload.get("schema_version", 1)) >= 6
         for chain in chains:
             for event_id, event in sorted(event_defs.items()):
                 if not event_id.startswith(chain.namespace + "."):
                     continue
                 callers = self._dedupe_callers(call_sites.get(event_id, []))
+                event_owner_tag = next(
+                    (
+                        lifecycle.tag
+                        for lifecycle in chain.auxiliary_lifecycles
+                        if event_id in lifecycle.expected_yearly_callers
+                    ),
+                    chain.tag,
+                )
+                recovery_key = (
+                    f"effect:{event_owner_tag}_corporate_history_recover_midyear_events"
+                )
+                recovery_keys = {
+                    caller.key
+                    for caller in callers
+                    if caller.key == recovery_key
+                    or (
+                        caller.kind == "effect"
+                        and caller.owner.startswith(f"{chain.root}_recover_")
+                    )
+                }
+                if schema_v6:
+                    for caller in callers:
+                        if (
+                            caller.kind == "effect"
+                            and caller.owner.endswith(
+                                "_corporate_history_recover_midyear_events"
+                            )
+                            and caller.key != recovery_key
+                        ):
+                            findings.append(
+                                (
+                                    f"{event_id} has foreign midyear-recovery caller {caller.key}; expected {recovery_key}",
+                                    caller.file,
+                                    caller.line,
+                                )
+                            )
                 expected = chain.expected_callers.get(event_id)
                 if expected is not None:
                     actual_keys = tuple(sorted(caller.key for caller in callers))
-                    expected_keys = tuple(sorted(expected))
+                    effective_expected = set(expected)
+                    if schema_v6:
+                        effective_expected.update(recovery_keys)
+                    expected_keys = tuple(sorted(effective_expected))
                     if actual_keys != expected_keys:
                         findings.append(
                             (
@@ -4003,6 +5493,11 @@ class Validator(BaseValidator):
                             )
                         )
                     continue
+                ordinary_callers = [
+                    caller
+                    for caller in callers
+                    if not (schema_v6 and caller.key in recovery_keys)
+                ]
                 if not callers and event_id not in chain.callerless_anchors:
                     findings.append(
                         (
@@ -4012,11 +5507,11 @@ class Validator(BaseValidator):
                         )
                     )
                     continue
-                if len(callers) <= 1:
+                if len(ordinary_callers) <= 1:
                     continue
-                if self._multiple_callers_allowed(chain, event_id, callers):
+                if self._multiple_callers_allowed(chain, event_id, ordinary_callers):
                     continue
-                caller_desc = ", ".join(sorted(c.owner for c in callers))
+                caller_desc = ", ".join(sorted(c.owner for c in ordinary_callers))
                 findings.append(
                     (
                         f"{event_id} has multiple direct callers: {caller_desc}",
@@ -4026,12 +5521,178 @@ class Validator(BaseValidator):
                 )
         return findings
 
+    def _validate_core_chain_mode_paths(
+        self,
+        chains: Sequence[ChainConfig],
+        effect_defs: Dict[str, List[BlockDef]],
+        event_defs: Dict[str, EventDef],
+        call_sites: Dict[str, List[CallSite]],
+    ) -> List[Tuple[str, str, int]]:
+        if int(self._manifest_payload.get("schema_version", 1)) < 6:
+            return []
+
+        findings: List[Tuple[str, str, int]] = []
+        chain_events: Dict[str, ChainConfig] = {
+            event_id: chain
+            for chain in chains
+            for event_id in event_defs
+            if event_id.startswith(chain.namespace + ".")
+        }
+        core_event_ids = set(chain_events)
+        all_event_ids = frozenset(event_defs)
+        event_parents: Dict[str, Set[str]] = defaultdict(set)
+        for source_id, event in event_defs.items():
+            for target_id, _line in self._find_event_calls(
+                event.body, event.line, all_event_ids
+            ):
+                event_parents[target_id].add(source_id)
+
+        relevant_events = set(core_event_ids)
+        pending_events = list(core_event_ids)
+        while pending_events:
+            event_id = pending_events.pop()
+            for parent in event_parents.get(event_id, ()):
+                if parent in relevant_events:
+                    continue
+                relevant_events.add(parent)
+                pending_events.append(parent)
+
+        (
+            effect_modes,
+            event_modes,
+            effect_traces,
+            event_traces,
+        ) = self._independent_mode_graph(
+            effect_defs,
+            relevant_events,
+            event_defs_for_expansion=event_defs,
+        )
+
+        def require_modes(
+            symbol: str,
+            modes: Set[str],
+            traces: Mapping[Tuple[str, str], Sequence[ModeTrace]],
+            required: Set[str],
+            label: str,
+            file: str,
+            line: int,
+            expected_host: Optional[str] = None,
+        ) -> None:
+            missing = required - modes
+            if missing:
+                findings.append(
+                    (
+                        f"{label} {symbol} is unreachable in: {', '.join(sorted(missing))}",
+                        file,
+                        line,
+                    )
+                )
+            for forbidden_mode in ("outcomes_only", "off"):
+                if forbidden_mode in required or forbidden_mode not in modes:
+                    continue
+                trace = traces[(symbol, forbidden_mode)][0]
+                findings.append(
+                    (
+                        f"{label} {symbol} is reachable in {forbidden_mode} mode",
+                        trace.file,
+                        trace.line,
+                    )
+                )
+            for mode in modes:
+                for trace in traces.get((symbol, mode), ()):
+                    if not trace.host.startswith("on_monthly"):
+                        findings.append(
+                            (
+                                f"{label} {symbol} is reached from forbidden host {trace.host}",
+                                trace.host_file,
+                                trace.line,
+                            )
+                        )
+                    elif expected_host and trace.host != expected_host:
+                        findings.append(
+                            (
+                                f"{label} {symbol} is reached from {trace.host}; expected {expected_host}",
+                                trace.host_file,
+                                trace.line,
+                            )
+                        )
+
+        for chain in chains:
+            expected_host = f"on_monthly_{chain.tag}"
+            reconstruct_defs = effect_defs.get(chain.reconstruct_effect, [])
+            reconstruct_required: Set[str] = set()
+            if "reconstruction" in chain.full_start_strategies:
+                reconstruct_required.add("full")
+            if chain.outcomes_only_strategy == "reconstruction":
+                reconstruct_required.add("outcomes_only")
+            if reconstruct_required:
+                require_modes(
+                    chain.reconstruct_effect,
+                    effect_modes.get(chain.reconstruct_effect, set()),
+                    effect_traces,
+                    reconstruct_required,
+                    "Reconstruction effect",
+                    (
+                        reconstruct_defs[0].file
+                        if reconstruct_defs
+                        else "common/scripted_effects"
+                    ),
+                    reconstruct_defs[0].line if reconstruct_defs else 1,
+                    expected_host,
+                )
+
+            scheduler_modes = effect_modes.get(chain.scheduler_effect, set())
+            if scheduler_modes:
+                scheduler_defs = effect_defs.get(chain.scheduler_effect, [])
+                require_modes(
+                    chain.scheduler_effect,
+                    scheduler_modes,
+                    effect_traces,
+                    {"full"},
+                    "Current-year scheduler",
+                    (
+                        scheduler_defs[0].file
+                        if scheduler_defs
+                        else "common/scripted_effects"
+                    ),
+                    scheduler_defs[0].line if scheduler_defs else 1,
+                    expected_host,
+                )
+
+        for event_id, chain in sorted(chain_events.items()):
+            event = event_defs[event_id]
+            expected_callers = chain.expected_callers.get(event_id)
+            if expected_callers == () or event_id in chain.callerless_anchors:
+                continue
+            for caller in self._dedupe_callers(call_sites.get(event_id, [])):
+                if caller.kind == "script":
+                    findings.append(
+                        (
+                            f"Core event {event_id} has unregistered direct script caller {caller.owner}",
+                            caller.file,
+                            caller.line,
+                        )
+                    )
+            require_modes(
+                event_id,
+                event_modes.get(event_id, set()),
+                event_traces,
+                {"full"},
+                "Core event",
+                event.file,
+                event.line,
+            )
+
+        return self._dedupe_findings(findings)
+
     def _validate_oem_startup_architecture(
         self,
         effect_defs: Dict[str, List[BlockDef]],
         event_defs: Dict[str, EventDef],
         call_sites: Dict[str, List[CallSite]],
     ) -> List[Tuple[str, str, int]]:
+        if int(self._manifest_payload.get("schema_version", 1)) >= 6:
+            return self._validate_country_local_monthly_architecture(effect_defs)
         on_action_path = self._root.joinpath(*_OEM_STARTUP_ON_ACTION.split("/"))
         if (
             not on_action_path.exists()
@@ -4646,6 +6307,211 @@ class Validator(BaseValidator):
 
         return self._dedupe_findings(findings)
 
+    def _validate_country_local_monthly_architecture(
+        self, effect_defs: Dict[str, List[BlockDef]]
+    ) -> List[Tuple[str, str, int]]:
+        findings: List[Tuple[str, str, int]] = []
+        deprecated = (
+            _OEM_STARTUP_EFFECT,
+            "corporate_history_on_startup",
+        )
+        for effect_name in deprecated:
+            definitions = effect_defs.get(effect_name, [])
+            if definitions:
+                findings.append(
+                    (
+                        f"Deprecated singleton startup effect {effect_name} must be removed",
+                        definitions[0].file,
+                        definitions[0].line,
+                    )
+                )
+        old_on_action = self._root.joinpath(*_OEM_STARTUP_ON_ACTION.split("/"))
+        if old_on_action.exists():
+            findings.append(
+                (
+                    "The deprecated ABK OEM startup on-action file must be removed",
+                    _OEM_STARTUP_ON_ACTION,
+                    1,
+                )
+            )
+
+        required_effects = (
+            "corporate_history_country_bootstrap",
+            "corporate_history_monthly_dispatch",
+            *(f"corporate_history_dispatch_year_{year}" for year in range(2000, 2027)),
+        )
+        for effect_name in required_effects:
+            definitions = effect_defs.get(effect_name, [])
+            if len(definitions) != 1:
+                findings.append(
+                    (
+                        f"Country-local monthly architecture requires exactly one {effect_name}; found {len(definitions)}",
+                        (
+                            definitions[0].file
+                            if definitions
+                            else "common/scripted_effects/00_corporate_history_monthly_dispatch_effects.txt"
+                        ),
+                        definitions[0].line if definitions else 1,
+                    )
+                )
+
+        root = "corporate_history_monthly_dispatch"
+        effect_modes, _event_modes, effect_traces, _event_traces = (
+            self._independent_mode_graph(effect_defs, set())
+        )
+        root_modes = effect_modes.get(root, set())
+        for mode in ("full", "outcomes_only"):
+            if mode not in root_modes:
+                findings.append(
+                    (
+                        f"{root} is not reachable from a country-local monthly host in {mode}",
+                        "common/on_actions",
+                        1,
+                    )
+                )
+        traces = [
+            trace
+            for mode in _CORPORATE_MODES
+            for trace in effect_traces.get((root, mode), [])
+        ]
+        for trace in traces:
+            if not trace.host.startswith("on_monthly"):
+                findings.append(
+                    (
+                        f"{root} is reached from forbidden host {trace.host}",
+                        trace.host_file,
+                        trace.line,
+                    )
+                )
+            if any(block == "ABK" for block in trace.block_path):
+                findings.append(
+                    (
+                        f"{root} must not use ABK as a singleton host",
+                        trace.host_file,
+                        trace.line,
+                    )
+                )
+
+        if int(self._manifest_payload.get("schema_version", 1)) >= 6:
+            raw_chains = self._manifest_payload.get("chains", [])
+            drivers_by_tag: Dict[str, Set[str]] = defaultdict(set)
+            if isinstance(raw_chains, list):
+                for raw_chain in raw_chains:
+                    if not isinstance(raw_chain, dict):
+                        continue
+                    tag = str(raw_chain.get("tag", ""))
+                    driver = str(raw_chain.get("monthly_driver", ""))
+                    if tag and driver:
+                        drivers_by_tag[tag].add(driver)
+
+            expected_pairs: Set[Tuple[str, str]] = set()
+            declared_drivers: Set[str] = set()
+            for tag, drivers in sorted(drivers_by_tag.items()):
+                if len(drivers) != 1:
+                    findings.append(
+                        (
+                            f"Schema v6 requires one monthly driver for {tag}; found {', '.join(sorted(drivers)) or 'none'}",
+                            str(self._manifest_path),
+                            1,
+                        )
+                    )
+                    continue
+                driver = next(iter(drivers))
+                declared_drivers.add(driver)
+                expected_pairs.add((f"on_monthly_{tag}", driver))
+
+            actual_pairs: Dict[Tuple[str, str], Set[str]] = defaultdict(set)
+            for trace in traces:
+                path_drivers = declared_drivers.intersection(trace.block_path)
+                if len(path_drivers) != 1:
+                    rendered = ", ".join(sorted(path_drivers)) or "none"
+                    findings.append(
+                        (
+                            f"{root} must pass through exactly one declared monthly driver; found {rendered}",
+                            trace.host_file,
+                            trace.line,
+                        )
+                    )
+                    continue
+                driver = next(iter(path_drivers))
+                actual_pairs[(trace.host, driver)].add(trace.host_file)
+
+            for host, driver in sorted(expected_pairs - set(actual_pairs)):
+                findings.append(
+                    (
+                        f"{root} requires country-local path {host} -> {driver}; found none",
+                        "common/on_actions",
+                        1,
+                    )
+                )
+            for host, driver in sorted(set(actual_pairs) - expected_pairs):
+                files = ", ".join(sorted(actual_pairs[(host, driver)]))
+                findings.append(
+                    (
+                        f"{root} has undeclared country-local path {host} -> {driver} in {files}",
+                        next(iter(actual_pairs[(host, driver)])),
+                        1,
+                    )
+                )
+            for (host, driver), files in sorted(actual_pairs.items()):
+                if (host, driver) in expected_pairs and len(files) != 1:
+                    findings.append(
+                        (
+                            f"{root} requires one host file for {host} -> {driver}; found {len(files)}",
+                            next(iter(files)),
+                            1,
+                        )
+                    )
+
+        root_defs = effect_defs.get(root, [])
+        if len(root_defs) == 1:
+            body = root_defs[0].body
+            for year in range(2000, 2027):
+                dispatcher = f"corporate_history_dispatch_year_{year}"
+                count = len(re.findall(rf"\b{re.escape(dispatcher)}\s*=\s*yes\b", body))
+                if count != 1:
+                    findings.append(
+                        (
+                            f"{root} must reach {dispatcher} exactly once; found {count}",
+                            root_defs[0].file,
+                            root_defs[0].line,
+                        )
+                    )
+            if re.search(r"\b(?:set|clr)_global_flag\b|\bglobal\.", body):
+                findings.append(
+                    (
+                        f"{root} must keep chronology state country-local",
+                        root_defs[0].file,
+                        root_defs[0].line,
+                    )
+                )
+
+        forbidden_sites = []
+        forbidden_patterns = {
+            symbol: re.compile(rf"\b{re.escape(symbol)}\b")
+            for symbol in (*deprecated, _OEM_STARTUP_FLAG)
+        }
+        for filepath in self._collect_text_files(
+            ["common/**/*.txt", "events/**/*.txt", "history/**/*.txt"]
+        ):
+            try:
+                text = strip_comments(
+                    Path(filepath).read_text(encoding="utf-8-sig", errors="replace")
+                )
+            except OSError:
+                continue
+            for symbol, pattern in forbidden_patterns.items():
+                for match in pattern.finditer(text):
+                    forbidden_sites.append(
+                        (
+                            f"Deprecated singleton startup symbol {symbol} remains",
+                            self._relpath(filepath),
+                            self._line(text, match.start()),
+                        )
+                    )
+        findings.extend(forbidden_sites)
+        return self._dedupe_findings(findings)
+
     def _validate_dispatchers(
         self,
         chains: Sequence[ChainConfig],
@@ -4665,6 +6531,7 @@ class Validator(BaseValidator):
         registered_namespaces = {chain.namespace for chain in chains}
         defined_events = set(event_defs)
 
+        schema_v6 = int(self._manifest_payload.get("schema_version", 1)) >= 6
         for name, defs in sorted(defined_dispatchers.items()):
             if len(defs) != 1:
                 for definition in defs:
@@ -4678,7 +6545,9 @@ class Validator(BaseValidator):
                 continue
             definition = defs[0]
             callers = yearly_calls.get(name, [])
-            on_action_callers = self._script_effect_call_sites(name)
+            on_action_callers = (
+                [] if schema_v6 else self._script_effect_call_sites(name)
+            )
             call_count = len(callers) + len(on_action_callers)
             if call_count != 1:
                 findings.append(
@@ -4690,7 +6559,11 @@ class Validator(BaseValidator):
                 )
             year_match = re.search(r"_corporate_trigger_year_(\d{4})$", name)
             if call_count == 1 and year_match:
-                expected_owner = f"trigger_year_{year_match.group(1)}_events"
+                expected_owner = (
+                    f"corporate_history_dispatch_year_{year_match.group(1)}"
+                    if schema_v6
+                    else f"trigger_year_{year_match.group(1)}_events"
+                )
                 if callers:
                     if callers[0][2] != expected_owner:
                         findings.append(
@@ -4793,6 +6666,7 @@ class Validator(BaseValidator):
         idea_defs: Dict[str, IdeaDef],
     ) -> List[Tuple[str, str, int]]:
         findings = []
+        schema_v6 = int(self._manifest_payload.get("schema_version", 1)) >= 6
         startup_defs = effect_defs.get("corporate_history_on_startup", [])
         startup_full_branches = [
             self._startup_full_branch(startup.body) for startup in startup_defs
@@ -4803,20 +6677,36 @@ class Validator(BaseValidator):
         monthly_defs = {
             name: defs[0] for name, defs in effect_defs.items() if len(defs) == 1
         }
+        bootstrap_defs = effect_defs.get("corporate_history_country_bootstrap", [])
+        bootstrap_branches: Dict[str, List[str]] = {}
 
-        startup_callers = self._script_effect_call_sites("corporate_history_on_startup")
-        if len(startup_callers) != 1:
-            findings.append(
-                (
-                    f"corporate_history_on_startup requires exactly one on-action caller; found {len(startup_callers)}",
-                    (
-                        startup_callers[0][0]
-                        if startup_callers
-                        else "common/on_actions/00_on_actions.txt"
-                    ),
-                    startup_callers[0][1] if startup_callers else 0,
-                )
+        def country_branches(tag: str) -> List[str]:
+            if tag not in bootstrap_branches:
+                bootstrap_branches[tag] = [
+                    branch
+                    for bootstrap in bootstrap_defs
+                    for branch in self._country_bootstrap_tag_branches(
+                        bootstrap.body, tag
+                    )
+                ]
+            return bootstrap_branches[tag]
+
+        if not schema_v6:
+            startup_callers = self._script_effect_call_sites(
+                "corporate_history_on_startup"
             )
+            if len(startup_callers) != 1:
+                findings.append(
+                    (
+                        f"corporate_history_on_startup requires exactly one on-action caller; found {len(startup_callers)}",
+                        (
+                            startup_callers[0][0]
+                            if startup_callers
+                            else "common/on_actions/00_on_actions.txt"
+                        ),
+                        startup_callers[0][1] if startup_callers else 0,
+                    )
+                )
         for driver in sorted({chain.monthly_driver for chain in chains}):
             driver_callers = self._script_effect_call_sites(driver)
             if len(driver_callers) != 1:
@@ -4845,7 +6735,20 @@ class Validator(BaseValidator):
                             0,
                         )
                     )
-                if not any(
+                if schema_v6:
+                    reconstruction_calls = sum(
+                        self._direct_effect_call_count(branch, chain.reconstruct_effect)
+                        for branch in country_branches(chain.tag)
+                    )
+                    if reconstruction_calls != 1:
+                        findings.append(
+                            (
+                                f"{chain.reconstruct_effect} requires exactly one direct {chain.tag} country-bootstrap registration; found {reconstruction_calls}",
+                                "common/scripted_effects/00_corporate_history_monthly_dispatch_effects.txt",
+                                bootstrap_defs[0].line if bootstrap_defs else 0,
+                            )
+                        )
+                elif not any(
                     f"{chain.reconstruct_effect} = yes" in branch
                     for branch in startup_outcomes_branches
                 ):
@@ -4877,7 +6780,7 @@ class Validator(BaseValidator):
                         f"{chain.name} is missing its declared current-year scheduler",
                     )
                 )
-                if not any(
+                if not schema_v6 and not any(
                     self._startup_reaches_scheduler(chain, branch, event_defs)
                     for branch in startup_full_branches
                 ):
@@ -4913,18 +6816,26 @@ class Validator(BaseValidator):
                 )
             )
             event_90 = event_defs.get(chain.hidden_ninety_id)
-            startup_reconstructs = any(
-                f"{chain.reconstruct_effect} = yes" in branch
-                for branch in startup_full_branches
-            )
-            if (event_90 is None or not event_90.hidden) and not startup_reconstructs:
+            if schema_v6:
+                reconstruction_anchor = any(
+                    self._direct_effect_call_count(branch, chain.reconstruct_effect)
+                    for branch in country_branches(chain.tag)
+                )
+                reconstruction_host = "corporate_history_country_bootstrap"
+            else:
+                reconstruction_anchor = any(
+                    f"{chain.reconstruct_effect} = yes" in branch
+                    for branch in startup_full_branches
+                )
+                reconstruction_host = "corporate_history_on_startup"
+            if (event_90 is None or not event_90.hidden) and not reconstruction_anchor:
                 file = f"events/{chain.namespace}.txt"
                 line = event_90.line if event_90 else 0
                 findings.append(
                     (
                         f"{chain.hidden_ninety_id} is missing or not hidden and "
                         f"{chain.reconstruct_effect} is not called directly from "
-                        "corporate_history_on_startup",
+                        f"{reconstruction_host}",
                         event_90.file if event_90 else file,
                         line,
                     )
@@ -4937,7 +6848,19 @@ class Validator(BaseValidator):
                         0,
                     )
                 )
-            if not startup_defs or not any(
+            if schema_v6:
+                if not any(
+                    self._chain_is_registered_in_startup(chain, branch)
+                    for branch in country_branches(chain.tag)
+                ):
+                    findings.append(
+                        (
+                            f"{chain.name} is missing its {chain.tag} registration in corporate_history_country_bootstrap",
+                            "common/scripted_effects/00_corporate_history_monthly_dispatch_effects.txt",
+                            bootstrap_defs[0].line if bootstrap_defs else 0,
+                        )
+                    )
+            elif not startup_defs or not any(
                 self._chain_is_registered_in_startup(chain, startup.body)
                 for startup in startup_defs
             ):
@@ -6786,6 +8709,33 @@ class Validator(BaseValidator):
                 return body
         return ""
 
+    def _country_bootstrap_tag_branches(
+        self, bootstrap_body: str, tag: str
+    ) -> List[str]:
+        branches: List[str] = []
+        original_tag = rf"\boriginal_tag\s*=\s*{re.escape(tag)}\b"
+        for name, _start, _end, body in self._iter_direct_child_blocks(bootstrap_body):
+            if name not in ("if", "else_if"):
+                continue
+            limit = self._direct_child_block(body, "limit") or ""
+            if self._direct_has_exact_clauses(limit, (original_tag,)):
+                branches.append(body)
+        return branches
+
+    def _country_bootstrap_full_branches(self, tag_branch: str) -> List[str]:
+        branches: List[str] = []
+        for name, _start, _end, body in self._iter_direct_child_blocks(tag_branch):
+            if name not in ("if", "else_if"):
+                continue
+            limit = self._direct_child_block(body, "limit") or ""
+            if self._mode_constraint(limit) == {"full"}:
+                branches.append(body)
+        return branches
+
+    def _direct_effect_call_count(self, body: str, effect_name: str) -> int:
+        direct = self._direct_block_text(body)
+        return len(re.findall(rf"\b{re.escape(effect_name)}\s*=\s*yes\b", direct))
+
     def _startup_reaches_scheduler(
         self, chain: ChainConfig, startup_body: str, event_defs: Dict[str, EventDef]
     ) -> bool:
@@ -6819,9 +8769,8 @@ class Validator(BaseValidator):
                 reachable.add(parent)
                 pending.append(parent)
 
-        callers: List[Tuple[str, int, str, int]] = []
-        if self._on_action_texts_cache is None:
-            self._on_action_texts_cache = []
+        if self._on_action_effect_calls_cache is None:
+            self._on_action_effect_calls_cache = defaultdict(list)
             for filepath in self._collect_text_files(["common/on_actions/**/*.txt"]):
                 try:
                     text = strip_comments(
@@ -6829,18 +8778,21 @@ class Validator(BaseValidator):
                     )
                 except OSError:
                     continue
-                self._on_action_texts_cache.append((filepath, text))
-        on_action_texts = self._on_action_texts_cache
-        for filepath, text in on_action_texts:
-            rel = self._relpath(filepath)
-            for name in reachable:
-                pattern = re.compile(rf"\b{re.escape(name)}\s*=\s*yes\b")
-                path_count = self._effect_path_count(name, effect_name, children)
-                for match in pattern.finditer(text):
-                    callers.extend(
-                        (rel, self._line(text, match.start()), name, match.start())
-                        for _path in range(path_count)
+                rel = self._relpath(filepath)
+                line = 1
+                cursor = 0
+                for match in _EFFECT_YES_RE.finditer(text):
+                    line += text.count("\n", cursor, match.start())
+                    cursor = match.start()
+                    self._on_action_effect_calls_cache[match.group(1)].append(
+                        (rel, line, match.start())
                     )
+
+        callers: List[Tuple[str, int, str, int]] = []
+        for name in reachable.intersection(self._on_action_effect_calls_cache):
+            path_count = self._effect_path_count(name, effect_name, children)
+            for rel, line, offset in self._on_action_effect_calls_cache[name]:
+                callers.extend((rel, line, name, offset) for _path in range(path_count))
         return [(path, line) for path, line, _name, _offset in sorted(callers)]
 
     def _effect_call_parents(
