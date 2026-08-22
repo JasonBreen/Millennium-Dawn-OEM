@@ -15,36 +15,36 @@ This matrix is the runtime gate for the OEM release candidate. Static validation
 
 Status on the exact candidate head `2d3de527d7`. `SUPERSEDED` means credible evidence exists at an earlier commit but the gameplay logic it exercised changed afterwards.
 
-| Layer                                        | Status on RC head | Evidence count on RC head | Prior evidence recovered | Remaining gap                                                               |
-| -------------------------------------------- | ----------------- | ------------------------: | -----------------------: | --------------------------------------------------------------------------- |
-| A. Full natural chronology                   | SUPERSEDED        |                         0 |                        3 | Yearly dispatcher and per-country hosts were replaced; rerun natural Full   |
-| B. Outcomes Only                             | SUPERSEDED        |                         0 |                        4 | Mode gate moved into every event trigger; rerun Outcomes Only               |
+| Layer                                        | Status on RC head | Evidence count on RC head | Prior evidence recovered | Remaining gap                                                                 |
+| -------------------------------------------- | ----------------- | ------------------------: | -----------------------: | ----------------------------------------------------------------------------- |
+| A. Full natural chronology                   | SUPERSEDED        |                         0 |                        3 | Yearly dispatcher and per-country hosts were replaced; rerun natural Full     |
+| B. Outcomes Only                             | SUPERSEDED        |                         0 |                        4 | Mode gate moved into every event trigger; rerun Outcomes Only                 |
 | C. Corporate History Off                     | SUPERSEDED        |                         0 |                        3 | Off now also suppresses ISR/USA legacy/GPU chains; rerun Off and Independence |
-| D. Later start reconstruction                | NO EVIDENCE       |                         0 |                        1 | 2017 start never run at any commit; ATI 2026 fixtures are not a later start |
-| E. Scheduled-event save/reload               | SUPERSEDED        |                         0 |                        2 | Reloads were dashboard-state only, never around a pending scheduled event   |
-| F. Hidden callback and reconstruction reload | NO EVIDENCE       |                         0 |                        0 | No `.90` callback or repeat-reconstruction reload has ever been run         |
-| G. Terminal/capstone                         | SUPERSEDED        |                         0 |                        1 | Only ATI/AMD capstone was observed, at a superseded commit                  |
-| H. Collapsed and absent countries            | NO EVIDENCE       |                         0 |                        0 | Never run; new January-window dispatcher makes this higher risk, not lower  |
-| I. Representative counterfactuals            | NO EVIDENCE       |                         0 |                        0 | No counterfactual terminal save exists for any chain                        |
-| J. `error.log`                               | SUPERSEDED        |                         0 |                        4 | Prior loads isolated exactly one OEM error class, since repaired; reload    |
-| K. UI/GFX/localisation                       | PARTIAL           |                         1 |                        8 | Only the PS2 picture is byte-identical; 12 sprites are new and unrendered   |
+| D. Later start reconstruction                | NO EVIDENCE       |                         0 |                        1 | 2017 start never run at any commit; ATI 2026 fixtures are not a later start   |
+| E. Scheduled-event save/reload               | SUPERSEDED        |                         0 |                        2 | Reloads were dashboard-state only, never around a pending scheduled event     |
+| F. Hidden callback and reconstruction reload | NO EVIDENCE       |                         0 |                        0 | No `.90` callback or repeat-reconstruction reload has ever been run           |
+| G. Terminal/capstone                         | SUPERSEDED        |                         0 |                        1 | Only ATI/AMD capstone was observed, at a superseded commit                    |
+| H. Collapsed and absent countries            | NO EVIDENCE       |                         0 |                        0 | Never run; new January-window dispatcher makes this higher risk, not lower    |
+| I. Representative counterfactuals            | NO EVIDENCE       |                         0 |                        0 | No counterfactual terminal save exists for any chain                          |
+| J. `error.log`                               | SUPERSEDED        |                         0 |                        4 | Prior loads isolated exactly one OEM error class, since repaired; reload      |
+| K. UI/GFX/localisation                       | PARTIAL           |                         1 |                        8 | Only the PS2 picture is byte-identical; 12 sprites are new and unrendered     |
 
 ## Priority chain coverage
 
-| Chain                     | Best evidence recovered                                          | Class  | Validity on RC head |
-| ------------------------- | ---------------------------------------------------------------- | ------ | ------------------- |
-| IBM (#25)                 | `USA_ibm_events.12` natural at 2000.02.01; `.12` console fixture | `N`+`C` | SUPERSEDED          |
-| Sony (#24)                | `JAP_sony_events.1` natural twice; repaired artwork fixture      | `N`+`C` | PARTIAL (art only)  |
-| Matrox (#26/#112)         | `CAN_matrox_events.1` natural at 2000.03.17; `.1` console        | `N`+`C` | SUPERSEDED          |
-| Nokia (#27)               | none                                                              | -      | NO EVIDENCE         |
-| Ericsson (#27)            | `SWE_ericsson_events.1` console fixture                          | `C`    | SUPERSEDED          |
-| Siemens (#27)             | none                                                              | -      | NO EVIDENCE         |
-| Broader USA/OEM smoke (#28) | `USA_oem_events.13.b`, `ISR_oem_events.1.b`/`.6.a` natural     | `N`    | SUPERSEDED          |
-| Game-rule modes           | Full / Outcomes Only / Off across three campaign phases          | `N`    | SUPERSEDED          |
-| Save/reload               | Dashboard-state reload only                                       | `N+reload` | SUPERSEDED      |
-| Later start               | none                                                              | -      | NO EVIDENCE         |
-| UI/GFX                    | Dashboards, tiers, ATI capstone, repaired PS2 art                | `C`/`N` | PARTIAL            |
-| `error.log`               | Four archived load logs                                           | `S`    | SUPERSEDED          |
+| Chain                       | Best evidence recovered                                          | Class      | Validity on RC head |
+| --------------------------- | ---------------------------------------------------------------- | ---------- | ------------------- |
+| IBM (#25)                   | `USA_ibm_events.12` natural at 2000.02.01; `.12` console fixture | `N`+`C`    | SUPERSEDED          |
+| Sony (#24)                  | `JAP_sony_events.1` natural twice; repaired artwork fixture      | `N`+`C`    | PARTIAL (art only)  |
+| Matrox (#26/#112)           | `CAN_matrox_events.1` natural at 2000.03.17; `.1` console        | `N`+`C`    | SUPERSEDED          |
+| Nokia (#27)                 | none                                                             | -          | NO EVIDENCE         |
+| Ericsson (#27)              | `SWE_ericsson_events.1` console fixture                          | `C`        | SUPERSEDED          |
+| Siemens (#27)               | none                                                             | -          | NO EVIDENCE         |
+| Broader USA/OEM smoke (#28) | `USA_oem_events.13.b`, `ISR_oem_events.1.b`/`.6.a` natural       | `N`        | SUPERSEDED          |
+| Game-rule modes             | Full / Outcomes Only / Off across three campaign phases          | `N`        | SUPERSEDED          |
+| Save/reload                 | Dashboard-state reload only                                      | `N+reload` | SUPERSEDED          |
+| Later start                 | none                                                             | -          | NO EVIDENCE         |
+| UI/GFX                      | Dashboards, tiers, ATI capstone, repaired PS2 art                | `C`/`N`    | PARTIAL             |
+| `error.log`                 | Four archived load logs                                          | `S`        | SUPERSEDED          |
 
 # Evidence Rules
 
@@ -274,48 +274,48 @@ Retrieve any file with `git show <tag>:runtime_evidence/<path>`, or extract the 
 
 **Preservation warning.** Neither archive tag exists on `origin`. Three distinct `.hoi4` saves in the corpus are 145 MB, 145 MB, and 153 MB, so the tags cannot be pushed to GitHub as they stand. The 118 non-save files total 19.4 MB and would push cleanly; the saves need an off-repository archive.
 
-| Evidence ID | Tested SHA   | Country | Mode                  | Start / range         | Class           | System                                       | Result            |
-| ----------- | ------------ | ------- | --------------------- | --------------------- | --------------- | -------------------------------------------- | ----------------- |
-| E1          | `680d24909e` | JAP     | Full                  | 2000.1.1 to 2000.4.12 | `N`             | Sony, Matrox, IBM, Israel, USA legacy OEM    | PASS with defect  |
+| Evidence ID | Tested SHA   | Country | Mode                  | Start / range         | Class           | System                                        | Result            |
+| ----------- | ------------ | ------- | --------------------- | --------------------- | --------------- | --------------------------------------------- | ----------------- |
+| E1          | `680d24909e` | JAP     | Full                  | 2000.1.1 to 2000.4.12 | `N`             | Sony, Matrox, IBM, Israel, USA legacy OEM     | PASS with defect  |
 | E2          | `3dc86a2c31` | JAP     | Full                  | 2000.1.1 to 2000.3.11 | `N` + `C`       | Sony `.1`, Nintendo `.1`, `gpu_development.2` | PASS with defect  |
-| E3          | `9370598428` | JAP     | Full                  | 2000.1.6 paused       | `C`             | IBM `.12`, Matrox `.1`, Ericsson `.1`        | PASS              |
-| E4          | `9370598428` | JAP     | Full                  | 2000.1.17             | `C`             | Sony `.1` repaired artwork and option payload | PASS             |
-| E5          | `f344f9a37f` | USA     | Full / Outcomes / Off | 2000.1.1              | `N`, `N+reload` | Corporate Systems dashboard, mode gates      | PASS after repair |
-| E6          | `6176ab485a` | USA     | Full / Outcomes / Off | 2000.1.1 to 2000.2.19 | `N`, `N+reload` | Economic bridge tiers, tier repair, monthly  | PASS              |
-| E7          | `cd9b14b5b3` | USA     | Full                  | 2000.1.17             | `C`             | Four Corporate Systems policies and costs    | PASS              |
-| E8          | `bf6e8496db` | CAN     | Full / Outcomes / Off | 2026.9 to 2026.12     | `N`             | ATI/AMD dashboard, capstone, Off suppression | PASS              |
-| E9          | `d27eb699c9` | USA     | Full                  | 2000.1.1              | `N`             | Baseline dashboard, tooltips, read-only rows | PASS              |
-| E10         | `680d24909e` | n/a     | n/a                   | menu only             | `S`             | Load-time `error.log` and `system.log`       | PASS with defect  |
+| E3          | `9370598428` | JAP     | Full                  | 2000.1.6 paused       | `C`             | IBM `.12`, Matrox `.1`, Ericsson `.1`         | PASS              |
+| E4          | `9370598428` | JAP     | Full                  | 2000.1.17             | `C`             | Sony `.1` repaired artwork and option payload | PASS              |
+| E5          | `f344f9a37f` | USA     | Full / Outcomes / Off | 2000.1.1              | `N`, `N+reload` | Corporate Systems dashboard, mode gates       | PASS after repair |
+| E6          | `6176ab485a` | USA     | Full / Outcomes / Off | 2000.1.1 to 2000.2.19 | `N`, `N+reload` | Economic bridge tiers, tier repair, monthly   | PASS              |
+| E7          | `cd9b14b5b3` | USA     | Full                  | 2000.1.17             | `C`             | Four Corporate Systems policies and costs     | PASS              |
+| E8          | `bf6e8496db` | CAN     | Full / Outcomes / Off | 2026.9 to 2026.12     | `N`             | ATI/AMD dashboard, capstone, Off suppression  | PASS              |
+| E9          | `d27eb699c9` | USA     | Full                  | 2000.1.1              | `N`             | Baseline dashboard, tooltips, read-only rows  | PASS              |
+| E10         | `680d24909e` | n/a     | n/a                   | menu only             | `S`             | Load-time `error.log` and `system.log`        | PASS with defect  |
 
 Evidence files, by ID and path under `runtime_evidence/`:
 
-| ID  | Files                                                                                                                                                                                                                       |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ID  | Files                                                                                                                                                                                                                                                                   |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | E1  | `issue-driven-release-sweep/680d.../issue-24/logs/natural-full-game-after-ps2-auto-option-2000-04-12.log`; `.../issue-24/saves/acceptance_680d2490_JAP_full_2000_01_01_natural.hoi4`; `.../issue-24/screenshots/natural-full-ps2-event-2000-03-09-generic-computer.jpg` |
-| E2  | `current-main-smoke-3dc86a2/2026-08-03-japan-full.md`                                                                                                                                                                        |
-| E3  | `issue-driven-release-sweep/9370.../fixture-smoke-results.md`                                                                                                                                                                |
-| E4  | `.../9370.../issue-104/screenshots/fixture-driven-ps2-event-repaired-art-2000-01-17.jpg`; `.../issue-104/logs/fixture-driven-game-after-ps2-option-a-2000-01-17.log`; `.../issue-104/saves/acceptance_93705984_JAP_ps2_fixture_option_a.hoi4` |
-| E5  | `corporate-systems-campaign/phase0-pr96/f344.../runtime_results.md`; screenshots `02` to `08`; `logs/01-load-blocker-error.log`; `logs/02-clean-repaired-load-error.log`                                                      |
-| E6  | `corporate-systems-campaign/phase-1/working-tree/runtime-results.md`; screenshots `02` to `09`                                                                                                                               |
-| E7  | `corporate-systems-campaign/phase-2/working-tree/runtime-results.md`; `screenshots/01-policy-list-and-rename.jpg`                                                                                                            |
-| E8  | `corporate-systems-campaign/phase-3/working-tree/runtime-results.md`; screenshots `01`, `02`                                                                                                                                 |
-| E9  | `corporate-systems-campaign/baseline/d27e.../baseline_results.md`; screenshots `01` to `03`; `environment.txt`                                                                                                               |
-| E10 | `issue-driven-release-sweep/680d.../runtime/logs/menu-error.log`; `.../runtime/logs/menu-system.log`; `.../runtime/screenshots/issue-24-menu-99ba.jpg`; `.../runtime/menu-launch.md`                                          |
+| E2  | `current-main-smoke-3dc86a2/2026-08-03-japan-full.md`                                                                                                                                                                                                                   |
+| E3  | `issue-driven-release-sweep/9370.../fixture-smoke-results.md`                                                                                                                                                                                                           |
+| E4  | `.../9370.../issue-104/screenshots/fixture-driven-ps2-event-repaired-art-2000-01-17.jpg`; `.../issue-104/logs/fixture-driven-game-after-ps2-option-a-2000-01-17.log`; `.../issue-104/saves/acceptance_93705984_JAP_ps2_fixture_option_a.hoi4`                           |
+| E5  | `corporate-systems-campaign/phase0-pr96/f344.../runtime_results.md`; screenshots `02` to `08`; `logs/01-load-blocker-error.log`; `logs/02-clean-repaired-load-error.log`                                                                                                |
+| E6  | `corporate-systems-campaign/phase-1/working-tree/runtime-results.md`; screenshots `02` to `09`                                                                                                                                                                          |
+| E7  | `corporate-systems-campaign/phase-2/working-tree/runtime-results.md`; `screenshots/01-policy-list-and-rename.jpg`                                                                                                                                                       |
+| E8  | `corporate-systems-campaign/phase-3/working-tree/runtime-results.md`; screenshots `01`, `02`                                                                                                                                                                            |
+| E9  | `corporate-systems-campaign/baseline/d27e.../baseline_results.md`; screenshots `01` to `03`; `environment.txt`                                                                                                                                                          |
+| E10 | `issue-driven-release-sweep/680d.../runtime/logs/menu-error.log`; `.../runtime/logs/menu-system.log`; `.../runtime/screenshots/issue-24-menu-99ba.jpg`; `.../runtime/menu-launch.md`                                                                                    |
 
 Runtime environment for E1, E3, E4, and E10: Hearts of Iron IV Operation Postern `v1.19.2.0.a729`, modded checksum `99ba`, one enabled descriptor pointing at `G:/Millennium-Dawn-OEM-acceptance-20260731`. E2 recorded checksum `3a41`. E5 to E9 ran on the same HOI4 build with a `G:/Millennium-Dawn-OEM` descriptor at 3440x1440, UI scale 1.0, DirectX 11.
 
 ## Selected hashes
 
-| Artefact                                                          | SHA-256                                                            |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------ |
-| E1 `game.log`                                                     | `792166e65f4d7154b77ac0cb4d3c72fd0bc3fa2e675c505e311443e27aadc132` |
-| E1 save, the same file also filed under E4 as the pre-popup save  | `bc458f178f03b7ae39bc7a5d1e45f50e21c448b25622ba8182193522b5da5967` |
-| E1 PS2 popup screenshot, pre-repair generic art                   | `2767fb85f6b383acb17655f717759b82936d70aa2c507d4970c711da81d7d5c9` |
-| E4 repaired-art screenshot                                        | `a16412689069e55c0ac906d613d6ae91dedb1fe674c4869b960479e53de4b2ca` |
-| E4 `game.log`                                                     | `1ca012a1bd55a0ea33fef7ea879d9316233a1690a28c7a83a7437b8ec2f991cf` |
-| E10 `error.log`                                                   | `6905f84cc82f335a62e29524fc87f34736f1b02a8a78b61b00633e6cd974708d` |
-| E10 `system.log`                                                  | `840d5ea2835b7a5609b016c10a0357e708a0bffc0cc1fd8c7a129cf652451033` |
-| Pre-fixture debug `error.log` at `9370598428`                     | `ceec57cc5804585c0a11e38382a94133b84a38aa8545a91e952976197bca08b0` |
+| Artefact                                                         | SHA-256                                                            |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------ |
+| E1 `game.log`                                                    | `792166e65f4d7154b77ac0cb4d3c72fd0bc3fa2e675c505e311443e27aadc132` |
+| E1 save, the same file also filed under E4 as the pre-popup save | `bc458f178f03b7ae39bc7a5d1e45f50e21c448b25622ba8182193522b5da5967` |
+| E1 PS2 popup screenshot, pre-repair generic art                  | `2767fb85f6b383acb17655f717759b82936d70aa2c507d4970c711da81d7d5c9` |
+| E4 repaired-art screenshot                                       | `a16412689069e55c0ac906d613d6ae91dedb1fe674c4869b960479e53de4b2ca` |
+| E4 `game.log`                                                    | `1ca012a1bd55a0ea33fef7ea879d9316233a1690a28c7a83a7437b8ec2f991cf` |
+| E10 `error.log`                                                  | `6905f84cc82f335a62e29524fc87f34736f1b02a8a78b61b00633e6cd974708d` |
+| E10 `system.log`                                                 | `840d5ea2835b7a5609b016c10a0357e708a0bffc0cc1fd8c7a129cf652451033` |
+| Pre-fixture debug `error.log` at `9370598428`                    | `ceec57cc5804585c0a11e38382a94133b84a38aa8545a91e952976197bca08b0` |
 
 ## Events observed naturally
 
@@ -338,9 +338,9 @@ Validity was decided by comparing the blob of every gameplay file each test exer
 
 | Tested SHA   | Files identical to RC head | Files changed by RC | Classification                                        |
 | ------------ | -------------------------: | ------------------: | ----------------------------------------------------- |
-| `3dc86a2c31` |           1, PS2 art only  |                  13 | PARTIALLY VALID for PS2 artwork, SUPERSEDED otherwise |
+| `3dc86a2c31` |            1, PS2 art only |                  13 | PARTIALLY VALID for PS2 artwork, SUPERSEDED otherwise |
 | `680d24909e` |                          0 |                  13 | SUPERSEDED                                            |
-| `9370598428` |           1, PS2 art only  |                  13 | PARTIALLY VALID for PS2 artwork, SUPERSEDED otherwise |
+| `9370598428` |            1, PS2 art only |                  13 | PARTIALLY VALID for PS2 artwork, SUPERSEDED otherwise |
 | `f344f9a37f` |                          0 |                  12 | SUPERSEDED                                            |
 | `6176ab485a` |                          0 |                  12 | SUPERSEDED                                            |
 | `cd9b14b5b3` |                          0 |                  12 | SUPERSEDED                                            |
@@ -365,14 +365,14 @@ The candidate did not simply move past those commits. It replaced the mechanism 
 
 # Runtime Defects Found and Their Repair State
 
-| Issue | Defect                                                              | Found at          | Repair                | Repaired | Retested           | In candidate        |
-| ----- | ------------------------------------------------------------------- | ----------------- | --------------------- | -------- | ------------------ | ------------------- |
-| #104  | Sony PS2 launch event rendered generic computer artwork             | `680d24909e`, E1  | `11cdddf471`, PR #105 | Yes      | Yes, E4 fixture    | Yes, byte-identical |
-| #112  | Matrox events rendered generic computer artwork                     | `680d24909e`, E1  | source fix on `main`  | Yes      | No                 | Yes, unrendered     |
+| Issue | Defect                                                                | Found at          | Repair                | Repaired | Retested           | In candidate        |
+| ----- | --------------------------------------------------------------------- | ----------------- | --------------------- | -------- | ------------------ | ------------------- |
+| #104  | Sony PS2 launch event rendered generic computer artwork               | `680d24909e`, E1  | `11cdddf471`, PR #105 | Yes      | Yes, E4 fixture    | Yes, byte-identical |
+| #112  | Matrox events rendered generic computer artwork                       | `680d24909e`, E1  | source fix on `main`  | Yes      | No                 | Yes, unrendered     |
 | n/a   | `Invalid trigger 'stability'` at 12 sites in `00_gpu_development.txt` | `680d24909e`, E10 | `3e616d76ce`          | Yes      | No                 | Yes                 |
-| n/a   | `has_start_date = 2000.1.1` rejected at load                        | PR #96 branch     | in PR #96             | Yes      | Yes, E5 clean load | Yes                 |
-| n/a   | Malformed economic tier membership not repaired                     | PR #97 branch     | in PR #97             | Yes      | Yes, E6            | Yes                 |
-| #111  | `gpu_development.2` used a generic laptop photograph                | `3dc86a2c31`, E2  | not located           | Unknown  | No                 | Unresolved          |
+| n/a   | `has_start_date = 2000.1.1` rejected at load                          | PR #96 branch     | in PR #96             | Yes      | Yes, E5 clean load | Yes                 |
+| n/a   | Malformed economic tier membership not repaired                       | PR #97 branch     | in PR #97             | Yes      | Yes, E6            | Yes                 |
+| #111  | `gpu_development.2` used a generic laptop photograph                  | `3dc86a2c31`, E2  | not located           | Unknown  | No                 | Unresolved          |
 
 Issue #111 could not be retrieved: the number does not resolve in `JasonBreen/Millennium-Dawn-OEM`. It is recorded in the E2 notes and on issue #24 as a presentation defect for `gpu_development.2`. It belongs to the same picture-selection family as #104 and #112 and is treated as deferred presentation polish rather than a functional blocker.
 
@@ -385,18 +385,18 @@ Two static review findings raised on this candidate remain open and land directl
 
 The eleven-layer matrix above is the full gate. The following is the smallest set of runs that closes it on this candidate. It is deliberately shorter than the accumulated checklists on issues #24 to #28 and #45, most of which are development regression coverage rather than release gates.
 
-| Run | Setup                                                                                                                                     | Closes                                                       |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| R1  | Fresh load to the main menu, archive `error.log` and `system.log`, diff against the E10 baseline                                          | Layer J, plus the `has_stability` and new-sprite regressions |
-| R2  | USA 2000.1.1, Full isolated, natural to at least 2001.2.1, saving either side of IBM `.12` and reloading both                             | Layers A and E, and the IBM entry conditions for Layer G     |
-| R3  | JAP 2000.1.1, Full isolated, natural past Sony `.1`, with a save and reload while `.1` is queued but unanswered                           | Layers A and E on a second host, duplicate suppression       |
-| R4  | CAN 2000.1.1, Full isolated, natural past Matrox `.1` and `.2`, screenshots at the common test resolution                                 | Layers A and K, closes #112                                  |
-| R5  | USA 2000.1.1, Outcomes Only isolated, cross the first monthly reconstruction boundary twice                                               | Layer B                                                      |
-| R6  | USA 2000.1.1, Off isolated, then one repeat with the Independence preset                                                                  | Layer C, including the new ISR, USA legacy, and GPU suppression |
-| R7  | USA 2017 bookmark, Full isolated, one monthly pass, then save and reload                                                                  | Layers D and F, and the `USA_oem_legacy_effects.txt:55` concern |
-| R8  | Disposable save: set `collapsed_nation` on a chain owner before its January window, cross into February, clear the flag, run to the next monthly pass | Layer H and the January-window concern            |
-| R9  | Console fixtures for the 13 marquee sprites in the Marquee Artwork Check, after a full restart                                            | Layer K                                                      |
-| R10 | Disposable forked saves for one counterfactual per priority chain                                                                         | Layer I                                                      |
+| Run | Setup                                                                                                                                                 | Closes                                                          |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| R1  | Fresh load to the main menu, archive `error.log` and `system.log`, diff against the E10 baseline                                                      | Layer J, plus the `has_stability` and new-sprite regressions    |
+| R2  | USA 2000.1.1, Full isolated, natural to at least 2001.2.1, saving either side of IBM `.12` and reloading both                                         | Layers A and E, and the IBM entry conditions for Layer G        |
+| R3  | JAP 2000.1.1, Full isolated, natural past Sony `.1`, with a save and reload while `.1` is queued but unanswered                                       | Layers A and E on a second host, duplicate suppression          |
+| R4  | CAN 2000.1.1, Full isolated, natural past Matrox `.1` and `.2`, screenshots at the common test resolution                                             | Layers A and K, closes #112                                     |
+| R5  | USA 2000.1.1, Outcomes Only isolated, cross the first monthly reconstruction boundary twice                                                           | Layer B                                                         |
+| R6  | USA 2000.1.1, Off isolated, then one repeat with the Independence preset                                                                              | Layer C, including the new ISR, USA legacy, and GPU suppression |
+| R7  | USA 2017 bookmark, Full isolated, one monthly pass, then save and reload                                                                              | Layers D and F, and the `USA_oem_legacy_effects.txt:55` concern |
+| R8  | Disposable save: set `collapsed_nation` on a chain owner before its January window, cross into February, clear the flag, run to the next monthly pass | Layer H and the January-window concern                          |
+| R9  | Console fixtures for the 13 marquee sprites in the Marquee Artwork Check, after a full restart                                                        | Layer K                                                         |
+| R10 | Disposable forked saves for one counterfactual per priority chain                                                                                     | Layer I                                                         |
 
 R1 is cheap and should run first: it revalidates the only OEM error class ever observed and covers 12 sprite registrations that have never been loaded.
 
