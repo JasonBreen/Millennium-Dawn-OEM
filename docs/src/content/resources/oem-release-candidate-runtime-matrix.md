@@ -5,7 +5,9 @@ description: Exact-head acceptance plan for Corporate History chronology, recons
 
 This matrix is the runtime gate for the OEM release candidate. Static validation does not close a runtime item.
 
-**Candidate under test:** PR #209, branch `codex/oem-2.0-rc-remediation`, head `2d3de527d7a45467a01ca7c6ca70af1f600d9363`, tree `c6e78722e6dffab55cf28a4f57627a927ab09b02`, fork base `6aede79ae624d8b0512cc662787234c8a6f4dd3f`, upstream freeze `dfa37942892e4cbc8743e4eba8c48736e77d6307`.
+**Candidate under test:** PR #209, branch `codex/oem-2.0-rc-remediation`, fork base `6aede79ae624d8b0512cc662787234c8a6f4dd3f`, upstream freeze `dfa37942892e4cbc8743e4eba8c48736e77d6307`.
+
+**Gameplay freeze:** `2d3de527d7a45467a01ca7c6ca70af1f600d9363`, tree `c6e78722e6dffab55cf28a4f57627a927ab09b02`. Every reference to "the candidate head" or `2d3de527d7` on this page means that gameplay tree. Commits after it on this branch are documentation only and change no file under `common/`, `events/`, `history/`, `interface/`, `gfx/`, `localisation/`, `map/`, or `portraits/`. Confirm before testing with `git diff --name-only 2d3de527d7 HEAD`; if that command lists any path in those directories, the freeze is broken and this page must be revised.
 
 **Status at this revision:** static and CI gates are green on the exact head. A substantial body of earlier runtime evidence exists and has been recovered and catalogued below, but none of it was captured on this candidate, and the candidate replaced the dispatch architecture those runs exercised. Zero acceptance layers currently pass on the exact head. See [Coverage Summary](#coverage-summary) and [Remaining Acceptance Set](#remaining-acceptance-set).
 
