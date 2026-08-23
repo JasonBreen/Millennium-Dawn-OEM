@@ -1,0 +1,483 @@
+POL_industrial_sovereignty_ensure_capabilities = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			original_tag = POL
+			NOT = { has_dynamic_modifier = { modifier = POL_industrial_sovereignty_capabilities } }
+		}
+		add_dynamic_modifier = { modifier = POL_industrial_sovereignty_capabilities }
+	}
+}
+
+POL_industrial_sovereignty_apply_choice = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			original_tag = POL
+			check_variable = {
+				var = POL_industrial_sovereignty_stage
+				value = POL_industrial_sovereignty_choice_stage
+				compare = less_than
+			}
+		}
+		POL_industrial_sovereignty_ensure_capabilities = yes
+		add_to_variable = { POL_industrial_sovereignty_domestic_capacity = POL_industrial_sovereignty_domestic_delta }
+		add_to_variable = { POL_industrial_sovereignty_market_integration = POL_industrial_sovereignty_market_delta }
+		add_to_variable = { POL_industrial_sovereignty_technical_depth = POL_industrial_sovereignty_technical_delta }
+		clamp_variable = { var = POL_industrial_sovereignty_domestic_capacity min = 0 max = 0.10 }
+		clamp_variable = { var = POL_industrial_sovereignty_market_integration min = 0 max = 0.10 }
+		clamp_variable = { var = POL_industrial_sovereignty_technical_depth min = 0 max = 0.10 }
+		set_variable = { POL_industrial_sovereignty_stage = POL_industrial_sovereignty_choice_stage }
+		clear_variable = POL_industrial_sovereignty_expected_stage
+		clr_country_flag = POL_industrial_sovereignty_event_pending
+		if = {
+			limit = {
+				corporate_history_full_enabled = yes
+				check_variable = { POL_industrial_sovereignty_skip_successor < 1 }
+			}
+			POL_industrial_sovereignty_advance_lifecycle = yes
+		}
+	}
+}
+
+POL_industrial_sovereignty_reconstruct_event_1 = {
+	if = {
+		limit = { check_variable = { POL_industrial_sovereignty_stage < 1 } }
+		set_temp_variable = { POL_industrial_sovereignty_skip_successor = 1 }
+		set_temp_variable = { POL_industrial_sovereignty_choice_stage = 1 }
+		set_temp_variable = { POL_industrial_sovereignty_domestic_delta = 0.02 }
+		set_temp_variable = { POL_industrial_sovereignty_market_delta = 0 }
+		set_temp_variable = { POL_industrial_sovereignty_technical_delta = 0.01 }
+		POL_industrial_sovereignty_apply_choice = yes
+	}
+}
+
+POL_industrial_sovereignty_reconstruct_event_2 = {
+	if = {
+		limit = { check_variable = { POL_industrial_sovereignty_stage < 2 } }
+		set_temp_variable = { POL_industrial_sovereignty_skip_successor = 1 }
+		set_temp_variable = { POL_industrial_sovereignty_choice_stage = 2 }
+		set_temp_variable = { POL_industrial_sovereignty_domestic_delta = 0 }
+		set_temp_variable = { POL_industrial_sovereignty_market_delta = 0.02 }
+		set_temp_variable = { POL_industrial_sovereignty_technical_delta = 0.01 }
+		POL_industrial_sovereignty_apply_choice = yes
+	}
+}
+
+POL_industrial_sovereignty_reconstruct_event_3 = {
+	if = {
+		limit = { check_variable = { POL_industrial_sovereignty_stage < 3 } }
+		set_temp_variable = { POL_industrial_sovereignty_skip_successor = 1 }
+		set_temp_variable = { POL_industrial_sovereignty_choice_stage = 3 }
+		set_temp_variable = { POL_industrial_sovereignty_domestic_delta = 0 }
+		set_temp_variable = { POL_industrial_sovereignty_market_delta = 0.02 }
+		set_temp_variable = { POL_industrial_sovereignty_technical_delta = 0.01 }
+		POL_industrial_sovereignty_apply_choice = yes
+	}
+}
+
+POL_industrial_sovereignty_reconstruct_event_4 = {
+	if = {
+		limit = { check_variable = { POL_industrial_sovereignty_stage < 4 } }
+		set_temp_variable = { POL_industrial_sovereignty_skip_successor = 1 }
+		set_temp_variable = { POL_industrial_sovereignty_choice_stage = 4 }
+		set_temp_variable = { POL_industrial_sovereignty_domestic_delta = 0 }
+		set_temp_variable = { POL_industrial_sovereignty_market_delta = 0.02 }
+		set_temp_variable = { POL_industrial_sovereignty_technical_delta = 0.01 }
+		POL_industrial_sovereignty_apply_choice = yes
+	}
+}
+
+POL_industrial_sovereignty_reconstruct_event_5 = {
+	if = {
+		limit = { check_variable = { POL_industrial_sovereignty_stage < 5 } }
+		set_temp_variable = { POL_industrial_sovereignty_skip_successor = 1 }
+		set_temp_variable = { POL_industrial_sovereignty_choice_stage = 5 }
+		set_temp_variable = { POL_industrial_sovereignty_domestic_delta = 0.02 }
+		set_temp_variable = { POL_industrial_sovereignty_market_delta = 0 }
+		set_temp_variable = { POL_industrial_sovereignty_technical_delta = 0.01 }
+		POL_industrial_sovereignty_apply_choice = yes
+	}
+}
+
+# Starts after a milestone inherit its conservative historical route without replaying choices.
+POL_industrial_sovereignty_reconstruct_start_history = {
+	if = {
+		limit = { NOT = { has_start_date < 2000.1.2 } }
+		POL_industrial_sovereignty_reconstruct_event_1 = yes
+	}
+	if = {
+		limit = { NOT = { has_start_date < 2004.5.2 } }
+		POL_industrial_sovereignty_reconstruct_event_2 = yes
+	}
+	if = {
+		limit = { NOT = { has_start_date < 2009.7.29 } }
+		POL_industrial_sovereignty_reconstruct_event_3 = yes
+	}
+	if = {
+		limit = { NOT = { has_start_date < 2016.6.18 } }
+		POL_industrial_sovereignty_reconstruct_event_4 = yes
+	}
+	if = {
+		limit = { NOT = { has_start_date < 2022.12.7 } }
+		POL_industrial_sovereignty_reconstruct_event_5 = yes
+	}
+}
+
+POL_industrial_sovereignty_reconstruct_reached_history = {
+	if = {
+		limit = { date > 1999.12.31 }
+		POL_industrial_sovereignty_reconstruct_event_1 = yes
+	}
+	if = {
+		limit = { date > 2004.4.30 }
+		POL_industrial_sovereignty_reconstruct_event_2 = yes
+	}
+	if = {
+		limit = { date > 2009.7.27 }
+		POL_industrial_sovereignty_reconstruct_event_3 = yes
+	}
+	if = {
+		limit = { date > 2016.6.16 }
+		POL_industrial_sovereignty_reconstruct_event_4 = yes
+	}
+	if = {
+		limit = { date > 2022.12.5 }
+		POL_industrial_sovereignty_reconstruct_event_5 = yes
+	}
+}
+
+POL_industrial_sovereignty_schedule_event_1 = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = POL
+			check_variable = { POL_industrial_sovereignty_stage = 0 }
+			check_variable = { POL_industrial_sovereignty_expected_stage = 0 }
+		}
+		set_variable = { POL_industrial_sovereignty_expected_stage = 1 }
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			if = {
+				limit = { check_variable = { POL_industrial_sovereignty_schedule_immediately > 0 } }
+				set_country_flag = { flag = POL_industrial_sovereignty_event_pending days = 365 value = 1 }
+				country_event = POL_industrial_sovereignty_events.1
+			}
+			else = {
+				set_country_flag = { flag = POL_industrial_sovereignty_event_pending days = 368 value = 1 }
+				country_event = { id = POL_industrial_sovereignty_events.1 days = 3 }
+			}
+		}
+	}
+}
+
+POL_industrial_sovereignty_schedule_event_2 = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = POL
+			check_variable = { POL_industrial_sovereignty_stage = 1 }
+			check_variable = { POL_industrial_sovereignty_expected_stage = 0 }
+		}
+		set_variable = { POL_industrial_sovereignty_expected_stage = 2 }
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			if = {
+				limit = { check_variable = { POL_industrial_sovereignty_schedule_immediately > 0 } }
+				set_country_flag = { flag = POL_industrial_sovereignty_event_pending days = 365 value = 1 }
+				country_event = POL_industrial_sovereignty_events.2
+			}
+			else = {
+				set_country_flag = { flag = POL_industrial_sovereignty_event_pending days = 486 value = 1 }
+				country_event = { id = POL_industrial_sovereignty_events.2 days = 121 }
+			}
+		}
+	}
+}
+
+POL_industrial_sovereignty_schedule_event_3 = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = POL
+			check_variable = { POL_industrial_sovereignty_stage = 2 }
+			check_variable = { POL_industrial_sovereignty_expected_stage = 0 }
+		}
+		set_variable = { POL_industrial_sovereignty_expected_stage = 3 }
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			if = {
+				limit = { check_variable = { POL_industrial_sovereignty_schedule_immediately > 0 } }
+				set_country_flag = { flag = POL_industrial_sovereignty_event_pending days = 365 value = 1 }
+				country_event = POL_industrial_sovereignty_events.3
+			}
+			else = {
+				set_country_flag = { flag = POL_industrial_sovereignty_event_pending days = 573 value = 1 }
+				country_event = { id = POL_industrial_sovereignty_events.3 days = 208 }
+			}
+		}
+	}
+}
+
+POL_industrial_sovereignty_schedule_event_4 = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = POL
+			check_variable = { POL_industrial_sovereignty_stage = 3 }
+			check_variable = { POL_industrial_sovereignty_expected_stage = 0 }
+		}
+		set_variable = { POL_industrial_sovereignty_expected_stage = 4 }
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			if = {
+				limit = { check_variable = { POL_industrial_sovereignty_schedule_immediately > 0 } }
+				set_country_flag = { flag = POL_industrial_sovereignty_event_pending days = 365 value = 1 }
+				country_event = POL_industrial_sovereignty_events.4
+			}
+			else = {
+				set_country_flag = { flag = POL_industrial_sovereignty_event_pending days = 533 value = 1 }
+				country_event = { id = POL_industrial_sovereignty_events.4 days = 168 }
+			}
+		}
+	}
+}
+
+POL_industrial_sovereignty_schedule_event_5 = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = POL
+			check_variable = { POL_industrial_sovereignty_stage = 4 }
+			check_variable = { POL_industrial_sovereignty_expected_stage = 0 }
+		}
+		set_variable = { POL_industrial_sovereignty_expected_stage = 5 }
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			if = {
+				limit = { check_variable = { POL_industrial_sovereignty_schedule_immediately > 0 } }
+				set_country_flag = { flag = POL_industrial_sovereignty_event_pending days = 365 value = 1 }
+				country_event = POL_industrial_sovereignty_events.5
+			}
+			else = {
+				set_country_flag = { flag = POL_industrial_sovereignty_event_pending days = 704 value = 1 }
+				country_event = { id = POL_industrial_sovereignty_events.5 days = 339 }
+			}
+		}
+	}
+}
+
+POL_industrial_sovereignty_resolve_terminal_strategy = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			original_tag = POL
+			date > 2025.12.31
+			check_variable = { POL_industrial_sovereignty_stage = 5 }
+			NOT = {
+				OR = {
+					has_idea = POL_industrial_sovereignty_sovereign_production_network
+					has_idea = POL_industrial_sovereignty_european_systems_hub
+					has_idea = POL_industrial_sovereignty_networked_technology_state
+				}
+			}
+		}
+		remove_ideas = POL_industrial_sovereignty_sovereign_production_network
+		remove_ideas = POL_industrial_sovereignty_european_systems_hub
+		remove_ideas = POL_industrial_sovereignty_networked_technology_state
+		if = {
+			limit = {
+				check_variable = {
+					var = POL_industrial_sovereignty_domestic_capacity
+					value = POL_industrial_sovereignty_market_integration
+					compare = greater_than_or_equals
+				}
+				check_variable = {
+					var = POL_industrial_sovereignty_domestic_capacity
+					value = POL_industrial_sovereignty_technical_depth
+					compare = greater_than_or_equals
+				}
+			}
+			add_ideas = POL_industrial_sovereignty_sovereign_production_network
+		}
+		else_if = {
+			limit = {
+				check_variable = {
+					var = POL_industrial_sovereignty_market_integration
+					value = POL_industrial_sovereignty_technical_depth
+					compare = greater_than_or_equals
+				}
+			}
+			add_ideas = POL_industrial_sovereignty_european_systems_hub
+		}
+		else = { add_ideas = POL_industrial_sovereignty_networked_technology_state }
+	}
+}
+
+# This path also advances a predecessor resolved after its successor's dated hook.
+POL_industrial_sovereignty_advance_lifecycle = {
+	if = {
+		limit = {
+			date > 1999.12.31
+			check_variable = { POL_industrial_sovereignty_stage = 0 }
+			check_variable = { POL_industrial_sovereignty_expected_stage = 0 }
+		}
+		set_temp_variable = { POL_industrial_sovereignty_schedule_immediately = 1 }
+		POL_industrial_sovereignty_schedule_event_1 = yes
+	}
+	else_if = {
+		limit = {
+			date > 2004.4.30
+			check_variable = { POL_industrial_sovereignty_stage = 1 }
+			check_variable = { POL_industrial_sovereignty_expected_stage = 0 }
+		}
+		set_temp_variable = { POL_industrial_sovereignty_schedule_immediately = 1 }
+		POL_industrial_sovereignty_schedule_event_2 = yes
+	}
+	else_if = {
+		limit = {
+			date > 2009.7.27
+			check_variable = { POL_industrial_sovereignty_stage = 2 }
+			check_variable = { POL_industrial_sovereignty_expected_stage = 0 }
+		}
+		set_temp_variable = { POL_industrial_sovereignty_schedule_immediately = 1 }
+		POL_industrial_sovereignty_schedule_event_3 = yes
+	}
+	else_if = {
+		limit = {
+			date > 2016.6.16
+			check_variable = { POL_industrial_sovereignty_stage = 3 }
+			check_variable = { POL_industrial_sovereignty_expected_stage = 0 }
+		}
+		set_temp_variable = { POL_industrial_sovereignty_schedule_immediately = 1 }
+		POL_industrial_sovereignty_schedule_event_4 = yes
+	}
+	else_if = {
+		limit = {
+			date > 2022.12.5
+			check_variable = { POL_industrial_sovereignty_stage = 4 }
+			check_variable = { POL_industrial_sovereignty_expected_stage = 0 }
+		}
+		set_temp_variable = { POL_industrial_sovereignty_schedule_immediately = 1 }
+		POL_industrial_sovereignty_schedule_event_5 = yes
+	}
+	else_if = {
+		limit = {
+			date > 2025.12.31
+			check_variable = { POL_industrial_sovereignty_stage = 5 }
+		}
+		POL_industrial_sovereignty_resolve_terminal_strategy = yes
+	}
+}
+
+# A missing timed delivery receives one immediate retry, keyed to its expected stage.
+POL_industrial_sovereignty_recover_interrupted_event = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = POL
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = { has_country_flag = POL_industrial_sovereignty_event_pending }
+			check_variable = {
+				var = POL_industrial_sovereignty_expected_stage
+				value = POL_industrial_sovereignty_stage
+				compare = greater_than
+			}
+			check_variable = {
+				var = POL_industrial_sovereignty_recovery_stage
+				value = POL_industrial_sovereignty_expected_stage
+				compare = less_than
+			}
+		}
+		set_variable = { POL_industrial_sovereignty_recovery_stage = POL_industrial_sovereignty_expected_stage }
+		if = {
+			limit = { check_variable = { POL_industrial_sovereignty_expected_stage = 1 } }
+			country_event = POL_industrial_sovereignty_events.1
+		}
+		else_if = {
+			limit = { check_variable = { POL_industrial_sovereignty_expected_stage = 2 } }
+			country_event = POL_industrial_sovereignty_events.2
+		}
+		else_if = {
+			limit = { check_variable = { POL_industrial_sovereignty_expected_stage = 3 } }
+			country_event = POL_industrial_sovereignty_events.3
+		}
+		else_if = {
+			limit = { check_variable = { POL_industrial_sovereignty_expected_stage = 4 } }
+			country_event = POL_industrial_sovereignty_events.4
+		}
+		else_if = {
+			limit = { check_variable = { POL_industrial_sovereignty_expected_stage = 5 } }
+			country_event = POL_industrial_sovereignty_events.5
+		}
+	}
+}
+
+POL_industrial_sovereignty_trigger_year_2004 = {
+	POL_industrial_sovereignty_schedule_event_2 = yes
+}
+
+POL_industrial_sovereignty_trigger_year_2009 = {
+	POL_industrial_sovereignty_schedule_event_3 = yes
+}
+
+POL_industrial_sovereignty_trigger_year_2016 = {
+	POL_industrial_sovereignty_schedule_event_4 = yes
+}
+
+POL_industrial_sovereignty_trigger_year_2022 = {
+	POL_industrial_sovereignty_schedule_event_5 = yes
+}
+
+POL_industrial_sovereignty_trigger_year_2026 = {
+	POL_industrial_sovereignty_resolve_terminal_strategy = yes
+}
+
+POL_industrial_sovereignty_startup = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			original_tag = POL
+			NOT = { has_dynamic_modifier = { modifier = POL_industrial_sovereignty_capabilities } }
+		}
+		POL_industrial_sovereignty_ensure_capabilities = yes
+		if = {
+			limit = { corporate_history_outcomes_only_enabled = yes }
+			POL_industrial_sovereignty_reconstruct_reached_history = yes
+			POL_industrial_sovereignty_resolve_terminal_strategy = yes
+		}
+		else = {
+			POL_industrial_sovereignty_reconstruct_start_history = yes
+			if = {
+				limit = {
+					check_variable = { POL_industrial_sovereignty_stage = 0 }
+					check_variable = { POL_industrial_sovereignty_expected_stage = 0 }
+				}
+				POL_industrial_sovereignty_schedule_event_1 = yes
+			}
+			POL_industrial_sovereignty_advance_lifecycle = yes
+		}
+	}
+}
+
+POL_industrial_sovereignty_monthly_driver = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			original_tag = POL
+		}
+		if = {
+			limit = { NOT = { has_dynamic_modifier = { modifier = POL_industrial_sovereignty_capabilities } } }
+			POL_industrial_sovereignty_startup = yes
+		}
+		else_if = {
+			limit = { corporate_history_outcomes_only_enabled = yes }
+			POL_industrial_sovereignty_reconstruct_reached_history = yes
+			POL_industrial_sovereignty_resolve_terminal_strategy = yes
+		}
+		else = {
+			POL_industrial_sovereignty_advance_lifecycle = yes
+			POL_industrial_sovereignty_recover_interrupted_event = yes
+		}
+	}
+}
