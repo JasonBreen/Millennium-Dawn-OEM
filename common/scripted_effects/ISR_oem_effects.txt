@@ -1,0 +1,686 @@
+ISR_oem_ensure_capabilities_modifier = {
+	if = {
+		limit = { NOT = { has_dynamic_modifier = { modifier = ISR_oem_industrial_capabilities } } }
+		add_dynamic_modifier = { modifier = ISR_oem_industrial_capabilities }
+	}
+}
+
+ISR_oem_initialize_history = {
+	if = {
+		limit = { NOT = { has_country_flag = ISR_oem_history_initialized } }
+		set_variable = { ISR_oem_startup_network_score = 0 }
+		set_variable = { ISR_oem_national_champion_score = 0 }
+		set_variable = { ISR_oem_consolidation_score = 0 }
+		set_variable = { ISR_oem_event_1_route = 0 }
+		set_variable = { ISR_oem_event_2_route = 0 }
+		set_variable = { ISR_oem_event_3_route = 0 }
+		set_variable = { ISR_oem_event_4_route = 0 }
+		set_country_flag = ISR_oem_history_initialized
+	}
+}
+
+ISR_oem_complete_event_1 = {
+	if = {
+		limit = { NOT = { check_variable = { ISR_oem_event_1_route = 0 } } }
+		clr_country_flag = ISR_oem_event_1_pending
+		set_country_flag = ISR_oem_event_1_resolved
+	}
+}
+
+ISR_oem_complete_event_2 = {
+	if = {
+		limit = { NOT = { check_variable = { ISR_oem_event_2_route = 0 } } }
+		clr_country_flag = ISR_oem_event_2_pending
+		set_country_flag = ISR_oem_event_2_resolved
+	}
+}
+
+ISR_oem_complete_event_3 = {
+	if = {
+		limit = { NOT = { check_variable = { ISR_oem_event_3_route = 0 } } }
+		clr_country_flag = ISR_oem_event_3_pending
+		set_country_flag = ISR_oem_event_3_resolved
+	}
+}
+
+ISR_oem_complete_event_4 = {
+	if = {
+		limit = { NOT = { check_variable = { ISR_oem_event_4_route = 0 } } }
+		clr_country_flag = ISR_oem_event_4_pending
+		set_country_flag = ISR_oem_event_4_resolved
+	}
+}
+
+ISR_oem_apply_event_1_startup_outcome = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_1_route = 0 } }
+		ISR_oem_ensure_capabilities_modifier = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = ISR_oem_industrial_capabilities }
+		custom_effect_tooltip = ISR_oem_startup_network_alignment_tt
+		add_to_variable = { ISR_oem_research_speed_factor = 0.005 tooltip = research_speed_factor_tt }
+		add_to_variable = { ISR_oem_trade_opinion_factor = 0.02 tooltip = trade_opinion_factor_tt }
+		hidden_effect = {
+			add_to_variable = { ISR_oem_startup_network_score = 1 }
+			set_variable = { ISR_oem_event_1_route = 1 }
+		}
+	}
+}
+
+ISR_oem_apply_event_1_national_outcome = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_1_route = 0 } }
+		ISR_oem_ensure_capabilities_modifier = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = ISR_oem_industrial_capabilities }
+		custom_effect_tooltip = ISR_oem_national_champion_alignment_tt
+		add_to_variable = { ISR_oem_industrial_capacity_factory = 0.01 tooltip = industrial_capacity_factory_tt }
+		add_to_variable = { ISR_oem_consumer_goods_factor = 0.005 tooltip = consumer_goods_factor_tt }
+		hidden_effect = {
+			add_to_variable = { ISR_oem_national_champion_score = 1 }
+			set_variable = { ISR_oem_event_1_route = 2 }
+		}
+	}
+}
+
+ISR_oem_apply_event_1_consolidation_outcome = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_1_route = 0 } }
+		ISR_oem_ensure_capabilities_modifier = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = ISR_oem_industrial_capabilities }
+		custom_effect_tooltip = ISR_oem_consolidation_alignment_tt
+		add_to_variable = { ISR_oem_production_factory_efficiency_gain_factor = 0.01 tooltip = production_factory_efficiency_gain_factor_tt }
+		add_to_variable = { ISR_oem_stability_factor = -0.005 tooltip = stability_factor_tt }
+		hidden_effect = {
+			add_to_variable = { ISR_oem_consolidation_score = 1 }
+			set_variable = { ISR_oem_event_1_route = 3 }
+		}
+	}
+}
+
+ISR_oem_apply_event_2_startup_outcome = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_2_route = 0 } }
+		ISR_oem_ensure_capabilities_modifier = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = ISR_oem_industrial_capabilities }
+		custom_effect_tooltip = ISR_oem_startup_network_alignment_tt
+		add_to_variable = { ISR_oem_offices_productivity = 0.01 tooltip = offices_productivity_tt }
+		add_to_variable = { ISR_oem_foreign_influence_defense_modifier = -0.01 tooltip = foreign_influence_defense_modifier_tt }
+		hidden_effect = {
+			add_to_variable = { ISR_oem_startup_network_score = 1 }
+			set_variable = { ISR_oem_event_2_route = 1 }
+		}
+	}
+}
+
+ISR_oem_apply_event_2_national_outcome = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_2_route = 0 } }
+		ISR_oem_ensure_capabilities_modifier = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = ISR_oem_industrial_capabilities }
+		custom_effect_tooltip = ISR_oem_national_champion_alignment_tt
+		add_to_variable = { ISR_oem_industrial_capacity_factory = 0.01 tooltip = industrial_capacity_factory_tt }
+		add_to_variable = { ISR_oem_consumer_goods_factor = 0.005 tooltip = consumer_goods_factor_tt }
+		hidden_effect = {
+			add_to_variable = { ISR_oem_national_champion_score = 1 }
+			set_variable = { ISR_oem_event_2_route = 2 }
+		}
+	}
+}
+
+ISR_oem_apply_event_2_consolidation_outcome = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_2_route = 0 } }
+		ISR_oem_ensure_capabilities_modifier = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = ISR_oem_industrial_capabilities }
+		custom_effect_tooltip = ISR_oem_consolidation_alignment_tt
+		add_to_variable = { ISR_oem_research_speed_factor = 0.005 tooltip = research_speed_factor_tt }
+		add_to_variable = { ISR_oem_production_factory_efficiency_gain_factor = 0.005 tooltip = production_factory_efficiency_gain_factor_tt }
+		hidden_effect = {
+			add_to_variable = { ISR_oem_consolidation_score = 1 }
+			set_variable = { ISR_oem_event_2_route = 3 }
+		}
+	}
+}
+
+ISR_oem_apply_event_3_startup_outcome = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_3_route = 0 } }
+		ISR_oem_ensure_capabilities_modifier = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = ISR_oem_industrial_capabilities }
+		custom_effect_tooltip = ISR_oem_startup_network_alignment_tt
+		add_to_variable = { ISR_oem_receiving_investment_cost_modifier = -0.01 tooltip = receiving_investment_cost_modifier_tt }
+		add_to_variable = { ISR_oem_research_speed_factor = 0.005 tooltip = research_speed_factor_tt }
+		hidden_effect = {
+			add_to_variable = { ISR_oem_startup_network_score = 1 }
+			set_variable = { ISR_oem_event_3_route = 1 }
+		}
+	}
+}
+
+ISR_oem_apply_event_3_national_outcome = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_3_route = 0 } }
+		ISR_oem_ensure_capabilities_modifier = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = ISR_oem_industrial_capabilities }
+		custom_effect_tooltip = ISR_oem_national_champion_alignment_tt
+		add_to_variable = { ISR_oem_industrial_capacity_factory = 0.015 tooltip = industrial_capacity_factory_tt }
+		add_to_variable = { ISR_oem_consumer_goods_factor = 0.005 tooltip = consumer_goods_factor_tt }
+		hidden_effect = {
+			add_to_variable = { ISR_oem_national_champion_score = 1 }
+			set_variable = { ISR_oem_event_3_route = 2 }
+		}
+	}
+}
+
+ISR_oem_apply_event_3_consolidation_outcome = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_3_route = 0 } }
+		ISR_oem_ensure_capabilities_modifier = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = ISR_oem_industrial_capabilities }
+		custom_effect_tooltip = ISR_oem_consolidation_alignment_tt
+		add_to_variable = { ISR_oem_productivity_growth_modifier = 0.005 tooltip = productivity_growth_modifier_tt }
+		add_to_variable = { ISR_oem_production_factory_efficiency_gain_factor = 0.01 tooltip = production_factory_efficiency_gain_factor_tt }
+		hidden_effect = {
+			add_to_variable = { ISR_oem_consolidation_score = 1 }
+			set_variable = { ISR_oem_event_3_route = 3 }
+		}
+	}
+}
+
+ISR_oem_apply_event_4_startup_outcome = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_4_route = 0 } }
+		ISR_oem_ensure_capabilities_modifier = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = ISR_oem_industrial_capabilities }
+		custom_effect_tooltip = ISR_oem_startup_network_alignment_tt
+		add_to_variable = { ISR_oem_offices_productivity = 0.01 tooltip = offices_productivity_tt }
+		add_to_variable = { ISR_oem_trade_opinion_factor = 0.02 tooltip = trade_opinion_factor_tt }
+		hidden_effect = {
+			add_to_variable = { ISR_oem_startup_network_score = 1 }
+			set_variable = { ISR_oem_event_4_route = 1 }
+		}
+	}
+}
+
+ISR_oem_apply_event_4_national_outcome = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_4_route = 0 } }
+		ISR_oem_ensure_capabilities_modifier = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = ISR_oem_industrial_capabilities }
+		custom_effect_tooltip = ISR_oem_national_champion_alignment_tt
+		add_to_variable = { ISR_oem_research_speed_factor = 0.005 tooltip = research_speed_factor_tt }
+		add_to_variable = { ISR_oem_industrial_capacity_factory = 0.01 tooltip = industrial_capacity_factory_tt }
+		hidden_effect = {
+			add_to_variable = { ISR_oem_national_champion_score = 1 }
+			set_variable = { ISR_oem_event_4_route = 2 }
+		}
+	}
+}
+
+ISR_oem_apply_event_4_consolidation_outcome = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_4_route = 0 } }
+		ISR_oem_ensure_capabilities_modifier = yes
+		custom_effect_tooltip = { localization_key = modifies_dynamic_modifier_tt MODIFIER = ISR_oem_industrial_capabilities }
+		custom_effect_tooltip = ISR_oem_consolidation_alignment_tt
+		add_to_variable = { ISR_oem_production_factory_max_efficiency_factor = 0.01 tooltip = production_factory_max_efficiency_factor_tt }
+		add_to_variable = { ISR_oem_production_factory_efficiency_gain_factor = 0.01 tooltip = production_factory_efficiency_gain_factor_tt }
+		hidden_effect = {
+			add_to_variable = { ISR_oem_consolidation_score = 1 }
+			set_variable = { ISR_oem_event_4_route = 3 }
+		}
+	}
+}
+
+ISR_oem_resolve_strategy = {
+	if = {
+		limit = {
+			has_country_flag = ISR_oem_event_1_resolved
+			has_country_flag = ISR_oem_event_2_resolved
+			has_country_flag = ISR_oem_event_3_resolved
+			has_country_flag = ISR_oem_event_4_resolved
+			NOT = { check_variable = { ISR_oem_event_1_route = 0 } }
+			NOT = { check_variable = { ISR_oem_event_2_route = 0 } }
+			NOT = { check_variable = { ISR_oem_event_3_route = 0 } }
+			NOT = { check_variable = { ISR_oem_event_4_route = 0 } }
+		}
+		remove_ideas = {
+			ISR_oem_startup_nation_network
+			ISR_oem_national_champions
+			ISR_oem_strategic_consolidation
+		}
+		if = {
+			limit = {
+				check_variable = {
+					var = ISR_oem_startup_network_score
+					value = ISR_oem_national_champion_score
+					compare = greater_than_or_equals
+				}
+				check_variable = {
+					var = ISR_oem_startup_network_score
+					value = ISR_oem_consolidation_score
+					compare = greater_than_or_equals
+				}
+			}
+			add_ideas = ISR_oem_startup_nation_network
+		}
+		else_if = {
+			limit = {
+				check_variable = {
+					var = ISR_oem_national_champion_score
+					value = ISR_oem_consolidation_score
+					compare = greater_than_or_equals
+				}
+			}
+			add_ideas = ISR_oem_national_champions
+		}
+		else = {
+			add_ideas = ISR_oem_strategic_consolidation
+		}
+	}
+}
+
+# Later starts receive historical capabilities without one-time rewards.
+ISR_oem_reconstruct_event_1 = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_1_route = 0 } }
+		ISR_oem_apply_event_1_national_outcome = yes
+	}
+	set_country_flag = ISR_oem_event_1_expected
+	clr_country_flag = ISR_oem_event_1_pending
+	set_country_flag = ISR_oem_event_1_resolved
+	ISR_oem_resolve_strategy = yes
+}
+
+ISR_oem_reconstruct_event_2 = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_2_route = 0 } }
+		ISR_oem_apply_event_2_startup_outcome = yes
+	}
+	set_country_flag = ISR_oem_event_2_expected
+	clr_country_flag = ISR_oem_event_2_pending
+	set_country_flag = ISR_oem_event_2_resolved
+	ISR_oem_resolve_strategy = yes
+}
+
+ISR_oem_reconstruct_event_3 = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_3_route = 0 } }
+		ISR_oem_apply_event_3_startup_outcome = yes
+	}
+	set_country_flag = ISR_oem_event_3_expected
+	clr_country_flag = ISR_oem_event_3_pending
+	set_country_flag = ISR_oem_event_3_resolved
+	ISR_oem_resolve_strategy = yes
+}
+
+ISR_oem_reconstruct_event_4 = {
+	if = {
+		limit = { check_variable = { ISR_oem_event_4_route = 0 } }
+		ISR_oem_apply_event_4_consolidation_outcome = yes
+	}
+	set_country_flag = ISR_oem_event_4_expected
+	clr_country_flag = ISR_oem_event_4_pending
+	set_country_flag = ISR_oem_event_4_resolved
+	ISR_oem_resolve_strategy = yes
+}
+
+ISR_oem_reconstruct_reached_history = {
+	if = {
+		limit = {
+			date > 2000.5.29
+			NOT = { has_country_flag = ISR_oem_event_1_resolved }
+		}
+		ISR_oem_reconstruct_event_1 = yes
+	}
+	if = {
+		limit = {
+			date > 2000.11.15
+			NOT = { has_country_flag = ISR_oem_event_2_resolved }
+		}
+		ISR_oem_reconstruct_event_2 = yes
+	}
+	if = {
+		limit = {
+			date > 2001.3.1
+			NOT = { has_country_flag = ISR_oem_event_3_resolved }
+		}
+		ISR_oem_reconstruct_event_3 = yes
+	}
+	if = {
+		limit = {
+			date > 2001.7.31
+			NOT = { has_country_flag = ISR_oem_event_4_resolved }
+		}
+		ISR_oem_reconstruct_event_4 = yes
+	}
+}
+
+ISR_oem_reconstruct_start_history = {
+	if = {
+		limit = {
+			NOT = { has_start_date < 2000.5.30 }
+			NOT = { has_country_flag = ISR_oem_event_1_resolved }
+		}
+		ISR_oem_reconstruct_event_1 = yes
+	}
+	if = {
+		limit = {
+			NOT = { has_start_date < 2000.11.16 }
+			NOT = { has_country_flag = ISR_oem_event_2_resolved }
+		}
+		ISR_oem_reconstruct_event_2 = yes
+	}
+	if = {
+		limit = {
+			NOT = { has_start_date < 2001.3.2 }
+			NOT = { has_country_flag = ISR_oem_event_3_resolved }
+		}
+		ISR_oem_reconstruct_event_3 = yes
+	}
+	if = {
+		limit = {
+			NOT = { has_start_date < 2001.8.1 }
+			NOT = { has_country_flag = ISR_oem_event_4_resolved }
+		}
+		ISR_oem_reconstruct_event_4 = yes
+	}
+}
+
+ISR_oem_schedule_event_1 = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = ISR
+			NOT = { has_country_flag = ISR_oem_event_1_expected }
+			NOT = { has_country_flag = ISR_oem_event_1_resolved }
+			check_variable = { ISR_oem_event_1_route = 0 }
+		}
+		set_country_flag = ISR_oem_event_1_expected
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			if = {
+				limit = { has_country_flag = ISR_oem_schedule_immediately }
+				set_country_flag = { flag = ISR_oem_event_1_pending days = 32 value = 1 }
+				country_event = { id = ISR_oem_events.1 days = 1 }
+			}
+			else = {
+				set_country_flag = { flag = ISR_oem_event_1_pending days = 182 value = 1 }
+				country_event = { id = ISR_oem_events.1 days = 150 }
+			}
+		}
+	}
+}
+
+ISR_oem_schedule_event_2 = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = ISR
+			NOT = { has_country_flag = ISR_oem_event_2_expected }
+			NOT = { has_country_flag = ISR_oem_event_2_resolved }
+			check_variable = { ISR_oem_event_2_route = 0 }
+		}
+		set_country_flag = ISR_oem_event_2_expected
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			if = {
+				limit = { has_country_flag = ISR_oem_schedule_immediately }
+				set_country_flag = { flag = ISR_oem_event_2_pending days = 32 value = 1 }
+				country_event = { id = ISR_oem_events.2 days = 1 }
+			}
+			else = {
+				set_country_flag = { flag = ISR_oem_event_2_pending days = 352 value = 1 }
+				country_event = { id = ISR_oem_events.2 days = 320 }
+			}
+		}
+	}
+}
+
+ISR_oem_schedule_event_3 = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = ISR
+			NOT = { has_country_flag = ISR_oem_event_3_expected }
+			NOT = { has_country_flag = ISR_oem_event_3_resolved }
+			check_variable = { ISR_oem_event_3_route = 0 }
+		}
+		set_country_flag = ISR_oem_event_3_expected
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			if = {
+				limit = { has_country_flag = ISR_oem_schedule_immediately }
+				set_country_flag = { flag = ISR_oem_event_3_pending days = 32 value = 1 }
+				country_event = { id = ISR_oem_events.3 days = 1 }
+			}
+			else = {
+				set_country_flag = { flag = ISR_oem_event_3_pending days = 92 value = 1 }
+				country_event = { id = ISR_oem_events.3 days = 60 }
+			}
+		}
+	}
+}
+
+ISR_oem_schedule_event_4 = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = ISR
+			NOT = { has_country_flag = ISR_oem_event_4_expected }
+			NOT = { has_country_flag = ISR_oem_event_4_resolved }
+			check_variable = { ISR_oem_event_4_route = 0 }
+		}
+		set_country_flag = ISR_oem_event_4_expected
+		if = {
+			limit = { NOT = { has_country_flag = collapsed_nation } }
+			if = {
+				limit = { has_country_flag = ISR_oem_schedule_immediately }
+				set_country_flag = { flag = ISR_oem_event_4_pending days = 32 value = 1 }
+				country_event = { id = ISR_oem_events.4 days = 1 }
+			}
+			else = {
+				set_country_flag = { flag = ISR_oem_event_4_pending days = 244 value = 1 }
+				country_event = { id = ISR_oem_events.4 days = 212 }
+			}
+		}
+	}
+}
+
+ISR_oem_schedule_2000_events = {
+	if = {
+		limit = {
+			NOT = { has_start_date < 2000.1.1 }
+			has_start_date < 2000.1.2
+		}
+		ISR_oem_schedule_event_1 = yes
+		ISR_oem_schedule_event_2 = yes
+	}
+}
+
+ISR_oem_schedule_2001_events = {
+	if = {
+		limit = { has_start_date < 2001.3.2 }
+		ISR_oem_schedule_event_3 = yes
+	}
+	if = {
+		limit = { has_start_date < 2001.8.1 }
+		ISR_oem_schedule_event_4 = yes
+	}
+}
+
+# A milestone crossed after campaign start remains a choice instead of silent history.
+ISR_oem_schedule_current_year_event = {
+	if = {
+		limit = {
+			date > 2000.5.29
+			has_start_date < 2000.5.30
+			NOT = { has_country_flag = ISR_oem_event_1_expected }
+			NOT = { has_country_flag = ISR_oem_event_1_resolved }
+		}
+		set_country_flag = ISR_oem_schedule_immediately
+		ISR_oem_schedule_event_1 = yes
+		clr_country_flag = ISR_oem_schedule_immediately
+	}
+	else_if = {
+		limit = {
+			date > 2000.11.15
+			has_start_date < 2000.11.16
+			NOT = { check_variable = { ISR_oem_event_1_route = 0 } }
+			NOT = { has_country_flag = ISR_oem_event_2_expected }
+			NOT = { has_country_flag = ISR_oem_event_2_resolved }
+		}
+		set_country_flag = ISR_oem_schedule_immediately
+		ISR_oem_schedule_event_2 = yes
+		clr_country_flag = ISR_oem_schedule_immediately
+	}
+	else_if = {
+		limit = {
+			date > 2001.3.1
+			has_start_date < 2001.3.2
+			NOT = { check_variable = { ISR_oem_event_2_route = 0 } }
+			NOT = { has_country_flag = ISR_oem_event_3_expected }
+			NOT = { has_country_flag = ISR_oem_event_3_resolved }
+		}
+		set_country_flag = ISR_oem_schedule_immediately
+		ISR_oem_schedule_event_3 = yes
+		clr_country_flag = ISR_oem_schedule_immediately
+	}
+	else_if = {
+		limit = {
+			date > 2001.7.31
+			has_start_date < 2001.8.1
+			NOT = { check_variable = { ISR_oem_event_3_route = 0 } }
+			NOT = { has_country_flag = ISR_oem_event_4_expected }
+			NOT = { has_country_flag = ISR_oem_event_4_resolved }
+		}
+		set_country_flag = ISR_oem_schedule_immediately
+		ISR_oem_schedule_event_4 = yes
+		clr_country_flag = ISR_oem_schedule_immediately
+	}
+}
+
+# A delayed choice can register the next milestone without monthly polling.
+ISR_oem_schedule_due_successor = {
+	if = {
+		limit = {
+			date > 2000.11.15
+			NOT = { check_variable = { ISR_oem_event_1_route = 0 } }
+			NOT = { has_country_flag = ISR_oem_event_2_expected }
+			NOT = { has_country_flag = ISR_oem_event_2_resolved }
+		}
+		set_country_flag = ISR_oem_schedule_immediately
+		ISR_oem_schedule_event_2 = yes
+		clr_country_flag = ISR_oem_schedule_immediately
+	}
+	else_if = {
+		limit = {
+			date > 2001.3.1
+			NOT = { check_variable = { ISR_oem_event_2_route = 0 } }
+			NOT = { has_country_flag = ISR_oem_event_3_expected }
+			NOT = { has_country_flag = ISR_oem_event_3_resolved }
+		}
+		set_country_flag = ISR_oem_schedule_immediately
+		ISR_oem_schedule_event_3 = yes
+		clr_country_flag = ISR_oem_schedule_immediately
+	}
+	else_if = {
+		limit = {
+			date > 2001.7.31
+			NOT = { check_variable = { ISR_oem_event_3_route = 0 } }
+			NOT = { has_country_flag = ISR_oem_event_4_expected }
+			NOT = { has_country_flag = ISR_oem_event_4_resolved }
+		}
+		set_country_flag = ISR_oem_schedule_immediately
+		ISR_oem_schedule_event_4 = yes
+		clr_country_flag = ISR_oem_schedule_immediately
+	}
+}
+
+# Recovery redelivers once after the normal pending window expires.
+ISR_oem_recover_interrupted_events = {
+	if = {
+		limit = {
+			date > 2000.5.29
+			has_country_flag = ISR_oem_event_1_expected
+			NOT = { has_country_flag = ISR_oem_event_1_pending }
+			NOT = { has_country_flag = ISR_oem_event_1_resolved }
+			NOT = { has_country_flag = ISR_oem_event_1_recovery_used }
+			check_variable = { ISR_oem_event_1_route = 0 }
+		}
+		set_country_flag = ISR_oem_event_1_recovery_used
+		country_event = ISR_oem_events.1
+	}
+	else_if = {
+		limit = {
+			date > 2000.11.15
+			has_country_flag = ISR_oem_event_2_expected
+			NOT = { has_country_flag = ISR_oem_event_2_pending }
+			NOT = { has_country_flag = ISR_oem_event_2_resolved }
+			NOT = { has_country_flag = ISR_oem_event_2_recovery_used }
+			NOT = { check_variable = { ISR_oem_event_1_route = 0 } }
+			check_variable = { ISR_oem_event_2_route = 0 }
+		}
+		set_country_flag = ISR_oem_event_2_recovery_used
+		country_event = ISR_oem_events.2
+	}
+	else_if = {
+		limit = {
+			date > 2001.3.1
+			has_country_flag = ISR_oem_event_3_expected
+			NOT = { has_country_flag = ISR_oem_event_3_pending }
+			NOT = { has_country_flag = ISR_oem_event_3_resolved }
+			NOT = { has_country_flag = ISR_oem_event_3_recovery_used }
+			NOT = { check_variable = { ISR_oem_event_2_route = 0 } }
+			check_variable = { ISR_oem_event_3_route = 0 }
+		}
+		set_country_flag = ISR_oem_event_3_recovery_used
+		country_event = ISR_oem_events.3
+	}
+	else_if = {
+		limit = {
+			date > 2001.7.31
+			has_country_flag = ISR_oem_event_4_expected
+			NOT = { has_country_flag = ISR_oem_event_4_pending }
+			NOT = { has_country_flag = ISR_oem_event_4_resolved }
+			NOT = { has_country_flag = ISR_oem_event_4_recovery_used }
+			NOT = { check_variable = { ISR_oem_event_3_route = 0 } }
+			check_variable = { ISR_oem_event_4_route = 0 }
+		}
+		set_country_flag = ISR_oem_event_4_recovery_used
+		country_event = ISR_oem_events.4
+	}
+}
+
+ISR_oem_monthly_driver = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			original_tag = ISR
+			NOT = { has_country_flag = collapsed_nation }
+			NOT = {
+				OR = {
+					has_idea = ISR_oem_startup_nation_network
+					has_idea = ISR_oem_national_champions
+					has_idea = ISR_oem_strategic_consolidation
+				}
+			}
+		}
+		if = {
+			limit = { NOT = { has_country_flag = ISR_oem_history_initialized } }
+			ISR_oem_initialize_history = yes
+			if = {
+				limit = { corporate_history_full_enabled = yes }
+				ISR_oem_reconstruct_start_history = yes
+			}
+		}
+		if = {
+			limit = { corporate_history_outcomes_only_enabled = yes }
+			ISR_oem_reconstruct_reached_history = yes
+		}
+		else = {
+			ISR_oem_schedule_current_year_event = yes
+			ISR_oem_recover_interrupted_events = yes
+		}
+		ISR_oem_resolve_strategy = yes
+	}
+}
