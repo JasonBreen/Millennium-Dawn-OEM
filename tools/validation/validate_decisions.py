@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import disk_cache
+from image_size import read_image_size
 from shared_utils import (
     atomic_write_text,
     blank_quoted_strings,
@@ -24,7 +25,7 @@ from shared_utils import (
     strip_comments,
     strip_inline_comment,
 )
-from sprite_index import build_sprite_index
+from sprite_index import build_sprite_index, build_sprite_texture_index
 from validator_common import (
     DEFAULT_EXTRA_SKIP_PATTERNS,
     BaseValidator,
@@ -143,6 +144,75 @@ def _missing_sprite_message(
     return (
         f"{owner}: {_ICON_KIND_FIELD[kind]} = {value} -> no sprite {tried} defined "
         "in interface/*.gfx (create the sprite or pick an existing icon)"
+    )
+
+
+_SLOT_LABEL = {
+    "decision": "decision icon",
+    "category_icon": "category icon",
+    "category_picture": "category picture",
+}
+
+# The decision UI draws each sprite at its texture's native size — the category
+# tab's `icon` (interface/countrydecisionview.gui:97) and the decision row's
+# (:411) both declare a position and no size — so art from the wrong slot renders
+# oversized or shrunken instead of being scaled to fit. MD's decision art comes in
+# three size families, keyed here by longest edge. The gaps between the bands are
+# deliberate: MD has a handful of in-between textures (a 38x38 category icon, a
+# 38x40 decision icon) that read as either family, and reporting those would bury
+# the real swaps, so a size that lands in a gap identifies no slot at all.
+_SLOT_EDGE_RANGES = (
+    ("decision", 0, 36),
+    ("category_icon", 48, 79),
+    ("category_picture", 80, None),
+)
+_SLOT_TYPICAL_SIZE = {
+    "decision": "32x31",
+    "category_icon": "52x40",
+    "category_picture": "114x101",
+}
+
+
+def _slot_for_size(width: int, height: int) -> Optional[str]:
+    """Return the icon slot a texture of this size is drawn for, if unambiguous."""
+    longest = max(width, height)
+    for slot, low, high in _SLOT_EDGE_RANGES:
+        if low <= longest and (high is None or longest <= high):
+            return slot
+    return None
+
+
+def _resolved_sprite(kind: str, value: str, textures: Dict[str, str]) -> Optional[str]:
+    """Return the sprite name the engine renders for one icon/picture value."""
+    for candidate in _sprite_candidates(kind, value):
+        if candidate in textures:
+            return candidate
+    return None
+
+
+def _icon_type_message(
+    kind: str, owner: str, value: str, textures: Dict[str, str]
+) -> Optional[str]:
+    """Return a finding when the value's art belongs to a different slot.
+
+    Values that resolve to nothing, or to a texture whose size cannot be read,
+    are left to the missing-icon check rather than reported twice.
+    """
+    if "[" in value or "]" in value:
+        return None
+    sprite = _resolved_sprite(kind, value, textures)
+    if sprite is None:
+        return None
+    size = read_image_size(textures[sprite])
+    if size is None:
+        return None
+    actual = _slot_for_size(*size)
+    if actual is None or actual == kind:
+        return None
+    return (
+        f"{owner}: {_ICON_KIND_FIELD[kind]} = {value} -> {sprite} is "
+        f"{size[0]}x{size[1]}, which is {_SLOT_LABEL[actual]} art; a "
+        f"{_SLOT_LABEL[kind]} is {_SLOT_TYPICAL_SIZE[kind]}"
     )
 
 
@@ -337,6 +407,23 @@ _CATEGORY_DECISION_TOKEN_RE = re.compile(r"^[ \t]+(\S+) = \{", flags=re.MULTILIN
 # validate_from_without_targets).
 _FROM_BLOCK_RE = re.compile(r"\bFROM\s*=\s*\{")
 _FROM_WORD_RE = re.compile(r"\bFROM\b")
+
+# Formable commitment ratchet sync (validate_formable_commitment_sync).
+_FORMABLE_DECISIONS_BASENAME = "formable_nation_decisions.txt"
+_FORMABLE_TAG_RE = re.compile(
+    r"^([A-Z0-9]+)_(?:integrate_|buy_core_state$|update_flag$)"
+)
+_STATE_ENTRY_RE = re.compile(r"\b\d+\s*=\s*\{")
+_SIZE_SET_RE = re.compile(r"formable_committed_size\s*=\s*(\d+)")
+_SIZE_CMP_RE = re.compile(r"var\s*=\s*formable_committed_size\s+value\s*=\s*(\d+)")
+_COMMIT_PAIR_RE = re.compile(
+    r"set_variable\s*=\s*\{\s*formable_committed_id\s*=\s*(\d+)\s*\}\s*"
+    r"set_variable\s*=\s*\{\s*formable_committed_size\s*=\s*(\d+)\s*\}"
+)
+_OWN_GATE_ID_RE = re.compile(
+    r"NOT\s*=\s*\{\s*check_variable\s*=\s*\{\s*formable_committed_id\s*=\s*(\d+)\s*\}\s*\}"
+)
+_ID_LITERAL_RE = re.compile(r"formable_committed_id\s*=\s*(\d+)")
 
 
 def _is_targeted_decision(d: "DecisionFactory") -> bool:
@@ -636,6 +723,114 @@ def _find_category_redundant_rows(
             )
 
     return results
+
+
+def _find_formable_commitment_rows(
+    factories: List["DecisionFactory"], focus_texts: Dict[str, str]
+) -> List[str]:
+    """Drift check for the formable commitment ratchet.
+
+    Every decision in the formables file carries an ``ai_will_do`` gate
+    comparing ``formable_committed_size`` against that formable's full state
+    count, and the commit sites (integrate_start / update_flag complete_effect,
+    the IBR/ANZ remove_effects, Spain's focus tree) store the same id/size
+    pair. The counts exist only as inlined literals, so editing an
+    update_flag's state list silently corrupts the ratchet ordering — this
+    recomputes each count from the update_flag ``available`` block and diffs
+    it against every literal.
+
+    ``factories`` must already be restricted to the formables file;
+    ``focus_texts`` maps basename -> text for focus files mentioning
+    ``formable_committed_``.
+    """
+    rows: List[str] = []
+    by_tag: Dict[str, List["DecisionFactory"]] = {}
+    for d in factories:
+        m = _FORMABLE_TAG_RE.match(d.token)
+        if not m:
+            rows.append(
+                f"{d.token:<55}{d.source_basename} - not a formable decision shape"
+            )
+            continue
+        by_tag.setdefault(m.group(1), []).append(d)
+
+    canonical: Dict[str, int] = {}
+    for tag, decs in by_tag.items():
+        uf = next((d for d in decs if d.token == f"{tag}_update_flag"), None)
+        if uf is None or not uf.available:
+            rows.append(f"{tag}: no update_flag available block - cannot derive size")
+            continue
+        canonical[tag] = len(_STATE_ENTRY_RE.findall(uf.available))
+
+    commit_ids: Dict[str, int] = {}
+    for tag, decs in by_tag.items():
+        if tag not in canonical:
+            continue
+        size = canonical[tag]
+        ids = set()
+        for d in decs:
+            literals = [
+                int(v)
+                for regex in (_SIZE_SET_RE, _SIZE_CMP_RE)
+                for v in regex.findall(d.raw)
+            ]
+            if not literals:
+                rows.append(
+                    f"{d.token:<55}{d.source_basename} - missing commitment gate (no formable_committed_size literal)"
+                )
+            for v in literals:
+                if v != size:
+                    rows.append(
+                        f"{d.token:<55}{d.source_basename} - size literal {v} != {tag} update_flag state count {size}"
+                    )
+            for i, _ in _COMMIT_PAIR_RE.findall(d.raw):
+                ids.add(int(i))
+        if len(ids) > 1:
+            rows.append(f"{tag}: conflicting commit ids {sorted(ids)}")
+        elif ids:
+            commit_ids[tag] = next(iter(ids))
+        else:
+            rows.append(f"{tag}: no commit write (set_variable formable_committed_id)")
+
+    id_owner: Dict[int, str] = {}
+    for tag in sorted(commit_ids):
+        fid = commit_ids[tag]
+        if fid in id_owner:
+            rows.append(f"{tag}: commit id {fid} collides with {id_owner[fid]}")
+        else:
+            id_owner[fid] = tag
+
+    for tag, decs in by_tag.items():
+        fid = commit_ids.get(tag)
+        for d in decs:
+            for g in _OWN_GATE_ID_RE.findall(d.raw):
+                if fid is not None and int(g) != fid:
+                    rows.append(
+                        f"{d.token:<55}{d.source_basename} - gate id {g} != {tag} commit id {fid}"
+                    )
+            for ref in _ID_LITERAL_RE.findall(d.raw):
+                if id_owner and int(ref) not in id_owner:
+                    rows.append(
+                        f"{d.token:<55}{d.source_basename} - references unknown formable id {ref}"
+                    )
+
+    size_by_id = {commit_ids[t]: canonical[t] for t in commit_ids if t in canonical}
+    for basename, text in focus_texts.items():
+        for i, s in _COMMIT_PAIR_RE.findall(text):
+            if int(i) not in size_by_id:
+                rows.append(
+                    f"{basename}: focus commit references unknown formable id {i}"
+                )
+            elif int(s) != size_by_id[int(i)]:
+                rows.append(
+                    f"{basename}: focus commit size {s} != update_flag state count {size_by_id[int(i)]} for id {i}"
+                )
+        for v in _SIZE_CMP_RE.findall(text):
+            if size_by_id and int(v) not in set(size_by_id.values()):
+                rows.append(
+                    f"{basename}: focus guard size {v} matches no formable state count"
+                )
+    return rows
 
 
 def extract_value_single_line(obj: str, s: str) -> str:
@@ -2394,6 +2589,41 @@ class Validator(BaseValidator):
             "Decisions with targets_dynamic/target_non_existing but no targets (meaningless — add targets or remove):",
         )
 
+    def validate_formable_commitment_sync(self):
+        """Flag formable commitment-ratchet literals out of sync with state lists.
+
+        See ``_find_formable_commitment_rows`` for the rule set. New formables
+        must wire the ratchet (gate on every decision, commit in
+        integrate_start/update_flag) or this check reports them.
+        """
+        self._log_section(
+            "Checking formable commitment ratchet id/size literals for drift..."
+        )
+
+        factories = [
+            d
+            for d in parse_all_decision_factories(self.mod_path)
+            if d.source_basename == _FORMABLE_DECISIONS_BASENAME
+        ]
+
+        focus_texts: Dict[str, str] = {}
+        pattern = os.path.join(self.mod_path, "common", "national_focus", "*.txt")
+        for filename in glob.iglob(pattern):
+            if _should_skip(filename):
+                continue
+            text = FileOpener.open_text_file(
+                filename, lowercase=False, strip_comments_flag=True
+            )
+            if "formable_committed_" in text:
+                focus_texts[os.path.basename(filename)] = text
+
+        results = _find_formable_commitment_rows(factories, focus_texts)
+        self._report(
+            results,
+            "✓ Formable commitment ids/sizes in sync",
+            "Formable commitment ratchet drift (gate/commit literals out of sync with update_flag state lists — update every size literal for the formable):",
+        )
+
     def validate_missing_icons(self):
         """Flag decisions/categories whose icon or picture sprite is undefined.
 
@@ -2441,6 +2671,47 @@ class Validator(BaseValidator):
             category="missing-decision-icon",
         )
 
+    def validate_icon_types(self):
+        """Flag icons whose art belongs to a different decision-UI slot.
+
+        Sprite names do not tell the slot apart — MD categories use both
+        `GFX_decision_category_*` and `GFX_decisions_category_*`, and category
+        `picture` banners use the plain `GFX_decision_*` prefix — so the texture's
+        pixel size is what identifies the art. Nothing here overlaps the
+        missing-icon check: a value that resolves to no sprite is skipped.
+        """
+        self._log_section("Checking decision icons match their UI slot...")
+
+        textures = build_sprite_texture_index(self.mod_path)
+        if len(textures) < 1000:
+            self.log(
+                f"  Only {len(textures)} GFX textures loaded — sprite definitions "
+                "did not load; skipping the icon type check",
+                "warning",
+            )
+            return
+
+        files = self._collect_files(["common/decisions/**/*.txt"], ignore_staged=True)
+        ref_lists = self._pool_map(
+            _extract_decision_icons, [(f, self.mod_path) for f in files]
+        )
+
+        results = []
+        for filepath, refs in zip(files, ref_lists):
+            for owner, kind, value, line in refs:
+                msg = _icon_type_message(kind, owner, value, textures)
+                if not msg:
+                    continue
+                results.append((msg, os.path.relpath(filepath, self.mod_path), line))
+
+        self._report(
+            results,
+            "✓ All decision icons use art sized for their slot",
+            "Decision icons using art from the wrong slot:",
+            Severity.WARNING,
+            category="decision-icon-slot-mismatch",
+        )
+
     def run_validations(self):
         if self.staged_only:
             # Decision checks parse all 200+ decision files even for structural
@@ -2482,6 +2753,8 @@ class Validator(BaseValidator):
         self.validate_mission_only_attributes()
         self.validate_orphaned_remove_effect()
         self.validate_orphaned_target_modifiers()
+        self.validate_formable_commitment_sync()
+        self.validate_icon_types()
 
         if self.missing_icons:
             self.validate_missing_icons()

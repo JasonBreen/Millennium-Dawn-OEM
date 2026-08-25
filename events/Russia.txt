@@ -3992,7 +3992,10 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: sov_other.14.a executed"
 		hidden_effect = {
 			if = {
-				limit = { country_exists = NOV }
+				limit = {
+					country_exists = NOV
+					NOT = { NOV = { is_subject_of = UKR } }
+				}
 				NOV = {
 					remove_state_core = 1076
 					remove_state_core = 1075
@@ -4048,7 +4051,10 @@ country_event = {
 		change_influence_percentage = yes
 		hidden_effect = {
 			if = {
-				limit = { country_exists = NOV }
+				limit = {
+					country_exists = NOV
+					NOT = { NOV = { is_subject_of = UKR } }
+				}
 				NOV = {
 					remove_state_core = 1076
 					remove_state_core = 1075
@@ -5898,6 +5904,11 @@ country_event = {
 	picture = GFX_sov_empire_new_russian_army
 	is_triggered_only = yes
 
+	trigger = {
+		tag = SOV
+		date > 2013.12.31
+	}
+
 	option = {
 		name = sov_nationalists.33.a
 		log = "[GetDateText]: [This.GetName]: sov_nationalists.33.a executed"
@@ -5970,8 +5981,8 @@ country_event = {
 			set_temp_variable = { party_popularity_increase = 0.09 }
 			set_temp_variable = { temp_outlook_increase = 0.09 }
 			change_relative_party_popularity = yes
-			annex_country = { target = NOV transfer_troops = yes }
 			NOV = { every_core_state = { add_core_of = SOV } }
+			annex_country = { target = NOV transfer_troops = yes }
 		}
 	}
 }
@@ -8445,26 +8456,15 @@ country_event = {
 	option = {
 		name = sov_dissolution.5.a
 		log = "[GetDateText]: [This.GetName]: sov_dissolution.5.a executed"
-		random_owned_state = {
+		every_owned_state = {
+			limit = {
+				industrial_complex > 0
+			}
+			random_select_amount = 3
 			remove_building = {
 				type = industrial_complex
 				level = 1
 			}
-			log = "[This.GetName] Removing industry in [This.GetName], [This.GetName]"
-		}
-		random_owned_state = {
-			remove_building = {
-				type = industrial_complex
-				level = 1
-			}
-			log = "[This.GetName] Removing industry in [This.GetName], [This.GetName]"
-		}
-		random_owned_state = {
-			remove_building = {
-				type = industrial_complex
-				level = 1
-			}
-			log = "[This.GetName] Removing industry in [This.GetName], [This.GetName]"
 		}
 		FROM = {
 			add_offsite_building = { type = industrial_complex level = 3 }
@@ -8595,11 +8595,11 @@ country_event = {
 		name = sov_dissolution.12.a
 		log = "[GetDateText]: [This.GetName]: sov_dissolution.12.a executed"
 		random_owned_state = {
+			limit = { industrial_complex > 0 }
 			remove_building = {
 				type = industrial_complex
 				level = 1
 			}
-			log = "[This.GetName] Removing industry in [This.GetName], [This.GetName]"
 		}
 		add_to_variable = { reunification_progress = 20 }
 		custom_effect_tooltip = SOV_reunification_plus_20

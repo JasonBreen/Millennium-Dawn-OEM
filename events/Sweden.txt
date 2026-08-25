@@ -778,7 +778,7 @@ country_event = {
 					reload_type_slot = manual_loading
 					special_type_slot_1 = smoke_launchers_2
 					special_type_slot_2 = wet_ammo_storage
-					special_type_slot_3 = smoke_launchers_2
+					special_type_slot_3 = empty
 					special_type_slot_4 = tank_battlestation_3		#Battlestation
 					special_type_slot_6 = spaced_armor_gen2		#ERA/Spaced
 				}
@@ -4763,6 +4763,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: Sweden_royal.2.o1 executed"
 		custom_effect_tooltip = Sweden_royal.2.o1_desc
 			set_country_flag = victoria_officer_training
+			clr_country_flag = SWE_royal_officer_training_pending
 			add_war_support = 0.05
 			add_command_power = 10
 		ai_chance = { base = 1 }
@@ -4781,6 +4782,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: Sweden_royal.2.o2 executed"
 		custom_effect_tooltip = Sweden_royal.2.o2_desc
 			set_country_flag = philip_officer_training
+			clr_country_flag = SWE_royal_officer_training_pending
 			army_experience = 15
 			navy_experience = 15
 		ai_chance = { base = 1 }
@@ -4971,13 +4973,15 @@ country_event = {
 		change_influence_percentage = yes
 		newline = yes
 		random_owned_state = {
-				add_building_construction = {
-					type = offices
-					level = 1
-					instant_build = yes
-				}
+			limit = { free_shared_building_slots = yes }
+			add_building_construction = {
+				type = offices
+				level = 1
+				instant_build = yes
 			}
+		}
 		random_owned_state = {
+			limit = { free_shared_building_slots = yes }
 			add_building_construction = {
 				type = industrial_complex
 				level = 1
@@ -5004,12 +5008,12 @@ country_event = {
 		change_influence_percentage = yes
 		newline = yes
 		random_owned_state = {
-				add_building_construction = {
-					type = infrastructure
-					level = 1
-					instant_build = yes
-				}
+			add_building_construction = {
+				type = infrastructure
+				level = 1
+				instant_build = yes
 			}
+		}
 	}
 
 }
@@ -5208,20 +5212,22 @@ country_event = {
 	option = {
 		name = Sweden_eastern.14.a
 		log = "[GetDateText]: [This.GetName]: Sweden_eastern.14.a executed"
-		random_owned_state = {
+		every_owned_state = {
+			limit = {
+				free_building_slots = {
+					building = industrial_complex
+					size > 0
+					include_locked = no
+				}
+			}
+			random_select_amount = 2
 			add_building_construction = {
 				type = industrial_complex
 				level = 1
 				instant_build = yes
 			}
 		}
-		random_owned_state = {
-			add_building_construction = {
-				type = industrial_complex
-				level = 1
-				instant_build = yes
-			}
-		}
+		newline = yes
 		SWE = { country_event = SWE_eastern.15 }
 		set_temp_variable = { percent_change = 7 }
 		set_temp_variable = { tag_index = SWE }
@@ -5483,20 +5489,20 @@ country_event = {
 	option = {
 		name = Sweden_eastern.24.a
 		log = "[GetDateText]: [This.GetName]: Sweden_eastern.24.a executed"
-		random_owned_state = {
-			add_building_construction = {
-				type = industrial_complex
-				level = 1
-				instant_build = yes
+		every_owned_state = {
+			limit = {
+				free_building_slots = {
+					building = industrial_complex
+					size > 0
+					include_locked = yes
+				}
+				free_building_slots = {
+					building = infrastructure
+					size > 0
+					include_locked = no
+				}
 			}
-			add_building_construction = {
-				type = infrastructure
-				level = 1
-				instant_build = yes
-			}
-			add_extra_state_shared_building_slots = 2
-		}
-		random_owned_state = {
+			random_select_amount = 2
 			add_building_construction = {
 				type = industrial_complex
 				level = 1
