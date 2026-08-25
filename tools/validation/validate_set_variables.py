@@ -205,9 +205,11 @@ def _pass2_init(mod_path, bare_map, dotted_map, namespace):
 
 
 def _is_definition(text: str, start: int) -> bool:
-    # A match is the left-hand target of a set_variable assignment (a
-    # definition, not a use) when `set_variable = {? (scope.)*` sits directly
-    # before it. Identical to the old per-match look-behind.
+    """Check whether a variable match at `start` is a set_variable definition.
+
+    A match is the left-hand target of an assignment (a definition, not a use)
+    when `set_variable = {? (scope.)*` sits directly before it.
+    """
     before = text[max(0, start - SET_LOOKBACK_WINDOW) : start]
     return _SET_TARGET_PREFIX_RE.search(before) is not None
 
