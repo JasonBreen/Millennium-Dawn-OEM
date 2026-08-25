@@ -36,8 +36,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-# strip_comments is re-exported here so validate_simplifications_test can import it.
-from shared_utils import extract_block_from_text, strip_comments  # noqa: F401
+from shared_utils import extract_block_from_text
 from validator_common import BaseValidator, Severity, run_validator_main
 
 _SCAN_PATTERNS = [
