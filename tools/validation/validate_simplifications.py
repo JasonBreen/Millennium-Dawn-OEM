@@ -238,9 +238,8 @@ def _find_count_collapsible(text: str):
     return results
 
 
-# Empty `visible` / `available` / `allowed` blocks fall through to the engine
-# default (visible, available, allowed), so an effectively-empty one is dead
-# weight that can be deleted outright.
+# Empty `visible` / `available` / `allowed` blocks fall through to engine defaults,
+# so an effectively-empty block is redundant and can be deleted outright.
 _EMPTY_BLOCK_RE = re.compile(r"\b(visible|available|allowed)\s*=\s*\{")
 
 
