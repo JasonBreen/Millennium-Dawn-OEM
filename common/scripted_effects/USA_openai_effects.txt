@@ -1,0 +1,575 @@
+USA_openai_initialize_state = {
+	if = {
+		limit = { NOT = { has_country_flag = USA_openai_state_initialized } }
+		set_variable = { USA_openai_mission_control = 8 }
+		set_variable = { USA_openai_frontier_capability = 2 }
+		set_variable = { USA_openai_deployment_reach = 0 }
+		set_variable = { USA_openai_safety_governance = 6 }
+		set_variable = { USA_openai_compute_independence = 3 }
+		set_country_flag = USA_openai_state_initialized
+	}
+	USA_openai_clamp_state = yes
+}
+
+USA_openai_clamp_state = {
+	clamp_variable = { var = USA_openai_mission_control min = 0 max = 10 }
+	clamp_variable = { var = USA_openai_frontier_capability min = 0 max = 10 }
+	clamp_variable = { var = USA_openai_deployment_reach min = 0 max = 10 }
+	clamp_variable = { var = USA_openai_safety_governance min = 0 max = 10 }
+	clamp_variable = { var = USA_openai_compute_independence min = 0 max = 10 }
+}
+
+USA_openai_apply_mission_route = {
+	USA_openai_initialize_state = yes
+	add_to_variable = { USA_openai_mission_control = 2 }
+	add_to_variable = { USA_openai_safety_governance = 1 }
+	add_to_variable = { USA_openai_deployment_reach = -1 }
+	USA_openai_clamp_state = yes
+}
+
+USA_openai_apply_commercial_route = {
+	USA_openai_initialize_state = yes
+	add_to_variable = { USA_openai_frontier_capability = 1 }
+	add_to_variable = { USA_openai_deployment_reach = 2 }
+	add_to_variable = { USA_openai_mission_control = -1 }
+	add_to_variable = { USA_openai_safety_governance = -1 }
+	USA_openai_clamp_state = yes
+}
+
+USA_openai_apply_safety_route = {
+	USA_openai_initialize_state = yes
+	add_to_variable = { USA_openai_safety_governance = 2 }
+	add_to_variable = { USA_openai_mission_control = 1 }
+	add_to_variable = { USA_openai_deployment_reach = -1 }
+	USA_openai_clamp_state = yes
+}
+
+USA_openai_apply_compute_route = {
+	USA_openai_initialize_state = yes
+	add_to_variable = { USA_openai_compute_independence = 2 }
+	add_to_variable = { USA_openai_frontier_capability = 1 }
+	add_to_variable = { USA_openai_deployment_reach = 1 }
+	add_to_variable = { USA_openai_mission_control = -1 }
+	USA_openai_clamp_state = yes
+}
+
+USA_openai_apply_event_1_historical = {
+	set_country_flag = USA_openai_event_1_resolved
+	USA_openai_apply_mission_route = yes
+}
+
+USA_openai_apply_event_2_historical = {
+	set_country_flag = USA_openai_event_2_resolved
+	USA_openai_apply_commercial_route = yes
+}
+
+USA_openai_apply_event_3_historical = {
+	set_country_flag = USA_openai_event_3_resolved
+	USA_openai_apply_safety_route = yes
+}
+
+USA_openai_apply_event_4_historical = {
+	set_country_flag = USA_openai_event_4_resolved
+	USA_openai_apply_commercial_route = yes
+}
+
+USA_openai_apply_event_5_historical = {
+	set_country_flag = USA_openai_event_5_resolved
+	USA_openai_apply_commercial_route = yes
+}
+
+USA_openai_apply_event_6_historical = {
+	set_country_flag = USA_openai_event_6_resolved
+	USA_openai_apply_safety_route = yes
+}
+
+USA_openai_apply_event_7_historical = {
+	set_country_flag = USA_openai_event_7_resolved
+	USA_openai_apply_safety_route = yes
+}
+
+USA_openai_apply_event_8_historical = {
+	set_country_flag = USA_openai_event_8_resolved
+	USA_openai_apply_compute_route = yes
+}
+
+USA_openai_clear_capstone_outcome = {
+	remove_ideas = {
+		USA_openai_nonprofit_controlled_pbc
+		USA_openai_scaled_commercial_platform
+		USA_openai_diversified_frontier_consortium
+		USA_openai_safety_governed_laboratory
+	}
+}
+
+USA_openai_terminal_callback = {
+	if = {
+		limit = {
+			has_country_flag = USA_openai_capstone_resolved
+			NOT = { has_country_flag = USA_openai_terminal_callback_sent }
+		}
+		USA_ai_core_sync_openai_state = yes
+		set_country_flag = USA_openai_terminal_callback_sent
+	}
+}
+
+USA_openai_apply_nonprofit_controlled_pbc = {
+	if = {
+		limit = { NOT = { has_country_flag = USA_openai_capstone_resolved } }
+		USA_openai_clear_capstone_outcome = yes
+		add_ideas = USA_openai_nonprofit_controlled_pbc
+		set_country_flag = USA_openai_capstone_resolved
+		USA_openai_terminal_callback = yes
+	}
+}
+
+USA_openai_apply_scaled_commercial_platform = {
+	if = {
+		limit = { NOT = { has_country_flag = USA_openai_capstone_resolved } }
+		USA_openai_clear_capstone_outcome = yes
+		add_ideas = USA_openai_scaled_commercial_platform
+		set_country_flag = USA_openai_capstone_resolved
+		USA_openai_terminal_callback = yes
+	}
+}
+
+USA_openai_apply_diversified_frontier_consortium = {
+	if = {
+		limit = { NOT = { has_country_flag = USA_openai_capstone_resolved } }
+		USA_openai_clear_capstone_outcome = yes
+		add_ideas = USA_openai_diversified_frontier_consortium
+		set_country_flag = USA_openai_capstone_resolved
+		USA_openai_terminal_callback = yes
+	}
+}
+
+USA_openai_apply_safety_governed_laboratory = {
+	if = {
+		limit = { NOT = { has_country_flag = USA_openai_capstone_resolved } }
+		USA_openai_clear_capstone_outcome = yes
+		add_ideas = USA_openai_safety_governed_laboratory
+		set_country_flag = USA_openai_capstone_resolved
+		USA_openai_terminal_callback = yes
+	}
+}
+
+USA_openai_resolve_capstone = {
+	USA_openai_initialize_state = yes
+	if = {
+		limit = { NOT = { has_country_flag = USA_openai_capstone_resolved } }
+		if = {
+			limit = { check_variable = { USA_openai_capstone_choice = 1 } }
+			USA_openai_apply_nonprofit_controlled_pbc = yes
+		}
+		else_if = {
+			limit = { check_variable = { USA_openai_capstone_choice = 2 } }
+			USA_openai_apply_scaled_commercial_platform = yes
+		}
+		else_if = {
+			limit = { check_variable = { USA_openai_capstone_choice = 3 } }
+			USA_openai_apply_safety_governed_laboratory = yes
+		}
+		else_if = {
+			limit = { check_variable = { USA_openai_capstone_choice = 4 } }
+			USA_openai_apply_diversified_frontier_consortium = yes
+		}
+		else = { USA_openai_apply_nonprofit_controlled_pbc = yes }
+	}
+}
+
+USA_openai_reconstruct_history = {
+	if = {
+		limit = {
+			date > 2015.12.11
+			NOT = { has_country_flag = USA_openai_event_1_resolved }
+		}
+		USA_openai_initialize_state = yes
+		USA_openai_apply_event_1_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2019.3.11
+			NOT = { has_country_flag = USA_openai_event_2_resolved }
+		}
+		USA_openai_apply_event_2_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2020.6.11
+			NOT = { has_country_flag = USA_openai_event_3_resolved }
+		}
+		USA_openai_apply_event_3_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2022.11.30
+			NOT = { has_country_flag = USA_openai_event_4_resolved }
+		}
+		USA_openai_apply_event_4_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2023.3.14
+			NOT = { has_country_flag = USA_openai_event_5_resolved }
+		}
+		USA_openai_apply_event_5_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2023.11.17
+			NOT = { has_country_flag = USA_openai_event_6_resolved }
+		}
+		USA_openai_apply_event_6_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2024.3.8
+			NOT = { has_country_flag = USA_openai_event_7_resolved }
+		}
+		USA_openai_apply_event_7_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2025.1.21
+			NOT = { has_country_flag = USA_openai_event_8_resolved }
+		}
+		USA_openai_apply_event_8_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2025.10.28
+			NOT = { has_country_flag = USA_openai_capstone_resolved }
+		}
+		set_country_flag = USA_openai_event_9_resolved
+		USA_openai_resolve_capstone = yes
+		set_country_flag = USA_openai_capstone_resolved
+	}
+	if = {
+		limit = { date > 1999.12.31 }
+		set_country_flag = USA_openai_reconstruct_complete
+	}
+}
+
+USA_openai_recover_prior_year_history = {
+	if = {
+		limit = {
+			date > 2016.1.1
+			NOT = { has_country_flag = USA_openai_event_1_resolved }
+			NOT = { has_country_flag = USA_openai_event_1_pending }
+		}
+		clr_country_flag = USA_openai_event_1_delivery_expected
+		USA_openai_apply_event_1_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2020.1.1
+			NOT = { has_country_flag = USA_openai_event_2_resolved }
+			NOT = { has_country_flag = USA_openai_event_2_pending }
+		}
+		clr_country_flag = USA_openai_event_2_delivery_expected
+		USA_openai_apply_event_2_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2021.1.1
+			NOT = { has_country_flag = USA_openai_event_3_resolved }
+			NOT = { has_country_flag = USA_openai_event_3_pending }
+		}
+		clr_country_flag = USA_openai_event_3_delivery_expected
+		USA_openai_apply_event_3_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2023.1.1
+			NOT = { has_country_flag = USA_openai_event_4_resolved }
+			NOT = { has_country_flag = USA_openai_event_4_pending }
+		}
+		clr_country_flag = USA_openai_event_4_delivery_expected
+		USA_openai_apply_event_4_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2024.1.1
+			NOT = { has_country_flag = USA_openai_event_5_resolved }
+			NOT = { has_country_flag = USA_openai_event_5_pending }
+		}
+		clr_country_flag = USA_openai_event_5_delivery_expected
+		USA_openai_apply_event_5_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2024.1.1
+			NOT = { has_country_flag = USA_openai_event_6_resolved }
+			NOT = { has_country_flag = USA_openai_event_6_pending }
+		}
+		clr_country_flag = USA_openai_event_6_delivery_expected
+		USA_openai_apply_event_6_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2025.1.1
+			NOT = { has_country_flag = USA_openai_event_7_resolved }
+			NOT = { has_country_flag = USA_openai_event_7_pending }
+		}
+		clr_country_flag = USA_openai_event_7_delivery_expected
+		USA_openai_apply_event_7_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2026.1.1
+			NOT = { has_country_flag = USA_openai_event_8_resolved }
+			NOT = { has_country_flag = USA_openai_event_8_pending }
+		}
+		clr_country_flag = USA_openai_event_8_delivery_expected
+		USA_openai_apply_event_8_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2026.1.1
+			NOT = { has_country_flag = USA_openai_capstone_resolved }
+			NOT = { has_country_flag = USA_openai_event_9_pending }
+		}
+		clr_country_flag = USA_openai_event_9_delivery_expected
+		set_country_flag = USA_openai_event_9_resolved
+		USA_openai_resolve_capstone = yes
+	}
+}
+
+USA_openai_schedule_event_1 = {
+	if = {
+		limit = {
+			date > 2014.12.31
+			date < 2015.1.2
+			NOT = { has_country_flag = USA_openai_event_1_resolved }
+			NOT = { has_country_flag = USA_openai_event_1_pending }
+		}
+		set_country_flag = USA_openai_event_1_delivery_expected
+		set_country_flag = { flag = USA_openai_event_1_pending value = 1 days = 405 }
+		country_event = { id = USA_openai_events.1 days = 344 }
+	}
+	if = {
+		limit = {
+			date > 2015.12.11
+			NOT = { has_country_flag = USA_openai_event_1_resolved }
+			NOT = { has_country_flag = USA_openai_event_1_pending }
+		}
+		set_country_flag = USA_openai_event_1_delivery_expected
+		set_country_flag = { flag = USA_openai_event_1_pending value = 1 days = 61 }
+		country_event = { id = USA_openai_events.1 days = 1 }
+	}
+}
+
+USA_openai_schedule_event_2 = {
+	if = {
+		limit = {
+			date > 2018.12.31
+			date < 2019.1.2
+			NOT = { has_country_flag = USA_openai_event_2_resolved }
+			NOT = { has_country_flag = USA_openai_event_2_pending }
+		}
+		set_country_flag = USA_openai_event_2_delivery_expected
+		set_country_flag = { flag = USA_openai_event_2_pending value = 1 days = 130 }
+		country_event = { id = USA_openai_events.2 days = 69 }
+	}
+	if = {
+		limit = {
+			date > 2019.3.11
+			NOT = { has_country_flag = USA_openai_event_2_resolved }
+			NOT = { has_country_flag = USA_openai_event_2_pending }
+		}
+		set_country_flag = USA_openai_event_2_delivery_expected
+		set_country_flag = { flag = USA_openai_event_2_pending value = 1 days = 61 }
+		country_event = { id = USA_openai_events.2 days = 1 }
+	}
+}
+
+USA_openai_schedule_event_3 = {
+	if = {
+		limit = {
+			date > 2019.12.31
+			date < 2020.1.2
+			NOT = { has_country_flag = USA_openai_event_3_resolved }
+			NOT = { has_country_flag = USA_openai_event_3_pending }
+		}
+		set_country_flag = USA_openai_event_3_delivery_expected
+		set_country_flag = { flag = USA_openai_event_3_pending value = 1 days = 223 }
+		country_event = { id = USA_openai_events.3 days = 162 }
+	}
+	if = {
+		limit = {
+			date > 2020.6.11
+			NOT = { has_country_flag = USA_openai_event_3_resolved }
+			NOT = { has_country_flag = USA_openai_event_3_pending }
+		}
+		set_country_flag = USA_openai_event_3_delivery_expected
+		set_country_flag = { flag = USA_openai_event_3_pending value = 1 days = 61 }
+		country_event = { id = USA_openai_events.3 days = 1 }
+	}
+}
+
+USA_openai_schedule_event_4 = {
+	if = {
+		limit = {
+			date > 2021.12.31
+			date < 2022.1.2
+			NOT = { has_country_flag = USA_openai_event_4_resolved }
+			NOT = { has_country_flag = USA_openai_event_4_pending }
+		}
+		set_country_flag = USA_openai_event_4_delivery_expected
+		set_country_flag = { flag = USA_openai_event_4_pending value = 1 days = 394 }
+		country_event = { id = USA_openai_events.4 days = 333 }
+	}
+	if = {
+		limit = {
+			date > 2022.11.30
+			NOT = { has_country_flag = USA_openai_event_4_resolved }
+			NOT = { has_country_flag = USA_openai_event_4_pending }
+		}
+		set_country_flag = USA_openai_event_4_delivery_expected
+		set_country_flag = { flag = USA_openai_event_4_pending value = 1 days = 61 }
+		country_event = { id = USA_openai_events.4 days = 1 }
+	}
+}
+
+USA_openai_schedule_event_5 = {
+	if = {
+		limit = {
+			date > 2022.12.31
+			date < 2023.1.2
+			NOT = { has_country_flag = USA_openai_event_5_resolved }
+			NOT = { has_country_flag = USA_openai_event_5_pending }
+		}
+		set_country_flag = USA_openai_event_5_delivery_expected
+		set_country_flag = { flag = USA_openai_event_5_pending value = 1 days = 133 }
+		country_event = { id = USA_openai_events.5 days = 72 }
+	}
+	if = {
+		limit = {
+			date > 2023.3.14
+			NOT = { has_country_flag = USA_openai_event_5_resolved }
+			NOT = { has_country_flag = USA_openai_event_5_pending }
+		}
+		set_country_flag = USA_openai_event_5_delivery_expected
+		set_country_flag = { flag = USA_openai_event_5_pending value = 1 days = 61 }
+		country_event = { id = USA_openai_events.5 days = 1 }
+	}
+}
+
+USA_openai_schedule_event_6 = {
+	if = {
+		limit = {
+			date > 2022.12.31
+			date < 2023.1.2
+			NOT = { has_country_flag = USA_openai_event_6_resolved }
+			NOT = { has_country_flag = USA_openai_event_6_pending }
+		}
+		set_country_flag = USA_openai_event_6_delivery_expected
+		set_country_flag = { flag = USA_openai_event_6_pending value = 1 days = 381 }
+		country_event = { id = USA_openai_events.6 days = 320 }
+	}
+	if = {
+		limit = {
+			date > 2023.11.17
+			NOT = { has_country_flag = USA_openai_event_6_resolved }
+			NOT = { has_country_flag = USA_openai_event_6_pending }
+		}
+		set_country_flag = USA_openai_event_6_delivery_expected
+		set_country_flag = { flag = USA_openai_event_6_pending value = 1 days = 61 }
+		country_event = { id = USA_openai_events.6 days = 1 }
+	}
+}
+
+USA_openai_schedule_event_7 = {
+	if = {
+		limit = {
+			date > 2023.12.31
+			date < 2024.1.2
+			NOT = { has_country_flag = USA_openai_event_7_resolved }
+			NOT = { has_country_flag = USA_openai_event_7_pending }
+		}
+		set_country_flag = USA_openai_event_7_delivery_expected
+		set_country_flag = { flag = USA_openai_event_7_pending value = 1 days = 128 }
+		country_event = { id = USA_openai_events.7 days = 67 }
+	}
+	if = {
+		limit = {
+			date > 2024.3.8
+			NOT = { has_country_flag = USA_openai_event_7_resolved }
+			NOT = { has_country_flag = USA_openai_event_7_pending }
+		}
+		set_country_flag = USA_openai_event_7_delivery_expected
+		set_country_flag = { flag = USA_openai_event_7_pending value = 1 days = 61 }
+		country_event = { id = USA_openai_events.7 days = 1 }
+	}
+}
+
+USA_openai_schedule_event_8 = {
+	if = {
+		limit = {
+			date > 2024.12.31
+			date < 2025.1.2
+			NOT = { has_country_flag = USA_openai_event_8_resolved }
+			NOT = { has_country_flag = USA_openai_event_8_pending }
+		}
+		set_country_flag = USA_openai_event_8_delivery_expected
+		set_country_flag = { flag = USA_openai_event_8_pending value = 1 days = 81 }
+		country_event = { id = USA_openai_events.8 days = 20 }
+	}
+	if = {
+		limit = {
+			date > 2025.1.21
+			NOT = { has_country_flag = USA_openai_event_8_resolved }
+			NOT = { has_country_flag = USA_openai_event_8_pending }
+		}
+		set_country_flag = USA_openai_event_8_delivery_expected
+		set_country_flag = { flag = USA_openai_event_8_pending value = 1 days = 61 }
+		country_event = { id = USA_openai_events.8 days = 1 }
+	}
+}
+
+USA_openai_schedule_event_9 = {
+	if = {
+		limit = {
+			date > 2024.12.31
+			date < 2025.1.2
+			NOT = { has_country_flag = USA_openai_capstone_resolved }
+			NOT = { has_country_flag = USA_openai_event_9_resolved }
+			NOT = { has_country_flag = USA_openai_event_9_pending }
+		}
+		set_country_flag = USA_openai_event_9_delivery_expected
+		set_country_flag = { flag = USA_openai_event_9_pending value = 1 days = 361 }
+		country_event = { id = USA_openai_events.9 days = 300 }
+	}
+	if = {
+		limit = {
+			date > 2025.10.28
+			NOT = { has_country_flag = USA_openai_capstone_resolved }
+			NOT = { has_country_flag = USA_openai_event_9_resolved }
+			NOT = { has_country_flag = USA_openai_event_9_pending }
+		}
+		set_country_flag = USA_openai_event_9_delivery_expected
+		set_country_flag = { flag = USA_openai_event_9_pending value = 1 days = 61 }
+		country_event = { id = USA_openai_events.9 days = 1 }
+	}
+}
+
+USA_openai_schedule_current_year_events = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = USA
+			NOT = { has_country_flag = collapsed_nation }
+			has_country_flag = USA_openai_reconstruct_complete
+			NOT = { has_country_flag = USA_openai_capstone_resolved }
+		}
+		USA_openai_schedule_event_1 = yes
+		USA_openai_schedule_event_2 = yes
+		USA_openai_schedule_event_3 = yes
+		USA_openai_schedule_event_4 = yes
+		USA_openai_schedule_event_5 = yes
+		USA_openai_schedule_event_6 = yes
+		USA_openai_schedule_event_7 = yes
+		USA_openai_schedule_event_8 = yes
+		USA_openai_schedule_event_9 = yes
+	}
+}
