@@ -401,6 +401,36 @@ USA_test_apply_outcome = {
     assert scripts.reaches_marker("USA_test_reconstruct_history", "USA_test_outcome")
 
 
+def test_script_index_follows_calendar_date_scheduler_helpers(tmp_path):
+    effects = tmp_path / "common/scripted_effects/test_effects.txt"
+    effects.parent.mkdir(parents=True)
+    with effects.open("w", encoding="utf-8", newline="") as stream:
+        stream.write("""USA_test_schedule_current_year_events = {
+\tUSA_test_schedule_event_2 = yes
+}
+
+USA_test_schedule_event_2 = {
+\tif = {
+\t\tlimit = {
+\t\t\tdate > 2023.12.31
+\t\t\tdate < 2024.1.2
+\t\t}
+\t\tcountry_event = { id = USA_test_events.2 days = 151 }
+\t}
+\tif = {
+\t\tlimit = { date > 2024.6.1 }
+\t\tcountry_event = { id = USA_test_events.2 days = 1 }
+\t}
+}
+""")
+
+    scripts = ScriptIndex.load(tmp_path)
+
+    assert scripts.scheduler_years(
+        "USA_test_schedule_current_year_events", "USA_test_events.2"
+    ) == frozenset({2024})
+
+
 def test_script_backed_simulation_detects_wrong_scheduler_window(tmp_path):
     effects = tmp_path / "common/scripted_effects/test_effects.txt"
     effects.parent.mkdir(parents=True)

@@ -239,8 +239,37 @@ USA_ai_core_sync_openai_state = {
 		limit = {
 			NOT = { has_country_flag = USA_ai_core_capstone_resolved }
 			NOT = { has_country_flag = USA_ai_core_openai_state_received }
+			OR = {
+				has_idea = USA_openai_nonprofit_controlled_pbc
+				has_idea = USA_openai_scaled_commercial_platform
+				has_idea = USA_openai_diversified_frontier_consortium
+				has_idea = USA_openai_safety_governed_laboratory
+			}
 		}
-		# The OpenAI satellite fills this guarded receiver after defining its terminal ideas.
+		if = {
+			limit = { has_idea = USA_openai_nonprofit_controlled_pbc }
+			add_to_variable = { USA_ai_core_frontier_capability = 1 }
+			add_to_variable = { USA_ai_core_state_alignment = 1 }
+			add_to_variable = { USA_ai_core_public_legitimacy = 2 }
+		}
+		else_if = {
+			limit = { has_idea = USA_openai_scaled_commercial_platform }
+			add_to_variable = { USA_ai_core_frontier_capability = 2 }
+			add_to_variable = { USA_ai_core_compute_depth = 1 }
+			add_to_variable = { USA_ai_core_infrastructure_burden = 2 }
+			add_to_variable = { USA_ai_core_public_legitimacy = -1 }
+		}
+		else_if = {
+			limit = { has_idea = USA_openai_diversified_frontier_consortium }
+			add_to_variable = { USA_ai_core_compute_depth = 2 }
+			add_to_variable = { USA_ai_core_ecosystem_openness = 2 }
+			add_to_variable = { USA_ai_core_infrastructure_burden = 1 }
+		}
+		else = {
+			add_to_variable = { USA_ai_core_state_alignment = 1 }
+			add_to_variable = { USA_ai_core_public_legitimacy = 2 }
+			add_to_variable = { USA_ai_core_frontier_capability = -1 }
+		}
 		set_country_flag = USA_ai_core_openai_state_received
 		USA_ai_core_clamp_state = yes
 	}
@@ -251,8 +280,36 @@ USA_ai_core_sync_anthropic_state = {
 		limit = {
 			NOT = { has_country_flag = USA_ai_core_capstone_resolved }
 			NOT = { has_country_flag = USA_ai_core_anthropic_state_received }
+			OR = {
+				has_idea = USA_anthropic_safety_governed_frontier
+				has_idea = USA_anthropic_cloud_aligned_scale
+				has_idea = USA_anthropic_multi_cloud_independence
+				has_idea = USA_anthropic_cautious_research_laboratory
+			}
 		}
-		# The Anthropic satellite fills this guarded receiver after defining its terminal ideas.
+		if = {
+			limit = { has_idea = USA_anthropic_safety_governed_frontier }
+			add_to_variable = { USA_ai_core_state_alignment = 1 }
+			add_to_variable = { USA_ai_core_public_legitimacy = 2 }
+			add_to_variable = { USA_ai_core_frontier_capability = 1 }
+		}
+		else_if = {
+			limit = { has_idea = USA_anthropic_cloud_aligned_scale }
+			add_to_variable = { USA_ai_core_frontier_capability = 1 }
+			add_to_variable = { USA_ai_core_compute_depth = 2 }
+			add_to_variable = { USA_ai_core_infrastructure_burden = 1 }
+		}
+		else_if = {
+			limit = { has_idea = USA_anthropic_multi_cloud_independence }
+			add_to_variable = { USA_ai_core_compute_depth = 1 }
+			add_to_variable = { USA_ai_core_ecosystem_openness = 2 }
+			add_to_variable = { USA_ai_core_public_legitimacy = 1 }
+		}
+		else = {
+			add_to_variable = { USA_ai_core_ecosystem_openness = 1 }
+			add_to_variable = { USA_ai_core_public_legitimacy = 2 }
+			add_to_variable = { USA_ai_core_frontier_capability = -1 }
+		}
 		set_country_flag = USA_ai_core_anthropic_state_received
 		USA_ai_core_clamp_state = yes
 	}
