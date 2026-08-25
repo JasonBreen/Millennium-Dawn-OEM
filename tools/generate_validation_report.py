@@ -30,7 +30,6 @@ if _TOOLS_DIR not in sys.path:
 from report_lib import (  # noqa: E402
     MAX_ISSUES_STEP_SUMMARY,
     ReportContext,
-    classify,
     dedupe,
     delete_comment,
     load_all,
@@ -40,6 +39,7 @@ from report_lib import (  # noqa: E402
     render,
     truncate_if_needed,
 )
+from report_lib.baseline import classify  # noqa: E402
 
 
 def build_report(results_dir: str, ctx: ReportContext, baseline=None):

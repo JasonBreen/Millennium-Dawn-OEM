@@ -5,12 +5,11 @@ import json
 from report_lib import (
     Issue,
     Severity,
-    classify,
     load_baseline,
     load_issues,
     write_baseline,
 )
-from report_lib.baseline import META_FILENAME, issue_key
+from report_lib.baseline import META_FILENAME, classify, issue_key
 
 
 def _issue(**overrides):
