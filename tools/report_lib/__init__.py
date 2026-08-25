@@ -28,7 +28,8 @@ from .checks_api import post_checks
 from .comment import REPORT_MARKER, delete_comment, find_existing_comment, post_comment
 from .dedupe import dedupe
 from .loader import discover_validator_runs, load_all
-from .markdown import MAX_ISSUES_STEP_SUMMARY, render
+from .markdown import MAX_ISSUES_STEP_SUMMARY
+from .markdown import render as render
 from .models import Issue, ReportContext, Severity, ValidatorRun
 from .truncation import MAX_COMMENT_BYTES, truncate_if_needed
 
