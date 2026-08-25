@@ -357,9 +357,7 @@ def _engine_effect_payload(block: str) -> str:
 def _has_negative_treasury_change(option: str) -> bool:
     return any(
         float(value) < 0
-        for value in re.findall(
-            r"\btreasury_change\s*=\s*(-?\d+(?:\.\d+)?)", option
-        )
+        for value in re.findall(r"\btreasury_change\s*=\s*(-?\d+(?:\.\d+)?)", option)
     )
 
 
@@ -649,9 +647,7 @@ def test_shared_dispatch_recovers_full_late_starts_and_preserves_modes():
     assert "NOT = { has_country_flag = USA_intel_history_complete }" in full_monthly
     assert full_monthly.index(
         "USA_intel_reconstruct_history = yes"
-    ) < full_monthly.index(
-        "USA_intel_recover_history = yes"
-    )
+    ) < full_monthly.index("USA_intel_recover_history = yes")
     assert "corporate_history_outcomes_only_enabled = yes" in monthly
     assert "USA_intel_reconstruct_history = yes" in monthly
     assert "NOT = { has_country_flag = USA_intel_history_complete }" in monthly
@@ -860,7 +856,7 @@ def test_localisation_inventory_dashboard_values_and_utf8_bom_are_complete():
 
     option_tooltips = dict(
         re.findall(
-            r'(?m)^ (USA_intel_events\.(?:[1-9]|1[0-5])\.[abc]_tt):'
+            r"(?m)^ (USA_intel_events\.(?:[1-9]|1[0-5])\.[abc]_tt):"
             r'(?:\d+)?\s+"([^"]*)"\s*$',
             localisation,
         )
