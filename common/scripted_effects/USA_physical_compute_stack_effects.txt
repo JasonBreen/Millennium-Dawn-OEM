@@ -116,7 +116,48 @@ USA_physical_compute_stack_resolve = {
 		}
 	}
 
+	# Intel extends the aggregate without changing the three-pillar requirement
+	# that already produces USA_physical_compute_stack.
+	if = {
+		limit = {
+			OR = {
+				has_idea = USA_intel_domestic_silicon_arsenal
+				has_idea = USA_intel_open_systems_foundry
+				has_idea = USA_intel_integrated_compute_foundry
+				has_idea = USA_intel_x86_platform_fortress
+				has_idea = USA_intel_fabless_architecture_house
+			}
+		}
+		if = {
+			limit = { NOT = { has_idea = USA_processor_architecture_anchor } }
+			add_ideas = USA_processor_architecture_anchor
+		}
+	}
+	else = {
+		if = {
+			limit = { has_idea = USA_processor_architecture_anchor }
+			remove_ideas = USA_processor_architecture_anchor
+		}
+	}
+
+	if = {
+		limit = {
+			has_idea = USA_physical_compute_stack
+			has_idea = USA_processor_architecture_anchor
+		}
+		if = {
+			limit = { NOT = { has_idea = USA_full_spectrum_compute_stack } }
+			add_ideas = USA_full_spectrum_compute_stack
+		}
+	}
+	else = {
+		if = {
+			limit = { has_idea = USA_full_spectrum_compute_stack }
+			remove_ideas = USA_full_spectrum_compute_stack
+		}
+	}
+
 	# Shared exit for the TI, Micron and Motorola capstones: refresh the national
-	# bridge now rather than leaving it stale until the next monthly tick.
+	# bridge and the optional Intel extension now rather than leaving them stale.
 	USA_corporate_systems_update_economic_bridge = yes
 }

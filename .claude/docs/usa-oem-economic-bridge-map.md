@@ -79,13 +79,17 @@ AI-policy details are in `oem-real-options-economic-layer.md`.
 | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | Monthly U.S. Corporate History driver                                     | `USA_corporate_history_monthly_outcomes`                                     |
 | Each of the four Corporate Systems government policies                    | `common/decisions/USA_corporate_systems_dashboard.txt`                       |
-| Apple, Dell and NVIDIA capstones                                          | `USA_<chain>_resolve_capstone`                                               |
+| Apple, Dell, NVIDIA and Intel capstones                                   | Each chain's authoritative terminal resolver                                 |
 | TI, Micron and Motorola capstones (shared exit)                           | `USA_physical_compute_stack_resolve`                                         |
 | Google and Oracle outcome-changing options, and HP terminal route options | `events/USA_google_events.txt`, `USA_oracle_events.txt`, `USA_hp_events.txt` |
 
 Google, Oracle, and HP have no shared capstone resolver; their relevant event
 options refresh the bridge directly. The monthly call remains a safety net for
 late starts, reconstruction, and external economic-state changes.
+
+Each Corporate Systems policy calls the matching `USA_intel_apply_*` owner
+effect before the bridge refresh. The decision file never writes Intel variables
+or flags directly; Intel retains ownership of its policy response and clamp.
 
 ## Chain-to-axis mapping
 
@@ -107,6 +111,12 @@ Every branch is mutually exclusive within its chain unless noted.
 | NVIDIA   | idea `USA_nvidia_sovereign_compute_stack`                                     | NCS +1            | State-aligned capacity without an openness change                                | 1           |
 | NVIDIA   | idea `USA_nvidia_hybrid_national_champion`                                    | OS +1             | Hybrid route sets `USA_nvidia_ecosystem_openness +1`                             | 1           |
 | NVIDIA   | idea `USA_nvidia_commodity_decline`                                           | NCS -1            | Accelerator leadership lost                                                      | 1           |
+| Intel    | idea `USA_intel_domestic_silicon_arsenal`                                     | SR +1, NCS +1     | Domestic fabrication and strategic capacity remain aligned                       | 2           |
+| Intel    | idea `USA_intel_open_systems_foundry`                                         | OS +1, SR +1      | Foundry access broadens while domestic production remains viable                 | 2           |
+| Intel    | idea `USA_intel_integrated_compute_foundry`                                   | VI +1, NCS +1     | Architecture, fabrication, and platform delivery remain integrated               | 2           |
+| Intel    | idea `USA_intel_x86_platform_fortress`                                        | VI +1, OS -1      | Platform control remains deep but interoperability narrows                       | 2           |
+| Intel    | idea `USA_intel_fabless_architecture_house`                                   | VI -1, NCS +1     | Domestic architecture survives after manufacturing is separated                  | 2           |
+| Intel    | idea `USA_intel_managed_retrenchment`                                         | NCS -1            | Orderly contraction still reduces national compute depth                         | 1           |
 | Dell     | `USA_dell_outcome_ai_backbone`                                                | NCS +1, SR +1     | Gate requires enterprise pivot >= 8 plus an AI server buildout flag              | 2           |
 | Dell     | `USA_dell_outcome_integrated_federation`                                      | NCS +1            | Integrated infrastructure federation                                             | 1           |
 | Dell     | `USA_dell_outcome_direct_manufacturer`                                        | SR +1             | Gate requires direct-model strength >= 7: domestic build-to-order capacity       | 1           |
@@ -128,7 +138,7 @@ Every branch is mutually exclusive within its chain unless noted.
 
 Motorola, Google and Oracle each evaluate two independent gates on two different
 axes, so their combined absolute impact is still capped at two points. Every
-other chain resolves one mutually exclusive branch.
+other chain, including Intel, resolves one mutually exclusive branch.
 
 Oracle's maturity gate is `USA_oracle_event_12_resolved` plus any of
 `USA_oracle_cloud_public_sector`, `USA_oracle_platform_scale > 8`,
