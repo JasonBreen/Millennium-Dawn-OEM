@@ -632,7 +632,7 @@ def reindent_by_brace_depth(block_lines, base_tabs=0):
             continue
 
         # Count braces on the code portion only: a `#` comment may carry an
-        # unbalanced brace (e.g. `# TODO fix { this }`) that must not shift depth.
+        # unbalanced brace (e.g. `# note: fix { this }`) that must not shift depth.
         code = strip_inline_comment(stripped)
         opens = closes = 0
         in_str = False
