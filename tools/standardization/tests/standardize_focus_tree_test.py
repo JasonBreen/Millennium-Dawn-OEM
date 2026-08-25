@@ -337,7 +337,7 @@ def test_comment_brace_does_not_shift_indent():
         "shared_focus = {",
         "id = TST_x",
         "completion_reward = {",
-        "# TODO fix { this unbalanced brace",
+        "# note: fix { this unbalanced brace",
         "add_political_power = 10",
         "}",
         "ai_will_do = { base = 1 }",
@@ -348,7 +348,7 @@ def test_comment_brace_does_not_shift_indent():
     # Statement after the comment stays inside completion_reward (two tabs), and
     # the closing brace returns to one tab — not shifted by the comment's `{`.
     assert by_text["add_political_power = 10"] == "\t\tadd_political_power = 10"
-    assert by_text["# TODO fix { this unbalanced brace"].startswith("\t\t#")
+    assert by_text["# note: fix { this unbalanced brace"].startswith("\t\t#")
     assert out[-1] == "}"
     assert out[-2] == "\tai_will_do = { base = 1 }"
     # Overall brace balance is preserved across the emitted code (comments,
