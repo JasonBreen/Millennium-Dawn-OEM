@@ -342,10 +342,32 @@ def _assignment_blocks(text: str, key: str) -> List[str]:
     ]
 
 
+def _engine_effect_payload(block: str) -> str:
+    body = block[block.index("{") + 1 : block.rfind("}")]
+    state_call = re.compile(
+        r"USA_intel_(?:record_[A-Za-z0-9_]+|resolve_history)\s*=\s*yes"
+    )
+    return "\n".join(
+        line.strip()
+        for line in body.splitlines()
+        if line.strip() and not state_call.fullmatch(line.strip())
+    )
+
+
+def _has_negative_treasury_change(option: str) -> bool:
+    return any(
+        float(value) < 0
+        for value in re.findall(
+            r"\btreasury_change\s*=\s*(-?\d+(?:\.\d+)?)", option
+        )
+    )
+
+
 def _has_bankruptcy_zero_modifier(option: str) -> bool:
     ai_chance = _assignment_blocks(option, "ai_chance")
     assert len(ai_chance) == 1
-    for modifier in _assignment_blocks(ai_chance[0], "modifier"):
+    modifiers = _assignment_blocks(ai_chance[0], "modifier")
+    for index, modifier in enumerate(modifiers):
         factor_zero = re.search(r"\bfactor\s*=\s*0(?:\.0+)?(?=\s|\})", modifier)
         bankruptcy = re.search(
             r"\bhas_active_mission\s*=\s*bankruptcy_incoming_collapse\b", modifier
@@ -356,7 +378,10 @@ def _has_bankruptcy_zero_modifier(option: str) -> bool:
             modifier,
             re.DOTALL,
         )
-        if factor_zero and bankruptcy and not negated:
+        later_add = any(
+            re.search(r"\badd\s*=", item) for item in modifiers[index + 1 :]
+        )
+        if factor_zero and bankruptcy and not negated and not later_add:
             return True
     return False
 
@@ -597,7 +622,7 @@ def test_reconstruction_scheduling_and_recovery_cover_every_milestone():
     assert "USA_intel_schedule_current_year_events = yes" in wrapper
 
 
-def test_shared_dispatch_and_modes_preserve_full_outcomes_only_and_off():
+def test_shared_dispatch_recovers_full_late_starts_and_preserves_modes():
     effects = EFFECTS_PATH.read_text(encoding="utf-8")
     common = COMMON_EFFECTS_PATH.read_text(encoding="utf-8")
     dispatch = DISPATCH_PATH.read_text(encoding="utf-8")
@@ -605,6 +630,11 @@ def test_shared_dispatch_and_modes_preserve_full_outcomes_only_and_off():
 
     bootstrap = _named_block(monthly_dispatch, "corporate_history_country_bootstrap")
     monthly = _named_block(common, "USA_corporate_history_monthly_outcomes")
+    full_monthly = next(
+        block
+        for block in _assignment_blocks(monthly, "if")
+        if "limit = { corporate_history_full_enabled = yes }" in block
+    )
     global_dispatch = _named_block(
         monthly_dispatch, "corporate_history_monthly_dispatch"
     )
@@ -616,7 +646,12 @@ def test_shared_dispatch_and_modes_preserve_full_outcomes_only_and_off():
     assert "USA_intel_reconstruct_history = yes" in bootstrap
     assert "corporate_history_full_enabled = yes" in bootstrap
     assert "USA_intel_schedule_current_year_events = yes" in bootstrap
-    assert "USA_intel_recover_history = yes" in monthly
+    assert "NOT = { has_country_flag = USA_intel_history_complete }" in full_monthly
+    assert full_monthly.index(
+        "USA_intel_reconstruct_history = yes"
+    ) < full_monthly.index(
+        "USA_intel_recover_history = yes"
+    )
     assert "corporate_history_outcomes_only_enabled = yes" in monthly
     assert "USA_intel_reconstruct_history = yes" in monthly
     assert "NOT = { has_country_flag = USA_intel_history_complete }" in monthly
@@ -762,12 +797,26 @@ def test_visible_events_have_three_durable_routes_and_bespoke_era_art():
             suffix = "abc"[option_index]
             key = f"USA_intel_events.{event_number}.{suffix}"
             record = f"USA_intel_record_{flag.removeprefix('USA_intel_')}"
+            hidden_effect = _named_block(option, "hidden_effect")
+            engine_payload = _engine_effect_payload(hidden_effect)
+            effect_tooltips = _assignment_blocks(option, "effect_tooltip")
             assert f"name = {key}" in option
             assert f"custom_effect_tooltip = {key}_tt" in option
             assert f'{key} executed"' in option
             assert f"{record} = yes" in option
             assert "ai_chance = {" in option
             assert "hidden_effect = {" in option
+            if engine_payload:
+                assert len(effect_tooltips) == 1
+                effect_tooltip = effect_tooltips[0]
+                assert "USA_intel_record_" not in effect_tooltip
+                assert "USA_intel_resolve_history" not in effect_tooltip
+                assert _engine_effect_payload(effect_tooltip) == engine_payload
+                preview = re.search(r"(?m)^\s*effect_tooltip\s*=", option)
+                custom = re.search(r"(?m)^\s*custom_effect_tooltip\s*=", option)
+                assert preview and custom and preview.start() < custom.start()
+            else:
+                assert effect_tooltips == []
             if event_number == 15:
                 assert "USA_intel_resolve_history = yes" in option
             else:
@@ -778,16 +827,12 @@ def test_event_ai_always_has_a_bankruptcy_safe_route():
     events = EVENTS_PATH.read_text(encoding="utf-8")
     for event_number in range(1, 16):
         options = _option_blocks(_event_block(events, event_number))
-        material_options = []
         for option in options:
-            treasury = re.search(r"treasury_change\s*=\s*(-\d+\.\d+)", option)
-            material = treasury is not None and float(treasury.group(1)) <= -5.0
-            if material:
-                material_options.append(option)
+            if _has_negative_treasury_change(option):
                 assert _has_bankruptcy_zero_modifier(option)
-        assert len(material_options) < len(options)
         assert any(
-            not _has_bankruptcy_zero_modifier(option)
+            not _has_negative_treasury_change(option)
+            and not _has_bankruptcy_zero_modifier(option)
             and not _has_unconditional_historical_zero_modifier(option)
             and _has_positive_bankruptcy_weight(option)
             for option in options
@@ -812,6 +857,36 @@ def test_localisation_inventory_dashboard_values_and_utf8_bom_are_complete():
         referenced.add(f"{idea}_desc")
     referenced.update(SHARED_LOCALISATION_KEYS)
     assert referenced <= keys
+
+    option_tooltips = dict(
+        re.findall(
+            r'(?m)^ (USA_intel_events\.(?:[1-9]|1[0-5])\.[abc]_tt):'
+            r'(?:\d+)?\s+"([^"]*)"\s*$',
+            localisation,
+        )
+    )
+    expected_tooltips = {
+        f"USA_intel_events.{event_number}.{suffix}_tt"
+        for event_number in range(1, 16)
+        for suffix in "abc"
+    }
+    axis_labels = {
+        axis.removeprefix("USA_intel_").replace("_", " ").title() for axis in AXES
+    }
+    assert set(option_tooltips) == expected_tooltips
+    for tooltip in option_tooltips.values():
+        lower_tooltip = tooltip.casefold()
+        assert tooltip.strip()
+        assert not any(
+            phrase in lower_tooltip
+            for phrase in (
+                "treasury",
+                "political power",
+                "research bonus",
+                "technology",
+            )
+        )
+        assert any(label in tooltip for label in axis_labels)
 
     processor_desc = re.search(
         r'(?m)^ USA_corporate_systems_processor_foundry_desc:(?:\d+)?\s+"([^"]*)"',
