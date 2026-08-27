@@ -2616,3 +2616,107 @@ def test_shared_system_native_write_scanner_covers_every_executable_owned_role()
         "decision",
         "category",
     )
+
+
+def _cross_tag_fixture(root: Path, *, drop_korean_outcome=False):
+    manifest = {
+        "schema_version": 6,
+        "chains": [],
+        "independent_subsystems": [
+            {
+                "id": "cross_tag_demo",
+                "kind": "cross_tag_event_system",
+                "namespaces": ["demo_system"],
+                "event_ids": ["demo_system.1"],
+                "owner_tags": ["USA", "KOR"],
+            }
+        ],
+    }
+    _write(root, "tools/corporate_history_contract.json", json.dumps(manifest))
+
+    korean_outcome = (
+        "" if drop_korean_outcome else "\t\tset_country_flag = KOR_demo_broad_supply\n"
+    )
+    _write(
+        root,
+        "events/demo_system.txt",
+        "add_namespace = demo_system\n\n"
+        "country_event = {\n"
+        "\tid = demo_system.1\n"
+        "\tis_triggered_only = yes\n\n"
+        "\toption = {\n"
+        "\t\tname = demo_system.1.a_usa\n"
+        "\t\ttrigger = { original_tag = USA }\n"
+        "\t\tset_country_flag = demo_system_1_resolved\n"
+        "\t\tset_country_flag = USA_demo_open_standards\n"
+        "\t}\n\n"
+        "\toption = {\n"
+        "\t\tname = demo_system.1.b_usa\n"
+        "\t\ttrigger = { original_tag = USA }\n"
+        "\t\tset_country_flag = demo_system_1_resolved\n"
+        "\t\tset_country_flag = USA_demo_national_champions\n"
+        "\t}\n\n"
+        "\toption = {\n"
+        "\t\tname = demo_system.1.a_kor\n"
+        "\t\ttrigger = { original_tag = KOR }\n"
+        "\t\tset_country_flag = demo_system_1_resolved\n"
+        + korean_outcome +
+        "\t}\n\n"
+        "\toption = {\n"
+        "\t\tname = demo_system.1.b_kor\n"
+        "\t\ttrigger = { original_tag = KOR }\n"
+        "\t\tset_country_flag = demo_system_1_resolved\n"
+        "\t\tset_country_flag = KOR_demo_strategic_customers\n"
+        "\t}\n"
+        "}\n",
+    )
+    _write(
+        root,
+        "common/scripted_effects/demo_system_effects.txt",
+        "demo_system_reconstruct_history = {\n"
+        "\tif = {\n"
+        "\t\tlimit = { original_tag = USA }\n"
+        "\t\tset_country_flag = USA_demo_open_standards\n"
+        "\t}\n"
+        "\tif = {\n"
+        "\t\tlimit = { original_tag = KOR }\n"
+        "\t\tset_country_flag = KOR_demo_broad_supply\n"
+        "\t}\n"
+        "}\n",
+    )
+
+
+def _cross_tag_parity_messages(root: Path) -> list[str]:
+    validator = Validator(str(root), no_color=True)
+    validator._load_manifest()
+    validator._manifest_payload["schema_version"] = 6
+    effect_defs = validator._load_top_level_blocks(["common/scripted_effects/**/*.txt"])
+    event_defs = validator._load_events()
+    return [
+        message
+        for message, _file, _line in validator._validate_cross_tag_outcome_parity(
+            event_defs, effect_defs
+        )
+    ]
+
+
+def test_cross_tag_outcome_parity_accepts_a_complete_system(tmp_path):
+    _cross_tag_fixture(tmp_path)
+
+    assert _cross_tag_parity_messages(tmp_path) == []
+
+
+def test_cross_tag_outcome_parity_flags_an_option_without_an_outcome(tmp_path):
+    _cross_tag_fixture(tmp_path, drop_korean_outcome=True)
+
+    messages = _cross_tag_parity_messages(tmp_path)
+
+    assert any(
+        "demo_system.1 option for KOR sets no outcome flag" in message
+        for message in messages
+    )
+    assert any(
+        "demo_system.1 rewards KOR under the full rule but "
+        "demo_system_reconstruct_history sets none of its outcome flags" in message
+        for message in messages
+    )

@@ -50,6 +50,8 @@ _EVENT_SHORT_CALL_RE = re.compile(
 )
 _EVENT_LONG_CALL_RE = re.compile(r"\b(?:" + _EVENT_ALT + r")\s*=\s*\{")
 _EFFECT_YES_RE = re.compile(r"\b([A-Za-z0-9_]+)\s*=\s*yes\b")
+_SET_COUNTRY_FLAG_RE = re.compile(r"\bset_country_flag\s*=\s*([A-Za-z0-9_]+)")
+_ORIGINAL_TAG_RE = re.compile(r"\boriginal_tag\s*=\s*([A-Z]{3})")
 _SET_VAR_RE = re.compile(
     r"\b(?:set_variable|add_to_variable|subtract_from_variable|multiply_variable|divide_variable)\s*=\s*\{\s*([A-Za-z0-9_]+)"
 )
@@ -650,6 +652,14 @@ class Validator(BaseValidator):
             "Core-chain events and reconstruction obey the mode contract",
             "Corporate-history core-chain mode issues:",
             category="Corporate-history core-chain modes",
+        )
+
+        self._log_section("cross-tag outcome parity")
+        self._report(
+            self._validate_cross_tag_outcome_parity(event_defs, effect_defs),
+            "Cross-tag event systems reconstruct one outcome per owner",
+            "Cross-tag outcome parity issues:",
+            category="Corporate-history cross-tag outcome parity",
         )
 
         self._log_section("corporate-history host architecture")
@@ -5519,6 +5529,85 @@ class Validator(BaseValidator):
                         event.line,
                     )
                 )
+        return findings
+
+    def _validate_cross_tag_outcome_parity(
+        self,
+        event_defs: Dict[str, EventDef],
+        effect_defs: Dict[str, List[BlockDef]],
+    ) -> List[Tuple[str, str, int]]:
+        if int(self._manifest_payload.get("schema_version", 1)) < 6:
+            return []
+
+        findings: List[Tuple[str, str, int]] = []
+        subsystems = self._manifest_payload.get("independent_subsystems", []) or []
+        for subsystem in subsystems:
+            if not isinstance(subsystem, dict):
+                continue
+            if subsystem.get("kind") != "cross_tag_event_system":
+                continue
+            namespaces = tuple(subsystem.get("namespaces", ()))
+            owner_tags = frozenset(subsystem.get("owner_tags", ()))
+            if not namespaces or not owner_tags:
+                continue
+            bookkeeping = re.compile(
+                r"^(?:%s)_(?:\d+_(?:resolved|pending)|country_bootstrapped)$"
+                % "|".join(re.escape(namespace) for namespace in namespaces)
+            )
+            reconstructed: Set[str] = set()
+            for namespace in namespaces:
+                for block in effect_defs.get(f"{namespace}_reconstruct_history", ()):
+                    reconstructed.update(_SET_COUNTRY_FLAG_RE.findall(block.body))
+            for event_id in subsystem.get("event_ids", ()):
+                event = event_defs.get(event_id)
+                if event is None:
+                    continue
+                per_tag: Dict[str, Set[str]] = defaultdict(set)
+                for option in event.options:
+                    tags = frozenset(_ORIGINAL_TAG_RE.findall(option.body))
+                    if len(tags) != 1:
+                        continue
+                    tag = next(iter(tags))
+                    if tag not in owner_tags:
+                        continue
+                    outcomes = {
+                        flag
+                        for flag in _SET_COUNTRY_FLAG_RE.findall(option.body)
+                        if not bookkeeping.match(flag)
+                    }
+                    if not outcomes:
+                        findings.append(
+                            (
+                                f"{event_id} option for {tag} sets no outcome flag, so "
+                                "the outcomes_only rule cannot reproduce this choice",
+                                option.file,
+                                option.line,
+                            )
+                        )
+                    per_tag[tag] |= outcomes
+                for tag, outcomes in sorted(per_tag.items()):
+                    if not outcomes:
+                        continue
+                    historical = outcomes & reconstructed
+                    if not historical:
+                        findings.append(
+                            (
+                                f"{event_id} rewards {tag} under the full rule but "
+                                f"{namespaces[0]}_reconstruct_history sets none of its "
+                                "outcome flags",
+                                event.file,
+                                event.line,
+                            )
+                        )
+                    elif len(historical) > 1:
+                        findings.append(
+                            (
+                                f"{event_id} reconstructs conflicting outcomes for "
+                                f"{tag}: {', '.join(sorted(historical))}",
+                                event.file,
+                                event.line,
+                            )
+                        )
         return findings
 
     def _validate_core_chain_mode_paths(
