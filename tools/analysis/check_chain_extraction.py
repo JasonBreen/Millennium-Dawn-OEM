@@ -31,11 +31,20 @@ OPTION_NAME = re.compile(r"\n\t\tname = (\S+)")
 LOC_REF = re.compile(r"\n\t(?:title|desc) = (\S+)")
 LOC_REF_INLINE = re.compile(r"text = (\S+?) \}")
 EFFECT_CALL = re.compile(r"\b(\w+) = yes\b")
-NOT_AN_EFFECT = frozenset({
-    "always", "hidden", "fire_only_once", "is_triggered_only", "is_ai",
-    "is_historical_focus_on", "allowed_civil_war", "major", "minor_flavor",
-    "ai_has_major_economic_problems",
-})
+NOT_AN_EFFECT = frozenset(
+    {
+        "always",
+        "hidden",
+        "fire_only_once",
+        "is_triggered_only",
+        "is_ai",
+        "is_historical_focus_on",
+        "allowed_civil_war",
+        "major",
+        "minor_flavor",
+        "ai_has_major_economic_problems",
+    }
+)
 
 
 def read(path):
@@ -91,26 +100,31 @@ def check(root, targets, prefix="", effect_outcomes=False):
                 records = bool(SET_FLAG.search(body) or SET_FLAG_TIMED.search(body))
                 if effect_outcomes:
                     records = records or any(
-                        name not in NOT_AN_EFFECT
-                        for name in EFFECT_CALL.findall(body)
+                        name not in NOT_AN_EFFECT for name in EFFECT_CALL.findall(body)
                     )
                 if not records:
                     findings.append((rel, event_id, "%s records no outcome" % name))
-                for flag in set(SET_FLAG.findall(body)) | set(SET_FLAG_TIMED.findall(body)):
+                for flag in set(SET_FLAG.findall(body)) | set(
+                    SET_FLAG_TIMED.findall(body)
+                ):
                     if flag not in used:
                         findings.append(
-                            (rel, event_id, "%s is written but never read" % flag))
+                            (rel, event_id, "%s is written but never read" % flag)
+                        )
                 for flag in set(HAS_FLAG.findall(body)):
                     if flag not in written:
                         findings.append(
-                            (rel, event_id, "%s is read but never written" % flag))
+                            (rel, event_id, "%s is read but never written" % flag)
+                        )
     return findings
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--path", default=".", help="mod root")
-    parser.add_argument("--prefix", default="", help="only events mentioning this token")
+    parser.add_argument(
+        "--prefix", default="", help="only events mentioning this token"
+    )
     parser.add_argument(
         "--effect-outcomes",
         action="store_true",
@@ -129,7 +143,10 @@ def main(argv=None):
     findings = check(root, targets, args.prefix, args.effect_outcomes)
     for rel, event_id, message in findings:
         print("%s: %s - %s" % (rel, event_id, message))
-    print("chain preflight: %s" % ("%d issue(s)" % len(findings) if findings else "no issues found"))
+    print(
+        "chain preflight: %s"
+        % ("%d issue(s)" % len(findings) if findings else "no issues found")
+    )
     return 1 if findings else 0
 
 

@@ -64,8 +64,10 @@ def test_a_complete_chain_passes(tmp_path):
 def test_flags_written_but_never_read_are_reported(tmp_path):
     target = _fixture(tmp_path, event=EVENT.replace(GUARD_LINE, ""))
 
-    assert any("DEMO_took_the_deal is written but never read" in m
-               for m in _messages(tmp_path, target))
+    assert any(
+        "DEMO_took_the_deal is written but never read" in m
+        for m in _messages(tmp_path, target)
+    )
 
 
 def test_flags_read_but_never_written_are_reported(tmp_path):
@@ -76,8 +78,10 @@ def test_flags_read_but_never_written_are_reported(tmp_path):
     )
     target = _fixture(tmp_path, event=event)
 
-    assert any("DEMO_sibling_chain is read but never written" in m
-               for m in _messages(tmp_path, target))
+    assert any(
+        "DEMO_sibling_chain is read but never written" in m
+        for m in _messages(tmp_path, target)
+    )
 
 
 def test_an_option_with_no_outcome_is_reported(tmp_path):
@@ -93,7 +97,9 @@ def test_missing_localisation_is_reported(tmp_path):
 
 
 def test_effect_outcomes_exempts_a_chain_that_records_through_effects(tmp_path):
-    event = EVENT.replace(SET_LINE, "\t\tDEMO_apply_route = yes\n").replace(GUARD_LINE, "")
+    event = EVENT.replace(SET_LINE, "\t\tDEMO_apply_route = yes\n").replace(
+        GUARD_LINE, ""
+    )
     target = _fixture(tmp_path, event=event)
 
     strict = _messages(tmp_path, target)
