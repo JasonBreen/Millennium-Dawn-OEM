@@ -6,6 +6,7 @@ under OR / random_list / count_triggers, and never for non-deterministic
 (random_*) or iterator scopes.
 """
 
+from shared_utils import strip_comments
 from validate_simplifications import (
     _find_bare_not,
     _find_count_collapsible,
@@ -15,7 +16,6 @@ from validate_simplifications import (
     _find_random_controlled_shortcut,
     _find_scope_expansion,
     _find_two_bucket_random,
-    strip_comments,
 )
 
 

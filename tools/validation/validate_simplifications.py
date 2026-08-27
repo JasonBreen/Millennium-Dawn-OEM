@@ -36,8 +36,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-# strip_comments is re-exported here so validate_simplifications_test can import it.
-from shared_utils import extract_block_from_text, strip_comments  # noqa: F401
+from shared_utils import extract_block_from_text
 from validator_common import BaseValidator, Severity, run_validator_main
 
 _SCAN_PATTERNS = [
@@ -239,9 +238,8 @@ def _find_count_collapsible(text: str):
     return results
 
 
-# Empty `visible` / `available` / `allowed` blocks fall through to the engine
-# default (visible, available, allowed), so an effectively-empty one is dead
-# weight that can be deleted outright.
+# Empty `visible` / `available` / `allowed` blocks fall through to engine defaults,
+# so an effectively-empty block is redundant and can be deleted outright.
 _EMPTY_BLOCK_RE = re.compile(r"\b(visible|available|allowed)\s*=\s*\{")
 
 

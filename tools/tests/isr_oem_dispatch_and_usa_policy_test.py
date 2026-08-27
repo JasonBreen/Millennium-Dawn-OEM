@@ -82,6 +82,7 @@ def test_usa_policy_visibility_keeps_ibm_outside_recipient_or():
         "USA_corporate_policy_open_systems_procurement": {
             "USA_apple_state_initialized",
             "USA_nvidia_state_initialized",
+            "USA_intel_state_initialized",
         },
         "USA_corporate_policy_domestic_capacity_grants": {
             "USA_apple_state_initialized",
@@ -89,11 +90,13 @@ def test_usa_policy_visibility_keeps_ibm_outside_recipient_or():
             "USA_ti_state_initialized",
             "USA_micron_state_initialized",
             "USA_motorola_state_initialized",
+            "USA_intel_state_initialized",
         },
         "USA_corporate_policy_secure_federal_systems": {
             "USA_dell_state_initialized",
             "USA_motorola_state_initialized",
             "USA_google_state_initialized",
+            "USA_intel_state_initialized",
         },
         "USA_corporate_policy_advanced_computing_consortium": {
             "USA_nvidia_state_initialized",
@@ -102,6 +105,7 @@ def test_usa_policy_visibility_keeps_ibm_outside_recipient_or():
             "USA_ti_state_initialized",
             "USA_micron_state_initialized",
             "USA_motorola_state_initialized",
+            "USA_intel_state_initialized",
         },
     }
 

@@ -486,11 +486,10 @@ def _body_money_cost(
                 val is not None and val.startswith("-") and val.lstrip("-0.") != ""
             )
             if seg_var_base or (seg_has_set and not seg_sign_unknown):
-                # `treasury_change = gdp_total` then `* -0.08` is the MD idiom
-                # for a cost of unknown size, and `* 0.05` for income: a known
-                # non-negative base lets the literal carry the sign. Scales are
-                # not composed: sibling if/else branches scale the same set, so
-                # one negative anywhere in the segment keeps it negative.
+                # Scaling a known non-negative base lets the literal carry the
+                # sign. Scales are not composed: sibling if/else branches scale
+                # the same set, so one negative anywhere in the segment keeps
+                # it negative.
                 seg_neg = seg_neg or scale_is_negative
                 seg_sign_unknown = False
                 seg_var_base = False

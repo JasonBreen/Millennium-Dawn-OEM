@@ -107,8 +107,32 @@ class ScriptIndex:
 
     def scheduler_years(self, scheduler: str, event_id: str) -> FrozenSet[int]:
         years: Set[int] = set()
-        _collect_scheduler_years(self.effects.get(scheduler, ""), event_id, None, years)
+        self._collect_scheduler_effect_years(
+            scheduler,
+            event_id,
+            frozenset(),
+            years,
+        )
         return frozenset(years)
+
+    def _collect_scheduler_effect_years(
+        self,
+        effect: str,
+        event_id: str,
+        seen: FrozenSet[str],
+        years: Set[int],
+    ) -> None:
+        if effect in seen or effect not in self.effects:
+            return
+        body = self.effects[effect]
+        _collect_scheduler_years(body, event_id, None, years)
+        for called in _EFFECT_RE.findall(body):
+            self._collect_scheduler_effect_years(
+                called,
+                event_id,
+                seen | {effect},
+                years,
+            )
 
 
 def _event_calls(body: str) -> Set[str]:
@@ -164,6 +188,15 @@ def _start_date_window(block: str) -> Optional[int]:
     return None
 
 
+def _calendar_date_window(block: str) -> Optional[int]:
+    limit = _block_limit(block)
+    lower = re.search(r"\bdate\s*>\s*(\d{4})\.12\.31\b", limit)
+    upper = re.search(r"\bdate\s*<\s*(\d{4})\.1\.2\b", limit)
+    if lower and upper and int(upper.group(1)) == int(lower.group(1)) + 1:
+        return int(upper.group(1))
+    return None
+
+
 def _count_event_calls(body: str, event_id: str) -> int:
     return sum(
         1
@@ -188,6 +221,8 @@ def _collect_scheduler_years(
         if not total:
             continue
         window = _start_date_window(child)
+        if window is None:
+            window = _calendar_date_window(child)
         if window is None:
             window = inherited
         nested = sum(
@@ -523,7 +558,6 @@ def _simulate_history(
             )
             scheduler_matches = scripts is None or (
                 activation.year in scripts.scheduler_years(scheduler_effect, event_id)
-                and scheduler_effect in scripts.event_callers.get(event_id, frozenset())
             )
             recovery_matches = scripts is None or bool(
                 _recovery_callers(chain, actual_callers)
