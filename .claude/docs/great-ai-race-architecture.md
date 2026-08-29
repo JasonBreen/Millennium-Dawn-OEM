@@ -197,7 +197,6 @@ Additional country state:
 - `ai_race_selected_lab`: UI-only lab ID;
 - `AI_RACE_state_initialized`: idempotent initialization flag;
 - `AI_RACE_active`: participant is eligible, initialized, and currently registered in the headless simulation; a later presentation gate will own the public competitive-activation threshold;
-- `AI_RACE_outcomes_reconstructed`: Outcomes Only state is available;
 - `AI_RACE_dashboard_open`: player-only presentation flag if the selected GUI pattern requires it.
 
 The exact set of stock/external variables may be reduced if a metric has no external adapter. The three-part ownership contract must remain wherever a canonical external system contributes.
@@ -549,7 +548,7 @@ These do not block the core state contract, but must be settled before their nam
 
 The first implementation slice freezes these decisions so later work does not reinterpret the kernel:
 
-- Full and Outcomes Only enter the same headless state machine. Outcomes Only adds only its reconstruction/presentation marker in this phase.
+- Full and Outcomes Only enter the same headless state machine. Presentation derives the active mode directly from the immutable game rule instead of duplicating it in country state.
 - Off is gated at the existing monthly singleton caller. It creates no state or debug category and performs no normal race callback.
 - The first enabled monthly pulse is the sole bootstrap and late-start recovery path. No event namespace, hidden event, or second startup owner is added.
 - USA and China are the only eligible participants. The participant registry stores country scopes in that order, excludes `collapsed_nation`, and rebuilds rather than mutating an array during iteration.
