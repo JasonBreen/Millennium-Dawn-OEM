@@ -12,8 +12,12 @@ name: Tools Validation
       - "resources/documentation/modifiers_documentation.md"
       - ".pre-commit-config.yaml"
       - "pyproject.toml"
+      - "package.json"
+      - "bun.lock"
+      - ".jscpd.json"
       - ".github/workflows/coding-pipeline.yml"
       - ".github/workflows/nightly-pr-validation.yml"
+      - ".github/workflows/pr-cache-cleanup.yml"
       - ".github/workflows/tools-validation.yml"
       - ".github/workflows/validator-cache.yml"
 
@@ -29,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -43,7 +47,7 @@ jobs:
             interface
             gfx/flags
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.x"
       - name: Install dependencies
@@ -59,7 +63,7 @@ jobs:
           python tools/validation/validate_corporate_history_contract.py \
             --strict --no-color
       - name: Upload validation report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: tools-validation-report
@@ -97,7 +101,7 @@ jobs:
       # collection time.
       - name: Checkout (unit tests)
         if: matrix.check.id == 'unit'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -111,6 +115,7 @@ jobs:
             docs/src/content/resources/intel-corporate-history-source-map.md
             resources/documentation/modifiers_documentation.md
             common/national_focus
+            common/idea_tags
             common/script_enums.txt
             common/units/equipment
             common/decisions
@@ -118,6 +123,7 @@ jobs:
             common/modifiers
             .github/workflows/coding-pipeline.yml
             .github/workflows/nightly-pr-validation.yml
+            .github/workflows/pr-cache-cleanup.yml
             .github/workflows/tools-validation.yml
             .github/workflows/validator-cache.yml
             common
@@ -130,7 +136,7 @@ jobs:
 
       - name: Checkout (staged integration)
         if: matrix.check.id == 'staged'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -145,7 +151,7 @@ jobs:
 
       - name: Checkout (lint)
         if: matrix.check.id == 'lint'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -155,7 +161,7 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.x"
 
@@ -214,3 +220,26 @@ jobs:
       - name: Run mypy
         if: matrix.check.id == 'lint'
         run: mypy
+
+  check-duplication:
+    name: Code duplication (jscpd)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            tools
+            package.json
+            bun.lock
+            .jscpd.json
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version: "1.3.14"
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Run jscpd
+        run: bun run jscpd
