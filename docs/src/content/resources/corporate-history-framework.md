@@ -349,7 +349,7 @@ scheduling anchors are recorded in
 2. Direct target-local bootstrap and monthly reconstruction calls. Retain an existing hidden `.90` event only as a save-compatible queued-event sink; never add it as a new scheduling path.
 3. Schedule entries added to the matching `<TAG>_corporate_trigger_year_<YYYY>` effects and the target-local bootstrap/recovery path. Never add an ABK host, a shared global year flag, or an inline call in `00_yearly_effects.txt`.
 4. Monthly-driver coverage: add the reconstruct call to `<TAG>_corporate_history_monthly_outcomes`; the driver terminates on the chain's `*_reconstruct_complete` flag, so the ladder must set that flag at its true final milestone (create the `on_monthly_<TAG>` hook if the country has none).
-5. Outcome ideas: `allowed = { original_tag = <TAG> }` **and** `allowed_civil_war = { always = yes }`.
+5. Outcome ideas: permanent national spirits belong in the slotless `country` category, omit `allowed` because `add_ideas` does not consult it, and retain `allowed_civil_war = { always = yes }`. An intentionally slotted idea follows the normal pool gate and uses `original_tag`, not `tag`.
 6. Guard audit on every reconstruct step: `date >` gate; `NOT` on the step's own marker **and all sibling markers**; `add_ideas` guarded by `NOT has_idea` on all alternatives; no event fires inside reconstruction; single-child `NOT`s only.
 7. Cross-links declared in the table above; localisation; changelog.
 

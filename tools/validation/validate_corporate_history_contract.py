@@ -6931,17 +6931,6 @@ class Validator(BaseValidator):
                     )
                     continue
                 if not re.search(
-                    rf"\ballowed\s*=\s*\{{\s*original_tag\s*=\s*{re.escape(chain.tag)}\s*\}}",
-                    idea.body,
-                ):
-                    findings.append(
-                        (
-                            f"{idea_id} is missing allowed = {{ original_tag = {chain.tag} }}",
-                            idea.file,
-                            idea.line,
-                        )
-                    )
-                if not re.search(
                     r"\ballowed_civil_war\s*=\s*\{\s*always\s*=\s*yes\s*\}",
                     idea.body,
                 ):
