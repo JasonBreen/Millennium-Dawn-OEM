@@ -1,0 +1,45 @@
+ai_race_full_mode = {
+	NOT = { has_game_rule = { rule = rule_ai_race option = outcomes_only } }
+	NOT = { has_game_rule = { rule = rule_ai_race option = disabled } }
+}
+
+ai_race_outcomes_only_mode = {
+	has_game_rule = { rule = rule_ai_race option = outcomes_only }
+}
+
+ai_race_enabled = {
+	OR = {
+		ai_race_full_mode = yes
+		ai_race_outcomes_only_mode = yes
+	}
+}
+
+ai_race_disabled = {
+	has_game_rule = { rule = rule_ai_race option = disabled }
+}
+
+ai_race_eligible_participant = {
+	ai_race_enabled = yes
+	exists = yes
+	NOT = { has_country_flag = collapsed_nation }
+	OR = {
+		original_tag = USA
+		original_tag = CHI
+	}
+}
+
+ai_race_country_initialized = {
+	has_country_flag = AI_RACE_state_initialized
+}
+
+ai_race_active = {
+	ai_race_enabled = yes
+	ai_race_eligible_participant = yes
+	ai_race_country_initialized = yes
+	has_country_flag = AI_RACE_active
+}
+
+ai_race_debug_visible = {
+	is_debug = yes
+	ai_race_enabled = yes
+}
