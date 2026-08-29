@@ -1,8 +1,11 @@
+import importlib
 import os
 import stat
 
 import pytest
 import shared_utils as U
+
+git_test_utils = importlib.import_module("git_test_utils")
 
 
 def test_normalized_traversal_exclusions_handle_both_separators():
@@ -46,7 +49,8 @@ def test_atomic_write_preserves_mode_and_existing_bom(tmp_path):
 
     U.atomic_write_text(str(path), 'l_english:\n key: "value"\n')
 
-    assert stat.S_IMODE(path.stat().st_mode) == 0o744
+    if os.name != "nt":
+        assert stat.S_IMODE(path.stat().st_mode) == 0o744
     assert path.read_bytes().startswith(b"\xef\xbb\xbf")
     assert path.read_bytes().count(b"\xef\xbb\xbf") == 1
 
@@ -56,7 +60,9 @@ def test_atomic_write_uses_non_executable_mode_for_new_files(tmp_path):
 
     U.atomic_write_text(str(path), "generated\n")
 
-    assert stat.S_IMODE(path.stat().st_mode) == 0o644
+    if os.name != "nt":
+        assert stat.S_IMODE(path.stat().st_mode) == 0o644
+    assert path.read_bytes() == b"generated\n"
 
 
 def test_atomic_write_preserves_bom_and_crlf(tmp_path):
@@ -150,6 +156,7 @@ def test_staged_files_drops_paths_that_are_no_longer_on_disk(tmp_path, monkeypat
 
     staged = U.get_staged_files(str(tmp_path))
 
+    assert staged is not None
     assert [os.path.normpath(f) for f in staged] == [os.path.normpath(str(kept))]
 
 
@@ -157,3 +164,40 @@ def test_staged_files_returns_none_when_every_path_is_gone(tmp_path, monkeypatch
     monkeypatch.setenv("MD_STAGED_FILES", "common/country_leader/deleted.txt")
 
     assert U.get_staged_files(str(tmp_path)) is None
+
+
+def test_staged_files_retains_missing_paths_when_requested(tmp_path, monkeypatch):
+    deleted = tmp_path / "common" / "country_leader" / "deleted.txt"
+    monkeypatch.setenv("MD_STAGED_FILES", "common/country_leader/deleted.txt")
+
+    assert U.get_staged_files(str(tmp_path), include_missing=True) == [str(deleted)]
+
+
+def test_staged_files_includes_deleted_git_paths_when_requested(tmp_path, monkeypatch):
+    monkeypatch.delenv("MD_STAGED_FILES", raising=False)
+    units = tmp_path / "history" / "units"
+    units.mkdir(parents=True)
+    deleted = units / "deleted.txt"
+    renamed_from = units / "renamed-from.txt"
+    moved_from = units / "moved-out.txt"
+    for path, content in (
+        (deleted, "units = { deleted = yes }\n"),
+        (renamed_from, "units = { renamed = yes }\n"),
+        (moved_from, "units = { moved = yes }\n"),
+    ):
+        with path.open("w", encoding="utf-8", newline="") as output_file:
+            output_file.write(content)
+
+    git_test_utils.initialize_git_repository(tmp_path, "history/units")
+    deleted.unlink()
+    renamed_to = units / "renamed-to.txt"
+    renamed_from.rename(renamed_to)
+    moved_from.rename(tmp_path / "moved-out.txt")
+    git_test_utils.run_git(tmp_path, "add", "-A")
+
+    staged = U.get_staged_files(str(tmp_path), include_missing=True)
+
+    assert staged is not None
+    assert str(deleted) in staged
+    assert str(renamed_to) in staged
+    assert str(moved_from) in staged
