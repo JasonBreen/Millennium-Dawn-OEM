@@ -1,6 +1,6 @@
 # Great AI Race Architecture
 
-Status: architecture contract for a future implementation campaign. This document does not authorize gameplay implementation, commits, pushes, or publication.
+Status: Phase 1 architecture contract implemented; later phases remain planned and require their own scoped implementation and publication decisions.
 
 ## Purpose
 
@@ -46,16 +46,16 @@ The race owns only:
 
 ### Authority ledger
 
-| State | Authoritative owner | Great AI Race access |
-|---|---|---|
-| `USA_ai_core_*` axes and milestones | USA AI Industry Core | Read through the USA adapter |
-| Existing company ideas, flags, and milestones | Their existing event/effect files | Read through country or company adapters |
-| Existing technology, economy, semiconductor, and research state | Existing MD/OEM systems | Read-only input where explicitly documented |
-| Race-owned national stock | Great AI Race country scope | Read and write |
-| Effective national race metrics | Great AI Race rebuild effect | Derived cache; never an external write target |
-| Lab registry and lab state | Great AI Race country scope | Read and write |
-| Global frontier and rankings | Great AI Race global scope | Read and write through one dispatcher |
-| Selected tab, selected card, visible-list cache, dirty counter | Great AI Race GUI layer | Presentation only |
+| State                                                           | Authoritative owner               | Great AI Race access                          |
+| --------------------------------------------------------------- | --------------------------------- | --------------------------------------------- |
+| `USA_ai_core_*` axes and milestones                             | USA AI Industry Core              | Read through the USA adapter                  |
+| Existing company ideas, flags, and milestones                   | Their existing event/effect files | Read through country or company adapters      |
+| Existing technology, economy, semiconductor, and research state | Existing MD/OEM systems           | Read-only input where explicitly documented   |
+| Race-owned national stock                                       | Great AI Race country scope       | Read and write                                |
+| Effective national race metrics                                 | Great AI Race rebuild effect      | Derived cache; never an external write target |
+| Lab registry and lab state                                      | Great AI Race country scope       | Read and write                                |
+| Global frontier and rankings                                    | Great AI Race global scope        | Read and write through one dispatcher         |
+| Selected tab, selected card, visible-list cache, dirty counter  | Great AI Race GUI layer           | Presentation only                             |
 
 ### Adapter formula
 
@@ -78,7 +78,7 @@ ai_race_capability = clamp(
 
 The quarterly adapter effect must:
 
-1. Reset every `*_external` contribution to zero.
+1. Clear every `*_external` contribution so it reads as zero.
 2. Read canonical external state.
 3. Rebuild the contribution from the current canonical state.
 4. Calculate and clamp the effective metric.
@@ -90,31 +90,31 @@ This permits late-start reconstruction and save repair without bidirectional syn
 
 ### OEM patterns to reuse
 
-| Need | Repository precedent | Translation |
-|---|---|---|
-| Full / Outcomes Only / Off rule | `common/game_rules/00_game_rules.txt`, `common/scripted_triggers/MD_corporate_history_triggers.txt` | A separate `rule_ai_race` and three non-overlapping scripted triggers |
-| Central low-frequency scheduling | `common/on_actions/MD_on_actions.txt`, `common/scripted_effects/00_power_ranking_effects.txt` | One call from the existing global monthly singleton, with month gates for quarterly work |
-| Sorted country ranking | `common/scripted_effects/00_power_ranking_effects.txt` | Scope-backed participant array and derived ranked array |
-| Decision-category GUI | `common/decisions/categories/00_agrarian_economics_category.txt`, `common/scripted_guis/01_agri_scripted_gui.txt` | Embed the main dashboard in a decision category |
-| Dense status dashboard | Protests GUI in `common/scripted_guis/01_expected_spending.txt` and `interface/MD_protest_decision.gui` | Mutually exclusive status banner plus compact live metrics |
-| Reusable cards | MIO Catalog in `common/scripted_guis/00_mio_unlock_catalog.txt` | One reusable lab/project card rendered from a visible array |
-| Growing country list | EU scope arrays in `common/scripted_guis/01_european_union_guis.txt` | Generic country rows with `change_scope = yes` |
-| Alerts | `common/scripted_guis/00_MD_alerts_scripted_gui.txt` | Major danger and attention tokens, not routine event spam |
-| 100-step gauge | Czech GUI in `common/scripted_guis/99_CZE_scripted_gui.txt` and `interface/cze_scripted_gui.gfx` | Normalized, clamped metric and progress frames |
-| Dirty-variable refresh | `.claude/docs/scripted-gui-patterns.md` | Refresh derived visible arrays on player interaction, not per tick for every AI |
-| Mode-aware reports | Corporate Systems dashboards | Explicit Outcomes Only and unavailable states, never misleading zeros |
+| Need                             | Repository precedent                                                                                              | Translation                                                                              |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Full / Outcomes Only / Off rule  | `common/game_rules/00_game_rules.txt`, `common/scripted_triggers/MD_corporate_history_triggers.txt`               | A separate `rule_ai_race` and three non-overlapping scripted triggers                    |
+| Central low-frequency scheduling | `common/on_actions/MD_on_actions.txt`, `common/scripted_effects/00_power_ranking_effects.txt`                     | One call from the existing global monthly singleton, with month gates for quarterly work |
+| Sorted country ranking           | `common/scripted_effects/00_power_ranking_effects.txt`                                                            | Scope-backed participant array and derived ranked array                                  |
+| Decision-category GUI            | `common/decisions/categories/00_agrarian_economics_category.txt`, `common/scripted_guis/01_agri_scripted_gui.txt` | Embed the main dashboard in a decision category                                          |
+| Dense status dashboard           | Protests GUI in `common/scripted_guis/01_expected_spending.txt` and `interface/MD_protest_decision.gui`           | Mutually exclusive status banner plus compact live metrics                               |
+| Reusable cards                   | MIO Catalog in `common/scripted_guis/00_mio_unlock_catalog.txt`                                                   | One reusable lab/project card rendered from a visible array                              |
+| Growing country list             | EU scope arrays in `common/scripted_guis/01_european_union_guis.txt`                                              | Generic country rows with `change_scope = yes`                                           |
+| Alerts                           | `common/scripted_guis/00_MD_alerts_scripted_gui.txt`                                                              | Major danger and attention tokens, not routine event spam                                |
+| 100-step gauge                   | Czech GUI in `common/scripted_guis/99_CZE_scripted_gui.txt` and `interface/cze_scripted_gui.gfx`                  | Normalized, clamped metric and progress frames                                           |
+| Dirty-variable refresh           | `.claude/docs/scripted-gui-patterns.md`                                                                           | Refresh derived visible arrays on player interaction, not per tick for every AI          |
+| Mode-aware reports               | Corporate Systems dashboards                                                                                      | Explicit Outcomes Only and unavailable states, never misleading zeros                    |
 
 ### Local TNO references
 
 Installed Workshop source inspected through the local descriptor for item `2438003901`, version `1.10.0b`.
 
-| Reference | Useful element | OEM translation |
-|---|---|---|
-| `common/scripted_guis/TNO_alertbar.txt` | Tokenized alerts with click and dismiss behavior | Use MD Alerts or a dashboard-local attention strip |
-| `common/scripted_guis/TNO_GNG_Product_Decisions_GUI.txt` | Product progress, release history, active/inactive panels | Training-project and model-release panels |
-| `common/scripted_guis/TNO_GNG_Research_Team_GUI.txt` | Selectable project cards and active-project state | Laboratory project selection with reusable cards |
-| `interface/Guangdong/TNO_GNG_Research_Team.gui` | Card hierarchy, progress, selection pop-out | Information architecture only; author OEM-native layout and assets |
-| `common/scripted_guis/TNO_Cold_War_GUI.txt` | Comparison between strategic actors | Global frontier and rival comparison view |
+| Reference                                                | Useful element                                            | OEM translation                                                    |
+| -------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------ |
+| `common/scripted_guis/TNO_alertbar.txt`                  | Tokenized alerts with click and dismiss behavior          | Use MD Alerts or a dashboard-local attention strip                 |
+| `common/scripted_guis/TNO_GNG_Product_Decisions_GUI.txt` | Product progress, release history, active/inactive panels | Training-project and model-release panels                          |
+| `common/scripted_guis/TNO_GNG_Research_Team_GUI.txt`     | Selectable project cards and active-project state         | Laboratory project selection with reusable cards                   |
+| `interface/Guangdong/TNO_GNG_Research_Team.gui`          | Card hierarchy, progress, selection pop-out               | Information architecture only; author OEM-native layout and assets |
+| `common/scripted_guis/TNO_Cold_War_GUI.txt`              | Comparison between strategic actors                       | Global frontier and rival comparison view                          |
 
 Do not reproduce TNO's full top-bar replacement, total-conversion shell, or GUI-owned AI work on a ten-day interval. The race belongs inside OEM's Decisions experience and uses central game logic.
 
@@ -127,21 +127,21 @@ The Cognoscenti is useful because it combines two distinct management loops:
 1. **Internal power:** three mutually dependent actors compete for a fixed pool of influence.
 2. **External pressure:** two coupled risk meters rise on recurring clocks and require costly interventions.
 
-| Cognoscenti element | Local source | Great AI Race translation |
-|---|---|---|
-| Decision-category dashboard | `common/decisions/categories/TFR_decision_categories_USB.txt:26-37`, `common/scripted_guis/TFR_scripted_guis_USB.txt:6-180` | A decision-category race dashboard whose GUI presents, but does not own, gameplay state |
-| Three actor columns | `interface/TFR_USB_cogno.gui:7-89` | Distinct lab cards with identity, leadership, agenda, current share, and strategic effect |
-| Cabinet/appointment strip | `interface/TFR_USB_cogno.gui:91-277` | Later laboratory-director or government-liaison layer; not part of the MVP |
-| Influence shares | `localisation/english/TFR_country_localisation_USB_l_english.yml:939-988` | A bounded national support or compute-allocation pool across active laboratories |
-| Influence-balancing effect | `common/scripted_effects/TFR_scripted_effects_USB.txt:5652-5897` | Deterministic redistribution whose shares always total exactly `100`; do not copy TFR's random normalization |
-| Scaling actor benefit | `common/dynamic_modifiers/TFR_dynamic_modifiers_USB.txt:615-636` | Each lab's support share contributes one small, legible national effect or project specialty |
-| Actor-themed actions | `common/decisions/TFR_decisions_USB.txt:3796-4599` | Decisions and missions visibly aligned with a lab; completing them shifts support and produces an immediate strategic result |
-| Influence-gated project | `common/decisions/TFR_decisions_USB.txt:4393-4428` | Frontier projects may require a minimum lab share, control capacity, compute allocation, or policy posture |
-| Separate Masquerade loop | `common/decisions/categories/TFR_decision_categories_USB.txt:52-63` | Keep external race pressure conceptually separate from laboratory politics |
-| Recurring risk missions | `common/decisions/TFR_decisions_USB.txt:8906-8965` | Native missions periodically raise public alarm and control debt; investments can lengthen the interval |
-| Coupled tradeoff decisions | `common/decisions/TFR_decisions_USB.txt:8967-9687` | Interventions may reduce one danger while consuming capacity or worsening another |
-| Tiered risk state | `common/scripted_effects/TFR_scripted_effects_USB.txt:5436-5650`, `common/scripted_localisation/TFR_scripted_loc_USB.txt:788-993` | Clamp meters, map them to explicit bands, and drive readable status plus bounded consequences |
-| Explicit terminal crisis chain | `common/decisions/TFR_decisions_USB.txt:3752-3794`, `events/TFR_events_USB.txt:18114-18200` | A separately activated emergency mission owns terminal resolution; a high pressure band alone does not silently collapse the country |
+| Cognoscenti element            | Local source                                                                                                                      | Great AI Race translation                                                                                                            |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Decision-category dashboard    | `common/decisions/categories/TFR_decision_categories_USB.txt:26-37`, `common/scripted_guis/TFR_scripted_guis_USB.txt:6-180`       | A decision-category race dashboard whose GUI presents, but does not own, gameplay state                                              |
+| Three actor columns            | `interface/TFR_USB_cogno.gui:7-89`                                                                                                | Distinct lab cards with identity, leadership, agenda, current share, and strategic effect                                            |
+| Cabinet/appointment strip      | `interface/TFR_USB_cogno.gui:91-277`                                                                                              | Later laboratory-director or government-liaison layer; not part of the MVP                                                           |
+| Influence shares               | `localisation/english/TFR_country_localisation_USB_l_english.yml:939-988`                                                         | A bounded national support or compute-allocation pool across active laboratories                                                     |
+| Influence-balancing effect     | `common/scripted_effects/TFR_scripted_effects_USB.txt:5652-5897`                                                                  | Deterministic redistribution whose shares always total exactly `100`; do not copy TFR's random normalization                         |
+| Scaling actor benefit          | `common/dynamic_modifiers/TFR_dynamic_modifiers_USB.txt:615-636`                                                                  | Each lab's support share contributes one small, legible national effect or project specialty                                         |
+| Actor-themed actions           | `common/decisions/TFR_decisions_USB.txt:3796-4599`                                                                                | Decisions and missions visibly aligned with a lab; completing them shifts support and produces an immediate strategic result         |
+| Influence-gated project        | `common/decisions/TFR_decisions_USB.txt:4393-4428`                                                                                | Frontier projects may require a minimum lab share, control capacity, compute allocation, or policy posture                           |
+| Separate Masquerade loop       | `common/decisions/categories/TFR_decision_categories_USB.txt:52-63`                                                               | Keep external race pressure conceptually separate from laboratory politics                                                           |
+| Recurring risk missions        | `common/decisions/TFR_decisions_USB.txt:8906-8965`                                                                                | Native missions periodically raise public alarm and control debt; investments can lengthen the interval                              |
+| Coupled tradeoff decisions     | `common/decisions/TFR_decisions_USB.txt:8967-9687`                                                                                | Interventions may reduce one danger while consuming capacity or worsening another                                                    |
+| Tiered risk state              | `common/scripted_effects/TFR_scripted_effects_USB.txt:5436-5650`, `common/scripted_localisation/TFR_scripted_loc_USB.txt:788-993` | Clamp meters, map them to explicit bands, and drive readable status plus bounded consequences                                        |
+| Explicit terminal crisis chain | `common/decisions/TFR_decisions_USB.txt:3752-3794`, `events/TFR_events_USB.txt:18114-18200`                                       | A separately activated emergency mission owns terminal resolution; a high pressure band alone does not silently collapse the country |
 
 The direct design lesson is not `three labs forever`. It is that actors become strategically legible when each has an identity, a share of a constrained resource, a scaling specialty, its own actions, and influence-gated projects. The Great AI Race applies that pattern to a data-driven lab roster.
 
@@ -165,14 +165,14 @@ All core metrics are integers from `0` to `100`. Every writer clamps its result.
 
 ### Country-scope state
 
-| Variable | Meaning | High value |
-|---|---|---|
-| `ai_race_capability` | Effective frontier algorithm and model capability | Beneficial, but increases pressure |
-| `ai_race_compute` | Available training and inference compute | Beneficial |
-| `ai_race_talent` | Research, engineering, and operator base | Beneficial |
-| `ai_race_deployment` | Ability to integrate models into the economy and state | Beneficial, with transition risks |
-| `ai_race_control_capacity` | Institutional ability to evaluate and govern advanced systems | Beneficial |
-| `ai_race_public_confidence` | Social and political legitimacy for continued deployment | Beneficial |
+| Variable                    | Meaning                                                       | High value                         |
+| --------------------------- | ------------------------------------------------------------- | ---------------------------------- |
+| `ai_race_capability`        | Effective frontier algorithm and model capability             | Beneficial, but increases pressure |
+| `ai_race_compute`           | Available training and inference compute                      | Beneficial                         |
+| `ai_race_talent`            | Research, engineering, and operator base                      | Beneficial                         |
+| `ai_race_deployment`        | Ability to integrate models into the economy and state        | Beneficial, with transition risks  |
+| `ai_race_control_capacity`  | Institutional ability to evaluate and govern advanced systems | Beneficial                         |
+| `ai_race_public_confidence` | Social and political legitimacy for continued deployment      | Beneficial                         |
 
 Each core metric also has:
 
@@ -204,18 +204,18 @@ The exact set of stock/external variables may be reduced if a metric has no exte
 
 ### Global state
 
-| State | Purpose |
-|---|---|
-| `global.ai_race_frontier_capability` | Highest current effective capability |
-| `global.ai_race_temperature` | Competitive pressure and escalation, `0..100`; high is dangerous |
-| `global.ai_race_frontier_pressure` | Rate at which laggards are pushed toward risky choices |
-| `global.ai_race_leader_id` | Country ID of the current leader |
-| `global.ai_race_epoch` | Count of completed scheduled quarterly reconciliations |
-| `global.ai_race_last_processed_quarter` | Replay guard encoded as `current year * 4 + quarter index` |
-| `global.ai_race_dirty_update_var` | Player presentation refresh counter |
-| `GLOBAL_ai_race_initialized` | Global initialization guard |
-| `global.ai_race_participants` | Country-scope array of eligible participants |
-| `global.ai_race_ranked_participants` | Derived country-scope array sorted by effective capability |
+| State                                   | Purpose                                                          |
+| --------------------------------------- | ---------------------------------------------------------------- |
+| `global.ai_race_frontier_capability`    | Highest current effective capability                             |
+| `global.ai_race_temperature`            | Competitive pressure and escalation, `0..100`; high is dangerous |
+| `global.ai_race_frontier_pressure`      | Rate at which laggards are pushed toward risky choices           |
+| `global.ai_race_leader_id`              | Country ID of the current leader                                 |
+| `global.ai_race_epoch`                  | Count of completed scheduled quarterly reconciliations           |
+| `global.ai_race_last_processed_quarter` | Replay guard encoded as `current year * 4 + quarter index`       |
+| `global.ai_race_dirty_update_var`       | Player presentation refresh counter                              |
+| `GLOBAL_ai_race_initialized`            | Global initialization guard                                      |
+| `global.ai_race_participants`           | Country-scope array of eligible participants                     |
+| `global.ai_race_ranked_participants`    | Derived country-scope array sorted by effective capability       |
 
 The ranked array is derived and may be rebuilt. It never becomes the only record of participation or national values.
 
@@ -225,20 +225,20 @@ Laboratories are authored identities with stable, never-reused numeric IDs. A co
 
 Minimum lab fields:
 
-| Field | Range or type |
-|---|---|
-| Active/known state | Boolean or bounded enum |
-| Capability | `0..100` |
-| Compute access | `0..100` |
-| Capital access | `0..100` |
-| Talent | `0..100` |
-| Momentum | `0..100` |
-| Openness | `0..100`, with explicit polarity in tooltips |
+| Field                  | Range or type                                   |
+| ---------------------- | ----------------------------------------------- |
+| Active/known state     | Boolean or bounded enum                         |
+| Capability             | `0..100`                                        |
+| Compute access         | `0..100`                                        |
+| Capital access         | `0..100`                                        |
+| Talent                 | `0..100`                                        |
+| Momentum               | `0..100`                                        |
+| Openness               | `0..100`, with explicit polarity in tooltips    |
 | National support share | `0..100`; active lab shares total exactly `100` |
-| Current project | Stable project ID or `0` |
-| Project phase | Bounded enum |
-| Project progress | `0..100` |
-| Release posture | Bounded enum |
+| Current project        | Stable project ID or `0`                        |
+| Project phase          | Bounded enum                                    |
+| Project progress       | `0..100`                                        |
+| Release posture        | Bounded enum                                    |
 
 Recommended storage is parallel country-scope arrays indexed by lab ID, following the repository's fixed-ID dynamic-list patterns. Confirm the exact array syntax against a live OEM precedent before Phase 4.
 
@@ -263,10 +263,10 @@ The first laboratory phase should use two or three labs in one country and prove
 
 The Masquerade pattern is translated into two separate danger tracks:
 
-| Pressure | Primary causes | Typical response | Bad response tradeoff |
-|---|---|---|---|
-| Public alarm | Disruptive deployment, visible failures, secrecy breaches, labor shock, weak public confidence | Transparency, compensation, standards, slower deployment | May reveal more information or sacrifice race momentum |
-| Control debt | Capability and deployment outpacing evaluation, rushed releases, opaque labs, underfunded testing | Evaluations, pauses, audits, control research | Costs compute/time and may widen the frontier gap |
+| Pressure     | Primary causes                                                                                    | Typical response                                         | Bad response tradeoff                                  |
+| ------------ | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------ |
+| Public alarm | Disruptive deployment, visible failures, secrecy breaches, labor shock, weak public confidence    | Transparency, compensation, standards, slower deployment | May reveal more information or sacrifice race momentum |
+| Control debt | Capability and deployment outpacing evaluation, rushed releases, opaque labs, underfunded testing | Evaluations, pauses, audits, control research            | Costs compute/time and may widen the frontier gap      |
 
 These are bounded `0..100` variables with explicit bands and threshold consequences. The central quarterly reducer advances stored interval counters and applies a pressure pulse when a counter expires. Investments may lengthen the interval or reduce pulse size, while aggressive race posture shortens it. Do not create Cognoscenti-style 20- or 25-day self-reactivating missions for every participant.
 
@@ -302,14 +302,14 @@ Participant rows must be country scopes, not a localisation matrix keyed by ever
 
 ## Update cadence
 
-| Cadence | Work |
-|---|---|
-| First enabled monthly pulse / reconstruction | Gate the rule, initialize global state, register eligible participants, initialize or reconstruct country state idempotently; the same path repairs late bookmarks and loaded saves |
-| Event-driven | Player actions, lab activation, policy change, project start, release choice, major breakthrough, owner-system changes that do not need polling |
-| Monthly | Advance only active projects and bounded lab work; resolve completed phase transitions once |
-| Quarterly | Rebuild external contributions, update effective national values, advance national pressure counters, compute frontier and gaps, rebuild rankings, update race temperature and pressure |
-| Yearly or explicit repair | Optional consistency audit and late-participant registration; no narrative event polling |
-| GUI interaction | Rebuild player-visible filtered arrays and advance the dirty counter |
+| Cadence                                      | Work                                                                                                                                                                                    |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| First enabled monthly pulse / reconstruction | Gate the rule, initialize global state, register eligible participants, initialize or reconstruct country state idempotently; the same path repairs late bookmarks and loaded saves     |
+| Event-driven                                 | Player actions, lab activation, policy change, project start, release choice, major breakthrough, owner-system changes that do not need polling                                         |
+| Monthly                                      | Advance only active projects and bounded lab work; resolve completed phase transitions once                                                                                             |
+| Quarterly                                    | Rebuild external contributions, update effective national values, advance national pressure counters, compute frontier and gaps, rebuild rankings, update race temperature and pressure |
+| Yearly or explicit repair                    | Optional consistency audit and late-participant registration; no narrative event polling                                                                                                |
+| GUI interaction                              | Rebuild player-visible filtered arrays and advance the dirty counter                                                                                                                    |
 
 Implementation should add one narrow, enabled-mode-gated call to the existing global monthly singleton. It must not create a second global `on_monthly` owner, a global daily event, or `every_country` work. Quarterly country work iterates only the registered participant array. A normal Off game does not enter the race dispatcher.
 
@@ -321,16 +321,16 @@ GUI dirty-variable effects must be guarded so AI countries do not continually re
 
 The Great AI Race gets a separate fixed-at-setup game rule, `rule_ai_race`. It must not reuse `rule_corporate_history`.
 
-| Surface | Full | Outcomes Only | Off |
-|---|---|---|---|
-| Core state | Initialized and simulated | Initialized or reconstructed and simulated autonomously | Not created |
-| National/global outcomes | Yes | Yes | No |
-| Dashboard | Full interactive dashboard | Read-only summary with persistent mode banner | Hidden |
-| Lab/project controls | Interactive | Hidden; AI/autonomous policy resolves them | Hidden |
-| Routine alerts and clocks | Yes | Hidden | Hidden |
-| Major outcome notices | Yes | Yes, bounded | No |
-| Debug surface | Available under `is_debug = yes` | Available under `is_debug = yes` | Hidden |
-| Dispatcher work | Monthly and quarterly | Monthly and quarterly using autonomous choices | None |
+| Surface                   | Full                             | Outcomes Only                                           | Off         |
+| ------------------------- | -------------------------------- | ------------------------------------------------------- | ----------- |
+| Core state                | Initialized and simulated        | Initialized or reconstructed and simulated autonomously | Not created |
+| National/global outcomes  | Yes                              | Yes                                                     | No          |
+| Dashboard                 | Full interactive dashboard       | Read-only summary with persistent mode banner           | Hidden      |
+| Lab/project controls      | Interactive                      | Hidden; AI/autonomous policy resolves them              | Hidden      |
+| Routine alerts and clocks | Yes                              | Hidden                                                  | Hidden      |
+| Major outcome notices     | Yes                              | Yes, bounded                                            | No          |
+| Debug surface             | Available under `is_debug = yes` | Available under `is_debug = yes`                        | Hidden      |
+| Dispatcher work           | Monthly and quarterly            | Monthly and quarterly using autonomous choices          | None        |
 
 Full and Outcomes Only use the same state machine and resolution effects. Outcomes Only suppresses micromanagement and routine presentation; it does not maintain a second simplified history chain. Off must leave no participant arrays, country initialization flags, project state, dashboard placeholders, alerts, or events.
 
@@ -431,23 +431,23 @@ The first playable vertical slice is USA and China only, with one national overv
 
 Expected files over the first three phases:
 
-| File | Responsibility |
-|---|---|
-| `common/game_rules/00_game_rules.txt` | Separate Great AI Race runtime rule |
-| `common/scripted_triggers/MD_great_ai_race_triggers.txt` | Mode, participant, initialization, and threshold gates |
-| `common/scripted_effects/00_great_ai_race_effects.txt` | Initialization, adapters, clamps, update cadence, frontier, ranking |
-| `common/on_actions/MD_on_actions.txt` | One call from the existing global monthly singleton |
-| `common/decisions/categories/MD_great_ai_race_categories.txt` | Category visibility and later scripted-GUI attachment |
-| `common/decisions/MD_great_ai_race_decisions.txt` | Debug-only controls in Phase 1; later normal actions remain mode-gated |
-| `common/scripted_guis/01_great_ai_race_scripted_gui.txt` | Dashboard properties, visibility, clicks, and dynamic lists |
-| `common/scripted_localisation/00_great_ai_race_scripted_localisation.txt` | Status, tier, mode, lab/project dispatchers |
-| `interface/MD_great_ai_race.gui` | OEM-native dashboard layout |
-| `interface/MD_great_ai_race.gfx` | New OEM-native sprites and progress-bar definitions |
-| `localisation/english/MD_great_ai_race_l_english.yml` | Shared cross-country English copy |
-| `localisation/english/MD_game_rules_l_english.yml` | Rule name and authoritative mode descriptions |
-| `localisation/english/MD_focus_USA_l_english.yml` | USA-owned event/decision copy only |
-| `localisation/english/MD_focus_CHI_l_english.yml` | China-owned event/decision copy only |
-| `tools/tests/great_ai_race_state_model_test.py` | State ownership, modes, cadence, clamps, and lifecycle contract |
+| File                                                                      | Responsibility                                                         |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `common/game_rules/00_game_rules.txt`                                     | Separate Great AI Race runtime rule                                    |
+| `common/scripted_triggers/MD_great_ai_race_triggers.txt`                  | Mode, participant, initialization, and threshold gates                 |
+| `common/scripted_effects/00_great_ai_race_effects.txt`                    | Initialization, adapters, clamps, update cadence, frontier, ranking    |
+| `common/on_actions/MD_on_actions.txt`                                     | One call from the existing global monthly singleton                    |
+| `common/decisions/categories/MD_great_ai_race_categories.txt`             | Category visibility and later scripted-GUI attachment                  |
+| `common/decisions/MD_great_ai_race_decisions.txt`                         | Debug-only controls in Phase 1; later normal actions remain mode-gated |
+| `common/scripted_guis/01_great_ai_race_scripted_gui.txt`                  | Dashboard properties, visibility, clicks, and dynamic lists            |
+| `common/scripted_localisation/00_great_ai_race_scripted_localisation.txt` | Status, tier, mode, lab/project dispatchers                            |
+| `interface/MD_great_ai_race.gui`                                          | OEM-native dashboard layout                                            |
+| `interface/MD_great_ai_race.gfx`                                          | New OEM-native sprites and progress-bar definitions                    |
+| `localisation/english/MD_great_ai_race_l_english.yml`                     | Shared cross-country English copy                                      |
+| `localisation/english/MD_game_rules_l_english.yml`                        | Rule name and authoritative mode descriptions                          |
+| `localisation/english/MD_focus_USA_l_english.yml`                         | USA-owned event/decision copy only                                     |
+| `localisation/english/MD_focus_CHI_l_english.yml`                         | China-owned event/decision copy only                                   |
+| `tools/tests/great_ai_race_state_model_test.py`                           | State ownership, modes, cadence, clamps, and lifecycle contract        |
 
 The exact filenames may be adjusted to avoid collisions or match a stronger nearby convention found at implementation time. Ownership boundaries may not be adjusted silently.
 
@@ -465,7 +465,7 @@ Likely relevant static validators include:
 - `tools/validation/validate_set_variables.py`
 - `tools/validation/validate_localisation.py`
 - `tools/validation/validate_gfx_references.py`
-- `tools/validation/validate_common_mistakes.py`
+- `tools/linting/check_common_mistakes.py`
 
 Static validation is not rendered GUI evidence and is not natural HOI4 runtime acceptance.
 
@@ -517,21 +517,21 @@ Do not report a later tier from evidence belonging to an earlier tier.
 
 ## Known risks and mitigations
 
-| Risk | Mitigation |
-|---|---|
-| Duplicate authority with USA AI Core | Read-only quarterly adapter and explicit authority ledger |
-| Dashboard becomes a wall of text | Short labels, tier adjectives, tooltips, tabs, selected-entity panels |
-| Country x lab x metric explosion | Scope-backed countries, fixed-ID labs, one selected-entity detail panel |
-| Per-tick performance cost | Participant array, monthly active-project work, quarterly aggregation, no daily poll |
-| GUI refresh work runs for AI | Guard dirty effects and rebuild only player-visible arrays |
-| Save/reload replays projects | Persistent phase IDs, completion guards, last-processed quarter |
-| Multiplayer divergence | One owner scope and deterministic resolution effects |
-| Foreign UI leaks exact values | Separate exact simulation state from intelligence-derived display state |
-| Progress bar lies about scale | Normalize to `0..100`, clamp, display value/cap, test boundary frames |
-| Hardcoded TFR-style participant branches | Generic country-scope rows and filtered arrays |
-| TNO-style total UI replacement | Decision-category shell with optional bounded pop-out only |
-| Localisation parses but does not fit | Render tests at the smallest supported resolution and 1920x1080 |
-| TNO/TFR asset or code copying | Mechanical references only; create OEM-native script, copy, and art |
+| Risk                                     | Mitigation                                                                           |
+| ---------------------------------------- | ------------------------------------------------------------------------------------ |
+| Duplicate authority with USA AI Core     | Read-only quarterly adapter and explicit authority ledger                            |
+| Dashboard becomes a wall of text         | Short labels, tier adjectives, tooltips, tabs, selected-entity panels                |
+| Country x lab x metric explosion         | Scope-backed countries, fixed-ID labs, one selected-entity detail panel              |
+| Per-tick performance cost                | Participant array, monthly active-project work, quarterly aggregation, no daily poll |
+| GUI refresh work runs for AI             | Guard dirty effects and rebuild only player-visible arrays                           |
+| Save/reload replays projects             | Persistent phase IDs, completion guards, last-processed quarter                      |
+| Multiplayer divergence                   | One owner scope and deterministic resolution effects                                 |
+| Foreign UI leaks exact values            | Separate exact simulation state from intelligence-derived display state              |
+| Progress bar lies about scale            | Normalize to `0..100`, clamp, display value/cap, test boundary frames                |
+| Hardcoded TFR-style participant branches | Generic country-scope rows and filtered arrays                                       |
+| TNO-style total UI replacement           | Decision-category shell with optional bounded pop-out only                           |
+| Localisation parses but does not fit     | Render tests at the smallest supported resolution and 1920x1080                      |
+| TNO/TFR asset or code copying            | Mechanical references only; create OEM-native script, copy, and art                  |
 
 ## Open design decisions
 
@@ -553,16 +553,16 @@ The first implementation slice freezes these decisions so later work does not re
 - Off is gated at the existing monthly singleton caller. It creates no state or debug category and performs no normal race callback.
 - The first enabled monthly pulse is the sole bootstrap and late-start recovery path. No event namespace, hidden event, or second startup owner is added.
 - USA and China are the only eligible participants. The participant registry stores country scopes in that order, excludes `collapsed_nation`, and rebuilds rather than mutating an array during iteration.
-- All six stock, external, and effective metric slots initialize to `0`. Phase 1 resets every external slot to `0`; owner-system adapters remain Phase 2 work.
+- All six stock, external, and effective metric slots begin unset and therefore read as `0`. Phase 1 clears every external slot before rebuilding; owner-system adapters remain Phase 2 work.
 - Ranking uses effective capability only. China leads only when strictly greater; USA wins an exact tie because it is first in the fixed registry.
 - `ai_race_frontier_gap` is signed `capability - frontier`, so the leader is `0` and lagging participants are negative.
 - `global.ai_race_last_processed_quarter` stores `year * 4 + quarter index`. The replay-guarded wrapper alone advances `global.ai_race_epoch` and the dirty counter.
 - `ai_race_rebuild_derived_state` is pure and repeatable. Debug repair calls it without advancing scheduled state.
-- Temperature and frontier pressure remain bounded zero-valued placeholders until their formulas are approved.
+- Temperature and frontier pressure remain unset, bounded zero-valued placeholders until their formulas are approved.
 - Phase 1 has no normal dashboard, laboratory, project, policy, pressure pulse, alert, modifier, or event content.
 
-## Next implementation slice
+## Implemented Phase 1 slice
 
-The first code slice should implement only the separate game rule, mode triggers, USA/China initialization, six clamped country metrics, global initialization, a quarterly debug update, and debug-only readout/repair controls. It should not add the final dashboard, laboratories, selectable projects, model-release events, new art, or world effects.
+Phase 1 implements only the separate game rule, mode triggers, USA/China initialization, six clamped country metrics, global initialization, a quarterly debug update, and debug-only readout/repair controls. It does not add the final dashboard, laboratories, selectable projects, model-release events, new art, or world effects.
 
 The phased Claude campaign is defined in `.claude/docs/great-ai-race-implementation-campaign.md`.

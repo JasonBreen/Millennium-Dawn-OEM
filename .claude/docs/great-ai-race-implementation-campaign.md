@@ -93,7 +93,7 @@ The current checkout resolves Prompt 1's previously open implementation choices 
 - Bootstrap occurs on the first enabled call from OEM's existing guarded global monthly singleton. The same idempotent path repairs late bookmarks and loaded saves; there is no hidden event or second startup owner.
 - `AI_RACE_active` means eligible and registered in the headless kernel. The later public dashboard activation date or capability threshold remains a separate product decision.
 - USA and China are registered as country scopes in that fixed order. Exact capability ties resolve to USA; the signed frontier gap is `capability - frontier`.
-- Phase 1 external slots are explicit zero-valued scaffolding. Prompt 2 replaces those zeros with read-only canonical adapters.
+- Phase 1 external slots remain unset and therefore read as zero. Prompt 2 replaces that cleared scaffolding with read-only canonical adapters.
 - The replay guard is encoded as `year * 4 + quarter index`.
 - `ai_race_rebuild_derived_state` is pure and repeatable. Only the scheduled quarterly wrapper advances the epoch, dirty counter, and future interval state.
 - The enabled-mode gate is at the singleton caller, so Off performs no Great AI Race callback and exposes no debug category.
@@ -101,11 +101,11 @@ The current checkout resolves Prompt 1's previously open implementation choices 
 
 ### Prompt 1-3 file allowlist
 
-| Prompt | Files allowed to change |
-|---|---|
-| 1 | `common/game_rules/00_game_rules.txt`; `common/on_actions/MD_on_actions.txt`; `common/scripted_triggers/MD_great_ai_race_triggers.txt`; `common/scripted_effects/00_great_ai_race_effects.txt`; `common/decisions/categories/MD_great_ai_race_categories.txt`; `common/decisions/MD_great_ai_race_decisions.txt`; `localisation/english/MD_game_rules_l_english.yml`; `localisation/english/MD_great_ai_race_l_english.yml`; these three planning documents |
-| 2 | Great AI Race trigger/effect/debug/localisation files above; explicitly approved read-only owner files may be inspected but not edited |
-| 3 | Great AI Race category/decision/trigger/effect/localisation files plus new `common/scripted_guis/01_great_ai_race_scripted_gui.txt`, `interface/MD_great_ai_race.gui`, and `interface/MD_great_ai_race.gfx` |
+| Prompt | Files allowed to change                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `common/game_rules/00_game_rules.txt`; `common/on_actions/MD_on_actions.txt`; `common/scripted_triggers/MD_great_ai_race_triggers.txt`; `common/scripted_effects/00_great_ai_race_effects.txt`; `common/decisions/categories/MD_great_ai_race_categories.txt`; `common/decisions/MD_great_ai_race_decisions.txt`; `localisation/english/MD_game_rules_l_english.yml`; `localisation/english/MD_great_ai_race_l_english.yml`; these three planning documents |
+| 2      | Great AI Race trigger/effect/debug/localisation files above; explicitly approved read-only owner files may be inspected but not edited                                                                                                                                                                                                                                                                                                                      |
+| 3      | Great AI Race category/decision/trigger/effect/localisation files plus new `common/scripted_guis/01_great_ai_race_scripted_gui.txt`, `interface/MD_great_ai_race.gui`, and `interface/MD_great_ai_race.gfx`                                                                                                                                                                                                                                                 |
 
 ## Prompt 1 - Headless Kernel and Runtime Modes
 
@@ -123,7 +123,7 @@ Implement the smallest headless Great AI Race kernel for USA and China. There is
 - Add public alarm and control debt as bounded country state, but do not yet add their recurring missions.
 - Add global frontier, temperature, pressure, leader, epoch, participant array, and ranked-array placeholders.
 - Add one clamp/repair effect and one debug-only readout/repair surface.
-- Reset the six external-contribution slots to zero without reading or writing any owner system.
+- Clear the six external-contribution slots before rebuilding without reading or writing any owner system.
 - Rebuild participants and derived ranking state deterministically for USA and China; capability-only ranking is an explicit Phase 1 scaffold, not the final national score formula.
 - Store `year * 4 + quarter index` as a replay guard and separate pure derived-state repair from scheduled state advancement.
 - In Off, create no race variables, arrays, flags, ideas, missions, alerts, or categories.
@@ -278,6 +278,17 @@ Add the Cognoscenti-derived inner politics loop: distinct laboratories compete f
 - A new authored lab requires registry/mapping/content changes but no copied GUI layout.
 - Full provides interactions; Outcomes Only resolves the same choices autonomously and shows read-only results; Off has no labs.
 
+## Shared Event Contract for Prompts 5, 6, and 9
+
+Before adding or editing events, read `.claude/docs/event-reference.md` and `.claude/docs/localisation-rules.md`.
+
+- Every event is `is_triggered_only = yes`. Project/release resolution effects own Prompt 5 dispatch, the quarterly pressure reducer and explicit crisis mission own Prompt 6 dispatch, and breakthrough registration effects own Prompt 9 dispatch. Do not add date polling or a second scheduler.
+- Verify each namespace, event ID, caller effect type, and caller path. An effectful option logs its exact event and option ID; a notification-only option has no log.
+- Every `picture = GFX_*` resolves to a sprite declared in `interface/*.gfx`. Do not use a vanilla fallback, copied Workshop asset, or invented sprite name.
+- Keep the mechanical payload at the authoritative resolution site. Report events summarize completed outcomes and do not reapply their effects.
+- Batch routine multi-source notifications into one report. Pure notifications use `minor_flavor = yes`; only strategic releases, crises, breakthroughs, and authored choices receive standalone event treatment.
+- Full may show routine and strategic events. Outcomes Only suppresses routine presentation and reports only major strategic outcomes. Off schedules and fires nothing.
+
 ## Prompt 5 - Training Projects and Model Releases
 
 ### Objective
@@ -286,6 +297,7 @@ Implement one complete project lifecycle per prototype country before expanding 
 
 ### Required scope
 
+- Apply the [shared event contract](#shared-event-contract-for-prompts-5-6-and-9).
 - Add stable project IDs and the bounded lifecycle: available, selected, preparation, training, evaluation, release choice, resolved, blocked, failed.
 - Use native missions or timed flags as the authoritative clock. The GUI must not decrement a second clock.
 - Make compute commitment, lab capability, talent, momentum, and control capacity affect duration or outcome through documented formulas.
@@ -317,6 +329,7 @@ Implement the Cognoscenti-derived outer pressure loop without reproducing the Ma
 
 ### Required scope
 
+- Apply the [shared event contract](#shared-event-contract-for-prompts-5-6-and-9).
 - Implement public alarm and control debt as separate `0..100` dangers.
 - Derive their normal pressures from capability, deployment, public confidence, control capacity, lab openness, release posture, incidents, and race temperature.
 - Add one stored quarterly interval and countdown for each pressure. The central participant dispatcher applies the pulse and resets the countdown.
@@ -405,6 +418,7 @@ Make the global race react to national advances and surface pressure through bou
 
 ### Required scope
 
+- Apply the [shared event contract](#shared-event-contract-for-prompts-5-6-and-9).
 - Implement discrete breakthrough classes and exactly-once registration.
 - Recalculate global frontier and race temperature from documented inputs.
 - Add explicit temperature bands and threshold-entry effects.

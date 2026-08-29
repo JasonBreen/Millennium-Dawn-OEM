@@ -1,5 +1,5 @@
 # The race owns only AI_RACE/ai_race state. External contributions are rebuilt from canonical
-# owners and never written back; Phase 1 deliberately resets those adapter slots to zero.
+# owners and never written back; Phase 1 clears those adapter slots so they read as zero.
 
 ai_race_clear_country_state = {
 	clear_variable = ai_race_capability_stock
@@ -66,28 +66,7 @@ ai_race_initialize_country = {
 			ai_race_eligible_participant = yes
 			NOT = { ai_race_country_initialized = yes }
 		}
-		set_variable = { ai_race_capability_stock = 0 }
-		set_variable = { ai_race_capability_external = 0 }
-		set_variable = { ai_race_capability = 0 }
-		set_variable = { ai_race_compute_stock = 0 }
-		set_variable = { ai_race_compute_external = 0 }
-		set_variable = { ai_race_compute = 0 }
-		set_variable = { ai_race_talent_stock = 0 }
-		set_variable = { ai_race_talent_external = 0 }
-		set_variable = { ai_race_talent = 0 }
-		set_variable = { ai_race_deployment_stock = 0 }
-		set_variable = { ai_race_deployment_external = 0 }
-		set_variable = { ai_race_deployment = 0 }
-		set_variable = { ai_race_control_capacity_stock = 0 }
-		set_variable = { ai_race_control_capacity_external = 0 }
-		set_variable = { ai_race_control_capacity = 0 }
-		set_variable = { ai_race_public_confidence_stock = 0 }
-		set_variable = { ai_race_public_confidence_external = 0 }
-		set_variable = { ai_race_public_confidence = 0 }
-		set_variable = { ai_race_public_alarm = 0 }
-		set_variable = { ai_race_control_debt = 0 }
-		set_variable = { ai_race_frontier_gap = 0 }
-		set_variable = { ai_race_rank = 0 }
+		ai_race_clear_country_state = yes
 		set_country_flag = AI_RACE_state_initialized
 	}
 	if = {
@@ -110,12 +89,12 @@ ai_race_initialize_country = {
 ai_race_rebuild_country_metrics = {
 	if = {
 		limit = { ai_race_active = yes }
-		set_variable = { ai_race_capability_external = 0 }
-		set_variable = { ai_race_compute_external = 0 }
-		set_variable = { ai_race_talent_external = 0 }
-		set_variable = { ai_race_deployment_external = 0 }
-		set_variable = { ai_race_control_capacity_external = 0 }
-		set_variable = { ai_race_public_confidence_external = 0 }
+		clear_variable = ai_race_capability_external
+		clear_variable = ai_race_compute_external
+		clear_variable = ai_race_talent_external
+		clear_variable = ai_race_deployment_external
+		clear_variable = ai_race_control_capacity_external
+		clear_variable = ai_race_public_confidence_external
 
 		set_variable = { ai_race_capability = ai_race_capability_stock }
 		add_to_variable = { ai_race_capability = ai_race_capability_external }
@@ -145,7 +124,7 @@ ai_race_refresh_participants = {
 		else_if = {
 			limit = { ai_race_country_initialized = yes }
 			clr_country_flag = AI_RACE_active
-			set_variable = { ai_race_rank = 0 }
+			clear_variable = ai_race_rank
 		}
 	}
 	CHI = {
@@ -157,15 +136,15 @@ ai_race_refresh_participants = {
 		else_if = {
 			limit = { ai_race_country_initialized = yes }
 			clr_country_flag = AI_RACE_active
-			set_variable = { ai_race_rank = 0 }
+			clear_variable = ai_race_rank
 		}
 	}
 }
 
 ai_race_rebuild_frontier_and_ranking = {
 	clear_array = global.ai_race_ranked_participants
-	set_variable = { global.ai_race_frontier_capability = 0 }
-	set_variable = { global.ai_race_leader_id = 0 }
+	clear_variable = global.ai_race_frontier_capability
+	clear_variable = global.ai_race_leader_id
 
 	if = {
 		limit = {
@@ -241,13 +220,13 @@ ai_race_initialize_global = {
 		}
 		clear_array = global.ai_race_participants
 		clear_array = global.ai_race_ranked_participants
-		set_variable = { global.ai_race_frontier_capability = 0 }
-		set_variable = { global.ai_race_temperature = 0 }
-		set_variable = { global.ai_race_frontier_pressure = 0 }
-		set_variable = { global.ai_race_leader_id = 0 }
-		set_variable = { global.ai_race_epoch = 0 }
-		set_variable = { global.ai_race_last_processed_quarter = 0 }
-		set_variable = { global.ai_race_dirty_update_var = 0 }
+		clear_variable = global.ai_race_frontier_capability
+		clear_variable = global.ai_race_temperature
+		clear_variable = global.ai_race_frontier_pressure
+		clear_variable = global.ai_race_leader_id
+		clear_variable = global.ai_race_epoch
+		clear_variable = global.ai_race_last_processed_quarter
+		clear_variable = global.ai_race_dirty_update_var
 		set_global_flag = GLOBAL_ai_race_initialized
 		ai_race_refresh_participants = yes
 		ai_race_repair_global_state = yes
