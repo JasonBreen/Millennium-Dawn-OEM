@@ -195,12 +195,35 @@ ai_race_rebuild_country_metrics = {
 				}
 				set_variable = { ai_race_compute_external = _cmp }
 				if = { limit = { has_idea = CHI_lenovo_enterprise_server_platform } add_to_variable = { ai_race_compute_external = 5 } }
+				# Compute adjustments from national/company ideas
+				if = { limit = { has_idea = CHI_semiconductor_backwardness } subtract_from_variable = { ai_race_compute_external = 40 } }
+				else_if = { limit = { has_idea = CHI_semiconductor_backwardness_2 } subtract_from_variable = { ai_race_compute_external = 25 } }
+				else_if = { limit = { has_idea = CHI_semiconductor_backwardness_3 } subtract_from_variable = { ai_race_compute_external = 15 } }
+				else_if = { limit = { has_idea = CHI_semiconductor_backwardness_4 } subtract_from_variable = { ai_race_compute_external = 8 } }
+				if = { limit = { has_idea = CHI_huawei_foundry_chokepoint } subtract_from_variable = { ai_race_compute_external = 8 } }
+				if = { limit = { has_idea = CHI_huawei_entity_list_shock } subtract_from_variable = { ai_race_compute_external = 10 } }
+				if = { limit = { has_idea = CHI_huawei_domestic_yield_ramp } add_to_variable = { ai_race_compute_external = 5 } }
+				# Optional thin GPU signal: resolved milestones + memory independence focus
+				if = {
+					limit = {
+						has_country_flag = gpu_development_7_resolved
+						has_completed_focus = CHI_memory_independence
+					}
+					add_to_variable = { ai_race_compute_external = 3 }
+				}
+				if = {
+					limit = {
+						has_country_flag = gpu_development_9_resolved
+						has_completed_focus = CHI_memory_independence
+					}
+					add_to_variable = { ai_race_compute_external = 3 }
+				}
 				# Talent: national research slots + small weight from standards_leverage
 				set_temp_variable = { _tal = { value = research_slots_from_gdp multiply = 10 } }
 				add_to_temp_variable = { _tal = { value = research_slots_from_gdp_c multiply = 10 } }
 				add_to_temp_variable = { _tal = { value = CHI_huawei_standards_leverage multiply = 5 } }
 				set_variable = { ai_race_talent_external = _tal }
-				# Deployment: (carrier_reach + consumer_position) ×5, Lenovo platforms small bonuses
+				# Deployment: (carrier_reach + consumer_position) ×5; Lenovo platforms & Harmony/OpenHarmony add small bonuses
 				set_temp_variable = {
 					_dep = {
 						value = CHI_huawei_carrier_reach
@@ -211,10 +234,26 @@ ai_race_rebuild_country_metrics = {
 				set_variable = { ai_race_deployment_external = _dep }
 				if = { limit = { has_idea = CHI_lenovo_global_pc_platform } add_to_variable = { ai_race_deployment_external = 5 } }
 				if = { limit = { has_idea = CHI_lenovo_enterprise_server_platform } add_to_variable = { ai_race_deployment_external = 5 } }
+				if = { limit = { has_country_flag = CHI_huawei_harmony_hms_full_ecosystem } add_to_variable = { ai_race_deployment_external = 3 } }
+				if = { limit = { has_country_flag = CHI_huawei_openharmony_federation } add_to_variable = { ai_race_deployment_external = 3 } }
+				# Capability extra: national research complex (CETC) boolean bonus
+				if = { limit = { has_idea = CHI_cetc_innovation_idea } add_to_variable = { ai_race_capability_external = 5 } }
 				# Control capacity: fallback from silicon_autonomy only (no dedicated Huawei control axis)
 				set_variable = { ai_race_control_capacity_external = { value = CHI_huawei_silicon_autonomy multiply = 10 } }
-				# Public confidence: trusted_market_access ×10 (documented as imperfect proxy)
-				set_variable = { ai_race_public_confidence_external = { value = CHI_huawei_trusted_market_access multiply = 10 } }
+				if = { limit = { has_idea = CHI_national_security_commission_3 } add_to_variable = { ai_race_control_capacity_external = 15 } }
+				else_if = { limit = { has_idea = CHI_national_security_commission_2 } add_to_variable = { ai_race_control_capacity_external = 10 } }
+				else_if = { limit = { has_idea = CHI_national_security_commission_1 } add_to_variable = { ai_race_control_capacity_external = 5 } }
+				if = { limit = { has_idea = CHI_ic_inf_nsc } add_to_variable = { ai_race_control_capacity_external = 5 } }
+				# Public confidence: prefer publicity_department tiers; fallback to a reduced Huawei trusted access proxy
+				clear_temp_variable = _pc
+				if = { limit = { has_idea = CHI_publicity_department_3 } set_temp_variable = { _pc = 30 } }
+				else_if = { limit = { has_idea = CHI_publicity_department_2 } set_temp_variable = { _pc = 20 } }
+				else_if = { limit = { has_idea = CHI_publicity_department_1 } set_temp_variable = { _pc = 10 } }
+				if = {
+					limit = { check_variable = { _pc = 0 } }
+					set_temp_variable = { _pc = { value = CHI_huawei_trusted_market_access multiply = 5 } }
+				}
+				set_variable = { ai_race_public_confidence_external = _pc }
 				ai_race_repair_country_state = yes
 			}
 			else = {
@@ -231,6 +270,7 @@ ai_race_rebuild_country_metrics = {
 				set_variable = { ai_race_capability_external = _cap_tmp }
 				set_temp_variable = { _cmp_tmp = { value = research_slots_from_gdp multiply = 10 } }
 				add_to_temp_variable = { _cmp_tmp = { value = research_slots_from_gdp_c multiply = 10 } }
+				if = { limit = { has_idea = CHI_semiconductor_backwardness } subtract_from_temp_variable = { _cmp_tmp = 20 } }
 				set_variable = { ai_race_compute_external = _cmp_tmp }
 				set_temp_variable = { _tal_tmp = { value = research_slots_from_gdp multiply = 10 } }
 				add_to_temp_variable = { _tal_tmp = { value = research_slots_from_gdp_c multiply = 10 } }
