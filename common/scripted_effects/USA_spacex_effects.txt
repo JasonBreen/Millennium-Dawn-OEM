@@ -1,0 +1,424 @@
+# SpaceX corporate-history: state, reconstruction, scheduling, and capstone
+#
+# Root prefix: USA_spacex
+# Namespace: USA_spacex_events (events/USA_spacex_events.txt)
+# Tag: USA
+#
+# Conventions:
+# - Variables are integers clamped 0..10 via corporate_history_clamp_value
+# - All effects are idempotent and logged via event-option logs or dispatcher logs
+# - Visible events are is_triggered_only and owned by the yearly dispatcher
+#
+
+USA_spacex_initialize_state = {
+	if = {
+		limit = { NOT = { has_country_flag = USA_spacex_state_initialized } }
+		# Baselines chosen to reflect an early-2000s private launcher with limited cadence and contracts
+		set_variable = { USA_spacex_launch_cadence_reliability = 1 }
+		set_variable = { USA_spacex_reusability_depth = 1 }
+		set_variable = { USA_spacex_government_partnership = 1 }
+		set_variable = { USA_spacex_commercial_market_power = 0 }
+		set_variable = { USA_spacex_leo_satcom_presence = 0 }
+		set_variable = { USA_spacex_heavy_deep_space_lift = 0 }
+		set_variable = { USA_spacex_geostrategic_access = 1 }
+		set_country_flag = USA_spacex_state_initialized
+	}
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_clamp_state = {
+	set_temp_variable = { corp_value = USA_spacex_launch_cadence_reliability }
+	corporate_history_clamp_value = yes
+	set_variable = { USA_spacex_launch_cadence_reliability = corp_value }
+	set_temp_variable = { corp_value = USA_spacex_reusability_depth }
+	corporate_history_clamp_value = yes
+	set_variable = { USA_spacex_reusability_depth = corp_value }
+	set_temp_variable = { corp_value = USA_spacex_government_partnership }
+	corporate_history_clamp_value = yes
+	set_variable = { USA_spacex_government_partnership = corp_value }
+	set_temp_variable = { corp_value = USA_spacex_commercial_market_power }
+	corporate_history_clamp_value = yes
+	set_variable = { USA_spacex_commercial_market_power = corp_value }
+	set_temp_variable = { corp_value = USA_spacex_leo_satcom_presence }
+	corporate_history_clamp_value = yes
+	set_variable = { USA_spacex_leo_satcom_presence = corp_value }
+	set_temp_variable = { corp_value = USA_spacex_heavy_deep_space_lift }
+	corporate_history_clamp_value = yes
+	set_variable = { USA_spacex_heavy_deep_space_lift = corp_value }
+	set_temp_variable = { corp_value = USA_spacex_geostrategic_access }
+	corporate_history_clamp_value = yes
+	set_variable = { USA_spacex_geostrategic_access = corp_value }
+}
+
+# Milestone recorders (flags are used only as guards; deltas applied here)
+
+USA_spacex_record_foundation = {
+	set_country_flag = USA_spacex_founded
+	add_to_variable = { USA_spacex_reusability_depth = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_falcon1_development = {
+	set_country_flag = USA_spacex_falcon1_development
+	add_to_variable = { USA_spacex_reusability_depth = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_falcon1_success = {
+	set_country_flag = USA_spacex_falcon1_success
+	add_to_variable = { USA_spacex_launch_cadence_reliability = 1 }
+	add_to_variable = { USA_spacex_government_partnership = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_falcon9_firstflight = {
+	set_country_flag = USA_spacex_falcon9_firstflight
+	add_to_variable = { USA_spacex_launch_cadence_reliability = 1 }
+	add_to_variable = { USA_spacex_reusability_depth = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_cargo_to_iss = {
+	set_country_flag = USA_spacex_dragon_cargo_operational
+	add_to_variable = { USA_spacex_government_partnership = 2 }
+	add_to_variable = { USA_spacex_geostrategic_access = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_first_landing = {
+	set_country_flag = USA_spacex_first_stage_landing
+	add_to_variable = { USA_spacex_reusability_depth = 2 }
+	add_to_variable = { USA_spacex_launch_cadence_reliability = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_first_reflight = {
+	set_country_flag = USA_spacex_first_reflight
+	add_to_variable = { USA_spacex_reusability_depth = 2 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_starlink_initial = {
+	set_country_flag = USA_spacex_starlink_initial
+	add_to_variable = { USA_spacex_leo_satcom_presence = 2 }
+	add_to_variable = { USA_spacex_launch_cadence_reliability = 1 }
+	add_to_variable = { USA_spacex_commercial_market_power = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_commercial_crew = {
+	set_country_flag = USA_spacex_commercial_crew_operational
+	add_to_variable = { USA_spacex_government_partnership = 2 }
+	add_to_variable = { USA_spacex_geostrategic_access = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_starship_integrated = {
+	set_country_flag = USA_spacex_starship_integrated_test
+	add_to_variable = { USA_spacex_reusability_depth = 1 }
+	add_to_variable = { USA_spacex_heavy_deep_space_lift = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_starship_progress_2024 = {
+	set_country_flag = USA_spacex_starship_progress_2024
+	add_to_variable = { USA_spacex_reusability_depth = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+# Additional recorders for historical-A branch milestones
+USA_spacex_record_cots_crs_awarded = {
+	set_country_flag = USA_spacex_cots_crs_awarded
+	add_to_variable = { USA_spacex_government_partnership = 2 }
+	add_to_variable = { USA_spacex_geostrategic_access = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_falcon_heavy_demo = {
+	set_country_flag = USA_spacex_falcon_heavy_demo
+	add_to_variable = { USA_spacex_heavy_deep_space_lift = 2 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_nssl_dual_source = {
+	set_country_flag = USA_spacex_nssl_dual_source
+	add_to_variable = { USA_spacex_government_partnership = 1 }
+	add_to_variable = { USA_spacex_geostrategic_access = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_hls_award = {
+	set_country_flag = USA_spacex_hls_award
+	add_to_variable = { USA_spacex_heavy_deep_space_lift = 1 }
+	add_to_variable = { USA_spacex_government_partnership = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_starship_iterative_licensing = {
+	set_country_flag = USA_spacex_iterative_licensing
+	add_to_variable = { USA_spacex_reusability_depth = 1 }
+	add_to_variable = { USA_spacex_geostrategic_access = 1 }
+	USA_spacex_clamp_state = yes
+}
+
+# Route selection (2026 posture)
+
+USA_spacex_clear_route = {
+	clr_country_flag = USA_spacex_route_cadence
+	clr_country_flag = USA_spacex_route_starship
+	clr_country_flag = USA_spacex_route_public_contract
+	clr_country_flag = USA_spacex_route_starlink
+}
+
+USA_spacex_record_route_cadence = {
+	USA_spacex_clear_route = yes
+	set_country_flag = USA_spacex_route_cadence
+	add_to_variable = { USA_spacex_launch_cadence_reliability = 1 }
+	add_to_variable = { USA_spacex_government_partnership = -1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_route_starship = {
+	USA_spacex_clear_route = yes
+	set_country_flag = USA_spacex_route_starship
+	add_to_variable = { USA_spacex_reusability_depth = 1 }
+	add_to_variable = { USA_spacex_launch_cadence_reliability = -1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_route_public_contract = {
+	USA_spacex_clear_route = yes
+	set_country_flag = USA_spacex_route_public_contract
+	add_to_variable = { USA_spacex_government_partnership = 1 }
+	add_to_variable = { USA_spacex_leo_satcom_presence = -1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_route_starlink = {
+	USA_spacex_clear_route = yes
+	set_country_flag = USA_spacex_route_starlink
+	add_to_variable = { USA_spacex_leo_satcom_presence = 2 }
+	add_to_variable = { USA_spacex_government_partnership = -1 }
+	USA_spacex_clamp_state = yes
+}
+
+# Capstone outcomes (exactly one idea)
+
+USA_spacex_clear_capstone_outcome = {
+	remove_ideas = {
+		USA_spacex_cadence_champion
+		USA_spacex_allied_leo_connectivity
+		USA_spacex_deep_space_stack
+		USA_spacex_commercial_monopoly_risk
+		USA_spacex_mixed_provider_ecosystem
+	}
+	clr_country_flag = USA_spacex_capstone_resolved
+}
+
+USA_spacex_apply_cadence_leadership = {
+	USA_spacex_clear_capstone_outcome = yes
+	add_ideas = USA_spacex_cadence_champion
+	set_country_flag = USA_spacex_capstone_resolved
+}
+
+USA_spacex_apply_heavy_lift_transition = {
+	USA_spacex_clear_capstone_outcome = yes
+	add_ideas = USA_spacex_deep_space_stack
+	set_country_flag = USA_spacex_capstone_resolved
+}
+
+USA_spacex_apply_public_contract_backbone = {
+	USA_spacex_clear_capstone_outcome = yes
+	add_ideas = USA_spacex_mixed_provider_ecosystem
+	set_country_flag = USA_spacex_capstone_resolved
+}
+
+USA_spacex_apply_starlink_infrastructure = {
+	USA_spacex_clear_capstone_outcome = yes
+	add_ideas = USA_spacex_allied_leo_connectivity
+	set_country_flag = USA_spacex_capstone_resolved
+}
+
+USA_spacex_apply_commercial_monopoly_risk = {
+	USA_spacex_clear_capstone_outcome = yes
+	add_ideas = USA_spacex_commercial_monopoly_risk
+	set_country_flag = USA_spacex_capstone_resolved
+}
+
+USA_spacex_resolve_capstone = {
+	USA_spacex_initialize_state = yes
+	if = {
+		limit = { NOT = { has_country_flag = USA_spacex_capstone_resolved } }
+		if = { limit = { has_country_flag = USA_spacex_route_cadence } USA_spacex_apply_cadence_leadership = yes }
+		else_if = { limit = { has_country_flag = USA_spacex_route_starship } USA_spacex_apply_heavy_lift_transition = yes }
+		else_if = { limit = { has_country_flag = USA_spacex_route_public_contract } USA_spacex_apply_public_contract_backbone = yes }
+		else_if = { limit = { has_country_flag = USA_spacex_route_starlink } USA_spacex_apply_starlink_infrastructure = yes }
+		else = { USA_spacex_apply_public_contract_backbone = yes }
+	}
+}
+
+# Hidden reconstruction — chronological, reward-free
+
+USA_spacex_reconstruct_history = {
+	USA_spacex_initialize_state = yes
+
+	# 2002-03-14: Company founded
+	if = {
+		limit = { date > 2002.3.14 NOT = { has_country_flag = USA_spacex_founded } }
+		USA_spacex_record_foundation = yes
+	}
+	# 2006-08-01: COTS anchor (CRS follows in 2008 in narrative)
+	if = {
+		limit = { date > 2006.8.1 NOT = { has_country_flag = USA_spacex_cots_crs_awarded } }
+		USA_spacex_record_cots_crs_awarded = yes
+	}
+	# 2006-03-24: Falcon 1 first launch attempt (development pivot)
+	if = {
+		limit = { date > 2006.3.24 NOT = { has_country_flag = USA_spacex_falcon1_development } }
+		USA_spacex_record_falcon1_development = yes
+	}
+	# 2008-09-28: Falcon 1 success
+	if = {
+		limit = { date > 2008.9.28 NOT = { has_country_flag = USA_spacex_falcon1_success } }
+		USA_spacex_record_falcon1_success = yes
+	}
+	# 2010-06-04: Falcon 9 first flight
+	if = {
+		limit = { date > 2010.6.4 NOT = { has_country_flag = USA_spacex_falcon9_firstflight } }
+		USA_spacex_record_falcon9_firstflight = yes
+	}
+	# 2012-05-25: Dragon C2+ berthing (cargo operational)
+	if = {
+		limit = { date > 2012.5.25 NOT = { has_country_flag = USA_spacex_dragon_cargo_operational } }
+		USA_spacex_record_cargo_to_iss = yes
+	}
+	# 2015-12-21: First stage landing
+	if = {
+		limit = { date > 2015.12.21 NOT = { has_country_flag = USA_spacex_first_stage_landing } }
+		USA_spacex_record_first_landing = yes
+	}
+	# 2017-03-30: First reflight
+	if = {
+		limit = { date > 2017.3.30 NOT = { has_country_flag = USA_spacex_first_reflight } }
+		USA_spacex_record_first_reflight = yes
+	}
+	# 2018-02-06: Falcon Heavy demo
+	if = {
+		limit = { date > 2018.2.6 NOT = { has_country_flag = USA_spacex_falcon_heavy_demo } }
+		USA_spacex_record_falcon_heavy_demo = yes
+	}
+	# 2019-05-23: First large Starlink launch
+	if = {
+		limit = { date > 2019.5.23 NOT = { has_country_flag = USA_spacex_starlink_initial } }
+		USA_spacex_record_starlink_initial = yes
+	}
+	# 2020-05-30: Crew Dragon Demo-2 (commercial crew)
+	if = {
+		limit = { date > 2020.5.30 NOT = { has_country_flag = USA_spacex_commercial_crew_operational } }
+		USA_spacex_record_commercial_crew = yes
+	}
+	# 2021-04-16: HLS Option A
+	if = {
+		limit = { date > 2021.4.16 NOT = { has_country_flag = USA_spacex_hls_award } }
+		USA_spacex_record_hls_award = yes
+	}
+	# 2021-08-01: NSSL dual-source operational composite
+	if = {
+		limit = { date > 2021.8.1 NOT = { has_country_flag = USA_spacex_nssl_dual_source } }
+		USA_spacex_record_nssl_dual_source = yes
+	}
+	# 2023-04-20: Starship integrated flight test
+	if = {
+		limit = { date > 2023.4.20 NOT = { has_country_flag = USA_spacex_starship_integrated_test } }
+		USA_spacex_record_starship_integrated = yes
+	}
+	# 2023-04-20+: Iterative licensing posture
+	if = {
+		limit = { date > 2023.4.20 NOT = { has_country_flag = USA_spacex_iterative_licensing } }
+		USA_spacex_record_starship_iterative_licensing = yes
+	}
+	# 2024-06-06: Starship progress (IFT-4)
+	if = {
+		limit = { date > 2024.6.6 NOT = { has_country_flag = USA_spacex_starship_progress_2024 } }
+		USA_spacex_record_starship_progress_2024 = yes
+	}
+
+	USA_spacex_clamp_state = yes
+
+	if = {
+		limit = { date > 2026.9.1 NOT = { has_country_flag = USA_spacex_capstone_resolved } }
+		USA_spacex_resolve_capstone = yes
+	}
+	if = { limit = { date > 2026.9.1 } set_country_flag = USA_spacex_reconstruct_complete }
+}
+
+# Current-year scheduler (startup safety net; the yearly dispatcher owns normal delivery)
+
+USA_spacex_schedule_current_year_events = {
+	if = { limit = { NOT = { has_country_flag = USA_spacex_start_year_events_scheduled } }
+
+		# 2002
+		if = {
+			limit = { NOT = { has_start_date < 2002.1.1 } has_start_date < 2002.1.2 NOT = { has_country_flag = USA_spacex_founded } }
+			country_event = { id = USA_spacex_events.1 days = 72 }
+		}
+		# 2006
+		if = {
+			limit = { NOT = { has_start_date < 2006.1.1 } has_start_date < 2006.1.2 NOT = { has_country_flag = USA_spacex_cots_crs_awarded } }
+			country_event = { id = USA_spacex_events.3 days = 227 }
+		}
+		# 2008
+		if = {
+			limit = { NOT = { has_start_date < 2008.1.1 } has_start_date < 2008.1.2 NOT = { has_country_flag = USA_spacex_falcon1_success } }
+			country_event = { id = USA_spacex_events.2 days = 271 }
+		}
+		# 2010
+		if = {
+			limit = { NOT = { has_start_date < 2010.1.1 } has_start_date < 2010.1.2 NOT = { has_country_flag = USA_spacex_falcon9_firstflight } }
+			country_event = { id = USA_spacex_events.4 days = 154 }
+		}
+		# 2015
+		if = {
+			limit = { NOT = { has_start_date < 2015.1.1 } has_start_date < 2015.1.2 NOT = { has_country_flag = USA_spacex_first_stage_landing } }
+			country_event = { id = USA_spacex_events.6 days = 354 }
+		}
+		# 2018
+		if = {
+			limit = { NOT = { has_start_date < 2018.1.1 } has_start_date < 2018.1.2 NOT = { has_country_flag = USA_spacex_falcon_heavy_demo } }
+			country_event = { id = USA_spacex_events.6 days = 37 }
+		}
+		# 2019
+		if = {
+			limit = { NOT = { has_start_date < 2019.1.1 } has_start_date < 2019.1.2 NOT = { has_country_flag = USA_spacex_starlink_initial } }
+			country_event = { id = USA_spacex_events.7 days = 143 }
+		}
+		# 2020
+		if = {
+			limit = { NOT = { has_start_date < 2020.1.1 } has_start_date < 2020.1.2 NOT = { has_country_flag = USA_spacex_commercial_crew_operational } }
+			country_event = { id = USA_spacex_events.8 days = 151 }
+		}
+		# 2021 HLS
+		if = {
+			limit = { NOT = { has_start_date < 2021.1.1 } has_start_date < 2021.1.2 NOT = { has_country_flag = USA_spacex_hls_award } }
+			country_event = { id = USA_spacex_events.10 days = 106 }
+		}
+		# 2021 NSSL composite
+		if = {
+			limit = { NOT = { has_start_date < 2021.1.1 } has_start_date < 2021.1.2 NOT = { has_country_flag = USA_spacex_nssl_dual_source } }
+			country_event = { id = USA_spacex_events.9 days = 224 }
+		}
+		# 2023
+		if = {
+			limit = { NOT = { has_start_date < 2023.1.1 } has_start_date < 2023.1.2 NOT = { has_country_flag = USA_spacex_starship_integrated_test } }
+			country_event = { id = USA_spacex_events.11 days = 110 }
+		}
+		# 2026 (capstone formalization; route is chosen in late 2025/2026)
+		if = {
+			limit = { NOT = { has_start_date < 2026.1.1 } has_start_date < 2026.1.2 NOT = { has_country_flag = USA_spacex_capstone_resolved } }
+			country_event = { id = USA_spacex_events.12 days = 243 }
+		}
+	}
+
+	set_country_flag = USA_spacex_start_year_events_scheduled
+}
+
