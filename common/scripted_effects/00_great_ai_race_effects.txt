@@ -172,9 +172,9 @@ ai_race_rebuild_country_metrics = {
 					}
 				}
 				set_variable = { ai_race_compute_external = _cmp_raw }
-				if = { limit = { check_variable = { energy_balance < 0 } } subtract_from_temp_variable = { _cmp_tmp = 10 } }
-				if = { limit = { check_variable = { unfulfilled_energy_demand_var > 0 } } subtract_from_temp_variable = { _cmp_tmp = 10 } }
-				if = { limit = { check_variable = { energy_difference_variable < 0 } } subtract_from_temp_variable = { _cmp_tmp = 10 } }
+				if = { limit = { check_variable = { energy_balance < 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
+				if = { limit = { check_variable = { unfulfilled_energy_demand_var > 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
+				if = { limit = { check_variable = { energy_difference_variable < 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
 				# Optional Linux stack: very small overlay, only if linux_system_initialized
 				if = {
 					limit = { has_country_flag = linux_system_initialized }
@@ -214,7 +214,7 @@ ai_race_rebuild_country_metrics = {
 					}
 				}
 				set_variable = { ai_race_compute_external = _cmp }
-				if = { limit = { has_idea = CHI_lenovo_enterprise_server_platform } add_to_variable = { ai_race_compute_external = 5 } }
+				# Lenovo enterprise server platform contributes to deployment only (not compute)
 				# Compute adjustments from national/company ideas
 				if = { limit = { has_idea = CHI_semiconductor_backwardness } subtract_from_variable = { ai_race_compute_external = 40 } }
 				else_if = { limit = { has_idea = CHI_semiconductor_backwardness_2 } subtract_from_variable = { ai_race_compute_external = 25 } }
@@ -263,7 +263,7 @@ ai_race_rebuild_country_metrics = {
 				if = { limit = { has_idea = CHI_national_security_commission_3 } add_to_variable = { ai_race_control_capacity_external = 15 } }
 				else_if = { limit = { has_idea = CHI_national_security_commission_2 } add_to_variable = { ai_race_control_capacity_external = 10 } }
 				else_if = { limit = { has_idea = CHI_national_security_commission_1 } add_to_variable = { ai_race_control_capacity_external = 5 } }
-				if = { limit = { has_idea = CHI_ic_inf_nsc } add_to_variable = { ai_race_control_capacity_external = 5 } }
+				if = { limit = { check_variable = { CHI_ic_inf_nsc > 0 } } add_to_variable = { ai_race_control_capacity_external = 5 } }
 				# Public confidence: prefer publicity_department tiers; fallback to a reduced Huawei trusted access proxy
 				clear_temp_variable = _pc
 				if = { limit = { has_idea = CHI_publicity_department_3 } set_temp_variable = { _pc = 30 } }
@@ -295,6 +295,9 @@ ai_race_rebuild_country_metrics = {
 				set_temp_variable = { _tal_tmp = { value = research_slots_from_gdp multiply = 10 } }
 				add_to_temp_variable = { _tal_tmp = { value = research_slots_from_gdp_c multiply = 10 } }
 				set_variable = { ai_race_talent_external = _tal_tmp }
+				# Read starting policy ideas when present
+				if = { limit = { has_idea = edu_02 } add_to_variable = { ai_race_talent_external = 5 } }
+				if = { limit = { has_idea = police_04 } add_to_variable = { ai_race_control_capacity_external = 5 } }
 				ai_race_repair_country_state = yes
 			}
 		}
@@ -573,8 +576,8 @@ ai_race_debug_log_state = {
 				}
 				# External contributions rebuilt this quarter
 				log = "[GetDateText]: [THIS.GetName]: External — cap [?ai_race_capability_external|0], compute [?ai_race_compute_external|0], talent [?ai_race_talent_external|0], deploy [?ai_race_deployment_external|0], control [?ai_race_control_capacity_external|0], confidence [?ai_race_public_confidence_external|0]"
-				# Effective totals and score
-				log = "[GetDateText]: [THIS.GetName]: Effective — cap [?ai_race_capability], compute [?ai_race_compute], talent [?ai_race_talent], deploy [?ai_race_deployment], control [?ai_race_control_capacity], confidence [?ai_race_public_confidence], score [?ai_race_score|0], gap [?ai_race_frontier_gap|+0], rank [?ai_race_rank]"
+				# Effective totals
+				log = "[GetDateText]: [THIS.GetName]: Effective — cap [?ai_race_capability], compute [?ai_race_compute], talent [?ai_race_talent], deploy [?ai_race_deployment], control [?ai_race_control_capacity], confidence [?ai_race_public_confidence], gap [?ai_race_frontier_gap|+0], rank [?ai_race_rank]"
 			}
 		}
 	}
