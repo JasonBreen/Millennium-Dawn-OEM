@@ -108,8 +108,11 @@ ai_race_rebuild_country_metrics = {
 				}
 				if = { limit = { check_variable = { energy_balance < 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
 				if = { limit = { check_variable = { unfulfilled_energy_demand_var > 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
+				if = { limit = { check_variable = { energy_difference_variable < 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
 				# Control capacity: state_alignment ×10
-				set_variable = { ai_race_control_capacity_external = { value = USA_ai_core_state_alignment multiply = 10 } }
+				# Split alignment influence between control and deployment — do not 1:1 copy into both
+				set_temp_variable = { _usa_align_ctl = { value = USA_ai_core_state_alignment multiply = 7 } } # 70% weight
+				set_variable = { ai_race_control_capacity_external = _usa_align_ctl }
 				# Public confidence: public_legitimacy ×10
 				set_variable = { ai_race_public_confidence_external = { value = USA_ai_core_public_legitimacy multiply = 10 } }
 				# Talent: research-slot/education signals plus small weight from ecosystem_openness
@@ -121,9 +124,9 @@ ai_race_rebuild_country_metrics = {
 				# Deployment: mix of compute_depth and public_legitimacy; small capstone bonus (at most one)
 				set_temp_variable = {
 					_usa_deploy = {
-						value = USA_ai_core_compute_depth
-						multiply = 6
+						value = USA_ai_core_compute_depth multiply = 5
 						add = { value = USA_ai_core_public_legitimacy multiply = 4 }
+						add = { value = USA_ai_core_state_alignment multiply = 1 } # 10% alignment influence to deployment
 					}
 				}
 				set_variable = { ai_race_deployment_external = { value = _usa_deploy multiply = 10 divide = 10 } }
@@ -137,13 +140,13 @@ ai_race_rebuild_country_metrics = {
 							has_idea = USA_ai_core_power_constrained_leadership
 						}
 					}
-					add_to_variable = { ai_race_deployment_external = 5 }
+					add_to_variable = { ai_race_deployment_external = 1 }
 				}
 				ai_race_repair_country_state = yes
 			}
 			else = {
 				# Corporate History Off/Uninitialized — fallback to ordinary tech/energy/research slots
-				# Capability: approximate from AI tech depth (each level adds +5, capped)
+				# Capability: approximate from AI tech depth (each level adds +5, up to 14 tiers)
 				clear_temp_variable = _cap_tmp
 				if = { limit = { has_tech = artificial_intelligence_1 } add_to_temp_variable = { _cap_tmp = 5 } }
 				if = { limit = { has_tech = artificial_intelligence_2 } add_to_temp_variable = { _cap_tmp = 5 } }
@@ -153,14 +156,31 @@ ai_race_rebuild_country_metrics = {
 				if = { limit = { has_tech = artificial_intelligence_6 } add_to_temp_variable = { _cap_tmp = 5 } }
 				if = { limit = { has_tech = artificial_intelligence_7 } add_to_temp_variable = { _cap_tmp = 5 } }
 				if = { limit = { has_tech = artificial_intelligence_8 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_9 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_10 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_11 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_12 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_13 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_14 } add_to_temp_variable = { _cap_tmp = 5 } }
 				set_variable = { ai_race_capability_external = _cap_tmp }
-				# Compute: research slots and energy availability
-				set_temp_variable = { _cmp_tmp = { value = research_slots_from_gdp multiply = 10 } }
-				add_to_temp_variable = { _cmp_tmp = { value = research_slots_from_gdp_c multiply = 10 } }
+				# Compute: microchip production and energy availability (thin heuristic)
+				set_temp_variable = {
+					_cmp_raw = {
+						value = resource_produced@microchips
+						subtract = country_microchip_production_var
+						multiply = 2
+					}
+				}
+				set_variable = { ai_race_compute_external = _cmp_raw }
 				if = { limit = { check_variable = { energy_balance < 0 } } subtract_from_temp_variable = { _cmp_tmp = 10 } }
 				if = { limit = { check_variable = { unfulfilled_energy_demand_var > 0 } } subtract_from_temp_variable = { _cmp_tmp = 10 } }
-				set_variable = { ai_race_compute_external = _cmp_tmp }
-				# Talent: research slots
+				if = { limit = { check_variable = { energy_difference_variable < 0 } } subtract_from_temp_variable = { _cmp_tmp = 10 } }
+				# Optional Linux stack: very small overlay, only if linux_system_initialized
+				if = {
+					limit = { has_country_flag = linux_system_initialized }
+					add_to_variable = { ai_race_compute_external = 2 }
+				}
+				# Talent: research slots (thin fallback)
 				set_temp_variable = { _tal_tmp = { value = research_slots_from_gdp multiply = 10 } }
 				add_to_temp_variable = { _tal_tmp = { value = research_slots_from_gdp_c multiply = 10 } }
 				set_variable = { ai_race_talent_external = _tal_tmp }
