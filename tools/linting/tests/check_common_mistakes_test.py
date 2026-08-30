@@ -44,6 +44,7 @@ Unit tests for the checks added to check_common_mistakes.py (in file order):
   41. is_at_war is not a valid trigger (use has_war)
   42. review regressions: add-after-zero, excluded fallback, single-line ai_chance
   43. windows path separators keep the directory-scoped checks enabled
+  44. has_game_rule references resolve to a rule and one of its own options
 """
 
 import os
@@ -77,6 +78,7 @@ from check_common_mistakes import (
     _check_every_owned_controlled_state,
     _check_focus_log_id,
     _check_focus_missing_war_hint,
+    _check_has_game_rule_defined,
     _check_has_idea_mutex_in_not_block,
     _check_hidden_trigger_in_ctt,
     _check_influence_setter_scope,
@@ -114,6 +116,19 @@ def assert_finds(check_fn, lines, expected_count, label):
         print(
             f"  FAIL  {label}: expected {expected_count} finding(s), got {len(result)}"
         )
+        for ln, msg in result:
+            print(f"        line {ln}: {msg}")
+
+
+def assert_message_contains(check_fn, lines, expected, label):
+    global passed, failed
+    result = check_fn(lines)
+    if len(result) == 1 and expected in result[0][1]:
+        passed += 1
+        print(f"  PASS  {label}")
+    else:
+        failed += 1
+        print(f"  FAIL  {label}: expected one finding containing {expected!r}")
         for ln, msg in result:
             print(f"        line {ln}: {msg}")
 
@@ -3883,6 +3898,74 @@ assert_finds(
     ],
     0,
     "defined opinion modifier not flagged",
+)
+
+
+# 44. has_game_rule rule and option references
+
+print("\n── game-rule references ──")
+
+assert_finds(
+    _check_has_game_rule_defined,
+    [
+        "\thas_game_rule = {\n",
+        "\t\trule = rule_ai_race\n",
+        "\t\toption = outcomes_only\n",
+        "\t}\n",
+    ],
+    0,
+    "defined multiline game-rule option not flagged",
+)
+assert_finds(
+    _check_has_game_rule_defined,
+    ["\thas_game_rule = { rule = rule_ai_race option = full }\n"],
+    0,
+    "default game-rule choice recognized in compact syntax",
+)
+assert_finds(
+    _check_has_game_rule_defined,
+    ["\thas_game_rule = { rule = rule_missing option = full }\n"],
+    1,
+    "undefined game rule flagged",
+)
+assert_finds(
+    _check_has_game_rule_defined,
+    ["\thas_game_rule = { rule = rule_ai_race option = missing }\n"],
+    1,
+    "undefined option flagged",
+)
+assert_finds(
+    _check_has_game_rule_defined,
+    ["\thas_game_rule = { rule = rule_ai_race option = off }\n"],
+    1,
+    "option belonging only to another rule flagged",
+)
+assert_message_contains(
+    _check_has_game_rule_defined,
+    ["\thas_game_rule = { rule = RULE_AI_RACE option = outcomes_only }\n"],
+    "differs in case from rule_ai_race",
+    "rule case mismatch reports canonical spelling",
+)
+assert_message_contains(
+    _check_has_game_rule_defined,
+    ["\thas_game_rule = { rule = rule_ai_race option = OUTCOMES_ONLY }\n"],
+    "differs in case from outcomes_only",
+    "option case mismatch reports canonical spelling",
+)
+assert_finds(
+    _check_has_game_rule_defined,
+    [
+        "\t# has_game_rule = { rule = rule_missing option = full }\n",
+        '\tlog = "has_game_rule = { rule = rule_missing option = full }"\n',
+    ],
+    0,
+    "commented and quoted game-rule examples ignored",
+)
+assert_finds(
+    _check_has_game_rule_defined,
+    ["\thas_game_rule = { rule = rule_ai_race@ROOT option = $choice$ }\n"],
+    0,
+    "dynamic game-rule references ignored",
 )
 
 
