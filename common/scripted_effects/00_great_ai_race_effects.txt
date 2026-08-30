@@ -87,6 +87,150 @@ ai_race_rebuild_country_metrics = {
 		clear_variable = ai_race_deployment_external
 		clear_variable = ai_race_control_capacity_external
 		clear_variable = ai_race_public_confidence_external
+		
+		# Rebuild external contributions from canonical owner systems (Prompt 2).
+		# USA uses USA AI Industry Core axes as read-only inputs with deterministic fallbacks.
+		if = {
+			limit = { original_tag = USA }
+			# Default/fallbacks match USA_ai_core_initialize_state (0..10 scale)
+			set_temp_variable = { _usa_core_frontier_capability = 2 }
+			set_temp_variable = { _usa_core_compute_depth = 3 }
+			set_temp_variable = { _usa_core_ecosystem_openness = 6 }
+			set_temp_variable = { _usa_core_state_alignment = 2 }
+			set_temp_variable = { _usa_core_infrastructure_burden = 1 }
+			set_temp_variable = { _usa_core_public_legitimacy = 5 }
+			# If Corporate History has meaningfully initialized USA AI Core, read live values
+			if = {
+				limit = {
+					corporate_history_enabled = yes
+					has_country_flag = USA_ai_core_state_initialized
+				}
+				set_temp_variable = { _usa_core_frontier_capability = USA_ai_core_frontier_capability }
+				set_temp_variable = { _usa_core_compute_depth = USA_ai_core_compute_depth }
+				set_temp_variable = { _usa_core_ecosystem_openness = USA_ai_core_ecosystem_openness }
+				set_temp_variable = { _usa_core_state_alignment = USA_ai_core_state_alignment }
+				set_temp_variable = { _usa_core_infrastructure_burden = USA_ai_core_infrastructure_burden }
+				set_temp_variable = { _usa_core_public_legitimacy = USA_ai_core_public_legitimacy }
+			}
+			# External contributions (0..100) from 0..10 core axes
+			set_variable = { ai_race_capability_external = { value = _usa_core_frontier_capability multiply = 10 } }
+			set_variable = { ai_race_compute_external = { value = _usa_core_compute_depth multiply = 10 } }
+			set_variable = { ai_race_talent_external = { value = _usa_core_ecosystem_openness multiply = 10 } }
+			set_variable = { ai_race_deployment_external = { value = _usa_core_state_alignment multiply = 10 } }
+			# Control capacity favors alignment and legitimacy, penalizes infrastructure burden
+			set_temp_variable = {
+				_tmp_cc = {
+					value = _usa_core_state_alignment
+					add = _usa_core_public_legitimacy
+					multiply = 10
+					subtract = { value = _usa_core_infrastructure_burden multiply = 5 }
+				}
+			}
+			set_variable = { ai_race_control_capacity_external = _tmp_cc }
+			# Public confidence primarily follows legitimacy, with mild infra penalty
+			set_temp_variable = {
+				_tmp_pc = {
+					value = _usa_core_public_legitimacy
+					multiply = 10
+					subtract = { value = _usa_core_infrastructure_burden multiply = 5 }
+				}
+			}
+			set_variable = { ai_race_public_confidence_external = _tmp_pc }
+			ai_race_repair_country_state = yes
+		}
+		# China adapter: use canonical Huawei corporate state when present; deterministic baselines otherwise.
+		else_if = {
+			limit = { original_tag = CHI }
+			# Deterministic Huawei baselines from CHI_huawei_initialize_state (0..10 scale)
+			set_temp_variable = { _hw_carrier_reach = 4 }
+			set_temp_variable = { _hw_standards_leverage = 2 }
+			set_temp_variable = { _hw_consumer_position = 1 }
+			set_temp_variable = { _hw_silicon_autonomy = 2 }
+			set_temp_variable = { _hw_software_ecosystem = 2 }
+			set_temp_variable = { _hw_supply_resilience = 3 }
+			set_temp_variable = { _hw_trusted_market_access = 5 }
+			if = {
+				limit = {
+					CHI_corporate_systems_has_meaningful_state = yes
+					OR = { has_country_flag = CHI_huawei_state_initialized has_country_flag = CHI_huawei_reconstruct_complete }
+				}
+				set_temp_variable = { _hw_carrier_reach = CHI_huawei_carrier_reach }
+				set_temp_variable = { _hw_standards_leverage = CHI_huawei_standards_leverage }
+				set_temp_variable = { _hw_consumer_position = CHI_huawei_consumer_position }
+				set_temp_variable = { _hw_silicon_autonomy = CHI_huawei_silicon_autonomy }
+				set_temp_variable = { _hw_software_ecosystem = CHI_huawei_software_ecosystem }
+				set_temp_variable = { _hw_supply_resilience = CHI_huawei_supply_resilience }
+				set_temp_variable = { _hw_trusted_market_access = CHI_huawei_trusted_market_access }
+			}
+			# Compute contributions (0..100) from Huawei axes
+			# Capability: standards + software ecosystem (average)
+			set_variable = {
+				ai_race_capability_external = {
+					value = _hw_standards_leverage
+					add = _hw_software_ecosystem
+					divide = 2
+					multiply = 10
+				}
+			}
+			# Compute: silicon autonomy + supply resilience (average)
+			set_variable = {
+				ai_race_compute_external = {
+					value = _hw_silicon_autonomy
+					add = _hw_supply_resilience
+					divide = 2
+					multiply = 10
+				}
+			}
+			# Talent: software ecosystem
+			set_variable = { ai_race_talent_external = { value = _hw_software_ecosystem multiply = 10 } }
+			# Deployment: carrier reach + trusted market access (average)
+			set_variable = {
+				ai_race_deployment_external = {
+					value = _hw_carrier_reach
+					add = _hw_trusted_market_access
+					divide = 2
+					multiply = 10
+				}
+			}
+			# Control capacity: standards leverage + supply resilience (average)
+			set_variable = {
+				ai_race_control_capacity_external = {
+					value = _hw_standards_leverage
+					add = _hw_supply_resilience
+					divide = 2
+					multiply = 10
+				}
+			}
+			# Public confidence: trusted market access
+			set_variable = { ai_race_public_confidence_external = { value = _hw_trusted_market_access multiply = 10 } }
+			# Deterministic adjustments from national ideas (semiconductor/talent)
+			if = {
+				limit = { has_idea = CHI_semiconductor_backwardness }
+				subtract_from_variable = { ai_race_compute_external = 40 }
+			}
+			else_if = {
+				limit = { has_idea = CHI_semiconductor_backwardness_2 }
+				subtract_from_variable = { ai_race_compute_external = 25 }
+			}
+			else_if = {
+				limit = { has_idea = CHI_semiconductor_backwardness_3 }
+				subtract_from_variable = { ai_race_compute_external = 15 }
+			}
+			else_if = {
+				limit = { has_idea = CHI_semiconductor_backwardness_4 }
+				subtract_from_variable = { ai_race_compute_external = 8 }
+			}
+			if = {
+				limit = { has_idea = CHI_smic_foundry_base }
+				add_to_variable = { ai_race_compute_external = 10 }
+			}
+			if = {
+				limit = { has_idea = CHI_Invigorate_Country_Through_STE1 }
+				add_to_variable = { ai_race_talent_external = 5 }
+				add_to_variable = { ai_race_capability_external = 3 }
+			}
+			ai_race_repair_country_state = yes
+		}
 
 		set_variable = { ai_race_capability = ai_race_capability_stock }
 		add_to_variable = { ai_race_capability = ai_race_capability_external }
@@ -100,6 +244,16 @@ ai_race_rebuild_country_metrics = {
 		add_to_variable = { ai_race_control_capacity = ai_race_control_capacity_external }
 		set_variable = { ai_race_public_confidence = ai_race_public_confidence_stock }
 		add_to_variable = { ai_race_public_confidence = ai_race_public_confidence_external }
+		# Derived national score (0..100): documented weighted blend
+		# score = 0.4*capability + 0.2*compute + 0.15*talent + 0.1*deployment + 0.1*control + 0.05*confidence
+		clear_variable = ai_race_score
+		set_temp_variable = { _score_acc = { value = ai_race_capability multiply = 0.4 } }
+		add_to_temp_variable = { _score_acc = { value = ai_race_compute multiply = 0.2 } }
+		add_to_temp_variable = { _score_acc = { value = ai_race_talent multiply = 0.15 } }
+		add_to_temp_variable = { _score_acc = { value = ai_race_deployment multiply = 0.1 } }
+		add_to_temp_variable = { _score_acc = { value = ai_race_control_capacity multiply = 0.1 } }
+		add_to_temp_variable = { _score_acc = { value = ai_race_public_confidence multiply = 0.05 } }
+		set_variable = { ai_race_score = _score_acc }
 		ai_race_repair_country_state = yes
 	}
 }
@@ -143,23 +297,32 @@ ai_race_rebuild_frontier_and_ranking = {
 			USA = { ai_race_active = yes }
 			CHI = { ai_race_active = yes }
 		}
-		set_temp_variable = { ai_race_usa_capability = USA.ai_race_capability }
-		set_temp_variable = { ai_race_chi_capability = CHI.ai_race_capability }
+		# Frontier/leader remain defined by capability
+		set_temp_variable = { _usa_cap = USA.ai_race_capability }
+		set_temp_variable = { _chi_cap = CHI.ai_race_capability }
 		if = {
-			limit = { check_variable = { ai_race_chi_capability > ai_race_usa_capability } }
+			limit = { check_variable = { _chi_cap > _usa_cap } }
+			set_variable = { global.ai_race_frontier_capability = _chi_cap }
+			set_variable = { global.ai_race_leader_id = CHI.id }
+		}
+		else = {
+			set_variable = { global.ai_race_frontier_capability = _usa_cap }
+			set_variable = { global.ai_race_leader_id = USA.id }
+		}
+		# Ranking uses national score with USA as deterministic tie-break
+		set_temp_variable = { _usa_score = USA.ai_race_score }
+		set_temp_variable = { _chi_score = CHI.ai_race_score }
+		if = {
+			limit = { check_variable = { _chi_score > _usa_score } }
 			add_to_array = { global.ai_race_ranked_participants = CHI }
 			add_to_array = { global.ai_race_ranked_participants = USA }
-			set_variable = { global.ai_race_frontier_capability = ai_race_chi_capability }
-			set_variable = { global.ai_race_leader_id = CHI.id }
 			CHI = { set_variable = { ai_race_rank = 1 } }
 			USA = { set_variable = { ai_race_rank = 2 } }
 		}
 		else = {
-			# USA precedes China in the fixed participant registry and therefore wins exact ties.
+			# USA precedes China in the fixed registry and therefore wins exact score ties.
 			add_to_array = { global.ai_race_ranked_participants = USA }
 			add_to_array = { global.ai_race_ranked_participants = CHI }
-			set_variable = { global.ai_race_frontier_capability = ai_race_usa_capability }
-			set_variable = { global.ai_race_leader_id = USA.id }
 			USA = { set_variable = { ai_race_rank = 1 } }
 			CHI = { set_variable = { ai_race_rank = 2 } }
 		}
@@ -351,7 +514,19 @@ ai_race_debug_log_state = {
 			array = global.ai_race_ranked_participants
 			value = ai_race_participant
 			var:ai_race_participant = {
-				log = "[GetDateText]: [THIS.GetName]: Great AI Race rank [?ai_race_rank], capability [?ai_race_capability], compute [?ai_race_compute], talent [?ai_race_talent], deployment [?ai_race_deployment], control [?ai_race_control_capacity], confidence [?ai_race_public_confidence]"
+				# Canonical inputs snapshot (owner systems are read-only)
+				if = {
+					limit = { original_tag = USA }
+					log = "[GetDateText]: [THIS.GetName]: USA AI Core inputs — frontier_capability [?USA_ai_core_frontier_capability], compute_depth [?USA_ai_core_compute_depth], openness [?USA_ai_core_ecosystem_openness], alignment [?USA_ai_core_state_alignment], infra_burden [?USA_ai_core_infrastructure_burden], legitimacy [?USA_ai_core_public_legitimacy]"
+				}
+				else_if = {
+					limit = { original_tag = CHI }
+					log = "[GetDateText]: [THIS.GetName]: Huawei inputs — carrier_reach [?CHI_huawei_carrier_reach], standards [?CHI_huawei_standards_leverage], consumer [?CHI_huawei_consumer_position], silicon_autonomy [?CHI_huawei_silicon_autonomy], software_ecosystem [?CHI_huawei_software_ecosystem], supply_resilience [?CHI_huawei_supply_resilience], trusted_access [?CHI_huawei_trusted_market_access]"
+				}
+				# External contributions rebuilt this quarter
+				log = "[GetDateText]: [THIS.GetName]: External — cap [?ai_race_capability_external|0], compute [?ai_race_compute_external|0], talent [?ai_race_talent_external|0], deploy [?ai_race_deployment_external|0], control [?ai_race_control_capacity_external|0], confidence [?ai_race_public_confidence_external|0]"
+				# Effective totals and score
+				log = "[GetDateText]: [THIS.GetName]: Effective — cap [?ai_race_capability], compute [?ai_race_compute], talent [?ai_race_talent], deploy [?ai_race_deployment], control [?ai_race_control_capacity], confidence [?ai_race_public_confidence], score [?ai_race_score|0], gap [?ai_race_frontier_gap|+0], rank [?ai_race_rank]"
 			}
 		}
 	}
