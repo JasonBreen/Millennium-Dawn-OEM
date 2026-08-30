@@ -98,16 +98,18 @@ Priority order, then fallback:
 
 Authority: applied idea (checked via `has_idea`); completion flags kept for lifecycle only.
 
-Qualification thresholds (Outcomes Only / no route flags)
-- Cadence champion: `launch_cadence_reliability >= 5` AND `government_partnership >= 6`
-- Allied LEO: `leo_satcom_presence >= 5` AND `geostrategic_access >= 5`
-- Deep-space stack: `heavy_deep_space_lift >= 5` AND `reusability_depth >= 6`
-- Monopoly risk: `commercial_market_power >= 7` AND `commercial_market_power > government_partnership`
-- Mixed-provider: always available fallback
+Full-mode resolution (match NVIDIA split)
+- The capstone event `.12` presents five options in collision order only for Full:
+  a Cadence Champion (gated)
+  b Allied LEO (gated)
+  c Deep-Space (gated)
+  d Monopoly Risk (gated)
+  e Mixed-Provider (always available)
+- Each option sets its route flag then calls `USA_spacex_resolve_capstone` to apply the idea and mark reconstruction complete.
 
-Full-mode resolution
-- The capstone event `.12` presents five gated options (above thresholds) plus an always-visible fallback (mixed-provider). Selecting one applies the idea directly and marks reconstruction complete.
-- If a player route flag exists, `resolve_capstone` honors it. Otherwise `resolve_capstone` evaluates the thresholds in priority order (1→4), then falls back to mixed-provider. This makes `USA_spacex_commercial_monopoly_risk` reachable in Outcomes Only when market concentration is high.
+Outcomes Only (no popup)
+- Reconstruction applies all historical‑A beat recorders. If `date > 2026.08.31` and no route flag is set, it silently sets the cadence route. On/after `2026.09.01`, `resolve_capstone` applies the cadence outcome.
+- `USA_spacex_resolve_capstone` contains no axis scoring: it switches on route flags only (cadence/starlink/starship/monopoly/mixed) and falls back to mixed‑provider when no route flag is present.
 
 ## Files and ownership
 

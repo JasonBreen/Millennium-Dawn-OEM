@@ -168,6 +168,8 @@ USA_spacex_clear_route = {
 	clr_country_flag = USA_spacex_route_starship
 	clr_country_flag = USA_spacex_route_public_contract
 	clr_country_flag = USA_spacex_route_starlink
+	clr_country_flag = USA_spacex_route_monopoly
+	clr_country_flag = USA_spacex_route_mixed
 }
 
 USA_spacex_record_route_cadence = {
@@ -199,6 +201,18 @@ USA_spacex_record_route_starlink = {
 	set_country_flag = USA_spacex_route_starlink
 	add_to_variable = { USA_spacex_leo_satcom_presence = 2 }
 	add_to_variable = { USA_spacex_government_partnership = -1 }
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_route_monopoly = {
+	USA_spacex_clear_route = yes
+	set_country_flag = USA_spacex_route_monopoly
+	USA_spacex_clamp_state = yes
+}
+
+USA_spacex_record_route_mixed = {
+	USA_spacex_clear_route = yes
+	set_country_flag = USA_spacex_route_mixed
 	USA_spacex_clamp_state = yes
 }
 
@@ -249,39 +263,14 @@ USA_spacex_resolve_capstone = {
 	USA_spacex_initialize_state = yes
 	if = {
 		limit = { NOT = { has_country_flag = USA_spacex_capstone_resolved } }
-		# Honor any player-selected route in Full mode
+		# NVIDIA-style: resolve only by route flags; fallback is mixed-provider
 		if = { limit = { has_country_flag = USA_spacex_route_cadence } USA_spacex_apply_cadence_leadership = yes }
-		else_if = { limit = { has_country_flag = USA_spacex_route_starship } USA_spacex_apply_heavy_lift_transition = yes }
-		else_if = { limit = { has_country_flag = USA_spacex_route_public_contract } USA_spacex_apply_public_contract_backbone = yes }
 		else_if = { limit = { has_country_flag = USA_spacex_route_starlink } USA_spacex_apply_starlink_infrastructure = yes }
-		# Outcomes Only / no route chosen: evaluate axes in priority order
+		else_if = { limit = { has_country_flag = USA_spacex_route_starship } USA_spacex_apply_heavy_lift_transition = yes }
+		else_if = { limit = { has_country_flag = USA_spacex_route_monopoly } USA_spacex_apply_commercial_monopoly_risk = yes }
 		else_if = {
-			limit = {
-				check_variable = { var = USA_spacex_launch_cadence_reliability value = 5 compare = greater_than_or_equals }
-				check_variable = { var = USA_spacex_government_partnership value = 6 compare = greater_than_or_equals }
-			}
-			USA_spacex_apply_cadence_leadership = yes
-		}
-		else_if = {
-			limit = {
-				check_variable = { var = USA_spacex_leo_satcom_presence value = 5 compare = greater_than_or_equals }
-				check_variable = { var = USA_spacex_geostrategic_access value = 5 compare = greater_than_or_equals }
-			}
-			USA_spacex_apply_starlink_infrastructure = yes
-		}
-		else_if = {
-			limit = {
-				check_variable = { var = USA_spacex_heavy_deep_space_lift value = 5 compare = greater_than_or_equals }
-				check_variable = { var = USA_spacex_reusability_depth value = 6 compare = greater_than_or_equals }
-			}
-			USA_spacex_apply_heavy_lift_transition = yes
-		}
-		else_if = {
-			limit = {
-				check_variable = { var = USA_spacex_commercial_market_power value = 7 compare = greater_than_or_equals }
-				check_variable = { var = USA_spacex_commercial_market_power value = USA_spacex_government_partnership compare = greater_than }
-			}
-			USA_spacex_apply_commercial_monopoly_risk = yes
+			limit = { OR = { has_country_flag = USA_spacex_route_mixed has_country_flag = USA_spacex_route_public_contract } }
+			USA_spacex_apply_public_contract_backbone = yes
 		}
 		else = { USA_spacex_apply_public_contract_backbone = yes }
 	}
@@ -374,6 +363,22 @@ USA_spacex_reconstruct_history = {
 	}
 
 	USA_spacex_clamp_state = yes
+
+	# Historical-A route choice applied silently at the route window when none is set
+	if = {
+		limit = {
+			date > 2026.8.31
+			NOT = { OR = {
+				has_country_flag = USA_spacex_route_cadence
+				has_country_flag = USA_spacex_route_starlink
+				has_country_flag = USA_spacex_route_starship
+				has_country_flag = USA_spacex_route_monopoly
+				has_country_flag = USA_spacex_route_mixed
+				has_country_flag = USA_spacex_route_public_contract
+			} }
+		}
+		USA_spacex_record_route_cadence = yes
+	}
 
 	if = {
 		limit = { date > 2026.9.1 NOT = { has_country_flag = USA_spacex_capstone_resolved } }
