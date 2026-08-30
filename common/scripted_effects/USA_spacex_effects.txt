@@ -249,10 +249,40 @@ USA_spacex_resolve_capstone = {
 	USA_spacex_initialize_state = yes
 	if = {
 		limit = { NOT = { has_country_flag = USA_spacex_capstone_resolved } }
+		# Honor any player-selected route in Full mode
 		if = { limit = { has_country_flag = USA_spacex_route_cadence } USA_spacex_apply_cadence_leadership = yes }
 		else_if = { limit = { has_country_flag = USA_spacex_route_starship } USA_spacex_apply_heavy_lift_transition = yes }
 		else_if = { limit = { has_country_flag = USA_spacex_route_public_contract } USA_spacex_apply_public_contract_backbone = yes }
 		else_if = { limit = { has_country_flag = USA_spacex_route_starlink } USA_spacex_apply_starlink_infrastructure = yes }
+		# Outcomes Only / no route chosen: evaluate axes in priority order
+		else_if = {
+			limit = {
+				check_variable = { var = USA_spacex_launch_cadence_reliability value = 5 compare = greater_than_or_equals }
+				check_variable = { var = USA_spacex_government_partnership value = 6 compare = greater_than_or_equals }
+			}
+			USA_spacex_apply_cadence_leadership = yes
+		}
+		else_if = {
+			limit = {
+				check_variable = { var = USA_spacex_leo_satcom_presence value = 5 compare = greater_than_or_equals }
+				check_variable = { var = USA_spacex_geostrategic_access value = 5 compare = greater_than_or_equals }
+			}
+			USA_spacex_apply_starlink_infrastructure = yes
+		}
+		else_if = {
+			limit = {
+				check_variable = { var = USA_spacex_heavy_deep_space_lift value = 5 compare = greater_than_or_equals }
+				check_variable = { var = USA_spacex_reusability_depth value = 6 compare = greater_than_or_equals }
+			}
+			USA_spacex_apply_heavy_lift_transition = yes
+		}
+		else_if = {
+			limit = {
+				check_variable = { var = USA_spacex_commercial_market_power value = 7 compare = greater_than_or_equals }
+				check_variable = { var = USA_spacex_commercial_market_power value = USA_spacex_government_partnership compare = greater_than }
+			}
+			USA_spacex_apply_commercial_monopoly_risk = yes
+		}
 		else = { USA_spacex_apply_public_contract_backbone = yes }
 	}
 }
@@ -375,12 +405,12 @@ USA_spacex_schedule_current_year_events = {
 		# 2010
 		if = {
 			limit = { NOT = { has_start_date < 2010.1.1 } has_start_date < 2010.1.2 NOT = { has_country_flag = USA_spacex_falcon9_firstflight } }
-			country_event = { id = USA_spacex_events.4 days = 154 }
+			country_event = { id = USA_spacex_events.4 days = 155 }
 		}
 		# 2015
 		if = {
 			limit = { NOT = { has_start_date < 2015.1.1 } has_start_date < 2015.1.2 NOT = { has_country_flag = USA_spacex_first_stage_landing } }
-			country_event = { id = USA_spacex_events.6 days = 354 }
+			country_event = { id = USA_spacex_events.5 days = 356 }
 		}
 		# 2018
 		if = {
