@@ -926,7 +926,7 @@ def test_startup_modes_monthly_recovery_and_dashboard_state_are_registered():
     for idea in TIMED_IDEAS | set(CAPSTONE_IDEAS):
         block = _named_block(ideas, idea)
         assert "picture = " in block
-        assert "allowed = { original_tag = FRA }" in block
+        assert "allowed =" not in block
     effects = EFFECTS_PATH.read_text(encoding="utf-8")
     assert not re.search(
         r"set_country_flag\s*=\s*FRA_corporate_systems_[A-Za-z0-9_]*capstone",

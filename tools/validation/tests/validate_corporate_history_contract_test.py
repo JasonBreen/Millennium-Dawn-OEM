@@ -328,12 +328,10 @@ def _base_ideas(missing_civil_war=False):
 \tcountry = {{
 \t\tUSA_test_outcome_a = {{
 \t\t\tpicture = GFX_test
-\t\t\tallowed = {{ original_tag = USA }}
 {civ}\t\t}}
 
 \t\tUSA_test_outcome_b = {{
 \t\t\tpicture = GFX_test
-\t\t\tallowed = {{ original_tag = USA }}
 \t\t\tallowed_civil_war = {{ always = yes }}
 \t\t}}
 \t}}
@@ -793,7 +791,6 @@ USA_oem_investment_climate_2 = {
 }}""")
         idea_blocks.append(f"""USA_oem_program_{number} = {{
 	picture = generic_economic_increase
-	allowed = {{ original_tag = USA }}
 	allowed_civil_war = {{ always = yes }}
 }}""")
         loc_lines.extend(
@@ -997,7 +994,7 @@ def test_outcome_idea_missing_allowed_civil_war(tmp_path):
     )
 
 
-def test_valid_minimal_tier_one_fixture(tmp_path):
+def test_valid_minimal_tier_one_fixture_without_slotless_allowed(tmp_path):
     _build_fixture(tmp_path)
     assert _messages(tmp_path) == []
 

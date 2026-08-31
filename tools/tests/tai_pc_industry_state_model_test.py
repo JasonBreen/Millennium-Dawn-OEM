@@ -742,4 +742,4 @@ def test_localisation_inventory_encoding_and_chain_ownership_are_clean():
     for idea in OUTCOMES.values():
         block = _idea_block(ideas, idea)
         assert "picture = " in block
-        assert "allowed = { original_tag = TAI }" in block
+        assert "allowed =" not in block
