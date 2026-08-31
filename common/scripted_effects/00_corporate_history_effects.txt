@@ -185,6 +185,17 @@ GER_siemens_reconstruct_history = {
 #          visible Google/Oracle catch-up, retries the IBM-to-Lenovo handoff, and
 #          recovers missed Intel deliveries and TI/Micron/Motorola/Dell terminal outcomes.
 USA_corporate_history_monthly_outcomes = {
+	# Resolve only prior-year SpaceX history before generic midyear recovery can
+	# queue stale visible events from a late bookmark or an upgraded save.
+	if = {
+		limit = {
+			original_tag = USA
+			corporate_history_full_enabled = yes
+			NOT = { has_country_flag = collapsed_nation }
+		}
+		USA_spacex_recover_prior_year_history = yes
+	}
+
 	corporate_history_monthly_dispatch = yes
 	USA_oem_legacy_monthly_driver = yes
 	USA_oem_storage_monthly_driver = yes
@@ -205,10 +216,7 @@ USA_corporate_history_monthly_outcomes = {
 			USA_anthropic_schedule_current_year_events = yes
 			USA_palantir_corporate_recover_prior_year_history = yes
 			USA_palantir_corporate_schedule_current_year_events = yes
-			if = {
-				limit = { NOT = { has_country_flag = USA_spacex_reconstruct_complete } }
-				country_event = { id = USA_spacex_events.90 days = 0 }
-			}
+			USA_spacex_schedule_current_year_events = yes
 			if = {
 				limit = { NOT = { has_country_flag = USA_intel_history_complete } }
 				USA_intel_reconstruct_history = yes
@@ -286,7 +294,10 @@ USA_corporate_history_monthly_outcomes = {
 			USA_aig_reconstruct_history = yes
 			USA_xbox_reconstruct_history = yes
 			USA_blackberry_reconstruct_history = yes
-			country_event = { id = USA_spacex_events.90 days = 0 }
+			if = {
+				limit = { NOT = { has_country_flag = USA_spacex_reconstruct_complete } }
+				USA_spacex_reconstruct_history = yes
+			}
 			USA_intel_reconstruct_history = yes
 		}
 

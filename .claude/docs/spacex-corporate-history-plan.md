@@ -3,11 +3,12 @@
 Scope: OEM Corporate History module modelling SpaceX from founding through Falcon 1, COTS/CRS, Falcon 9 + Dragon, reuse, Falcon Heavy, Starlink, Commercial Crew, NSSL, Starship HLS, iterative Starship licensing/tests, and a 2025–2026 capstone. Not a new focus tree, not Great AI Race. English localisation only. Namespace `USA_spacex_events`. Root prefix `USA_spacex`. Owner tag `USA` (`original_tag = USA` in every visible trigger).
 
 Game-rule semantics:
-- Full: initialize, reconstruct hidden history pre-start-date, schedule only current-year beats, deliver 11 visible beats plus a capstone, then complete
+
+- Full: initialize, reconstruct only elapsed history, schedule current-year beats, recover missed visible deliveries, deliver 11 visible beats plus a capstone, then complete
 - Outcomes Only: silent reconstruction picks the historical-A routes at each beat, then applies exactly one capstone idea
 - Off: creates no `USA_spacex_*` state, schedules nothing, changes nothing outside this chain
 
-Hidden reconstruct sink: `USA_spacex_events.90` exists but is not scheduled from schema bootstrap; the monthly/USA startup calls the owner effect directly.
+Hidden reconstruct sink: `USA_spacex_events.90` is a callerless Outcomes Only debug sink, not a lifecycle owner. The registered `USA_spacex_reconstruct_history` root delegates silent history only in Outcomes Only; Full monthly dispatch resolves only prior-year history before generic recovery and never invokes silent reconstruction for a current-year choice.
 
 Do not write any other chain’s identifiers (NASA, ULA/Boeing, AI Core, NVIDIA, energy, microchip, Great AI Race). Reads of other satcom/5G state are deferred and not used in this first implementation.
 
@@ -24,13 +25,17 @@ All variables are integers clamped to 0..10 by `corporate_history_clamp_value`. 
 - `USA_spacex_geostrategic_access` — U.S.-aligned strategic launch and regulatory access (range, licensing, allied access)
 
 Required owner effects (all idempotent):
+
 - `USA_spacex_initialize_state`
 - `USA_spacex_clamp_state`
 - `USA_spacex_reconstruct_history`
+- `USA_spacex_reconstruct_outcomes_history`
 - `USA_spacex_schedule_current_year_events`
+- `USA_spacex_recover_prior_year_history`
 - `USA_spacex_resolve_capstone`
 
 Lifecycle flags:
+
 - `USA_spacex_state_initialized`
 - `USA_spacex_reconstruct_complete`
 - `USA_spacex_start_year_events_scheduled`
@@ -42,54 +47,67 @@ Completion: `USA_spacex_capstone_resolved` (idea-applied) and `USA_spacex_recons
 
 All dates are scheduler anchors. Events never spend treasury/PP, grant research bonuses, place buildings, or alter opinions. Every option carries a real tradeoff following content-guidelines balance rules. GFX reuse: `GFX_computer` or `GFX_generic_factory` (no new art).
 
-1) Founding — 14 Mar 2002 (days = 72)
+1. Founding — 14 Mar 2002 (days = 72)
+
 - Choices: vertically integrate early; seek DoD/NASA contracting discipline; accelerate with foreign components
 - Axes: +reusability_depth or +government_partnership or +launch_cadence_reliability (with a tradeoff)
 
-2) Falcon 1 reaches orbit — 28 Sep 2008 (days = 271)
+2. Falcon 1 reaches orbit — 28 Sep 2008 (days = 271)
+
 - Choices: iterate with flight test; nationalize risk with tight oversight; consolidate with legacy primes
 - Axes: +launch_cadence_reliability, (+/-) government_partnership, (+/-) commercial_market_power
 
-3) COTS/CRS — Aug 2006 (days ~ 227) / CRS 23 Dec 2008 (historical context, single 2006 anchor)
+3. COTS/CRS — 1 Aug 2006 (days = 212) / CRS 23 Dec 2008 (historical context, single 2006 anchor)
+
 - Choices: dual-source cargo; single champion; stretch Shuttle logistics
 - Axes: (+/-) government_partnership, (+/-) geostrategic_access, (+/-) commercial_market_power
 
-4) Falcon 9 + Dragon — 4 Jun 2010 (days = 155) with 22–25 May 2012 in desc
+4. Falcon 9 + Dragon — 4 Jun 2010 (days = 154) with 22–25 May 2012 in desc
+
 - Choices: qualify Dragon for ISS cargo and civil missions vs slower certification vs narrow commercial focus
 - Axes: +launch_cadence_reliability, +government_partnership, (-/+) commercial_market_power
 
-5) First-stage reuse — 22 Dec 2015 landing (days = 356); 30 Mar 2017 reflight in desc
+5. First-stage reuse — 22 Dec 2015 landing (days = 355); 30 Mar 2017 reflight in desc
+
 - Choices: aggressive reuse ramp; conservative cadence; protect single-use revenue
 - Axes: +reusability_depth, (+/-) launch_cadence_reliability, (+/-) commercial_market_power
 
-6) Falcon Heavy — 6 Feb 2018 (days = 37)
+6. Falcon Heavy — 6 Feb 2018 (days = 36)
+
 - Choices: qualify for national-security missions; commercial-only heavy; defer to competing heavies
 - Axes: +heavy_deep_space_lift, (+/-) government_partnership, (+/-) geostrategic_access
 
-7) Starlink large deployment — 23 May 2019 (days = 143)
+7. Starlink large deployment — 23 May 2019 (days = 142)
+
 - Choices: allied dual-use; aggressive commercial-only; security reservation
 - Axes: +leo_satcom_presence, (+/-) commercial_market_power, (+/-) geostrategic_access
 
-8) Crew Dragon Demo-2 — 30 May 2020 (days = 151)
+8. Crew Dragon Demo-2 — 30 May 2020 (days = 150)
+
 - Choices: certify commercial crew; dual providers discipline; prolong Soyuz reliance
 - Axes: +government_partnership, +launch_cadence_reliability, (-/+) commercial_market_power
 
-9) NSSL composite — ~2021 anchor (days = 224)
+9. NSSL composite — 1 Aug 2021 operational anchor (days = 212)
+
 - Choices: dual-source with SpaceX cadence; legacy-prime preference; SpaceX sole-source
 - Axes: (+/-) government_partnership, (+/-) geostrategic_access, (+/-) commercial_market_power
 
-10) Starship HLS — 16 Apr 2021 (days = 106)
+10. Starship HLS — 16 Apr 2021 (days = 105)
+
 - Choices: award Starship; split vendors; delay for alternative lander
 - Axes: +heavy_deep_space_lift, +government_partnership, (-/+) commercial_market_power
 
-11) Starship iterative licensing — 20 Apr 2023 (days = 110), IFT-5 catch 13 Oct 2024 in desc
+11. Starship iterative licensing — 20 Apr 2023 (days = 109), IFT-5 catch 13 Oct 2024 in desc
+
 - Choices: aggressive iterative licensing; slow environmental path; federalize Starbase infrastructure
 - Axes: +reusability_depth, (+/-) geostrategic_access, (+/-) launch_cadence_reliability
 
-12) Capstone — 2026 window (deliver in `corporate_history_dispatch_year_2026`, days = 243)
+12. Capstone — 2026 window (deliver in `corporate_history_dispatch_year_2026`, days = 243)
+
 - Evaluate axes and apply exactly one idea (mutually exclusive); no further variable mutation after resolution.
 
 Priority order, then fallback:
+
 1. Assured Access Cadence Champion — `USA_spacex_cadence_champion`
 2. Allied LEO Connectivity Bloc — `USA_spacex_allied_leo_connectivity`
 3. Deep-Space Industrial Stack — `USA_spacex_deep_space_stack`
@@ -99,6 +117,7 @@ Priority order, then fallback:
 Authority: applied idea (checked via `has_idea`); completion flags kept for lifecycle only.
 
 Full-mode resolution (match NVIDIA split)
+
 - The capstone event `.12` presents five options in collision order only for Full:
   a Cadence Champion (gated)
   b Allied LEO (gated)
@@ -108,7 +127,8 @@ Full-mode resolution (match NVIDIA split)
 - Each option sets its route flag then calls `USA_spacex_resolve_capstone` to apply the idea and mark reconstruction complete.
 
 Outcomes Only (no popup)
-- Reconstruction applies all historical‑A beat recorders. If `date > 2026.08.31` and no route flag is set, it silently sets the cadence route. On/after `2026.09.01`, `resolve_capstone` applies the cadence outcome.
+
+- Reconstruction applies all historical-A beat recorders. If `date > 2026.08.31` and no route flag is set, it silently sets the cadence route. After `2026.09.01`, `resolve_capstone` applies the cadence outcome and the reconstruction root sets its completion marker.
 - `USA_spacex_resolve_capstone` contains no axis scoring: it switches on route flags only (cadence/starlink/starship/monopoly/mixed) and falls back to mixed‑provider when no route flag is present.
 
 ## Files and ownership
@@ -120,6 +140,7 @@ Outcomes Only (no popup)
 - `tools/corporate_history_contract.json` — contract entry
 - `common/scripted_effects/00_corporate_history_monthly_dispatch_effects.txt` — add USA startup wiring (initialize/reconstruct; schedule_current_year_events in 2000 window)
 - `common/scripted_effects/00_corporate_history_dispatch_effects.txt` — yearly scheduling owners for beats (2002, 2006, 2008, 2010, 2015, 2018, 2019, 2020, 2021×2, 2023, 2026)
+- `common/scripted_effects/00_corporate_history_midyear_recovery_effects.txt` — guarded one-day recovery delivery for all 12 visible events; SpaceX deliberately does not pre-resolve current-year events during generic bootstrap
 
 ## Contract (tools/corporate_history_contract.json)
 
@@ -138,7 +159,7 @@ Outcomes Only (no popup)
 - `monthly_driver`: "USA_corporate_history_monthly_outcomes"
 - `terminal_marker`: "USA_spacex_reconstruct_complete"
 - `terminal_date`: "2026-09-01"
-- `expected_callers`: { "USA_spacex_events.90": [] }
+- `expected_callers`: events `.1` through `.12` map to their exact `USA_spacex_dispatch_*` owner effects; schema-v6 recovery also permits the USA midyear-recovery host; `.90` maps to `[]`
 - `effect_preview_policy`: "engine_or_explicit"
 - `bridge_refresh_policy`: "none"
 
@@ -161,4 +182,3 @@ Outcomes Only (no popup)
 - Starship IFT‑1: 20 Apr 2023; IFT‑5 catch: 13 Oct 2024
 
 Primary documents: NASA program pages and press releases, USSF NSSL award releases, FCC filings for Starlink deployment, and SpaceX mission press kits. Dates are used only as scheduler anchors; no policy claims beyond public anchors.
-

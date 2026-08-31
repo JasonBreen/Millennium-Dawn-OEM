@@ -17,9 +17,6 @@ USA_spacex_initialize_state = {
 		set_variable = { USA_spacex_launch_cadence_reliability = 1 }
 		set_variable = { USA_spacex_reusability_depth = 1 }
 		set_variable = { USA_spacex_government_partnership = 1 }
-		set_variable = { USA_spacex_commercial_market_power = 0 }
-		set_variable = { USA_spacex_leo_satcom_presence = 0 }
-		set_variable = { USA_spacex_heavy_deep_space_lift = 0 }
 		set_variable = { USA_spacex_geostrategic_access = 1 }
 		set_country_flag = USA_spacex_state_initialized
 	}
@@ -74,7 +71,7 @@ USA_spacex_record_falcon1_success = {
 USA_spacex_record_falcon9_firstflight = {
 	set_country_flag = USA_spacex_falcon9_firstflight
 	add_to_variable = { USA_spacex_launch_cadence_reliability = 1 }
-	add_to_variable = { USA_spacex_reusability_depth = 1 }
+	add_to_variable = { USA_spacex_government_partnership = 1 }
 	USA_spacex_clamp_state = yes
 }
 
@@ -101,7 +98,6 @@ USA_spacex_record_first_reflight = {
 USA_spacex_record_starlink_initial = {
 	set_country_flag = USA_spacex_starlink_initial
 	add_to_variable = { USA_spacex_leo_satcom_presence = 2 }
-	add_to_variable = { USA_spacex_launch_cadence_reliability = 1 }
 	add_to_variable = { USA_spacex_commercial_market_power = 1 }
 	USA_spacex_clamp_state = yes
 }
@@ -109,7 +105,7 @@ USA_spacex_record_starlink_initial = {
 USA_spacex_record_commercial_crew = {
 	set_country_flag = USA_spacex_commercial_crew_operational
 	add_to_variable = { USA_spacex_government_partnership = 2 }
-	add_to_variable = { USA_spacex_geostrategic_access = 1 }
+	add_to_variable = { USA_spacex_launch_cadence_reliability = 1 }
 	USA_spacex_clamp_state = yes
 }
 
@@ -175,45 +171,31 @@ USA_spacex_clear_route = {
 USA_spacex_record_route_cadence = {
 	USA_spacex_clear_route = yes
 	set_country_flag = USA_spacex_route_cadence
-	add_to_variable = { USA_spacex_launch_cadence_reliability = 1 }
-	add_to_variable = { USA_spacex_government_partnership = -1 }
-	USA_spacex_clamp_state = yes
 }
 
 USA_spacex_record_route_starship = {
 	USA_spacex_clear_route = yes
 	set_country_flag = USA_spacex_route_starship
-	add_to_variable = { USA_spacex_reusability_depth = 1 }
-	add_to_variable = { USA_spacex_launch_cadence_reliability = -1 }
-	USA_spacex_clamp_state = yes
 }
 
 USA_spacex_record_route_public_contract = {
 	USA_spacex_clear_route = yes
 	set_country_flag = USA_spacex_route_public_contract
-	add_to_variable = { USA_spacex_government_partnership = 1 }
-	add_to_variable = { USA_spacex_leo_satcom_presence = -1 }
-	USA_spacex_clamp_state = yes
 }
 
 USA_spacex_record_route_starlink = {
 	USA_spacex_clear_route = yes
 	set_country_flag = USA_spacex_route_starlink
-	add_to_variable = { USA_spacex_leo_satcom_presence = 2 }
-	add_to_variable = { USA_spacex_government_partnership = -1 }
-	USA_spacex_clamp_state = yes
 }
 
 USA_spacex_record_route_monopoly = {
 	USA_spacex_clear_route = yes
 	set_country_flag = USA_spacex_route_monopoly
-	USA_spacex_clamp_state = yes
 }
 
 USA_spacex_record_route_mixed = {
 	USA_spacex_clear_route = yes
 	set_country_flag = USA_spacex_route_mixed
-	USA_spacex_clamp_state = yes
 }
 
 # Capstone outcomes (exactly one idea)
@@ -276,9 +258,23 @@ USA_spacex_resolve_capstone = {
 	}
 }
 
-# Hidden reconstruction — chronological, reward-free
-
 USA_spacex_reconstruct_history = {
+	if = {
+		limit = { corporate_history_outcomes_only_enabled = yes }
+		USA_spacex_reconstruct_outcomes_history = yes
+	}
+	if = {
+		limit = {
+			date > 2026.9.1
+			has_country_flag = USA_spacex_capstone_resolved
+		}
+		set_country_flag = USA_spacex_reconstruct_complete
+	}
+}
+
+# Hidden Outcomes Only reconstruction — chronological, reward-free
+
+USA_spacex_reconstruct_outcomes_history = {
 	USA_spacex_initialize_state = yes
 
 	# 2002-03-14: Company founded
@@ -311,14 +307,18 @@ USA_spacex_reconstruct_history = {
 		limit = { date > 2012.5.25 NOT = { has_country_flag = USA_spacex_dragon_cargo_operational } }
 		USA_spacex_record_cargo_to_iss = yes
 	}
-	# 2015-12-21: First stage landing
+	# 2015-12-22: First stage landing
 	if = {
-		limit = { date > 2015.12.21 NOT = { has_country_flag = USA_spacex_first_stage_landing } }
+		limit = { date > 2015.12.22 NOT = { has_country_flag = USA_spacex_first_stage_landing } }
 		USA_spacex_record_first_landing = yes
 	}
 	# 2017-03-30: First reflight
 	if = {
-		limit = { date > 2017.3.30 NOT = { has_country_flag = USA_spacex_first_reflight } }
+		limit = {
+			date > 2017.3.30
+			has_country_flag = USA_spacex_first_stage_landing
+			NOT = { has_country_flag = USA_spacex_first_reflight }
+		}
 		USA_spacex_record_first_reflight = yes
 	}
 	# 2018-02-06: Falcon Heavy demo
@@ -382,6 +382,155 @@ USA_spacex_reconstruct_history = {
 
 	if = {
 		limit = { date > 2026.9.1 NOT = { has_country_flag = USA_spacex_capstone_resolved } }
+		USA_spacex_resolve_capstone = yes
+	}
+}
+
+USA_spacex_recover_prior_year_history = {
+	USA_spacex_initialize_state = yes
+
+	# Background milestones have no player choice and may resolve in their current year.
+	if = {
+		limit = { date > 2006.3.24 NOT = { has_country_flag = USA_spacex_falcon1_development } }
+		USA_spacex_record_falcon1_development = yes
+	}
+	if = {
+		limit = { date > 2012.5.25 NOT = { has_country_flag = USA_spacex_dragon_cargo_operational } }
+		USA_spacex_record_cargo_to_iss = yes
+	}
+	if = {
+		limit = { date > 2017.3.30 NOT = { has_country_flag = USA_spacex_first_reflight } }
+		USA_spacex_record_first_reflight = yes
+	}
+	if = {
+		limit = { date > 2023.4.20 NOT = { has_country_flag = USA_spacex_starship_integrated_test } }
+		USA_spacex_record_starship_integrated = yes
+	}
+	if = {
+		limit = { date > 2024.6.6 NOT = { has_country_flag = USA_spacex_starship_progress_2024 } }
+		USA_spacex_record_starship_progress_2024 = yes
+	}
+
+	# Visible choices default historically only after their authored year has ended.
+	if = {
+		limit = {
+			date > 2003.1.1
+			NOT = { has_country_flag = USA_spacex_founded }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_1_pending }
+		}
+		set_country_flag = USA_corporate_history_midyear_spacex_events_1_resolved
+		clr_country_flag = USA_corporate_history_midyear_spacex_events_1_pending
+		USA_spacex_record_foundation = yes
+	}
+	if = {
+		limit = {
+			date > 2007.1.1
+			NOT = { has_country_flag = USA_spacex_cots_crs_awarded }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_3_pending }
+		}
+		set_country_flag = USA_corporate_history_midyear_spacex_events_3_resolved
+		clr_country_flag = USA_corporate_history_midyear_spacex_events_3_pending
+		USA_spacex_record_cots_crs_awarded = yes
+	}
+	if = {
+		limit = {
+			date > 2009.1.1
+			NOT = { has_country_flag = USA_spacex_falcon1_success }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_2_pending }
+		}
+		set_country_flag = USA_corporate_history_midyear_spacex_events_2_resolved
+		clr_country_flag = USA_corporate_history_midyear_spacex_events_2_pending
+		USA_spacex_record_falcon1_success = yes
+	}
+	if = {
+		limit = {
+			date > 2011.1.1
+			NOT = { has_country_flag = USA_spacex_falcon9_firstflight }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_4_pending }
+		}
+		set_country_flag = USA_corporate_history_midyear_spacex_events_4_resolved
+		clr_country_flag = USA_corporate_history_midyear_spacex_events_4_pending
+		USA_spacex_record_falcon9_firstflight = yes
+	}
+	if = {
+		limit = {
+			date > 2016.1.1
+			NOT = { has_country_flag = USA_spacex_first_stage_landing }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_5_pending }
+		}
+		set_country_flag = USA_corporate_history_midyear_spacex_events_5_resolved
+		clr_country_flag = USA_corporate_history_midyear_spacex_events_5_pending
+		USA_spacex_record_first_landing = yes
+	}
+	if = {
+		limit = {
+			date > 2019.1.1
+			NOT = { has_country_flag = USA_spacex_falcon_heavy_demo }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_6_pending }
+		}
+		set_country_flag = USA_corporate_history_midyear_spacex_events_6_resolved
+		clr_country_flag = USA_corporate_history_midyear_spacex_events_6_pending
+		USA_spacex_record_falcon_heavy_demo = yes
+	}
+	if = {
+		limit = {
+			date > 2020.1.1
+			NOT = { has_country_flag = USA_spacex_starlink_initial }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_7_pending }
+		}
+		set_country_flag = USA_corporate_history_midyear_spacex_events_7_resolved
+		clr_country_flag = USA_corporate_history_midyear_spacex_events_7_pending
+		USA_spacex_record_starlink_initial = yes
+	}
+	if = {
+		limit = {
+			date > 2021.1.1
+			NOT = { has_country_flag = USA_spacex_commercial_crew_operational }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_8_pending }
+		}
+		set_country_flag = USA_corporate_history_midyear_spacex_events_8_resolved
+		clr_country_flag = USA_corporate_history_midyear_spacex_events_8_pending
+		USA_spacex_record_commercial_crew = yes
+	}
+	if = {
+		limit = {
+			date > 2022.1.1
+			NOT = { has_country_flag = USA_spacex_hls_award }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_10_pending }
+		}
+		set_country_flag = USA_corporate_history_midyear_spacex_events_10_resolved
+		clr_country_flag = USA_corporate_history_midyear_spacex_events_10_pending
+		USA_spacex_record_hls_award = yes
+	}
+	if = {
+		limit = {
+			date > 2022.1.1
+			NOT = { has_country_flag = USA_spacex_nssl_dual_source }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_9_pending }
+		}
+		set_country_flag = USA_corporate_history_midyear_spacex_events_9_resolved
+		clr_country_flag = USA_corporate_history_midyear_spacex_events_9_pending
+		USA_spacex_record_nssl_dual_source = yes
+	}
+	if = {
+		limit = {
+			date > 2024.1.1
+			NOT = { has_country_flag = USA_spacex_iterative_licensing }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_11_pending }
+		}
+		set_country_flag = USA_corporate_history_midyear_spacex_events_11_resolved
+		clr_country_flag = USA_corporate_history_midyear_spacex_events_11_pending
+		USA_spacex_record_starship_iterative_licensing = yes
+	}
+	if = {
+		limit = {
+			date > 2027.1.1
+			NOT = { has_country_flag = USA_spacex_capstone_resolved }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_12_pending }
+		}
+		set_country_flag = USA_corporate_history_midyear_spacex_events_12_resolved
+		clr_country_flag = USA_corporate_history_midyear_spacex_events_12_pending
+		USA_spacex_record_route_cadence = yes
 		USA_spacex_resolve_capstone = yes
 	}
 }
@@ -459,50 +608,145 @@ USA_spacex_schedule_current_year_events = {
 # Yearly dispatcher wrappers (hide direct event ids from core-namespace discovery)
 
 USA_spacex_dispatch_2002 = {
-	country_event = { id = USA_spacex_events.1 days = 72 }
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_1_resolved }
+			NOT = { has_country_flag = USA_spacex_founded }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_1_pending }
+		}
+		set_country_flag = { flag = USA_corporate_history_midyear_spacex_events_1_pending days = 132 value = 1 }
+		country_event = { id = USA_spacex_events.1 days = 72 }
+	}
 }
 
 USA_spacex_dispatch_2006 = {
-	country_event = { id = USA_spacex_events.3 days = 227 }
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_3_resolved }
+			NOT = { has_country_flag = USA_spacex_cots_crs_awarded }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_3_pending }
+		}
+		set_country_flag = { flag = USA_corporate_history_midyear_spacex_events_3_pending days = 272 value = 1 }
+		country_event = { id = USA_spacex_events.3 days = 212 }
+	}
 }
 
 USA_spacex_dispatch_2008 = {
-	country_event = { id = USA_spacex_events.2 days = 271 }
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_2_resolved }
+			NOT = { has_country_flag = USA_spacex_falcon1_success }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_2_pending }
+		}
+		set_country_flag = { flag = USA_corporate_history_midyear_spacex_events_2_pending days = 331 value = 1 }
+		country_event = { id = USA_spacex_events.2 days = 271 }
+	}
 }
 
 USA_spacex_dispatch_2010 = {
-	country_event = { id = USA_spacex_events.4 days = 155 }
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_4_resolved }
+			NOT = { has_country_flag = USA_spacex_falcon9_firstflight }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_4_pending }
+		}
+		set_country_flag = { flag = USA_corporate_history_midyear_spacex_events_4_pending days = 214 value = 1 }
+		country_event = { id = USA_spacex_events.4 days = 154 }
+	}
 }
 
 USA_spacex_dispatch_2015 = {
-	country_event = { id = USA_spacex_events.5 days = 356 }
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_5_resolved }
+			NOT = { has_country_flag = USA_spacex_first_stage_landing }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_5_pending }
+		}
+		set_country_flag = { flag = USA_corporate_history_midyear_spacex_events_5_pending days = 415 value = 1 }
+		country_event = { id = USA_spacex_events.5 days = 355 }
+	}
 }
 
 USA_spacex_dispatch_2018 = {
-	country_event = { id = USA_spacex_events.6 days = 37 }
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_6_resolved }
+			NOT = { has_country_flag = USA_spacex_falcon_heavy_demo }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_6_pending }
+		}
+		set_country_flag = { flag = USA_corporate_history_midyear_spacex_events_6_pending days = 96 value = 1 }
+		country_event = { id = USA_spacex_events.6 days = 36 }
+	}
 }
 
 USA_spacex_dispatch_2019 = {
-	country_event = { id = USA_spacex_events.7 days = 143 }
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_7_resolved }
+			NOT = { has_country_flag = USA_spacex_starlink_initial }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_7_pending }
+		}
+		set_country_flag = { flag = USA_corporate_history_midyear_spacex_events_7_pending days = 202 value = 1 }
+		country_event = { id = USA_spacex_events.7 days = 142 }
+	}
 }
 
 USA_spacex_dispatch_2020 = {
-	country_event = { id = USA_spacex_events.8 days = 151 }
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_8_resolved }
+			NOT = { has_country_flag = USA_spacex_commercial_crew_operational }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_8_pending }
+		}
+		set_country_flag = { flag = USA_corporate_history_midyear_spacex_events_8_pending days = 210 value = 1 }
+		country_event = { id = USA_spacex_events.8 days = 150 }
+	}
 }
 
 USA_spacex_dispatch_2021_hls = {
-	country_event = { id = USA_spacex_events.10 days = 106 }
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_10_resolved }
+			NOT = { has_country_flag = USA_spacex_hls_award }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_10_pending }
+		}
+		set_country_flag = { flag = USA_corporate_history_midyear_spacex_events_10_pending days = 165 value = 1 }
+		country_event = { id = USA_spacex_events.10 days = 105 }
+	}
 }
 
 USA_spacex_dispatch_2021_nssl = {
-	country_event = { id = USA_spacex_events.9 days = 224 }
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_9_resolved }
+			NOT = { has_country_flag = USA_spacex_nssl_dual_source }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_9_pending }
+		}
+		set_country_flag = { flag = USA_corporate_history_midyear_spacex_events_9_pending days = 272 value = 1 }
+		country_event = { id = USA_spacex_events.9 days = 212 }
+	}
 }
 
 USA_spacex_dispatch_2023 = {
-	country_event = { id = USA_spacex_events.11 days = 110 }
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_11_resolved }
+			NOT = { has_country_flag = USA_spacex_iterative_licensing }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_11_pending }
+		}
+		set_country_flag = { flag = USA_corporate_history_midyear_spacex_events_11_pending days = 169 value = 1 }
+		country_event = { id = USA_spacex_events.11 days = 109 }
+	}
 }
 
 USA_spacex_dispatch_2026 = {
-	country_event = { id = USA_spacex_events.12 days = 243 }
+	if = {
+		limit = {
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_12_resolved }
+			NOT = { has_country_flag = USA_spacex_capstone_resolved }
+			NOT = { has_country_flag = USA_corporate_history_midyear_spacex_events_12_pending }
+		}
+		set_country_flag = { flag = USA_corporate_history_midyear_spacex_events_12_pending days = 303 value = 1 }
+		country_event = { id = USA_spacex_events.12 days = 243 }
+	}
 }
-
