@@ -552,7 +552,7 @@ def test_persistent_and_timed_ideas_match_the_manifest_exactly():
     assert len(persistent) == 8
     for idea in persistent:
         block = _named_block(ideas, idea)
-        assert "allowed = " not in block
+        assert "allowed =" not in block
         assert _numeric_modifier_map(block) == system["persistent_idea_modifiers"][idea]
 
     for idea, expected in system["timed_idea_modifiers"].items():
