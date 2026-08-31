@@ -4,6 +4,8 @@ import re
 import sys
 from pathlib import Path
 
+from tools.shared_utils import extract_block_from_text
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools" / "analysis"))
 
@@ -163,36 +165,9 @@ OUTCOMES = (
 
 
 def _extract_block(text: str, start: int) -> str:
-    opening = text.index("{", start)
-    depth = 0
-    in_comment = False
-    in_string = False
-    escaped = False
-    for index in range(opening, len(text)):
-        character = text[index]
-        if in_comment:
-            if character == "\n":
-                in_comment = False
-            continue
-        if in_string:
-            if escaped:
-                escaped = False
-            elif character == "\\":
-                escaped = True
-            elif character == '"':
-                in_string = False
-            continue
-        if character == "#":
-            in_comment = True
-        elif character == '"':
-            in_string = True
-        elif character == "{":
-            depth += 1
-        elif character == "}":
-            depth -= 1
-            if depth == 0:
-                return text[start : index + 1]
-    raise AssertionError("Unclosed scripted block")
+    _body, end = extract_block_from_text(text, start)
+    assert end != -1, "Unclosed scripted block"
+    return text[start:end]
 
 
 def _named_block(text: str, name: str) -> str:
