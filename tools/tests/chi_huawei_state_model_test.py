@@ -755,7 +755,7 @@ def test_era_burden_and_capstone_ideas_match_locked_modifiers():
         )
         assert modifiers == expected_modifiers
         assert re.search(r"(?m)^\t\t\tpicture\s*=\s*[A-Za-z0-9_]+$", block)
-        assert "allowed = " not in block
+        assert "allowed =" not in block
         assert "allowed_civil_war = { always = yes }" in block
 
 
