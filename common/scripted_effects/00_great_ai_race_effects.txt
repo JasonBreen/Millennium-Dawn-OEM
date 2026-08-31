@@ -1,0 +1,593 @@
+# The race owns only AI_RACE/ai_race state. External contributions are rebuilt from canonical
+# owners and never written back; each rebuild clears adapter slots before reading current sources.
+
+ai_race_clear_country_state = {
+	clear_variable = ai_race_capability_stock
+	clear_variable = ai_race_capability_external
+	clear_variable = ai_race_capability
+	clear_variable = ai_race_compute_stock
+	clear_variable = ai_race_compute_external
+	clear_variable = ai_race_compute
+	clear_variable = ai_race_talent_stock
+	clear_variable = ai_race_talent_external
+	clear_variable = ai_race_talent
+	clear_variable = ai_race_deployment_stock
+	clear_variable = ai_race_deployment_external
+	clear_variable = ai_race_deployment
+	clear_variable = ai_race_control_capacity_stock
+	clear_variable = ai_race_control_capacity_external
+	clear_variable = ai_race_control_capacity
+	clear_variable = ai_race_public_confidence_stock
+	clear_variable = ai_race_public_confidence_external
+	clear_variable = ai_race_public_confidence
+	clear_variable = ai_race_public_alarm
+	clear_variable = ai_race_control_debt
+	clear_variable = ai_race_frontier_gap
+	clear_variable = ai_race_rank
+	clr_country_flag = AI_RACE_state_initialized
+	clr_country_flag = AI_RACE_active
+}
+
+ai_race_repair_country_state = {
+	if = {
+		limit = {
+			ai_race_enabled = yes
+			ai_race_country_initialized = yes
+		}
+		clamp_variable = { var = ai_race_capability_stock min = 0 max = 100 }
+		clamp_variable = { var = ai_race_capability_external min = 0 max = 100 }
+		clamp_variable = { var = ai_race_capability min = 0 max = 100 }
+		clamp_variable = { var = ai_race_compute_stock min = 0 max = 100 }
+		clamp_variable = { var = ai_race_compute_external min = 0 max = 100 }
+		clamp_variable = { var = ai_race_compute min = 0 max = 100 }
+		clamp_variable = { var = ai_race_talent_stock min = 0 max = 100 }
+		clamp_variable = { var = ai_race_talent_external min = 0 max = 100 }
+		clamp_variable = { var = ai_race_talent min = 0 max = 100 }
+		clamp_variable = { var = ai_race_deployment_stock min = 0 max = 100 }
+		clamp_variable = { var = ai_race_deployment_external min = 0 max = 100 }
+		clamp_variable = { var = ai_race_deployment min = 0 max = 100 }
+		clamp_variable = { var = ai_race_control_capacity_stock min = 0 max = 100 }
+		clamp_variable = { var = ai_race_control_capacity_external min = 0 max = 100 }
+		clamp_variable = { var = ai_race_control_capacity min = 0 max = 100 }
+		clamp_variable = { var = ai_race_public_confidence_stock min = 0 max = 100 }
+		clamp_variable = { var = ai_race_public_confidence_external min = 0 max = 100 }
+		clamp_variable = { var = ai_race_public_confidence min = 0 max = 100 }
+		clamp_variable = { var = ai_race_public_alarm min = 0 max = 100 }
+		clamp_variable = { var = ai_race_control_debt min = 0 max = 100 }
+		clamp_variable = { var = ai_race_frontier_gap min = -100 max = 0 }
+		clamp_variable = { var = ai_race_rank min = 0 max = 2 }
+	}
+}
+
+ai_race_initialize_country = {
+	if = {
+		limit = {
+			ai_race_eligible_participant = yes
+			NOT = { ai_race_country_initialized = yes }
+		}
+		ai_race_clear_country_state = yes
+		set_country_flag = AI_RACE_state_initialized
+	}
+	if = {
+		limit = {
+			ai_race_eligible_participant = yes
+			ai_race_country_initialized = yes
+		}
+		set_country_flag = AI_RACE_active
+		ai_race_repair_country_state = yes
+	}
+}
+
+ai_race_rebuild_country_metrics = {
+	if = {
+		limit = { ai_race_active = yes }
+		clear_variable = ai_race_capability_external
+		clear_variable = ai_race_compute_external
+		clear_variable = ai_race_talent_external
+		clear_variable = ai_race_deployment_external
+		clear_variable = ai_race_control_capacity_external
+		clear_variable = ai_race_public_confidence_external
+
+		# Rebuild external contributions from canonical owner systems (Prompt 2).
+		# USA uses USA AI Industry Core axes as read-only inputs with deterministic fallbacks.
+		if = {
+			limit = { original_tag = USA }
+			# If Corporate History has meaningfully initialized USA AI Core, read live values (0..10 scale)
+			if = {
+				limit = {
+					corporate_history_enabled = yes
+					has_country_flag = USA_ai_core_state_initialized
+				}
+				# Direct axis mapping to externals (×10 scale-up)
+				set_variable = { ai_race_capability_external = { value = USA_ai_core_frontier_capability multiply = 10 } }
+				# Compute: compute_depth ×10, then subtract bounded penalties from infra burden and post-storage energy shortfalls
+				set_variable = { ai_race_compute_external = { value = USA_ai_core_compute_depth multiply = 10 } }
+				if = {
+					limit = { check_variable = { USA_ai_core_infrastructure_burden > 0 } }
+					subtract_from_variable = { ai_race_compute_external = { value = USA_ai_core_infrastructure_burden multiply = 5 } }
+				}
+				if = { limit = { check_variable = { energy_difference_variable < 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
+				# Control capacity: state_alignment ×10
+				# Split alignment influence between control and deployment; do not copy it 1:1 into both.
+				set_temp_variable = { _usa_align_ctl = { value = USA_ai_core_state_alignment multiply = 7 } } # 70% weight
+				set_variable = { ai_race_control_capacity_external = _usa_align_ctl }
+				# Public confidence: public_legitimacy ×10
+				set_variable = { ai_race_public_confidence_external = { value = USA_ai_core_public_legitimacy multiply = 10 } }
+				# Talent: research-slot/education signals plus small weight from ecosystem_openness
+				set_temp_variable = { _usa_talent = 0 }
+				add_to_temp_variable = { _usa_talent = { value = research_slots_from_gdp multiply = 10 } }
+				add_to_temp_variable = { _usa_talent = { value = research_slots_from_gdp_c multiply = 10 } }
+				add_to_temp_variable = { _usa_talent = { value = USA_ai_core_ecosystem_openness multiply = 5 } }
+				set_variable = { ai_race_talent_external = _usa_talent }
+				# Deployment: mix of compute_depth and public_legitimacy; small capstone bonus (at most one)
+				set_temp_variable = {
+					_usa_deploy = {
+						value = USA_ai_core_compute_depth multiply = 5
+						add = { value = USA_ai_core_public_legitimacy multiply = 4 }
+						add = { value = USA_ai_core_state_alignment multiply = 1 } # 10% alignment influence to deployment
+					}
+				}
+				set_variable = { ai_race_deployment_external = { value = _usa_deploy multiply = 10 divide = 10 } }
+				if = {
+					limit = {
+						OR = {
+							has_idea = USA_ai_core_private_frontier_primacy
+							has_idea = USA_ai_core_open_innovation_ecosystem
+							has_idea = USA_ai_core_federal_compute_compact
+							has_idea = USA_ai_core_resilient_industrial_base
+							has_idea = USA_ai_core_power_constrained_leadership
+						}
+					}
+					add_to_variable = { ai_race_deployment_external = 1 }
+				}
+				ai_race_repair_country_state = yes
+			}
+			else = {
+				# Corporate History Off or uninitialized: use ordinary tech, energy, and research slots.
+				# Capability: approximate from AI tech depth (each level adds +5, up to 14 tiers)
+				clear_temp_variable = _cap_tmp
+				if = { limit = { has_tech = artificial_intelligence_1 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_2 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_3 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_4 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_5 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_6 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_7 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_8 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_9 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_10 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_11 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_12 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_13 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_14 } add_to_temp_variable = { _cap_tmp = 5 } }
+				set_variable = { ai_race_capability_external = _cap_tmp }
+				# Compute: microchip production and energy availability (thin heuristic)
+				set_temp_variable = {
+					_cmp_raw = {
+						value = resource_produced@microchips
+						subtract = country_microchip_production_var
+						multiply = 2
+					}
+				}
+				set_variable = { ai_race_compute_external = _cmp_raw }
+				if = { limit = { check_variable = { energy_difference_variable < 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
+				# Optional Linux stack: very small overlay, only if linux_system_initialized
+				if = {
+					limit = { has_country_flag = linux_system_initialized }
+					add_to_variable = { ai_race_compute_external = 2 }
+				}
+				# Talent: research slots (thin fallback)
+				set_temp_variable = { _tal_tmp = { value = research_slots_from_gdp multiply = 10 } }
+				add_to_temp_variable = { _tal_tmp = { value = research_slots_from_gdp_c multiply = 10 } }
+				set_variable = { ai_race_talent_external = _tal_tmp }
+				# Other externals left to 0 in fallback
+				ai_race_repair_country_state = yes
+			}
+		}
+		# China adapter: use canonical Huawei corporate state when present; deterministic baselines otherwise.
+		else_if = {
+			limit = { original_tag = CHI }
+			if = {
+				limit = {
+					CHI_corporate_systems_has_meaningful_state = yes
+					OR = { has_country_flag = CHI_huawei_state_initialized has_country_flag = CHI_huawei_reconstruct_complete }
+				}
+				# Capability: (silicon_autonomy + software_ecosystem) ×5
+				set_temp_variable = {
+					_cap = {
+						value = CHI_huawei_silicon_autonomy
+						add = CHI_huawei_software_ecosystem
+						multiply = 5
+					}
+				}
+				set_variable = { ai_race_capability_external = _cap }
+				# Compute: (silicon_autonomy + supply_resilience) ×5, Lenovo enterprise server may help
+				set_temp_variable = {
+					_cmp = {
+						value = CHI_huawei_silicon_autonomy
+						add = CHI_huawei_supply_resilience
+						multiply = 5
+					}
+				}
+				set_variable = { ai_race_compute_external = _cmp }
+				# Lenovo enterprise server platform contributes to deployment only (not compute)
+				# Compute adjustments from national/company ideas
+				if = { limit = { has_idea = CHI_semiconductor_backwardness } subtract_from_variable = { ai_race_compute_external = 40 } }
+				else_if = { limit = { has_idea = CHI_semiconductor_backwardness_2 } subtract_from_variable = { ai_race_compute_external = 25 } }
+				else_if = { limit = { has_idea = CHI_semiconductor_backwardness_3 } subtract_from_variable = { ai_race_compute_external = 15 } }
+				else_if = { limit = { has_idea = CHI_semiconductor_backwardness_4 } subtract_from_variable = { ai_race_compute_external = 8 } }
+				if = { limit = { has_idea = CHI_huawei_foundry_chokepoint } subtract_from_variable = { ai_race_compute_external = 8 } }
+				if = { limit = { has_idea = CHI_huawei_entity_list_shock } subtract_from_variable = { ai_race_compute_external = 10 } }
+				if = { limit = { has_idea = CHI_huawei_domestic_yield_ramp } add_to_variable = { ai_race_compute_external = 5 } }
+				# Optional thin GPU signal: resolved milestones + memory independence focus
+				if = {
+					limit = {
+						has_country_flag = gpu_development_7_resolved
+						has_completed_focus = CHI_memory_independence
+					}
+					add_to_variable = { ai_race_compute_external = 3 }
+				}
+				if = {
+					limit = {
+						has_country_flag = gpu_development_9_resolved
+						has_completed_focus = CHI_memory_independence
+					}
+					add_to_variable = { ai_race_compute_external = 3 }
+				}
+				# Talent: national research slots + small weight from standards_leverage
+				set_temp_variable = { _tal = { value = research_slots_from_gdp multiply = 10 } }
+				add_to_temp_variable = { _tal = { value = research_slots_from_gdp_c multiply = 10 } }
+				add_to_temp_variable = { _tal = { value = CHI_huawei_standards_leverage multiply = 5 } }
+				set_variable = { ai_race_talent_external = _tal }
+				# Deployment: (carrier_reach + consumer_position) ×5; Lenovo platforms & Harmony/OpenHarmony add small bonuses
+				set_temp_variable = {
+					_dep = {
+						value = CHI_huawei_carrier_reach
+						add = CHI_huawei_consumer_position
+						multiply = 5
+					}
+				}
+				set_variable = { ai_race_deployment_external = _dep }
+				if = { limit = { has_idea = CHI_lenovo_global_pc_platform } add_to_variable = { ai_race_deployment_external = 5 } }
+				if = { limit = { has_idea = CHI_lenovo_enterprise_server_platform } add_to_variable = { ai_race_deployment_external = 5 } }
+				if = { limit = { has_country_flag = CHI_huawei_harmony_hms_full_ecosystem } add_to_variable = { ai_race_deployment_external = 3 } }
+				if = { limit = { has_country_flag = CHI_huawei_openharmony_federation } add_to_variable = { ai_race_deployment_external = 3 } }
+				# Capability extra: national research complex (CETC) boolean bonus
+				if = { limit = { has_idea = CHI_cetc_innovation_idea } add_to_variable = { ai_race_capability_external = 5 } }
+				# Control capacity: fallback from silicon_autonomy only (no dedicated Huawei control axis)
+				set_variable = { ai_race_control_capacity_external = { value = CHI_huawei_silicon_autonomy multiply = 10 } }
+				if = { limit = { has_idea = CHI_national_security_commission_3 } add_to_variable = { ai_race_control_capacity_external = 15 } }
+				else_if = { limit = { has_idea = CHI_national_security_commission_2 } add_to_variable = { ai_race_control_capacity_external = 10 } }
+				else_if = { limit = { has_idea = CHI_national_security_commission_1 } add_to_variable = { ai_race_control_capacity_external = 5 } }
+				if = { limit = { check_variable = { CHI_ic_inf_nsc > 0 } } add_to_variable = { ai_race_control_capacity_external = 5 } }
+				# Public confidence: prefer publicity_department tiers; fallback to a reduced Huawei trusted access proxy
+				clear_temp_variable = _pc
+				if = { limit = { has_idea = CHI_publicity_department_3 } set_temp_variable = { _pc = 30 } }
+				else_if = { limit = { has_idea = CHI_publicity_department_2 } set_temp_variable = { _pc = 20 } }
+				else_if = { limit = { has_idea = CHI_publicity_department_1 } set_temp_variable = { _pc = 10 } }
+				if = {
+					limit = { check_variable = { _pc = 0 } }
+					set_temp_variable = { _pc = { value = CHI_huawei_trusted_market_access multiply = 5 } }
+				}
+				set_variable = { ai_race_public_confidence_external = _pc }
+				ai_race_repair_country_state = yes
+			}
+			else = {
+				# Corporate History Off or uninitialized: use ordinary tech and research slots.
+				clear_temp_variable = _cap_tmp
+				if = { limit = { has_tech = artificial_intelligence_1 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_2 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_3 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_4 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_5 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_6 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_7 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_8 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_9 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_10 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_11 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_12 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_13 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_14 } add_to_temp_variable = { _cap_tmp = 5 } }
+				set_variable = { ai_race_capability_external = _cap_tmp }
+				set_temp_variable = { _cmp_tmp = { value = research_slots_from_gdp multiply = 10 } }
+				add_to_temp_variable = { _cmp_tmp = { value = research_slots_from_gdp_c multiply = 10 } }
+				if = { limit = { has_idea = CHI_semiconductor_backwardness } subtract_from_temp_variable = { _cmp_tmp = 20 } }
+				set_variable = { ai_race_compute_external = _cmp_tmp }
+				set_temp_variable = { _tal_tmp = { value = research_slots_from_gdp multiply = 10 } }
+				add_to_temp_variable = { _tal_tmp = { value = research_slots_from_gdp_c multiply = 10 } }
+				set_variable = { ai_race_talent_external = _tal_tmp }
+				# Read starting policy ideas when present
+				if = { limit = { has_idea = edu_02 } add_to_variable = { ai_race_talent_external = 5 } }
+				if = { limit = { has_idea = police_04 } add_to_variable = { ai_race_control_capacity_external = 5 } }
+				ai_race_repair_country_state = yes
+			}
+		}
+
+		set_variable = { ai_race_capability = ai_race_capability_stock }
+		add_to_variable = { ai_race_capability = ai_race_capability_external }
+		set_variable = { ai_race_compute = ai_race_compute_stock }
+		add_to_variable = { ai_race_compute = ai_race_compute_external }
+		set_variable = { ai_race_talent = ai_race_talent_stock }
+		add_to_variable = { ai_race_talent = ai_race_talent_external }
+		set_variable = { ai_race_deployment = ai_race_deployment_stock }
+		add_to_variable = { ai_race_deployment = ai_race_deployment_external }
+		set_variable = { ai_race_control_capacity = ai_race_control_capacity_stock }
+		add_to_variable = { ai_race_control_capacity = ai_race_control_capacity_external }
+		set_variable = { ai_race_public_confidence = ai_race_public_confidence_stock }
+		add_to_variable = { ai_race_public_confidence = ai_race_public_confidence_external }
+		ai_race_repair_country_state = yes
+	}
+}
+
+ai_race_refresh_participants = {
+	clear_array = global.ai_race_participants
+	clear_array = global.ai_race_ranked_participants
+	USA = {
+		if = {
+			limit = { ai_race_eligible_participant = yes }
+			ai_race_initialize_country = yes
+			add_to_array = { global.ai_race_participants = THIS }
+		}
+		else_if = {
+			limit = { ai_race_country_initialized = yes }
+			clr_country_flag = AI_RACE_active
+			clear_variable = ai_race_rank
+		}
+	}
+	CHI = {
+		if = {
+			limit = { ai_race_eligible_participant = yes }
+			ai_race_initialize_country = yes
+			add_to_array = { global.ai_race_participants = THIS }
+		}
+		else_if = {
+			limit = { ai_race_country_initialized = yes }
+			clr_country_flag = AI_RACE_active
+			clear_variable = ai_race_rank
+		}
+	}
+}
+
+ai_race_rebuild_frontier_and_ranking = {
+	clear_array = global.ai_race_ranked_participants
+	clear_variable = global.ai_race_frontier_capability
+	clear_variable = global.ai_race_leader_id
+
+	if = {
+		limit = {
+			USA = { ai_race_active = yes }
+			CHI = { ai_race_active = yes }
+		}
+		# Frontier/leader and ranking remain capability-only; USA wins exact ties
+		set_temp_variable = { _usa_cap = USA.ai_race_capability }
+		set_temp_variable = { _chi_cap = CHI.ai_race_capability }
+		if = {
+			limit = { check_variable = { _chi_cap > _usa_cap } }
+			add_to_array = { global.ai_race_ranked_participants = CHI }
+			add_to_array = { global.ai_race_ranked_participants = USA }
+			set_variable = { global.ai_race_frontier_capability = _chi_cap }
+			set_variable = { global.ai_race_leader_id = CHI.id }
+			CHI = { set_variable = { ai_race_rank = 1 } }
+			USA = { set_variable = { ai_race_rank = 2 } }
+		}
+		else = {
+			add_to_array = { global.ai_race_ranked_participants = USA }
+			add_to_array = { global.ai_race_ranked_participants = CHI }
+			set_variable = { global.ai_race_frontier_capability = _usa_cap }
+			set_variable = { global.ai_race_leader_id = USA.id }
+			USA = { set_variable = { ai_race_rank = 1 } }
+			CHI = { set_variable = { ai_race_rank = 2 } }
+		}
+	}
+	else_if = {
+		limit = { USA = { ai_race_active = yes } }
+		add_to_array = { global.ai_race_ranked_participants = USA }
+		set_variable = { global.ai_race_frontier_capability = USA.ai_race_capability }
+		set_variable = { global.ai_race_leader_id = USA.id }
+		USA = { set_variable = { ai_race_rank = 1 } }
+	}
+	else_if = {
+		limit = { CHI = { ai_race_active = yes } }
+		add_to_array = { global.ai_race_ranked_participants = CHI }
+		set_variable = { global.ai_race_frontier_capability = CHI.ai_race_capability }
+		set_variable = { global.ai_race_leader_id = CHI.id }
+		CHI = { set_variable = { ai_race_rank = 1 } }
+	}
+
+	for_each_loop = {
+		array = global.ai_race_participants
+		value = ai_race_participant
+		var:ai_race_participant = {
+			set_variable = { ai_race_frontier_gap = ai_race_capability }
+			subtract_from_variable = { ai_race_frontier_gap = global.ai_race_frontier_capability }
+			ai_race_repair_country_state = yes
+		}
+	}
+}
+
+ai_race_repair_global_state = {
+	if = {
+		limit = {
+			ai_race_enabled = yes
+			has_global_flag = GLOBAL_ai_race_initialized
+		}
+		clamp_variable = { var = global.ai_race_frontier_capability min = 0 max = 100 }
+		clamp_variable = { var = global.ai_race_temperature min = 0 max = 100 }
+		clamp_variable = { var = global.ai_race_frontier_pressure min = 0 max = 100 }
+		clamp_variable = { var = global.ai_race_epoch min = 0 }
+		clamp_variable = { var = global.ai_race_dirty_update_var min = 0 }
+	}
+}
+
+ai_race_initialize_global = {
+	if = {
+		limit = {
+			ai_race_enabled = yes
+			NOT = { has_global_flag = GLOBAL_ai_race_initialized }
+		}
+		clear_array = global.ai_race_participants
+		clear_array = global.ai_race_ranked_participants
+		clear_variable = global.ai_race_frontier_capability
+		clear_variable = global.ai_race_temperature
+		clear_variable = global.ai_race_frontier_pressure
+		clear_variable = global.ai_race_leader_id
+		clear_variable = global.ai_race_epoch
+		clear_variable = global.ai_race_last_processed_quarter
+		clear_variable = global.ai_race_dirty_update_var
+		set_global_flag = GLOBAL_ai_race_initialized
+		# Publish a current projection on the first eligible pulse without advancing scheduled state.
+		ai_race_rebuild_derived_state = yes
+	}
+}
+
+ai_race_rebuild_derived_state = {
+	if = {
+		limit = {
+			ai_race_enabled = yes
+			has_global_flag = GLOBAL_ai_race_initialized
+		}
+		ai_race_refresh_participants = yes
+		for_each_loop = {
+			array = global.ai_race_participants
+			value = ai_race_participant
+			var:ai_race_participant = { ai_race_rebuild_country_metrics = yes }
+		}
+		ai_race_rebuild_frontier_and_ranking = yes
+		ai_race_repair_global_state = yes
+	}
+}
+
+ai_race_quarterly_reconcile = {
+	if = {
+		limit = {
+			ai_race_enabled = yes
+			has_global_flag = GLOBAL_ai_race_initialized
+		}
+		ai_race_rebuild_derived_state = yes
+		add_to_variable = { global.ai_race_epoch = 1 }
+		if = {
+			limit = { check_variable = { global.ai_race_dirty_update_var < 10000 } }
+			add_to_variable = { global.ai_race_dirty_update_var = 1 }
+		}
+		else = {
+			set_variable = { global.ai_race_dirty_update_var = 1 }
+		}
+	}
+}
+
+ai_race_teardown_global = {
+	if = {
+		limit = { has_global_flag = GLOBAL_ai_race_initialized }
+		for_each_loop = {
+			array = global.ai_race_participants
+			value = ai_race_participant
+			var:ai_race_participant = { ai_race_clear_country_state = yes }
+		}
+		USA = { ai_race_clear_country_state = yes }
+		CHI = { ai_race_clear_country_state = yes }
+		clear_array = global.ai_race_participants
+		clear_array = global.ai_race_ranked_participants
+		clear_variable = global.ai_race_frontier_capability
+		clear_variable = global.ai_race_temperature
+		clear_variable = global.ai_race_frontier_pressure
+		clear_variable = global.ai_race_leader_id
+		clear_variable = global.ai_race_epoch
+		clear_variable = global.ai_race_last_processed_quarter
+		clear_variable = global.ai_race_dirty_update_var
+		clr_global_flag = GLOBAL_ai_race_initialized
+	}
+}
+
+ai_race_monthly_dispatch = {
+	if = {
+		limit = { ai_race_enabled = yes }
+		ai_race_initialize_global = yes
+		if = {
+			limit = {
+				OR = {
+					check_variable = { global.month = 1 }
+					check_variable = { global.month = 4 }
+					check_variable = { global.month = 7 }
+					check_variable = { global.month = 10 }
+				}
+			}
+			set_temp_variable = { ai_race_current_quarter = global.year }
+			multiply_temp_variable = { ai_race_current_quarter = 4 }
+			if = {
+				limit = { check_variable = { global.month = 1 } }
+				add_to_temp_variable = { ai_race_current_quarter = 1 }
+			}
+			else_if = {
+				limit = { check_variable = { global.month = 4 } }
+				add_to_temp_variable = { ai_race_current_quarter = 2 }
+			}
+			else_if = {
+				limit = { check_variable = { global.month = 7 } }
+				add_to_temp_variable = { ai_race_current_quarter = 3 }
+			}
+			else = {
+				add_to_temp_variable = { ai_race_current_quarter = 4 }
+			}
+			if = {
+				limit = {
+					NOT = { check_variable = { global.ai_race_last_processed_quarter = ai_race_current_quarter } }
+				}
+				ai_race_quarterly_reconcile = yes
+				set_variable = { global.ai_race_last_processed_quarter = ai_race_current_quarter }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_global_flag = GLOBAL_ai_race_initialized }
+		ai_race_teardown_global = yes
+	}
+}
+
+ai_race_debug_repair = {
+	if = {
+		limit = {
+			is_debug = yes
+			ai_race_enabled = yes
+		}
+		ai_race_initialize_global = yes
+		ai_race_rebuild_derived_state = yes
+	}
+}
+
+ai_race_debug_log_state = {
+	if = {
+		limit = {
+			is_debug = yes
+			ai_race_enabled = yes
+			has_global_flag = GLOBAL_ai_race_initialized
+		}
+		log = "[GetDateText]: Great AI Race epoch [?global.ai_race_epoch], frontier [?global.ai_race_frontier_capability], temperature [?global.ai_race_temperature], pressure [?global.ai_race_frontier_pressure], participants [?global.ai_race_participants^num]"
+		for_each_loop = {
+			array = global.ai_race_ranked_participants
+			value = ai_race_participant
+			var:ai_race_participant = {
+				# Canonical inputs snapshot (owner systems are read-only)
+				if = {
+					limit = { original_tag = USA }
+					log = "[GetDateText]: [THIS.GetName]: USA AI Core inputs: frontier_capability [?USA_ai_core_frontier_capability], compute_depth [?USA_ai_core_compute_depth], openness [?USA_ai_core_ecosystem_openness], alignment [?USA_ai_core_state_alignment], infra_burden [?USA_ai_core_infrastructure_burden], legitimacy [?USA_ai_core_public_legitimacy]"
+				}
+				else_if = {
+					limit = { original_tag = CHI }
+					log = "[GetDateText]: [THIS.GetName]: Huawei inputs: carrier_reach [?CHI_huawei_carrier_reach], standards [?CHI_huawei_standards_leverage], consumer [?CHI_huawei_consumer_position], silicon_autonomy [?CHI_huawei_silicon_autonomy], software_ecosystem [?CHI_huawei_software_ecosystem], supply_resilience [?CHI_huawei_supply_resilience], trusted_access [?CHI_huawei_trusted_market_access]"
+				}
+				# External contributions rebuilt this quarter
+				log = "[GetDateText]: [THIS.GetName]: External: cap [?ai_race_capability_external|0], compute [?ai_race_compute_external|0], talent [?ai_race_talent_external|0], deploy [?ai_race_deployment_external|0], control [?ai_race_control_capacity_external|0], confidence [?ai_race_public_confidence_external|0]"
+				# Effective totals
+				log = "[GetDateText]: [THIS.GetName]: Effective: cap [?ai_race_capability], compute [?ai_race_compute], talent [?ai_race_talent], deploy [?ai_race_deployment], control [?ai_race_control_capacity], confidence [?ai_race_public_confidence], gap [?ai_race_frontier_gap|+0], rank [?ai_race_rank]"
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			is_debug = yes
+			ai_race_disabled = yes
+		}
+		log = "[GetDateText]: Great AI Race is disabled; no state was created"
+	}
+}

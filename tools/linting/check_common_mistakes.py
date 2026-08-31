@@ -75,6 +75,8 @@ Detects mechanically-checkable rule violations from CLAUDE.md:
     define (a vanilla archetype MD renamed, or a miscased variant)
   - has_active_mission / has_active_decision / has_active_timed_decision naming
     no decision (the trigger reads false forever)
+  - has_game_rule naming no mod-defined rule or an option not declared by that
+    rule (the trigger reads false forever)
   - add_opinion_modifier / add_relation_modifier naming an undefined modifier
 """
 
@@ -164,6 +166,14 @@ _RE_ACTIVE_DECISION = re.compile(
     r"\s*=\s*([A-Za-z_]\w*)"
 )
 _RE_DECISION_ENTRY = re.compile(r"^\t(\w+)\s*=\s*\{", re.M)
+_RE_HAS_GAME_RULE_OPEN = re.compile(r"\bhas_game_rule\s*=\s*\{")
+_RE_HAS_GAME_RULE_RULE = re.compile(r"\brule\s*=\s*([A-Za-z_][\w-]*)(?=\s|})")
+_RE_HAS_GAME_RULE_OPTION = re.compile(r"\boption\s*=\s*([A-Za-z_][\w-]*)(?=\s|})")
+_RE_GAME_RULE_ENTRY = re.compile(r"^([A-Za-z_][\w-]*)\s*=\s*\{")
+_RE_GAME_RULE_CHOICE = re.compile(r"^\s*(?:default|option)\s*=\s*\{")
+_RE_GAME_RULE_NAME = re.compile(
+    r'\bname\s*=\s*(?:"([A-Za-z_][\w-]*)"|([A-Za-z_][\w-]*))'
+)
 _RE_RELATION_MODIFIER = re.compile(
     r"\badd_(relation|opinion)_modifier\s*=\s*\{[^{}]*?\bmodifier\s*=\s*([A-Za-z_]\w*)"
 )
@@ -2125,6 +2135,58 @@ def _decision_ids():
 
 
 @lru_cache(maxsize=None)
+def _game_rule_options():
+    """Mod-defined game-rule ids mapped to their default and option names."""
+    directory = os.path.join(_mod_root(), "common", "game_rules")
+    if not os.path.isdir(directory):
+        return None
+
+    catalog = {}
+    for root, _, filenames in os.walk(directory):
+        for filename in sorted(filenames):
+            if not filename.endswith(".txt"):
+                continue
+            try:
+                with open(
+                    os.path.join(root, filename),
+                    "r",
+                    encoding="utf-8",
+                    errors="replace",
+                ) as handle:
+                    lines = handle.readlines()
+            except OSError:
+                continue
+
+            index = 0
+            while index < len(lines):
+                entry = _RE_GAME_RULE_ENTRY.match(_code_for_depth(lines[index]))
+                if entry is None:
+                    index += 1
+                    continue
+
+                block_lines, next_index = _get_block(lines, index)
+                options = catalog.setdefault(entry.group(1), set())
+                depth = 0
+                for block_index, line in enumerate(block_lines):
+                    code = _code_for_depth(line)
+                    if depth == 1 and _RE_GAME_RULE_CHOICE.match(code):
+                        choice_lines, _ = _get_block(block_lines, block_index)
+                        choice_text = "".join(
+                            strip_inline_comment(choice_line)
+                            for choice_line in choice_lines
+                        )
+                        name = _RE_GAME_RULE_NAME.search(choice_text)
+                        if name:
+                            options.add(name.group(1) or name.group(2))
+                    depth += code.count("{") - code.count("}")
+                index = next_index
+
+    if not catalog:
+        return None
+    return {rule: frozenset(options) for rule, options in catalog.items()}
+
+
+@lru_cache(maxsize=None)
 def _opinion_modifier_names():
     """Every opinion modifier in common/opinion_modifiers/ (one tab in)."""
     text = _read_dir_text("common", "opinion_modifiers")
@@ -2307,6 +2369,77 @@ def _check_active_decision_defined(lines):
                     f"common/decisions/ -- the trigger is always false",
                 )
             )
+    return issues
+
+
+def _casefold_match(value, candidates):
+    return next(
+        (
+            candidate
+            for candidate in sorted(candidates)
+            if candidate.casefold() == value.casefold()
+        ),
+        None,
+    )
+
+
+def _check_has_game_rule_defined(lines):
+    """Flag literal has_game_rule references that cannot resolve in mod rules."""
+    issues = []
+    text = _joined_code(lines)
+    for match in _RE_HAS_GAME_RULE_OPEN.finditer(text):
+        body = _block_body(text, match.end())
+        rule_match = _RE_HAS_GAME_RULE_RULE.search(body)
+        option_match = _RE_HAS_GAME_RULE_OPTION.search(body)
+        if rule_match is None or option_match is None:
+            continue
+
+        catalog = _game_rule_options()
+        if catalog is None:
+            continue
+
+        rule = rule_match.group(1)
+        option = option_match.group(1)
+        if rule not in catalog:
+            canonical = _casefold_match(rule, catalog)
+            if canonical:
+                message = (
+                    f"has_game_rule rule = {rule} differs in case from {canonical} "
+                    "-- game-rule references are case-sensitive"
+                )
+            else:
+                message = (
+                    f"has_game_rule rule = {rule} is not defined in "
+                    "common/game_rules/ -- the trigger is always false"
+                )
+            issues.append(
+                (
+                    text.count("\n", 0, match.end() + rule_match.start()) + 1,
+                    message,
+                )
+            )
+            continue
+
+        options = catalog[rule]
+        if option in options:
+            continue
+        canonical = _casefold_match(option, options)
+        if canonical:
+            message = (
+                f"has_game_rule option = {option} differs in case from {canonical} "
+                f"for rule = {rule} -- game-rule references are case-sensitive"
+            )
+        else:
+            message = (
+                f"has_game_rule option = {option} is not defined for rule = {rule} "
+                "-- the trigger is always false"
+            )
+        issues.append(
+            (
+                text.count("\n", 0, match.end() + option_match.start()) + 1,
+                message,
+            )
+        )
     return issues
 
 
@@ -3495,6 +3628,7 @@ def check_file(filepath):
     issues.extend(_check_equipment_bonus(lines))
     issues.extend(_check_equipment_type_defined(lines))
     issues.extend(_check_active_decision_defined(lines))
+    issues.extend(_check_has_game_rule_defined(lines))
     issues.extend(_check_modifier_ref_defined(lines))
     if is_common_or_events_file:
         issues.extend(_check_every_owned_controlled_state(lines))
