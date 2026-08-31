@@ -1,5 +1,5 @@
 # The race owns only AI_RACE/ai_race state. External contributions are rebuilt from canonical
-# owners and never written back; Phase 1 clears those adapter slots so they read as zero.
+# owners and never written back; each rebuild clears adapter slots before reading current sources.
 
 ai_race_clear_country_state = {
 	clear_variable = ai_race_capability_stock
@@ -100,14 +100,12 @@ ai_race_rebuild_country_metrics = {
 				}
 				# Direct axis mapping to externals (×10 scale-up)
 				set_variable = { ai_race_capability_external = { value = USA_ai_core_frontier_capability multiply = 10 } }
-				# Compute: compute_depth ×10, then subtract bounded penalties from infra burden and energy shortfalls
+				# Compute: compute_depth ×10, then subtract bounded penalties from infra burden and post-storage energy shortfalls
 				set_variable = { ai_race_compute_external = { value = USA_ai_core_compute_depth multiply = 10 } }
 				if = {
 					limit = { check_variable = { USA_ai_core_infrastructure_burden > 0 } }
 					subtract_from_variable = { ai_race_compute_external = { value = USA_ai_core_infrastructure_burden multiply = 5 } }
 				}
-				if = { limit = { check_variable = { energy_balance < 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
-				if = { limit = { check_variable = { unfulfilled_energy_demand_var > 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
 				if = { limit = { check_variable = { energy_difference_variable < 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
 				# Control capacity: state_alignment ×10
 				# Split alignment influence between control and deployment; do not copy it 1:1 into both.
@@ -172,8 +170,6 @@ ai_race_rebuild_country_metrics = {
 					}
 				}
 				set_variable = { ai_race_compute_external = _cmp_raw }
-				if = { limit = { check_variable = { energy_balance < 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
-				if = { limit = { check_variable = { unfulfilled_energy_demand_var > 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
 				if = { limit = { check_variable = { energy_difference_variable < 0 } } subtract_from_variable = { ai_race_compute_external = 10 } }
 				# Optional Linux stack: very small overlay, only if linux_system_initialized
 				if = {
@@ -287,6 +283,12 @@ ai_race_rebuild_country_metrics = {
 				if = { limit = { has_tech = artificial_intelligence_6 } add_to_temp_variable = { _cap_tmp = 5 } }
 				if = { limit = { has_tech = artificial_intelligence_7 } add_to_temp_variable = { _cap_tmp = 5 } }
 				if = { limit = { has_tech = artificial_intelligence_8 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_9 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_10 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_11 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_12 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_13 } add_to_temp_variable = { _cap_tmp = 5 } }
+				if = { limit = { has_tech = artificial_intelligence_14 } add_to_temp_variable = { _cap_tmp = 5 } }
 				set_variable = { ai_race_capability_external = _cap_tmp }
 				set_temp_variable = { _cmp_tmp = { value = research_slots_from_gdp multiply = 10 } }
 				add_to_temp_variable = { _cmp_tmp = { value = research_slots_from_gdp_c multiply = 10 } }
@@ -434,8 +436,8 @@ ai_race_initialize_global = {
 		clear_variable = global.ai_race_last_processed_quarter
 		clear_variable = global.ai_race_dirty_update_var
 		set_global_flag = GLOBAL_ai_race_initialized
-		ai_race_refresh_participants = yes
-		ai_race_repair_global_state = yes
+		# Publish a current projection on the first eligible pulse without advancing scheduled state.
+		ai_race_rebuild_derived_state = yes
 	}
 }
 
