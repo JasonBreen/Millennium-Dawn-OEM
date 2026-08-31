@@ -502,7 +502,7 @@ def test_capstone_priority_ideas_and_completion_paths_are_authoritative():
         assert f"add_ideas = {idea}" in applicator
         idea_definition = _idea_block(ideas, idea)
         assert "picture = generic_intel_bonus" in idea_definition
-        assert "allowed = { original_tag = USA }" in idea_definition
+        assert "allowed =" not in idea_definition
         assert len(re.findall(r"(?m)^\t\t\t\t[A-Za-z0-9_]+\s*=", idea_definition)) <= 5
 
     resolve = _named_block(effects, "USA_intel_resolve_history")

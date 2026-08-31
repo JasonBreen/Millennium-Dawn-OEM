@@ -522,6 +522,26 @@ def test_event_inventory_is_eighteen_visible_plus_hidden_reconstruction():
     assert "hide_window = yes" in hidden or "hidden = yes" in hidden
 
 
+def test_elbrus_event_has_a_treasury_free_bankruptcy_fallback():
+    events = EVENTS_PATH.read_text(encoding="utf-8")
+    fallback = _event_option_block(
+        _event_block(events, 1), "SOV_computing_sovereignty_events.1.e"
+    )
+
+    assert "trigger = { has_active_mission = bankruptcy_incoming_collapse }" in fallback
+    assert "ai_chance = { base = 100 }" in fallback
+    assert "modify_treasury_effect" not in fallback
+    assert "treasury_change" not in fallback
+    canonical_effect = "SOV_computing_sovereignty_apply_elbrus_fabless = yes"
+    derived_preview = f"effect_tooltip = {{ {canonical_effect} }}"
+    custom_explanation = (
+        "custom_effect_tooltip = SOV_computing_sovereignty_events.1.e_tt"
+    )
+    assert derived_preview in fallback
+    assert fallback.count(canonical_effect) == 2
+    assert fallback.index(derived_preview) < fallback.index(custom_explanation)
+
+
 def test_reconstruction_is_silent_and_never_grants_advanced_hvm():
     effects = EFFECTS_PATH.read_text(encoding="utf-8")
     direct_reconstruct = _named_block(
