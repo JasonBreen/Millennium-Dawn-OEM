@@ -1,0 +1,636 @@
+# ASML corporate-history: state, reconstruction, scheduling, dispatchers, and capstone
+#
+# Root prefix: HOL_asml
+# Namespace: HOL_asml_events (events/HOL_asml_events.txt)
+# Tag: HOL
+#
+# Conventions:
+# - Variables are integers clamped 0..10 via corporate_history_clamp_value
+# - All effects are idempotent and logged via event-option logs or dispatcher logs
+# - Visible events are is_triggered_only and owned by the yearly dispatcher
+#
+
+HOL_asml_initialize_state = {
+	if = {
+		limit = { NOT = { has_country_flag = HOL_asml_state_initialized } }
+		set_variable = { HOL_asml_lithography_leadership = 1 }
+		set_variable = { HOL_asml_supply_chain_depth = 1 }
+		set_variable = { HOL_asml_export_alignment = 1 }
+		set_country_flag = HOL_asml_state_initialized
+	}
+	HOL_asml_clamp_state = yes
+}
+
+HOL_asml_clamp_state = {
+	set_temp_variable = { corp_value = HOL_asml_lithography_leadership }
+	corporate_history_clamp_value = yes
+	set_variable = { HOL_asml_lithography_leadership = corp_value }
+	set_temp_variable = { corp_value = HOL_asml_supply_chain_depth }
+	corporate_history_clamp_value = yes
+	set_variable = { HOL_asml_supply_chain_depth = corp_value }
+	set_temp_variable = { corp_value = HOL_asml_export_alignment }
+	corporate_history_clamp_value = yes
+	set_variable = { HOL_asml_export_alignment = corp_value }
+}
+
+# Milestone recorders (historical-A defaults)
+
+HOL_asml_record_immersion_bet = {
+	set_country_flag = HOL_asml_immersion_bet_committed
+	add_to_variable = { HOL_asml_lithography_leadership = 1 }
+	HOL_asml_clamp_state = yes
+}
+
+HOL_asml_record_xt1250i_delivery = {
+	set_country_flag = HOL_asml_xt1250i_shipped
+	add_to_variable = { HOL_asml_supply_chain_depth = 1 }
+	HOL_asml_clamp_state = yes
+}
+
+HOL_asml_record_alpha_demo_tools = {
+	set_country_flag = HOL_asml_alpha_demo_tools_broadened
+	add_to_variable = { HOL_asml_lithography_leadership = 1 }
+	HOL_asml_clamp_state = yes
+}
+
+HOL_asml_record_nxe3100_first_light = {
+	set_country_flag = HOL_asml_nxe3100_first_light
+	add_to_variable = { HOL_asml_lithography_leadership = 1 }
+	add_to_variable = { HOL_asml_supply_chain_depth = 1 }
+	HOL_asml_clamp_state = yes
+}
+
+HOL_asml_record_ccip = {
+	set_country_flag = HOL_asml_ccip_expanded
+	add_to_variable = { HOL_asml_supply_chain_depth = 1 }
+	HOL_asml_clamp_state = yes
+}
+
+HOL_asml_record_cymer_acquisition = {
+	set_country_flag = HOL_asml_cymer_integrated
+	add_to_variable = { HOL_asml_supply_chain_depth = 2 }
+	HOL_asml_clamp_state = yes
+}
+
+HOL_asml_record_zeiss_smt_stake = {
+	set_country_flag = HOL_asml_zeiss_smt_integration
+	add_to_variable = { HOL_asml_supply_chain_depth = 1 }
+	HOL_asml_clamp_state = yes
+}
+
+HOL_asml_record_euv_hvm = {
+	set_country_flag = HOL_asml_euv_hvm_cadence
+	add_to_variable = { HOL_asml_lithography_leadership = 2 }
+	HOL_asml_clamp_state = yes
+}
+
+HOL_asml_record_euv_china_license_nonrenewal = {
+	set_country_flag = HOL_asml_euv_china_license_nonrenewal
+	add_to_variable = { HOL_asml_export_alignment = 2 }
+	add_to_variable = { HOL_asml_supply_chain_depth = -1 }
+	HOL_asml_clamp_state = yes
+}
+
+HOL_asml_record_advanced_duv_licensing = {
+	set_country_flag = HOL_asml_advanced_duv_controls
+	add_to_variable = { HOL_asml_export_alignment = 1 }
+	HOL_asml_clamp_state = yes
+}
+
+HOL_asml_record_high_na_exe = {
+	set_country_flag = HOL_asml_high_na_exe_deployed
+	add_to_variable = { HOL_asml_lithography_leadership = 2 }
+	HOL_asml_clamp_state = yes
+}
+
+# Route selection (capstone)
+
+HOL_asml_clear_route = {
+	clr_country_flag = HOL_asml_route_chokepoint_steward
+	clr_country_flag = HOL_asml_route_triad_supply_sovereign
+	clr_country_flag = HOL_asml_route_open_market_maximizer
+	clr_country_flag = HOL_asml_route_dual_use_gatekeeper
+	clr_country_flag = HOL_asml_route_balanced_anchor
+}
+
+HOL_asml_record_route_chokepoint_steward = {
+	HOL_asml_clear_route = yes
+	set_country_flag = HOL_asml_route_chokepoint_steward
+}
+
+HOL_asml_record_route_triad_supply_sovereign = {
+	HOL_asml_clear_route = yes
+	set_country_flag = HOL_asml_route_triad_supply_sovereign
+}
+
+HOL_asml_record_route_open_market_maximizer = {
+	HOL_asml_clear_route = yes
+	set_country_flag = HOL_asml_route_open_market_maximizer
+}
+
+HOL_asml_record_route_dual_use_gatekeeper = {
+	HOL_asml_clear_route = yes
+	set_country_flag = HOL_asml_route_dual_use_gatekeeper
+}
+
+HOL_asml_record_route_balanced_anchor = {
+	HOL_asml_clear_route = yes
+	set_country_flag = HOL_asml_route_balanced_anchor
+}
+
+# Capstone outcomes (exactly one idea)
+
+HOL_asml_clear_capstone_outcome = {
+	remove_ideas = {
+		HOL_asml_chokepoint_steward
+		HOL_asml_triad_supply_sovereign
+		HOL_asml_open_market_maximizer
+		HOL_asml_dual_use_gatekeeper
+		HOL_asml_balanced_atlantic_anchor
+	}
+	clr_country_flag = HOL_asml_capstone_resolved
+}
+
+HOL_asml_apply_chokepoint_steward = {
+	HOL_asml_clear_capstone_outcome = yes
+	add_ideas = HOL_asml_chokepoint_steward
+	set_country_flag = HOL_asml_capstone_resolved
+}
+
+HOL_asml_apply_triad_supply_sovereign = {
+	HOL_asml_clear_capstone_outcome = yes
+	add_ideas = HOL_asml_triad_supply_sovereign
+	set_country_flag = HOL_asml_capstone_resolved
+}
+
+HOL_asml_apply_open_market_maximizer = {
+	HOL_asml_clear_capstone_outcome = yes
+	add_ideas = HOL_asml_open_market_maximizer
+	set_country_flag = HOL_asml_capstone_resolved
+}
+
+HOL_asml_apply_dual_use_gatekeeper = {
+	HOL_asml_clear_capstone_outcome = yes
+	add_ideas = HOL_asml_dual_use_gatekeeper
+	set_country_flag = HOL_asml_capstone_resolved
+}
+
+HOL_asml_apply_balanced_anchor = {
+	HOL_asml_clear_capstone_outcome = yes
+	add_ideas = HOL_asml_balanced_atlantic_anchor
+	set_country_flag = HOL_asml_capstone_resolved
+}
+
+HOL_asml_resolve_capstone = {
+	HOL_asml_initialize_state = yes
+	if = {
+		limit = { NOT = { has_country_flag = HOL_asml_capstone_resolved } }
+		if = { limit = { has_country_flag = HOL_asml_route_chokepoint_steward } HOL_asml_apply_chokepoint_steward = yes }
+		else_if = { limit = { has_country_flag = HOL_asml_route_triad_supply_sovereign } HOL_asml_apply_triad_supply_sovereign = yes }
+		else_if = { limit = { has_country_flag = HOL_asml_route_open_market_maximizer } HOL_asml_apply_open_market_maximizer = yes }
+		else_if = { limit = { has_country_flag = HOL_asml_route_dual_use_gatekeeper } HOL_asml_apply_dual_use_gatekeeper = yes }
+		else = { HOL_asml_apply_balanced_anchor = yes }
+	}
+}
+
+# Reconstruction
+
+HOL_asml_reconstruct_history = {
+	if = {
+		limit = { corporate_history_outcomes_only_enabled = yes }
+		HOL_asml_reconstruct_outcomes_history = yes
+	}
+	if = {
+		limit = {
+			date > 2026.9.1
+			has_country_flag = HOL_asml_capstone_resolved
+		}
+		set_country_flag = HOL_asml_reconstruct_complete
+	}
+}
+
+HOL_asml_reconstruct_outcomes_history = {
+	HOL_asml_initialize_state = yes
+
+	# 2003-06-01: Immersion bet committed
+	if = {
+		limit = { date > 2003.6.1 NOT = { has_country_flag = HOL_asml_immersion_bet_committed } }
+		HOL_asml_record_immersion_bet = yes
+	}
+	# 2004-04-01: XT:1250i shipped
+	if = {
+		limit = { date > 2004.4.1 NOT = { has_country_flag = HOL_asml_xt1250i_shipped } }
+		HOL_asml_record_xt1250i_delivery = yes
+	}
+	# 2006-10-01: Alpha Demo Tools broadened
+	if = {
+		limit = { date > 2006.10.1 NOT = { has_country_flag = HOL_asml_alpha_demo_tools_broadened } }
+		HOL_asml_record_alpha_demo_tools = yes
+	}
+	# 2010-03-01: NXE:3100 first light
+	if = {
+		limit = { date > 2010.3.1 NOT = { has_country_flag = HOL_asml_nxe3100_first_light } }
+		HOL_asml_record_nxe3100_first_light = yes
+	}
+	# 2012-07-01: CCIP expanded
+	if = {
+		limit = { date > 2012.7.1 NOT = { has_country_flag = HOL_asml_ccip_expanded } }
+		HOL_asml_record_ccip = yes
+	}
+	# 2013-05-01: Cymer integrated
+	if = {
+		limit = { date > 2013.5.1 NOT = { has_country_flag = HOL_asml_cymer_integrated } }
+		HOL_asml_record_cymer_acquisition = yes
+	}
+	# 2016-11-01: Zeiss SMT integration
+	if = {
+		limit = { date > 2016.11.1 NOT = { has_country_flag = HOL_asml_zeiss_smt_integration } }
+		HOL_asml_record_zeiss_smt_stake = yes
+	}
+	# 2019-07-01: EUV HVM cadence
+	if = {
+		limit = { date > 2019.7.1 NOT = { has_country_flag = HOL_asml_euv_hvm_cadence } }
+		HOL_asml_record_euv_hvm = yes
+	}
+	# 2019-12-01: EUV China license non-renewal
+	if = {
+		limit = { date > 2019.12.1 NOT = { has_country_flag = HOL_asml_euv_china_license_nonrenewal } }
+		HOL_asml_record_euv_china_license_nonrenewal = yes
+	}
+	# 2023-03-01: Advanced DUV licensing posture tightened
+	if = {
+		limit = { date > 2023.3.1 NOT = { has_country_flag = HOL_asml_advanced_duv_controls } }
+		HOL_asml_record_advanced_duv_licensing = yes
+	}
+	# 2024-06-01: High-NA EXE deployed to allies
+	if = {
+		limit = { date > 2024.6.1 NOT = { has_country_flag = HOL_asml_high_na_exe_deployed } }
+		HOL_asml_record_high_na_exe = yes
+	}
+
+	HOL_asml_clamp_state = yes
+
+	# Historical-A route choice applied silently at the route window when none is set
+	if = {
+		limit = {
+			date > 2026.8.31
+			NOT = { OR = {
+				has_country_flag = HOL_asml_route_chokepoint_steward
+				has_country_flag = HOL_asml_route_triad_supply_sovereign
+				has_country_flag = HOL_asml_route_open_market_maximizer
+				has_country_flag = HOL_asml_route_dual_use_gatekeeper
+				has_country_flag = HOL_asml_route_balanced_anchor
+			} }
+		}
+		HOL_asml_record_route_chokepoint_steward = yes
+	}
+
+	if = {
+		limit = { date > 2026.9.1 NOT = { has_country_flag = HOL_asml_capstone_resolved } }
+		HOL_asml_resolve_capstone = yes
+	}
+}
+
+# Prior-year recovery (defaults historical-A after year end)
+
+HOL_asml_recover_prior_year_history = {
+	HOL_asml_initialize_state = yes
+
+	if = {
+		limit = {
+			date > 2004.1.1
+			NOT = { has_country_flag = HOL_asml_immersion_bet_committed }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_1_pending }
+		}
+		set_country_flag = HOL_corporate_history_midyear_asml_events_1_resolved
+		clr_country_flag = HOL_corporate_history_midyear_asml_events_1_pending
+		HOL_asml_record_immersion_bet = yes
+	}
+	if = {
+		limit = {
+			date > 2005.1.1
+			NOT = { has_country_flag = HOL_asml_xt1250i_shipped }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_2_pending }
+		}
+		set_country_flag = HOL_corporate_history_midyear_asml_events_2_resolved
+		clr_country_flag = HOL_corporate_history_midyear_asml_events_2_pending
+		HOL_asml_record_xt1250i_delivery = yes
+	}
+	if = {
+		limit = {
+			date > 2007.1.1
+			NOT = { has_country_flag = HOL_asml_alpha_demo_tools_broadened }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_3_pending }
+		}
+		set_country_flag = HOL_corporate_history_midyear_asml_events_3_resolved
+		clr_country_flag = HOL_corporate_history_midyear_asml_events_3_pending
+		HOL_asml_record_alpha_demo_tools = yes
+	}
+	if = {
+		limit = {
+			date > 2011.1.1
+			NOT = { has_country_flag = HOL_asml_nxe3100_first_light }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_4_pending }
+		}
+		set_country_flag = HOL_corporate_history_midyear_asml_events_4_resolved
+		clr_country_flag = HOL_corporate_history_midyear_asml_events_4_pending
+		HOL_asml_record_nxe3100_first_light = yes
+	}
+	if = {
+		limit = {
+			date > 2013.1.1
+			NOT = { has_country_flag = HOL_asml_ccip_expanded }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_5_pending }
+		}
+		set_country_flag = HOL_corporate_history_midyear_asml_events_5_resolved
+		clr_country_flag = HOL_corporate_history_midyear_asml_events_5_pending
+		HOL_asml_record_ccip = yes
+	}
+	if = {
+		limit = {
+			date > 2014.1.1
+			NOT = { has_country_flag = HOL_asml_cymer_integrated }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_6_pending }
+		}
+		set_country_flag = HOL_corporate_history_midyear_asml_events_6_resolved
+		clr_country_flag = HOL_corporate_history_midyear_asml_events_6_pending
+		HOL_asml_record_cymer_acquisition = yes
+	}
+	if = {
+		limit = {
+			date > 2017.1.1
+			NOT = { has_country_flag = HOL_asml_zeiss_smt_integration }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_7_pending }
+		}
+		set_country_flag = HOL_corporate_history_midyear_asml_events_7_resolved
+		clr_country_flag = HOL_corporate_history_midyear_asml_events_7_pending
+		HOL_asml_record_zeiss_smt_stake = yes
+	}
+	if = {
+		limit = {
+			date > 2020.1.1
+			NOT = { has_country_flag = HOL_asml_euv_hvm_cadence }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_8_pending }
+		}
+		set_country_flag = HOL_corporate_history_midyear_asml_events_8_resolved
+		clr_country_flag = HOL_corporate_history_midyear_asml_events_8_pending
+		HOL_asml_record_euv_hvm = yes
+	}
+	if = {
+		limit = {
+			date > 2020.1.1
+			NOT = { has_country_flag = HOL_asml_euv_china_license_nonrenewal }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_9_pending }
+		}
+		set_country_flag = HOL_corporate_history_midyear_asml_events_9_resolved
+		clr_country_flag = HOL_corporate_history_midyear_asml_events_9_pending
+		HOL_asml_record_euv_china_license_nonrenewal = yes
+	}
+	if = {
+		limit = {
+			date > 2024.1.1
+			NOT = { has_country_flag = HOL_asml_advanced_duv_controls }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_10_pending }
+		}
+		set_country_flag = HOL_corporate_history_midyear_asml_events_10_resolved
+		clr_country_flag = HOL_corporate_history_midyear_asml_events_10_pending
+		HOL_asml_record_advanced_duv_licensing = yes
+	}
+	if = {
+		limit = {
+			date > 2025.1.1
+			NOT = { has_country_flag = HOL_asml_high_na_exe_deployed }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_11_pending }
+		}
+		set_country_flag = HOL_corporate_history_midyear_asml_events_11_resolved
+		clr_country_flag = HOL_corporate_history_midyear_asml_events_11_pending
+		HOL_asml_record_high_na_exe = yes
+	}
+	if = {
+		limit = {
+			date > 2027.1.1
+			NOT = { has_country_flag = HOL_asml_capstone_resolved }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_12_pending }
+		}
+		set_country_flag = HOL_corporate_history_midyear_asml_events_12_resolved
+		clr_country_flag = HOL_corporate_history_midyear_asml_events_12_pending
+		HOL_asml_record_route_chokepoint_steward = yes
+		HOL_asml_resolve_capstone = yes
+	}
+}
+
+# Current-year scheduler (startup safety net; the yearly dispatcher owns normal delivery)
+
+HOL_asml_schedule_current_year_events = {
+	if = { limit = { NOT = { has_country_flag = HOL_asml_start_year_events_scheduled } }
+
+		# 2003
+		if = {
+			limit = { NOT = { has_start_date < 2003.1.1 } has_start_date < 2003.1.2 NOT = { has_country_flag = HOL_asml_immersion_bet_committed } }
+			HOL_asml_dispatch_2003 = yes
+		}
+		# 2004
+		if = {
+			limit = { NOT = { has_start_date < 2004.1.1 } has_start_date < 2004.1.2 NOT = { has_country_flag = HOL_asml_xt1250i_shipped } }
+			HOL_asml_dispatch_2004 = yes
+		}
+		# 2006
+		if = {
+			limit = { NOT = { has_start_date < 2006.1.1 } has_start_date < 2006.1.2 NOT = { has_country_flag = HOL_asml_alpha_demo_tools_broadened } }
+			HOL_asml_dispatch_2006 = yes
+		}
+		# 2010
+		if = {
+			limit = { NOT = { has_start_date < 2010.1.1 } has_start_date < 2010.1.2 NOT = { has_country_flag = HOL_asml_nxe3100_first_light } }
+			HOL_asml_dispatch_2010 = yes
+		}
+		# 2012
+		if = {
+			limit = { NOT = { has_start_date < 2012.1.1 } has_start_date < 2012.1.2 NOT = { has_country_flag = HOL_asml_ccip_expanded } }
+			HOL_asml_dispatch_2012 = yes
+		}
+		# 2013
+		if = {
+			limit = { NOT = { has_start_date < 2013.1.1 } has_start_date < 2013.1.2 NOT = { has_country_flag = HOL_asml_cymer_integrated } }
+			HOL_asml_dispatch_2013 = yes
+		}
+		# 2016
+		if = {
+			limit = { NOT = { has_start_date < 2016.1.1 } has_start_date < 2016.1.2 NOT = { has_country_flag = HOL_asml_zeiss_smt_integration } }
+			HOL_asml_dispatch_2016 = yes
+		}
+		# 2019 HVM
+		if = {
+			limit = { NOT = { has_start_date < 2019.1.1 } has_start_date < 2019.1.2 NOT = { has_country_flag = HOL_asml_euv_hvm_cadence } }
+			HOL_asml_dispatch_2019_hvm = yes
+		}
+		# 2019 License non-renewal
+		if = {
+			limit = { NOT = { has_start_date < 2019.1.1 } has_start_date < 2019.1.2 NOT = { has_country_flag = HOL_asml_euv_china_license_nonrenewal } }
+			HOL_asml_dispatch_2019_license = yes
+		}
+		# 2023 Advanced DUV
+		if = {
+			limit = { NOT = { has_start_date < 2023.1.1 } has_start_date < 2023.1.2 NOT = { has_country_flag = HOL_asml_advanced_duv_controls } }
+			HOL_asml_dispatch_2023_duv = yes
+		}
+		# 2024 High-NA
+		if = {
+			limit = { NOT = { has_start_date < 2024.1.1 } has_start_date < 2024.1.2 NOT = { has_country_flag = HOL_asml_high_na_exe_deployed } }
+			HOL_asml_dispatch_2024_high_na = yes
+		}
+		# 2026 Capstone
+		if = {
+			limit = { NOT = { has_start_date < 2026.1.1 } has_start_date < 2026.1.2 NOT = { has_country_flag = HOL_asml_capstone_resolved } }
+			HOL_asml_dispatch_2026 = yes
+		}
+	}
+
+	set_country_flag = HOL_asml_start_year_events_scheduled
+}
+
+# Yearly dispatcher wrappers (hide direct event ids from core-namespace discovery)
+
+HOL_asml_dispatch_2003 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_1_resolved }
+			NOT = { has_country_flag = HOL_asml_immersion_bet_committed }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_1_pending }
+		}
+		set_country_flag = { flag = HOL_corporate_history_midyear_asml_events_1_pending days = 152 value = 1 }
+		country_event = { id = HOL_asml_events.1 days = 72 }
+	}
+}
+
+HOL_asml_dispatch_2004 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_2_resolved }
+			NOT = { has_country_flag = HOL_asml_xt1250i_shipped }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_2_pending }
+		}
+		set_country_flag = { flag = HOL_corporate_history_midyear_asml_events_2_pending days = 91 value = 1 }
+		country_event = { id = HOL_asml_events.2 days = 31 }
+	}
+}
+
+HOL_asml_dispatch_2006 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_3_resolved }
+			NOT = { has_country_flag = HOL_asml_alpha_demo_tools_broadened }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_3_pending }
+		}
+		set_country_flag = { flag = HOL_corporate_history_midyear_asml_events_3_pending days = 274 value = 1 }
+		country_event = { id = HOL_asml_events.3 days = 214 }
+	}
+}
+
+HOL_asml_dispatch_2010 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_4_resolved }
+			NOT = { has_country_flag = HOL_asml_nxe3100_first_light }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_4_pending }
+		}
+		set_country_flag = { flag = HOL_corporate_history_midyear_asml_events_4_pending days = 60 value = 1 }
+		country_event = { id = HOL_asml_events.4 days = 30 }
+	}
+}
+
+HOL_asml_dispatch_2012 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_5_resolved }
+			NOT = { has_country_flag = HOL_asml_ccip_expanded }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_5_pending }
+		}
+		set_country_flag = { flag = HOL_corporate_history_midyear_asml_events_5_pending days = 182 value = 1 }
+		country_event = { id = HOL_asml_events.5 days = 122 }
+	}
+}
+
+HOL_asml_dispatch_2013 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_6_resolved }
+			NOT = { has_country_flag = HOL_asml_cymer_integrated }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_6_pending }
+		}
+		set_country_flag = { flag = HOL_corporate_history_midyear_asml_events_6_pending days = 121 value = 1 }
+		country_event = { id = HOL_asml_events.6 days = 61 }
+	}
+}
+
+HOL_asml_dispatch_2016 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_7_resolved }
+			NOT = { has_country_flag = HOL_asml_zeiss_smt_integration }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_7_pending }
+		}
+		set_country_flag = { flag = HOL_corporate_history_midyear_asml_events_7_pending days = 305 value = 1 }
+		country_event = { id = HOL_asml_events.7 days = 245 }
+	}
+}
+
+HOL_asml_dispatch_2019_hvm = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_8_resolved }
+			NOT = { has_country_flag = HOL_asml_euv_hvm_cadence }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_8_pending }
+		}
+		set_country_flag = { flag = HOL_corporate_history_midyear_asml_events_8_pending days = 182 value = 1 }
+		country_event = { id = HOL_asml_events.8 days = 122 }
+	}
+}
+
+HOL_asml_dispatch_2019_license = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_9_resolved }
+			NOT = { has_country_flag = HOL_asml_euv_china_license_nonrenewal }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_9_pending }
+		}
+		set_country_flag = { flag = HOL_corporate_history_midyear_asml_events_9_pending days = 335 value = 1 }
+		country_event = { id = HOL_asml_events.9 days = 275 }
+	}
+}
+
+HOL_asml_dispatch_2023_duv = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_10_resolved }
+			NOT = { has_country_flag = HOL_asml_advanced_duv_controls }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_10_pending }
+		}
+		set_country_flag = { flag = HOL_corporate_history_midyear_asml_events_10_pending days = 60 value = 1 }
+		country_event = { id = HOL_asml_events.10 days = 30 }
+	}
+}
+
+HOL_asml_dispatch_2024_high_na = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_11_resolved }
+			NOT = { has_country_flag = HOL_asml_high_na_exe_deployed }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_11_pending }
+		}
+		set_country_flag = { flag = HOL_corporate_history_midyear_asml_events_11_pending days = 152 value = 1 }
+		country_event = { id = HOL_asml_events.11 days = 92 }
+	}
+}
+
+HOL_asml_dispatch_2026 = {
+	if = {
+		limit = {
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_12_resolved }
+			NOT = { has_country_flag = HOL_asml_capstone_resolved }
+			NOT = { has_country_flag = HOL_corporate_history_midyear_asml_events_12_pending }
+		}
+		set_country_flag = { flag = HOL_corporate_history_midyear_asml_events_12_pending days = 243 value = 1 }
+		country_event = { id = HOL_asml_events.12 days = 183 }
+	}
+}
