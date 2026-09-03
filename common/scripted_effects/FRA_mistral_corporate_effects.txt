@@ -1,0 +1,503 @@
+FRA_mistral_initialize_state = {
+	if = {
+		limit = { NOT = { has_country_flag = FRA_mistral_state_initialized } }
+		set_variable = { FRA_mistral_model_capability = 3 }
+		set_variable = { FRA_mistral_open_weights = 6 }
+		set_variable = { FRA_mistral_compute_sovereignty = 2 }
+		set_variable = { FRA_mistral_commercial_scale = 1 }
+		set_variable = { FRA_mistral_strategic_independence = 6 }
+		set_country_flag = FRA_mistral_state_initialized
+	}
+	FRA_mistral_clamp_state = yes
+}
+
+FRA_mistral_clamp_state = {
+	clamp_variable = { var = FRA_mistral_model_capability min = 0 max = 10 }
+	clamp_variable = { var = FRA_mistral_open_weights min = 0 max = 10 }
+	clamp_variable = { var = FRA_mistral_compute_sovereignty min = 0 max = 10 }
+	clamp_variable = { var = FRA_mistral_commercial_scale min = 0 max = 10 }
+	clamp_variable = { var = FRA_mistral_strategic_independence min = 0 max = 10 }
+}
+
+FRA_mistral_apply_capability_route = {
+	FRA_mistral_initialize_state = yes
+	add_to_variable = { FRA_mistral_model_capability = 2 }
+	add_to_variable = { FRA_mistral_open_weights = -1 }
+	add_to_variable = { FRA_mistral_commercial_scale = 1 }
+	add_to_variable = { FRA_mistral_strategic_independence = -1 }
+	FRA_mistral_clamp_state = yes
+}
+
+FRA_mistral_apply_open_route = {
+	FRA_mistral_initialize_state = yes
+	add_to_variable = { FRA_mistral_model_capability = 1 }
+	add_to_variable = { FRA_mistral_open_weights = 2 }
+	add_to_variable = { FRA_mistral_compute_sovereignty = -1 }
+	add_to_variable = { FRA_mistral_commercial_scale = -1 }
+	FRA_mistral_clamp_state = yes
+}
+
+FRA_mistral_apply_sovereign_route = {
+	FRA_mistral_initialize_state = yes
+	add_to_variable = { FRA_mistral_model_capability = -1 }
+	add_to_variable = { FRA_mistral_compute_sovereignty = 2 }
+	add_to_variable = { FRA_mistral_commercial_scale = -1 }
+	add_to_variable = { FRA_mistral_strategic_independence = 1 }
+	FRA_mistral_clamp_state = yes
+}
+
+FRA_mistral_apply_commercial_route = {
+	FRA_mistral_initialize_state = yes
+	add_to_variable = { FRA_mistral_model_capability = 1 }
+	add_to_variable = { FRA_mistral_open_weights = -1 }
+	add_to_variable = { FRA_mistral_commercial_scale = 2 }
+	add_to_variable = { FRA_mistral_strategic_independence = -1 }
+	FRA_mistral_clamp_state = yes
+}
+
+FRA_mistral_apply_independence_route = {
+	FRA_mistral_initialize_state = yes
+	add_to_variable = { FRA_mistral_model_capability = -1 }
+	add_to_variable = { FRA_mistral_compute_sovereignty = 1 }
+	add_to_variable = { FRA_mistral_commercial_scale = -1 }
+	add_to_variable = { FRA_mistral_strategic_independence = 2 }
+	FRA_mistral_clamp_state = yes
+}
+
+FRA_mistral_apply_event_1_historical = {
+	set_country_flag = FRA_mistral_event_1_resolved
+	FRA_mistral_apply_open_route = yes
+}
+
+FRA_mistral_apply_event_2_historical = {
+	set_country_flag = FRA_mistral_event_2_resolved
+	FRA_mistral_apply_open_route = yes
+}
+
+FRA_mistral_apply_event_3_historical = {
+	set_country_flag = FRA_mistral_event_3_resolved
+	FRA_mistral_apply_commercial_route = yes
+}
+
+FRA_mistral_apply_event_4_historical = {
+	set_country_flag = FRA_mistral_event_4_resolved
+	FRA_mistral_apply_capability_route = yes
+}
+
+FRA_mistral_apply_event_5_historical = {
+	set_country_flag = FRA_mistral_event_5_resolved
+	FRA_mistral_apply_sovereign_route = yes
+}
+
+FRA_mistral_apply_event_6_historical = {
+	set_country_flag = FRA_mistral_event_6_resolved
+	FRA_mistral_apply_capability_route = yes
+}
+
+FRA_mistral_clear_capstone_outcome = {
+	remove_ideas = {
+		FRA_mistral_european_champion
+		FRA_mistral_open_weights_standard
+		FRA_mistral_sovereign_compute_stack
+		FRA_mistral_hyperscaler_annex
+		FRA_mistral_credible_challenger
+	}
+}
+
+FRA_mistral_terminal_callback = {
+	if = {
+		limit = {
+			has_country_flag = FRA_mistral_capstone_resolved
+			NOT = { has_country_flag = FRA_mistral_terminal_callback_sent }
+		}
+		set_country_flag = FRA_mistral_terminal_callback_sent
+	}
+}
+
+FRA_mistral_apply_european_champion = {
+	if = {
+		limit = { NOT = { has_country_flag = FRA_mistral_capstone_resolved } }
+		FRA_mistral_clear_capstone_outcome = yes
+		add_ideas = FRA_mistral_european_champion
+		set_country_flag = FRA_mistral_capstone_resolved
+		FRA_mistral_terminal_callback = yes
+	}
+}
+
+FRA_mistral_apply_open_weights_standard = {
+	if = {
+		limit = { NOT = { has_country_flag = FRA_mistral_capstone_resolved } }
+		FRA_mistral_clear_capstone_outcome = yes
+		add_ideas = FRA_mistral_open_weights_standard
+		set_country_flag = FRA_mistral_capstone_resolved
+		FRA_mistral_terminal_callback = yes
+	}
+}
+
+FRA_mistral_apply_sovereign_compute_stack = {
+	if = {
+		limit = { NOT = { has_country_flag = FRA_mistral_capstone_resolved } }
+		FRA_mistral_clear_capstone_outcome = yes
+		add_ideas = FRA_mistral_sovereign_compute_stack
+		set_country_flag = FRA_mistral_capstone_resolved
+		FRA_mistral_terminal_callback = yes
+	}
+}
+
+FRA_mistral_apply_hyperscaler_annex = {
+	if = {
+		limit = { NOT = { has_country_flag = FRA_mistral_capstone_resolved } }
+		FRA_mistral_clear_capstone_outcome = yes
+		add_ideas = FRA_mistral_hyperscaler_annex
+		set_country_flag = FRA_mistral_capstone_resolved
+		FRA_mistral_terminal_callback = yes
+	}
+}
+
+FRA_mistral_apply_credible_challenger = {
+	if = {
+		limit = { NOT = { has_country_flag = FRA_mistral_capstone_resolved } }
+		FRA_mistral_clear_capstone_outcome = yes
+		add_ideas = FRA_mistral_credible_challenger
+		set_country_flag = FRA_mistral_capstone_resolved
+		FRA_mistral_terminal_callback = yes
+	}
+}
+
+FRA_mistral_resolve_capstone = {
+	FRA_mistral_initialize_state = yes
+	if = {
+		limit = { NOT = { has_country_flag = FRA_mistral_capstone_resolved } }
+		if = {
+			limit = { check_variable = { FRA_mistral_capstone_choice = 1 } }
+			FRA_mistral_apply_european_champion = yes
+		}
+		else_if = {
+			limit = { check_variable = { FRA_mistral_capstone_choice = 2 } }
+			FRA_mistral_apply_open_weights_standard = yes
+		}
+		else_if = {
+			limit = { check_variable = { FRA_mistral_capstone_choice = 3 } }
+			FRA_mistral_apply_sovereign_compute_stack = yes
+		}
+		else_if = {
+			limit = { check_variable = { FRA_mistral_capstone_choice = 4 } }
+			FRA_mistral_apply_hyperscaler_annex = yes
+		}
+		else = { FRA_mistral_apply_credible_challenger = yes }
+	}
+}
+
+FRA_mistral_reconstruct_history = {
+	if = {
+		limit = {
+			date > 2022.12.31
+			NOT = { has_country_flag = FRA_mistral_state_initialized }
+		}
+		FRA_mistral_initialize_state = yes
+	}
+	if = {
+		limit = {
+			date > 2023.12.31
+			NOT = { has_country_flag = FRA_mistral_event_1_resolved }
+		}
+		FRA_mistral_apply_event_1_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2023.12.31
+			NOT = { has_country_flag = FRA_mistral_event_2_resolved }
+		}
+		FRA_mistral_apply_event_2_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2024.12.31
+			NOT = { has_country_flag = FRA_mistral_event_3_resolved }
+		}
+		FRA_mistral_apply_event_3_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2024.12.31
+			NOT = { has_country_flag = FRA_mistral_event_4_resolved }
+		}
+		FRA_mistral_apply_event_4_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2025.12.31
+			NOT = { has_country_flag = FRA_mistral_event_5_resolved }
+		}
+		FRA_mistral_apply_event_5_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2025.12.31
+			NOT = { has_country_flag = FRA_mistral_event_6_resolved }
+		}
+		FRA_mistral_apply_event_6_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2025.12.31
+			NOT = { has_country_flag = FRA_mistral_capstone_resolved }
+		}
+		set_country_flag = FRA_mistral_event_7_resolved
+		FRA_mistral_resolve_capstone = yes
+		set_country_flag = FRA_mistral_capstone_resolved
+	}
+	FRA_mistral_clamp_state = yes
+	if = {
+		limit = { date > 1999.12.31 }
+		set_country_flag = FRA_mistral_reconstruct_complete
+	}
+}
+
+FRA_mistral_recover_prior_year_history = {
+	if = {
+		limit = {
+			date > 2024.1.1
+			NOT = { has_country_flag = FRA_mistral_event_1_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_1_pending }
+		}
+		clr_country_flag = FRA_mistral_event_1_delivery_expected
+		FRA_mistral_apply_event_1_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2024.1.1
+			NOT = { has_country_flag = FRA_mistral_event_2_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_2_pending }
+		}
+		clr_country_flag = FRA_mistral_event_2_delivery_expected
+		FRA_mistral_apply_event_2_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2025.1.1
+			NOT = { has_country_flag = FRA_mistral_event_3_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_3_pending }
+		}
+		clr_country_flag = FRA_mistral_event_3_delivery_expected
+		FRA_mistral_apply_event_3_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2025.1.1
+			NOT = { has_country_flag = FRA_mistral_event_4_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_4_pending }
+		}
+		clr_country_flag = FRA_mistral_event_4_delivery_expected
+		FRA_mistral_apply_event_4_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2026.1.1
+			NOT = { has_country_flag = FRA_mistral_event_5_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_5_pending }
+		}
+		clr_country_flag = FRA_mistral_event_5_delivery_expected
+		FRA_mistral_apply_event_5_historical = yes
+	}
+	if = {
+		limit = {
+			date > 2026.1.1
+			NOT = { has_country_flag = FRA_mistral_event_6_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_6_pending }
+		}
+		clr_country_flag = FRA_mistral_event_6_delivery_expected
+		FRA_mistral_apply_event_6_historical = yes
+	}
+}
+
+FRA_mistral_schedule_event_1 = {
+	if = {
+		limit = {
+			date > 2022.12.31
+			date < 2023.1.2
+			NOT = { has_country_flag = FRA_mistral_event_1_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_1_pending }
+		}
+		set_country_flag = FRA_mistral_event_1_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_1_pending value = 1 days = 224 }
+		country_event = { id = FRA_mistral_events.1 days = 163 }
+	}
+	if = {
+		limit = {
+			date > 2023.12.31
+			NOT = { has_country_flag = FRA_mistral_event_1_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_1_pending }
+		}
+		set_country_flag = FRA_mistral_event_1_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_1_pending value = 1 days = 61 }
+		country_event = { id = FRA_mistral_events.1 days = 1 }
+	}
+}
+
+FRA_mistral_schedule_event_2 = {
+	if = {
+		limit = {
+			date > 2022.12.31
+			date < 2023.1.2
+			NOT = { has_country_flag = FRA_mistral_event_2_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_2_pending }
+		}
+		set_country_flag = FRA_mistral_event_2_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_2_pending value = 1 days = 405 }
+		country_event = { id = FRA_mistral_events.2 days = 344 }
+	}
+	if = {
+		limit = {
+			date > 2023.12.31
+			NOT = { has_country_flag = FRA_mistral_event_2_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_2_pending }
+		}
+		set_country_flag = FRA_mistral_event_2_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_2_pending value = 1 days = 61 }
+		country_event = { id = FRA_mistral_events.2 days = 1 }
+	}
+}
+
+FRA_mistral_schedule_event_3 = {
+	if = {
+		limit = {
+			date > 2023.12.31
+			date < 2024.1.2
+			NOT = { has_country_flag = FRA_mistral_event_3_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_3_pending }
+		}
+		set_country_flag = FRA_mistral_event_3_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_3_pending value = 1 days = 117 }
+		country_event = { id = FRA_mistral_events.3 days = 56 }
+	}
+	if = {
+		limit = {
+			date > 2024.12.31
+			NOT = { has_country_flag = FRA_mistral_event_3_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_3_pending }
+		}
+		set_country_flag = FRA_mistral_event_3_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_3_pending value = 1 days = 61 }
+		country_event = { id = FRA_mistral_events.3 days = 1 }
+	}
+}
+
+FRA_mistral_schedule_event_4 = {
+	if = {
+		limit = {
+			date > 2023.12.31
+			date < 2024.1.2
+			NOT = { has_country_flag = FRA_mistral_event_4_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_4_pending }
+		}
+		set_country_flag = FRA_mistral_event_4_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_4_pending value = 1 days = 223 }
+		country_event = { id = FRA_mistral_events.4 days = 162 }
+	}
+	if = {
+		limit = {
+			date > 2024.12.31
+			NOT = { has_country_flag = FRA_mistral_event_4_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_4_pending }
+		}
+		set_country_flag = FRA_mistral_event_4_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_4_pending value = 1 days = 61 }
+		country_event = { id = FRA_mistral_events.4 days = 1 }
+	}
+}
+
+FRA_mistral_schedule_event_5 = {
+	if = {
+		limit = {
+			date > 2024.12.31
+			date < 2025.1.2
+			NOT = { has_country_flag = FRA_mistral_event_5_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_5_pending }
+		}
+		set_country_flag = FRA_mistral_event_5_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_5_pending value = 1 days = 97 }
+		country_event = { id = FRA_mistral_events.5 days = 36 }
+	}
+	if = {
+		limit = {
+			date > 2025.12.31
+			NOT = { has_country_flag = FRA_mistral_event_5_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_5_pending }
+		}
+		set_country_flag = FRA_mistral_event_5_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_5_pending value = 1 days = 61 }
+		country_event = { id = FRA_mistral_events.5 days = 1 }
+	}
+}
+
+FRA_mistral_schedule_event_6 = {
+	if = {
+		limit = {
+			date > 2024.12.31
+			date < 2025.1.2
+			NOT = { has_country_flag = FRA_mistral_event_6_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_6_pending }
+		}
+		set_country_flag = FRA_mistral_event_6_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_6_pending value = 1 days = 312 }
+		country_event = { id = FRA_mistral_events.6 days = 251 }
+	}
+	if = {
+		limit = {
+			date > 2025.12.31
+			NOT = { has_country_flag = FRA_mistral_event_6_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_6_pending }
+		}
+		set_country_flag = FRA_mistral_event_6_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_6_pending value = 1 days = 61 }
+		country_event = { id = FRA_mistral_events.6 days = 1 }
+	}
+}
+
+FRA_mistral_schedule_event_7 = {
+	if = {
+		limit = {
+			date > 2024.12.31
+			date < 2025.1.2
+			NOT = { has_country_flag = FRA_mistral_event_7_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_7_pending }
+		}
+		set_country_flag = FRA_mistral_event_7_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_7_pending value = 1 days = 395 }
+		country_event = { id = FRA_mistral_events.7 days = 334 }
+	}
+	if = {
+		limit = {
+			date > 2025.12.31
+			NOT = { has_country_flag = FRA_mistral_event_7_resolved }
+			NOT = { has_country_flag = FRA_mistral_event_7_pending }
+		}
+		set_country_flag = FRA_mistral_event_7_delivery_expected
+		set_country_flag = { flag = FRA_mistral_event_7_pending value = 1 days = 61 }
+		country_event = { id = FRA_mistral_events.7 days = 1 }
+	}
+}
+
+FRA_mistral_schedule_current_year_events = {
+	if = {
+		limit = {
+			corporate_history_full_enabled = yes
+			original_tag = FRA
+			NOT = { has_country_flag = collapsed_nation }
+			has_country_flag = FRA_mistral_reconstruct_complete
+			NOT = { has_country_flag = FRA_mistral_capstone_resolved }
+		}
+		if = {
+			limit = { date > 2022.12.31 }
+			FRA_mistral_initialize_state = yes
+		}
+		FRA_mistral_schedule_event_1 = yes
+		FRA_mistral_schedule_event_2 = yes
+		FRA_mistral_schedule_event_3 = yes
+		FRA_mistral_schedule_event_4 = yes
+		FRA_mistral_schedule_event_5 = yes
+		FRA_mistral_schedule_event_6 = yes
+		FRA_mistral_schedule_event_7 = yes
+	}
+}
