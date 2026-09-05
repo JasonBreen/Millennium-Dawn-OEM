@@ -17,7 +17,7 @@ Do not write any other chain’s identifiers. Hard constraints for this series: 
 All variables are integers clamped to 0..10 by `corporate_history_clamp_value`. Owner effects only:
 
 - `HOL_asml_lithography_leadership` — technology lead across immersion, EUV, and High‑NA
-  20|- `HOL_asml_supply_chain_depth` — optics, light‑source, and component chain depth and resilience
+- `HOL_asml_supply_chain_depth` — optics, light‑source, and component chain depth and resilience
 - `HOL_asml_export_alignment` — alignment with allied export‑control policy and licensing posture
 
 Required owner effects (all idempotent):
