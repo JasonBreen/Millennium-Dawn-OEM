@@ -559,6 +559,28 @@ investment_building_slot_available = {
 }
 
 # AI Related STuff
+investment_ai_offer_pending = {
+	check_variable = { investment_ai_offer_target > 0 }
+}
+
+investment_ai_offer_matches_response = {
+	has_event_target = investment_ai_offer_investor
+	has_event_target = investment_ai_offer_state
+	check_variable = { FROM.id = event_target:investment_ai_offer_investor.id }
+	FROM = {
+		investment_ai_offer_pending = yes
+		check_variable = { investment_ai_offer_target = PREV.id }
+		check_variable = { investment_ai_offer_state = event_target:investment_ai_offer_state.id }
+	}
+}
+
+investment_ai_treasury_above_reserve = {
+	if = {
+		limit = { ai_race_ai_expansion_permitted = yes }
+		check_variable = { treasury > ai_race_ai_savings_target }
+	}
+}
+
 currently_is_considering_a_project = {
 	custom_trigger_tooltip = {
 		tooltip = this_investment_offer_pending_tt

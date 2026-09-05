@@ -88,60 +88,227 @@ send_pending_investment_offer = {
 	}
 }
 
-initialize_pending_investment_offer = {
-	set_variable = { investor_cost = FROM.project_monetary_cost_effect }
-	multiply_variable = { investor_cost = 0.1 }
-	set_variable = { pending_offer_total_cost = FROM.project_monetary_cost^-1 }
-	set_variable = { pending_offer_duration = FROM.project_construction_duration^-1 }
-	set_variable = { pending_offer_amount = FROM.project_build_amount^-1 }
-	set_variable = { pending_offer_type = FROM.project_building_type^-1 }
-	set_variable = { pending_offer_state = FROM.investments_state_target }
-}
-
-accept_pending_investment_offer = {
-	FROM = {
-		set_variable = { project_building_type^-1 = PREV.pending_offer_type }
-		set_variable = { project_build_amount^-1 = PREV.pending_offer_amount }
-		set_variable = { project_monetary_cost^-1 = PREV.pending_offer_total_cost }
-		set_variable = { project_construction_duration^-1 = PREV.pending_offer_duration }
-		set_variable = { investments_state_target = PREV.pending_offer_state }
-		set_variable = {
-			project_monetary_cost_effect = {
-				value = PREV.pending_offer_total_cost
-				multiply = -1
+investment_ai_propose_project = {
+	if = {
+		limit = {
+			NOT = { investment_ai_offer_pending = yes }
+			investment_ai_treasury_above_reserve = yes
+		}
+		set_variable = { project_building_type^-1 = AI_best_type }
+		set_variable = { project_build_amount^-1 = 1 }
+		set_variable = { project = -1 }
+		set_variable = { project_type = AI_best_type }
+		var:AI_best_target = {
+			ROOT = { project_monetary_cost_calculation = yes }
+			precompute_state_construction_data = yes
+		}
+		calculate_project_duration = yes
+		set_temp_variable = { investment_ai_spendable_cash = treasury }
+		if = {
+			limit = { ai_race_ai_expansion_permitted = yes }
+			subtract_from_temp_variable = { investment_ai_spendable_cash = ai_race_ai_savings_target }
+		}
+		if = {
+			limit = {
+				check_variable = { var = investment_ai_spendable_cash value = project_monetary_cost^-1 compare = greater_than_or_equals }
+			}
+			if = {
+				limit = {
+					check_variable = { project_construction_duration^-2 < 700 }
+					check_variable = { project_construction_duration^-2 > 0 }
+					var:AI_best_target = {
+						selected_investment_building_available = yes
+						CONTROLLER = { country_exists = THIS }
+					}
+				}
+				var:AI_best_target = {
+					set_variable = { ROOT.investments_state_target = THIS.id }
+					CONTROLLER = { set_variable = { ROOT.investments_nation_target = THIS.id } }
+				}
+				investment_ai_record_offer = yes
+				set_country_flag = { flag = investments_ai_pending days = 7 value = 1 }
+				country_event = investments_event.3
+				var:AI_best_country = {
+					set_country_flag = { flag = recently_accepted_an_investment value = 1 days = 21 }
+				}
+				log = "[GetDateText]: [This.GetName]: Investment offer sent: project type [?AI_best_type] in [?AI_best_target.GetName], cost [?project_monetary_cost^-1], score [?AI_best_score]"
+			}
+			else = {
+				var:AI_best_country = {
+					set_country_flag = { flag = recently_failed_to_invest value = 1 days = 75 }
+				}
+				log = "[GetDateText]: [This.GetName]: Investment Failed: duration or slot unavailable in [?AI_best_target.GetName]. Skipping this investment pulse."
 			}
 		}
-
-		start_project_two = yes
-		clr_country_flag = this_investment_offer_pending@PREV
-		clr_country_flag = investments_ai_pending
+		clear_variable = project
+		clear_variable = project_type
 	}
+}
+
+investment_ai_record_offer = {
+	set_variable = { investment_ai_offer_target = investments_nation_target }
+	var:investment_ai_offer_target = {
+		set_variable = { PREV.investment_ai_offer_target_generation = investment_ai_annex_generation }
+	}
+	set_variable = { investment_ai_offer_state = investments_state_target }
+	set_variable = { investment_ai_offer_cost = project_monetary_cost^-1 }
+	set_variable = { investment_ai_offer_duration = project_construction_duration^-1 }
+	set_variable = { investment_ai_offer_amount = project_build_amount^-1 }
+	set_variable = { investment_ai_offer_type = project_building_type^-1 }
+	set_variable = { investment_ai_offer_recipient_cost = investment_ai_offer_cost }
+	multiply_variable = { investment_ai_offer_recipient_cost = 0.1 }
+	set_variable = { investment_ai_offer_orphan_day = num_days }
+	add_to_variable = { investment_ai_offer_orphan_day = 15 }
+	save_event_target_as = investment_ai_offer_investor
+	var:investment_ai_offer_state = { save_event_target_as = investment_ai_offer_state }
+}
+
+investment_ai_clear_offer = {
+	clear_variable = investment_ai_offer_target
+	clear_variable = investment_ai_offer_target_generation
+	clear_variable = investment_ai_offer_state
+	clear_variable = investment_ai_offer_cost
+	clear_variable = investment_ai_offer_duration
+	clear_variable = investment_ai_offer_amount
+	clear_variable = investment_ai_offer_type
+	clear_variable = investment_ai_offer_recipient_cost
+	clear_variable = investment_ai_offer_orphan_day
+	clr_country_flag = investments_ai_pending
+}
+
+investment_ai_record_recipient_annexation = {
+	add_to_variable = { investment_ai_annex_generation = 1 }
+}
+
+investment_ai_cleanup_orphaned_offer = {
 	if = {
-		limit = { NOT = { has_country_flag = influence_gained_@FROM } }
-		set_temp_variable = { percent_change = global.investment_percent_change_value }
-		set_temp_variable = { tag_index = FROM.id }
-		change_influence_percentage = yes
-		newline = yes
-
-		if = { limit = { has_game_rule = { rule = rule_influence_cooldown_limits option = day_14_cooldown } }
-			set_country_flag = { flag = influence_gained_@FROM value = 1 days = 14 }
-			custom_effect_tooltip = cooldown_influence_limit_14_tooltip
+		limit = {
+			investment_ai_offer_pending = yes
+			check_variable = { var = num_days value = investment_ai_offer_orphan_day compare = greater_than_or_equals }
+			var:investment_ai_offer_target = {
+				OR = {
+					NOT = { country_exists = THIS }
+					NOT = { check_variable = { investment_ai_annex_generation = PREV.investment_ai_offer_target_generation } }
+				}
+			}
 		}
-		else_if = { limit = { has_game_rule = { rule = rule_influence_cooldown_limits option = day_30_cooldown } }
-			set_country_flag = { flag = influence_gained_@FROM value = 1 days = 30 }
-			custom_effect_tooltip = cooldown_influence_limit_30_tooltip
-		}
+		# The popup has a 13-day lifetime; retain two days for event dispatch.
+		investment_ai_clear_offer = yes
 	}
+}
 
-	set_temp_variable = { treasury_change = FROM.project_monetary_cost_effect }
-	multiply_temp_variable = { treasury_change = 0.1 }
-	modify_treasury_effect = yes
+initialize_pending_investment_offer = {
+	if = {
+		limit = { NOT = { has_event_target = investment_ai_offer_investor } }
+		set_variable = { investor_cost = FROM.project_monetary_cost_effect }
+		multiply_variable = { investor_cost = 0.1 }
+		set_variable = { pending_offer_total_cost = FROM.project_monetary_cost^-1 }
+		set_variable = { pending_offer_duration = FROM.project_construction_duration^-1 }
+		set_variable = { pending_offer_amount = FROM.project_build_amount^-1 }
+		set_variable = { pending_offer_type = FROM.project_building_type^-1 }
+		set_variable = { pending_offer_state = FROM.investments_state_target }
+	}
+}
+
+clear_pending_investment_snapshot = {
 	clear_variable = investor_cost
 	clear_variable = pending_offer_total_cost
 	clear_variable = pending_offer_duration
 	clear_variable = pending_offer_amount
 	clear_variable = pending_offer_type
 	clear_variable = pending_offer_state
+}
+
+accept_pending_investment_offer = {
+	if = {
+		limit = { has_event_target = investment_ai_offer_investor }
+		if = {
+			limit = { investment_ai_offer_matches_response = yes }
+			if = {
+				limit = {
+					country_exists = THIS
+					country_exists = FROM
+					event_target:investment_ai_offer_state = { is_controlled_by = ROOT }
+				}
+				FROM = {
+					set_variable = { project_building_type^-1 = investment_ai_offer_type }
+					set_variable = { project_build_amount^-1 = investment_ai_offer_amount }
+					set_variable = { project_monetary_cost^-1 = investment_ai_offer_cost }
+					set_variable = { project_construction_duration^-1 = investment_ai_offer_duration }
+					set_variable = { investments_state_target = investment_ai_offer_state }
+					set_variable = { project_monetary_cost_effect = investment_ai_offer_cost }
+					multiply_variable = { project_monetary_cost_effect = -1 }
+				}
+				commit_pending_investment_offer = yes
+			}
+			FROM = { investment_ai_clear_offer = yes }
+		}
+	}
+	else = {
+		FROM = {
+			set_variable = { project_building_type^-1 = PREV.pending_offer_type }
+			set_variable = { project_build_amount^-1 = PREV.pending_offer_amount }
+			set_variable = { project_monetary_cost^-1 = PREV.pending_offer_total_cost }
+			set_variable = { project_construction_duration^-1 = PREV.pending_offer_duration }
+			set_variable = { investments_state_target = PREV.pending_offer_state }
+			set_variable = { project_monetary_cost_effect = PREV.pending_offer_total_cost }
+			multiply_variable = { project_monetary_cost_effect = -1 }
+		}
+		commit_pending_investment_offer = yes
+		clear_pending_investment_snapshot = yes
+	}
+}
+
+commit_pending_investment_offer = {
+	FROM = {
+		start_project_two = yes
+		clr_country_flag = this_investment_offer_pending@PREV
+		clr_country_flag = investments_ai_pending
+	}
+	if = {
+		limit = { check_variable = { investment_project_started = 1 } }
+		if = {
+			limit = { NOT = { has_country_flag = influence_gained_@FROM } }
+			set_temp_variable = { percent_change = global.investment_percent_change_value }
+			set_temp_variable = { tag_index = FROM.id }
+			change_influence_percentage = yes
+			newline = yes
+
+			if = { limit = { has_game_rule = { rule = rule_influence_cooldown_limits option = day_14_cooldown } }
+				set_country_flag = { flag = influence_gained_@FROM value = 1 days = 14 }
+				custom_effect_tooltip = cooldown_influence_limit_14_tooltip
+			}
+			else_if = { limit = { has_game_rule = { rule = rule_influence_cooldown_limits option = day_30_cooldown } }
+				set_country_flag = { flag = influence_gained_@FROM value = 1 days = 30 }
+				custom_effect_tooltip = cooldown_influence_limit_30_tooltip
+			}
+		}
+
+		set_temp_variable = { treasury_change = FROM.project_monetary_cost_effect }
+		multiply_temp_variable = { treasury_change = 0.1 }
+		modify_treasury_effect = yes
+	}
+}
+
+refuse_pending_investment_offer = {
+	set_temp_variable = { investment_offer_resolved = 0 }
+	if = {
+		limit = { has_event_target = investment_ai_offer_investor }
+		if = {
+			limit = { investment_ai_offer_matches_response = yes }
+			FROM = { investment_ai_clear_offer = yes }
+			set_temp_variable = { investment_offer_resolved = 1 }
+		}
+	}
+	else = {
+		clear_pending_investment_snapshot = yes
+		set_temp_variable = { investment_offer_resolved = 1 }
+	}
+	if = {
+		limit = { check_variable = { investment_offer_resolved = 1 } }
+		FROM = { country_event = investments_event.11 }
+		set_country_flag = { flag = recently_refused_investment@FROM days = 30 value = 1 }
+	}
 }
 
 # Recomputes staging-slot (^-1) cost/duration when player tweaks GUI.
@@ -479,6 +646,7 @@ calculate_project_duration = {
 # Called from accept_pending_investment_offer inside FROM = { }: THIS = the investor and
 # ROOT = the target country. Investor variables live on THIS/PREV, never ROOT.
 start_project_two = {
+	set_temp_variable = { investment_project_started = 0 }
 	# Get available project
 	get_available_project = yes
 
@@ -519,6 +687,7 @@ start_project_two = {
 		add_to_variable = { treasury = project_monetary_cost_effect } # Project Monetary Cost Effect is -1
 		subtract_from_variable = { int_investments = project_monetary_cost_effect }
 		add_to_variable = { active_projects = 1 }
+		set_temp_variable = { investment_project_started = 1 }
 
 		# Initializes the target decisions for the investment project
 		initialize_start_project_decisions = yes
