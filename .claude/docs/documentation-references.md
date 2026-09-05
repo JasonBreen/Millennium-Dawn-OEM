@@ -69,6 +69,7 @@ All files below live in `.claude/docs/`.
 | `loading-screen-system.md`       | Loading rotation vs menu picker, `GFX_<x>_small`, generator  |
 | `localisation-rules.md`          | English `.yml` rules: BOM, file naming, key formatting       |
 | `md-custom-modifiers.md`         | Non-vanilla modifier keys, grouped by category               |
+| `md-oem-corporate-roadmap.md`    | OEM roadmap: semiconductors, AI race, minerals, defense, SWF |
 | `meta-effect-patterns.md`        | `meta_effect`/`meta_trigger` dispatch; `[!]` tooltips        |
 | `mio-reference.md`               | MIO structure, per-block modifier keys, trait-grid rules     |
 | `music-system.md`                | Stations, playlists, chance weights, radio GUI wiring        |
