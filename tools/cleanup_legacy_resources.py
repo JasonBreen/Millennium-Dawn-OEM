@@ -44,7 +44,6 @@ REMOVE_DIRS = [
     "Old Tank Builder Icons",
     "Operations",
     "Opinion_modifiers.xlsx",
-    "parliament_generator",  # Keep this - it has active content
     "Politics",
     "population_estimator.py",
     "portrait_dump",
@@ -101,49 +100,23 @@ LEGACY_PATTERNS = [
 
 
 def should_remove_dir(dir_path: Path) -> bool:
-    """Check if a directory should be removed."""
-    dir_name = dir_path.name
-
-    # Check if in remove list
-    if dir_name in REMOVE_DIRS:
-        return True
-
-    # Check if parent is in remove list
-    for parent in dir_path.parents:
-        if parent == dir_path.parent:
-            break
-        if parent.name in REMOVE_DIRS:
-            return True
-
-    # Check for legacy patterns in name
-    for pattern in LEGACY_PATTERNS:
-        if re.search(pattern, dir_name, re.IGNORECASE):
-            return True
-
-    return False
+    """Check names within resources, giving protected components precedence."""
+    try:
+        parts = dir_path.resolve().relative_to(RESOURCES_DIR.resolve()).parts
+    except ValueError:
+        return False
+    if any(part in KEEP_FILES for part in parts):
+        return False
+    return any(
+        part in REMOVE_DIRS
+        or any(re.search(pattern, part, re.IGNORECASE) for pattern in LEGACY_PATTERNS)
+        for part in parts
+    )
 
 
 def should_remove_file(file_path: Path) -> bool:
     """Check if a file should be removed."""
-    # Check if in keep list
-    if file_path.name in KEEP_FILES or any(
-        keep in str(file_path) for keep in KEEP_FILES
-    ):
-        return False
-
-    # Check if parent should be removed
-    for parent in file_path.parents:
-        if parent == file_path.parent:
-            break
-        if should_remove_dir(parent):
-            return True
-
-    # Check for legacy patterns in name
-    for pattern in LEGACY_PATTERNS:
-        if re.search(pattern, file_path.name, re.IGNORECASE):
-            return True
-
-    return False
+    return should_remove_dir(file_path)
 
 
 def get_files_to_remove() -> List[Path]:
@@ -153,14 +126,8 @@ def get_files_to_remove() -> List[Path]:
     if not RESOURCES_DIR.exists():
         return files_to_remove
 
-    # First, check directories
-    for item in RESOURCES_DIR.iterdir():
-        if item.is_dir() and should_remove_dir(item):
-            # Add all files in this directory
-            for file_path in item.rglob("*"):
-                if file_path.is_file():
-                    files_to_remove.append(file_path)
-        elif item.is_file() and should_remove_file(item):
+    for item in RESOURCES_DIR.rglob("*"):
+        if item.is_file() and should_remove_file(item):
             files_to_remove.append(item)
 
     return files_to_remove
@@ -291,7 +258,7 @@ def main():
         # Also remove empty directories
         removed_dirs = 0
         for dir_path in sorted(RESOURCES_DIR.rglob("*"), reverse=True):
-            if dir_path.is_dir():
+            if dir_path.is_dir() and should_remove_dir(dir_path):
                 try:
                     dir_path.rmdir()
                     removed_dirs += 1

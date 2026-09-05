@@ -76,23 +76,11 @@ def get_all_files(directory: Path) -> List[Path]:
 
 def is_legacy_content(path: Path) -> bool:
     """Check if a path appears to be legacy content."""
-    path_str = str(path).lower()
-
-    # Check directory name
-    for pattern in LEGACY_PATTERNS:
-        if pattern in path_str:
-            return True
-
-    # Check parent directory
-    for parent in path.parents:
-        if parent == path.parent:
-            break
-        parent_str = str(parent.name).lower()
-        for pattern in LEGACY_PATTERNS:
-            if pattern in parent_str:
-                return True
-
-    return False
+    try:
+        relative_path = path.resolve().relative_to(RESOURCES_DIR.resolve())
+    except ValueError:
+        return False
+    return any(pattern in str(relative_path).lower() for pattern in LEGACY_PATTERNS)
 
 
 def is_unintegrated_file(path: Path) -> bool:
@@ -116,7 +104,9 @@ def get_file_info(path: Path) -> Dict:
         "modified": datetime.fromtimestamp(stat.st_mtime),
         "is_legacy": is_legacy_content(path),
         "is_unintegrated": is_unintegrated_file(path),
-        "is_keep_dir": any(keep_dir in str(path) for keep_dir in KEEP_DIRS),
+        "is_keep_dir": any(
+            part in KEEP_DIRS for part in path.relative_to(RESOURCES_DIR).parts[:-1]
+        ),
     }
 
 
@@ -131,20 +121,13 @@ def format_size(size_bytes: int) -> str:
 
 def scan_resources() -> Tuple[List[Dict], Dict]:
     """Scan the resources directory and categorize files."""
+    categories = {"legacy": [], "unintegrated": [], "keep": [], "unknown": []}
     if not RESOURCES_DIR.exists():
         print(f"Directory {RESOURCES_DIR} does not exist.")
-        return [], {}
+        return [], categories
 
     all_files = get_all_files(RESOURCES_DIR)
     file_infos = [get_file_info(f) for f in all_files]
-
-    # Categorize
-    categories = {
-        "legacy": [],
-        "unintegrated": [],
-        "keep": [],
-        "unknown": [],
-    }
 
     total_size = 0
     for info in file_infos:
@@ -190,7 +173,7 @@ def print_scan_results(categories: Dict, total_size: int):
             print()
 
 
-def interactive_cleanup(categories: Dict) -> List[Path]:
+def interactive_cleanup(categories: Dict) -> Tuple[List[Path], List[Path]]:
     """Interactive cleanup mode."""
     print("\n" + "=" * 80)
     print("INTERACTIVE CLEANUP MODE")

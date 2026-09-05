@@ -18,7 +18,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 # Configuration
 MUSIC_DIR = Path("music")
@@ -73,7 +73,7 @@ def is_mono_audio(filepath: Path) -> bool:
     return False
 
 
-def get_audio_info(filepath: Path) -> Tuple[str, str, int]:
+def get_audio_info(filepath: Path) -> Tuple[str, str, float]:
     """Get audio format, bitrate, and duration."""
     try:
         result = subprocess.run(
@@ -127,7 +127,7 @@ def compress_audio_file(
     if force_mono:
         cmd.extend(["-ac", "1"])  # Force mono
 
-    cmd.append(str(output_path))
+    cmd.extend(["-f", "ogg", str(output_path)])
 
     try:
         result = subprocess.run(
@@ -152,6 +152,8 @@ def compress_audio_file(
 def create_backup(filepath: Path, backup_dir: Path) -> bool:
     """Create a backup of a file."""
     backup_path = backup_dir / filepath.relative_to(Path("."))
+    if backup_path.exists():
+        return True
     backup_path.parent.mkdir(parents=True, exist_ok=True)
 
     try:
@@ -171,6 +173,7 @@ def restore_from_backup(filepath: Path, backup_dir: Path) -> bool:
         return False
 
     try:
+        filepath.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(backup_path, filepath)
         return True
     except Exception as e:
@@ -205,22 +208,17 @@ def scan_audio_files() -> Tuple[List[Path], List[Path]]:
 
 def analyze_files(files: List[Path], label: str) -> Tuple[int, int]:
     """Analyze audio files and estimate savings."""
-    total_original = 0
-    total_compressed = 0
+    total_original = sum(get_file_size(filepath) for filepath in files)
+    compression_ratio = 0.5 if label == "Music" else 0.4
+    total_compressed = sum(
+        int(get_file_size(filepath) * compression_ratio) for filepath in files
+    )
 
     print(f"\n{label} Analysis:")
     print("-" * 60)
 
     for filepath in sorted(files)[:10]:  # Show first 10 as sample
         size = get_file_size(filepath)
-        total_original += size
-
-        # Estimate compressed size (rough estimate: 50% reduction for music, 60% for SFX)
-        if label == "Music":
-            estimated_compressed = int(size * 0.5)
-        else:
-            estimated_compressed = int(size * 0.4)
-        total_compressed += estimated_compressed
 
         fmt, bitrate, duration = get_audio_info(filepath)
         is_mono = is_mono_audio(filepath)
@@ -245,11 +243,14 @@ def compress_files(
     bitrate: str,
     force_mono: bool = False,
     dry_run: bool = False,
+    failed_files: Optional[List[Path]] = None,
 ) -> Tuple[int, int]:
     """Compress a list of audio files."""
     total_original = 0
     total_compressed = 0
     processed = 0
+    if failed_files is None:
+        failed_files = []
 
     for filepath in files:
         original_size = get_file_size(filepath)
@@ -275,6 +276,8 @@ def compress_files(
         # Create backup
         if not create_backup(filepath, BACKUP_DIR):
             print(f"  Skipping {filepath} (backup failed)")
+            failed_files.append(filepath)
+            total_compressed += original_size
             continue
 
         # Compress
@@ -292,10 +295,14 @@ def compress_files(
                 processed += 1
             except Exception as e:
                 print(f"    Error replacing file: {e}", file=sys.stderr)
-                # Restore from backup
-                restore_from_backup(filepath, BACKUP_DIR)
+                failed_files.append(filepath)
+                total_compressed += get_file_size(filepath)
+                if temp_path.exists():
+                    temp_path.unlink()
         else:
             print(f"    Failed to compress {filepath}")
+            failed_files.append(filepath)
+            total_compressed += original_size
             # Clean up temp file if it exists
             if temp_path.exists():
                 temp_path.unlink()
@@ -315,10 +322,9 @@ def restore_all_backups() -> int:
             relative_path = backup_file.relative_to(BACKUP_DIR)
             original_path = Path(".") / relative_path
 
-            if original_path.exists():
-                if restore_from_backup(original_path, BACKUP_DIR):
-                    restored += 1
-                    print(f"  Restored: {relative_path}")
+            if restore_from_backup(original_path, BACKUP_DIR):
+                restored += 1
+                print(f"  Restored: {relative_path}")
 
     return restored
 
@@ -381,11 +387,12 @@ def main():
 
     if args.restore:
         print("\nRestoring files from backups...")
+        backup_count = sum(path.is_file() for path in BACKUP_DIR.rglob("*"))
         restored = restore_all_backups()
         print(f"\nRestored {restored} files.")
 
         # Clean up backup directory
-        if BACKUP_DIR.exists():
+        if BACKUP_DIR.exists() and restored == backup_count:
             try:
                 shutil.rmtree(BACKUP_DIR)
                 print("Backup directory removed.")
@@ -422,6 +429,8 @@ def main():
         if args.dry_run:
             print("DRY RUN MODE - No files will be modified\n")
 
+        failed_files = []
+
         # Process music files
         if not args.sound_only:
             print("\nProcessing Music Files:")
@@ -431,6 +440,7 @@ def main():
                 MUSIC_BITRATE,
                 force_mono=False,
                 dry_run=args.dry_run,
+                failed_files=failed_files,
             )
             music_savings = orig - comp
         else:
@@ -445,6 +455,7 @@ def main():
                 SFX_BITRATE,
                 force_mono=args.force_mono,
                 dry_run=args.dry_run,
+                failed_files=failed_files,
             )
             sfx_savings = orig_sfx - comp_sfx
         else:
@@ -460,13 +471,17 @@ def main():
         print(f"Total original size: {format_size(total_original)}")
         print(f"Total compressed size: {format_size(total_compressed)}")
         print(f"Total savings: {format_size(total_savings)}")
-        print(f"Compression ratio: {total_compressed / total_original * 100:.1f}%")
+        ratio = total_compressed / total_original * 100 if total_original else 0
+        print(f"Compression ratio: {ratio:.1f}%")
 
         if args.apply and not args.dry_run:
-            print("\nCompression complete!")
+            if failed_files:
+                print(f"\nCompression incomplete: {len(failed_files)} files failed.")
+            else:
+                print("\nCompression complete!")
 
             # Clean up backups if requested
-            if args.cleanup and BACKUP_DIR.exists():
+            if args.cleanup and BACKUP_DIR.exists() and not failed_files:
                 try:
                     shutil.rmtree(BACKUP_DIR)
                     print("Backup directory removed (as requested).")

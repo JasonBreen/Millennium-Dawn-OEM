@@ -24,12 +24,10 @@ def write_path():
 
 @pytest.fixture
 def country_file(tmp_path):
+    from shared.suite import write_text
+
     def write(body, name="ARA - Arabistan.txt"):
-        d = tmp_path / "history" / "countries"
-        d.mkdir(parents=True, exist_ok=True)
-        p = d / name
-        p.write_text(body, encoding="utf-8")
-        return str(p)
+        return str(write_text(tmp_path / "history" / "countries" / name, body))
 
     return write
 

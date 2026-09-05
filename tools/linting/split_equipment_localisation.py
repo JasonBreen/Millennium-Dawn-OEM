@@ -6,9 +6,16 @@ This script specifically handles the equipment localisation file which is very l
 It splits by equipment type prefixes.
 """
 
+import shutil
 import sys
 from pathlib import Path
 from typing import Dict, Tuple
+
+from split_localisation import (
+    format_localisation_value,
+    parse_yaml_file,
+    remove_incomplete_outputs,
+)
 
 # Configuration
 LOCALISATION_DIR = Path("localisation/english")
@@ -124,73 +131,7 @@ EQUIPMENT_CATEGORIES = {
 
 def parse_equipment_file(filepath: Path) -> Dict[str, str]:
     """Parse the equipment localisation file."""
-    entries = {}
-
-    try:
-        with open(filepath, "r", encoding="utf-8-sig") as f:
-            content = f.read()
-    except Exception as e:
-        print(f"Error reading {filepath}: {e}", file=sys.stderr)
-        return entries
-
-    # Remove BOM if present
-    if content.startswith("\ufeff"):
-        content = content[1:]
-
-    # Split by lines
-    lines = content.split("\n")
-
-    current_key = None
-    in_multiline = False
-    multiline_value = ""
-
-    for line in lines:
-        line = line.rstrip()  # Remove trailing whitespace
-
-        # Skip empty lines and comments
-        if not line or line.startswith("#") or line.startswith("l_english:"):
-            if in_multiline:
-                # Save the multiline value
-                if current_key:
-                    entries[current_key] = multiline_value.strip()
-                current_key = None
-                in_multiline = False
-                multiline_value = ""
-            continue
-
-        # Check for key: value pattern
-        if ":" in line and not line.startswith(" ") and not line.startswith("\t"):
-            # This is a new key
-            if in_multiline:
-                # Save the previous multiline value
-                if current_key:
-                    entries[current_key] = multiline_value.strip()
-
-            parts = line.split(":", 1)
-            current_key = parts[0].strip()
-            value = parts[1].strip() if len(parts) > 1 else ""
-
-            # Check if value continues on next line
-            if value.endswith("\\") or (value and value[0] == '"' and value[-1] != '"'):
-                in_multiline = True
-                multiline_value = value
-            else:
-                entries[current_key] = value
-                current_key = None
-                in_multiline = False
-        elif in_multiline and current_key:
-            # Continuation of multiline value
-            multiline_value += " " + line.strip()
-        elif current_key and line.startswith(" ") and line.strip():
-            # This might be a continuation
-            if current_key in entries:
-                entries[current_key] += " " + line.strip()
-
-    # Save any remaining multiline value
-    if in_multiline and current_key:
-        entries[current_key] = multiline_value.strip()
-
-    return entries
+    return parse_yaml_file(filepath)
 
 
 def categorize_entry(key: str) -> str:
@@ -233,12 +174,7 @@ def write_category_file(
             # Write entries sorted by key
             for key in sorted(entries.keys()):
                 value = entries[key]
-                # Escape quotes in value
-                value_escaped = value.replace('"', '\\"')
-                # Ensure value is quoted
-                if not (value.startswith('"') and value.endswith('"')):
-                    value_escaped = f'"{value_escaped}"'
-                f.write(f" {key}: {value_escaped}\n")
+                f.write(f" {key}: {format_localisation_value(value)}\n")
 
         return True
     except Exception as e:
@@ -255,6 +191,9 @@ def split_equipment_file(dry_run: bool = False) -> Tuple[int, Dict[str, int]]:
     print(f"Parsing {EQUIPMENT_FILE}...")
     entries = parse_equipment_file(EQUIPMENT_FILE)
     print(f"Found {len(entries)} entries")
+    if not entries:
+        print("No entries to split; original file retained.")
+        return 0, {}
 
     # Categorize entries
     categories = {cat: {} for cat in EQUIPMENT_CATEGORIES.keys()}
@@ -279,6 +218,25 @@ def split_equipment_file(dry_run: bool = False) -> Tuple[int, Dict[str, int]]:
 
     # Create output directory
     output_dir = LOCALISATION_DIR
+    outputs = [
+        output_dir / f"equipment_{category}_l_english.yml"
+        for category, cat_entries in categories.items()
+        if cat_entries
+    ]
+    for output_path in outputs:
+        if output_path.exists():
+            print(
+                f"Refusing to overwrite existing output: {output_path}", file=sys.stderr
+            )
+            return 0, {}
+
+    backup_path = EQUIPMENT_FILE.with_suffix(EQUIPMENT_FILE.suffix + ".backup")
+    try:
+        shutil.copy2(EQUIPMENT_FILE, backup_path)
+        print(f"Backup created: {backup_path.name}")
+    except Exception as e:
+        print(f"Error: Could not create backup: {e}", file=sys.stderr)
+        return 0, {}
 
     # Write each category file
     created_files = []
@@ -291,22 +249,12 @@ def split_equipment_file(dry_run: bool = False) -> Tuple[int, Dict[str, int]]:
                 )
             else:
                 print(f"Failed to create: equipment_{category}_l_english.yml")
-
-    # Create a master file that includes all the split files
-    backup_path = EQUIPMENT_FILE.with_suffix(EQUIPMENT_FILE.suffix + ".backup")
-
-    # Backup original
-    try:
-        import shutil
-
-        shutil.copy2(EQUIPMENT_FILE, backup_path)
-        print(f"Backup created: {backup_path.name}")
-    except Exception as e:
-        print(f"Warning: Could not create backup: {e}", file=sys.stderr)
+                remove_incomplete_outputs(outputs)
+                return 0, {}
 
     # Write new master file
     with open(EQUIPMENT_FILE, "w", encoding="utf-8", newline="") as f:
-        f.write("\ufeff# Equipment Localisation\n")
+        f.write("\ufeffl_english:\n# Equipment Localisation\n")
         f.write(
             "# This file has been split into multiple category files for better maintainability.\n"
         )
@@ -370,12 +318,13 @@ def main():
         print(f"\nTotal: {len(entries)} entries")
         return
 
-    if args.dry_run:
+    dry_run = args.dry_run or not args.apply
+    if dry_run:
         print("DRY RUN MODE - No files will be modified\n")
 
-    total_entries, category_counts = split_equipment_file(args.dry_run)
+    total_entries, category_counts = split_equipment_file(dry_run)
 
-    if args.dry_run:
+    if dry_run:
         print(
             f"\n[DRY RUN] Would split {total_entries} entries into {len(category_counts)} category files"
         )
