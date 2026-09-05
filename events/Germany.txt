@@ -16,6 +16,7 @@ add_namespace = GER_Diplomacy_answer
 add_namespace = GER_winds
 add_namespace = GER_Eurofighter
 add_namespace = GER_panavia
+add_namespace = GER_airbus
 add_namespace = Gruner_news
 add_namespace = Gruner
 
@@ -2453,6 +2454,23 @@ country_event = {
 	}
 
 }
+country_event = {
+	id = germany.68
+	title = germany.68.t
+	desc = germany.68.d
+	picture = GFX_weapons_arms1
+	is_triggered_only = yes
+	minor_flavor = yes
+
+	trigger = { has_dlc = "Arms Against Tyranny" }
+
+	option = {
+		name = germany.68.a # Acknowledge
+		log = "[GetDateText]: [Root.GetName]: germany.68.a executed"
+		unlock_military_industrial_organization_tooltip = mio:GER_cg_haenel
+	}
+
+}
 #NSU
 
 country_event = {
@@ -4307,7 +4325,7 @@ country_event = {
 		name = germany.218.a
 		log = "[GetDateText]: [This.GetName]: germany.218.a executed"
 		set_cosmetic_tag = GER_german_empire
-		set_country_flag = is_GERMAN
+		mark_formed_country_formable = yes
 		ai_chance = {
 			base = 5
 		}
@@ -4317,7 +4335,7 @@ country_event = {
 		name = germany.218.b
 		log = "[GetDateText]: [This.GetName]: germany.218.b executed"
 		set_cosmetic_tag = GER_holy_german_empire
-		set_country_flag = is_GERMAN
+		mark_formed_country_formable = yes
 		ai_chance = {
 			base = 5
 		}
@@ -4982,7 +5000,16 @@ country_event = {
 			change_ruling_party_effect = yes
 		}
 		ai_chance = {
-			base = 5
+			base = 1
+			modifier = {
+				add = 100
+				has_global_flag = GER_MONARCHIST_FOCUS_PATH
+			}
+			modifier = {
+				factor = 0
+				NOT = { has_global_flag = GER_MONARCHIST_FOCUS_PATH }
+				GER_ai_republic_collapse_path = yes
+			}
 		}
 	}
 
@@ -4999,7 +5026,16 @@ country_event = {
 			change_ruling_party_effect = yes
 		}
 		ai_chance = {
-			base = 5
+			base = 1
+			modifier = {
+				add = 100
+				has_global_flag = GER_NATIONALIST_FOCUS_PATH
+			}
+			modifier = {
+				factor = 0
+				NOT = { has_global_flag = GER_NATIONALIST_FOCUS_PATH }
+				GER_ai_republic_collapse_path = yes
+			}
 		}
 	}
 
@@ -5016,7 +5052,16 @@ country_event = {
 			change_ruling_party_effect = yes
 		}
 		ai_chance = {
-			base = 5
+			base = 1
+			modifier = {
+				add = 100
+				has_global_flag = GER_SOCIALIST_FOCUS_PATH
+			}
+			modifier = {
+				factor = 0
+				NOT = { has_global_flag = GER_SOCIALIST_FOCUS_PATH }
+				GER_ai_republic_collapse_path = yes
+			}
 		}
 	}
 
@@ -9649,6 +9694,9 @@ country_event = {
 			ideology = nationalist
 			popularity = -0.01
 		}
+		ai_chance = {
+			base = 1
+		}
 	}
 
 	option = { #check if we can jail him
@@ -9662,6 +9710,13 @@ country_event = {
 		add_popularity = {
 			ideology = nationalist
 			popularity = 0.01
+		}
+		ai_chance = {
+			base = 1
+			modifier = {
+				add = 5
+				GER_ai_irredentist_path = yes
+			}
 		}
 	}
 
@@ -9705,6 +9760,9 @@ country_event = {
 			custom_effect_tooltip = GER_increase_rightist_status_by_5
 			add_to_variable = { GER_rightwing_department_status = 5 }
 		}
+		ai_chance = {
+			base = 1
+		}
 	}
 
 	option = { #enough is enough
@@ -9728,6 +9786,13 @@ country_event = {
 			custom_effect_tooltip = GER_increase_rightist_status_by_5
 			add_to_variable = { GER_rightwing_department_status = 5 }
 		}
+		ai_chance = {
+			base = 1
+			modifier = {
+				add = 5
+				GER_ai_irredentist_path = yes
+			}
+		}
 	}
 
 	option = { #enough is enough
@@ -9750,6 +9815,13 @@ country_event = {
 			}
 			custom_effect_tooltip = GER_increase_rightist_status_by_10
 			add_to_variable = { GER_rightwing_department_status = 10 }
+		}
+		ai_chance = {
+			base = 1
+			modifier = {
+				factor = 0
+				GER_ai_irredentist_path = yes
+			}
 		}
 	}
 
@@ -21317,9 +21389,8 @@ country_event = {
 #			increase_corruption = yes
 #			increase_corruption = yes
 #			increase_corruption = yes
-#			clear_array = ruling_party
 #			clear_array = gov_coalition_array
-#			add_to_array = { ruling_party = 20 }
+#			set_variable = { ruling_party = 20 }
 #			update_government_coalition_strength = yes
 #			set_coalition_drift = yes
 #			set_ruling_leader = yes
@@ -21843,5 +21914,24 @@ country_event = {
 		effect_tooltip = { add_timed_idea = { idea = GER_siemens_diversified_conglomerate days = 365 } }
 		hidden_effect = { GER_siemens_apply_diversified_conglomerate = yes }
 		ai_chance = { base = 100 }
+	}
+}
+
+# Eurocopter rebrands as Airbus Helicopters and folds into Airbus Defence and Space (historical: 2014-01-02)
+country_event = {
+	id = GER_airbus.1
+	title = GER_airbus.1.t
+	desc = GER_airbus.1.d
+	picture = GFX_airbus_transport_airplane_event_picture
+	is_triggered_only = yes
+	fire_only_once = yes
+
+	option = {
+		name = GER_airbus.1.a
+		log = "[GetDateText]: [This.GetName]: GER_airbus.1.a executed"
+		set_country_flag = GER_airbus_change
+		unlock_military_industrial_organization_tooltip = mio:GER_airbus_defence_aircraft_manufacturer
+		custom_effect_tooltip = TT_GER_airbus_change_carry_traits
+		hidden_effect = { GER_airbus_change_carry_traits = yes }
 	}
 }

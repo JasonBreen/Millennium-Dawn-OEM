@@ -48,7 +48,10 @@ _TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 if _TOOLS_DIR not in sys.path:
     sys.path.insert(0, _TOOLS_DIR)
 
-from shared_utils import split_cpu_budget  # noqa: E402 — needs the path tweak above
+from shared_utils import (  # noqa: E402 — needs the path tweak above
+    normalize_path_separators,
+    split_cpu_budget,
+)
 
 TXT = ".txt"
 YML = ".yml"
@@ -175,6 +178,7 @@ _REGISTRY = [
             ("common/military_industrial_organization/organizations/", TXT),
             ("common/military_industrial_organization/policies/", TXT),
             ("common/country_leader/", TXT),
+            ("common/doctrines/", TXT),
             # Equipment and its groups are the other half of the dead-bonus
             # check: dropping a base stat there kills bonuses elsewhere.
             ("common/units/equipment/", TXT),
@@ -195,12 +199,14 @@ def _discover_staged(mod_path, argv_files):
         )
         or []
     )
-    discovered = [os.path.relpath(f, mod_path).replace(os.sep, "/") for f in staged]
+    discovered = [
+        normalize_path_separators(os.path.relpath(f, mod_path)) for f in staged
+    ]
     if not argv_files:
         return discovered
 
     passed = [
-        os.path.relpath(os.path.abspath(f), mod_path).replace(os.sep, "/")
+        normalize_path_separators(os.path.relpath(os.path.abspath(f), mod_path))
         for f in argv_files
     ]
     return list(dict.fromkeys(passed + discovered))
