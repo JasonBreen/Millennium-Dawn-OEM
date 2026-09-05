@@ -49,6 +49,7 @@ All files below live in `.claude/docs/`.
 | `agent-conventions.md`           | Rules for `.claude/agents/` definitions: anti-rules, reading |
 | `ai-equipment-reference.md`      | AI equipment variants: role templates, coverage errors       |
 | `ai-strategy-reference.md`       | Unit production: 5 layers, on_action entries, plan files     |
+| `asml-corporate-history-plan.md` | ASML chain plan: HOL owner, namespace `HOL_asml_events`      |
 | `bug-patterns.md`                | Known bug patterns: scan signatures, diff-review questions   |
 | `content-guidelines.md`          | Content checklist: economic, political, military, visual, AI |
 | `debug-commands.md`              | Console recipes for testing MD systems (EU/USoE focus)       |
@@ -83,6 +84,7 @@ All files below live in `.claude/docs/`.
 | `scripting-edge-cases.md`        | Niche pitfalls: temp-var defaults, `^index`, vacant office   |
 | `search-filters.md`              | Every `FOCUS_FILTER_*`, Israel subcats, common mistakes      |
 | `simplification-patterns.md`     | Lookups→arrays, parameterized loc, shared helpers            |
+| `spacex-corporate-history-plan.md` | SpaceX chain plan: USA owner, namespace `USA_spacex_events` |
 | `sound-system.md`                | Sound defs, combat sounds, voicelines, compressors           |
 | `typo-watchlist.md`              | Recurring localisation typos to check in review              |
 | `un-system-reference.md`         | UN votes/elections: invariants, new-resolution recipe        |
