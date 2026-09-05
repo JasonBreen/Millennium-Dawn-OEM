@@ -66,6 +66,7 @@ All files below live in `.claude/docs/`.
 | `known-false-positives.md`       | Intentional bug-lookalikes; review agents must skip them     |
 | `linux-national-adapters.md`     | Linux historical route, read-only adapters, source register  |
 | `linux-system-reference.md`      | Linux ecosystem game rule: state, milestones, USA bridge     |
+| `loading-screen-system.md`       | Loading rotation vs menu picker, `GFX_<x>_small`, generator  |
 | `localisation-rules.md`          | English `.yml` rules: BOM, file naming, key formatting       |
 | `md-custom-modifiers.md`         | Non-vanilla modifier keys, grouped by category               |
 | `meta-effect-patterns.md`        | `meta_effect`/`meta_trigger` dispatch; `[!]` tooltips        |

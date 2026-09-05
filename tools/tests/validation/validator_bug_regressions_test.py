@@ -305,6 +305,7 @@ def test_report_does_not_mutate_prebuilt_issue(dummy_validator):
         file=r"common\decisions\foo.txt",
         line=3,
     )
+    source.file = r"common\decisions\foo.txt"
 
     dummy_validator._report([source], ok_msg="OK", fail_msg="Findings:")
 

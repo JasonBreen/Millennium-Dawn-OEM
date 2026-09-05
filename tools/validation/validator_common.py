@@ -806,7 +806,7 @@ class BaseValidator:
         ),
         re.compile(r"^(?P<file>[^,\n]+?\.\w+),\s*line\s*(?P<line>\d+),\s*(?P<msg>.+)$"),
         re.compile(
-            r"^(?P<prefix>[^\s].*?)\s*-\s*(?P<file>[^\n]+?\.\w+)\s*-\s*(?P<msg>.+)$"
+            r"^(?P<prefix>[^\s].*?)\s+-\s+(?P<file>[^\n]+?\.\w+)\s+-\s+(?P<msg>.+)$"
         ),
     )
 

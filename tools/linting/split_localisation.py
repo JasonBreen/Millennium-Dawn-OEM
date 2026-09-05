@@ -13,6 +13,7 @@ Usage:
 """
 
 import argparse
+import re
 import shutil
 import sys
 from collections import defaultdict
@@ -135,40 +136,36 @@ def parse_yaml_file(filepath: Path) -> Dict[str, str]:
         print(f"Error reading {filepath}: {e}", file=sys.stderr)
         return entries
 
-    # Simple YAML parser for localisation files
-    # Format: key: "value"
-    lines = content.split("\n")
     current_key = None
-
-    for line in lines:
-        line = line.strip()
-
-        # Skip empty lines and comments
-        if not line or line.startswith("#") or line.startswith("l_english:"):
+    for line in content.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith(("#", "l_english:")):
             continue
-
-        # Check for key: value pattern
-        if ":" in line:
-            # Handle multi-line values
-            if line.endswith("\\") or (current_key and not line.startswith(" ")):
-                # This is a continuation or a new key
-                parts = line.split(":", 1)
-                if len(parts) == 2:
-                    current_key = parts[0].strip()
-                    value = parts[1].strip()
-                    entries[current_key] = value
-            else:
-                parts = line.split(":", 1)
-                if len(parts) == 2:
-                    current_key = parts[0].strip()
-                    value = parts[1].strip()
-                    entries[current_key] = value
-        elif current_key and line.startswith(" ") and line.strip():
-            # Continuation of previous value
-            if current_key in entries:
-                entries[current_key] += " " + line.strip()
+        match = re.match(r"^\s*([^\s:#]+)\s*:\s*(.*)$", line)
+        if match:
+            current_key, value = match.groups()
+            entries[current_key] = value
+        elif current_key and line[0].isspace():
+            entries[current_key] += " " + stripped
 
     return entries
+
+
+def format_localisation_value(value: str) -> str:
+    """Preserve the quoting and optional version supplied by localisation syntax."""
+    if re.fullmatch(r'(?:\d+\s*)?"(?:\\.|[^"\\])*"\s*(?:#.*)?', value):
+        return value
+    escaped = value.replace('"', '\\"')
+    return f'"{escaped}"'
+
+
+def remove_incomplete_outputs(paths: List[Path]) -> None:
+    """Remove only the outputs whose absence was checked before this split."""
+    for path in paths:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError as error:
+            print(f"Error removing incomplete output {path}: {error}", file=sys.stderr)
 
 
 def categorize_entries(
@@ -203,18 +200,13 @@ def write_yaml_file(
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
         with open(filepath, "w", encoding="utf-8", newline="") as f:
-            # Write UTF-8 BOM for HOI4 compatibility
-            f.write("\ufeff")
+            f.write("\ufeffl_english:\n")
 
             if header:
                 f.write(f"# {header}\n")
 
-            f.write("l_english:\n")
-
             for key, value in sorted(entries):
-                # Escape special characters in value
-                value_escaped = value.replace('"', '\\"')
-                f.write(f' {key}: "{value_escaped}"\n')
+                f.write(f" {key}: {format_localisation_value(value)}\n")
 
         return True
     except Exception as e:
@@ -231,18 +223,45 @@ def split_file(
     # Parse the file
     entries = parse_yaml_file(filepath)
     print(f"  Found {len(entries)} entries")
+    if not entries:
+        print("  No entries to split; original file retained.")
+        return 0, []
 
     # Categorize entries
     categories = categorize_entries(entries, strategy)
     print(f"  Categorized into {len(categories)} categories")
 
     created_files = []
+    outputs = {}
+    for category in categories:
+        output_name = (
+            category
+            if category.endswith("_l_english")
+            else f"{category.rstrip('_')}_l_english"
+        )
+        outputs[category] = LOCALISATION_DIR / f"{output_name}.yml"
+    if not dry_run:
+        for output_path in outputs.values():
+            if output_path.exists():
+                print(
+                    f"  Refusing to overwrite existing output: {output_path}",
+                    file=sys.stderr,
+                )
+                return 0, []
+        backup_path = filepath.with_suffix(filepath.suffix + ".backup")
+        try:
+            shutil.copy2(filepath, backup_path)
+            print(f"  Backup created: {backup_path.name}")
+        except Exception as e:
+            print(f"  Error: Could not create backup: {e}", file=sys.stderr)
+            return 0, []
 
     # Write each category to a separate file
     for category, category_entries in categories.items():
-        output_path = LOCALISATION_DIR / f"{category}.yml"
+        output_path = outputs[category]
 
         if dry_run:
+            created_files.append(output_path)
             print(
                 f"  [DRY RUN] Would create: {output_path.name} ({len(category_entries)} entries)"
             )
@@ -256,23 +275,17 @@ def split_file(
                 )
             else:
                 print(f"  Failed to create: {output_path.name}")
+                remove_incomplete_outputs(list(outputs.values()))
+                return 0, []
 
     # Create a master file that includes all the split files
     if not dry_run:
         master_path = filepath
-        backup_path = filepath.with_suffix(filepath.suffix + ".backup")
-
-        # Backup original
-        try:
-            shutil.copy2(filepath, backup_path)
-            print(f"  Backup created: {backup_path.name}")
-        except Exception as e:
-            print(f"  Warning: Could not create backup: {e}", file=sys.stderr)
-
         # Write new master file that includes the split files
         with open(master_path, "w", encoding="utf-8", newline="") as f:
+            f.write("\ufeffl_english:\n")
             f.write(
-                "\ufeff# This file has been split into multiple files for better maintainability\n"
+                "# This file has been split into multiple files for better maintainability\n"
             )
             f.write("# Original file backed up as .backup\n")
             f.write("# Include the following files instead:\n")

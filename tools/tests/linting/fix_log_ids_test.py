@@ -5,20 +5,16 @@ enclosing focus/decision block. Tests use real fixtures so the
 finder/writer pipeline is exercised, not mocked.
 """
 
-import subprocess
 import sys
 from pathlib import Path
 
-_CLI = Path(__file__).resolve().parents[2] / "linting" / "fix_log_ids.py"
+import fix_log_ids
 
 
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8", newline="")
-
-
-def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[3]
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        handle.write(content)
 
 
 def _shared_tree(tmp_path: Path) -> Path:
@@ -29,13 +25,9 @@ def _shared_tree(tmp_path: Path) -> Path:
     return root
 
 
-def _run(root: Path, *args):
-    return subprocess.run(
-        [sys.executable, str(_CLI), *args],
-        capture_output=True,
-        text=True,
-        cwd=str(root),
-    )
+def _run(monkeypatch, *args):
+    monkeypatch.setattr(sys, "argv", ["fix_log_ids.py", "--workers", "1", *args])
+    return fix_log_ids.main()
 
 
 def test_focus_finder_dispatches_to_focus_and_decision():
@@ -187,14 +179,18 @@ def test_apply_read_failure_returns_zero(tmp_path, monkeypatch):
     assert count == 0
 
 
-def test_cli_dry_run_reports_completion(tmp_path):
+def test_cli_dry_run_reports_completion(tmp_path, monkeypatch, capsys):
     root = _shared_tree(tmp_path)
     focus = root / "common/national_focus/cli.txt"
-    _write(focus, "focus_tree = { id = TST_cli }\n")
+    original = (
+        "focus_tree = {\n\tfocus = {\n\t\tid = TST_cli\n"
+        '\t\tlog = "[GetDateText]: [Root.GetName]: Focus TST_wrong"\n\t}\n}\n'
+    )
+    _write(focus, original)
 
-    result = _run(root, "--dry-run", "--workers", "1")
-    assert result.returncode == 0
-    assert "Fix Log IDs" in result.stdout
+    assert _run(monkeypatch, "--dry-run", "--files", str(focus)) == 0
+    assert "Would fix 1 log id(s) in 1 file(s)" in capsys.readouterr().out
+    assert focus.read_text(encoding="utf-8") == original
 
 
 def test_apply_returns_zero_for_unknown_path(tmp_path):
@@ -203,22 +199,14 @@ def test_apply_returns_zero_for_unknown_path(tmp_path):
 
     other = tmp_path / "common/ideas/zzz.txt"
     other.parent.mkdir(parents=True, exist_ok=True)
-    other.write_text("ideas = { country = { TST_x = { } } }", encoding="utf-8")
+    _write(other, "ideas = { country = { TST_x = { } } }")
     path, count = fix_file(str(other))
     assert path == str(other)
     assert count == 0
 
 
-def test_cli_writes_fix_when_target_is_repo_root(tmp_path):
-    # The CLI walks the entire mod tree (default --root), so just place a
-    # focus file with a mismatched log under the standard layout and let it
-    # be rewritten by the live parser.
-    target = (
-        _repo_root()
-        / "common"
-        / "national_focus"
-        / "_fixture_fix_log_ids_test_focus.txt"
-    )
+def test_cli_writes_only_the_requested_fixture(tmp_path, monkeypatch, capsys):
+    target = _shared_tree(tmp_path) / "common/national_focus/fixture.txt"
     original_content = (
         "focus_tree = {\n"
         "    id = TST_log_id_fix\n"
@@ -229,11 +217,19 @@ def test_cli_writes_fix_when_target_is_repo_root(tmp_path):
         "}\n"
     )
     _write(target, original_content)
-    try:
-        result = _run(_repo_root(), "--workers", "1")
-        assert result.returncode == 0
-        body = target.read_text(encoding="utf-8")
-        assert "TST_other_id" not in body
-        assert 'Focus TST_log_id_fix"' in body
-    finally:
-        target.unlink(missing_ok=True)
+    untouched = target.with_name("unselected.txt")
+    _write(untouched, original_content)
+    assert _run(monkeypatch, "--files", str(target)) == 0
+    body = target.read_text(encoding="utf-8")
+    assert "TST_other_id" not in body
+    assert 'Focus TST_log_id_fix"' in body
+    assert untouched.read_text(encoding="utf-8") == original_content
+    assert "Fixed 1 log id(s) in 1 file(s)" in capsys.readouterr().out
+
+
+def test_cli_skips_non_focus_and_decision_files(tmp_path, monkeypatch, capsys):
+    target = tmp_path / "common/ideas/unrelated.txt"
+    _write(target, "ideas = {}\n")
+    assert _run(monkeypatch, "--files", str(target)) == 0
+    assert "No focus/decision files to process" in capsys.readouterr().out
+    assert target.read_text(encoding="utf-8") == "ideas = {}\n"

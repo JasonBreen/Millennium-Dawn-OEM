@@ -37,6 +37,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from shared_utils import extract_block_from_text
+from shared_utils import strip_comments as strip_comments
 from validator_common import BaseValidator, Severity, run_validator_main
 
 _SCAN_PATTERNS = [
