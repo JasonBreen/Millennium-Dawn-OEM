@@ -473,7 +473,6 @@ def test_dispatch_and_acceptance_use_frozen_terms_after_staging_changes():
     receiver.update(
         pending_offer_total_cost=900, pending_offer_state=-999, pending_offer_type=5
     )
-    receiver_before = copy.deepcopy(receiver)
     propose(model, chosen)
     investor.update(
         investments_nation_target=1,
@@ -483,12 +482,16 @@ def test_dispatch_and_acceptance_use_frozen_terms_after_staging_changes():
     model.deliver()
     popup = model.popups[0]
     assert popup["recipient"] == 2
-    assert receiver == receiver_before
+    assert receiver["pending_offer_total_cost"] == 900
+    assert receiver["pending_offer_state"] == -999
+    assert receiver["pending_offer_type"] == 5
+    assert receiver["pending_offer_generation^1"] == 1
     assert pending(model)
     model.respond(popup)
     assert investor["treasury"] == 88
-    assert receiver["treasury"] == pytest.approx(receiver_before["treasury"] - 1.2)
+    assert receiver["treasury"] == pytest.approx(99998.8)
     assert receiver["pending_offer_total_cost"] == 900
+    assert "pending_offer_generation^1" not in receiver
     assert investor["project_monetary_cost^0"] == 12
     assert investor["project_array^0"] == -100
     assert not pending(model)
@@ -518,11 +521,15 @@ def test_two_investors_do_not_overwrite_each_others_terms():
     )
     model.deliver()
     assert len(model.popups) == 2
+    assert receiver["pending_offer_generation^1"] == 1
+    assert receiver["pending_offer_generation^3"] == 1
     for popup in list(reversed(model.popups)):
         model.respond(popup)
     assert first["treasury"] == 88
     assert second["treasury"] == 80
     assert receiver["treasury"] == pytest.approx(99996.8)
+    assert "pending_offer_generation^1" not in receiver
+    assert "pending_offer_generation^3" not in receiver
     assert not pending(model, 1) and not pending(model, 3)
 
 
@@ -754,7 +761,7 @@ def test_tracked_description_and_building_name_use_frozen_sender_only():
 def test_retired_popup_cannot_resolve_new_offer_to_same_recipient_and_state(
     option, reload
 ):
-    model, _investor, _receiver, chosen = world()
+    model, _investor, receiver, chosen = world()
     propose(model, chosen)
     model.deliver()
     old_popup = copy.deepcopy(model.popups[0])
@@ -766,16 +773,19 @@ def test_retired_popup_cannot_resolve_new_offer_to_same_recipient_and_state(
     propose(model, chosen)
     model.deliver()
     new_popup = copy.deepcopy(model.popups[-1])
+    assert receiver["pending_offer_generation^1"] == 2
     if reload:
         model = copy.deepcopy(model)
     before = copy.deepcopy((model.countries, model.queue))
     model.respond(old_popup, option=option)
     assert (model.countries, model.queue) == before
     assert pending(model)
+    assert model.countries[2]["vars"]["pending_offer_generation^1"] == 2
     assert not model.charges and not model.project_starts and not model.influence
     model.respond(new_popup)
     assert not pending(model)
     assert model.countries[1]["vars"]["treasury"] == 88
+    assert "pending_offer_generation^1" not in model.countries[2]["vars"]
     assert model.project_starts == [(1, 0)]
 
 
