@@ -4239,6 +4239,15 @@ calculate_additional_expense_rate = {
 	#Compensate for inflation on the final value
 	set_temp_variable = { additional_expenses_inflation = { value = 1 add = modifier@inflation_cost_multiplier_modifier } }
 	multiply_variable = { additional_expenses_rate = additional_expenses_inflation }
+	if = {
+		limit = {
+			OR = {
+				check_variable = { ai_race_finance_outstanding > 0 }
+				check_variable = { ai_race_finance_expense_component > 0 }
+			}
+		}
+		ai_race_refresh_finance_expense = yes
+	}
 
 	# Event Horizon
 	if = {
@@ -4425,6 +4434,15 @@ update_display = {
 	}
 
 	set_variable = { treasury_rate = { value = display_income subtract = display_expense } }
+	if = {
+		limit = {
+			OR = {
+				check_variable = { ai_race_finance_expense_component > 0 }
+				check_variable = { ai_race_finance_rate_component > 0 }
+			}
+		}
+		set_variable = { ai_race_finance_rate_component = ai_race_finance_expense_component }
+	}
 
 	if = { limit = { is_in_array = { global.arabic_countries = THIS.id } }
 		calculate_monthly_arab_spring_change = yes

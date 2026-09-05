@@ -30,8 +30,20 @@ country_event = {
 	is_triggered_only = yes
 	immediate = {
 		log = "[GetDateText]: [ROOT.GetName]: investments_event.3 executed"
-		var:ROOT.investments_nation_target = {
-			send_pending_investment_offer = yes
+		if = {
+			limit = { has_event_target = investment_ai_offer_investor }
+			if = {
+				limit = { investment_ai_offer_matches_context = yes }
+				var:investment_ai_offer_target = {
+					if = {
+						limit = { country_exists = THIS }
+						send_pending_investment_offer = yes
+					}
+				}
+			}
+		}
+		else = {
+			var:ROOT.investments_nation_target = { send_pending_investment_offer = yes }
 		}
 		refresh_investment_gui = yes
 	}
@@ -41,9 +53,17 @@ country_event = {
 country_event = {
 	id = investments_event.10
 	title = investments_event.1.t
-	desc = investments_event.1.d
+	desc = {
+		trigger = { has_event_target = investment_ai_offer_investor }
+		text = ai_race_investment_offer_desc
+	}
+	desc = {
+		trigger = { NOT = { has_event_target = investment_ai_offer_investor } }
+		text = investments_event.1.d
+	}
 	picture = GFX_united_states_dollar
 	is_triggered_only = yes
+	timeout_days = 13
 
 	immediate = {
 		hidden_effect = { initialize_pending_investment_offer = yes }
@@ -134,18 +154,7 @@ country_event = {
 	option = {
 		name = investments_event.1.o2 # refuse
 		log = "[GetDateText]: [This.GetName]: investments_event.1.o2 executed"
-		# FROM is the original investor nation
-		# THIS is the target nation
-		clear_variable = investor_cost
-		clear_variable = pending_offer_total_cost
-		clear_variable = pending_offer_duration
-		clear_variable = pending_offer_amount
-		clear_variable = pending_offer_type
-		clear_variable = pending_offer_state
-		FROM = {
-			country_event = investments_event.11
-		}
-		set_country_flag = { flag = recently_refused_investment@FROM days = 30 value = 1 }
+		refuse_pending_investment_offer = yes
 
 		# AI chance for rejecting
 		ai_chance = {
@@ -264,8 +273,14 @@ country_event = {
 	option = {
 		name = investments_event.2.o1
 		log = "[GetDateText]: [This.GetName]: investments_event.2.o1 executed"
-		clr_country_flag = this_investment_offer_pending@FROM
-		clr_country_flag = investments_ai_pending
+		if = {
+			limit = {
+				NOT = { has_event_target = investment_ai_offer_investor }
+				NOT = { investment_ai_offer_pending = yes }
+			}
+			clr_country_flag = this_investment_offer_pending@FROM
+			clr_country_flag = investments_ai_pending
+		}
 	}
 }
 
@@ -293,6 +308,8 @@ country_event = {
 	trigger = {
 		is_ai = yes
 		NOT = { has_country_flag = investments_ai_pending }
+		NOT = { investment_ai_offer_pending = yes }
+		investment_ai_treasury_above_reserve = yes
 		check_variable = { active_projects < 15 }
 		check_variable = { debt_ratio < 2.50 }
 		check_variable = { interest_rate < 8.000 }
@@ -528,64 +545,7 @@ country_event = {
 				}
 			}
 			if = { limit = { check_variable = { AI_best_score > AI_MIN_STATE_SCORE } }
-				# Project building type
-				set_variable = { project_building_type = 0 }
-				set_variable = { project_type = -1 }
-				set_variable = { project_building_type^project_type = AI_best_type }
-				# Regardless it will always be one for sake of AI balance
-				set_variable = { project_build_amount^-1 = 1 }
-
-				project_monetary_cost_calculation = yes
-
-				# Init Project Variables (writes ^-1 staging slot since project = -1)
-				# AI_best_target is the best state to invest in
-				set_variable = { project = -1 }
-				set_variable = { project_type = project_building_type^-1 }
-				random_state = {
-					limit = { state = ROOT.AI_best_target }
-					precompute_state_construction_data = yes
-				}
-				calculate_project_duration = yes
-
-				# Log Values
-				set_temp_variable = { pd = project_construction_duration^-2 }
-				set_temp_variable = { pbt = project_building_type^-1 }
-				set_temp_variable = { pba = project_build_amount^-1 }
-				set_temp_variable = { abt = AI_best_target }
-				set_temp_variable = { abs = AI_best_score }
-
-				if = {
-					limit = {
-						# Only allow projects between 0 and 700. If construction speed goes negative you'll get instant failing projects
-						check_variable = { project_construction_duration^-2 < 700 }
-						check_variable = { project_construction_duration^-2 > 0 }
-
-						# Check whether it's available
-						var:AI_best_target = { investment_building_slot_available = yes }
-					}
-					var:AI_best_target = {
-						THIS = {
-							set_variable = { ROOT.investments_state_target = THIS.id }
-							# CONTROLLER is pretty obvious
-							CONTROLLER = { set_variable = { ROOT.investments_nation_target = THIS.id } }
-						}
-						ROOT = { country_event = investments_event.3 }
-					}
-					# Guard against overlapping proposals overwriting the -1 staging variables
-					set_country_flag = { flag = investments_ai_pending days = 7 value = 1 }
-					# Temporarily pulls this tag from investment targets for the sake of spreading investments around
-					var:AI_best_country = {
-						set_country_flag = { flag = recently_accepted_an_investment value = 1 days = 21 }
-					}
-
-					log = "[GetDateText]: [This.GetName]: Investment Succeeded: project type [?pbt] (x [?pba]) in [?abt.GetName], Project Duration: [?pd], Nation [?ROOT.investments_nation_target.GetName], score = [?abs]"
-				}
-				else = {
-					var:AI_best_country = {
-						set_country_flag = { flag = recently_failed_to_invest value = 1 days = 75 }
-					}
-					log = "[GetDateText]: [This.GetName]: Investment Failed: project_construction_duration out of range or slot unavailable in [?abt.GetName]. Duration: [?pd], score: [?abs]. Skipping this investment pulse."
-				}
+				investment_ai_propose_project = yes
 			}
 			else = {
 				var:AI_best_country = {

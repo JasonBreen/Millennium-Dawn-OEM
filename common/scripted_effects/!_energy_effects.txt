@@ -18,6 +18,7 @@ calculate_energy_use = {
 	energy_calc_consumption = yes
 	energy_calc_generation = yes
 	energy_calc_balance = yes
+	ai_race_capture_power_sample = yes
 	energy_calc_fuel = yes
 }
 
@@ -194,6 +195,16 @@ energy_calc_consumption = {
 
 	# Static use from special decisions/events, scaled into its display var
 	set_variable = { other_energy_use_display_var = { value = modifier@energy_use multiply = display_multiplier } }
+	if = {
+		limit = {
+			OR = {
+				ai_race_country_initialized = yes
+				has_variable = ai_race_ai_target_stage
+			}
+		}
+		set_variable = { ai_race_accounted_power = { value = modifier@ai_race_applied_power multiply = display_multiplier } }
+		set_variable = { ai_race_sampled_power_multiplier = display_multiplier }
+	}
 
 	# Energy Use from Buildings, computed straight into the persistent per-type display vars with the display multiplier folded in
 	# Base energy use per building: count * (1 + modifier) * base_energy_use * display_multiplier
@@ -793,7 +804,7 @@ change_reactor_grade_material_effect = {
 }
 
 # Effect: buy_fuel_from_the_market_effect
-# Purpose: Adds 50k units of fuel when buying it from the energy screen
+# Purpose: Buys 100k units of fuel through the energy screen's treasury charge.
 buy_fuel_from_the_market_effect = {
 	add_fuel = 100000
 	set_temp_variable = { treasury_change = -0.1 }

@@ -559,6 +559,75 @@ investment_building_slot_available = {
 }
 
 # AI Related STuff
+investment_ai_offer_pending = {
+	check_variable = { investment_ai_offer_target > 0 }
+}
+
+investment_ai_offer_bit_matches = {
+	if = {
+		limit = { has_event_target = $TARGET$ }
+		if = {
+			limit = { check_variable = { var = investment_ai_response_remainder value = $VALUE$ compare = greater_than_or_equals } }
+			check_variable = { event_target:$TARGET$.id = THIS.id }
+			subtract_from_temp_variable = { investment_ai_response_remainder = $VALUE$ }
+		}
+		else = {
+			check_variable = { event_target:$TARGET$.id = investment_ai_offer_target }
+		}
+	}
+	else = { always = no }
+}
+
+investment_ai_offer_matches_context = {
+	has_event_target = investment_ai_offer_investor
+	has_event_target = investment_ai_offer_state
+	investment_ai_offer_pending = yes
+	check_variable = { THIS.id = event_target:investment_ai_offer_investor.id }
+	check_variable = { investment_ai_offer_state = event_target:investment_ai_offer_state.id }
+	check_variable = { investment_ai_offer_generation > 0 }
+	set_temp_variable = { investment_ai_response_remainder = investment_ai_offer_generation }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_20 VALUE = 1048576 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_19 VALUE = 524288 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_18 VALUE = 262144 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_17 VALUE = 131072 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_16 VALUE = 65536 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_15 VALUE = 32768 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_14 VALUE = 16384 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_13 VALUE = 8192 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_12 VALUE = 4096 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_11 VALUE = 2048 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_10 VALUE = 1024 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_9 VALUE = 512 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_8 VALUE = 256 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_7 VALUE = 128 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_6 VALUE = 64 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_5 VALUE = 32 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_4 VALUE = 16 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_3 VALUE = 8 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_2 VALUE = 4 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_1 VALUE = 2 }
+	investment_ai_offer_bit_matches = { TARGET = investment_ai_offer_bit_0 VALUE = 1 }
+	check_variable = { investment_ai_response_remainder = 0 }
+}
+
+investment_ai_offer_matches_response = {
+	has_event_target = investment_ai_offer_investor
+	has_event_target = investment_ai_offer_state
+	check_variable = { FROM.id = event_target:investment_ai_offer_investor.id }
+	check_variable = { pending_offer_generation^FROM.id = FROM.investment_ai_offer_generation }
+	FROM = {
+		investment_ai_offer_matches_context = yes
+		check_variable = { investment_ai_offer_target = PREV.id }
+	}
+}
+
+investment_ai_treasury_above_reserve = {
+	if = {
+		limit = { ai_race_ai_expansion_permitted = yes }
+		check_variable = { treasury > ai_race_ai_savings_target }
+	}
+}
+
 currently_is_considering_a_project = {
 	custom_trigger_tooltip = {
 		tooltip = this_investment_offer_pending_tt
