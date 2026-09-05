@@ -4,11 +4,11 @@ Scope: OEM Corporate History module modelling ASML from the immersion lithograph
 
 Game‑rule semantics:
 
-- Full: initialize, reconstruct only elapsed history, schedule current‑year beats, recover missed visible deliveries, deliver 12 visible beats plus a capstone, then complete
+- Full: initialize, reconstruct only elapsed history, schedule current‑year beats, recover missed visible deliveries, deliver 11 visible beats plus a capstone, then complete
 - Outcomes Only: silent reconstruction picks the historical‑A routes at each beat, then applies exactly one capstone idea
 - Off: creates no `HOL_asml_*` state, schedules nothing, changes nothing outside this chain
-  10|
-  Hidden reconstruct sink: `HOL_asml_events.90` is a callerless Outcomes Only debug sink, not a lifecycle owner. The registered `HOL_asml_reconstruct_history` root delegates silent history only in Outcomes Only; Full monthly dispatch resolves only prior‑year history before generic recovery and never invokes silent reconstruction for a current‑year choice.
+
+Hidden reconstruct sink: `HOL_asml_events.90` is a callerless Outcomes Only debug sink, not a lifecycle owner. The registered `HOL_asml_reconstruct_history` root delegates silent history only in Outcomes Only; Full monthly dispatch resolves only prior‑year history before generic recovery and never invokes silent reconstruction for a current‑year choice.
 
 Do not write any other chain’s identifiers. Hard constraints for this series: writes are confined to `HOL_asml_*` only; no Samsung/KOR cross‑chain coupling; do not reopen or edit SpaceX `USA_spacex_*` material (tracked separately).
 
