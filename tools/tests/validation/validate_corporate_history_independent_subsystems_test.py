@@ -8,7 +8,8 @@ from validate_corporate_history_contract import Validator
 def _write(root: Path, relative: str, text: str) -> None:
     path = root / relative
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
+    with open(path, "w", encoding="utf-8", newline="") as handle:
+        handle.write(text)
 
 
 def _chain() -> dict:
@@ -192,23 +193,32 @@ def test_schema_v6_independent_subsystems_accept_one_local_monthly_owner(tmp_pat
     assert messages == []
 
 
-def test_schema_v6_accepts_explicit_hidden_ninety_save_anchor(tmp_path):
-    _build_fixture(tmp_path)
-    manifest_path = tmp_path / "tools/corporate_history_contract.json"
+def _declare_subsystem_event(root: Path, subsystem_id: str, event_id: str) -> None:
+    manifest_path = root / "tools/corporate_history_contract.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    isr = next(
+    owner = next(
         subsystem
         for subsystem in manifest["independent_subsystems"]
-        if subsystem["id"] == "israel_oem_historical_flavour"
+        if subsystem["id"] == subsystem_id
     )
-    isr["event_ids"].append("ISR_test.90")
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-    events_path = tmp_path / "events/independent_test_events.txt"
-    events_path.write_text(
+    owner["event_ids"].append(event_id)
+    _write(root, "tools/corporate_history_contract.json", json.dumps(manifest))
+
+
+def _build_callerless_israel_event(root: Path, event_id: str, hidden: str) -> None:
+    _build_fixture(root)
+    _declare_subsystem_event(root, "israel_oem_historical_flavour", event_id)
+    events_path = root / "events/independent_test_events.txt"
+    _write(
+        root,
+        "events/independent_test_events.txt",
         events_path.read_text(encoding="utf-8")
-        + "country_event = { id = ISR_test.90 hidden = yes is_triggered_only = yes }\n",
-        encoding="utf-8",
+        + f"country_event = {{ id = {event_id} hidden = {hidden} is_triggered_only = yes }}\n",
     )
+
+
+def test_schema_v6_accepts_explicit_hidden_ninety_save_anchor(tmp_path):
+    _build_callerless_israel_event(tmp_path, "ISR_test.90", "yes")
 
     _validator, messages = _validator_findings(tmp_path)
 
@@ -222,22 +232,7 @@ def test_schema_v6_accepts_explicit_hidden_ninety_save_anchor(tmp_path):
 def test_schema_v6_rejects_non_compatibility_callerless_events(
     tmp_path, event_id, hidden
 ):
-    _build_fixture(tmp_path)
-    manifest_path = tmp_path / "tools/corporate_history_contract.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    isr = next(
-        subsystem
-        for subsystem in manifest["independent_subsystems"]
-        if subsystem["id"] == "israel_oem_historical_flavour"
-    )
-    isr["event_ids"].append(event_id)
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-    events_path = tmp_path / "events/independent_test_events.txt"
-    events_path.write_text(
-        events_path.read_text(encoding="utf-8")
-        + f"country_event = {{ id = {event_id} hidden = {hidden} is_triggered_only = yes }}\n",
-        encoding="utf-8",
-    )
+    _build_callerless_israel_event(tmp_path, event_id, hidden)
 
     _validator, messages = _validator_findings(tmp_path)
 
@@ -488,22 +483,24 @@ def test_schema_v6_rejects_cross_subsystem_event_dispatch(tmp_path):
     )
 
 
-def test_schema_v6_accepts_reachable_intra_subsystem_event_dispatch(tmp_path):
-    _build_fixture(tmp_path)
-    manifest_path = tmp_path / "tools/corporate_history_contract.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    manifest["independent_subsystems"][0]["event_ids"].append("gpu_test.2")
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-    events_path = tmp_path / "events/independent_test_events.txt"
-    events_path.write_text(
+def _build_gpu_event_followup(root: Path, immediate: str) -> None:
+    _build_fixture(root)
+    _declare_subsystem_event(root, "cross_tag_gpu_development", "gpu_test.2")
+    events_path = root / "events/independent_test_events.txt"
+    _write(
+        root,
+        "events/independent_test_events.txt",
         events_path.read_text(encoding="utf-8").replace(
             "country_event = { id = gpu_test.1 is_triggered_only = yes }",
             "country_event = { id = gpu_test.1 is_triggered_only = yes "
-            "immediate = { country_event = gpu_test.2 } }\n"
+            f"immediate = {{ {immediate} }} }}\n"
             "country_event = { id = gpu_test.2 is_triggered_only = yes }",
         ),
-        encoding="utf-8",
     )
+
+
+def test_schema_v6_accepts_reachable_intra_subsystem_event_dispatch(tmp_path):
+    _build_gpu_event_followup(tmp_path, "country_event = gpu_test.2")
 
     _validator, messages = _validator_findings(tmp_path)
 
@@ -511,21 +508,7 @@ def test_schema_v6_accepts_reachable_intra_subsystem_event_dispatch(tmp_path):
 
 
 def test_schema_v6_accepts_event_effect_event_dispatch_within_subsystem(tmp_path):
-    _build_fixture(tmp_path)
-    manifest_path = tmp_path / "tools/corporate_history_contract.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    manifest["independent_subsystems"][0]["event_ids"].append("gpu_test.2")
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-    events_path = tmp_path / "events/independent_test_events.txt"
-    events_path.write_text(
-        events_path.read_text(encoding="utf-8").replace(
-            "country_event = { id = gpu_test.1 is_triggered_only = yes }",
-            "country_event = { id = gpu_test.1 is_triggered_only = yes "
-            "immediate = { gpu_test_event_followup = yes } }\n"
-            "country_event = { id = gpu_test.2 is_triggered_only = yes }",
-        ),
-        encoding="utf-8",
-    )
+    _build_gpu_event_followup(tmp_path, "gpu_test_event_followup = yes")
     effects_path = tmp_path / "common/scripted_effects/independent_test_effects.txt"
     effects_path.write_text(
         effects_path.read_text(encoding="utf-8")
@@ -777,12 +760,18 @@ country_event = { id = fixture_events.90 hidden = yes is_triggered_only = yes }
     return validator, chains
 
 
-def _core_mode_messages(root: Path) -> list[str]:
-    validator, chains = _build_core_mode_fixture(root)
+def _load_core_validation_context(root: Path, namespaces: set[str]):
+    validator = Validator(str(root), no_color=True)
+    chains = validator._load_manifest()
     effect_defs = validator._load_top_level_blocks(["common/scripted_effects/**/*.txt"])
     event_defs = validator._load_events()
-    call_sites = validator._load_event_call_sites(
-        event_defs, effect_defs, {"fixture_events"}
+    call_sites = validator._load_event_call_sites(event_defs, effect_defs, namespaces)
+    return validator, chains, effect_defs, event_defs, call_sites
+
+
+def _core_mode_messages(root: Path) -> list[str]:
+    validator, chains, effect_defs, event_defs, call_sites = (
+        _load_core_validation_context(root, {"fixture_events"})
     )
     return [
         message
@@ -793,6 +782,7 @@ def _core_mode_messages(root: Path) -> list[str]:
 
 
 def test_schema_v6_core_modes_expand_event_effect_event_paths(tmp_path):
+    _build_core_mode_fixture(tmp_path)
     assert _core_mode_messages(tmp_path) == []
 
 
@@ -807,19 +797,7 @@ def test_schema_v6_core_modes_reject_outcomes_event_delivery(tmp_path):
         encoding="utf-8",
     )
 
-    validator = Validator(str(tmp_path), no_color=True)
-    chains = validator._load_manifest()
-    effect_defs = validator._load_top_level_blocks(["common/scripted_effects/**/*.txt"])
-    event_defs = validator._load_events()
-    call_sites = validator._load_event_call_sites(
-        event_defs, effect_defs, {"fixture_events"}
-    )
-    messages = [
-        message
-        for message, _file, _line in validator._validate_core_chain_mode_paths(
-            chains, effect_defs, event_defs, call_sites
-        )
-    ]
+    messages = _core_mode_messages(tmp_path)
 
     assert any("fixture_events.1 is reachable in outcomes_only" in m for m in messages)
     assert any("fixture_events.2 is reachable in outcomes_only" in m for m in messages)
@@ -837,19 +815,7 @@ def test_schema_v6_core_modes_reject_off_reconstruction(tmp_path):
         encoding="utf-8",
     )
 
-    validator = Validator(str(tmp_path), no_color=True)
-    chains = validator._load_manifest()
-    effect_defs = validator._load_top_level_blocks(["common/scripted_effects/**/*.txt"])
-    event_defs = validator._load_events()
-    call_sites = validator._load_event_call_sites(
-        event_defs, effect_defs, {"fixture_events"}
-    )
-    messages = [
-        message
-        for message, _file, _line in validator._validate_core_chain_mode_paths(
-            chains, effect_defs, event_defs, call_sites
-        )
-    ]
+    messages = _core_mode_messages(tmp_path)
 
     assert any(
         "Reconstruction effect USA_fixture_reconstruct_history" in m for m in messages
@@ -865,19 +831,7 @@ def test_schema_v6_core_modes_reject_nonmonthly_host(tmp_path):
         encoding="utf-8",
     )
 
-    validator = Validator(str(tmp_path), no_color=True)
-    chains = validator._load_manifest()
-    effect_defs = validator._load_top_level_blocks(["common/scripted_effects/**/*.txt"])
-    event_defs = validator._load_events()
-    call_sites = validator._load_event_call_sites(
-        event_defs, effect_defs, {"fixture_events"}
-    )
-    messages = [
-        message
-        for message, _file, _line in validator._validate_core_chain_mode_paths(
-            chains, effect_defs, event_defs, call_sites
-        )
-    ]
+    messages = _core_mode_messages(tmp_path)
 
     assert any("reached from forbidden host on_daily_USA" in m for m in messages)
 
@@ -1004,12 +958,10 @@ country_event = { id = fixture_aux_events.1 is_triggered_only = yes }
 """,
     )
 
-    validator = Validator(str(tmp_path), no_color=True)
-    chains = validator._load_manifest()
-    effect_defs = validator._load_top_level_blocks(["common/scripted_effects/**/*.txt"])
-    event_defs = validator._load_events()
-    call_sites = validator._load_event_call_sites(
-        event_defs, effect_defs, {"fixture_events", "fixture_aux_events"}
+    validator, chains, effect_defs, event_defs, call_sites = (
+        _load_core_validation_context(
+            tmp_path, {"fixture_events", "fixture_aux_events"}
+        )
     )
     messages = [
         message

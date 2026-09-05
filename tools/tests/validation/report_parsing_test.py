@@ -87,6 +87,15 @@ def test_parse_unknown_format_returns_as_message():
     assert msg == "free-form message with no path"
 
 
+def test_parse_message_preserves_embedded_hyphenated_path():
+    text = (
+        r"faction icon source did not load (G:\Millennium-Dawn-OEM\test-run\factions.gfx); "
+        "skipping per-template icon checks"
+    )
+
+    assert BaseValidator._parse_result_location(text) == (text, "", 0)
+
+
 def test_issue_normalizes_windows_path_separators():
     issue = Issue(
         severity=Severity.ERROR,

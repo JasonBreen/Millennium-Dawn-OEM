@@ -677,6 +677,8 @@ def test_tools_tests_checkout_consumed_configuration():
     required = {
         ".pre-commit-config.yaml",
         ".claude/docs/typo-watchlist.md",
+        ".claude/docs/linux-system-reference.md",
+        ".claude/docs/linux-national-adapters.md",
         # validate_modifiers_test parses the shipped doc to catch a Paradox
         # format change; without it here the test reads an absent file.
         "resources/documentation/modifiers_documentation.md",
@@ -690,9 +692,25 @@ def test_tools_tests_checkout_consumed_configuration():
         "common/units/equipment",
         # renewable_power_per_cost_test drives the CLI against its live input.
         "common/technologies/industry.txt",
+        "common/technologies/SOV_computing_sovereignty.txt",
+        "common/ai_strategy/SOV.txt",
+        "common/ai_focuses/MD_SOV.txt",
+        "common/doctrines/folders/doctrine_folders.txt",
         "common/decisions",
         "common/opinion_modifiers",
         "common/modifiers",
+        # OEM state-model tests read the shipped owner scripts and their UI.
+        "common/scripted_effects",
+        "common/scripted_triggers",
+        "common/scripted_localisation",
+        "common/dynamic_modifiers",
+        "common/game_rules",
+        "common/on_actions",
+        "common/ideas",
+        "events",
+        "localisation/english",
+        "interface",
+        "docs/src/content/resources",
         ".github/workflows/coding-pipeline.yml",
         ".github/workflows/validator-cache.yml",
         ".github/workflows/nightly-pr-validation.yml",

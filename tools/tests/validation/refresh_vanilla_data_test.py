@@ -49,23 +49,28 @@ def test_main_exits_one_when_no_install(monkeypatch):
     assert rvd_mod.main() == 1
 
 
-def test_main_dispatches_each_target(monkeypatch, tmp_path, capsys):
+@pytest.mark.parametrize("explicit_targets", [False, True])
+def test_main_dispatches_each_target(monkeypatch, tmp_path, capsys, explicit_targets):
     import validation.refresh_vanilla_data as rvd_mod
 
     importlib.reload(rvd_mod)
     monkeypatch.setattr(rvd_mod, "find_hoi4_install", lambda: str(tmp_path))
-    for name in ("defines", "docs", "fonts", "gui", "paths", "sprites"):
+    targets = ("defines", "docs", "fonts", "gui", "paths", "sprites")
+    for name in targets:
         monkeypatch.setitem(rvd_mod._TARGETS, name, lambda n=name: f"{n}: ok")
 
     import sys as _sys
 
-    monkeypatch.setattr(_sys, "argv", ["refresh_vanilla_data.py"])
+    args = ["refresh_vanilla_data.py"]
+    if explicit_targets:
+        args.extend(["--only", *targets])
+    monkeypatch.setattr(_sys, "argv", args)
     rc = rvd_mod.main()
 
     captured = capsys.readouterr()
     assert rc == 0
-    for name in ("defines", "docs", "fonts", "gui", "paths", "sprites"):
-        assert f"{name}: ok" in captured.out
+    for name in targets:
+        assert (f"{name}: ok" in captured.out) == (explicit_targets or name != "docs")
 
 
 def test_main_only_runs_requested_targets(monkeypatch, tmp_path):

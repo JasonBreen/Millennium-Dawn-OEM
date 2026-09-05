@@ -187,6 +187,21 @@ country_event = {
     return "\n\n".join(blocks) + "\n"
 
 
+_COMPLETE_BRANCH = """\tif = {
+\t\tlimit = {
+\t\t\tdate > 2001.3.1
+\t\t\tNOT = { has_idea = USA_test_outcome_a }
+\t\t\tNOT = { has_idea = USA_test_outcome_b }
+\t\t}
+\t\tUSA_test_resolve_capstone = yes
+\t}
+\tif = {
+\t\tlimit = { date > 2001.3.1 }
+\t\tset_country_flag = USA_test_reconstruct_complete
+\t}
+"""
+
+
 def _base_effects():
     return """USA_test_initialize_state = {
 \tif = {
@@ -233,20 +248,7 @@ USA_test_reconstruct_history = {
 \t\t}
 \t\tset_country_flag = USA_test_branch_a
 \t}
-\tif = {
-\t\tlimit = {
-\t\t\tdate > 2001.3.1
-\t\t\tNOT = { has_idea = USA_test_outcome_a }
-\t\t\tNOT = { has_idea = USA_test_outcome_b }
-\t\t}
-\t\tUSA_test_resolve_capstone = yes
-\t}
-\tif = {
-\t\tlimit = { date > 2001.3.1 }
-\t\tset_country_flag = USA_test_reconstruct_complete
-\t}
-}
-"""
+""" + _COMPLETE_BRANCH + "}\n"
 
 
 def _base_core_effects(monthly_registration=True, startup_reconstructs=False):
@@ -1005,21 +1007,6 @@ def test_explicitly_allowed_custom_anchor(tmp_path):
     assert not any(
         "USA_test_events.2 has no direct callers" in message for message in messages
     )
-
-
-_COMPLETE_BRANCH = """\tif = {
-\t\tlimit = {
-\t\t\tdate > 2001.3.1
-\t\t\tNOT = { has_idea = USA_test_outcome_a }
-\t\t\tNOT = { has_idea = USA_test_outcome_b }
-\t\t}
-\t\tUSA_test_resolve_capstone = yes
-\t}
-\tif = {
-\t\tlimit = { date > 2001.3.1 }
-\t\tset_country_flag = USA_test_reconstruct_complete
-\t}
-"""
 
 
 def _reconstruct(branch: str) -> str:
