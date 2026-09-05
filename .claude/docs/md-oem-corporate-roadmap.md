@@ -223,5 +223,5 @@ Every new module added under this roadmap must satisfy:
 1. **State Bounds**: All country variables initialize within declared bounds and clamp after every mutation path.
 2. **Reconstruction Parity**: Late-start reconstruction (2000, 2017, 2026) reproduces correct historical state without orphaned ideas, duplicate flags, or unhandled dates.
 3. **Three-Mode Integrity**: Full mode shows events/decisions; Outcomes Only resolves silently without popup spam; Off cleanly bypasses the chain with zero game impact.
-4. **Energy & Economy Safety**: No phantom generation, direct writes to calculated energy variables, or un-guarded treasury deductions during bankruptcy states.
+4. **Energy & Economy Safety**: No phantom generation, direct writes to calculated energy variables, or unguarded treasury deductions during bankruptcy states.
 5. **Contract Validation**: Registered in `tools/corporate_history_contract.json` and covered by automated regression tests in `tools/tests/`.
