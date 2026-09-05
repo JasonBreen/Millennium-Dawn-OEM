@@ -33,7 +33,7 @@ country_event = {
 		if = {
 			limit = { has_event_target = investment_ai_offer_investor }
 			if = {
-				limit = { investment_ai_offer_pending = yes }
+				limit = { investment_ai_offer_matches_context = yes }
 				var:investment_ai_offer_target = {
 					if = {
 						limit = { country_exists = THIS }
@@ -273,8 +273,14 @@ country_event = {
 	option = {
 		name = investments_event.2.o1
 		log = "[GetDateText]: [This.GetName]: investments_event.2.o1 executed"
-		clr_country_flag = this_investment_offer_pending@FROM
-		clr_country_flag = investments_ai_pending
+		if = {
+			limit = {
+				NOT = { has_event_target = investment_ai_offer_investor }
+				NOT = { investment_ai_offer_pending = yes }
+			}
+			clr_country_flag = this_investment_offer_pending@FROM
+			clr_country_flag = investments_ai_pending
+		}
 	}
 }
 

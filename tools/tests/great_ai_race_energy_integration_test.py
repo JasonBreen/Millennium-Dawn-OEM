@@ -83,7 +83,7 @@ def _recovering(mode="full"):
         ai_race_ai_recovery=1,
         ai_race_stage=1,
         ai_race_current_power_ratio=0.5,
-        fossil_powerplants=1,
+        number_of_fossil_pps=1,
         nuclear_reactors=1,
         nuclear_fuel_consumption=10,
         total_nuclear_reactor_fuel_production=0,
@@ -138,6 +138,19 @@ def test_fuel_ai_cannot_bypass_the_existing_purchase_cost(treasury, bankrupt, ex
     assert (
         race.condition(_modifier(_body(button, "ai_will_do"), "treasury"), 1)
         is expected
+    )
+
+
+@pytest.mark.parametrize("plants", [0, 1])
+@pytest.mark.parametrize("fuel", [399999, 400000, 500000, 999999, 1000000])
+def test_fossil_recovery_uses_owner_plant_count_through_the_market_purchase_range(
+    plants, fuel
+):
+    race, country = _recovering()
+    country["vars"].update(number_of_fossil_pps=plants, fuel=fuel)
+    assert "fossil_powerplants" not in country["vars"]
+    assert race.condition([("ai_race_ai_needs_fossil_fuel", "=", "yes")], 1) is (
+        plants > 0 and fuel < 1000000
     )
 
 

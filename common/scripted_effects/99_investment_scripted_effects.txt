@@ -92,6 +92,7 @@ investment_ai_propose_project = {
 	if = {
 		limit = {
 			NOT = { investment_ai_offer_pending = yes }
+			check_variable = { investment_ai_offer_generation < 2097151 }
 			investment_ai_treasury_above_reserve = yes
 		}
 		set_variable = { project_building_type^-1 = AI_best_type }
@@ -118,7 +119,10 @@ investment_ai_propose_project = {
 					check_variable = { project_construction_duration^-2 > 0 }
 					var:AI_best_target = {
 						selected_investment_building_available = yes
-						CONTROLLER = { country_exists = THIS }
+						CONTROLLER = {
+							country_exists = THIS
+							NOT = { check_variable = { THIS.id = ROOT.id } }
+						}
 					}
 				}
 				var:AI_best_target = {
@@ -146,6 +150,7 @@ investment_ai_propose_project = {
 }
 
 investment_ai_record_offer = {
+	add_to_variable = { investment_ai_offer_generation = 1 }
 	set_variable = { investment_ai_offer_target = investments_nation_target }
 	var:investment_ai_offer_target = {
 		set_variable = { PREV.investment_ai_offer_target_generation = investment_ai_annex_generation }
@@ -161,6 +166,40 @@ investment_ai_record_offer = {
 	add_to_variable = { investment_ai_offer_orphan_day = 15 }
 	save_event_target_as = investment_ai_offer_investor
 	var:investment_ai_offer_state = { save_event_target_as = investment_ai_offer_state }
+	set_temp_variable = { investment_ai_offer_remainder = investment_ai_offer_generation }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_20 VALUE = 1048576 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_19 VALUE = 524288 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_18 VALUE = 262144 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_17 VALUE = 131072 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_16 VALUE = 65536 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_15 VALUE = 32768 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_14 VALUE = 16384 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_13 VALUE = 8192 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_12 VALUE = 4096 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_11 VALUE = 2048 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_10 VALUE = 1024 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_9 VALUE = 512 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_8 VALUE = 256 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_7 VALUE = 128 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_6 VALUE = 64 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_5 VALUE = 32 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_4 VALUE = 16 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_3 VALUE = 8 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_2 VALUE = 4 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_1 VALUE = 2 }
+	investment_ai_capture_offer_bit = { TARGET = investment_ai_offer_bit_0 VALUE = 1 }
+}
+
+# Saved references retain per-event identity; country variables remain mutable.
+investment_ai_capture_offer_bit = {
+	if = {
+		limit = { check_variable = { var = investment_ai_offer_remainder value = $VALUE$ compare = greater_than_or_equals } }
+		save_event_target_as = $TARGET$
+		subtract_from_temp_variable = { investment_ai_offer_remainder = $VALUE$ }
+	}
+	else = {
+		var:investment_ai_offer_target = { save_event_target_as = $TARGET$ }
+	}
 }
 
 investment_ai_clear_offer = {

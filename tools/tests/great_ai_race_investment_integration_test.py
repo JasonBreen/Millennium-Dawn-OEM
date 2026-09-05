@@ -143,6 +143,9 @@ class InvestmentScript(RaceScript):
             } or key.startswith(("var:", "event_target:")):
                 with self.scoped(self.identifier(key, identifier)):
                     result = self.condition(value, self.current)
+            elif key in {"set_temp_variable", "subtract_from_temp_variable"}:
+                self.execute([(key, op, value)], identifier)
+                result = True
             elif key == "country_exists":
                 result = self.countries[self.identifier(value, identifier)]["exists"]
             elif key == "has_event_target":
@@ -744,3 +747,114 @@ def test_tracked_description_and_building_name_use_frozen_sender_only():
     for index, building in enumerate(BUILDING_NAMES, 1):
         assert f"FROM.investment_ai_offer_type = {index}" in helper
         assert f"localization_key = {building}" in helper
+
+
+@pytest.mark.parametrize("option", (0, 1))
+@pytest.mark.parametrize("reload", (False, True))
+def test_retired_popup_cannot_resolve_new_offer_to_same_recipient_and_state(
+    option, reload
+):
+    model, _investor, _receiver, chosen = world()
+    propose(model, chosen)
+    model.deliver()
+    old_popup = copy.deepcopy(model.popups[0])
+    model.invoke("investment_ai_record_recipient_annexation", 2)
+    model.countries[2]["exists"] = False
+    model.advance(15)
+    model.invoke("investment_ai_cleanup_orphaned_offer", 1)
+    model.countries[2]["exists"] = True
+    propose(model, chosen)
+    model.deliver()
+    new_popup = copy.deepcopy(model.popups[-1])
+    if reload:
+        model = copy.deepcopy(model)
+    before = copy.deepcopy((model.countries, model.queue))
+    model.respond(old_popup, option=option)
+    assert (model.countries, model.queue) == before
+    assert pending(model)
+    assert not model.charges and not model.project_starts and not model.influence
+    model.respond(new_popup)
+    assert not pending(model)
+    assert model.countries[1]["vars"]["treasury"] == 88
+    assert model.project_starts == [(1, 0)]
+
+
+def test_retired_dispatch_cannot_deliver_new_offer_a_second_time():
+    model, investor, _receiver, chosen = world()
+    propose(model, chosen)
+    model.invoke("investment_ai_record_recipient_annexation", 2)
+    model.globals["num_days"] += 15
+    model.invoke("investment_ai_cleanup_orphaned_offer", 1)
+    propose(model, chosen)
+    model.deliver()
+    assert len(model.popups) == 1
+    assert investor["investment_ai_offer_generation"] == 2
+    model.respond(model.popups[0])
+    assert investor["treasury"] == 88
+    assert model.project_starts == [(1, 0)]
+
+
+@pytest.mark.parametrize("bit", (0, 10, 20))
+def test_missing_saved_generation_bit_cannot_charge_or_release_offer(bit):
+    model, investor, _receiver, chosen = world()
+    propose(model, chosen)
+    model.deliver()
+    popup = model.popups[0]
+    popup["targets"].pop(f"investment_ai_offer_bit_{bit}")
+    model.respond(popup)
+    assert pending(model)
+    assert investor["treasury"] == 100
+    assert not model.charges and not model.project_starts
+
+
+@pytest.mark.parametrize("generation", [2**bit for bit in range(21)] + [2097151])
+def test_saved_generation_bits_accept_at_each_integer_boundary(generation):
+    model, investor, _receiver, chosen = world()
+    investor["investment_ai_offer_generation"] = generation - 1
+    propose(model, chosen)
+    model.deliver()
+    reloaded = copy.deepcopy(model)
+    reloaded.respond(reloaded.popups[0])
+    assert reloaded.countries[1]["vars"]["investment_ai_offer_generation"] == generation
+    assert reloaded.countries[1]["vars"]["treasury"] == 88
+    assert not pending(reloaded)
+
+
+def test_exhausted_generation_defers_without_wrap_spending_or_failure_penalties():
+    model, investor, _receiver, chosen = world()
+    investor["investment_ai_offer_generation"] = 2097151
+    before = copy.deepcopy(model.countries)
+    propose(model, chosen)
+    assert model.countries == before
+    assert not pending(model)
+    assert not model.queue and not model.charges
+
+
+@pytest.mark.parametrize("legacy", (False, True))
+def test_refusal_notification_cannot_clear_new_offer_lock(legacy):
+    model, investor, _receiver, chosen = world()
+    propose(model, chosen)
+    model.deliver()
+    model.respond(model.popups[0], option=1)
+    propose(model, chosen)
+    model.deliver()
+    notification = next(
+        popup for popup in model.popups if popup["id"] == "investments_event.11"
+    )
+    if legacy:
+        notification["targets"] = {}
+    before = copy.deepcopy(model.countries)
+    model.respond(notification)
+    assert model.countries == before
+    assert pending(model)
+    assert model._flag(model.countries[1]["flags"], "investments_ai_pending")
+    assert investor["investment_ai_offer_generation"] == 2
+
+
+def test_self_investment_cannot_create_ambiguous_scope_identity():
+    model, investor, _receiver, chosen = world()
+    model.countries[-100]["controller"] = 1
+    propose(model, {**chosen, "AI_best_country": 1})
+    assert not pending(model)
+    assert investor.get("investment_ai_offer_generation", 0) == 0
+    assert not model.queue and not model.charges

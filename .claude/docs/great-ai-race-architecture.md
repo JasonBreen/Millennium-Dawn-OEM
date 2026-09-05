@@ -56,6 +56,8 @@ no funded stage. Purchased stages continue accumulating work during capacity sho
 
 - `global.countries` is scanned from 2016 on the first discovery pass and each January.
 - A human can enroll between passes through the dashboard refresh or an eligible stage review.
+- Completing AI technology 7 initializes an eligible human country and announces the category
+  immediately. The 2016 date gate and race modes still apply; repeat initialization is silent.
 - `global.ai_race_all_initialized` records every initialized country independently of eligibility.
 - Active arrays are rebuilt from existing, non-collapsed registry members. Temporary eligibility
   loss never erases paid stages or obligations.
@@ -248,8 +250,16 @@ proposal and delays race purchases. Matching acceptance or rejection resolves th
 acceptance retains the existing charges. The native 13-day response timeout remains in force.
 An orphan is removed only after recipient disappearance and the response window plus a two-day
 dispatch margin. An investment-owned annexation generation records disappearance even when the
-recipient returns between weekly passes. Reload does not renew the deadline. Completion
-notifications cannot clear a newer offer, and race-mode cleanup never clears investment commitments.
+recipient returns between weekly passes. Reload does not renew the deadline.
+
+Each investor assigns a monotonically increasing offer generation. The 21 generation bits are
+captured as saved event targets pointing to the investor or recipient, so their immutable scope
+identities survive delayed dispatch, popup lifetime, annexation, and reload. Matching every bit
+prevents a retired popup from accepting or rejecting a newer offer to the same recipient and
+state. The counter is never cleared or wrapped; exhausting 2,097,151 generations defers further
+autonomous offers without spending or penalties. Dispatch also checks identity before sending.
+Refusal notifications cannot clear a newer offer, and race-mode cleanup never clears investment
+commitments.
 
 ## Decisions and notifications
 

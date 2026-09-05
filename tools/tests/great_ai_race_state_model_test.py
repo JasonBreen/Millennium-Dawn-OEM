@@ -439,6 +439,7 @@ class RaceScript:
         self.countries, self.globals, self.temps = {}, {}, {}
         self.scope_stack = []
         self.global_flags, self.events, self.charges = {}, [], []
+        self.unlocked_categories = []
         self.today = date(2016, 1, 1)
         self.goto(2016, 1)
 
@@ -882,7 +883,9 @@ class RaceScript:
                 self.countries[identifier].setdefault(
                     "dynamic_modifiers", set()
                 ).discard(data["modifier"])
-            elif key in {"log", "unlock_decision_category_tooltip"}:
+            elif key == "unlock_decision_category_tooltip":
+                self.unlocked_categories.append((identifier, operand))
+            elif key == "log":
                 continue
             elif key in self.effects and isinstance(operand, list):
                 arguments = {key: value for key, _op, value in operand}
@@ -1190,6 +1193,36 @@ def test_executed_human_enrollment_between_discovery_and_next_january():
     assert race.globals["ai_race_all_initialized"] == [1, 2]
     assert race.charges == []
     assert not later["vars"].get("ai_race_stage_months")
+
+
+@pytest.mark.parametrize("mode", ["full", "outcomes_only", "disabled"])
+@pytest.mark.parametrize("corporate_mode", ["full", "outcomes_only", "disabled"])
+@pytest.mark.parametrize("year, ai", [(2015, False), (2016, False), (2016, True)])
+def test_technology_completion_announces_human_enrollment_once_before_interaction(
+    mode, corporate_mode, year, ai
+):
+    race = RaceScript(mode, corporate_mode)
+    country = race.country(1, ai=ai)
+    race.goto(year, 6)
+    technology = _named_block(
+        (ROOT / "common/technologies/engineering.txt").read_text(encoding="utf-8"),
+        "artificial_intelligence_7",
+    )
+    completed = _parse_race_script(_named_block(technology, "on_research_complete"))[
+        "on_research_complete"
+    ]
+    race.execute(completed, 1)
+    eligible_human = mode != "disabled" and year >= 2016 and not ai
+    assert race.unlocked_categories == (
+        [(1, "AI_RACE_category")] if eligible_human else []
+    )
+    assert race.globals.get("ai_race_all_initialized", []) == (
+        [1] if eligible_human else []
+    )
+    race.execute(completed, 1)
+    assert len(race.unlocked_categories) == int(eligible_human)
+    assert race.charges == country["ledger"] == []
+    assert country["vars"].get("ai_race_stage", 0) == 0
 
 
 def test_executed_ranking_stage_progress_capability_id_and_frontier_are_distinct():
