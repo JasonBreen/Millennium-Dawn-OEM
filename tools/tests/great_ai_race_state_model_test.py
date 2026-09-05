@@ -537,26 +537,30 @@ class RaceScript:
             flags[name] is None or flags[name] > self.globals["num_days"]
         )
 
+    def _active_statements(self, statements, identifier):
+        """Resolve branches lazily so preceding effects can change later limits."""
+        matched = False
+        for key, comparison, operand in statements:
+            if key not in {"if", "else_if", "else"}:
+                yield key, comparison, operand
+                continue
+            if key == "if":
+                matched = False
+            data = {name: value for name, _op, value in operand}
+            if not matched and (
+                key == "else" or self.condition(data["limit"], identifier)
+            ):
+                matched = True
+                yield key, comparison, [
+                    entry for entry in operand if entry[0] != "limit"
+                ]
+
     def condition(self, statements, identifier):
         country = self.countries[identifier]
         outcomes = []
-        matched = False
-        for key, comparison, operand in statements:
+        for key, comparison, operand in self._active_statements(statements, identifier):
             if key in {"if", "else_if", "else"}:
-                data = {key: value for key, _op, value in operand}
-                if key == "if":
-                    matched = False
-                if not matched and (
-                    key == "else" or self.condition(data["limit"], identifier)
-                ):
-                    matched = True
-                    outcomes.append(
-                        self.condition(
-                            [entry for entry in operand if entry[0] != "limit"],
-                            identifier,
-                        )
-                    )
-                continue
+                result = self.condition(operand, identifier)
             elif key in {"AND", "OR", "NOT"}:
                 values = [self.condition([entry], identifier) for entry in operand]
                 result = any(values) if key == "OR" else all(values)
@@ -740,19 +744,11 @@ class RaceScript:
             self.execute(self.effects[name], identifier)
 
     def execute(self, statements, identifier):
-        matched = False
-        for key, _comparison, operand in statements:
+        for key, _comparison, operand in self._active_statements(
+            statements, identifier
+        ):
             if key in {"if", "else_if", "else"}:
-                data = {key: value for key, _op, value in operand}
-                if key == "if":
-                    matched = False
-                if not matched and (
-                    key == "else" or self.condition(data["limit"], identifier)
-                ):
-                    matched = True
-                    self.execute(
-                        [entry for entry in operand if entry[0] != "limit"], identifier
-                    )
+                self.execute(operand, identifier)
             elif key.startswith("var:"):
                 self.scope_stack.append(identifier)
                 try:
@@ -863,16 +859,24 @@ class RaceScript:
                     data = (
                         {key: value for key, _op, value in operand}
                         if isinstance(operand, list)
-                        else {"flag": operand}
+                        else {"flag": operand, "value": "1"}
                     )
+                    # This harness models shorthand presence checks, which reject zero.
+                    if float(data.get("value", 0)) == 0:
+                        flags.pop(data["flag"], None)
+                        continue
                     flags[data["flag"]] = (
                         self.globals["num_days"] + float(data["days"])
                         if "days" in data
                         else None
                     )
             elif key in {"country_event", "news_event"}:
-                data = {key: value for key, _op, value in operand}
-                self.events.append((identifier, data["id"]))
+                event_id = (
+                    dict((name, value) for name, _op, value in operand)["id"]
+                    if isinstance(operand, list)
+                    else operand
+                )
+                self.events.append((identifier, event_id))
             elif key == "remove_dynamic_modifier":
                 data = {key: value for key, _op, value in operand}
                 self.countries[identifier].setdefault(
@@ -900,6 +904,71 @@ class RaceScript:
                 self.run(key, identifier)
             else:
                 raise AssertionError(f"Unsupported effect {key}")
+
+
+@pytest.mark.parametrize("initial, expected", [(0, 23), (1, 15), (2, 18)])
+def test_harness_branches_observe_mutations_and_keep_nested_chains_independent(
+    initial, expected
+):
+    race = RaceScript()
+    country = race.country(1)
+    country["vars"]["counter"] = initial
+    script = _parse_race_script("""
+        effects = {
+            if = {
+                limit = { check_variable = { counter = 0 } }
+                set_variable = { counter = 1 }
+                if = {
+                    limit = { check_variable = { counter = 2 } }
+                    set_variable = { counter = 100 }
+                }
+                else_if = {
+                    limit = { check_variable = { counter = 1 } }
+                    add_to_variable = { counter = 2 }
+                }
+                else = { set_variable = { counter = 1000 } }
+            }
+            else_if = {
+                limit = { check_variable = { counter = 1 } }
+                add_to_variable = { counter = 4 }
+            }
+            else = { add_to_variable = { counter = 6 } }
+            if = {
+                limit = { check_variable = { counter > 4 } }
+                add_to_variable = { counter = 10 }
+            }
+            else = { add_to_variable = { counter = 20 } }
+        }
+        trigger = {
+            if = {
+                limit = { check_variable = { counter > 20 } }
+                check_variable = { counter = 23 }
+            }
+            else = { check_variable = { counter < 20 } }
+        }
+        """)
+    race.execute(script["effects"], 1)
+    assert country["vars"]["counter"] == expected
+    assert race.condition(script["trigger"], 1)
+    country["vars"]["counter"] = 24
+    assert not race.condition(script["trigger"], 1)
+
+
+@pytest.mark.parametrize(
+    "value, present", [("", False), ("value = 0", False), ("value = 1", True)]
+)
+def test_harness_timed_flag_presence_requires_nonzero_value(value, present):
+    race = RaceScript()
+    country = race.country(1)
+    statements = _parse_race_script(
+        f"effect = {{ set_country_flag = {{ flag = pending days = 9 {value} }} }}"
+    )["effect"]
+    race.execute(statements, 1)
+    assert race._flag(country["flags"], "pending") is present
+    race.goto(2016, 1, 9)
+    assert race._flag(country["flags"], "pending") is present
+    race.goto(2016, 1, 10)
+    assert not race._flag(country["flags"], "pending")
 
 
 def _enrolled_race(
