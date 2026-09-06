@@ -238,7 +238,10 @@ investment_ai_cleanup_orphaned_offer = {
 
 initialize_pending_investment_offer = {
 	if = {
-		limit = { NOT = { has_event_target = investment_ai_offer_investor } }
+		limit = { has_event_target = investment_ai_offer_investor }
+		set_variable = { pending_offer_generation^FROM.id = FROM.investment_ai_offer_generation }
+	}
+	else = {
 		set_variable = { investor_cost = FROM.project_monetary_cost_effect }
 		multiply_variable = { investor_cost = 0.1 }
 		set_variable = { pending_offer_total_cost = FROM.project_monetary_cost^-1 }
@@ -281,6 +284,7 @@ accept_pending_investment_offer = {
 				commit_pending_investment_offer = yes
 			}
 			FROM = { investment_ai_clear_offer = yes }
+			clear_variable = pending_offer_generation^FROM.id
 		}
 	}
 	else = {
@@ -336,6 +340,7 @@ refuse_pending_investment_offer = {
 		if = {
 			limit = { investment_ai_offer_matches_response = yes }
 			FROM = { investment_ai_clear_offer = yes }
+			clear_variable = pending_offer_generation^FROM.id
 			set_temp_variable = { investment_offer_resolved = 1 }
 		}
 	}
