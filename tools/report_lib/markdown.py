@@ -13,7 +13,7 @@ Two renderings come out of the same builder:
 """
 
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, DefaultDict, Dict, List, Optional, Tuple
 from urllib.parse import quote
 
 from .comment import REPORT_MARKER
@@ -354,7 +354,7 @@ def _render_validator_sections(
     category. Clean validators are omitted and counted in a single line so the
     summary is not a wall of empty dropdowns.
     """
-    by_validator: Dict[str, Dict[str, List[Issue]]] = defaultdict(
+    by_validator: DefaultDict[str, DefaultDict[str, List[Issue]]] = defaultdict(
         lambda: defaultdict(list)
     )
     for issue in issues:
@@ -497,12 +497,13 @@ def _render_raw_logs(runs: List[ValidatorRun]) -> str:
 
     parts = ["<details>", "<summary>Full raw logs</summary>", ""]
     for run in runs:
-        if not run.log_text or not run.log_text.strip():
+        log_text = run.log_text
+        if not log_text or not log_text.strip():
             continue
         parts.append(f"#### {run.title}")
         parts.append("")
         parts.append("```")
-        parts.append(run.log_text.rstrip())
+        parts.append(log_text.rstrip())
         parts.append("```")
         parts.append("")
     parts.append("</details>")
