@@ -188,7 +188,7 @@ def test_generated_names_and_roles_have_english_localisation(manifest):
 
 def test_reserved_successors_and_political_civilian_identity_are_separate(manifest):
     output = GENERATOR.render(manifest)
-    registry = output["common/scripted_effects/01_targeted_operations_registry.txt"]
+    registry = output["common/scripted_effects/81_targeted_operations_registry.txt"]
     assert "global.TOP_registry_capacity = 142" in registry
     for field in ("ct", "leader", "created", "destroyed", "window"):
         assert f"resize_array = {{ global.TOP_group_{field} = 22 }}" in registry
@@ -207,5 +207,5 @@ def test_reserved_successors_and_political_civilian_identity_are_separate(manife
     for ident in range(129, 142):
         assert f"TOP_authored_role_eligible = {{ TARGET = {ident} }}" in registry
         assert f"global.TOP_political^{ident} = 1" in registry
-    successors = output["common/scripted_effects/01_targeted_operations_successors.txt"]
+    successors = output["common/scripted_effects/82_targeted_operations_successors.txt"]
     assert "TOP_person_129" not in successors

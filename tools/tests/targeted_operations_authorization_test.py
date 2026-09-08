@@ -13,9 +13,9 @@ from great_ai_race_state_model_test import (
 from targeted_operations_helpers_test import TargetedScript
 
 ROOT = Path(__file__).resolve().parents[2]
-EFFECT_PATH = "common/scripted_effects/02_targeted_operations_authorization_effects.txt"
+EFFECT_PATH = "common/scripted_effects/88_targeted_operations_authorization_effects.txt"
 TRIGGER_PATH = (
-    "common/scripted_triggers/02_targeted_operations_authorization_triggers.txt"
+    "common/scripted_triggers/84_targeted_operations_authorization_triggers.txt"
 )
 EVENT_PATH = "events/Targeted Operations.txt"
 
@@ -32,12 +32,12 @@ class ReviewScript(TargetedScript):
     def __init__(self, designated=True):
         self.effects = _parse_race_script(source(EFFECT_PATH))
         core = _parse_race_script(
-            source("common/scripted_effects/00_targeted_operations_effects.txt")
+            source("common/scripted_effects/85_targeted_operations_effects.txt")
         )
         self.effects.update(core)
         self.effects.update(
             _parse_race_script(
-                source("common/scripted_effects/04_targeted_operations_cases.txt")
+                source("common/scripted_effects/84_targeted_operations_cases.txt")
             )
         )
         self.effects.update(
@@ -49,12 +49,12 @@ class ReviewScript(TargetedScript):
         )
         self.triggers = _parse_race_script(source(TRIGGER_PATH))
         core_triggers = _parse_race_script(
-            source("common/scripted_triggers/01_targeted_operations_triggers.txt")
+            source("common/scripted_triggers/83_targeted_operations_triggers.txt")
         )
         self.triggers.update(core_triggers)
         self.triggers.update(
             _parse_race_script(
-                source("common/scripted_triggers/04_targeted_operations_cases.txt")
+                source("common/scripted_triggers/82_targeted_operations_cases.txt")
             )
         )
         self.countries = {

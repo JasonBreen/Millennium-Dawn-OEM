@@ -106,7 +106,7 @@ def test_oef_consent_and_unilateral_choices_authorize_operations():
 
 def test_legacy_outcome_adapter_cannot_reenter_the_canonical_resolver():
     adapter = _named_block(
-        source("common/scripted_effects/01_targeted_operations_legacy_effects.txt"),
+        source("common/scripted_effects/80_targeted_operations_legacy_effects.txt"),
         "TOP_apply_legacy_outcome",
     )
     assert "TOP_capture_target" not in adapter
@@ -118,7 +118,7 @@ def test_legacy_outcome_adapter_cannot_reenter_the_canonical_resolver():
 def test_recapture_cannot_repeat_legacy_rewards():
     parsed = _parse_race_script(
         _named_block(
-            source("common/scripted_effects/01_targeted_operations_legacy_effects.txt"),
+            source("common/scripted_effects/80_targeted_operations_legacy_effects.txt"),
             "TOP_apply_legacy_outcome",
         )
     )["TOP_apply_legacy_outcome"]
@@ -160,7 +160,7 @@ def test_recapture_cannot_repeat_legacy_rewards():
 )
 def test_iraq_progress_reads_each_terminal_person_once(statuses, expected):
     text = _named_block(
-        source("common/scripted_effects/01_targeted_operations_legacy_effects.txt"),
+        source("common/scripted_effects/80_targeted_operations_legacy_effects.txt"),
         "TOP_update_iraq_progress",
     )
     loop = _parse_race_script(_named_block(text, "for_loop_effect"))["for_loop_effect"]
@@ -202,7 +202,7 @@ def test_cards_distinguish_custody_and_death():
 
 def test_registered_character_removal_checks_the_person_before_each_removal():
     text = _named_block(
-        source("common/scripted_effects/01_targeted_operations_legacy_effects.txt"),
+        source("common/scripted_effects/80_targeted_operations_legacy_effects.txt"),
         "TOP_retire_registered_character",
     )
     parsed = _parse_race_script(text)["TOP_retire_registered_character"]
@@ -246,7 +246,7 @@ def test_registered_character_removal_checks_the_person_before_each_removal():
 
 def test_ttp_office_uses_active_canonical_successor_and_preserves_off_setter():
     adapter = _named_block(
-        source("common/scripted_effects/01_targeted_operations_legacy_effects.txt"),
+        source("common/scripted_effects/80_targeted_operations_legacy_effects.txt"),
         "TOP_apply_office_successor",
     )
     assert "global.TOP_status^TOP_target = 1" in adapter
@@ -279,7 +279,7 @@ def test_soleimani_historical_report_cannot_remove_an_active_target():
 
 def test_bin_laden_release_reopens_legacy_hunt_without_replaying_rewards():
     release = _named_block(
-        source("common/scripted_effects/01_targeted_operations_legacy_effects.txt"),
+        source("common/scripted_effects/80_targeted_operations_legacy_effects.txt"),
         "TOP_apply_legacy_release",
     )
     assert "global.TOP_status^1 = 1" in release
@@ -304,7 +304,7 @@ def test_country_movement_setters_share_registry_office(tag, group):
 
 
 def test_office_dispatch_never_replaces_ordinary_host_governments():
-    text = source("common/scripted_effects/01_targeted_operations_legacy_effects.txt")
+    text = source("common/scripted_effects/80_targeted_operations_legacy_effects.txt")
     office = _named_block(text, "TOP_apply_office_successor")
     for tag in ("AQY", "ISI", "TTP", "SHB"):
         body = _named_block(office, tag)
@@ -322,7 +322,7 @@ def test_office_dispatch_never_replaces_ordinary_host_governments():
 
 
 def test_legacy_lethal_news_waits_for_confirmation_and_consumes_its_pending_delivery():
-    text = source("common/scripted_effects/01_targeted_operations_legacy_effects.txt")
+    text = source("common/scripted_effects/80_targeted_operations_legacy_effects.txt")
     outcome = _named_block(text, "TOP_apply_legacy_outcome")
     report = _named_block(text, "TOP_apply_legacy_assessment")
     assert "TOP_legacy_report_pending^TOP_target = 1" in outcome

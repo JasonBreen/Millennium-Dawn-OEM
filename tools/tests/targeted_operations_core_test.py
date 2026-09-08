@@ -26,10 +26,10 @@ class TargetScript(TargetedScript):
     def __init__(self):
         self.effects = {}
         for filename in (
-            "00_targeted_operations_effects.txt",
-            "01_targeted_operations_world.txt",
-            "01_targeted_operations_registry.txt",
-            "04_targeted_operations_cases.txt",
+            "85_targeted_operations_effects.txt",
+            "87_targeted_operations_world.txt",
+            "81_targeted_operations_registry.txt",
+            "84_targeted_operations_cases.txt",
         ):
             self.effects.update(
                 _parse_race_script(
@@ -39,7 +39,7 @@ class TargetScript(TargetedScript):
                 )
             )
         succession = (
-            ROOT / "common/scripted_effects/01_targeted_operations_successors.txt"
+            ROOT / "common/scripted_effects/82_targeted_operations_successors.txt"
         ).read_text(encoding="utf-8")
         self.effects.update(
             _parse_race_script(
@@ -48,13 +48,13 @@ class TargetScript(TargetedScript):
         )
         self.triggers = _parse_race_script(
             (
-                ROOT / "common/scripted_triggers/01_targeted_operations_triggers.txt"
+                ROOT / "common/scripted_triggers/83_targeted_operations_triggers.txt"
             ).read_text(encoding="utf-8")
         )
         self.triggers.update(
             _parse_race_script(
                 (
-                    ROOT / "common/scripted_triggers/04_targeted_operations_cases.txt"
+                    ROOT / "common/scripted_triggers/82_targeted_operations_cases.txt"
                 ).read_text(encoding="utf-8")
             )
         )

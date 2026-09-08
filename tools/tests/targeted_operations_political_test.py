@@ -19,7 +19,7 @@ class PoliticalScript(TargetedScript):
 
     def __init__(self):
         source = (
-            ROOT / "common/scripted_effects/03_targeted_operations_political_roster.txt"
+            ROOT / "common/scripted_effects/89_targeted_operations_political_roster.txt"
         ).read_text(encoding="utf-8")
         # Country-leader traits are an engine-owned literal list, outside this evaluator.
         self.effects = _parse_race_script(
@@ -28,7 +28,7 @@ class PoliticalScript(TargetedScript):
         self.triggers = _parse_race_script(
             (
                 ROOT
-                / "common/scripted_triggers/03_targeted_operations_political_roster.txt"
+                / "common/scripted_triggers/80_targeted_operations_political_roster.txt"
             ).read_text(encoding="utf-8")
         )
         self.tags = {

@@ -6,8 +6,8 @@ from targeted_operations_core_test import TargetScript
 from targeted_operations_helpers_test import TargetedScript
 
 ROOT = Path(__file__).resolve().parents[2]
-EFFECTS = ROOT / "common/scripted_effects/03_targeted_operations_security.txt"
-TRIGGERS = ROOT / "common/scripted_triggers/03_targeted_operations_security.txt"
+EFFECTS = ROOT / "common/scripted_effects/83_targeted_operations_security.txt"
+TRIGGERS = ROOT / "common/scripted_triggers/81_targeted_operations_security.txt"
 
 
 class SecurityScript(TargetedScript):

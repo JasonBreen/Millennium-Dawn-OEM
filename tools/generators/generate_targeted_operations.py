@@ -440,8 +440,8 @@ def render(data: dict) -> dict[str, str]:
         + "\n}\n"
     )
     return {
-        "common/scripted_effects/01_targeted_operations_registry.txt": registry(data),
-        "common/scripted_effects/01_targeted_operations_successors.txt": successors(
+        "common/scripted_effects/81_targeted_operations_registry.txt": registry(data),
+        "common/scripted_effects/82_targeted_operations_successors.txt": successors(
             data
         ),
         "common/raids/targeted_operations_raids.txt": raids,
