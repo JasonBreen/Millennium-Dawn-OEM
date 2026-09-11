@@ -36,6 +36,20 @@ def enabled_branch(text):
     return branch
 
 
+def test_ukrainian_leader_rotation_preserves_target_removal_guard():
+    text = source("common/scripted_effects/UKR_political_leaders.txt")
+    marker = re.search(
+        r"if\s*=\s*\{\s*limit\s*=\s*\{\s*OR\s*=\s*\{\s*TOP_enabled\s*=\s*no",
+        text,
+    )
+    assert marker
+    guard = _extract_block(text, marker.start())
+    assert "global.TOP_status^132 < 2" in _named_block(guard, "limit")
+    assert "kill_country_leader = yes" in guard
+    assert 'name = "Volodymyr Zelenskyy"' in guard
+    assert text.count('name = "Volodymyr Zelenskyy"') == 1
+
+
 @pytest.mark.parametrize("name,target", IRAQ)
 def test_iraq_capture_events_have_one_authoritative_enabled_outcome(name, target):
     text = event(f"iraqi_MNF.{target - 46}", "events/Middle East Peace Plan.txt")
