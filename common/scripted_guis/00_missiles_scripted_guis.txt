@@ -115,7 +115,16 @@ scripted_gui = {
 			}
 			ct_gui_ledger_button_click = {
 				set_variable = { var_open_MD_CT_gui = 2 }
-				if = { limit = { TOP_enabled = yes } TOP_open_dossiers = yes }
+				if = {
+					limit = { TOP_enabled = yes }
+					if = {
+						limit = { no_jihadist_government = yes }
+						set_variable = { TOP_open = 0 }
+						set_variable = { TOP_security_open = 0 }
+						TOP_refresh_view = yes
+					}
+					else = { TOP_open_dossiers = yes }
+				}
 				clear_variable = var_open_MD_space_gui
 				clear_variable = var_open_MD_PMC_gui
 				clear_variable = var_open_MD_UN_gui
