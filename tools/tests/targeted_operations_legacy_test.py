@@ -56,7 +56,17 @@ def test_ct_ledger_preserves_main_navigation_and_explicit_top_access():
     top_navigation = _named_block(ct_click, "if")
     assert "TOP_enabled = yes" in _named_block(top_navigation, "limit")
     legacy_navigation = _named_block(top_navigation.partition("{")[2], "if")
-    assert "no_jihadist_government = yes" in _named_block(legacy_navigation, "limit")
+    legacy_gate = _named_block(legacy_navigation, "limit")
+    ct_gui = _named_block(
+        source("common/scripted_guis/00_missiles_scripted_guis.txt"), "MD_CT_system_gui"
+    )
+    ct_visibility = _named_block(ct_gui, "visible")
+    for condition in (
+        "NOT = { salafist_caliphate_are_in_power = yes }",
+        "NOT = { salafist_caliphate_are_in_coalition = yes }",
+    ):
+        assert condition in legacy_gate
+        assert condition in ct_visibility
     assert "TOP_open_dossiers = yes" not in legacy_navigation
     for token in (
         "set_variable = { TOP_open = 0 }",
@@ -66,9 +76,6 @@ def test_ct_ledger_preserves_main_navigation_and_explicit_top_access():
         assert token in legacy_navigation
     assert "TOP_open_dossiers = yes" in _named_block(top_navigation, "else")
 
-    ct_gui = _named_block(
-        source("common/scripted_guis/00_missiles_scripted_guis.txt"), "MD_CT_system_gui"
-    )
     assert "TOP_open_dossiers = yes" in _named_block(
         _named_block(ct_gui, "effects"), "TOP_open_button_click"
     )

@@ -248,6 +248,42 @@ def test_tools_checkout_exposes_consumed_configuration():
     assert required <= sparse
 
 
+@pytest.mark.parametrize(
+    "workflow_name,job_name,checkout_name",
+    (
+        ("test-suite.yml", "tools-tests", "Checkout tools test tree"),
+        ("tools-validation.yml", "checks", "Checkout (unit tests)"),
+    ),
+)
+def test_unit_checkouts_include_targeted_operations_sources(
+    workflow_name, job_name, checkout_name
+):
+    workflow = yaml.safe_load(
+        (CI_WORKFLOW.parent / workflow_name).read_text(encoding="utf-8")
+    )
+    checkout = next(
+        step
+        for step in workflow["jobs"][job_name]["steps"]
+        if step.get("name") == checkout_name
+    )
+    sparse = set(checkout["with"]["sparse-checkout"].split())
+    for required in (
+        ".github/workflows/docs-quality.yml",
+        ".github/workflows/tools-validation.yml",
+        "common/scripted_guis/00_missiles_scripted_guis.txt",
+        "common/scripted_guis/01_targeted_operations_gui.txt",
+        "common/scripted_guis/03_targeted_operations_security.txt",
+        "common/scripted_effects/01_targeted_operations_view.txt",
+        "interface/MD_countrymissilesview.gui",
+        "interface/targeted_operations.gui",
+        "interface/targeted_operations_security.gui",
+    ):
+        assert any(
+            required == entry or required.startswith(entry.rstrip("/") + "/")
+            for entry in sparse
+        ), (workflow_name, required)
+
+
 def test_file_paths_run_in_a_lightweight_index_job():
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
     detect = workflow["jobs"]["detect-changes"]
