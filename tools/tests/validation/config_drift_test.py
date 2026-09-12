@@ -303,11 +303,27 @@ def test_detect_changes_uses_python_grouping():
     assert "dorny/paths-filter" not in text
     assert "filter: blob:none" in text
     assert "git diff --name-status -z" in text
+    detect_script = next(
+        step["run"]
+        for step in detect["steps"]
+        if step.get("name") == "Derive changed files"
+    )
+    assert re.search(
+        r'git diff --unified=0 "\$merge_base" "\$HEAD_SHA" -- \\\n'
+        r"\s+localisation/english/MD_politics_view_parties_l_english\.yml \\\n"
+        r'\s+"\$hook_path" > \.\./party-loc-scope\.diff',
+        detect_script,
+    )
+    assert "party-loc-scope.diff" in text
+    assert next(
+        step
+        for step in detect["steps"]
+        if step.get("name") == "Derive changed files"
+    )["working-directory"] == "pr-head"
     assert "collect_changed_files.py" in text
     assert "change_groups.py" in text
     assert "full_suite" in detect["outputs"]
     assert "tools" in detect["outputs"]
-    assert any(step.get("name") == "Upload changed files" for step in detect["steps"])
     checkout = next(
         step for step in detect["steps"] if step.get("name") == "Checkout PR index"
     )
@@ -328,6 +344,11 @@ def test_detect_changes_uses_python_grouping():
         if step.get("name") == "Derive changed files"
     )
     assert "../tooling/tools/validation/collect_changed_files.py" in derive
+    upload = next(
+        step for step in detect["steps"] if step.get("name") == "Upload changed files"
+    )
+    assert "changed-files.txt" in upload["with"]["path"]
+    assert "party-loc-scope.diff" in upload["with"]["path"]
     for path in ("resources/documentation/modifiers_documentation.md",):
         assert classify([path])["full_suite"] is True
 
@@ -434,6 +455,25 @@ def test_prepare_workspace_separates_pr_data_from_validation_tooling():
     assert "workflow_dispatch" not in valcache["if"]
     assert "steps.toolshash.outputs.hash" in valcache["with"]["key"]
     assert "base-sha" not in valcache["with"]["key"]
+
+
+def test_targeted_b_downloads_and_hands_off_party_loc_scope():
+    workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
+    steps = workflow["jobs"]["mod-tests"]["steps"]
+    download = next(
+        step
+        for step in steps
+        if step.get("name") == "Download party localisation scope"
+    )
+    assert download["if"] == "matrix.batch == 'targeted-b'"
+    assert download["with"] == {
+        "name": "changed-files",
+        "path": "validation-scope",
+    }
+    batch = next(step for step in steps if step.get("name") == "Run validator batch")
+    assert "MD_PARTY_LOC_DIFF" in batch["env"]
+    assert "validation-scope/party-loc-scope.diff" in batch["env"]["MD_PARTY_LOC_DIFF"]
+    assert "targeted-b" in batch["env"]["MD_PARTY_LOC_DIFF"]
 
 
 def test_mod_core_runs_extra_checks_after_batch():
