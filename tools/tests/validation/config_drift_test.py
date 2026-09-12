@@ -315,11 +315,14 @@ def test_detect_changes_uses_python_grouping():
         detect_script,
     )
     assert "party-loc-scope.diff" in text
-    assert next(
-        step
-        for step in detect["steps"]
-        if step.get("name") == "Derive changed files"
-    )["working-directory"] == "pr-head"
+    assert (
+        next(
+            step
+            for step in detect["steps"]
+            if step.get("name") == "Derive changed files"
+        )["working-directory"]
+        == "pr-head"
+    )
     assert "collect_changed_files.py" in text
     assert "change_groups.py" in text
     assert "full_suite" in detect["outputs"]
