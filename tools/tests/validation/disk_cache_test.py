@@ -744,7 +744,7 @@ def test_vanilla_install_paths_do_not_leak_across_installs(tmp_path, monkeypatch
 
 
 def test_portable_key_and_rehome_edges(tmp_path):
-    old = str(tmp_path / "old")
+    old = (tmp_path / "old").as_posix()
     new = str(tmp_path / "new")
     posix_new = os.path.normpath(new).replace("\\", "/")
     assert disk_cache._source_key(str(tmp_path), "") == ""
@@ -776,3 +776,16 @@ def test_portable_key_and_rehome_edges(tmp_path):
     disk_cache._rehome_mod_paths(loop, old, new)
     with pytest.raises(disk_cache.pickle.UnpicklingError):
         disk_cache._unpack(str(tmp_path), disk_cache.pickle.dumps(("nope",)))
+
+
+def test_rehome_uses_native_separators_for_backslash_input(tmp_path):
+    old = str(tmp_path / "old")
+    new = str(tmp_path / "new")
+    backslash_old = old.replace("/", "\\")
+    assert disk_cache._rehome_str(backslash_old, old, new) == os.path.normpath(new)
+    assert disk_cache._rehome_str(backslash_old + "\\a.txt", old, new) == os.path.join(
+        new, "a.txt"
+    )
+    assert disk_cache._rehome_str(backslash_old + "/a.txt", old, new) == os.path.join(
+        new, "a.txt"
+    )
