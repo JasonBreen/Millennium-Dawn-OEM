@@ -36,6 +36,133 @@ def enabled_branch(text):
     return branch
 
 
+def test_ct_ledger_preserves_main_navigation_and_explicit_top_access():
+    missiles_gui = _named_block(
+        source("common/scripted_guis/00_missiles_scripted_guis.txt"), "MD_missiles_gui"
+    )
+    triggers = _named_block(missiles_gui, "triggers")
+    gate = _named_block(triggers, "ct_gui_ledger_button_click_enabled")
+    eligibility = _named_block(gate, "OR")
+    for token in (
+        "no_jihadist_government = yes",
+        "TOP_country_eligible = yes",
+        "TOP_security_country_eligible = yes",
+    ):
+        assert token in eligibility
+
+    effects = _named_block(missiles_gui, "effects")
+    ct_click = _named_block(effects, "ct_gui_ledger_button_click")
+    assert "set_variable = { var_open_MD_CT_gui = 2 }" in ct_click
+    top_navigation = _named_block(ct_click, "if")
+    assert "TOP_enabled = yes" in _named_block(top_navigation, "limit")
+    legacy_navigation = _named_block(top_navigation.partition("{")[2], "if")
+    legacy_gate = _named_block(legacy_navigation, "limit")
+    ct_gui = _named_block(
+        source("common/scripted_guis/00_missiles_scripted_guis.txt"), "MD_CT_system_gui"
+    )
+    ct_visibility = _named_block(ct_gui, "visible")
+    for condition in (
+        "NOT = { salafist_caliphate_are_in_power = yes }",
+        "NOT = { salafist_caliphate_are_in_coalition = yes }",
+    ):
+        assert condition in legacy_gate
+        assert condition in ct_visibility
+    assert "TOP_open_dossiers = yes" not in legacy_navigation
+    for token in (
+        "set_variable = { TOP_open = 0 }",
+        "set_variable = { TOP_security_open = 0 }",
+        "TOP_refresh_view = yes",
+    ):
+        assert token in legacy_navigation
+    assert "TOP_open_dossiers = yes" in _named_block(top_navigation, "else")
+
+    assert "TOP_open_dossiers = yes" in _named_block(
+        _named_block(ct_gui, "effects"), "TOP_open_button_click"
+    )
+
+    open_dossiers = _named_block(
+        source("common/scripted_effects/01_targeted_operations_view.txt"),
+        "TOP_open_dossiers",
+    )
+    for token in (
+        "set_variable = { TOP_open = 1 }",
+        "set_variable = { TOP_security_open = 0 }",
+        "set_variable = { TOP_tab = 0 }",
+        "set_variable = { var_open_MD_CT_gui = 2 }",
+        "TOP_build_view = yes",
+    ):
+        assert token in open_dossiers
+
+
+def test_dossiers_button_is_above_the_counter_terror_hitboxes():
+    windows = _parse_race_script(source("interface/MD_countrymissilesview.gui"))[
+        "guiTypes"
+    ]
+    ct_window = next(
+        body
+        for kind, _, body in windows
+        if kind == "containerWindowType"
+        and ("name", "=", '"MD_CT_system_window"') in body
+    )
+    kind, _, button = ct_window[-1]
+    assert kind == "buttonType"
+    assert ("name", "=", '"TOP_open_button"') in button
+    actions = next(
+        body
+        for kind, _, body in ct_window
+        if kind == "containerWindowType"
+        and ("name", "=", '"counter_terror_int_actions"') in body
+    )
+    labels = [body for kind, _, body in actions if kind == "instantTextboxType"]
+    assert len(labels) == 3
+    assert all(("maxHeight", "=", "20") in label for label in labels)
+
+
+@pytest.mark.parametrize("view", ("footer", "policy"))
+def test_security_windows_attach_to_the_live_dossiers_gui(view):
+    gui = _named_block(
+        source("common/scripted_guis/03_targeted_operations_security.txt"),
+        f"TOP_security_{view}_gui",
+    )
+    assert "parent_scripted_gui = TOP_dossiers_gui" in gui
+    assert "parent_window_name" not in gui
+    assert "TOP_security_window_visible = yes" in _named_block(gui, "visible")
+
+
+def test_security_footer_leaves_room_for_the_dossiers_refresh_button():
+    windows = _parse_race_script(source("interface/targeted_operations_security.gui"))[
+        "guiTypes"
+    ]
+    footer = next(
+        body
+        for kind, _, body in windows
+        if kind == "containerWindowType"
+        and ("name", "=", '"TOP_security_footer_window"') in body
+    )
+    fields = {key: value for key, _, value in footer}
+    assert ("width", "=", "190") in fields["size"]
+    badge = fields["instantTextboxType"]
+    assert ("text", "=", '"TOP_security_parody_label"') in badge
+    assert ("pdx_tooltip", "=", '"TOP_security_parody_tt"') in badge
+    assert ("maxWidth", "=", "180") in badge
+
+
+@pytest.mark.parametrize(
+    "button,tab",
+    (("dossiers_tab", 0), ("authority_tab", 1), ("archive_tab", 2), ("cases", 3)),
+)
+def test_dossier_navigation_leaves_the_security_overlay(button, tab):
+    gui = _named_block(
+        source("common/scripted_guis/01_targeted_operations_gui.txt"),
+        "TOP_dossiers_gui",
+    )
+    click = _named_block(_named_block(gui, "effects"), f"TOP_{button}_click")
+    assert "set_variable = { TOP_tab = " + str(tab) + " }" in click
+    reset = "set_variable = { TOP_security_open = 0 }"
+    assert reset in click
+    assert click.index(reset) < click.index("TOP_build_view = yes")
+
+
 def test_ukrainian_leader_rotation_preserves_target_removal_guard():
     text = source("common/scripted_effects/UKR_political_leaders.txt")
     marker = re.search(
