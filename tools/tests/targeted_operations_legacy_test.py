@@ -118,6 +118,41 @@ def test_dossiers_button_is_above_the_counter_terror_hitboxes():
     assert all(("maxHeight", "=", "20") in label for label in labels)
 
 
+def test_dossiers_window_is_screen_level_and_scoped_to_counter_terror():
+    gui = _named_block(
+        source("common/scripted_guis/01_targeted_operations_gui.txt"),
+        "TOP_dossiers_gui",
+    )
+    fields = {
+        key: value for key, _, value in _parse_race_script(gui)["TOP_dossiers_gui"]
+    }
+    assert fields["context_type"] == "player_context"
+    assert fields["window_name"] == "TOP_window"
+    assert fields["dirty"] == "TOP_dirty"
+    assert not {
+        "parent_window_name",
+        "parent_window_token",
+        "parent_scripted_gui",
+    }.intersection(fields)
+    assert fields["visible"] == [
+        ("TOP_enabled", "=", "yes"),
+        ("has_country_flag", "=", "open_MD_countrymissilesview"),
+        ("check_variable", "=", [("var_open_MD_CT_gui", "=", "2")]),
+        ("check_variable", "=", [("TOP_open", "=", "1")]),
+    ]
+
+    windows = _parse_race_script(source("interface/targeted_operations.gui"))[
+        "guiTypes"
+    ]
+    window = next(
+        body
+        for kind, _, body in windows
+        if kind == "containerWindowType" and ("name", "=", '"TOP_window"') in body
+    )
+    position = next(value for key, _, value in window if key == "position")
+    assert position == [("x", "=", "550"), ("y", "=", "78")]
+
+
 @pytest.mark.parametrize("view", ("footer", "policy"))
 def test_security_windows_attach_to_the_live_dossiers_gui(view):
     gui = _named_block(
