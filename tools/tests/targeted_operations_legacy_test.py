@@ -36,6 +36,18 @@ def enabled_branch(text):
     return branch
 
 
+def test_startup_caches_targeted_operations_rule_in_country_scope():
+    startup = _named_block(source("common/on_actions/00_on_actions.txt"), "on_startup")
+    statements = _parse_race_script(startup)["on_startup"]
+    effect = next(body for key, _, body in statements if key == "effect")
+    country = next(body for key, _, body in effect if key == "ABK")
+    assert country[0] == ("TOP_cache_game_rule", "=", "yes")
+    assert not any(key == "TOP_cache_game_rule" for key, _, _ in effect)
+    assert "TOP_cache_game_rule" not in source(
+        "common/on_actions/999_game_rules_on_actions.txt"
+    )
+
+
 def test_ct_ledger_preserves_main_navigation_and_explicit_top_access():
     missiles_gui = _named_block(
         source("common/scripted_guis/00_missiles_scripted_guis.txt"), "MD_missiles_gui"

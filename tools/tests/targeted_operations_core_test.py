@@ -690,6 +690,17 @@ def test_reserved_and_out_of_bounds_ids_cannot_resolve(boundary):
     assert script.countries[1]["vars"]["TOP_archive_cursor"] == 0
 
 
+@pytest.mark.parametrize(
+    "mode,expected", [("TOP_enabled_option", 1), ("TOP_disabled_option", 0)]
+)
+def test_game_rule_cache_initializes_fresh_campaign(mode, expected):
+    script = TargetScript()
+    script.mode = mode
+    script.globals.pop("TOP_rule_enabled")
+    script.run("TOP_cache_game_rule", 1)
+    assert script.globals.get("TOP_rule_enabled", 0) == expected
+
+
 def test_disabled_rule_keeps_global_and_country_state_inert():
     script = TargetScript()
     script.target()
