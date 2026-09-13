@@ -11,7 +11,7 @@ TOP_global_monthly = {
 			value = TOP_world_target
 			set_temp_variable = { TOP_target = TOP_world_target }
 			if = {
-				limit = { check_variable = { global.TOP_state^TOP_target > 0 } }
+				limit = { NOT = { check_variable = { global.TOP_state^TOP_target = 0 } } }
 				var:global.TOP_state^TOP_target = {
 					set_variable = { global.TOP_host^TOP_target = controller }
 				}
@@ -132,7 +132,7 @@ TOP_register_missing_organizations = {
 				check_variable = { TOP_org_id > 9 }
 				check_variable = { global.TOP_group_destroyed^TOP_group = 0 }
 				check_variable = { global.TOP_group_window^TOP_group = 1 }
-				check_variable = { global.TOP_state^TOP_target > 0 }
+				NOT = { check_variable = { global.TOP_state^TOP_target = 0 } }
 			}
 			TOP_append_ct_organization = yes
 		}
@@ -207,7 +207,7 @@ TOP_update_detained_targets = {
 			limit = { check_variable = { global.TOP_status^TOP_prisoner = 2 } }
 			if = {
 				limit = {
-					check_variable = { global.TOP_custody_state^TOP_prisoner > 0 }
+					NOT = { check_variable = { global.TOP_custody_state^TOP_prisoner = 0 } }
 					var:global.TOP_custodian^TOP_prisoner = { NOT = { exists = yes } }
 				}
 				var:global.TOP_custody_state^TOP_prisoner = { set_temp_variable = { TOP_transfer_host = controller } }
