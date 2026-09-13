@@ -357,7 +357,7 @@ def test_visit_retention_and_dossier_refresh_share_full_live_revalidation():
         "TOP_revalidate_active_visit",
     ):
         for block in (processor, refresher):
-            assert "set_temp_variable = { TOP_arg_target = TOP_visit_target }" in block
+            assert "set_temp_variable = { TOP_arg_target = top_visit_target }" in block
             assert f"{effect} = yes" in block
     assert "global.TOP_visit_minimum_confidence" in refresher
 
@@ -365,28 +365,28 @@ def test_visit_retention_and_dossier_refresh_share_full_live_revalidation():
 def test_invalid_visit_cleanup_requires_current_token_and_preserves_newer_locations():
     processor = _named_block(EFFECTS, "TOP_process_visits")
     assert (
-        "global.TOP_visit_planned_token^TOP_visit_target = "
-        "global.TOP_visit_token^TOP_visit_target"
+        "global.TOP_visit_planned_token^top_visit_target = "
+        "global.TOP_visit_token^top_visit_target"
     ) in processor
     assert (
-        "global.TOP_visit_active_token^TOP_visit_target = "
-        "global.TOP_visit_token^TOP_visit_target"
+        "global.TOP_visit_active_token^top_visit_target = "
+        "global.TOP_visit_token^top_visit_target"
     ) in processor
     assert "var:TOP_visit_cleanup_host = { exists = yes }" in processor
     assert (
         "else = {\n"
-        "\t\t\t\tset_temp_variable = { TOP_arg_target = TOP_visit_target }\n"
+        "\t\t\t\tset_temp_variable = { TOP_arg_target = top_visit_target }\n"
         "\t\t\t\tTOP_clear_visit = yes\n"
         "\t\t\t}"
     ) in processor
 
     end_visit = _named_block(EFFECTS, "TOP_end_visit")
     assert (
-        "global.TOP_host^TOP_visit_target = global.TOP_visit_host^TOP_visit_target"
+        "global.TOP_host^top_visit_target = global.TOP_visit_host^top_visit_target"
         in end_visit
     )
     assert (
-        "global.TOP_state^TOP_visit_target = global.TOP_visit_state^TOP_visit_target"
+        "global.TOP_state^top_visit_target = global.TOP_visit_state^top_visit_target"
         in end_visit
     )
 

@@ -299,6 +299,11 @@ def raid(ident: int, method: int) -> str:
     kind = "drone" if drone else "capture"
     lines = [
         f"category = {'drone_strike_raids' if drone else 'special_forces_raids'}",
+        (
+            "custom_map_icon = GFX_raid_type_icon_targeted_drone_strike"
+            if drone
+            else "custom_map_icon = GFX_raid_type_icon_direct_action_raid_supply"
+        ),
         f"days_to_prepare = {14 if drone else 28}",
         "days_re_enable = 30",
         "command_power = 20",
@@ -338,7 +343,7 @@ def raid(ident: int, method: int) -> str:
         f"\t\tbase = {0.15 if drone else 0.25}",
         "\t\tintel = { weight = 0.5 start_weight = -0.1 start_reference = 10 reference = 100 }",
         (
-            "\t\texperience = { weight = 0.3 start_weight = -0.2 reference = 1000 }"
+            "\t\texperience = { weight = 0.3 start_weight = -0.2 reference = 1 }"
             if drone
             else "\t\texperience = { weight = 0.5 start_weight = -0.25 reference = 0.75 }"
         ),
