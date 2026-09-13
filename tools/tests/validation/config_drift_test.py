@@ -255,7 +255,7 @@ def test_tools_checkout_exposes_consumed_configuration():
         ("tools-validation.yml", "checks", "Checkout (unit tests)"),
     ),
 )
-def test_unit_checkouts_include_targeted_operations_sources(
+def test_unit_checkouts_include_required_content_sources(
     workflow_name, job_name, checkout_name
 ):
     workflow = yaml.safe_load(
@@ -277,6 +277,7 @@ def test_unit_checkouts_include_targeted_operations_sources(
         "interface/MD_countrymissilesview.gui",
         "interface/targeted_operations.gui",
         "interface/targeted_operations_security.gui",
+        "localisation/*/MD_frontend_l_*.yml",
     ):
         assert any(
             required == entry or required.startswith(entry.rstrip("/") + "/")

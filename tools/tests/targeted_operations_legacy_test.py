@@ -36,6 +36,18 @@ def enabled_branch(text):
     return branch
 
 
+def test_startup_caches_targeted_operations_rule_in_country_scope():
+    startup = _named_block(source("common/on_actions/00_on_actions.txt"), "on_startup")
+    statements = _parse_race_script(startup)["on_startup"]
+    effect = next(body for key, _, body in statements if key == "effect")
+    country = next(body for key, _, body in effect if key == "ABK")
+    assert country[0] == ("TOP_cache_game_rule", "=", "yes")
+    assert not any(key == "TOP_cache_game_rule" for key, _, _ in effect)
+    assert "TOP_cache_game_rule" not in source(
+        "common/on_actions/999_game_rules_on_actions.txt"
+    )
+
+
 def test_ct_ledger_preserves_main_navigation_and_explicit_top_access():
     missiles_gui = _named_block(
         source("common/scripted_guis/00_missiles_scripted_guis.txt"), "MD_missiles_gui"
@@ -116,6 +128,41 @@ def test_dossiers_button_is_above_the_counter_terror_hitboxes():
     labels = [body for kind, _, body in actions if kind == "instantTextboxType"]
     assert len(labels) == 3
     assert all(("maxHeight", "=", "20") in label for label in labels)
+
+
+def test_dossiers_window_is_screen_level_and_scoped_to_counter_terror():
+    gui = _named_block(
+        source("common/scripted_guis/01_targeted_operations_gui.txt"),
+        "TOP_dossiers_gui",
+    )
+    fields = {
+        key: value for key, _, value in _parse_race_script(gui)["TOP_dossiers_gui"]
+    }
+    assert fields["context_type"] == "player_context"
+    assert fields["window_name"] == "TOP_window"
+    assert fields["dirty"] == "TOP_dirty"
+    assert not {
+        "parent_window_name",
+        "parent_window_token",
+        "parent_scripted_gui",
+    }.intersection(fields)
+    assert fields["visible"] == [
+        ("TOP_enabled", "=", "yes"),
+        ("has_country_flag", "=", "open_MD_countrymissilesview"),
+        ("check_variable", "=", [("var_open_MD_CT_gui", "=", "2")]),
+        ("check_variable", "=", [("TOP_open", "=", "1")]),
+    ]
+
+    windows = _parse_race_script(source("interface/targeted_operations.gui"))[
+        "guiTypes"
+    ]
+    window = next(
+        body
+        for kind, _, body in windows
+        if kind == "containerWindowType" and ("name", "=", '"TOP_window"') in body
+    )
+    position = next(value for key, _, value in window if key == "position")
+    assert position == [("x", "=", "550"), ("y", "=", "78")]
 
 
 @pytest.mark.parametrize("view", ("footer", "policy"))
