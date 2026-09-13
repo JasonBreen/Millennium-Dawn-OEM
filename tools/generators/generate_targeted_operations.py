@@ -239,7 +239,7 @@ def registry(data: dict) -> str:
         lines += [
             f"\tTOP_choose_location_{gid} = yes",
             "\tif = {",
-            "\t\tlimit = { check_variable = { TOP_activation_state > 0 } }",
+            "\t\tlimit = { NOT = { check_variable = { TOP_activation_state = 0 } } }",
             "\t\tvar:TOP_activation_state = { set_temp_variable = { TOP_activation_host = controller } }",
         ]
         for target in (t for t in data["targets"] if t["group"] == gid):
@@ -264,7 +264,7 @@ def registry(data: dict) -> str:
                 f"set_temp_variable = {{ TOP_group = {gid} }}",
                 "TOP_find_group_org = yes",
                 "if = {",
-                "\tlimit = { check_variable = { TOP_org_slot > -1 } check_variable = { global.active_terror_hq^TOP_org_slot > 0 } }",
+                "\tlimit = { check_variable = { TOP_org_slot > -1 } NOT = { check_variable = { global.active_terror_hq^TOP_org_slot = 0 } } }",
                 "\tvar:global.active_terror_hq^TOP_org_slot = {",
                 "\t\tif = { limit = { controller = { exists = yes } } set_temp_variable = { TOP_activation_state = THIS } }",
                 "\t}",
