@@ -20,6 +20,22 @@ TOP_global_monthly = {
 				limit = { var:global.TOP_host^TOP_target = { NOT = { exists = yes } } }
 				set_variable = { global.TOP_state^TOP_target = 0 }
 			}
+			if = {
+				limit = {
+					check_variable = { global.TOP_status^TOP_target = 1 }
+					check_variable = { global.TOP_visit_status^TOP_target = 0 }
+					NOT = { check_variable = { global.TOP_state^TOP_target = 0 } }
+				}
+				random = {
+					chance = 10
+					var:global.TOP_host^TOP_target = {
+						if = {
+							limit = { num_of_controlled_states > 0 }
+							random_controlled_state = { set_variable = { global.TOP_state^TOP_target = THIS } }
+						}
+					}
+				}
+			}
 		}
 		for_loop_effect = {
 			start = 1
