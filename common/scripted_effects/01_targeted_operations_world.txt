@@ -8,8 +8,8 @@ TOP_global_monthly = {
 		TOP_update_detained_targets = yes
 		for_each_loop = {
 			array = global.TOP_active_targets
-			value = TOP_world_target
-			set_temp_variable = { TOP_target = TOP_world_target }
+			value = top_world_target
+			set_temp_variable = { TOP_target = top_world_target }
 			if = {
 				limit = { NOT = { check_variable = { global.TOP_state^TOP_target = 0 } } }
 				var:global.TOP_state^TOP_target = {
@@ -24,8 +24,8 @@ TOP_global_monthly = {
 		for_loop_effect = {
 			start = 1
 			end = global.TOP_group_leader^num
-			value = TOP_world_office
-			set_temp_variable = { TOP_group = TOP_world_office }
+			value = top_world_office
+			set_temp_variable = { TOP_group = top_world_office }
 			if = {
 				limit = { check_variable = { global.TOP_group_leader^TOP_group = 0 } }
 				TOP_select_authored_successor = yes
@@ -39,14 +39,14 @@ TOP_global_monthly = {
 			}
 			if = {
 				limit = { check_variable = { global.TOP_backlash^TOP_group > 0 } }
-				set_temp_variable = { TOP_group = TOP_world_office }
+				set_temp_variable = { TOP_group = top_world_office }
 				TOP_find_group_org = yes
 				if = {
 					limit = { check_variable = { TOP_org_slot > -1 } }
 					add_to_variable = { global.active_terror_org_threat_lvl^TOP_org_slot = 1 }
 					clamp_variable = { var = global.active_terror_org_threat_lvl^TOP_org_slot min = 0 max = 100 }
 				}
-				subtract_from_variable = { global.TOP_backlash^TOP_world_office = 1 }
+				subtract_from_variable = { global.TOP_backlash^top_world_office = 1 }
 			}
 		}
 	}
@@ -65,19 +65,19 @@ TOP_choose_successor = {
 			for_loop_effect = {
 				start = 65
 				end = 129
-				value = TOP_generated_id
+				value = top_generated_id
 				if = {
 					limit = {
 						check_variable = { TOP_candidate = 0 }
-						check_variable = { global.TOP_generated_used^TOP_generated_id = 0 }
-						check_variable = { global.TOP_affiliation^TOP_generated_id = TOP_group }
+						check_variable = { global.TOP_generated_used^top_generated_id = 0 }
+						check_variable = { global.TOP_affiliation^top_generated_id = TOP_group }
 					}
-					set_temp_variable = { TOP_candidate = TOP_generated_id }
-					set_variable = { global.TOP_generated_used^TOP_generated_id = 1 }
-					set_variable = { global.TOP_status^TOP_generated_id = 1 }
-					set_variable = { global.TOP_state^TOP_generated_id = global.TOP_state^TOP_predecessor }
-					set_variable = { global.TOP_host^TOP_generated_id = global.TOP_host^TOP_predecessor }
-					add_to_array = { global.TOP_active_targets = TOP_generated_id }
+					set_temp_variable = { TOP_candidate = top_generated_id }
+					set_variable = { global.TOP_generated_used^top_generated_id = 1 }
+					set_variable = { global.TOP_status^top_generated_id = 1 }
+					set_variable = { global.TOP_state^top_generated_id = global.TOP_state^TOP_predecessor }
+					set_variable = { global.TOP_host^top_generated_id = global.TOP_host^TOP_predecessor }
+					add_to_array = { global.TOP_active_targets = top_generated_id }
 				}
 			}
 		}
@@ -96,23 +96,23 @@ TOP_reconcile_organizations = {
 	for_loop_effect = {
 		start = 1
 		end = global.TOP_group_leader^num
-		value = TOP_world_group
-		set_temp_variable = { TOP_world_ct = global.TOP_group_ct^TOP_world_group }
+		value = top_world_group
+		set_temp_variable = { TOP_world_ct = global.TOP_group_ct^top_world_group }
 		if = {
 			limit = {
 				check_variable = { TOP_world_ct > -1 }
 				is_in_array = { global.active_terror_orgs = TOP_world_ct }
 			}
-			set_variable = { global.TOP_group_created^TOP_world_group = 1 }
-			set_variable = { global.TOP_group_destroyed^TOP_world_group = 0 }
+			set_variable = { global.TOP_group_created^top_world_group = 1 }
+			set_variable = { global.TOP_group_destroyed^top_world_group = 0 }
 		}
 		else_if = {
 			limit = {
 				check_variable = { TOP_world_ct > -1 }
-				check_variable = { global.TOP_group_created^TOP_world_group = 1 }
+				check_variable = { global.TOP_group_created^top_world_group = 1 }
 				NOT = { is_in_array = { global.active_terror_orgs = TOP_world_ct } }
 			}
-			set_variable = { global.TOP_group_destroyed^TOP_world_group = 1 }
+			set_variable = { global.TOP_group_destroyed^top_world_group = 1 }
 		}
 	}
 }
@@ -120,8 +120,8 @@ TOP_reconcile_organizations = {
 TOP_register_missing_organizations = {
 	for_each_loop = {
 		array = global.TOP_active_targets
-		value = TOP_world_target
-		set_temp_variable = { TOP_target = TOP_world_target }
+		value = top_world_target
+		set_temp_variable = { TOP_target = top_world_target }
 		TOP_find_org = yes
 		if = {
 			limit = { check_variable = { TOP_org_slot > -1 } }
@@ -166,10 +166,10 @@ TOP_tracking_completed = {
 		TOP_country_initialize = yes
 		for_each_loop = {
 			array = global.TOP_active_targets
-			value = TOP_tracking_target
+			value = top_tracking_target
 			if = {
-				limit = { check_variable = { global.TOP_host^TOP_tracking_target = FROM } }
-				set_temp_variable = { TOP_arg_target = TOP_tracking_target } set_temp_variable = { TOP_arg_amount = 30 } TOP_add_target_lead = yes
+				limit = { check_variable = { global.TOP_host^top_tracking_target = FROM } }
+				set_temp_variable = { TOP_arg_target = top_tracking_target } set_temp_variable = { TOP_arg_amount = 30 } TOP_add_target_lead = yes
 			}
 		}
 	}
@@ -202,22 +202,22 @@ TOP_update_detained_targets = {
 	clear_array = global.TOP_detained_next
 	for_each_loop = {
 		array = global.TOP_detained_targets
-		value = TOP_prisoner
+		value = top_prisoner
 		if = {
-			limit = { check_variable = { global.TOP_status^TOP_prisoner = 2 } }
+			limit = { check_variable = { global.TOP_status^top_prisoner = 2 } }
 			if = {
 				limit = {
-					NOT = { check_variable = { global.TOP_custody_state^TOP_prisoner = 0 } }
-					var:global.TOP_custodian^TOP_prisoner = { NOT = { exists = yes } }
+					NOT = { check_variable = { global.TOP_custody_state^top_prisoner = 0 } }
+					var:global.TOP_custodian^top_prisoner = { NOT = { exists = yes } }
 				}
-				var:global.TOP_custody_state^TOP_prisoner = { set_temp_variable = { TOP_transfer_host = controller } }
-				set_temp_variable = { TOP_transfer_target = TOP_prisoner }
+				var:global.TOP_custody_state^top_prisoner = { set_temp_variable = { TOP_transfer_host = controller } }
+				set_temp_variable = { TOP_transfer_target = top_prisoner }
 				TOP_transfer_recorded_custody = yes
 			}
-			add_to_array = { global.TOP_detained_next = TOP_prisoner }
+			add_to_array = { global.TOP_detained_next = top_prisoner }
 		}
 	}
 	clear_array = global.TOP_detained_targets
-	for_each_loop = { array = global.TOP_detained_next value = TOP_prisoner add_to_array = { global.TOP_detained_targets = TOP_prisoner } }
+	for_each_loop = { array = global.TOP_detained_next value = top_prisoner add_to_array = { global.TOP_detained_targets = top_prisoner } }
 	TOP_update_iraq_progress = yes
 }

@@ -375,7 +375,7 @@ def test_iraq_progress_reads_each_terminal_person_once(statuses, expected):
     )
     loop = _parse_race_script(_named_block(text, "for_loop_effect"))["for_loop_effect"]
     values = {key: value for key, _, value in loop}
-    assert values["value"] == "TOP_iraq_target"
+    assert values["value"] == "top_iraq_target"
     conditional = next(value for key, _, value in loop if key == "if")
     conditions = next(value for key, _, value in conditional if key == "limit")
     comparisons = {">": operator.gt, "<": operator.lt, "=": operator.eq}

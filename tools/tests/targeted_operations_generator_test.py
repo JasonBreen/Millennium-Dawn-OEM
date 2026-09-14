@@ -208,6 +208,28 @@ def test_every_raid_has_a_gate_that_binds_its_own_person_and_method(manifest):
     assert "TOP_native_result = {" not in raids
 
 
+@pytest.mark.parametrize("method", [1, 2])
+def test_native_raid_map_icons_resolve_to_existing_sprites(method):
+    icon = re.search(r"(?m)^\s*custom_map_icon\s*=\s*(\w+)", GENERATOR.raid(1, method))
+    sprites = (ROOT / "interface/military_raids/MD_military_raids.gfx").read_text(
+        encoding="utf-8-sig"
+    )
+    names = set(re.findall(r'name\s*=\s*"([^"]+)"', sprites))
+    assert icon is not None
+    assert icon.group(1) in names
+
+
+@pytest.mark.parametrize("method", [1, 2])
+def test_native_raid_experience_reaches_full_weight_on_the_engine_scale(method):
+    raid = GENERATOR.raid(1, method)
+    factors = _named_block(raid, "success_factors")
+    success = _named_block(factors, "success")
+    experience = _parse_race_script(_named_block(success, "experience"))["experience"]
+    fields = {key: float(operand) for key, _, operand in experience}
+    assert 0 < fields["reference"] <= 1
+    assert fields["start_weight"] < fields["weight"]
+
+
 def test_generated_names_and_roles_have_english_localisation(manifest):
     output = GENERATOR.render(manifest)
     roster = output["localisation/english/MD_targeted_operations_roster_l_english.yml"]

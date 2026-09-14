@@ -30,12 +30,12 @@ STATE_GUARDS = (
     (
         "scripted_effects/01_targeted_operations_world.txt",
         "TOP_update_detained_targets",
-        "global.TOP_custody_state^TOP_prisoner",
+        "global.TOP_custody_state^top_prisoner",
     ),
     (
         "scripted_effects/05_targeted_operations_runtime.txt",
         "TOP_end_visit",
-        "global.TOP_visit_return_state^TOP_visit_target",
+        "global.TOP_visit_return_state^top_visit_target",
     ),
     (
         "scripted_effects/05_targeted_operations_runtime.txt",

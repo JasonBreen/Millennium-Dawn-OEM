@@ -65,11 +65,11 @@ TOP_find_group_org = {
 	set_temp_variable = { TOP_org_id = global.TOP_group_ct^TOP_group }
 	for_each_loop = {
 		array = global.active_terror_orgs
-		index = TOP_find_i
-		value = TOP_find_v
+		index = top_find_i
+		value = top_find_v
 		if = {
-			limit = { check_variable = { TOP_find_v = TOP_org_id } }
-			set_temp_variable = { TOP_org_slot = TOP_find_i }
+			limit = { check_variable = { top_find_v = TOP_org_id } }
+			set_temp_variable = { TOP_org_slot = top_find_i }
 		}
 	}
 }
@@ -116,7 +116,7 @@ TOP_collect_selected = {
 			limit = { check_variable = { TOP_case_phase^TOP_selected = 1 } }
 			set_variable = { TOP_case_until^TOP_selected = { value = global.TOP_clock add = 182 } }
 		}
-		TOP_refresh_view = yes
+		TOP_build_view = yes
 	}
 }
 
@@ -178,21 +178,21 @@ TOP_country_tick = {
 		TOP_refresh_visit_dossiers = yes
 		for_each_loop = {
 			array = TOP_dossiers
-			value = TOP_tick_target
-			add_to_variable = { TOP_lead_age^TOP_tick_target = 28 }
-			subtract_from_variable = { TOP_confidence^TOP_tick_target = 5 }
-			clamp_variable = { var = TOP_confidence^TOP_tick_target min = 0 max = 100 }
+			value = top_tick_target
+			add_to_variable = { TOP_lead_age^top_tick_target = 28 }
+			subtract_from_variable = { TOP_confidence^top_tick_target = 5 }
+			clamp_variable = { var = TOP_confidence^top_tick_target min = 0 max = 100 }
 			if = {
-				limit = { check_variable = { global.TOP_confirmed_dead^TOP_tick_target = 1 } }
-				set_variable = { TOP_assessment^TOP_tick_target = 3 }
+				limit = { check_variable = { global.TOP_confirmed_dead^top_tick_target = 1 } }
+				set_variable = { TOP_assessment^top_tick_target = 3 }
 			}
 		}
 		set_temp_variable = { TOP_actor = THIS }
 		set_temp_variable = { TOP_new_dossiers_this_tick = 0 }
 		for_each_loop = {
 			array = global.TOP_active_targets
-			value = TOP_tick_target
-			set_temp_variable = { TOP_target = TOP_tick_target }
+			value = top_tick_target
+			set_temp_variable = { TOP_target = top_tick_target }
 			TOP_find_org = yes
 			set_temp_variable = { TOP_detect = 0 }
 			if = {
@@ -210,7 +210,7 @@ TOP_country_tick = {
 				limit = { check_variable = { TOP_detect > 24 } check_variable = { TOP_new_dossiers_this_tick = 0 } }
 				if = {
 					limit = { check_variable = { TOP_known^TOP_target = 0 } }
-					set_temp_variable = { TOP_arg_target = TOP_tick_target }
+					set_temp_variable = { TOP_arg_target = top_tick_target }
 					set_temp_variable = { TOP_arg_amount = 15 }
 					TOP_add_target_lead = yes
 					set_temp_variable = { TOP_new_dossiers_this_tick = 1 }
@@ -219,11 +219,11 @@ TOP_country_tick = {
 		}
 		for_each_loop = {
 			array = TOP_active_cases
-			value = TOP_collection_target
+			value = top_collection_target
 			if = {
-				set_temp_variable = { TOP_role_target = TOP_collection_target }
-				limit = { check_variable = { TOP_case_collecting^TOP_collection_target = 1 } TOP_authored_role_eligible = yes check_variable = { global.TOP_status^TOP_collection_target = 1 } }
-				set_temp_variable = { TOP_target = TOP_collection_target }
+				set_temp_variable = { TOP_role_target = top_collection_target }
+				limit = { check_variable = { TOP_case_collecting^top_collection_target = 1 } TOP_authored_role_eligible = yes check_variable = { global.TOP_status^top_collection_target = 1 } }
+				set_temp_variable = { TOP_target = top_collection_target }
 				TOP_find_org = yes
 				TOP_get_defensive_modifiers = yes
 				set_temp_variable = { TOP_gain = { value = 12 subtract = global.TOP_security^TOP_target subtract = TOP_defensive_collection_penalty } }
@@ -237,14 +237,14 @@ TOP_country_tick = {
 					}
 				}
 				clamp_temp_variable = { var = TOP_gain min = 2 max = 25 }
-				set_temp_variable = { TOP_arg_target = TOP_collection_target } set_temp_variable = { TOP_arg_amount = TOP_gain } TOP_add_target_lead = yes
+				set_temp_variable = { TOP_arg_target = top_collection_target } set_temp_variable = { TOP_arg_amount = TOP_gain } TOP_add_target_lead = yes
 				random = {
 					chance = 15
-					set_temp_variable = { TOP_false_state = global.TOP_state^TOP_collection_target }
-					var:global.TOP_host^TOP_collection_target = {
+					set_temp_variable = { TOP_false_state = global.TOP_state^top_collection_target }
+					var:global.TOP_host^top_collection_target = {
 						random_controlled_state = { set_temp_variable = { TOP_false_state = THIS } }
 					}
-					set_variable = { TOP_lead_state^TOP_collection_target = TOP_false_state }
+					set_variable = { TOP_lead_state^top_collection_target = TOP_false_state }
 				}
 			}
 		}
@@ -365,10 +365,10 @@ TOP_exploit_capture = {
 	set_temp_variable = { TOP_capture_leads = 0 }
 	for_each_loop = {
 		array = global.TOP_active_targets
-		value = TOP_link_target
+		value = top_link_target
 		if = {
-			limit = { check_variable = { global.TOP_affiliation^TOP_link_target = TOP_capture_group } check_variable = { TOP_capture_leads < 2 } }
-			set_temp_variable = { TOP_arg_target = TOP_link_target } set_temp_variable = { TOP_arg_amount = 25 } TOP_add_target_lead = yes
+			limit = { check_variable = { global.TOP_affiliation^top_link_target = TOP_capture_group } check_variable = { TOP_capture_leads < 2 } }
+			set_temp_variable = { TOP_arg_target = top_link_target } set_temp_variable = { TOP_arg_amount = 25 } TOP_add_target_lead = yes
 			add_to_temp_variable = { TOP_capture_leads = 1 }
 		}
 	}
@@ -596,8 +596,8 @@ TOP_global_weekly = {
 		clear_array = global.TOP_pending_actors
 		for_each_loop = {
 			array = global.TOP_pending_next
-			value = TOP_pending_actor
-			add_to_array = { global.TOP_pending_actors = TOP_pending_actor }
+			value = top_pending_actor
+			add_to_array = { global.TOP_pending_actors = top_pending_actor }
 		}
 	}
 }
@@ -608,15 +608,15 @@ TOP_process_timers = {
 	clear_array = TOP_bda_remaining
 	for_each_loop = {
 		array = TOP_pending_assessments
-		value = TOP_bda_target
+		value = top_bda_target
 		if = {
-			limit = { check_variable = { TOP_bda_due^TOP_bda_target < global.TOP_clock } }
+			limit = { check_variable = { TOP_bda_due^top_bda_target < global.TOP_clock } }
 			if = {
-				limit = { NOT = { check_variable = { TOP_assessment^TOP_bda_target = 2 } } }
-				set_variable = { TOP_assessment^TOP_bda_target = TOP_bda_result^TOP_bda_target }
+				limit = { NOT = { check_variable = { TOP_assessment^top_bda_target = 2 } } }
+				set_variable = { TOP_assessment^top_bda_target = TOP_bda_result^top_bda_target }
 			}
-			set_temp_variable = { TOP_target = TOP_bda_target }
-			set_temp_variable = { TOP_result = TOP_bda_result^TOP_bda_target }
+			set_temp_variable = { TOP_target = top_bda_target }
+			set_temp_variable = { TOP_result = TOP_bda_result^top_bda_target }
 			if = { limit = { check_variable = { TOP_result = 3 } } set_variable = { global.TOP_confirmed_dead^TOP_target = 1 } }
 			TOP_apply_legacy_assessment = yes
 			set_temp_variable = { TOP_reporting_assessment = 1 }
@@ -624,14 +624,14 @@ TOP_process_timers = {
 
 			set_temp_variable = { TOP_reporting_assessment = 0 }
 			if = {
-				limit = { check_variable = { TOP_case_phase^TOP_bda_target = 4 } }
-				set_variable = { TOP_case_phase^TOP_bda_target = 5 }
+				limit = { check_variable = { TOP_case_phase^top_bda_target = 4 } }
+				set_variable = { TOP_case_phase^top_bda_target = 5 }
 			}
 		}
-		else = { add_to_array = { TOP_bda_remaining = TOP_bda_target } }
+		else = { add_to_array = { TOP_bda_remaining = top_bda_target } }
 	}
 	clear_array = TOP_pending_assessments
-	for_each_loop = { array = TOP_bda_remaining value = TOP_bda_target add_to_array = { TOP_pending_assessments = TOP_bda_target } }
+	for_each_loop = { array = TOP_bda_remaining value = top_bda_target add_to_array = { TOP_pending_assessments = top_bda_target } }
 	if = { limit = { is_ai = no check_variable = { TOP_open = 1 } } TOP_build_view = yes }
 }
 
@@ -674,32 +674,32 @@ TOP_ai_choose_operation = {
 		set_temp_variable = { TOP_ai_score = 0 }
 		for_each_loop = {
 			array = TOP_dossiers
-			value = TOP_ai_target
-			set_temp_variable = { TOP_ai_candidate_score = TOP_confidence^TOP_ai_target }
+			value = top_ai_target
+			set_temp_variable = { TOP_ai_candidate_score = TOP_confidence^top_ai_target }
 			if = {
-				limit = { check_variable = { global.TOP_political^TOP_ai_target = 1 } }
+				limit = { check_variable = { global.TOP_political^top_ai_target = 1 } }
 				subtract_from_temp_variable = { TOP_ai_candidate_score = global.TOP_official_review_penalty }
 			}
 			if = {
 				limit = {
-					check_variable = { global.TOP_status^TOP_ai_target = 1 }
-					set_temp_variable = { TOP_role_target = TOP_ai_target }
+					check_variable = { global.TOP_status^top_ai_target = 1 }
+					set_temp_variable = { TOP_role_target = top_ai_target }
 					TOP_authored_role_eligible = yes
-					set_temp_variable = { TOP_target = TOP_ai_target }
+					set_temp_variable = { TOP_target = top_ai_target }
 					TOP_exceptional_authority = yes
-					check_variable = { TOP_case_phase^TOP_ai_target < 2 }
-					OR = { check_variable = { TOP_case_phase^TOP_ai_target = 1 } check_variable = { TOP_active_cases^num < 3 } }
-					set_temp_variable = { TOP_arg_target = TOP_ai_target }
-					set_temp_variable = { TOP_arg_host = TOP_lead_host^TOP_ai_target }
+					check_variable = { TOP_case_phase^top_ai_target < 2 }
+					OR = { check_variable = { TOP_case_phase^top_ai_target = 1 } check_variable = { TOP_active_cases^num < 3 } }
+					set_temp_variable = { TOP_arg_target = top_ai_target }
+					set_temp_variable = { TOP_arg_host = TOP_lead_host^top_ai_target }
 					TOP_host_case_available = yes
 					check_variable = { TOP_ai_candidate_score > TOP_ai_score }
 					OR = {
-						check_variable = { global.TOP_political^TOP_ai_target = 0 }
-						AND = { check_variable = { global.TOP_political^TOP_ai_target = 1 } has_political_power > 249 }
+						check_variable = { global.TOP_political^top_ai_target = 0 }
+						AND = { check_variable = { global.TOP_political^top_ai_target = 1 } has_political_power > 249 }
 					}
-					NOT = { check_variable = { global.TOP_host^TOP_ai_target = THIS } }
+					NOT = { check_variable = { global.TOP_host^top_ai_target = THIS } }
 				}
-				set_temp_variable = { TOP_ai_best = TOP_ai_target }
+				set_temp_variable = { TOP_ai_best = top_ai_target }
 				set_temp_variable = { TOP_ai_score = TOP_ai_candidate_score }
 			}
 		}
