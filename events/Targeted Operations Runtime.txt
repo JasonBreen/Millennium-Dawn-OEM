@@ -852,3 +852,86 @@ country_event = {
 
 	option = { name = TOP_crisis.7.a }
 }
+
+# The open story. Stories 1 to 5 name one person each and fire once from
+# trigger_year_2032_events; this one carries whoever the dispatcher picked, so
+# it needs country variables rather than literals to survive the delays.
+country_event = {
+	id = TOP_visit.6
+	title = TOP_visit.6.t
+	desc = TOP_visit.6.d
+	picture = GFX_USA_event_cia
+	is_triggered_only = yes
+	minor_flavor = yes
+
+	trigger = {
+		set_temp_variable = { TOP_visit_trigger_target = TOP_open_visit_target }
+		set_temp_variable = { TOP_visit_trigger_state = TOP_open_visit_state }
+		set_temp_variable = { TOP_visit_trigger_story = 6 }
+		TOP_visit_can_invite = yes
+	}
+
+	option = {
+		name = TOP_visit.accept
+		log = "[GetDateText]: [Root.GetName]: TOP_visit.6 accepted"
+		set_temp_variable = { TOP_arg_target = TOP_open_visit_target }
+		set_temp_variable = { TOP_arg_state = TOP_open_visit_state }
+		set_temp_variable = { TOP_arg_story = 6 }
+		TOP_plan_visit = yes
+		country_event = { id = TOP_visit.16 days = 60 }
+		ai_chance = {
+			base = 50
+			modifier = { add = 25 has_stability > 0.55 }
+			modifier = { add = 15 has_war_support > 0.50 }
+			modifier = { add = -35 has_war = yes }
+		}
+	}
+
+	option = {
+		name = TOP_visit.decline
+		clear_variable = TOP_open_visit_target
+		clear_variable = TOP_open_visit_state
+		ai_chance = { base = 20 modifier = { add = 30 has_war = yes } modifier = { add = 20 has_stability < 0.35 } }
+	}
+}
+
+country_event = {
+	id = TOP_visit.16
+	is_triggered_only = yes
+	hidden = yes
+
+	trigger = {
+		set_temp_variable = { TOP_visit_trigger_target = TOP_open_visit_target }
+		set_temp_variable = { TOP_visit_trigger_state = TOP_open_visit_state }
+		set_temp_variable = { TOP_visit_trigger_story = 6 }
+		TOP_visit_can_arrive = yes
+	}
+
+	immediate = {
+		set_temp_variable = { TOP_arg_target = TOP_open_visit_target }
+		set_temp_variable = { TOP_arg_state = TOP_open_visit_state }
+		set_temp_variable = { TOP_arg_story = 6 }
+		TOP_activate_visit = yes
+		country_event = { id = TOP_visit.26 days = 21 }
+	}
+}
+
+country_event = {
+	id = TOP_visit.26
+	is_triggered_only = yes
+	hidden = yes
+
+	trigger = {
+		set_temp_variable = { TOP_visit_trigger_target = TOP_open_visit_target }
+		set_temp_variable = { TOP_visit_trigger_story = 6 }
+		TOP_visit_can_end = yes
+	}
+
+	immediate = {
+		set_temp_variable = { TOP_arg_target = TOP_open_visit_target }
+		set_temp_variable = { TOP_arg_story = 6 }
+		TOP_end_visit = yes
+		clear_variable = TOP_open_visit_target
+		clear_variable = TOP_open_visit_state
+	}
+}

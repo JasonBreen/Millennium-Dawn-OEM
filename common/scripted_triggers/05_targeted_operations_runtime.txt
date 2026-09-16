@@ -3,8 +3,12 @@ TOP_visit_can_invite = {
 	check_variable = { TOP_visit_trigger_target > 0 }
 	check_variable = { TOP_visit_trigger_target < global.TOP_registry_capacity }
 	check_variable = { TOP_visit_trigger_story > 0 }
-	check_variable = { TOP_visit_trigger_story < 6 }
-	check_variable = { global.TOP_visit_story_used^TOP_visit_trigger_story = 0 }
+	check_variable = { TOP_visit_trigger_story < 7 }
+	# Story 6 is the open story: it is not bound to one person and is not spent.
+	OR = {
+		check_variable = { TOP_visit_trigger_story = 6 }
+		check_variable = { global.TOP_visit_story_used^TOP_visit_trigger_story = 0 }
+	}
 	check_variable = { global.TOP_status^TOP_visit_trigger_target = 1 }
 	check_variable = { global.TOP_political^TOP_visit_trigger_target = 1 }
 	check_variable = { global.TOP_civilian^TOP_visit_trigger_target = 0 }
@@ -166,6 +170,20 @@ TOP_visit_story_valid = {
 			ISR = { TOP_person_159_serving = yes }
 			has_global_flag = SAU_ISR_normalized
 		}
+		# Stories 1 to 5 each name one person and one set piece, so they run out.
+		# Story 6 is the standing case: any serving figure whose own country is on
+		# speaking terms with the host. The opinion check sits inside that
+		# country's scope because has_opinion rejects a var: target.
+		AND = {
+			check_variable = { TOP_visit_trigger_story = 6 }
+			check_variable = { global.TOP_host^TOP_visit_trigger_target > 0 }
+			NOT = { check_variable = { global.TOP_host^TOP_visit_trigger_target = THIS } }
+			var:global.TOP_host^TOP_visit_trigger_target = {
+				exists = yes
+				NOT = { has_war_with = PREV }
+				has_opinion = { target = PREV value > 24 }
+			}
+		}
 	}
 }
 
@@ -177,7 +195,7 @@ TOP_exposed_visit_kill_valid = {
 	check_variable = { global.TOP_political^TOP_target = 1 }
 	check_variable = { TOP_authorized_visit_status > 0 }
 	check_variable = { TOP_authorized_visit_story > 0 }
-	check_variable = { TOP_authorized_visit_story < 6 }
+	check_variable = { TOP_authorized_visit_story < 7 }
 	check_variable = { TOP_authorized_visit_token = global.TOP_visit_active_token^TOP_target }
 	check_variable = { global.TOP_visit_active_token^TOP_target = global.TOP_visit_token^TOP_target }
 	check_variable = { TOP_authorized_visit_story = global.TOP_visit_story^TOP_target }
