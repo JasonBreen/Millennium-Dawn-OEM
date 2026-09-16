@@ -177,6 +177,7 @@ TOP_country_tick = {
 		TOP_political_country_opportunities = yes
 		TOP_visit_country_opportunities = yes
 		TOP_refresh_visit_dossiers = yes
+		clear_array = TOP_retired_dossiers
 		for_each_loop = {
 			array = TOP_dossiers
 			value = top_tick_target
@@ -187,7 +188,30 @@ TOP_country_tick = {
 				limit = { check_variable = { global.TOP_confirmed_dead^top_tick_target = 1 } }
 				set_variable = { TOP_assessment^top_tick_target = 3 }
 			}
+			else_if = {
+				# The trail is cold and nothing is riding on it, so the file closes
+				# rather than sitting in the roster forever.
+				limit = {
+					check_variable = { TOP_confidence^top_tick_target = 0 }
+					check_variable = { TOP_assessment^top_tick_target = 1 }
+					check_variable = { global.TOP_status^top_tick_target = 1 }
+					NOT = { is_in_array = { TOP_active_cases = top_tick_target } }
+				}
+				add_to_array = { TOP_retired_dossiers = top_tick_target }
+			}
 		}
+		for_each_loop = {
+			array = TOP_retired_dossiers
+			value = top_retire_target
+			remove_from_array = { TOP_dossiers = top_retire_target }
+			set_variable = { TOP_known^top_retire_target = 0 }
+			set_variable = { TOP_assessment^top_retire_target = 0 }
+			if = {
+				limit = { check_variable = { TOP_selected = top_retire_target } }
+				set_variable = { TOP_selected = 0 }
+			}
+		}
+		clear_array = TOP_retired_dossiers
 		set_temp_variable = { TOP_actor = THIS }
 		set_temp_variable = { TOP_new_dossiers_this_tick = 0 }
 		for_each_loop = {
