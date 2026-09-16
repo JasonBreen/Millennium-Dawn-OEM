@@ -235,7 +235,7 @@ def test_repeat_incident_and_timeout_dispatch_the_ultimatum_band():
 
     timeout = _named_block(EFFECTS, "TOP_process_crisis")
     assert "global.TOP_crisis_story < 1" in timeout
-    assert "global.TOP_crisis_story > 5" in timeout
+    assert "global.TOP_crisis_story > 6" in timeout
     assert "global.TOP_crisis_visit_token < 1" in timeout
     assert "TOP_crisis_tension_ultimatum = yes" in timeout
     assert "add_to_variable = { global.TOP_crisis_until = 30 }" in timeout
@@ -310,7 +310,7 @@ def test_crisis_gate_requires_exact_live_headline_visit_and_lethal_result():
         "TOP_result = 3",
         "global.TOP_status^TOP_target = 3",
         "TOP_authorized_visit_story > 0",
-        "TOP_authorized_visit_story < 6",
+        "TOP_authorized_visit_story < 7",
         "TOP_authorized_visit_token = global.TOP_visit_active_token^TOP_target",
         "global.TOP_visit_status^TOP_target = 2",
         "TOP_authorized_host = global.TOP_visit_host^TOP_target",
@@ -458,3 +458,71 @@ def test_ultimatum_ai_uses_latched_coalition_balance_snapshot():
     ]
     assert ultimatum.count("global.TOP_crisis_coalition_balance = 1") == 2
     assert ultimatum.count("global.TOP_crisis_coalition_balance = -1") == 2
+
+
+def test_open_story_is_held_to_serving_office_holders():
+    """Targets 56-64 are the hunted Ba'athists and Soleimani.
+
+    They carry political = 1 and so clear the invite gate, but a state visit to
+    a fugitive is nonsense, and TOP_open_visit_name has no branch for them.
+    """
+    story = _named_block(TRIGGERS, "TOP_visit_story_valid")
+    assert "TOP_visit_trigger_story = 6" in story
+    assert "TOP_visit_trigger_target > 128" in story
+    names = (
+        ROOT / "common/scripted_localisation/01_targeted_operations_names.txt"
+    ).read_text(encoding="utf-8")
+    # defined_text blocks are keyed by an inner `name =`, not by the block name.
+    resolver = names[names.index("name = TOP_open_visit_name") :]
+    for legacy in (56, 60, 64):
+        assert f"TOP_open_visit_target = {legacy} " not in resolver
+    for serving in (129, 144, 160):
+        assert f"TOP_open_visit_target = {serving} " in resolver
+
+
+def test_open_story_is_reusable_where_the_authored_stories_are_spent():
+    gate = _named_block(TRIGGERS, "TOP_visit_can_invite")
+    assert "TOP_visit_trigger_story < 7" in gate
+    # The spend check must not apply to story 6, or it fires once like the rest.
+    assert "TOP_visit_trigger_story = 6" in gate
+    assert "global.TOP_visit_story_used^TOP_visit_trigger_story = 0" in gate
+    setup = _named_block(EFFECTS, "TOP_setup_extended_runtime")
+    assert "resize_array = { global.TOP_visit_story_used = 7 }" in setup
+    assert "global.TOP_extended_runtime_version = 4" in setup
+    assert "global.TOP_visit_open_interval = 91" in setup
+
+
+def test_open_story_dispatcher_throttles_globally_and_frees_a_stalled_host():
+    dispatch = _named_block(EFFECTS, "TOP_visit_country_opportunities")
+    assert "TOP_country_eligible = yes" in dispatch
+    # Global clock, not a per-country timer, so the rate does not scale with
+    # how many hosts happen to be eligible.
+    assert "global.TOP_visit_open_after < global.TOP_clock" in dispatch
+    assert (
+        "set_variable = { global.TOP_visit_open_after = "
+        "{ value = global.TOP_clock add = global.TOP_visit_open_interval } }"
+        in dispatch
+    )
+    # A chain that stalls must not wedge the host out of every later invitation.
+    assert "TOP_open_visit_target = 0" in dispatch
+    assert "global.TOP_visit_status^TOP_open_visit_target = 0" in dispatch
+    assert "TOP_visit_can_invite = yes" in dispatch
+    assert "end = global.TOP_registry_capacity" in dispatch
+    assert "country_event = { id = TOP_visit.6 days = 1 }" in dispatch
+    assert "TOP_visit_country_opportunities = yes" in _named_block(
+        CORE_EFFECTS, "TOP_country_tick"
+    )
+
+
+def test_open_story_chain_carries_its_pick_in_country_variables():
+    """Temporaries do not survive the 60 day notice or the 21 day stay."""
+    for event_id, follow_up, days in (("6", "16", 60), ("16", "26", 21)):
+        block = EVENTS[EVENTS.index(f"id = TOP_visit.{event_id}\n") :]
+        block = block[: block.index("\ncountry_event = {")]
+        assert "TOP_arg_target = TOP_open_visit_target" in block
+        assert (
+            f"country_event = {{ id = TOP_visit.{follow_up} days = {days} }}" in block
+        )
+    closing = EVENTS[EVENTS.index("id = TOP_visit.26\n") :]
+    assert "TOP_end_visit = yes" in closing
+    assert "clear_variable = TOP_open_visit_target" in closing
