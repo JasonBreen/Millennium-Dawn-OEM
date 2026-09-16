@@ -37,6 +37,7 @@ def discovery_script():
     )
     script.stubs.discard("TOP_build_view")
     script.stubs.add("TOP_political_country_opportunities")
+    script.stubs.add("TOP_visit_country_opportunities")
     script.globals["TOP_active_targets"] = ScriptArray([1, 2, 3])
     script.globals["active_terror_orgs"] = ScriptArray([10, 0, 1])
     for target in (1, 2, 3):
