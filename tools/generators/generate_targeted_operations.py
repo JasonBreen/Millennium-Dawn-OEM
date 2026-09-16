@@ -455,6 +455,7 @@ def dispatch(data: dict) -> str:
         ("TOP_proposal_name", "TOP_proposal_target"),
         ("TOP_row_name", "v"),
         ("TOP_archive_name", "TOP_archive_target^v"),
+        ("TOP_open_visit_name", "TOP_open_visit_target"),
     ]
     latest_year = max(target["activation_year"] for target in data["targets"])
     selectors += [

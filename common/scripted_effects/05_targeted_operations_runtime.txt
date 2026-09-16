@@ -35,8 +35,15 @@ TOP_setup_extended_runtime = {
 		resize_array = { global.TOP_visit_return_state = global.TOP_registry_capacity }
 	}
 	if = {
-		limit = { TOP_enabled = yes check_variable = { global.TOP_visit_story_used^num < 6 } }
-		resize_array = { global.TOP_visit_story_used = 6 }
+		limit = { TOP_enabled = yes check_variable = { global.TOP_visit_story_used^num < 7 } }
+		resize_array = { global.TOP_visit_story_used = 7 }
+	}
+	if = {
+		# Days between open-story visits worldwide; 91 gives about four a year.
+		# Guarded on its own rather than by the version above, so an existing
+		# save picks it up without re-running every constant in this file.
+		limit = { TOP_enabled = yes check_variable = { global.TOP_visit_open_interval < 1 } }
+		set_variable = { global.TOP_visit_open_interval = 91 }
 	}
 }
 
@@ -688,7 +695,7 @@ TOP_process_crisis = {
 			check_variable = { global.TOP_crisis_active = 1 }
 			OR = {
 				check_variable = { global.TOP_crisis_story < 1 }
-				check_variable = { global.TOP_crisis_story > 5 }
+				check_variable = { global.TOP_crisis_story > 6 }
 				check_variable = { global.TOP_crisis_visit_token < 1 }
 			}
 		}
@@ -715,6 +722,58 @@ TOP_process_crisis = {
 				}
 			}
 			TOP_cleanup_crisis = yes
+		}
+	}
+}
+
+# Stories 1 to 5 are dispatched once each from trigger_year_2032_events, so
+# before 2032 nothing ever schedules a visit and every target sits still. This
+# offers the open story instead, throttled globally rather than per country so
+# the rate does not scale with how many hosts are eligible.
+TOP_visit_country_opportunities = {
+	if = {
+		limit = {
+			TOP_country_eligible = yes
+			check_variable = { global.TOP_visit_open_after < global.TOP_clock }
+			# Free again once the held pick has no visit left, so a chain that
+			# stalls because the person was taken or killed does not wedge the
+			# host out of every later invitation.
+			OR = {
+				check_variable = { TOP_open_visit_target = 0 }
+				check_variable = { global.TOP_visit_status^TOP_open_visit_target = 0 }
+			}
+		}
+		set_temp_variable = { TOP_visit_open_candidate = 0 }
+		random_owned_state = {
+			limit = { is_controlled_by = ROOT }
+			set_temp_variable = { TOP_visit_open_state = THIS }
+		}
+		if = {
+			limit = { check_variable = { TOP_visit_open_state > 0 } }
+			for_loop_effect = {
+				start = 1
+				end = global.TOP_registry_capacity
+				value = top_visit_person
+				if = {
+					limit = {
+						check_variable = { TOP_visit_open_candidate = 0 }
+						set_temp_variable = { TOP_visit_trigger_target = top_visit_person }
+						set_temp_variable = { TOP_visit_trigger_state = TOP_visit_open_state }
+						set_temp_variable = { TOP_visit_trigger_story = 6 }
+						TOP_visit_can_invite = yes
+					}
+					set_temp_variable = { TOP_visit_open_candidate = top_visit_person }
+				}
+			}
+		}
+		if = {
+			limit = { check_variable = { TOP_visit_open_candidate > 0 } }
+			set_variable = { global.TOP_visit_open_after = { value = global.TOP_clock add = global.TOP_visit_open_interval } }
+			# The chain spans a 60 day notice and a 21 day stay, so the pick is
+			# held in country variables rather than temporaries.
+			set_variable = { TOP_open_visit_target = TOP_visit_open_candidate }
+			set_variable = { TOP_open_visit_state = TOP_visit_open_state }
+			country_event = { id = TOP_visit.6 days = 1 }
 		}
 	}
 }
