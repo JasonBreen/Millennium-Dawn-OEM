@@ -92,6 +92,7 @@ def test_intel_discovers_an_activated_state_reference_and_preserves_its_location
     variables = script.countries[1]["vars"]
     variables["international_terror_org_intel"] = ScriptArray([38.48938, 0])
     script.stubs.add("TOP_political_country_opportunities")
+    script.stubs.add("TOP_visit_country_opportunities")
 
     script.run("TOP_activate_group_1", 1)
     script.run("TOP_country_tick", 1)

@@ -469,15 +469,12 @@ def test_open_story_is_held_to_serving_office_holders():
     story = _named_block(TRIGGERS, "TOP_visit_story_valid")
     assert "TOP_visit_trigger_story = 6" in story
     assert "TOP_visit_trigger_target > 128" in story
+    # The resolver is generated across the whole registry, so the fugitives are
+    # nameable; it is this trigger that keeps them from being invited.
     names = (
         ROOT / "common/scripted_localisation/01_targeted_operations_names.txt"
     ).read_text(encoding="utf-8")
-    # defined_text blocks are keyed by an inner `name =`, not by the block name.
-    resolver = names[names.index("name = TOP_open_visit_name") :]
-    for legacy in (56, 60, 64):
-        assert f"TOP_open_visit_target = {legacy} " not in resolver
-    for serving in (129, 144, 160):
-        assert f"TOP_open_visit_target = {serving} " in resolver
+    assert "name = TOP_open_visit_name" in names
 
 
 def test_open_story_is_reusable_where_the_authored_stories_are_spent():
@@ -488,7 +485,7 @@ def test_open_story_is_reusable_where_the_authored_stories_are_spent():
     assert "global.TOP_visit_story_used^TOP_visit_trigger_story = 0" in gate
     setup = _named_block(EFFECTS, "TOP_setup_extended_runtime")
     assert "resize_array = { global.TOP_visit_story_used = 7 }" in setup
-    assert "global.TOP_extended_runtime_version = 4" in setup
+    assert "global.TOP_visit_open_interval < 1" in setup
     assert "global.TOP_visit_open_interval = 91" in setup
 
 

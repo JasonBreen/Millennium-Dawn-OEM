@@ -1,9 +1,7 @@
 TOP_setup_extended_runtime = {
 	if = {
-		limit = { TOP_enabled = yes check_variable = { global.TOP_extended_runtime_version < 4 } }
-		set_variable = { global.TOP_extended_runtime_version = 4 }
-		# Days between open-story visits worldwide. 91 gives about four a year.
-		set_variable = { global.TOP_visit_open_interval = 91 }
+		limit = { TOP_enabled = yes check_variable = { global.TOP_extended_runtime_version < 3 } }
+		set_variable = { global.TOP_extended_runtime_version = 3 }
 		set_variable = { global.TOP_annual_lead_gain = 25 }
 		set_variable = { global.TOP_official_review_penalty = 20 }
 		set_variable = { global.TOP_visit_notice_days = 60 }
@@ -39,6 +37,13 @@ TOP_setup_extended_runtime = {
 	if = {
 		limit = { TOP_enabled = yes check_variable = { global.TOP_visit_story_used^num < 7 } }
 		resize_array = { global.TOP_visit_story_used = 7 }
+	}
+	if = {
+		# Days between open-story visits worldwide; 91 gives about four a year.
+		# Guarded on its own rather than by the version above, so an existing
+		# save picks it up without re-running every constant in this file.
+		limit = { TOP_enabled = yes check_variable = { global.TOP_visit_open_interval < 1 } }
+		set_variable = { global.TOP_visit_open_interval = 91 }
 	}
 }
 
