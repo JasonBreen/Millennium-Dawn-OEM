@@ -1370,7 +1370,7 @@ def test_ai_bootstrap_and_capacity_strategies_are_bounded():
     assert "microchip_plant_total < 8" in sovereign
     assert "id = microchip_plant value = 75" in sovereign
     assert "CAT_microchips = 18.0" in focuses
-    assert "CAT_computing_tech = 8.0" in focuses
+    assert "CAT_information_technology = 8.0" in focuses
     assert "CAT_microchips = 8.0" in focuses
 
 
