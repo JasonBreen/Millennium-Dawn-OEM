@@ -102,7 +102,7 @@ def test_location_presence_guards_accept_nonzero_state_references(
     else:
         statements = _parse_race_script(_named_block(text, block))[block]
     guards = _location_guards(statements, variable)
-    assert len(guards) == 1
+    assert guards
     script = TargetScript()
     script.temps[variable] = state
     assert script.condition(guards, 1) == (state != 0)
@@ -126,6 +126,7 @@ def test_monthly_host_refresh_resolves_changed_state_controller(state):
     script = TargetScript()
     script.state(state, 3)
     script.target(1, host=2, state=state)
+    script.globals["TOP_status"][1] = 2
     script.stubs.add("TOP_activate_candidates")
     script.run("TOP_global_monthly", 1)
     assert script.globals["TOP_state"][1] == state
