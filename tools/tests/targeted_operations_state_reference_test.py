@@ -7,7 +7,7 @@ from great_ai_race_state_model_test import (
     _parse_race_script,
 )
 from targeted_operations_authorization_test import ReviewScript
-from targeted_operations_core_test import TargetScript
+from targeted_operations_core_test import ScriptArray, TargetScript
 
 ROOT = Path(__file__).resolve().parents[2]
 ENCODED_STATE = -10737.40617
@@ -18,9 +18,11 @@ STATE_GUARDS = (
         "TOP_import_state",
     ),
     (
+        # Two guards: the var: scope open, and the monthly relocation roll.
         "scripted_effects/01_targeted_operations_world.txt",
         "TOP_global_monthly",
         "global.TOP_state^TOP_target",
+        2,
     ),
     (
         "scripted_effects/01_targeted_operations_world.txt",
@@ -90,11 +92,11 @@ def _location_guards(statements, variable):
     return found
 
 
-@pytest.mark.parametrize("path,block,variable", STATE_GUARDS)
+@pytest.mark.parametrize("entry", STATE_GUARDS)
 @pytest.mark.parametrize("state", (ENCODED_STATE, 101, 0))
-def test_location_presence_guards_accept_nonzero_state_references(
-    path, block, variable, state
-):
+def test_location_presence_guards_accept_nonzero_state_references(entry, state):
+    path, block, variable = entry[:3]
+    expected = entry[3] if len(entry) > 3 else 1
     text = (ROOT / "common" / path).read_text(encoding="utf-8")
     if block == "TOP_selected_location":
         start = text.rfind("defined_text", 0, text.index(f"name = {block}"))
@@ -102,10 +104,11 @@ def test_location_presence_guards_accept_nonzero_state_references(
     else:
         statements = _parse_race_script(_named_block(text, block))[block]
     guards = _location_guards(statements, variable)
-    assert len(guards) == 1
+    assert len(guards) == expected
     script = TargetScript()
     script.temps[variable] = state
-    assert script.condition(guards, 1) == (state != 0)
+    for guard in guards:
+        assert script.condition([guard], 1) == (state != 0)
 
 
 @pytest.mark.parametrize("state", (ENCODED_STATE, 105))
@@ -126,6 +129,10 @@ def test_monthly_host_refresh_resolves_changed_state_controller(state):
     script = TargetScript()
     script.state(state, 3)
     script.target(1, host=2, state=state)
+    # The harness always takes a `chance`, so the monthly relocation roll would
+    # move the target. A target mid-visit is exempt from it.
+    script.globals["TOP_visit_status"] = ScriptArray([0] * 200)
+    script.globals["TOP_visit_status"][1] = 1
     script.stubs.add("TOP_activate_candidates")
     script.run("TOP_global_monthly", 1)
     assert script.globals["TOP_state"][1] == state
