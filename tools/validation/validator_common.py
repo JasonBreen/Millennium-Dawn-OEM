@@ -10,6 +10,7 @@ import time
 from dataclasses import dataclass
 from multiprocessing import cpu_count
 from multiprocessing.pool import Pool
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, TypeVar, cast
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -24,6 +25,7 @@ from shared_utils import (
     compute_line_offsets,
     cpu_budget,
     create_validation_parser,
+    extract_block_from_text,
     find_line_number,
     get_staged_files,
     line_for_offset,
@@ -997,6 +999,21 @@ class BaseValidator:
         ) as pool:
             return pool.map(func, items, chunksize=chunksize)
 
+    def staged_touches(self, dirs: Tuple[str, ...]) -> bool:
+        """True when any staged file sits under one of the mod-relative dirs."""
+        mod = Path(self.mod_path)
+        prefixes = tuple(d + "/" for d in dirs)
+        for f in self.staged_files or []:
+            p = Path(f)
+            abs_p = p if p.is_absolute() else mod / p
+            try:
+                rel = abs_p.resolve().relative_to(mod.resolve()).as_posix()
+            except ValueError:
+                continue
+            if rel.startswith(prefixes):
+                return True
+        return False
+
     def _collect_files(
         self,
         patterns: List[str],
@@ -1066,6 +1083,7 @@ class BaseValidator:
                 for f in glob.iglob(
                     os.path.join(self.mod_path, pattern), recursive=True
                 ):
+                    f = os.path.normpath(f)
                     if f not in seen:
                         seen.add(f)
                         files.append(f)
