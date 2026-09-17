@@ -113,7 +113,7 @@ def _write_manifest(
 def _write_legacy_batch_summary(
     batch: Optional[str],
     specs: List[ValidatorSpec],
-    outcomes: Dict[str, Tuple[int, str]],
+    outcomes: Dict[str, Tuple[int, str, str]],
     output_dir: str,
 ) -> None:
     """Write the aggregate sidecar expected by the pre-batch trusted reporter."""
@@ -143,7 +143,7 @@ def _write_legacy_batch_summary(
                 }
             )
 
-        returncode, status = outcomes[spec.name]
+        returncode, status, _detail = outcomes[spec.name]
         new_issues = issues[first_issue:]
         if (returncode != 0 or status in {"crash", "missing"}) and not any(
             issue.get("severity") == "error" for issue in new_issues
