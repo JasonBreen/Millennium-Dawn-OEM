@@ -17,8 +17,6 @@ ALG_khenchela_arms_manufacturer = {
 		}
 	}
 
-	equipment_type = { infantry_weapons_type }
-
 	research_categories = {
 		CAT_infantry
 		CAT_command_and_control_equipment
@@ -151,7 +149,6 @@ ALG_khenchela_arms_manufacturer = {
 			}
 		}
 	}
-
 }
 
 ### Small Arms ###
@@ -167,8 +164,6 @@ ALG_seriana_small_arms = {
 			FROM = { num_of_military_factories < 8 }
 		}
 	}
-
-	equipment_type = { infantry_weapons_type }
 
 	research_categories = { CAT_infantry }
 
@@ -204,6 +199,8 @@ ALG_seriana_small_arms = {
 		icon = GFX_generic_mio_trait_icon_smallarms_attack
 
 		position = { x = 1 y = 0 }
+
+		limit_to_equipment_type = { infantry_weapons_type }
 
 		equipment_bonus = {
 			soft_attack = 0.05
@@ -275,7 +272,6 @@ ALG_seriana_small_arms = {
 			}
 		}
 	}
-
 }
 
 ### Missiles & Artillery ###
@@ -481,7 +477,6 @@ ALG_dgi_missile_systems = {
 			}
 		}
 	}
-
 }
 
 ### Armored Vehicles ###
@@ -500,7 +495,7 @@ ALG_bcl_armored_development = {
 	}
 
 	equipment_type = {
-		util_vehicle_type
+		mio_cat_all_utils
 		medium_tank_amphibious_chassis
 		medium_tank_flame_chassis
 		medium_tank_destroyer_chassis
@@ -687,7 +682,6 @@ ALG_bcl_armored_development = {
 			}
 		}
 	}
-
 }
 
 ### Utility Vehicles ###
@@ -705,7 +699,7 @@ ALG_snvi_vehicle_manufacturer = {
 		}
 	}
 
-	equipment_type = { util_vehicle_type }
+	equipment_type = { mio_cat_all_utils }
 
 	research_categories = { CAT_utility_vehicles }
 
@@ -836,7 +830,6 @@ ALG_snvi_vehicle_manufacturer = {
 			}
 		}
 	}
-
 }
 
 ### Helicopters ###
@@ -955,7 +948,6 @@ ALG_enmib_helicopter_unit = {
 			}
 		}
 	}
-
 }
 
 ### Light Naval ###
@@ -1083,7 +1075,6 @@ ALG_mers_el_kebir_shipyards = {
 			}
 		}
 	}
-
 }
 
 ### Mixed Naval ###
@@ -1287,7 +1278,6 @@ ALG_el_djazair_naval_industry = {
 			}
 		}
 	}
-
 }
 
 ### Aircraft ###
@@ -1309,6 +1299,7 @@ ALG_ersa_aircraft_manufacturer = {
 		mio_cat_eq_only_light_aircraft
 		mio_cat_eq_only_transport
 		mio_cat_helicopters
+		mio_cat_eq_only_uav
 	}
 
 	research_categories = {
@@ -1446,6 +1437,68 @@ ALG_ersa_aircraft_manufacturer = {
 		}
 	}
 
+	trait = {
+		token = ALG_ersa_trait_yabhon_licence_line
+		name = ALG_ersa_trait_yabhon_licence_line
+		icon = GFX_generic_mio_trait_icon_build_cost_ic
+
+		all_parents = { ALG_ersa_trait_licensed_assembly }
+
+		position = { x = 0 y = 2 }
+		relative_position_id = ALG_ersa_trait_mro_expertise
+
+		limit_to_equipment_type = { mio_cat_eq_only_uav }
+
+		equipment_bonus = { build_cost_ic = -0.06 }
+
+		production_bonus = { production_capacity_factor = 0.08 }
+
+		on_complete = {
+			FROM = {
+				medium_expenditure = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 50
+			modifier = {
+				factor = 0
+				check_variable = { FROM.interest_rate > 8 }
+			}
+		}
+	}
+
+	trait = {
+		token = ALG_ersa_trait_flash20_endurance
+		name = ALG_ersa_trait_flash20_endurance
+		icon = GFX_generic_mio_trait_icon_air_range
+
+		all_parents = { ALG_ersa_trait_yabhon_licence_line }
+
+		position = { x = 0 y = 3 }
+		relative_position_id = ALG_ersa_trait_mro_expertise
+
+		limit_to_equipment_type = { mio_cat_eq_only_uav }
+
+		equipment_bonus = {
+			air_range = 0.10
+			reliability = 0.05
+		}
+
+		on_complete = {
+			FROM = {
+				large_expenditure = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 50
+			modifier = {
+				factor = 0
+				check_variable = { FROM.interest_rate > 8 }
+			}
+		}
+	}
 }
 
 ALG_ferrovial_manufacturer = {
