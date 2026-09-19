@@ -11,7 +11,7 @@ Substitute `DEN` / `Denmark` / the path names. Tabs for indentation.
 DEN_ai_behavior = {
 	name = "DEN_AI_BEHAVIOR"
 	group = "RULE_GROUP_AI_BEHAVIOR"
-	option = {
+	default = {
 		name = HISTORICAL
 		text = "RULE_OPTION_DEN_HISTORICAL"
 		desc = "RULE_OPTION_DEN_HISTORICAL_DESC"
@@ -26,17 +26,12 @@ DEN_ai_behavior = {
 		text = "RULE_OPTION_MD_RANDOM_PATH"
 		desc = "RULE_OPTION_MD_RANDOM_PATH_DESC"
 	}
-	default = {
-		name = NO_PATH
-		text = "RULE_OPTION_MD_NO_PATH"
-		desc = "RULE_OPTION_MD_NO_PATH_DESC"
-	}
 }
 ```
 
-`NO_PATH` is the `default = { }` block and stays last — a fresh game leaves the AI unscripted unless
-the player picks a path. `HISTORICAL` is a plain `option` and comes first, with one `option` per
-alt-history path between it and `RANDOM_PATH`. No `DEFAULT`. Option names are unprefixed
+`HISTORICAL` is the default in this example. Select the rule's primary meaningful route as its single
+`default = { }` block, then list one `option` per alternate path and `RANDOM_PATH`. No `NO_PATH` or
+`DEFAULT`. Option names are unprefixed
 (`EUROPEAN_UNION`, not `DEN_EUROPEAN_UNION`) and never contain "random". The file lists the rules
 alphabetically by displayed country name; insert a new block at that position. A country sub-rule
 (`BLR_union_state_ai_behavior`, `GEO_help_CHE_behavior`) goes directly after the main rule in the
@@ -66,9 +61,8 @@ Every `_desc` is **exactly two sentences**, present tense about the country, no 
 on party and movement names. First sentence: what the country does. Second: what that means for the
 world or its neighbours. Reference blocks: `TUR` and `BHR` in the same file.
 
-`RANDOM_PATH` / `NO_PATH` reuse the shared keys that already exist near the top of the file —
-`RULE_OPTION_MD_RANDOM_PATH`, `RULE_OPTION_MD_NO_PATH` and their `_DESC`s. Never write per-country
-copies.
+`RANDOM_PATH` reuses the shared keys that already exist near the top of the file —
+`RULE_OPTION_MD_RANDOM_PATH` and `RULE_OPTION_MD_RANDOM_PATH_DESC`. Never write per-country copies.
 
 ## 3. Flag wiring — `common/on_actions/999_game_rules_on_actions.txt`
 
@@ -98,9 +92,8 @@ copies.
 				}
 ```
 
-One `if` per named option. `RANDOM_PATH` draws from a `random_list` that **includes the historical
-bucket** and excludes `NO_PATH`; no bucket may be empty. `NO_PATH` gets no branch at all — it sets
-nothing. Flags are global (`set_global_flag`), never country flags.
+One `if` per named route. `RANDOM_PATH` draws from a `random_list` that **includes the historical
+bucket**; no bucket may be empty. Flags are global (`set_global_flag`), never country flags.
 
 Optional AI sentiment grant, if the country has one — `if`/`else_if`, no bookkeeping flag:
 
@@ -133,16 +126,11 @@ section lists every direct `has_game_rule` reader for your tag; convert each one
 Every ownership group gets an **owner** trigger and a **not** trigger. AI-internal, so no loc key and
 no `custom_trigger_tooltip`.
 
-The **historical** group is special and must use this owner trigger — the flag alone is not enough,
-because under `NO_PATH` with historical AI on no flag is set and the historical spine would be
-zeroed along with everything else:
+The **historical** group owns its historical-route flag directly:
 
 ```
 DEN_ai_historical_path = {
-	OR = {
-		is_historical_focus_on = yes
-		has_global_flag = DEN_HISTORICAL_FOCUS_PATH
-	}
+	has_global_flag = DEN_HISTORICAL_FOCUS_PATH
 }
 
 DEN_ai_not_historical_path = {
@@ -234,8 +222,7 @@ include historical too (`99_EGY_scripted_triggers.txt:18`, `99_IRQ_scripted_trig
 reader outside `ai_will_do` may instead pair the plain trigger with its not trigger —
 `DEN_ai_historical_path = yes` + `DEN_ai_not_historical_path = no` (§8, `ITA_strategy_plans.txt:6`).
 
-`ai_path_report.py` reports both failures: a focus alive under an alt rule only because historical is
-on, and a decision gate that is dead under `NO_PATH` or visible during an alt path.
+`ai_path_report.py` reports a focus or decision gate that is visible during an alternate path.
 
 **Precondition.** The collapsed shape is behaviour-identical to the old three-modifier form only
 while at most one `TAG_*_FOCUS_PATH` flag is ever set and each not trigger excludes its own group's
@@ -326,10 +313,9 @@ DEN_ai_path_category = {
 The icon must be a **category** sprite (52x40, `GFX_decisions_category_*`), not a decision one.
 
 Raw flags are right only while every path in the `visible` is an **alt** path, as above. A ramp that
-also has to run for the **historical** party gates on the alt-guarded `DEN_ai_historical_path` (§4)
-instead — raw `DEN_HISTORICAL_FOCUS_PATH` is dead under `NO_PATH` with historical AI, which is the one
-state the trigger exists to cover, and a bare unguarded trigger runs the historical ramp on top of the
-alt ramp the player picked. Both mistakes are live today: `GER_ai_path_category` and
+also has to run for the **historical** party gates on `DEN_HISTORICAL_FOCUS_PATH` (§4) instead. A
+bare unguarded trigger runs the historical ramp on top of the alternate ramp the player picked. Both
+mistakes are live today: `GER_ai_path_category` and
 `GRE_ai_path_category` read the raw flag; `EGY_ai_rally_the_generals` and `IND_rally_the_awakening`
 read the unguarded trigger.
 
