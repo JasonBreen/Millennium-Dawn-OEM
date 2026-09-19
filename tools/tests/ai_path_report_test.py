@@ -350,7 +350,7 @@ class TestWeights:
         )
         assert weight == 25
 
-    def test_no_path_without_historical_ai_leaves_the_base(self):
+    def test_unconfigured_path_without_historical_ai_leaves_the_base(self):
         focus = report.parse_focus_file(FOCUS_FILE, "DEN")[1]
         triggers = {
             "DEN_ai_not_socialist_path": parse(
@@ -359,7 +359,7 @@ class TestWeights:
             )
         }
         weight, _ = report.focus_weight(
-            focus, report.State("NO_PATH", None, False), triggers
+            focus, report.State("UNCONFIGURED", None, False), triggers
         )
         assert weight == 1
 
@@ -409,7 +409,7 @@ ALIAS_STATES = [
         ("HISTORICAL", "DEN_HISTORICAL_FOCUS_PATH"),
         ("NATIONALIST", "DEN_NATIONALIST_FOCUS_PATH"),
         ("SOCIALIST", "DEN_SOCIALIST_FOCUS_PATH"),
-        ("NO_PATH", None),
+        ("UNCONFIGURED", None),
     )
     for historical in (True, False)
 ]
@@ -529,7 +529,7 @@ class TestMutexBothOwned:
 
 
 class TestPathGates:
-    def test_raw_historical_flag_is_dead_under_no_path(self):
+    def test_raw_historical_flag_is_dead_when_the_path_is_unconfigured(self):
         issues = report._path_gate_issues(
             "DEN",
             {
@@ -544,7 +544,7 @@ class TestPathGates:
             alias_triggers(GUARDED_HISTORICAL),
         )
         assert issues == [
-            "DEN_ai_path_category: gates on DEN_HISTORICAL_FOCUS_PATH; NO_PATH with"
+            "DEN_ai_path_category: gates on DEN_HISTORICAL_FOCUS_PATH; an unconfigured path with"
             " historical AI sets no flag, read DEN_ai_historical_path instead"
         ]
 
@@ -987,7 +987,7 @@ TREE_FILES = {
 DEN_ai_behavior = {
 	name = "DEN_AI_BEHAVIOR"
 	group = "RULE_GROUP_AI_BEHAVIOR"
-	option = {
+	default = {
 		name = HISTORICAL
 		text = "RULE_OPTION_DEN_HISTORICAL"
 		desc = "RULE_OPTION_DEN_HISTORICAL_DESC"
@@ -1002,11 +1002,6 @@ DEN_ai_behavior = {
 		text = "RULE_OPTION_MD_RANDOM_PATH"
 		desc = "RULE_OPTION_MD_RANDOM_PATH_DESC"
 	}
-	default = {
-		name = NO_PATH
-		text = "RULE_OPTION_MD_NO_PATH"
-		desc = "RULE_OPTION_MD_NO_PATH_DESC"
-	}
 }
 """,
     "localisation/english/MD_game_rules_l_english.yml": """
@@ -1018,8 +1013,6 @@ DEN_ai_behavior = {
  RULE_OPTION_DEN_SOCIALIST_DESC: "The §8Social Democrats§! take the chamber. The union loses a vote."
  RULE_OPTION_MD_RANDOM_PATH: "Random"
  RULE_OPTION_MD_RANDOM_PATH_DESC: "A path is drawn at random. Every campaign differs."
- RULE_OPTION_MD_NO_PATH: "No Path"
- RULE_OPTION_MD_NO_PATH_DESC: "The country runs unscripted. Nothing steers it."
 """,
     "common/on_actions/999_game_rules_on_actions.txt": """
 on_actions = {
@@ -1235,13 +1228,26 @@ def run_cli(tree, capsys, *extra):
 
 
 class TestWholeReport:
+
+    def test_repository_country_rules_expose_one_configured_default(self):
+        rules = (REPO_ROOT / "common/game_rules/00_game_rules.txt").read_text(
+            encoding="utf-8"
+        )
+        tags = re.findall(r"(?m)^([A-Z]{3})_ai_behavior = \{", rules)
+
+        assert len(tags) == 63
+        for tag in tags:
+            rule = report.parse_rule(str(REPO_ROOT), tag)
+            assert rule is not None
+            assert "NO_PATH" not in [option.name for option in rule.options]
+            assert len([option for option in rule.options if option.is_default]) == 1
+
     def test_the_rule_and_its_wiring_are_read_off_the_tree(self, mod_tree):
         built = report.build_report(str(mod_tree), "DEN", 15)
         assert built["rule"]["options"] == [
             "HISTORICAL",
             "SOCIALIST",
             "RANDOM_PATH",
-            "NO_PATH",
         ]
         assert built["path_flags"] == [
             "DEN_HISTORICAL_FOCUS_PATH",
@@ -1276,7 +1282,6 @@ class TestWholeReport:
         ]
         assert dead == [
             "DEN_mafia: every cure is dead under HISTORICAL / historical on",
-            "DEN_mafia: every cure is dead under NO_PATH / historical on",
         ]
 
     def test_an_ai_untakeable_cure_and_a_player_only_gui_are_reported(self, mod_tree):

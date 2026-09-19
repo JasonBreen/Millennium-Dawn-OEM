@@ -82,9 +82,9 @@ events, an asymmetric branch, a wrong state id, or a typo in an English string t
 gets fixed in the same PR, in its own commit, never deferred as a follow-up. English values only —
 never rename a key that non-English files carry.
 
-**Rule standard.** Exactly `HISTORICAL` + one option per alt-history path + `RANDOM_PATH` +
-`NO_PATH`, and `NO_PATH` is the `default = { }` block, listed last — a country the player never
-configures runs unscripted. No `DEFAULT`, no `RANDOM`; merge any duplicate `DEFAULT`/`HISTORICAL`.
+**Rule standard.** Exactly `HISTORICAL` + one option per alt-history path + `RANDOM_PATH`, with
+exactly one meaningful route as the `default = { }` block. No `NO_PATH`, `DEFAULT`, or `RANDOM`;
+merge any duplicate `DEFAULT`/`HISTORICAL`.
 Write the options fresh — don't recycle a stub's names or bucket count. The historical option's
 displayed text is literally `"Historical"`; its `_desc` carries the country's history. Player-facing
 names, no internal jargon, no "random" in a path name. Every `_desc` exactly two sentences, present
@@ -94,11 +94,9 @@ block at the same position in `MD_game_rules_l_english.yml`, and a country sub-r
 is the shape) sits directly after the country's main rule in `RULE_GROUP_AI_BEHAVIOR`.
 
 **Wiring.** Rule → `set_global_flag = TAG_<PATH>_FOCUS_PATH` in `999_game_rules_on_actions.txt`.
-`RANDOM_PATH`'s `random_list` includes the historical bucket; `NO_PATH` gets no branch. Convert
-country flags to global. Gate on `has_global_flag`, never `has_game_rule`, everywhere including
-events and strategy plans — otherwise a RANDOM roll enables the flags but not the plan. Verify
-`NO_PATH` leaves a working AI: an unconditionally-enabled strategy plan and a sane focus
-`ai_will_do` base.
+`RANDOM_PATH`'s `random_list` includes the historical bucket. Every named route gets a branch.
+Convert country flags to global. Gate on `has_global_flag`, never `has_game_rule`, everywhere
+including events and strategy plans — otherwise a RANDOM roll enables the flags but not the plan.
 
 **Historical government.** Read the report's `government` section. On a **dated timeline** verdict,
 write the walker ([references/write.md](references/write.md) §8) and its `00_yearly_effects.txt`
@@ -140,7 +138,7 @@ target, focus or flag the mod-wide files cannot express; anything on `surrender_
 ## 6. Finish
 
 Changelog: `Changelog.txt` carries one shared line under the current version's `Content:`,
-`- Country AI path game rules standardised to Historical / alternate paths / Random Path / No Path:
+`- Country AI path game rules standardised to Historical / alternate paths / Random Path:
 TAG, TAG`. Append your TAG to it; create the line if the version has none. No per-country line.
 
 PR body in the `/open-pr` step 5 format and nothing else: a single `### Changes` heading, one

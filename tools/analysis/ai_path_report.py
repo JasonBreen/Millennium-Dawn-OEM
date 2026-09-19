@@ -594,7 +594,7 @@ def build_states(rule: Optional[Rule], flags: Sequence[str]) -> List[State]:
             options.append((option.name, match))
     else:
         options.extend((flag, flag) for flag in flags)
-        options.append(("NO_PATH", None))
+        options.append(("UNCONFIGURED", None))
     return [
         State(option=name, flag=flag, historical=historical)
         for name, flag in options
@@ -742,13 +742,15 @@ def _rule_findings(
         }
     options = [option.name for option in rule.options]
     defaults = [option.name for option in rule.options if option.is_default]
-    if defaults != ["NO_PATH"]:
+    if len(defaults) != 1:
         issues.append(
-            "default block is {}, expected NO_PATH".format(defaults or "missing")
+            "default block is {}, expected exactly one option".format(
+                defaults or "missing"
+            )
         )
-    if "DEFAULT" in options:
-        issues.append("DEFAULT option still present")
-    for required in ("HISTORICAL", "RANDOM_PATH", "NO_PATH"):
+    if "NO_PATH" in options:
+        issues.append("NO_PATH option is player-facing")
+    for required in ("RANDOM_PATH",):
         if required not in options:
             issues.append("missing " + required + " option")
     if rule.header_key and rule.header_key not in loc:
@@ -767,8 +769,6 @@ def _rule_findings(
             and option.text_key != "RULE_OPTION_MD_RANDOM_PATH"
         ):
             issues.append("RANDOM_PATH must reuse RULE_OPTION_MD_RANDOM_PATH")
-        if option.name == "NO_PATH" and option.text_key != "RULE_OPTION_MD_NO_PATH":
-            issues.append("NO_PATH must reuse RULE_OPTION_MD_NO_PATH")
         if option.text_key and option.text_key not in loc:
             issues.append("missing loc key " + option.text_key)
         if option.name == "HISTORICAL" and loc.get(option.text_key) not in (
@@ -798,14 +798,12 @@ def _rule_findings(
 
     wired = {option: values for option, values in wiring.items() if values}
     for option in options:
-        if option in ("RANDOM_PATH", "NO_PATH"):
+        if option == "RANDOM_PATH":
             continue
         if option not in wired:
             issues.append(
                 "option " + option + " sets no global flag in 999_game_rules_on_actions"
             )
-    if wiring.get("NO_PATH"):
-        issues.append("NO_PATH sets a flag; it must set none")
     if "RANDOM_PATH" in options:
         if not buckets:
             issues.append("RANDOM_PATH has no random_list buckets")
@@ -1314,9 +1312,11 @@ def _path_gate_issues(
             is_path_flag(token, tag) or is_path_trigger(token, tag) for token in tokens
         ):
             continue
-        if historical_flag in tokens:
+        if historical_flag in tokens and any(
+            state.option == "UNCONFIGURED" and state.historical for state in states
+        ):
             issues.append(
-                "{}: gates on {}; NO_PATH with historical AI sets no flag, "
+                "{}: gates on {}; an unconfigured path with historical AI sets no flag, "
                 "read {}_ai_historical_path instead".format(name, historical_flag, tag)
             )
             continue
