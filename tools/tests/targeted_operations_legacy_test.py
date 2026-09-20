@@ -161,19 +161,35 @@ def test_dossiers_window_is_screen_level_and_scoped_to_counter_terror():
         for kind, _, body in windows
         if kind == "containerWindowType" and ("name", "=", '"TOP_window"') in body
     )
-    position = next(value for key, _, value in window if key == "position")
-    assert position == [("x", "=", "550"), ("y", "=", "78")]
+    window_fields = {key: value for key, _, value in window}
+    assert window_fields["size"] == [
+        ("width", "=", "1040"),
+        ("height", "=", "700"),
+    ]
+    assert window_fields["orientation"] == "center"
 
 
-@pytest.mark.parametrize("view", ("footer", "policy"))
-def test_security_windows_attach_to_the_live_dossiers_gui(view):
+def test_security_footer_is_retired_but_remains_attached_to_the_live_dossiers_gui():
     gui = _named_block(
         source("common/scripted_guis/03_targeted_operations_security.txt"),
-        f"TOP_security_{view}_gui",
+        "TOP_security_footer_gui",
     )
     assert "parent_scripted_gui = TOP_dossiers_gui" in gui
     assert "parent_window_name" not in gui
-    assert "TOP_security_window_visible = yes" in _named_block(gui, "visible")
+    assert "always = no" in _named_block(gui, "visible")
+
+
+def test_security_policy_attaches_to_the_live_dossiers_security_tab():
+    gui = _named_block(
+        source("common/scripted_guis/03_targeted_operations_security.txt"),
+        "TOP_security_policy_gui",
+    )
+    assert "parent_scripted_gui = TOP_dossiers_gui" in gui
+    assert "parent_window_name" not in gui
+    visible = _named_block(gui, "visible")
+    assert "TOP_security_window_visible = yes" in visible
+    assert "check_variable = { TOP_security_open = 1 }" in visible
+    assert "check_variable = { TOP_tab = 5 }" in visible
 
 
 def test_security_footer_leaves_room_for_the_dossiers_refresh_button():
@@ -196,7 +212,13 @@ def test_security_footer_leaves_room_for_the_dossiers_refresh_button():
 
 @pytest.mark.parametrize(
     "button,tab",
-    (("dossiers_tab", 0), ("authority_tab", 1), ("archive_tab", 2), ("cases", 3)),
+    (
+        ("dossier_tab", 0),
+        ("package_tab", 1),
+        ("authority_tab", 2),
+        ("custody_tab", 3),
+        ("archive_tab", 4),
+    ),
 )
 def test_dossier_navigation_leaves_the_security_overlay(button, tab):
     gui = _named_block(
@@ -208,6 +230,18 @@ def test_dossier_navigation_leaves_the_security_overlay(button, tab):
     reset = "set_variable = { TOP_security_open = 0 }"
     assert reset in click
     assert click.index(reset) < click.index("TOP_build_view = yes")
+
+
+def test_security_navigation_opens_the_security_overlay():
+    gui = _named_block(
+        source("common/scripted_guis/01_targeted_operations_gui.txt"),
+        "TOP_dossiers_gui",
+    )
+    click = _named_block(_named_block(gui, "effects"), "TOP_security_tab_click")
+    assert "set_variable = { TOP_tab = 5 }" in click
+    assert "set_variable = { TOP_security_open = 1 }" in click
+    assert "TOP_security_refresh_view = yes" in click
+    assert "TOP_build_view = yes" in click
 
 
 def test_ukrainian_leader_rotation_preserves_target_removal_guard():

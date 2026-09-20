@@ -132,53 +132,74 @@ def panel_body_key(script):
     raise AssertionError("No Dossiers body matched")
 
 
-@pytest.mark.parametrize("tab", [0, 1, 2, 3])
-@pytest.mark.parametrize("has_dossier", [False, True])
+@pytest.mark.parametrize("tab", [0, 1, 2, 3, 4])
+@pytest.mark.parametrize("has_person", [False, True])
 @pytest.mark.parametrize("selected", [0, 11])
-def test_dossier_tabs_only_show_person_details_for_a_known_selection(
-    tab, has_dossier, selected
+def test_operations_center_person_tabs_require_a_known_typed_selection(
+    tab, has_person, selected
 ):
     script = TargetScript()
-    if has_dossier:
+    if has_person:
         script.target(11)
-    script.countries[1]["vars"].update(TOP_tab=tab, TOP_selected=selected)
+    script.countries[1]["vars"].update(
+        TOP_tab=tab, TOP_selected=selected, TOP_selected_kind=1
+    )
 
-    if tab == 2:
+    if tab == 4:
         expected = "TOP_archive_help"
-    elif not has_dossier:
-        expected = "TOP_no_dossiers_body"
-    elif selected == 0:
-        expected = "TOP_select_dossier_body"
+    elif not has_person or selected == 0:
+        expected = "TOP_select_subject_body"
     else:
         expected = {
-            0: "TOP_dossier_body",
-            1: "TOP_authorization_body",
-            3: "TOP_cases_body",
+            0: "TOP_person_dossier_body",
+            1: "TOP_person_package_body",
+            2: "TOP_person_authority_body",
+            3: "TOP_person_custody_body",
         }[tab]
     assert panel_body_key(script) == expected
 
 
 @pytest.mark.parametrize("selected", [-1, 12, 161])
-def test_dossier_tabs_reject_invalid_or_undiscovered_selections(selected):
+def test_operations_center_rejects_invalid_or_undiscovered_person_selections(selected):
     script = TargetScript()
     script.target(11)
-    script.countries[1]["vars"]["TOP_selected"] = selected
-    assert panel_body_key(script) == "TOP_select_dossier_body"
-
-
-def test_empty_dossiers_explain_discovery_without_placeholder_person_data():
-    localisation = source("localisation/english/MD_targeted_operations_l_english.yml")
-    values = {}
-    for line in localisation.splitlines():
-        if line.startswith((" TOP_no_dossiers_body:", " TOP_select_dossier_body:")):
-            key, _, value = line.strip().partition(":")
-            values[key] = value
-            assert "[TOP_selected_" not in value
-            assert "[?TOP_" not in value
-    assert set(values) == {"TOP_no_dossiers_body", "TOP_select_dossier_body"}
-    assert "24%" in values["TOP_no_dossiers_body"]
-    assert "scheduled Counter-Terror update" in values["TOP_no_dossiers_body"]
-    assert "Designate Case" in values["TOP_select_dossier_body"]
-    assert "TOP_detect > 24" in source(
-        "common/scripted_effects/00_targeted_operations_effects.txt"
+    script.countries[1]["vars"].update(
+        TOP_selected=selected, TOP_selected_kind=1, TOP_tab=0
     )
+    assert panel_body_key(script) == "TOP_select_subject_body"
+
+
+@pytest.mark.parametrize(
+    ("tab", "expected"),
+    [
+        (0, "TOP_organization_dossier_body"),
+        (1, "TOP_organization_package_body"),
+        (2, "TOP_organization_authority_body"),
+        (3, "TOP_organization_custody_disabled_body"),
+        (4, "TOP_archive_help"),
+    ],
+)
+def test_operations_center_organization_tabs_use_separate_lifecycle(tab, expected):
+    script = TargetScript()
+    script.authorize_organization(group=2, begin=False)
+    script.countries[1]["vars"]["TOP_tab"] = tab
+
+    assert panel_body_key(script) == expected
+
+
+def test_unselected_operations_center_explains_typed_cold_dossiers():
+    localisation = source(
+        "localisation/english/MD_targeted_operations_redesign_l_english.yml"
+    )
+    line = next(
+        line
+        for line in localisation.splitlines()
+        if line.startswith(" TOP_select_subject_body:")
+    )
+    _, _, value = line.strip().partition(":")
+
+    assert "[TOP_selected_" not in value
+    assert "[?TOP_" not in value
+    assert "person or organization" in value
+    assert "Cold dossiers" in value
+    assert "Knowledge and operational authority are independent" in value

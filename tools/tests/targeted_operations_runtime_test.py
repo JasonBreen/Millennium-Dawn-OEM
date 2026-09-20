@@ -106,7 +106,7 @@ def test_headline_visit_schedule_and_fixed_story_bindings():
 
 def test_visit_cases_snapshot_story_and_require_the_active_token_for_execution():
     for field in ("token", "status", "story"):
-        assert f"TOP_case_visit_{field}^TOP_selected" in CASES
+        assert f"TOP_case_visit_{field}^TOP_arg_target" in CASES
     execution = _named_block(TRIGGERS, "TOP_case_visit_execution_valid")
     assert (
         "TOP_case_visit_token^TOP_case_visit_target = global.TOP_visit_active_token^TOP_case_visit_target"
@@ -186,7 +186,9 @@ def test_crisis_constants_deltas_bands_and_single_war_path():
         "type = topple_government }"
     ) in EVENTS
     assert EVENTS.count("major = yes") == 1
-    assert "every_country" not in EFFECTS
+    initializer = _named_block(EFFECTS, "TOP_start_exposed_kill_crisis")
+    assert initializer.count("every_country = {") == 1
+    assert EFFECTS.count("every_country = {") == 1
     assert "every_country" not in EVENTS
     assert "every_other_country" not in EFFECTS
     assert "every_other_country" not in EVENTS
@@ -255,7 +257,7 @@ def test_unmatched_exposed_killing_uses_independent_news_snapshots():
     event_start = EVENTS.rfind("news_event = {", 0, event_id)
     event_end = EVENTS.index("\ncountry_event = {", event_id)
     event = EVENTS[event_start:event_end]
-    assert "picture = GFX_USA_collapse_unrest_global_event" in event
+    assert "picture = GFX_news_gulf_terror" in event
     assert "is_triggered_only = yes" in event
     assert "major = yes" not in event
     option = event[event.index("\toption = {") :]
@@ -277,7 +279,7 @@ def test_unmatched_exposed_killing_uses_independent_news_snapshots():
     assert "global.TOP_crisis_" not in independent_desc
 
 
-def test_crisis_preserves_physical_home_and_host_and_deduplicates_faction_consultations():
+def test_crisis_preserves_hosts_and_dispatches_deduplicated_support_consultations():
     initializer = _named_block(EFFECTS, "TOP_start_exposed_kill_crisis")
     assert (
         "OVERLORD = { set_variable = { global.TOP_crisis_candidate_actor = THIS } }"
@@ -290,17 +292,21 @@ def test_crisis_preserves_physical_home_and_host_and_deduplicates_faction_consul
     assert "global.TOP_crisis_candidate_host = TOP_authorized_host" in initializer
     assert "global.TOP_crisis_candidate_protection = THIS" not in initializer
     assert "global.TOP_crisis_candidate_host = THIS" not in initializer
-    assert initializer.count("country_event = { id = TOP_crisis.7 days = 1 }") == 2
-    assert (
-        "global.TOP_crisis_protection_faction_leader = "
-        "global.TOP_crisis_actor_faction_leader"
-    ) in initializer
+    assert initializer.count("country_event = { id = TOP_crisis.7 days = 1 }") == 1
+    assert "every_country = {" in initializer
+    assert "is_in_faction_with = var:global.TOP_crisis_actor" in initializer
+    assert "is_in_faction_with = var:global.TOP_crisis_protection" in initializer
+    assert "is_guaranteed_by = PREV" in initializer
+    assert "TOP_crisis_support_token = global.TOP_crisis_token" in initializer
     faction_event = _named_block(TRIGGERS, "TOP_crisis_faction_event_valid")
     assert "global.TOP_crisis_actor_faction_leader = THIS" in faction_event
     assert "global.TOP_crisis_protection_faction_leader = THIS" in faction_event
+    assert "TOP_crisis_support_token = global.TOP_crisis_token" in faction_event
     faction_event_start = EVENTS.index("\tid = TOP_crisis.7")
-    faction_event = EVENTS[faction_event_start : faction_event_start + 400]
+    faction_event = EVENTS[faction_event_start : faction_event_start + 4000]
     assert "minor_flavor = yes" in faction_event
+    for option in ("a", "b", "c", "g", "e", "f"):
+        assert f"name = TOP_crisis.7.{option}" in faction_event
 
 
 def test_crisis_gate_requires_exact_live_headline_visit_and_lethal_result():

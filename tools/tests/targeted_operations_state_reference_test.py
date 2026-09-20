@@ -46,8 +46,23 @@ STATE_GUARDS = (
     ),
     (
         "scripted_triggers/01_targeted_operations_triggers.txt",
-        "TOP_can_authorize",
-        "TOP_lead_state^TOP_selected",
+        "TOP_person_package_ready",
+        "TOP_lead_state^TOP_arg_target",
+    ),
+    (
+        "scripted_triggers/01_targeted_operations_triggers.txt",
+        "TOP_organization_package_ready",
+        "TOP_org_lead_state^TOP_group_target",
+    ),
+    (
+        "scripted_triggers/01_targeted_operations_triggers.txt",
+        "TOP_person_access_available",
+        "TOP_access_state",
+    ),
+    (
+        "scripted_triggers/01_targeted_operations_triggers.txt",
+        "TOP_facility_access_available",
+        "TOP_access_state",
     ),
     (
         "scripted_triggers/01_targeted_operations_triggers.txt",
@@ -56,7 +71,12 @@ STATE_GUARDS = (
     ),
     (
         "scripted_triggers/02_targeted_operations_authorization_triggers.txt",
-        "TOP_review_valid",
+        "TOP_person_review_valid",
+        "TOP_proposal_state",
+    ),
+    (
+        "scripted_triggers/07_targeted_operations_redesign.txt",
+        "TOP_organization_review_valid",
         "TOP_proposal_state",
     ),
     (
@@ -174,9 +194,12 @@ def test_host_review_and_case_preserve_state_and_normal_cost(state, method):
     review.run("TOP_approve_review")
     assert review.case(1, "state") == state
     assert review.case(1, "consent") == 1
-    assert review.case(1, "phase") == (2 if method == 2 else 3)
+    assert review.case(1, "phase") == 2
     assert review.actor["TOP_authorized_state"] == state
     assert review.countries[1]["power"] == 150
+    assert not review.binding(method=method, state=state)
+    review.begin_operation()
+    assert review.case(1, "phase") == 3
     assert review.binding(method=method, state=state)
     review.run("TOP_approve_review")
     assert review.countries[1]["power"] == 150
@@ -213,6 +236,7 @@ def test_retired_encoded_native_binding_cannot_be_recycled():
     review = ReviewScript()
     review.move_target(1, ENCODED_STATE, 2)
     review.approve_unilateral()
+    review.begin_operation()
     assert review.binding(state=ENCODED_STATE)
     sequence = review.case(1, "sequence")
     review.call("TOP_close_case", TARGET=1, SEQUENCE=sequence)
@@ -220,10 +244,11 @@ def test_retired_encoded_native_binding_cannot_be_recycled():
         [20000 + ENCODED_STATE * 2 + 2]
     )
     review.approve_unilateral()
-    assert review.case(1, "phase") == 1
+    assert review.case(1, "phase") == 0
     assert not review.binding(state=ENCODED_STATE)
     assert review.countries[1]["power"] == 150
     review.approve_unilateral(method=1)
     assert review.case(1, "phase") == 2
+    review.begin_operation()
     assert review.binding(method=1, state=ENCODED_STATE)
     assert review.countries[1]["power"] == 100

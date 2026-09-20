@@ -47,6 +47,7 @@ def discovery_script():
     variables = script.countries[1]["vars"]
     variables["international_terror_org_intel"] = ScriptArray([0, 40.4443, 0])
     variables["TOP_open"] = 1
+    variables["TOP_status_filter"] = 2
     return script, variables
 
 
@@ -60,22 +61,26 @@ def test_existing_campaign_discovers_real_ids_and_builds_named_rows_one_at_a_tim
     script.run("TOP_country_tick", 1)
 
     assert variables["TOP_dossiers"] == [1]
-    assert variables["TOP_visible_rows"] == [1]
+    assert variables["TOP_visible_people"] == [1]
     assert variables["TOP_known"][1] == 1
     assert variables["TOP_known"][0] == 0
     assert variables["TOP_lead_host"][1] == 2
     assert variables["TOP_lead_state"][1] == 101
-    assert variables["TOP_confidence"][1] == 15
+    assert variables["TOP_identity_confidence"][1] == 15
+    assert variables["TOP_location_confidence"][1] == 15
+    assert variables["TOP_pattern_confidence"][1] == 0
     assert script.globals == registry
     assert all(len(variables[name]) == size for name, size in country_arrays.items())
 
     script.run("TOP_country_tick", 1)
 
     assert variables["TOP_dossiers"] == [1, 2]
-    assert variables["TOP_visible_rows"] == [1, 2]
+    assert variables["TOP_visible_people"] == [1, 2]
     assert variables["TOP_known"][3] == 0
     assert variables["TOP_lead_age"][1] == 28
-    assert variables["TOP_confidence"][1] == 10
+    assert variables["TOP_identity_confidence"][1] == 15
+    assert variables["TOP_location_confidence"][1] == 10
+    assert variables["TOP_pattern_confidence"][1] == 0
 
 
 @pytest.mark.parametrize("intel", [0, 24])
@@ -86,7 +91,7 @@ def test_foreign_dossier_discovery_keeps_the_existing_intelligence_requirement(i
     script.run("TOP_country_tick", 1)
 
     assert not variables.get("TOP_dossiers")
-    assert variables["TOP_visible_rows"] == []
+    assert variables["TOP_visible_people"] == []
     assert not any(variables["TOP_known"])
 
 
@@ -105,20 +110,21 @@ def test_reconciliation_visits_real_groups_without_overwriting_saved_registry_st
     assert len(script.globals["TOP_group_created"]) == 35
 
 
-def test_collecting_refreshes_the_renewed_designation_deadline_immediately():
+def test_resuming_collection_preserves_the_package_and_review_snapshot():
     script, variables = discovery_script()
     script.target(1)
-    variables["TOP_case_phase"][1] = 1
-    variables["TOP_case_until"][1] = 110
+    variables["TOP_case_phase"][1] = 0
+    variables["TOP_package_state"][1] = 1
     script.globals["TOP_clock"] = 100
     script.run("TOP_build_view", 1)
-    assert variables["TOP_view_case_days"] == 10
+    assert variables["TOP_view_case_days"] == 0
     political_power = variables["political_power"]
 
     script.run("TOP_collect_selected", 1)
 
-    assert variables["TOP_case_collecting"][1] == 1
-    assert variables["TOP_case_until"][1] == 282
-    assert variables["TOP_view_case_days"] == 182
-    assert variables["political_power"] == political_power - 25
-    assert variables["TOP_visible_rows"] == [1]
+    assert variables["TOP_package_state"][1] == 2
+    assert variables["TOP_collecting_subjects"] == [1]
+    assert variables["TOP_case_phase"][1] == 0
+    assert variables["TOP_view_case_days"] == 0
+    assert variables["political_power"] == political_power
+    assert variables["TOP_visible_people"] == [1]

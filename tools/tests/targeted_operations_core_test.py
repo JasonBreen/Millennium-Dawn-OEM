@@ -29,6 +29,10 @@ class TargetScript(TargetedScript):
             "01_targeted_operations_world.txt",
             "01_targeted_operations_registry.txt",
             "04_targeted_operations_cases.txt",
+            "06_targeted_operations_redesign.txt",
+            "07_targeted_operations_organization_cases.txt",
+            "08_targeted_operations_resolution.txt",
+            "09_targeted_operations_depth.txt",
         ):
             self.effects.update(
                 _parse_race_script(
@@ -60,6 +64,22 @@ class TargetScript(TargetedScript):
         self.triggers.update(
             _parse_race_script(
                 (
+                    ROOT
+                    / "common/scripted_triggers/03_targeted_operations_political_roster.txt"
+                ).read_text(encoding="utf-8")
+            )
+        )
+        self.triggers.update(
+            _parse_race_script(
+                (
+                    ROOT
+                    / "common/scripted_triggers/07_targeted_operations_redesign.txt"
+                ).read_text(encoding="utf-8")
+            )
+        )
+        self.triggers.update(
+            _parse_race_script(
+                (
                     ROOT / "common/scripted_triggers/05_targeted_operations_runtime.txt"
                 ).read_text(encoding="utf-8")
             )
@@ -79,7 +99,7 @@ class TargetScript(TargetedScript):
         self.legacy_first_removals = []
         self.random_draws = 0
         self.today = date(2005, 1, 1)
-        self.mode = "TOP_enabled_option"
+        self.mode = "TOP_limited_sandbox_option"
         self.stubs = {
             "TOP_initialize_global",
             "TOP_refresh_view",
@@ -102,6 +122,8 @@ class TargetScript(TargetedScript):
             "TOP_refresh_visit_dossiers",
             "TOP_process_visits",
             "TOP_process_crisis",
+            "TOP_initialize_doctrine",
+            "TOP_seed_public_subjects",
             "international_systems_force_update",
         }
         manifest = json.loads(
@@ -119,13 +141,18 @@ class TargetScript(TargetedScript):
         for ident, tag in enumerate(tags):
             self.country(ident, tag=tag)
             self.countries[ident].update(states=[], exists=ident != 0)
+        self.countries[1]["techs"].update(
+            {"special_forces_tech_1", "decryption1", "decryption2"}
+        )
         self.countries[1]["vars"]["political_power"] = 500
         self.state(100, 1)
         self.state(101, 2)
         self.state(102, 3)
         self.run("TOP_setup_registry", 1)
+        self.run("TOP_initialize_redesign_global", 1)
         self.globals.update(
             TOP_rule_enabled=1,
+            TOP_rule_mode=1,
             TOP_active_targets=ScriptArray(),
             active_terror_orgs=ScriptArray([0, 10]),
             active_terror_org_threat_lvl=ScriptArray([50, 40]),
@@ -137,6 +164,9 @@ class TargetScript(TargetedScript):
         self.country(ident, tag=f"state_{ident}")
         self.countries[ident].update(controller=controller, states=[])
         self.countries[ident]["vars"]["infrastructure"] = 3
+        self.countries[ident]["vars"]["arms_factory"] = 2
+        self.countries[ident]["vars"]["industrial_complex"] = 2
+        self.countries[ident]["resources"] = ["oil"]
         self.countries[controller]["states"].append(ident)
 
     def tag(self, token):
@@ -188,7 +218,7 @@ class TargetScript(TargetedScript):
             result = self.scoped(
                 operand, identifier, self.value(key, identifier), condition=True
             )
-        elif key in {"TOP_country_eligible", "raid_show_target_intervention_check"}:
+        elif key == "raid_show_target_intervention_check":
             result = operand == "yes"
         elif key == "TOP_authored_role_eligible":
             # No longer parameterised: the caller sets TOP_role_target,
@@ -196,6 +226,8 @@ class TargetScript(TargetedScript):
             result = (
                 self.value("TOP_role_target", identifier) not in self.ineligible_roles
             )
+        elif key == "TOP_authored_civilian_mandate_valid":
+            result = operand == "no"
         elif key == "TOP_review_pending":
             result = operand == "no"
         elif key == "TOP_target_protection_at_war":
@@ -218,6 +250,7 @@ class TargetScript(TargetedScript):
         elif key in {
             "num_of_controlled_states",
             "has_political_power",
+            "arms_factory",
             "industrial_complex",
             "infrastructure",
         }:
@@ -237,6 +270,10 @@ class TargetScript(TargetedScript):
             )
         elif key == "has_opinion":
             result = False
+        elif key == "has_civil_war":
+            result = self.countries[identifier].get("civil_war", False) == (
+                operand == "yes"
+            )
         elif key == "state_has_any_resource":
             result = bool(self.countries[identifier].get("resources", [])) == (
                 operand == "yes"
@@ -320,12 +357,25 @@ class TargetScript(TargetedScript):
                 self.execute(
                     [entry for entry in operand if entry[0] != "chance"], identifier
                 )
+        elif key == "randomize_temp_variable":
+            data = {name: value for name, _, value in operand}
+            self.random_draws += 1
+            self.temps[data["var"]] = self.value(data["min"], identifier)
         elif key == "add_political_power":
             variables = self.countries[identifier]["vars"]
             variables["political_power"] = variables.get(
                 "political_power", 0
             ) + self.value(operand, identifier)
+        elif key == "add_stability":
+            variables = self.countries[identifier]["vars"]
+            variables["stability"] = variables.get("stability", 0) + self.value(
+                operand, identifier
+            )
+        elif key == "add_opinion_modifier":
+            self.external[key, identifier] += 1
         elif key == "damage_building":
+            self.external[key, identifier] += 1
+        elif key == "add_dynamic_modifier":
             self.external[key, identifier] += 1
         else:
             super().execute_statement(statement, identifier)
@@ -337,12 +387,17 @@ class TargetScript(TargetedScript):
             self.globals["TOP_active_targets"].append(ident)
         variables = self.countries[actor]["vars"]
         variables["TOP_selected"] = ident
+        variables["TOP_selected_kind"] = 1
         dossiers = variables.setdefault("TOP_dossiers", ScriptArray())
         if ident not in dossiers:
             dossiers.append(ident)
         for field, value in (
             ("known", 1),
             ("confidence", 85),
+            ("identity_confidence", 85),
+            ("location_confidence", 85),
+            ("pattern_confidence", 85),
+            ("package_state", 1),
             ("lead_state", state),
             ("lead_host", host),
             ("assessment", status),
@@ -350,19 +405,28 @@ class TargetScript(TargetedScript):
             variables[f"TOP_{field}"][ident] = value
         return variables
 
-    def authorize(self, target=11, method=1, *, host=2, state=101, actor=1):
+    def authorize(self, target=11, method=1, *, host=2, state=101, actor=1, begin=True):
         variables = self.target(target, host=host, state=state, actor=actor)
         for field, value in (
             ("host", host),
             ("state", state),
             ("method", method),
             ("until", 91),
-            ("phase", 2 if method < 3 else 3),
-            ("due", 7 if method > 2 else 0),
+            ("phase", 2),
+            ("due", 0),
             ("sequence", target),
             ("facility", 2),
             ("assurance", 85),
             ("rigor", 1),
+            ("identity", 85),
+            ("location", 85),
+            ("pattern", 85),
+            ("lead_age", 0),
+            ("access", method),
+            ("host_posture", 4 if method == 5 else 1),
+            ("doctrine", 2),
+            ("capability", 85),
+            ("protection", host),
         ):
             variables[f"TOP_case_{field}"][target] = value
         active = variables.setdefault("TOP_active_cases", ScriptArray())
@@ -376,6 +440,58 @@ class TargetScript(TargetedScript):
             target_state=state,
             TOP_facility_kind=2,
         )
+        if begin:
+            self.call("TOP_begin_person_operation", actor, TARGET=target)
+        return variables
+
+    def authorize_organization(
+        self, group=2, objective=1, *, host=3, state=102, actor=1, begin=True
+    ):
+        variables = self.countries[actor]["vars"]
+        self.globals["TOP_group_created"][group] = 1
+        self.globals["TOP_group_window"][group] = 1
+        self.globals["TOP_group_destroyed"][group] = 0
+        self.globals["TOP_group_class"][group] = 1
+        self.globals["TOP_group_host"][group] = host
+        self.globals["TOP_group_state"][group] = state
+        variables["TOP_selected_kind"] = 2
+        variables["TOP_selected_organization"] = group
+        if group not in variables["TOP_organization_dossiers"]:
+            variables["TOP_organization_dossiers"].append(group)
+        for field, value in (
+            ("known", 1),
+            ("verification", 85),
+            ("location", 85),
+            ("activity", 85),
+            ("lead_age", 0),
+            ("lead_state", state),
+            ("lead_host", host),
+            ("package_state", 1),
+        ):
+            variables[f"TOP_org_{field}"][group] = value
+        for field, value in (
+            ("host", host),
+            ("state", state),
+            ("until", 91),
+            ("phase", 2),
+            ("due", 0),
+            ("sequence", group),
+            ("objective", objective),
+            ("verification", 85),
+            ("location", 85),
+            ("activity", 85),
+            ("lead_age", 0),
+            ("access", 3),
+            ("host_posture", 1),
+            ("doctrine", 2),
+            ("capability", 85),
+        ):
+            variables[f"TOP_org_case_{field}"][group] = value
+        if group not in variables["TOP_active_organization_cases"]:
+            variables["TOP_active_organization_cases"].append(group)
+        if begin:
+            self.call("TOP_begin_organization_operation", actor, GROUP=group)
+        self.temps["TOP_group_target"] = group
         return variables
 
     def persisted_clone(self):
@@ -421,7 +537,9 @@ def test_capture_release_recapture_does_not_repeat_lifetime_rewards():
     assert script.globals["TOP_removals"][11] == 1
     assert variables["political_power"] == rewarded_pp
     assert script.globals["active_terror_org_threat_lvl"] == threat
-    assert script.external["TOP_exploit_capture", 1] == 1
+    assert script.globals["TOP_exploited"][11] == 0
+    assert script.globals["TOP_exploitation_until"][11] == 14
+    assert script.external["TOP_exploit_capture", 1] == 0
     assert script.legacy_first_removals == [1, 0]
 
 
@@ -446,21 +564,22 @@ def test_delayed_assessment_retains_original_method_state_and_uncertainty():
     script.run("TOP_complete_operation", 1)
     assert variables["TOP_archive_result"][0] == 5
     assert variables["TOP_assessment"][11] == 5
-    script.authorize(12, method=6, host=3, state=102)
+    script.authorize(12, method=4, host=3, state=102)
     variables["TOP_case_due"][12] = 100
     script.globals["TOP_state"][11] = 102
-    script.globals["TOP_clock"] = 28
+    script.globals["TOP_clock"] = 15
     script.run("TOP_process_timers", 1)
     assert variables["TOP_assessment"][11] == 3
-    assert variables["TOP_archive_result"][1] == 3
-    assert variables["TOP_archive_target"][1] == 11
-    assert variables["TOP_archive_method"][1] == 1
-    assert variables["TOP_archive_state"][1] == 101
+    assert variables["TOP_archive_cursor"] == 1
+    assert variables["TOP_archive_result"][0] == 3
+    assert variables["TOP_archive_target"][0] == 11
+    assert variables["TOP_archive_method"][0] == 1
+    assert variables["TOP_archive_state"][0] == 101
 
 
 def test_legacy_capture_cannot_borrow_an_unrelated_mandate():
     script = TargetScript()
-    variables = script.authorize(target=12, method=6)
+    variables = script.authorize(target=12, method=4)
     script.target(11)
     script.call("TOP_capture_target", TARGET=11)
     assert variables["TOP_archive_target"][0] == 11
@@ -468,29 +587,37 @@ def test_legacy_capture_cannot_borrow_an_unrelated_mandate():
     assert variables["TOP_archive_state"][0] == 101
 
 
-@pytest.mark.parametrize("tier,state", [(0, 101), (1, 101), (2, 101), (2, 102)])
-def test_sabotage_records_every_outcome_once(tier, state):
+@pytest.mark.parametrize("objective", (1, 2, 3))
+def test_facility_sabotage_damages_the_map_without_removing_a_person(objective):
     script = TargetScript()
-    variables = script.authorize(method=6)
-    script.temps.update(TOP_tier=tier, TOP_operation_state=state)
-    script.run("TOP_complete_operation", 1)
+    variables = script.authorize_organization(objective=objective, host=2, state=101)
+    original_person_status = list(script.globals["TOP_status"])
+    script.run("TOP_resolve_organization_operation", 1)
     assert variables["TOP_archive_cursor"] == 1
-    assert variables["TOP_archive_target"][0] == 11
-    assert variables["TOP_attempts"][11] == 1
-    assert script.external["damage_building", 101] == int(tier > 1 and state == 101)
+    assert variables["TOP_archive_subject_kind"][0] == 2
+    assert variables["TOP_archive_subject_id"][0] == 2
+    assert variables["TOP_archive_objective"][0] == objective
+    assert variables["TOP_archive_result"][0] == 11
+    assert script.external["damage_building", 101] == 1
+    assert script.globals["TOP_group_disruption_type"][2] == objective
+    assert script.globals["TOP_group_disruption_until"][2] == 90
+    assert script.globals["TOP_status"] == original_person_status
 
 
-def test_partner_refusal_never_executes_or_exposes_an_operation():
+def test_partner_operation_revalidates_cooperative_posture_before_execution():
     script = TargetScript()
-    variables = script.authorize(method=5)
-    script.globals["TOP_clock"] = 14
-    script.run("TOP_process_timers", 1)
-    assert variables["TOP_case_phase"][11] == 5
-    assert variables["TOP_case_due"][11] == 0
+    variables = script.authorize(method=5, begin=False)
+    variables["TOP_case_host_posture"][11] = 5
+    script.call("TOP_begin_person_operation", TARGET=11)
+    assert variables["TOP_case_phase"][11] == 2
     assert script.globals["TOP_attempts"][11] == 0
-    assert script.globals["TOP_security"][11] == 0
-    assert script.globals["TOP_state"][11] == 101
-    assert script.external["TOP_apply_exposure", 1] == 0
+    assert variables["TOP_archive_cursor"] == 0
+    assert variables["TOP_operation_subject_kind"] == 0
+
+    variables["TOP_case_host_posture"][11] = 4
+    script.call("TOP_begin_person_operation", TARGET=11)
+    assert variables["TOP_case_phase"][11] == 3
+    assert variables["TOP_operation_subject_kind"] == 1
 
 
 @pytest.mark.parametrize(
@@ -507,67 +634,59 @@ def test_changed_state_controller_invalidates_authorization(trigger):
     assert not script.condition(statements, 1)
 
 
-def test_sabotage_binding_rejects_a_recorded_facility_that_no_longer_exists():
+def test_organization_execution_revalidates_the_recorded_state_controller():
     script = TargetScript()
-    script.authorize(method=6)
-    statements = script.triggers["TOP_mission_binding_valid"]
+    variables = script.authorize_organization(
+        objective=1, host=2, state=101, begin=False
+    )
+    script.temps["TOP_arg_group"] = 2
+    statements = script.triggers["TOP_can_begin_organization_operation"]
     assert script.condition(statements, 1)
-    script.countries[101]["vars"]["infrastructure"] = 0
+    script.countries[101]["controller"] = 3
     assert not script.condition(statements, 1)
+    script.call("TOP_begin_organization_operation", GROUP=2)
+    assert variables["TOP_org_case_phase"][2] == 2
 
 
-def test_ai_does_not_restart_collection_that_is_already_running():
+def test_ai_cannot_designate_collect_or_begin_a_person_operation():
     script = TargetScript()
     variables = script.target()
-    variables["TOP_confidence"][11] = 30
-    script.run("TOP_ai_choose_operation", 1)
-    after_first_start = variables["political_power"]
-    assert variables["TOP_case_collecting"][11] == 1
-    script.run("TOP_ai_choose_operation", 1)
-    assert variables["political_power"] == after_first_start
-
-
-@pytest.mark.parametrize("ineligible", ["authority", "former_role"])
-def test_ineligible_high_confidence_person_cannot_starve_ai_collection(ineligible):
-    script = TargetScript()
-    variables = script.target(129, host=3, state=102)
-    variables["TOP_confidence"][129] = 95
-    script.globals["TOP_political"][129] = 1
-    if ineligible == "former_role":
-        # The authored-role validator is a separate fixture boundary.
-        script.ineligible_roles.add(129)
-        variables["TOP_mandates"][129] = 365
-    script.target(11)
-    variables["TOP_confidence"][11] = 30
-    script.run("TOP_ai_choose_operation", 1)
-    assert variables["TOP_selected"] == 11
-    assert variables["TOP_case_phase"][129] == 0
-    assert variables["TOP_case_collecting"][129] == 0
-    assert variables["TOP_case_phase"][11] == 1
-    assert variables["TOP_case_collecting"][11] == 1
-    assert variables["political_power"] == 475
-
-
-def test_ai_at_three_case_limit_continues_existing_collection_without_adding_a_fourth():
-    script = TargetScript()
-    variables = script.target(11)
-    variables["TOP_confidence"][11] = 30
+    script.countries[1]["ai"] = True
+    variables["TOP_package_state"][11] = 0
+    power = variables["political_power"]
     script.run("TOP_designate_selected", 1)
-    script.authorize(12, host=3, state=102)
-    script.state(103, 4)
-    script.authorize(13, host=4, state=103)
-    second, third = case_snapshot(script, 12), case_snapshot(script, 13)
-    script.state(104, 5)
-    script.target(14, host=5, state=104)
-    variables["TOP_confidence"][14] = 99
-    script.run("TOP_ai_choose_operation", 1)
-    assert variables["TOP_selected"] == 11
-    assert variables["TOP_case_collecting"][11] == 1
-    assert variables["TOP_case_phase"][14] == 0
-    assert variables["TOP_active_cases"] == [11, 12, 13]
-    assert case_snapshot(script, 12) == second
-    assert case_snapshot(script, 13) == third
-    assert variables["political_power"] == 475
+    assert variables["TOP_package_state"][11] == 0
+    assert variables["political_power"] == power
+
+    variables["TOP_package_state"][11] = 1
+    script.run("TOP_collect_selected", 1)
+    assert variables["TOP_collecting_subjects"] == []
+
+    script.authorize(begin=False)
+    script.call("TOP_begin_person_operation", TARGET=11)
+    assert variables["TOP_case_phase"][11] == 2
+    assert variables["TOP_operation_subject_kind"] == 0
+
+
+def test_ai_cannot_begin_an_organization_operation():
+    script = TargetScript()
+    variables = script.authorize_organization(begin=False)
+    script.countries[1]["ai"] = True
+    script.call("TOP_begin_organization_operation", GROUP=2)
+    assert variables["TOP_org_case_phase"][2] == 2
+    assert variables["TOP_operation_subject_kind"] == 0
+
+
+def test_generated_native_raids_have_no_offensive_ai_weight():
+    raids = (ROOT / "common/raids/targeted_operations_raids.txt").read_text(
+        encoding="utf-8"
+    )
+    assert raids.count("ai_will_do = {") > 0
+    assert raids.count("ai_will_do = { base = 0 }") == raids.count("ai_will_do = {")
+    assert "TOP_ai_choose_operation" not in "\n".join(
+        path.read_text(encoding="utf-8-sig")
+        for path in (ROOT / "common/scripted_effects").glob("*targeted_operations*.txt")
+    )
 
 
 @pytest.mark.parametrize("group,target,host", [(1, 7, 5), (3, 36, 7)])
@@ -647,7 +766,8 @@ def test_last_registry_slot_has_all_arrays_and_can_be_resolved():
     script.call("TOP_kill_target", TARGET=target)
     assert script.globals["TOP_status"][target] == 3
     assert script.globals["TOP_removals"][target] == 1
-    assert variables["TOP_capture_exploited"][target] == 1
+    assert variables["TOP_capture_exploited"][target] == 0
+    assert script.globals["TOP_exploited"][target] == 0
     for name, array in script.globals.items():
         if (
             name.startswith("TOP_")
@@ -674,8 +794,15 @@ def test_last_registry_slot_has_all_arrays_and_can_be_resolved():
                 "TOP_active_cases",
                 "TOP_cases_to_close",
                 "TOP_retired_native_bindings",
+                "TOP_vip_assignments",
+                "TOP_collecting_subjects",
+                "TOP_organization_dossiers",
+                "TOP_active_organization_cases",
+                "TOP_attribution_pending_people",
+                "TOP_attribution_pending_organizations",
             }
             and not name.startswith("TOP_archive_")
+            and not name.startswith("TOP_org_")
         ):
             assert len(array) == capacity, name
 
@@ -691,14 +818,21 @@ def test_reserved_and_out_of_bounds_ids_cannot_resolve(boundary):
 
 
 @pytest.mark.parametrize(
-    "mode,expected", [("TOP_enabled_option", 1), ("TOP_disabled_option", 0)]
+    "mode,expected_mode,enabled",
+    [
+        ("TOP_limited_sandbox_option", 1, 1),
+        ("TOP_full_sandbox_option", 2, 1),
+        ("TOP_disabled_option", 0, 0),
+    ],
 )
-def test_game_rule_cache_initializes_fresh_campaign(mode, expected):
+def test_game_rule_cache_initializes_fresh_campaign(mode, expected_mode, enabled):
     script = TargetScript()
     script.mode = mode
     script.globals.pop("TOP_rule_enabled")
+    script.globals.pop("TOP_rule_mode")
     script.run("TOP_cache_game_rule", 1)
-    assert script.globals.get("TOP_rule_enabled", 0) == expected
+    assert script.globals.get("TOP_rule_mode", 0) == expected_mode
+    assert script.globals.get("TOP_rule_enabled", 0) == enabled
 
 
 def test_disabled_rule_keeps_global_and_country_state_inert():
@@ -706,6 +840,7 @@ def test_disabled_rule_keeps_global_and_country_state_inert():
     script.target()
     script.mode = "TOP_disabled_option"
     script.globals["TOP_rule_enabled"] = 0
+    script.globals["TOP_rule_mode"] = 0
     before = deepcopy((script.globals, script.countries))
     script.call("TOP_capture_target", TARGET=11)
     script.call("TOP_import_target_location", 2, TARGET=12)
@@ -739,26 +874,28 @@ def test_native_callback_for_a_superseded_binding_cannot_touch_current_case(
     assert variables["TOP_archive_cursor"] == 0
 
 
-def test_unresolved_lethal_assessment_reports_recorded_escape_without_reroll():
+def test_lethal_bda_updates_the_original_archive_without_rerolling_physical_truth():
     script = TargetScript()
     variables = script.authorize(method=3)
-    script.temps["TOP_tier"] = 1
     script.run("TOP_complete_operation", 1)
-    assert script.globals["TOP_status"][11] == 1
-    assert variables["TOP_assessment"][11] == 6
-    script.authorize(12, method=5, host=3, state=102)
-    variables["TOP_case_due"][12] = 100
-    script.globals["TOP_clock"] = 28
-    script.globals["TOP_state"][11] = 102
-    previous_draws = script.random_draws
+    assert script.globals["TOP_status"][11] == 3
+    assert script.globals["TOP_removals"][11] == 1
+    assert variables["TOP_attempts"][11] == 1
+    assert variables["TOP_archive_cursor"] == 1
+    assert variables["TOP_archive_physical"][0] == 3
+    assert variables["TOP_assessment"][11] == 5
+
+    script.globals["TOP_clock"] = 15
     script.run("TOP_process_timers", 1)
-    assert script.globals["TOP_status"][11] == 1
+    assert script.globals["TOP_status"][11] == 3
+    assert script.globals["TOP_removals"][11] == 1
     assert script.globals["TOP_attempts"][11] == 1
-    assert variables["TOP_assessment"][11] == 4
-    assert variables["TOP_archive_result"][1] == 4
-    assert variables["TOP_archive_method"][1] == 3
-    assert variables["TOP_archive_state"][1] == 101
-    assert script.random_draws == previous_draws
+    assert variables["TOP_assessment"][11] == 3
+    assert variables["TOP_archive_cursor"] == 1
+    assert variables["TOP_archive_result"][0] == 3
+    assert variables["TOP_archive_physical"][0] == 3
+    assert variables["TOP_archive_method"][0] == 3
+    assert variables["TOP_archive_state"][0] == 101
 
 
 def test_annexed_custodian_hands_prisoner_to_prison_controller_without_losing_credit():
@@ -822,24 +959,29 @@ def test_returning_org_identity_reopens_activation_without_resurrecting_removed_
     assert script.temps["TOP_org_slot"] == 2
 
 
-def test_designation_limits_each_actor_to_one_person_in_each_host():
+def test_designation_allows_multiple_persistent_packages_in_one_host():
     script = TargetScript()
     variables = script.target(11)
+    variables["TOP_package_state"][11] = 0
     script.run("TOP_designate_selected", 1)
-    first = case_snapshot(script, 11)
-    assert variables["TOP_case_phase"][11] == 1
+    assert variables["TOP_package_state"][11] == 1
     script.target(12)
+    variables["TOP_package_state"][12] = 0
     script.run("TOP_designate_selected", 1)
-    assert variables["TOP_case_phase"][12] == 0
-    assert case_snapshot(script, 11) == first
+    assert variables["TOP_package_state"][12] == 1
     script.target(13, host=3, state=102)
+    variables["TOP_package_state"][13] = 0
     script.run("TOP_designate_selected", 1)
-    assert variables["TOP_case_phase"][13] == 1
-    assert set(variables["TOP_active_cases"]) == {11, 13}
+    assert variables["TOP_package_state"][13] == 1
+    assert variables.get("TOP_active_cases", []) == []
+    assert variables["political_power"] == 425
+
+    script.countries[3]["vars"]["political_power"] = 100
     script.target(11, actor=3)
+    script.countries[3]["vars"]["TOP_package_state"][11] = 0
     script.run("TOP_designate_selected", 3)
-    assert script.countries[3]["vars"]["TOP_case_phase"][11] == 1
-    assert case_snapshot(script, 11) == first
+    assert script.countries[3]["vars"]["TOP_package_state"][11] == 1
+    assert script.countries[3]["vars"]["political_power"] == 75
 
 
 def fire_native_callback(script, target=11, method=1, tier=2, state=101):
@@ -859,7 +1001,7 @@ def fire_native_callback(script, target=11, method=1, tier=2, state=101):
 def test_native_callback_loads_its_person_case_while_another_host_is_selected():
     script = TargetScript()
     variables = script.authorize()
-    script.authorize(12, host=3, state=102)
+    script.authorize(12, host=3, state=102, begin=False)
     other = case_snapshot(script, 12)
     fire_native_callback(script)
     assert script.globals["TOP_status"][11] == 3
@@ -871,27 +1013,34 @@ def test_native_callback_loads_its_person_case_while_another_host_is_selected():
 
 
 @pytest.mark.parametrize("restore", [False, True], ids=["live", "persisted_state"])
-def test_parallel_timed_cases_resolve_once_without_using_selection_or_scratch(restore):
+def test_waiting_timed_mandates_execute_sequentially_through_one_slot(restore):
     script = TargetScript()
     script.authorize(method=3)
     script.authorize(12, method=4, host=3, state=102)
     if restore:
         script = script.persisted_clone()
     variables = script.countries[1]["vars"]
+    assert variables["TOP_case_phase"][11] == 3
+    assert variables["TOP_case_phase"][12] == 2
     variables["TOP_selected"] = 0
     script.temps.clear()
-    script.globals["TOP_clock"] = 14
+    script.globals["TOP_clock"] = 29
     script.run("TOP_process_timers", 1)
     assert script.globals["TOP_status"][11] == 3
-    assert script.globals["TOP_status"][12] == 2
+    assert script.globals["TOP_status"][12] == 1
     assert variables["TOP_case_phase"][11] == 4
-    assert variables["TOP_case_phase"][12] == 5
+    assert variables["TOP_case_phase"][12] == 2
     assert variables["TOP_attempts"][11] == 1
-    assert variables["TOP_attempts"][12] == 1
-    assert set(variables["TOP_archive_target"][:2]) == {11, 12}
+    assert variables["TOP_attempts"][12] == 0
+
+    script.call("TOP_begin_person_operation", TARGET=12)
+    assert variables["TOP_case_phase"][12] == 3
+    script.globals["TOP_clock"] = 58
     script.run("TOP_process_timers", 1)
+    assert script.globals["TOP_status"][12] == 2
     assert variables["TOP_archive_cursor"] == 2
     assert variables["TOP_attempts"][11] == variables["TOP_attempts"][12] == 1
+    assert set(variables["TOP_archive_target"][:2]) == {11, 12}
 
 
 def test_assessment_holds_host_after_expiry_and_revoke_until_recorded_confirmation():
@@ -900,7 +1049,7 @@ def test_assessment_holds_host_after_expiry_and_revoke_until_recorded_confirmati
     script.temps["TOP_tier"] = 2
     script.run("TOP_complete_operation", 1)
     assert variables["TOP_case_phase"][11] == 4
-    script.authorize(12, host=3, state=102)
+    script.authorize(12, host=3, state=102, begin=False)
     variables["TOP_case_until"][12] = 300
     other = case_snapshot(script, 12)
     variables["TOP_selected"] = 11
@@ -921,19 +1070,12 @@ def test_assessment_holds_host_after_expiry_and_revoke_until_recorded_confirmati
     assert script.globals["TOP_status"][11] == 3
 
 
-def test_another_countrys_unconfirmed_kill_holds_case_until_global_assessment():
+def test_another_countrys_kill_changes_global_truth_before_local_reporting():
     script = TargetScript()
     variables = script.authorize()
     script.call("TOP_kill_target", 3, TARGET=11)
     script.run("TOP_process_timers", 1)
-    assert variables["TOP_case_phase"][11] == 4
-    assert variables["TOP_assessment"][11] == 5
-    script.run("TOP_confirm_assessment", 1)
-    assert variables["TOP_case_phase"][11] == 4
-    script.globals["TOP_clock"] = 28
-    script.run("TOP_process_timers", 3)
     assert script.globals["TOP_confirmed_dead"][11] == 1
-    script.run("TOP_process_timers", 1)
     assert variables["TOP_case_phase"][11] == 5
     assert variables["TOP_assessment"][11] == 3
     script.run("TOP_confirm_assessment", 1)
@@ -950,7 +1092,7 @@ def test_closing_one_case_preserves_other_hosts_and_rejects_its_late_callback(ac
     variables["TOP_selected"] = 11
     if action == "close":
         script.call("TOP_close_case", TARGET=11, SEQUENCE=999)
-        assert variables["TOP_case_phase"][11] == 2
+        assert variables["TOP_case_phase"][11] == 3
         script.call("TOP_close_case", TARGET=11, SEQUENCE=11)
     elif action == "revoke":
         script.run("TOP_revoke_authorization", 1)
@@ -971,9 +1113,11 @@ def test_cancelled_timed_case_cannot_complete_after_other_host_is_authorized():
     script = TargetScript()
     variables = script.authorize(method=3)
     script.authorize(12, method=4, host=3, state=102)
+    assert variables["TOP_case_phase"][12] == 2
     variables["TOP_selected"] = 11
     script.run("TOP_revoke_authorization", 1)
-    script.globals["TOP_clock"] = 14
+    script.call("TOP_begin_person_operation", TARGET=12)
+    script.globals["TOP_clock"] = 29
     script.run("TOP_process_timers", 1)
     assert script.globals["TOP_status"][11] == 1
     assert script.globals["TOP_status"][12] == 2

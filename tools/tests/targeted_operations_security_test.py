@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from great_ai_race_state_model_test import _parse_race_script
+from great_ai_race_state_model_test import _named_block, _parse_race_script
 from targeted_operations_core_test import TargetScript
 from targeted_operations_helpers_test import TargetedScript
 
@@ -20,6 +20,7 @@ class SecurityScript(TargetedScript):
 
     def __init__(self):
         self.effects = _parse_race_script(EFFECTS.read_text(encoding="utf-8"))
+        self.effects["TOP_refresh_vip_details"] = []
         self.triggers = _parse_race_script(TRIGGERS.read_text(encoding="utf-8"))
         self.globals = {"TOP_clock": 7}
         self.temps, self.scope_stack, self.charges = {}, [], []
@@ -38,6 +39,8 @@ class SecurityScript(TargetedScript):
             }
             for identifier in (0, 1, 2, 3)
         }
+        for country in self.countries.values():
+            country["vars"]["TOP_vip_assignments"] = []
 
     def condition_statement(self, statement, identifier):
         key, comparison, operand = statement
@@ -68,6 +71,8 @@ class SecurityScript(TargetedScript):
             super().execute_statement(statement, identifier)
 
     def run(self, name, identifier=1):
+        if name == "TOP_refresh_vip_details":
+            return
         if name == "modify_treasury_effect":
             amount = self.temps["treasury_change"]
             self.countries[identifier]["vars"]["treasury"] += amount
@@ -262,7 +267,7 @@ def test_parody_badge_has_explicit_non_sponsorship_hover_text():
     assert "no actual sponsorship, endorsement, or affiliation" in text
 
 
-def test_successful_lethal_operation_preserves_pre_retirement_exposure_bonus():
+def test_lethal_resolution_snapshots_defensive_exposure_before_retirement():
     class ExposureScript(TargetScript):
         def __init__(self):
             super().__init__()
@@ -270,11 +275,8 @@ def test_successful_lethal_operation_preserves_pre_retirement_exposure_bonus():
             self.triggers.update(
                 _parse_race_script(TRIGGERS.read_text(encoding="utf-8"))
             )
-            self.stubs.difference_update(
-                {"TOP_get_defensive_modifiers", "TOP_apply_exposure"}
-            )
+            self.stubs.difference_update({"TOP_get_defensive_modifiers"})
             self.stubs.add("TOP_get_protection_country")
-            self.exposure_rolls = []
 
         def run(self, name, identifier):
             if name == "TOP_get_protection_country":
@@ -283,24 +285,27 @@ def test_successful_lethal_operation_preserves_pre_retirement_exposure_bonus():
             else:
                 super().run(name, identifier)
 
-        def execute_statement(self, statement, identifier):
-            key, comparison, operand = statement
-            if key == "random":
-                data = {name: value for name, _, value in operand}
-                self.exposure_rolls.append(self.value(data["chance"], identifier))
-            else:
-                super().execute_statement(statement, identifier)
-
     game = ExposureScript()
+    game.globals["TOP_rule_mode"] = 2
     game.authorize(target=129, method=3)
     game.countries[2]["vars"].update(
         TOP_counterintelligence_level=3, TOP_counterintelligence_until=182
     )
-    game.temps["TOP_tier"] = 2
-    game.run("TOP_complete_operation", 1)
-    assert game.globals["TOP_status"][129] == 3
-    assert game.external["TOP_retire_registered_character", 1] == 1
+    game.temps.update(TOP_target=129, TOP_method=3)
+    game.run("TOP_calculate_person_consequences", 1)
     assert game.temps["TOP_operation_exposure_bonus"] == 15
-    assert game.exposure_rolls[0] == 40
+    assert game.countries[1]["vars"]["TOP_case_protection"][129] == 2
+
+    resolution = _named_block(
+        (
+            ROOT / "common/scripted_effects/08_targeted_operations_resolution.txt"
+        ).read_text(encoding="utf-8"),
+        "TOP_resolve_person_operation",
+    )
+    assert resolution.index(
+        "TOP_calculate_person_consequences = yes"
+    ) < resolution.index("TOP_kill_target = yes")
+
+    game.call("TOP_kill_target", TARGET=129)
     game.run("TOP_get_defensive_modifiers", 1)
     assert game.temps["TOP_defensive_exposure_bonus"] == 0
