@@ -430,6 +430,9 @@ def test_operations_center_exposes_required_filters_tabs_and_dimensions():
     scripted_gui = read("common/scripted_guis/01_targeted_operations_gui.txt")
 
     assert "size = { width = 1040 height = 700 }" in gui
+    title = gui[gui.index('name = "TOP_title"') :][:250]
+    assert 'font = "hoi_24header"' in title
+    assert "hoi_22mbs" not in gui
     for control in (
         "TOP_filter_active",
         "TOP_filter_cold",
