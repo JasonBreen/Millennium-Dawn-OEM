@@ -232,6 +232,9 @@ TOP_commit_reviewed_authorization = {
 		set_variable = { TOP_case_host_posture^TOP_proposal_target = TOP_proposal_host_posture }
 		set_variable = { TOP_case_doctrine^TOP_proposal_target = TOP_proposal_doctrine }
 		set_variable = { TOP_case_capability^TOP_proposal_target = TOP_proposal_capability }
+		set_variable = { TOP_case_protection^TOP_proposal_target = TOP_proposal_protection }
+		set_variable = { TOP_case_exposure_score^TOP_proposal_target = TOP_proposal_exposure_score }
+		set_variable = { TOP_case_harm_risk^TOP_proposal_target = TOP_proposal_harm_risk }
 		set_variable = { TOP_case_attribution^TOP_proposal_target = 0 }
 		set_variable = { TOP_case_harm^TOP_proposal_target = 0 }
 		set_variable = { TOP_case_phase^TOP_proposal_target = 2 }
@@ -259,6 +262,65 @@ TOP_enroll_pending_actor = {
 	if = {
 		limit = { NOT = { is_in_array = { global.TOP_pending_actors = THIS } } }
 		add_to_array = { global.TOP_pending_actors = THIS }
+	}
+}
+
+TOP_process_collection_assignments = {
+	clear_array = TOP_collecting_subjects_remaining
+	for_each_loop = {
+		array = TOP_collecting_subjects
+		value = top_collection_subject
+		if = {
+			limit = { check_variable = { top_collection_subject < 1000 } }
+			set_temp_variable = { TOP_target = top_collection_subject }
+			set_temp_variable = { TOP_role_target = TOP_target }
+			if = {
+				limit = {
+					check_variable = { TOP_target > 0 }
+					check_variable = { TOP_target < global.TOP_status^num }
+					check_variable = { global.TOP_status^TOP_target = 1 }
+					check_variable = { TOP_package_state^TOP_target = 2 }
+					TOP_authored_role_eligible = yes
+				}
+				add_to_array = { TOP_collecting_subjects_remaining = top_collection_subject }
+				TOP_collect_person_pulse = yes
+			}
+			else_if = {
+				limit = {
+					check_variable = { TOP_target > 0 }
+					check_variable = { TOP_target < global.TOP_status^num }
+					check_variable = { TOP_package_state^TOP_target = 2 }
+				}
+				set_variable = { TOP_package_state^TOP_target = 1 }
+			}
+		}
+		else = {
+			set_temp_variable = { TOP_group_target = { value = top_collection_subject subtract = 1000 } }
+			if = {
+				limit = {
+					check_variable = { TOP_group_target > 0 }
+					check_variable = { TOP_group_target < global.TOP_group_class^num }
+					check_variable = { TOP_org_package_state^TOP_group_target = 2 }
+					TOP_group_operational = yes
+				}
+				add_to_array = { TOP_collecting_subjects_remaining = top_collection_subject }
+				TOP_collect_organization_pulse = yes
+			}
+			else_if = {
+				limit = {
+					check_variable = { TOP_group_target > 0 }
+					check_variable = { TOP_group_target < global.TOP_group_class^num }
+					check_variable = { TOP_org_package_state^TOP_group_target = 2 }
+				}
+				set_variable = { TOP_org_package_state^TOP_group_target = 1 }
+			}
+		}
+	}
+	clear_array = TOP_collecting_subjects
+	for_each_loop = {
+		array = TOP_collecting_subjects_remaining
+		value = top_collection_subject
+		add_to_array = { TOP_collecting_subjects = top_collection_subject }
 	}
 }
 
@@ -334,19 +396,7 @@ TOP_country_tick = {
 				}
 			}
 		}
-		for_each_loop = {
-			array = TOP_collecting_subjects
-			value = top_collection_subject
-			if = {
-				limit = { check_variable = { top_collection_subject < 1000 } }
-				set_temp_variable = { TOP_target = top_collection_subject }
-				TOP_collect_person_pulse = yes
-			}
-			else = {
-				set_temp_variable = { TOP_group_target = { value = top_collection_subject subtract = 1000 } }
-				TOP_collect_organization_pulse = yes
-			}
-		}
+		TOP_process_collection_assignments = yes
 		if = {
 			limit = { check_variable = { global.TOP_modern_year > TOP_last_modern_year } }
 			TOP_modern_country_opportunity = yes

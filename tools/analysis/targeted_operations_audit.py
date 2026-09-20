@@ -22,13 +22,15 @@ def main() -> int:
         return 1
 
     tests = sorted((ROOT / "tools/tests").glob("targeted_operations*_test.py"))
+    basetemp = (ROOT / ".pytest_cache" / "targeted-operations-audit").resolve()
+    basetemp.parent.mkdir(parents=True, exist_ok=True)
     pytest = [
         sys.executable,
         "-m",
         "pytest",
         "-q",
         "--basetemp",
-        ".pytest_cache/targeted-operations-audit",
+        str(basetemp),
         *(path.relative_to(ROOT).as_posix() for path in tests),
     ]
     return run(pytest)

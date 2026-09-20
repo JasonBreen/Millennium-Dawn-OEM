@@ -213,10 +213,19 @@ def test_typed_selection_and_immutable_review_snapshots_are_separate():
     ):
         assert snapshot in person_review
         assert snapshot in organization_review
-    for review in (person_review, organization_review):
+    person_risk = block(
+        "common/scripted_effects/02_targeted_operations_authorization_effects.txt",
+        "TOP_calculate_person_proposal_risks",
+    )
+    organization_risk = block(
+        "common/scripted_effects/07_targeted_operations_organization_cases.txt",
+        "TOP_calculate_organization_proposal_risks",
+    )
+    for review in (person_risk, organization_risk):
         assert "TOP_proposal_harm_risk > 40" in review
         assert "TOP_proposal_harm_risk = 40" in review
         assert "var = TOP_proposal_harm_risk min = 0 max = 100" in review
+    assert "TOP_case_visit_status^TOP_proposal_target = 0" in person_risk
 
 
 def test_delegated_doctrine_compresses_only_nonleader_review():

@@ -1,3 +1,35 @@
+TOP_calculate_person_proposal_risks = {
+	set_temp_variable = { TOP_target = TOP_proposal_target }
+	TOP_get_defensive_modifiers = yes
+	set_variable = { TOP_proposal_protection = global.TOP_host^TOP_proposal_target }
+	if = { limit = { check_variable = { TOP_security_country > 0 } } set_variable = { TOP_proposal_protection = TOP_security_country } }
+	set_variable = { TOP_proposal_exposure_score = 45 }
+	if = { limit = { check_variable = { TOP_proposal_method = 1 } } set_variable = { TOP_proposal_exposure_score = 65 } }
+	else_if = { limit = { check_variable = { TOP_proposal_method = 2 } } set_variable = { TOP_proposal_exposure_score = 70 } }
+	else_if = { limit = { check_variable = { TOP_proposal_method = 3 } } set_variable = { TOP_proposal_exposure_score = 25 } }
+	else_if = { limit = { check_variable = { TOP_proposal_method = 4 } } set_variable = { TOP_proposal_exposure_score = 40 } }
+	else_if = { limit = { check_variable = { TOP_proposal_method = 5 } } set_variable = { TOP_proposal_exposure_score = 20 } }
+	else_if = { limit = { check_variable = { TOP_proposal_method = 7 } } set_variable = { TOP_proposal_exposure_score = 65 } }
+	add_to_variable = { TOP_proposal_exposure_score = TOP_defensive_exposure_bonus }
+	if = { limit = { check_variable = { TOP_proposal_host_posture = 1 } } add_to_variable = { TOP_proposal_exposure_score = 20 } }
+	else_if = { limit = { check_variable = { TOP_proposal_host_posture = 3 } } add_to_variable = { TOP_proposal_exposure_score = 5 } }
+	else_if = { limit = { check_variable = { TOP_proposal_host_posture = 4 } } subtract_from_variable = { TOP_proposal_exposure_score = 15 } }
+	if = { limit = { check_variable = { TOP_proposal_doctrine = 1 } } subtract_from_variable = { TOP_proposal_exposure_score = 10 } }
+	else_if = { limit = { check_variable = { TOP_proposal_doctrine = 3 } } add_to_variable = { TOP_proposal_exposure_score = 5 } }
+	else_if = { limit = { check_variable = { TOP_proposal_doctrine = 4 } } add_to_variable = { TOP_proposal_exposure_score = 10 } }
+	clamp_variable = { var = TOP_proposal_exposure_score min = 0 max = 100 }
+	set_variable = { TOP_proposal_harm_risk = { value = 100 subtract = TOP_proposal_pattern } }
+	if = { limit = { check_variable = { TOP_proposal_host_posture = 4 } } subtract_from_variable = { TOP_proposal_harm_risk = 10 } }
+	if = { limit = { check_variable = { TOP_proposal_rigor = 2 } } subtract_from_variable = { TOP_proposal_harm_risk = 10 } }
+	if = { limit = { check_variable = { TOP_proposal_doctrine = 3 } } add_to_variable = { TOP_proposal_harm_risk = 5 } }
+	else_if = { limit = { check_variable = { TOP_proposal_doctrine = 4 } } add_to_variable = { TOP_proposal_harm_risk = 10 } }
+	if = {
+		limit = { check_variable = { TOP_case_visit_status^TOP_proposal_target = 0 } check_variable = { TOP_proposal_harm_risk > 40 } }
+		set_variable = { TOP_proposal_harm_risk = 40 }
+	}
+	clamp_variable = { var = TOP_proposal_harm_risk min = 0 max = 100 }
+}
+
 # Reads TOP_arg_method.
 TOP_begin_review = {
 	set_temp_variable = { TOP_requested_method = TOP_arg_method }
@@ -32,10 +64,6 @@ TOP_begin_review = {
 		else_if = { limit = { check_variable = { TOP_proposal_method = 5 } } set_variable = { TOP_proposal_access = 4 } }
 		set_variable = { TOP_proposal_doctrine = TOP_doctrine }
 		set_variable = { TOP_proposal_capability = 50 }
-		set_variable = { TOP_proposal_harm_risk = { value = 100 subtract = TOP_proposal_pattern } }
-		if = { limit = { check_variable = { TOP_proposal_harm_risk > 40 } } set_variable = { TOP_proposal_harm_risk = 40 } }
-		clamp_variable = { var = TOP_proposal_harm_risk min = 0 max = 100 }
-		set_variable = { TOP_proposal_exposure_score = 25 }
 		if = {
 			limit = {
 				OR = {
@@ -66,6 +94,7 @@ TOP_begin_review = {
 			}
 			set_variable = { TOP_proposal_capture_feasible = 1 }
 		}
+		TOP_calculate_person_proposal_risks = yes
 		set_variable = { TOP_package_state^TOP_selected = 3 }
 		set_temp_variable = { TOP_subject_key = TOP_selected }
 		remove_from_array = { TOP_collecting_subjects = TOP_subject_key }
@@ -202,6 +231,10 @@ TOP_send_host_request = {
 TOP_answer_host_request = {
 	if = {
 		limit = { TOP_host_request_matches = yes }
+		if = {
+			limit = { check_variable = { TOP_arg_posture = 4 } NOT = { is_in_array = { TOP_liaison_partners = TOP_incoming_actor } } }
+			add_to_array = { TOP_liaison_partners = TOP_incoming_actor }
+		}
 		var:TOP_incoming_actor = {
 			set_variable = { TOP_proposal_consent = 0 }
 			set_variable = { TOP_proposal_host_posture = TOP_arg_posture }
@@ -267,6 +300,8 @@ TOP_answer_host_request = {
 TOP_open_senior_review = {
 	if = {
 		limit = { TOP_review_valid = yes }
+		if = { limit = { check_variable = { TOP_proposal_subject_kind = 1 } } TOP_calculate_person_proposal_risks = yes }
+		else_if = { limit = { check_variable = { TOP_proposal_subject_kind = 2 } } TOP_calculate_organization_proposal_risks = yes }
 		set_variable = { TOP_proposal_stage = 4 }
 		set_variable = { TOP_review_event_open = 4 }
 		country_event = TOP_authorization.4

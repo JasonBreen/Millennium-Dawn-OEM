@@ -277,6 +277,10 @@ class TargetScript(TargetedScript):
             result = bool(self.countries[identifier].get("resources", [])) == (
                 operand == "yes"
             )
+        elif key == "has_intelligence_agency":
+            result = self.countries[identifier].get("intelligence_agency", False) == (
+                operand == "yes"
+            )
         else:
             result = super().condition_statement(statement, identifier)
         return result
@@ -307,8 +311,16 @@ class TargetScript(TargetedScript):
             self.scoped(operand, identifier, self.value(key, identifier))
         elif key in {"random_controlled_state", "capital_scope"}:
             states = self.countries[identifier]["states"]
-            if states:
-                self.scoped(operand, identifier, states[0])
+            limits = [value for name, _, value in operand if name == "limit"]
+            body = [entry for entry in operand if entry[0] != "limit"]
+            for state in states:
+                if limits and not all(
+                    self.scoped(limit, identifier, state, condition=True)
+                    for limit in limits
+                ):
+                    continue
+                self.scoped(body, identifier, state)
+                break
         elif key == "resize_array":
             name, _, size = operand[0]
             scope, name = self._scope(name, identifier)
@@ -426,6 +438,8 @@ class TargetScript(TargetedScript):
             ("doctrine", 2),
             ("capability", 85),
             ("protection", host),
+            ("exposure_score", 65),
+            ("harm_risk", 15),
         ):
             variables[f"TOP_case_{field}"][target] = value
         active = variables.setdefault("TOP_active_cases", ScriptArray())
@@ -484,6 +498,8 @@ class TargetScript(TargetedScript):
             ("host_posture", 1),
             ("doctrine", 2),
             ("capability", 85),
+            ("exposure_score", 45),
+            ("harm_risk", 15),
         ):
             variables[f"TOP_org_case_{field}"][group] = value
         if group not in variables["TOP_active_organization_cases"]:
@@ -799,6 +815,7 @@ def test_last_registry_slot_has_all_arrays_and_can_be_resolved():
                 "TOP_active_organization_cases",
                 "TOP_attribution_pending_people",
                 "TOP_attribution_pending_organizations",
+                "TOP_liaison_partners",
             }
             and not name.startswith("TOP_archive_")
             and not name.startswith("TOP_org_")

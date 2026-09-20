@@ -48,11 +48,19 @@ class ReviewScript(TargetedScript):
             )
         )
         self.effects.update(
+            _parse_race_script(
+                source(
+                    "common/scripted_effects/07_targeted_operations_organization_cases.txt"
+                )
+            )
+        )
+        self.effects.update(
             TOP_refresh_view=[],
             TOP_enroll_pending_actor=[],
             TOP_initialize_global=[],
             TOP_country_initialize=[],
             TOP_build_view=[],
+            TOP_get_defensive_modifiers=[],
         )
         self.triggers = _parse_race_script(source(TRIGGER_PATH))
         core_triggers = _parse_race_script(
@@ -99,6 +107,8 @@ class ReviewScript(TargetedScript):
             for country in (0, 1, 2, 3, 100)
         }
         self.countries[100]["controller"] = 2
+        for country in self.countries.values():
+            country["vars"]["TOP_liaison_partners"] = []
         manifest = json.loads(source("tools/data/targeted_operations.json"))
         self.globals = {
             "TOP_clock": 7,
@@ -126,6 +136,8 @@ class ReviewScript(TargetedScript):
             TOP_selected_facility=1,
             TOP_doctrine=2,
             TOP_collecting_subjects=[],
+            TOP_attribution_pending_people=[],
+            TOP_attribution_pending_organizations=[],
         )
         self.actor["TOP_dossiers"] = [1, 2]
         self.actor["TOP_active_cases"] = []
@@ -838,8 +850,8 @@ def test_snapshot_identity_and_host_slot_have_single_writers():
         rendered = repr(body)
         if name != "TOP_begin_review":
             for field in ("target", "method", "state", "host", "sequence"):
-                assert not re.search(
-                    rf"'set_variable'.*?\[\('TOP_proposal_{field}'", rendered
+                assert (
+                    f"('set_variable', '=', [('TOP_proposal_{field}'," not in rendered
                 )
         if name not in {"TOP_send_host_request", "TOP_answer_host_request"}:
             assert "TOP_incoming_actor" not in rendered
@@ -872,8 +884,8 @@ def test_novichok_is_a_russia_only_high_exposure_timed_method():
     assert "TOP_proposal_identity > 89" in review
     assert "TOP_proposal_method = 7" in lethal
     assert "TOP_method = 7" in _named_block(resolution, "TOP_resolve_person_operation")
-    exposure = _named_block(resolution, "TOP_calculate_person_consequences")
-    assert "TOP_method = 7" in exposure
-    assert "TOP_exposure_score = 65" in exposure
+    exposure = _named_block(source(EFFECT_PATH), "TOP_calculate_person_proposal_risks")
+    assert "TOP_proposal_method = 7" in exposure
+    assert "TOP_proposal_exposure_score = 65" in exposure
     assert "set_temp_variable = { TOP_arg_method = 7 } TOP_begin_review = yes" in gui
     assert 'name = "TOP_novichok"' in layout

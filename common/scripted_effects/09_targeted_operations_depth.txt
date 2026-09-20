@@ -148,7 +148,11 @@ TOP_merge_liaison_snapshot = {
 		if = { limit = { check_variable = { TOP_liaison_axis_2 > TOP_location_confidence^TOP_liaison_snapshot_id } } set_variable = { TOP_location_confidence^TOP_liaison_snapshot_id = TOP_liaison_axis_2 } }
 		if = { limit = { check_variable = { TOP_liaison_axis_3 > TOP_pattern_confidence^TOP_liaison_snapshot_id } } set_variable = { TOP_pattern_confidence^TOP_liaison_snapshot_id = TOP_liaison_axis_3 } }
 		if = {
-			limit = { OR = { check_variable = { TOP_liaison_age < TOP_lead_age^TOP_liaison_snapshot_id } check_variable = { TOP_liaison_location_stronger = 1 } } }
+			limit = {
+				check_variable = { TOP_liaison_state > 0 }
+				check_variable = { TOP_liaison_host > 0 }
+				OR = { check_variable = { TOP_liaison_age < TOP_lead_age^TOP_liaison_snapshot_id } check_variable = { TOP_liaison_location_stronger = 1 } }
+			}
 			set_variable = { TOP_lead_state^TOP_liaison_snapshot_id = TOP_liaison_state }
 			set_variable = { TOP_lead_host^TOP_liaison_snapshot_id = TOP_liaison_host }
 			set_variable = { TOP_lead_age^TOP_liaison_snapshot_id = TOP_liaison_age }
@@ -166,7 +170,11 @@ TOP_merge_liaison_snapshot = {
 		if = { limit = { check_variable = { TOP_liaison_axis_2 > TOP_org_location^TOP_liaison_snapshot_id } } set_variable = { TOP_org_location^TOP_liaison_snapshot_id = TOP_liaison_axis_2 } }
 		if = { limit = { check_variable = { TOP_liaison_axis_3 > TOP_org_activity^TOP_liaison_snapshot_id } } set_variable = { TOP_org_activity^TOP_liaison_snapshot_id = TOP_liaison_axis_3 } }
 		if = {
-			limit = { OR = { check_variable = { TOP_liaison_age < TOP_org_lead_age^TOP_liaison_snapshot_id } check_variable = { TOP_liaison_location_stronger = 1 } } }
+			limit = {
+				check_variable = { TOP_liaison_state > 0 }
+				check_variable = { TOP_liaison_host > 0 }
+				OR = { check_variable = { TOP_liaison_age < TOP_org_lead_age^TOP_liaison_snapshot_id } check_variable = { TOP_liaison_location_stronger = 1 } }
+			}
 			set_variable = { TOP_org_lead_state^TOP_liaison_snapshot_id = TOP_liaison_state }
 			set_variable = { TOP_org_lead_host^TOP_liaison_snapshot_id = TOP_liaison_host }
 			set_variable = { TOP_org_lead_age^TOP_liaison_snapshot_id = TOP_liaison_age }
@@ -196,6 +204,7 @@ TOP_exploit_linked_targets = {
 			if = {
 				limit = {
 					check_variable = { global.TOP_affiliation^top_linked_target = TOP_capture_group }
+					check_variable = { TOP_linked_score < 300 }
 					check_variable = { TOP_linked_score < TOP_linked_best_score }
 				}
 				set_temp_variable = { TOP_linked_first = top_linked_target }
@@ -218,6 +227,7 @@ TOP_exploit_linked_targets = {
 				limit = {
 					check_variable = { global.TOP_affiliation^top_linked_target = TOP_capture_group }
 					NOT = { check_variable = { top_linked_target = TOP_linked_first } }
+					check_variable = { TOP_linked_score < 300 }
 					check_variable = { TOP_linked_score < TOP_linked_best_score }
 				}
 				set_temp_variable = { TOP_linked_second = top_linked_target }
@@ -267,6 +277,7 @@ TOP_prosecute_selected = {
 		set_variable = { TOP_assessment^TOP_selected = 4 }
 		add_political_power = 10
 		add_stability = 0.01
+		if = { limit = { check_variable = { TOP_selected > 55 } check_variable = { TOP_selected < 64 } } TOP_update_iraq_progress = yes }
 		TOP_refresh_view = yes
 	}
 }

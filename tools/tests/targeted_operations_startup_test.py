@@ -42,7 +42,7 @@ def test_country_case_arrays_use_registry_capacity_at_startup():
         for name, _, operand in script.effects["TOP_initialize_cases"]
         if name == "resize_array"
     ]
-    assert len(case_arrays) == len(set(case_arrays)) == 34
+    assert len(case_arrays) == len(set(case_arrays)) == 36
     assert all(name.startswith("TOP_case_") for name in case_arrays)
     assert {
         "TOP_case_identity",

@@ -86,6 +86,8 @@ TOP_can_review_organization = {
 	TOP_review_pending = no
 	TOP_country_eligible = yes
 	TOP_has_selected_organization = yes
+	NOT = { is_in_array = { TOP_attribution_pending_organizations = TOP_selected_organization } }
+	check_variable = { TOP_org_case_oversight_open^TOP_selected_organization = 0 }
 	set_temp_variable = { TOP_group_target = TOP_selected_organization }
 	TOP_organization_package_ready = yes
 	TOP_organization_operational_eligible = yes
@@ -157,6 +159,8 @@ TOP_can_assign_vip_detail = {
 	check_variable = { global.TOP_status^TOP_arg_target = 1 }
 	check_variable = { global.TOP_leader_role^TOP_arg_target > 0 }
 	check_variable = { global.TOP_host^TOP_arg_target = THIS }
+	set_temp_variable = { TOP_role_target = TOP_arg_target }
+	TOP_authored_role_eligible = yes
 	TOP_vip_detail_capacity_available = yes
 	has_political_power > 24
 	check_variable = { var = treasury value = 0.25 compare = greater_than_or_equals }
@@ -198,26 +202,15 @@ TOP_can_request_liaison = {
 			check_variable = { TOP_liaison_pair_until^top_liaison_index > global.TOP_clock }
 		}
 	}
-	var:TOP_liaison_target_country = { exists = yes }
-	OR = {
-		var:TOP_liaison_target_country = {
-			OR = {
-				is_in_faction_with = PREV
-				is_subject_of = PREV
-				ROOT = { is_subject_of = PREV }
-				has_opinion = { target = PREV value > 49 }
-				check_variable = { TOP_liaison_partner = PREV }
-			}
-		}
-		AND = {
-			check_variable = { TOP_liaison_subject_kind = 1 }
-			check_variable = { TOP_case_host^TOP_liaison_subject_id = TOP_liaison_target_country }
-			check_variable = { TOP_case_host_posture^TOP_liaison_subject_id = 4 }
-		}
-		AND = {
-			check_variable = { TOP_liaison_subject_kind = 2 }
-			check_variable = { TOP_org_case_host^TOP_liaison_subject_id = TOP_liaison_target_country }
-			check_variable = { TOP_org_case_host_posture^TOP_liaison_subject_id = 4 }
+	var:TOP_liaison_target_country = {
+		exists = yes
+		check_variable = { TOP_incoming_liaison_actor = 0 }
+		OR = {
+			is_in_faction_with = PREV
+			is_subject_of = PREV
+			ROOT = { is_subject_of = PREV }
+			has_opinion = { target = PREV value > 49 }
+			is_in_array = { TOP_liaison_partners = PREV }
 		}
 	}
 	has_political_power > 24

@@ -272,6 +272,14 @@ def test_lethal_resolution_snapshots_defensive_exposure_before_retirement():
         def __init__(self):
             super().__init__()
             self.effects.update(_parse_race_script(EFFECTS.read_text(encoding="utf-8")))
+            self.effects.update(
+                _parse_race_script(
+                    (
+                        ROOT
+                        / "common/scripted_effects/02_targeted_operations_authorization_effects.txt"
+                    ).read_text(encoding="utf-8")
+                )
+            )
             self.triggers.update(
                 _parse_race_script(TRIGGERS.read_text(encoding="utf-8"))
             )
@@ -287,14 +295,31 @@ def test_lethal_resolution_snapshots_defensive_exposure_before_retirement():
 
     game = ExposureScript()
     game.globals["TOP_rule_mode"] = 2
-    game.authorize(target=129, method=3)
+    variables = game.target(ident=129)
     game.countries[2]["vars"].update(
         TOP_counterintelligence_level=3, TOP_counterintelligence_until=182
     )
+    variables.update(
+        TOP_proposal_target=129,
+        TOP_proposal_method=3,
+        TOP_proposal_pattern=85,
+        TOP_proposal_host_posture=1,
+        TOP_proposal_doctrine=2,
+        TOP_proposal_rigor=1,
+    )
+    game.run("TOP_calculate_person_proposal_risks", 1)
+    assert variables["TOP_proposal_exposure_score"] == 60
+    assert variables["TOP_proposal_protection"] == 2
+    assert variables["TOP_proposal_harm_risk"] == 15
+
+    variables["TOP_case_exposure_score"][129] = variables["TOP_proposal_exposure_score"]
+    variables["TOP_case_protection"][129] = variables["TOP_proposal_protection"]
+    variables["TOP_case_harm_risk"][129] = variables["TOP_proposal_harm_risk"]
+    game.call("TOP_kill_target", TARGET=129)
     game.temps.update(TOP_target=129, TOP_method=3)
     game.run("TOP_calculate_person_consequences", 1)
-    assert game.temps["TOP_operation_exposure_bonus"] == 15
-    assert game.countries[1]["vars"]["TOP_case_protection"][129] == 2
+    assert game.temps["TOP_exposure_score"] == 60
+    assert game.temps["TOP_operation_protection_country"] == 2
 
     resolution = _named_block(
         (
@@ -305,7 +330,3 @@ def test_lethal_resolution_snapshots_defensive_exposure_before_retirement():
     assert resolution.index(
         "TOP_calculate_person_consequences = yes"
     ) < resolution.index("TOP_kill_target = yes")
-
-    game.call("TOP_kill_target", TARGET=129)
-    game.run("TOP_get_defensive_modifiers", 1)
-    assert game.temps["TOP_defensive_exposure_bonus"] == 0
