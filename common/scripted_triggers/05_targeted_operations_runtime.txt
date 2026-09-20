@@ -195,18 +195,30 @@ TOP_visit_story_valid = {
 TOP_exposed_visit_kill_valid = {
 	TOP_enabled = yes
 	check_variable = { TOP_exposure_recorded = 1 }
-	check_variable = { TOP_result = 3 }
-	check_variable = { global.TOP_status^TOP_target = 3 }
-	check_variable = { global.TOP_political^TOP_target = 1 }
-	check_variable = { TOP_authorized_visit_status > 0 }
-	check_variable = { TOP_authorized_visit_story > 0 }
-	check_variable = { TOP_authorized_visit_story < 7 }
-	check_variable = { TOP_authorized_visit_token = global.TOP_visit_active_token^TOP_target }
-	check_variable = { global.TOP_visit_active_token^TOP_target = global.TOP_visit_token^TOP_target }
-	check_variable = { TOP_authorized_visit_story = global.TOP_visit_story^TOP_target }
-	check_variable = { global.TOP_visit_status^TOP_target = 2 }
-	check_variable = { TOP_authorized_host = global.TOP_visit_host^TOP_target }
-	check_variable = { TOP_operation_state = global.TOP_visit_state^TOP_target }
+	OR = {
+		AND = {
+			check_variable = { TOP_result = 3 }
+			check_variable = { global.TOP_status^TOP_target = 3 }
+			check_variable = { global.TOP_political^TOP_target = 1 }
+			check_variable = { TOP_authorized_visit_status > 0 }
+			check_variable = { TOP_authorized_visit_story > 0 }
+			check_variable = { TOP_authorized_visit_story < 7 }
+			check_variable = { TOP_authorized_visit_token = global.TOP_visit_active_token^TOP_target }
+			check_variable = { global.TOP_visit_active_token^TOP_target = global.TOP_visit_token^TOP_target }
+			check_variable = { TOP_authorized_visit_story = global.TOP_visit_story^TOP_target }
+			check_variable = { global.TOP_visit_status^TOP_target = 2 }
+			check_variable = { TOP_authorized_host = global.TOP_visit_host^TOP_target }
+			check_variable = { TOP_operation_state = global.TOP_visit_state^TOP_target }
+		}
+		AND = {
+			check_variable = { TOP_strategic_crisis_candidate = 1 }
+			OR = { check_variable = { TOP_result = 2 } check_variable = { TOP_result = 3 } }
+			check_variable = { global.TOP_leader_role^TOP_target > 0 }
+			check_variable = { global.TOP_leader_role^TOP_target < 3 }
+			check_variable = { TOP_operation_protection_country > 0 }
+			NOT = { check_variable = { TOP_operation_protection_country = THIS } }
+		}
+	}
 }
 
 TOP_crisis_event_valid = {
@@ -238,6 +250,7 @@ TOP_crisis_faction_event_valid = {
 	OR = {
 		check_variable = { global.TOP_crisis_actor_faction_leader = THIS }
 		check_variable = { global.TOP_crisis_protection_faction_leader = THIS }
+		check_variable = { TOP_crisis_support_token = global.TOP_crisis_token }
 	}
 	NOT = { check_variable = { global.TOP_crisis_actor = THIS } }
 	NOT = { check_variable = { global.TOP_crisis_protection = THIS } }
@@ -272,6 +285,8 @@ TOP_crisis_existing_war = {
 TOP_crisis_can_start_war = {
 	TOP_crisis_victim_event_valid = yes
 	TOP_crisis_tension_ultimatum = yes
+	check_variable = { global.TOP_crisis_attribution = 3 }
+	check_variable = { global.TOP_crisis_war_risk = 1 }
 	check_variable = { global.TOP_crisis_existing_war = 0 }
 	is_subject = no
 	NOT = { is_in_faction_with = var:global.TOP_crisis_actor }

@@ -315,15 +315,16 @@ TOP_refresh_visit_dossiers = {
 					check_variable = { TOP_known^top_visit_target = 1 }
 					is_in_array = { TOP_dossiers = top_visit_target }
 					check_variable = { TOP_case_phase^top_visit_target = 0 }
-					check_variable = { TOP_confidence^top_visit_target > TOP_visit_confidence_floor }
+					check_variable = { TOP_identity_confidence^top_visit_target > TOP_visit_confidence_floor }
 					check_variable = { TOP_visit_notice_seen^top_visit_target < global.TOP_visit_token^top_visit_target }
 				}
 				set_variable = { TOP_visit_notice_seen^top_visit_target = global.TOP_visit_token^top_visit_target }
+				set_temp_variable = { TOP_arg_target = top_visit_target }
+				set_temp_variable = { TOP_arg_amount = global.TOP_visit_notice_lead_gain }
+				TOP_add_target_lead = yes
 				set_variable = { TOP_lead_host^top_visit_target = global.TOP_visit_host^top_visit_target }
 				set_variable = { TOP_lead_state^top_visit_target = global.TOP_visit_state^top_visit_target }
 				set_variable = { TOP_lead_age^top_visit_target = 0 }
-				add_to_variable = { TOP_confidence^top_visit_target = global.TOP_visit_notice_lead_gain }
-				clamp_variable = { var = TOP_confidence^top_visit_target min = 0 max = 100 }
 			}
 		}
 		for_each_loop = {
@@ -337,15 +338,16 @@ TOP_refresh_visit_dossiers = {
 					check_variable = { TOP_known^top_visit_target = 1 }
 					is_in_array = { TOP_dossiers = top_visit_target }
 					check_variable = { TOP_case_phase^top_visit_target = 0 }
-					check_variable = { TOP_confidence^top_visit_target > TOP_visit_confidence_floor }
+					check_variable = { TOP_identity_confidence^top_visit_target > TOP_visit_confidence_floor }
 					check_variable = { TOP_visit_arrival_seen^top_visit_target < global.TOP_visit_token^top_visit_target }
 				}
 				set_variable = { TOP_visit_arrival_seen^top_visit_target = global.TOP_visit_token^top_visit_target }
+				set_temp_variable = { TOP_arg_target = top_visit_target }
+				set_temp_variable = { TOP_arg_amount = global.TOP_visit_arrival_lead_gain }
+				TOP_add_target_lead = yes
 				set_variable = { TOP_lead_host^top_visit_target = global.TOP_visit_host^top_visit_target }
 				set_variable = { TOP_lead_state^top_visit_target = global.TOP_visit_state^top_visit_target }
 				set_variable = { TOP_lead_age^top_visit_target = 0 }
-				add_to_variable = { TOP_confidence^top_visit_target = global.TOP_visit_arrival_lead_gain }
-				clamp_variable = { var = TOP_confidence^top_visit_target min = 0 max = 100 }
 			}
 		}
 	}
@@ -425,6 +427,26 @@ TOP_start_exposed_kill_crisis = {
 			set_variable = { global.TOP_crisis_target = TOP_target }
 			set_variable = { global.TOP_crisis_story = TOP_authorized_visit_story }
 			set_variable = { global.TOP_crisis_visit_token = TOP_authorized_visit_token }
+			set_variable = { global.TOP_crisis_generic = TOP_strategic_crisis_candidate }
+			set_variable = { global.TOP_crisis_capture = 0 }
+			if = { limit = { check_variable = { TOP_result = 2 } } set_variable = { global.TOP_crisis_capture = 1 } }
+			set_variable = { global.TOP_crisis_attribution = TOP_case_attribution^TOP_target }
+			if = { limit = { check_variable = { global.TOP_crisis_attribution < 2 } } set_variable = { global.TOP_crisis_attribution = 3 } }
+			set_variable = { global.TOP_crisis_war_risk = 0 }
+			var:global.TOP_crisis_candidate_protection = {
+				if = {
+					limit = {
+						OR = {
+							is_major = yes
+							is_in_faction = yes
+							has_country_flag = TOP_strategic_tripwire
+							has_equipment = { nuclear_missile_equipment > 0 }
+							has_equipment = { nuclear_ballistic_missile_equipment > 0 }
+						}
+					}
+					set_variable = { global.TOP_crisis_war_risk = 1 }
+				}
+			}
 			set_variable = { global.TOP_crisis_stage = 1 }
 			set_variable = { global.TOP_crisis_tension = global.TOP_crisis_opening_tension }
 			set_variable = { global.TOP_crisis_until = global.TOP_clock }
@@ -484,34 +506,38 @@ TOP_start_exposed_kill_crisis = {
 					country_event = { id = TOP_crisis.4 days = 1 }
 				}
 			}
-			if = {
+			every_country = {
 				limit = {
-					check_variable = { global.TOP_crisis_actor_faction_leader > 0 }
-					NOT = { check_variable = { global.TOP_crisis_actor_faction_leader = global.TOP_crisis_actor } }
-					NOT = { check_variable = { global.TOP_crisis_actor_faction_leader = global.TOP_crisis_protection } }
-					NOT = { check_variable = { global.TOP_crisis_actor_faction_leader = global.TOP_crisis_host } }
-					var:global.TOP_crisis_actor_faction_leader = { exists = yes }
+					exists = yes
+					NOT = { check_variable = { global.TOP_crisis_actor = THIS } }
+					NOT = { check_variable = { global.TOP_crisis_protection = THIS } }
+					NOT = { check_variable = { global.TOP_crisis_host = THIS } }
 				}
-				var:global.TOP_crisis_actor_faction_leader = {
+				set_temp_variable = { TOP_crisis_support_dispatch_side = 0 }
+				if = {
+					limit = { is_in_faction_with = var:global.TOP_crisis_actor }
+					set_temp_variable = { TOP_crisis_support_dispatch_side = 1 }
+				}
+				if = {
+					limit = {
+						OR = {
+							is_in_faction_with = var:global.TOP_crisis_protection
+							var:global.TOP_crisis_protection = { is_guaranteed_by = PREV }
+						}
+					}
+					set_temp_variable = { TOP_crisis_support_dispatch_side = 2 }
+				}
+				if = {
+					limit = { check_variable = { TOP_crisis_support_dispatch_side > 0 } }
 					set_variable = { TOP_crisis_token = global.TOP_crisis_token }
-					set_variable = { TOP_crisis_counterpart = global.TOP_crisis_protection }
+					set_variable = { TOP_crisis_support_token = global.TOP_crisis_token }
+					set_variable = { TOP_crisis_support_side = TOP_crisis_support_dispatch_side }
 					set_variable = { TOP_crisis_target = global.TOP_crisis_target }
-					country_event = { id = TOP_crisis.7 days = 1 }
-				}
-			}
-			if = {
-				limit = {
-					check_variable = { global.TOP_crisis_protection_faction_leader > 0 }
-					NOT = { check_variable = { global.TOP_crisis_protection_faction_leader = global.TOP_crisis_actor } }
-					NOT = { check_variable = { global.TOP_crisis_protection_faction_leader = global.TOP_crisis_protection } }
-					NOT = { check_variable = { global.TOP_crisis_protection_faction_leader = global.TOP_crisis_host } }
-					NOT = { check_variable = { global.TOP_crisis_protection_faction_leader = global.TOP_crisis_actor_faction_leader } }
-					var:global.TOP_crisis_protection_faction_leader = { exists = yes }
-				}
-				var:global.TOP_crisis_protection_faction_leader = {
-					set_variable = { TOP_crisis_token = global.TOP_crisis_token }
-					set_variable = { TOP_crisis_counterpart = global.TOP_crisis_actor }
-					set_variable = { TOP_crisis_target = global.TOP_crisis_target }
+					if = {
+						limit = { check_variable = { TOP_crisis_support_dispatch_side = 1 } }
+						set_variable = { TOP_crisis_counterpart = global.TOP_crisis_protection }
+					}
+					else = { set_variable = { TOP_crisis_counterpart = global.TOP_crisis_actor } }
 					country_event = { id = TOP_crisis.7 days = 1 }
 				}
 			}
@@ -524,6 +550,7 @@ TOP_start_exposed_kill_crisis = {
 				check_variable = { global.TOP_crisis_candidate_protection = global.TOP_crisis_protection }
 			}
 			add_to_variable = { global.TOP_crisis_tension = global.TOP_crisis_repeat_tension }
+			if = { limit = { check_variable = { TOP_case_attribution^TOP_target > global.TOP_crisis_attribution } } set_variable = { global.TOP_crisis_attribution = TOP_case_attribution^TOP_target } }
 			clamp_variable = { var = global.TOP_crisis_tension min = 0 max = 100 }
 			if = {
 				limit = {
@@ -664,6 +691,10 @@ TOP_cleanup_crisis = {
 		set_variable = { global.TOP_crisis_actor_coalition_anchor = 0 }
 		set_variable = { global.TOP_crisis_victim_coalition_anchor = 0 }
 		set_variable = { global.TOP_crisis_coalition_balance = 0 }
+		set_variable = { global.TOP_crisis_generic = 0 }
+		set_variable = { global.TOP_crisis_capture = 0 }
+		set_variable = { global.TOP_crisis_attribution = 0 }
+		set_variable = { global.TOP_crisis_war_risk = 0 }
 	}
 }
 
@@ -693,6 +724,7 @@ TOP_process_crisis = {
 	if = {
 		limit = {
 			check_variable = { global.TOP_crisis_active = 1 }
+			check_variable = { global.TOP_crisis_generic = 0 }
 			OR = {
 				check_variable = { global.TOP_crisis_story < 1 }
 				check_variable = { global.TOP_crisis_story > 6 }
@@ -749,7 +781,7 @@ TOP_visit_country_opportunities = {
 			set_temp_variable = { TOP_visit_open_state = THIS }
 		}
 		if = {
-			limit = { check_variable = { TOP_visit_open_state > 0 } }
+			limit = { NOT = { check_variable = { TOP_visit_open_state = 0 } } }
 			for_loop_effect = {
 				start = 1
 				end = global.TOP_registry_capacity

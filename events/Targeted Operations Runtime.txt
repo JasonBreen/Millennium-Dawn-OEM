@@ -513,7 +513,7 @@ news_event = {
 	id = TOP_crisis.12
 	title = TOP_crisis.12.t
 	desc = TOP_crisis.12.d
-	picture = GFX_USA_collapse_unrest_global_event
+	picture = GFX_news_gulf_terror
 	is_triggered_only = yes
 
 	option = {
@@ -850,7 +850,77 @@ country_event = {
 
 	trigger = { TOP_crisis_faction_event_valid = yes }
 
-	option = { name = TOP_crisis.7.a }
+	option = {
+		name = TOP_crisis.7.a
+		trigger = { check_variable = { TOP_crisis_support_side = 2 } }
+		var:global.TOP_crisis_actor = {
+			reverse_add_opinion_modifier = { target = PREV modifier = harsh_sanctions }
+			add_opinion_modifier = { target = PREV modifier = harsh_sanctions }
+		}
+		set_temp_variable = { TOP_arg_amount = 8 }
+		TOP_adjust_crisis_tension = yes
+		ai_chance = { base = 25 modifier = { add = 20 has_war_support > 0.60 } }
+	}
+
+	option = {
+		name = TOP_crisis.7.b
+		trigger = { check_variable = { TOP_crisis_support_side = 2 } }
+		add_political_power = -10
+		var:global.TOP_crisis_protection = {
+			add_war_support = 0.01
+			add_opinion_modifier = { target = PREV modifier = TOP_crisis_settlement }
+		}
+		set_temp_variable = { TOP_arg_amount = 5 }
+		TOP_adjust_crisis_tension = yes
+		ai_chance = { base = 20 modifier = { add = 25 is_in_faction_with = var:global.TOP_crisis_protection } }
+	}
+
+	option = {
+		name = TOP_crisis.7.c
+		trigger = { check_variable = { TOP_crisis_support_side = 2 } }
+		add_political_power = -5
+		var:global.TOP_crisis_protection = {
+			set_temp_variable = { TOP_crisis_intelligence_until = { value = global.TOP_clock add = 91 } }
+			if = {
+				limit = { check_variable = { TOP_counterintelligence_level < 3 } }
+				add_to_variable = { TOP_counterintelligence_level = 1 }
+			}
+			if = {
+				limit = { check_variable = { TOP_counterintelligence_until < TOP_crisis_intelligence_until } }
+				set_variable = { TOP_counterintelligence_until = TOP_crisis_intelligence_until }
+			}
+			add_opinion_modifier = { target = PREV modifier = TOP_crisis_settlement }
+		}
+		set_temp_variable = { TOP_arg_amount = -5 }
+		TOP_adjust_crisis_tension = yes
+		ai_chance = { base = 25 modifier = { add = 30 is_in_faction_with = var:global.TOP_crisis_protection } }
+	}
+
+	option = {
+		name = TOP_crisis.7.g
+		var:global.TOP_crisis_actor = {
+			add_political_power = -15
+			add_opinion_modifier = { target = PREV modifier = TOP_sovereignty_violation }
+		}
+		set_temp_variable = { TOP_arg_amount = -8 }
+		TOP_adjust_crisis_tension = yes
+		ai_chance = { base = 25 modifier = { add = 25 is_in_faction_with = var:global.TOP_crisis_actor } }
+	}
+
+	option = {
+		name = TOP_crisis.7.e
+		add_political_power = -5
+		var:global.TOP_crisis_actor = { add_opinion_modifier = { target = PREV modifier = TOP_crisis_settlement } }
+		var:global.TOP_crisis_protection = { add_opinion_modifier = { target = PREV modifier = TOP_crisis_settlement } }
+		set_temp_variable = { TOP_arg_amount = -10 }
+		TOP_adjust_crisis_tension = yes
+		ai_chance = { base = 30 modifier = { add = 20 has_stability > 0.60 } }
+	}
+
+	option = {
+		name = TOP_crisis.7.f
+		ai_chance = { base = 10 }
+	}
 }
 
 # The open story. Stories 1 to 5 name one person each and fire once from

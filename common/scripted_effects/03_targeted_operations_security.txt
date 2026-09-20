@@ -76,6 +76,7 @@ TOP_security_refresh_view = {
 }
 
 TOP_security_country_tick = {
+	TOP_refresh_vip_details = yes
 	if = {
 		limit = {
 			TOP_enabled = yes
@@ -127,6 +128,29 @@ TOP_get_defensive_modifiers = {
 				set_temp_variable = { TOP_defensive_exposure_bonus = TOP_counterintelligence_level }
 				multiply_temp_variable = { TOP_defensive_exposure_bonus = 5 }
 			}
+			if = {
+				limit = { is_in_array = { TOP_vip_assignments = TOP_target } check_variable = { TOP_vip_until^TOP_target > global.TOP_clock } }
+				add_to_temp_variable = { TOP_defensive_collection_penalty = 3 }
+				add_to_temp_variable = { TOP_defensive_success_penalty = 10 }
+				add_to_temp_variable = { TOP_defensive_exposure_bonus = 5 }
+			}
 		}
 	}
+	set_temp_variable = { TOP_security_group = global.TOP_affiliation^TOP_target }
+	set_temp_variable = { TOP_effective_pressure = global.TOP_pressure^TOP_target }
+	add_to_temp_variable = { TOP_effective_pressure = { value = global.TOP_group_pressure^TOP_security_group multiply = 0.5 } }
+	clamp_temp_variable = { var = TOP_effective_pressure min = 0 max = 100 }
+	if = {
+		limit = { check_variable = { global.TOP_consequence_profile^TOP_target > 1 } }
+		if = { limit = { check_variable = { TOP_effective_pressure > 24 } } add_to_temp_variable = { TOP_defensive_collection_penalty = 1 } add_to_temp_variable = { TOP_defensive_success_penalty = 2 } }
+		if = { limit = { check_variable = { TOP_effective_pressure > 49 } } add_to_temp_variable = { TOP_defensive_collection_penalty = 2 } add_to_temp_variable = { TOP_defensive_success_penalty = 3 } add_to_temp_variable = { TOP_defensive_exposure_bonus = 2 } }
+		if = { limit = { check_variable = { TOP_effective_pressure > 74 } } add_to_temp_variable = { TOP_defensive_collection_penalty = 2 } add_to_temp_variable = { TOP_defensive_success_penalty = 5 } add_to_temp_variable = { TOP_defensive_exposure_bonus = 3 } }
+	}
+	if = {
+		limit = { check_variable = { global.TOP_group_disruption_type^TOP_security_group = 3 } check_variable = { global.TOP_group_disruption_until^TOP_security_group > global.TOP_clock } }
+		subtract_from_temp_variable = { TOP_defensive_success_penalty = 5 }
+	}
+	clamp_temp_variable = { var = TOP_defensive_collection_penalty min = 0 max = 25 }
+	clamp_temp_variable = { var = TOP_defensive_success_penalty min = 0 max = 40 }
+	clamp_temp_variable = { var = TOP_defensive_exposure_bonus min = 0 max = 40 }
 }
