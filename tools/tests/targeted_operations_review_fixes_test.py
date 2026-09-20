@@ -1,19 +1,9 @@
 import re
-from pathlib import Path
 
-from great_ai_race_state_model_test import _extract_block, _named_block
+from great_ai_race_state_model_test import _extract_block
 from targeted_operations_authorization_test import ReviewScript
 from targeted_operations_core_test import TargetScript
-
-ROOT = Path(__file__).resolve().parents[2]
-
-
-def read(relative: str) -> str:
-    return (ROOT / relative).read_text(encoding="utf-8-sig")
-
-
-def block(relative: str, name: str) -> str:
-    return _named_block(read(relative), name)
+from targeted_operations_redesign_test import block, read
 
 
 def test_collection_rebuild_prunes_inactive_typed_assignments_and_pauses_packages():
