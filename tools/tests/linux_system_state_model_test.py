@@ -424,7 +424,7 @@ def test_event_costs_rewards_and_fallbacks_match_the_design():
     for option in event_1[:2]:
         assert "bonus = 0.05" in option
         assert "uses = 1" in option
-        assert "category = CAT_computing_tech" in option
+        assert "category = CAT_information_technology" in option
     assert "add_tech_bonus" not in event_1[2]
 
     assert [
@@ -453,9 +453,9 @@ def test_event_costs_rewards_and_fallbacks_match_the_design():
     assert "modifier = { factor = 0 }" in event_3[3]
 
     event_4_categories = (
-        "CAT_internet_tech",
-        "CAT_internet_tech",
-        "CAT_encryption_tech",
+        "CAT_internet",
+        "CAT_internet",
+        "CAT_encryption",
     )
     assert len(event_4) == len(event_4_categories)
     for option, category in zip(event_4, event_4_categories):
@@ -809,7 +809,7 @@ def test_ibm_linux_markers_conditionals_and_event_ceiling_are_stable():
     first_ibm_route = _option_blocks(events[13])[0]
     assert "bonus = 0.05" in first_ibm_route
     assert "uses = 1" in first_ibm_route
-    assert "category = CAT_computing_tech" in first_ibm_route
+    assert "category = CAT_information_technology" in first_ibm_route
     for event_number in (28, 34):
         assert "USA_ibm_redhat_neutral" in events[event_number]
         assert "USA_ibm_redhat_absorbed" in events[event_number]
