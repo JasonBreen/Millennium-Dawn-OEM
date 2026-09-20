@@ -307,6 +307,12 @@ def test_crisis_preserves_hosts_and_dispatches_deduplicated_support_consultation
     assert "minor_flavor = yes" in faction_event
     for option in ("a", "b", "c", "g", "e", "f"):
         assert f"name = TOP_crisis.7.{option}" in faction_event
+    for option in ("a", "b", "c", "g", "e"):
+        assert (
+            f'log = "[GetDateText]: [Root.GetName]: TOP_crisis.7.{option} executed"'
+            in faction_event
+        )
+    assert "TOP_crisis.7.f executed" not in faction_event
 
 
 def test_crisis_gate_requires_exact_live_headline_visit_and_lethal_result():
