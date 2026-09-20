@@ -803,8 +803,6 @@ def dispatch(data: dict) -> str:
     output = ""
     selectors = [
         ("TOP_selected_name", "TOP_selected"),
-        ("TOP_authorized_name", "TOP_authorized_target"),
-        ("TOP_row_name", "v"),
         ("TOP_person_row_name", "v"),
         ("TOP_open_visit_name", "TOP_open_visit_target"),
     ]

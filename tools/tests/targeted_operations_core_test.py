@@ -151,7 +151,6 @@ class TargetScript(TargetedScript):
         self.run("TOP_setup_registry", 1)
         self.run("TOP_initialize_redesign_global", 1)
         self.globals.update(
-            TOP_rule_enabled=1,
             TOP_rule_mode=1,
             TOP_active_targets=ScriptArray(),
             active_terror_orgs=ScriptArray([0, 10]),
@@ -818,28 +817,25 @@ def test_reserved_and_out_of_bounds_ids_cannot_resolve(boundary):
 
 
 @pytest.mark.parametrize(
-    "mode,expected_mode,enabled",
+    "mode,expected_mode",
     [
-        ("TOP_limited_sandbox_option", 1, 1),
-        ("TOP_full_sandbox_option", 2, 1),
-        ("TOP_disabled_option", 0, 0),
+        ("TOP_limited_sandbox_option", 1),
+        ("TOP_full_sandbox_option", 2),
+        ("TOP_disabled_option", 0),
     ],
 )
-def test_game_rule_cache_initializes_fresh_campaign(mode, expected_mode, enabled):
+def test_game_rule_cache_initializes_fresh_campaign(mode, expected_mode):
     script = TargetScript()
     script.mode = mode
-    script.globals.pop("TOP_rule_enabled")
     script.globals.pop("TOP_rule_mode")
     script.run("TOP_cache_game_rule", 1)
     assert script.globals.get("TOP_rule_mode", 0) == expected_mode
-    assert script.globals.get("TOP_rule_enabled", 0) == enabled
 
 
 def test_disabled_rule_keeps_global_and_country_state_inert():
     script = TargetScript()
     script.target()
     script.mode = "TOP_disabled_option"
-    script.globals["TOP_rule_enabled"] = 0
     script.globals["TOP_rule_mode"] = 0
     before = deepcopy((script.globals, script.countries))
     script.call("TOP_capture_target", TARGET=11)

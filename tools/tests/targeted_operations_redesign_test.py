@@ -18,6 +18,7 @@ def block(relative: str, name: str) -> str:
 def test_game_rule_modes_and_authoritative_eligibility_contract():
     rules = read("common/game_rules/01_targeted_operations.txt")
     triggers = read("common/scripted_triggers/01_targeted_operations_triggers.txt")
+    effects = read("common/scripted_effects/00_targeted_operations_effects.txt")
 
     assert "default = {\n\t\tname = TOP_limited_sandbox_option" in rules
     assert rules.count("name = TOP_limited_sandbox_option") == 1
@@ -45,6 +46,7 @@ def test_game_rule_modes_and_authoritative_eligibility_contract():
         "common/scripted_triggers/01_targeted_operations_triggers.txt",
         "TOP_organization_operational_eligible",
     )
+    assert "TOP_rule_enabled" not in effects
 
 
 def test_all_generated_native_raids_are_player_only():
@@ -211,6 +213,10 @@ def test_typed_selection_and_immutable_review_snapshots_are_separate():
     ):
         assert snapshot in person_review
         assert snapshot in organization_review
+    for review in (person_review, organization_review):
+        assert "TOP_proposal_harm_risk > 40" in review
+        assert "TOP_proposal_harm_risk = 40" in review
+        assert "var = TOP_proposal_harm_risk min = 0 max = 100" in review
 
 
 def test_delegated_doctrine_compresses_only_nonleader_review():
@@ -409,6 +415,32 @@ def test_strategic_crisis_consults_faction_partners_and_guarantors():
         assert f"name = TOP_crisis.7.{option}" in crisis_event
 
 
+def test_capture_uses_distinct_custody_crisis_copy_and_authored_tripwires():
+    events = read("events/Targeted Operations Runtime.txt")
+    localization = read(
+        "localisation/english/MD_targeted_operations_authorization_l_english.yml"
+    )
+    depth = read("common/scripted_effects/09_targeted_operations_depth.txt")
+
+    for event_id in ("TOP_crisis.10", "TOP_crisis.1", "TOP_crisis.2", "TOP_crisis.4"):
+        event_start = events.index(f"\tid = {event_id}\n")
+        event = events[event_start : event_start + 1400]
+        assert "global.TOP_crisis_capture = 1" in event
+        assert f"{event_id}.t_capture" in event
+        assert f"{event_id}.d_capture" in event
+        assert f" {event_id}.t_capture:" in localization
+        assert f" {event_id}.d_capture:" in localization
+    assert "custody and hostage crisis" in localization
+    assert "negotiated return" in localization
+
+    for effect, flag in (
+        ("TOP_grant_expanded_doctrine_override", "TOP_expanded_doctrine_override"),
+        ("TOP_grant_delegated_doctrine_override", "TOP_delegated_doctrine_override"),
+        ("TOP_grant_strategic_tripwire", "TOP_strategic_tripwire"),
+    ):
+        assert f"set_country_flag = {flag}" in _named_block(depth, effect)
+
+
 def test_public_compatibility_interfaces_remain_available():
     effects = read("common/scripted_effects/00_targeted_operations_effects.txt")
 
@@ -428,6 +460,10 @@ def test_public_compatibility_interfaces_remain_available():
 def test_operations_center_exposes_required_filters_tabs_and_dimensions():
     gui = read("interface/targeted_operations.gui")
     scripted_gui = read("common/scripted_guis/01_targeted_operations_gui.txt")
+    localization = read(
+        "localisation/english/MD_targeted_operations_redesign_l_english.yml"
+    )
+    dispatch = read("common/scripted_localisation/01_targeted_operations_names.txt")
 
     assert "size = { width = 1040 height = 700 }" in gui
     title = gui[gui.index('name = "TOP_title"') :][:250]
@@ -448,3 +484,7 @@ def test_operations_center_exposes_required_filters_tabs_and_dimensions():
     ):
         assert control in gui
         assert control in scripted_gui
+    assert 'buttonText = "TOP_organization_row_label"' in gui
+    assert "[TOP_organization_row_class]: [TOP_organization_row_name]" in localization
+    assert "name = TOP_authorized_name" not in dispatch
+    assert "name = TOP_row_name" not in dispatch

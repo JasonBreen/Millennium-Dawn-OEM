@@ -17,7 +17,7 @@ def test_registry_initialization_precedes_country_startup():
 def test_country_case_arrays_use_registry_capacity_at_startup():
     script = TargetScript()
     script.globals.clear()
-    script.globals.update(TOP_rule_enabled=1, TOP_rule_mode=1)
+    script.globals.update(TOP_rule_mode=1)
     country_vars = script.countries[1]["vars"]
     country_vars.clear()
 

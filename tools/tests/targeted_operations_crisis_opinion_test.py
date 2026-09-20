@@ -145,7 +145,6 @@ def test_crisis_option_changes_only_the_respondents_opinion(
 def test_invalid_crisis_does_not_apply_opinions_or_costs(effect, invalid):
     script = CrisisOpinionScript()
     if invalid == "disabled":
-        script.globals["TOP_rule_enabled"] = 0
         script.globals["TOP_rule_mode"] = 0
     elif invalid == "stale":
         script.countries[2]["vars"]["TOP_crisis_token"] = 6
