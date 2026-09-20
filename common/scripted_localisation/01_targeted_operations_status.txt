@@ -1,5 +1,6 @@
 defined_text = {
 	name = TOP_selected_status
+	text = { trigger = { check_variable = { global.TOP_prosecuted^TOP_selected = 1 } } localization_key = TOP_status_prosecuted }
 	text = { trigger = { check_variable = { TOP_assessment^TOP_selected = 4 } } localization_key = TOP_status_escaped }
 	text = { trigger = { check_variable = { TOP_assessment^TOP_selected = 6 } } localization_key = TOP_status_unknown }
 	text = { trigger = { check_variable = { TOP_assessment^TOP_selected = 2 } } localization_key = TOP_status_captured }
@@ -23,23 +24,28 @@ defined_text = {
 	text = { trigger = { check_variable = { TOP_archive_result^v = 7 } } localization_key = TOP_status_wrong_location }
 	text = { trigger = { check_variable = { TOP_archive_result^v = 8 } } localization_key = TOP_status_partial }
 	text = { trigger = { check_variable = { TOP_archive_result^v = 9 } } localization_key = TOP_status_compromised }
+	text = { trigger = { check_variable = { TOP_archive_result^v = 11 } } localization_key = TOP_status_facility_damaged }
 	text = { localization_key = TOP_status_unknown }
 }
 
 defined_text = {
 	name = TOP_selected_location
-	text = { trigger = { check_variable = { TOP_confidence^TOP_selected > 59 } NOT = { check_variable = { TOP_lead_state^TOP_selected = 0 } } } localization_key = TOP_location_actionable }
+	text = { trigger = { check_variable = { TOP_location_confidence^TOP_selected > 59 } NOT = { check_variable = { TOP_lead_state^TOP_selected = 0 } } } localization_key = TOP_location_actionable }
 	text = { localization_key = TOP_location_region }
 }
 
 defined_text = {
 	name = TOP_panel_body
-	text = { trigger = { check_variable = { TOP_tab = 2 } } localization_key = TOP_archive_help }
-	text = { trigger = { check_variable = { TOP_dossiers^num = 0 } } localization_key = TOP_no_dossiers_body }
-	text = { trigger = { NOT = { TOP_has_selected_target = yes } } localization_key = TOP_select_dossier_body }
-	text = { trigger = { check_variable = { TOP_tab = 3 } } localization_key = TOP_cases_body }
-	text = { trigger = { check_variable = { TOP_tab = 1 } } localization_key = TOP_authorization_body }
-	text = { localization_key = TOP_dossier_body }
+	text = { trigger = { check_variable = { TOP_tab = 4 } } localization_key = TOP_archive_help }
+	text = { trigger = { check_variable = { TOP_tab = 3 } TOP_has_selected_organization = yes } localization_key = TOP_organization_custody_disabled_body }
+	text = { trigger = { check_variable = { TOP_tab = 3 } TOP_has_selected_target = yes } localization_key = TOP_person_custody_body }
+	text = { trigger = { check_variable = { TOP_tab = 2 } TOP_has_selected_organization = yes } localization_key = TOP_organization_authority_body }
+	text = { trigger = { check_variable = { TOP_tab = 2 } TOP_has_selected_target = yes } localization_key = TOP_person_authority_body }
+	text = { trigger = { check_variable = { TOP_tab = 1 } TOP_has_selected_organization = yes } localization_key = TOP_organization_package_body }
+	text = { trigger = { check_variable = { TOP_tab = 1 } TOP_has_selected_target = yes } localization_key = TOP_person_package_body }
+	text = { trigger = { check_variable = { TOP_tab = 0 } TOP_has_selected_organization = yes } localization_key = TOP_organization_dossier_body }
+	text = { trigger = { check_variable = { TOP_tab = 0 } TOP_has_selected_target = yes } localization_key = TOP_person_dossier_body }
+	text = { localization_key = TOP_select_subject_body }
 }
 
 defined_text = {
@@ -56,24 +62,29 @@ defined_text = {
 
 defined_text = {
 	name = TOP_facility_name
-	text = { trigger = { check_variable = { TOP_selected_facility = 2 } } localization_key = TOP_facility_infrastructure }
-	text = { trigger = { check_variable = { TOP_selected_facility = 3 } } localization_key = TOP_facility_resources }
-	text = { localization_key = TOP_facility_industry }
+	text = { trigger = { check_variable = { TOP_selected_facility = 2 } } localization_key = TOP_facility_training }
+	text = { trigger = { check_variable = { TOP_selected_facility = 3 } } localization_key = TOP_facility_funding }
+	text = { localization_key = TOP_facility_command }
 }
 
 defined_text = {
 	name = TOP_current_authority
-	text = { trigger = { check_variable = { TOP_case_phase^TOP_selected > 1 } check_variable = { TOP_case_phase^TOP_selected < 4 } } localization_key = TOP_authority_current }
+	text = { trigger = { TOP_has_selected_organization = yes check_variable = { TOP_org_case_phase^TOP_selected_organization > 1 } check_variable = { TOP_org_case_phase^TOP_selected_organization < 4 } } localization_key = TOP_organization_authority_current }
+	text = { trigger = { TOP_has_selected_target = yes check_variable = { TOP_case_phase^TOP_selected > 1 } check_variable = { TOP_case_phase^TOP_selected < 4 } } localization_key = TOP_authority_current }
 	text = { localization_key = TOP_authority_none }
 }
 
 defined_text = {
 	name = TOP_case_stage
-	text = { trigger = { check_variable = { TOP_case_phase^TOP_selected = 1 } } localization_key = TOP_case_designated }
-	text = { trigger = { check_variable = { TOP_case_phase^TOP_selected = 2 } } localization_key = TOP_case_native }
-	text = { trigger = { check_variable = { TOP_case_phase^TOP_selected = 3 } } localization_key = TOP_case_timed }
-	text = { trigger = { check_variable = { TOP_case_phase^TOP_selected = 4 } } localization_key = TOP_case_assessing }
-	text = { trigger = { check_variable = { TOP_case_phase^TOP_selected = 5 } } localization_key = TOP_case_confirm }
+	text = { trigger = { TOP_has_selected_organization = yes check_variable = { TOP_org_case_phase^TOP_selected_organization = 1 } } localization_key = TOP_case_review }
+	text = { trigger = { TOP_has_selected_organization = yes check_variable = { TOP_org_case_phase^TOP_selected_organization = 2 } } localization_key = TOP_case_waiting }
+	text = { trigger = { TOP_has_selected_organization = yes check_variable = { TOP_org_case_phase^TOP_selected_organization = 3 } } localization_key = TOP_case_timed }
+	text = { trigger = { TOP_has_selected_organization = yes check_variable = { TOP_org_case_phase^TOP_selected_organization = 5 } } localization_key = TOP_case_confirm }
+	text = { trigger = { TOP_has_selected_target = yes check_variable = { TOP_case_phase^TOP_selected = 1 } } localization_key = TOP_case_review }
+	text = { trigger = { TOP_has_selected_target = yes check_variable = { TOP_case_phase^TOP_selected = 2 } } localization_key = TOP_case_waiting }
+	text = { trigger = { TOP_has_selected_target = yes check_variable = { TOP_case_phase^TOP_selected = 3 } } localization_key = TOP_case_timed }
+	text = { trigger = { TOP_has_selected_target = yes check_variable = { TOP_case_phase^TOP_selected = 4 } } localization_key = TOP_case_assessing }
+	text = { trigger = { TOP_has_selected_target = yes check_variable = { TOP_case_phase^TOP_selected = 5 } } localization_key = TOP_case_confirm }
 	text = { localization_key = TOP_case_none }
 }
 

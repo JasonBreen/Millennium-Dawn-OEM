@@ -26,13 +26,54 @@ TOP_global_monthly = {
 					check_variable = { global.TOP_visit_status^TOP_target = 0 }
 					NOT = { check_variable = { global.TOP_state^TOP_target = 0 } }
 				}
+				set_temp_variable = { TOP_relocation_chance = 10 }
+				if = {
+					limit = { check_variable = { global.TOP_consequence_profile^TOP_target = 1 } }
+					add_to_temp_variable = { TOP_relocation_chance = { value = global.TOP_pressure^TOP_target multiply = 0.15 } }
+				}
+				else = {
+					if = { limit = { check_variable = { global.TOP_pressure^TOP_target > 24 } } subtract_from_temp_variable = { TOP_relocation_chance = 3 } }
+					if = { limit = { check_variable = { global.TOP_pressure^TOP_target > 49 } } subtract_from_temp_variable = { TOP_relocation_chance = 3 } }
+					if = { limit = { check_variable = { global.TOP_pressure^TOP_target > 74 } } subtract_from_temp_variable = { TOP_relocation_chance = 4 } }
+				}
+				set_temp_variable = { TOP_movement_group = global.TOP_affiliation^TOP_target }
+				if = {
+					limit = { check_variable = { global.TOP_group_disruption_type^TOP_movement_group = 3 } check_variable = { global.TOP_group_disruption_until^TOP_movement_group > global.TOP_clock } }
+					subtract_from_temp_variable = { TOP_relocation_chance = 5 }
+				}
+				clamp_temp_variable = { var = TOP_relocation_chance min = 0 max = 30 }
 				random = {
-					chance = 10
+					chance = TOP_relocation_chance
 					var:global.TOP_host^TOP_target = {
 						if = {
 							limit = { num_of_controlled_states > 0 }
 							random_controlled_state = { set_variable = { global.TOP_state^TOP_target = THIS } }
 						}
+					}
+				}
+			}
+		}
+		for_loop_effect = {
+			start = 1
+			end = global.TOP_group_class^num
+			compare = less_than
+			value = top_world_group
+			set_temp_variable = { TOP_group_target = top_world_group }
+			if = {
+				limit = { TOP_group_operational = yes check_variable = { global.TOP_group_host^top_world_group > 0 } }
+				set_temp_variable = { TOP_group_relocation_chance = 10 }
+				if = {
+					limit = { check_variable = { global.TOP_group_class^top_world_group = 2 } check_variable = { global.TOP_group_pressure^top_world_group > 49 } }
+					add_to_temp_variable = { TOP_group_relocation_chance = 5 }
+				}
+				if = {
+					limit = { check_variable = { global.TOP_group_disruption_type^top_world_group = 3 } check_variable = { global.TOP_group_disruption_until^top_world_group > global.TOP_clock } }
+					subtract_from_temp_variable = { TOP_group_relocation_chance = 5 }
+				}
+				random = {
+					chance = TOP_group_relocation_chance
+					var:global.TOP_group_host^top_world_group = {
+						if = { limit = { num_of_controlled_states > 0 } random_controlled_state = { set_variable = { global.TOP_group_state^top_world_group = THIS } } }
 					}
 				}
 			}
@@ -145,6 +186,8 @@ TOP_register_missing_organizations = {
 		}
 		else_if = {
 			limit = {
+				check_variable = { global.TOP_group_class^TOP_group = 1 }
+				check_variable = { global.TOP_group_ct^TOP_group > -1 }
 				check_variable = { TOP_org_id > 9 }
 				check_variable = { global.TOP_group_destroyed^TOP_group = 0 }
 				check_variable = { global.TOP_group_window^TOP_group = 1 }

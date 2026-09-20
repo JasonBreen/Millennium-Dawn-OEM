@@ -38,6 +38,19 @@ def manifest():
         "group_class",
         "location_policy",
         "unknown_source",
+        "stable_target_key",
+        "stable_group_key",
+        "negative_ct_slot",
+        "group_public_identity",
+        "target_public_identity",
+        "facility_default",
+        "empty_facility_override",
+        "unknown_facility_override",
+        "leader_role",
+        "leader_office",
+        "consequence_profile",
+        "duplicate_successor",
+        "incomplete_successor",
     ],
 )
 def test_manifest_rejects_ambiguous_or_cross_group_identities(
@@ -70,12 +83,98 @@ def test_manifest_rejects_ambiguous_or_cross_group_identities(
         data["groups"][0]["group_class"] = "organization"
     elif defect == "location_policy":
         data["groups"][0]["location_policy"] = "random_state"
-    else:
+    elif defect == "unknown_source":
         data["targets"][0]["sources"].append("missing_source")
+    elif defect == "stable_target_key":
+        data["targets"][0]["key"], data["targets"][1]["key"] = (
+            data["targets"][1]["key"],
+            data["targets"][0]["key"],
+        )
+    elif defect == "stable_group_key":
+        data["groups"][0]["key"], data["groups"][1]["key"] = (
+            data["groups"][1]["key"],
+            data["groups"][0]["key"],
+        )
+    elif defect == "negative_ct_slot":
+        data["groups"][0]["ct_id"] = -1
+    elif defect == "group_public_identity":
+        data["groups"][0]["public_identity"] = True
+    elif defect == "target_public_identity":
+        data["targets"][0]["public_identity"] = True
+    elif defect == "facility_default":
+        data["facility_objective_defaults"]["state_security"] = [
+            "command",
+            "funding",
+        ]
+    elif defect == "empty_facility_override":
+        data["groups"][0]["facility_objectives"] = []
+    elif defect == "unknown_facility_override":
+        data["groups"][0]["facility_objectives"] = ["safehouse"]
+    elif defect == "leader_role":
+        data["targets"][0]["leader_role"] = "president"
+    elif defect == "leader_office":
+        leader = next(
+            target for target in data["targets"] if target["leader_role"] != "none"
+        )
+        leader["role_eligibility"]["office_keys"] = []
+    elif defect == "consequence_profile":
+        data["targets"][0]["consequence_profile"] = "political_leader"
+    elif defect == "duplicate_successor":
+        data["targets"][0]["successors"].append(data["targets"][0]["successors"][0])
+    else:
+        data["targets"][0]["successors"].pop()
     path = tmp_path / "tools/data/targeted_operations.json"
     path.parent.mkdir(parents=True)
     with path.open("w", encoding="utf-8", newline="") as stream:
         json.dump(data, stream)
+    with pytest.raises(ValueError):
+        GENERATOR.load_manifest(tmp_path)
+
+
+def test_facility_overrides_can_add_or_remove_known_objectives(manifest):
+    data = deepcopy(manifest)
+    political = next(
+        group
+        for group in data["groups"]
+        if group["group_class"] == "political_executive"
+    )
+    political["facility_objectives"] = ["training"]
+    assert GENERATOR.group_objective_mask(data, political) == 2
+
+
+@pytest.mark.parametrize("missing", ["serving", "retirement"])
+def test_registered_leaders_require_serving_and_retirement_bindings(
+    tmp_path, manifest, missing
+):
+    manifest_path = tmp_path / "tools/data/targeted_operations.json"
+    trigger_path = (
+        tmp_path
+        / "common/scripted_triggers/03_targeted_operations_political_roster.txt"
+    )
+    effect_path = (
+        tmp_path / "common/scripted_effects/03_targeted_operations_political_roster.txt"
+    )
+    for path in (manifest_path, trigger_path, effect_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    with manifest_path.open("w", encoding="utf-8", newline="") as stream:
+        json.dump(manifest, stream)
+    trigger_text = (
+        ROOT / "common/scripted_triggers/03_targeted_operations_political_roster.txt"
+    ).read_text(encoding="utf-8")
+    effect_text = (
+        ROOT / "common/scripted_effects/03_targeted_operations_political_roster.txt"
+    ).read_text(encoding="utf-8")
+    if missing == "serving":
+        trigger_text = trigger_text.replace(
+            "TOP_person_129_serving = {", "TOP_person_129_unbound = {", 1
+        )
+    else:
+        effect_text = effect_text.replace(
+            "check_variable = { TOP_target = 129 }",
+            "check_variable = { TOP_target = 999 }",
+        )
+    trigger_path.write_text(trigger_text, encoding="utf-8", newline="")
+    effect_path.write_text(effect_text, encoding="utf-8", newline="")
     with pytest.raises(ValueError):
         GENERATOR.load_manifest(tmp_path)
 
@@ -140,6 +239,8 @@ def test_all_native_raids_bind_their_own_person_method_and_callback(manifest):
     assert set(definitions) == expected
     assert len(definitions) == 2 * (manifest["capacity"] - 1)
     assert "has_dlc" not in text
+    assert text.count("ai_will_do = { base = 0 }") == len(definitions)
+    assert "add = 50 TOP_native_gate" not in text
     for token, kind, target in definitions:
         raid = _named_block(text, token)
         method = "1" if kind == "drone" else "2"
@@ -253,18 +354,23 @@ def test_generated_names_and_roles_have_english_localisation(manifest):
     assert referenced <= keys, sorted(referenced - keys)
 
 
-def test_reserved_successors_and_political_civilian_identity_are_separate(manifest):
+def test_registry_emits_legacy_and_three_axis_person_and_organization_state(manifest):
     output = GENERATOR.render(manifest)
     registry = output["common/scripted_effects/01_targeted_operations_registry.txt"]
     assert "global.TOP_registry_capacity = 161" in registry
-    for field in ("ct", "leader", "created", "destroyed", "window"):
+    for field in GENERATOR.GROUP_FIELDS:
         assert f"resize_array = {{ global.TOP_group_{field} = 35 }}" in registry
+    for field in GENERATOR.ORG_COUNTRY_FIELDS:
+        assert f"resize_array = {{ TOP_org_{field} = 35 }}" in registry
     generated = range(manifest["generated_start"], manifest["generated_end"])
     assert set(generated) == set(range(65, 129))
     for ident in generated:
         assert f"global.TOP_affiliation^{ident} =" in registry
+        assert f"global.TOP_consequence_profile^{ident} = 1" in registry
     for field in GENERATOR.GLOBAL_FIELDS:
         assert f"resize_array = {{ global.TOP_{field} = 161 }}" in registry
+    for field in GENERATOR.COUNTRY_FIELDS:
+        assert f"resize_array = {{ TOP_{field} = 161 }}" in registry
     names = output["localisation/english/MD_targeted_operations_roster_l_english.yml"]
     for target in manifest["targets"]:
         ident = target["id"]
@@ -277,15 +383,66 @@ def test_reserved_successors_and_political_civilian_identity_are_separate(manife
         ident = target["id"]
         political = int(target["target_class"] in {"official", "civilian"})
         assert f"global.TOP_political^{ident} = {political}" in registry
+        assert (
+            f"global.TOP_public_identity^{ident} = {int(target['public_identity'])}"
+            in registry
+        )
+        assert (
+            f"global.TOP_leader_role^{ident} = "
+            f"{GENERATOR.LEADER_ROLE_IDS[target['leader_role']]}" in registry
+        )
+        assert (
+            f"global.TOP_consequence_profile^{ident} = "
+            f"{GENERATOR.CONSEQUENCE_PROFILE_IDS[target['consequence_profile']]}"
+            in registry
+        )
         if ident >= 129:
             assert f"TOP_authored_role_eligible_{ident} = yes" in registry
+    for group in manifest["groups"]:
+        ident = group["id"]
+        assert (
+            f"global.TOP_group_class^{ident} = "
+            f"{GENERATOR.GROUP_CLASS_IDS[group['group_class']]}" in registry
+        )
+        assert (
+            f"global.TOP_group_public_identity^{ident} = "
+            f"{int(group['public_identity'])}" in registry
+        )
+        assert (
+            f"global.TOP_group_facility_objectives^{ident} = "
+            f"{GENERATOR.group_objective_mask(manifest, group)}" in registry
+        )
+        expected_ct = group.get("ct_id", -1)
+        assert f"global.TOP_group_ct^{ident} = {expected_ct}" in registry
+        activation = _named_block(registry, f"TOP_activate_group_{ident}")
+        assert f"global.TOP_group_state^{ident} = TOP_activation_state" in activation
+        assert f"global.TOP_group_host^{ident} = TOP_activation_host" in activation
+    resize = _named_block(registry, "TOP_resize_country_arrays")
+    assert "set_variable" not in resize
     successors = output["common/scripted_effects/01_targeted_operations_successors.txt"]
     assert "TOP_person_129" not in successors
 
 
 def test_manifest_declares_classes_location_policy_and_2027_2032_roster(manifest):
+    assert manifest["version"] == 4
     assert manifest["capacity"] == 161
-    assert all("target_class" in target for target in manifest["targets"])
+    assert set(manifest["facility_objective_defaults"]) == set(
+        GENERATOR.GROUP_CLASS_IDS
+    )
+    assert {
+        group_class: GENERATOR.objective_mask(objectives)
+        for group_class, objectives in manifest["facility_objective_defaults"].items()
+    } == GENERATOR.FACILITY_OBJECTIVE_DEFAULTS
+    assert all(
+        {
+            "target_class",
+            "leader_role",
+            "public_identity",
+            "consequence_profile",
+        }
+        <= target.keys()
+        for target in manifest["targets"]
+    )
     assert all(
         "political" not in target and "civilian" not in target
         for target in manifest["targets"]
@@ -336,14 +493,48 @@ def test_manifest_declares_classes_location_policy_and_2027_2032_roster(manifest
     assert "doj_absolute_resolve_2026" in maduro["sources"]
     groups = {group["key"]: group for group in manifest["groups"]}
     for key in ("isis_k", "jnim", "isis_somalia"):
-        assert groups[key]["ct_id"] == -1
-        assert groups[key]["group_class"] == "militant"
+        assert "ct_id" not in groups[key]
+        assert groups[key]["group_class"] == "militant_network"
+        assert groups[key]["public_identity"] is False
         assert groups[key]["location_policy"] == "group_hq"
+    for key in (
+        "iraq",
+        "irgc",
+        "irgc_command",
+        "irgc_ground",
+        "irgc_aerospace",
+        "irgc_navy",
+    ):
+        assert groups[key]["group_class"] == "state_security"
+        assert groups[key]["public_identity"] is True
+        assert GENERATOR.group_objective_mask(manifest, groups[key]) == 7
+    assert groups["tpusa"]["group_class"] == "civilian_organization"
+    assert groups["tpusa"]["public_identity"] is True
     for group in manifest["groups"]:
         if group["id"] >= 25:
-            assert group["ct_id"] == -1
-            assert group["group_class"] == "office"
+            assert "ct_id" not in group
+            assert group["group_class"] == "political_executive"
+            assert group["public_identity"] is True
             assert group["location_policy"] == "country_capital"
+            assert GENERATOR.group_objective_mask(manifest, group) == 5
+    public_people = {
+        target["id"] for target in manifest["targets"] if target["public_identity"]
+    }
+    assert set(range(56, 65)) | set(range(129, 142)) <= public_people
+    assert set(range(135, 141)) <= public_people
+    unbound_future_pool = {142, 143, 145, 148, 157}
+    assert all(
+        next(target for target in manifest["targets"] if target["id"] == ident)[
+            "leader_role"
+        ]
+        == "none"
+        for ident in unbound_future_pool
+    )
+    assert all(
+        ident not in group.get("succession", [])
+        for ident in unbound_future_pool
+        for group in manifest["groups"]
+    )
 
 
 def test_future_windows_names_and_placement_are_generated_from_manifest(manifest):
@@ -360,11 +551,12 @@ def test_future_windows_names_and_placement_are_generated_from_manifest(manifest
     assert "AFG = { random_controlled_state =" in militant_group
 
 
-def test_top_only_militant_windows_create_an_explicit_operational_state(manifest):
+def test_non_ct_organizations_activate_on_their_authored_windows(manifest):
     registry = GENERATOR.render(manifest)[
         "common/scripted_effects/01_targeted_operations_registry.txt"
     ]
-    for year, group in ((2028, 22), (2029, 23), (2032, 24)):
-        window = _named_block(registry, f"TOP_open_windows_{year}")
-        assert f"global.TOP_group_window^{group} = 1" in window
-        assert f"global.TOP_group_created^{group} = 1" in window
+    for group in manifest["groups"]:
+        window = _named_block(registry, f"TOP_open_windows_{group['year']}")
+        assert f"global.TOP_group_window^{group['id']} = 1" in window
+        if "ct_id" not in group:
+            assert f"global.TOP_group_created^{group['id']} = 1" in window
