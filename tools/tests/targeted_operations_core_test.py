@@ -16,6 +16,15 @@ class ScriptArray(list):
         return self[index] if 0 <= index < len(self) else default
 
 
+def _seed_bda_archive(variables, entries):
+    for target, row, token in entries:
+        variables["TOP_bda_archive_row"][target] = row
+        variables["TOP_bda_archive_token"][target] = token
+        variables["TOP_archive_subject_kind"][row] = 1
+        variables["TOP_archive_subject_id"][row] = target
+        variables["TOP_archive_bda_token"][row] = token
+
+
 class TargetScript(TargetedScript):
     """Execute TOP source while recording separately owned engine and legacy effects."""
 
@@ -501,6 +510,18 @@ class TargetScript(TargetedScript):
         ):
             variables[f"TOP_{field}"][ident] = value
         return variables
+
+    def organization_truth(self, group=12, *, host=2, state=101, public=False):
+        if public:
+            self.globals["TOP_group_public_identity"][group] = 1
+        for field, value in (
+            ("window", 1),
+            ("created", 1),
+            ("destroyed", 0),
+            ("host", host),
+            ("state", state),
+        ):
+            self.globals[f"TOP_group_{field}"][group] = value
 
     def authorize(self, target=11, method=1, *, host=2, state=101, actor=1, begin=True):
         variables = self.target(target, host=host, state=state, actor=actor)
@@ -1688,12 +1709,7 @@ def test_ai_liaison_bootstraps_public_reports_without_creating_packages():
     assert source["TOP_package_state"][129] == 0
     assert requester["TOP_package_state"][129] == 0
 
-    script.globals["TOP_group_public_identity"][12] = 1
-    script.globals["TOP_group_window"][12] = 1
-    script.globals["TOP_group_created"][12] = 1
-    script.globals["TOP_group_destroyed"][12] = 0
-    script.globals["TOP_group_host"][12] = 2
-    script.globals["TOP_group_state"][12] = 101
+    script.organization_truth(12, host=2, state=101, public=True)
     source.update(
         TOP_incoming_liaison_actor=1,
         TOP_incoming_liaison_kind=2,
@@ -1714,13 +1730,8 @@ def test_public_organization_seed_writes_the_authored_group_state():
     script = TargetScript()
     variables = script.countries[1]["vars"]
     script.stubs.remove("TOP_seed_public_subjects")
-    script.globals["TOP_group_public_identity"][12] = 1
-    script.globals["TOP_group_window"][12] = 1
-    script.globals["TOP_group_created"][12] = 1
-    script.globals["TOP_group_destroyed"][12] = 0
-    script.globals["TOP_group_host"][12] = 2
     script.globals["TOP_group_state"][0] = 0
-    script.globals["TOP_group_state"][12] = 0
+    script.organization_truth(12, host=2, state=0, public=True)
 
     script.run("TOP_seed_public_subjects", 1)
 
@@ -2255,12 +2266,7 @@ def test_bda_notice_queue_preserves_assessment_and_sequence_snapshots():
     script = TargetScript()
     variables = script.countries[1]["vars"]
 
-    for target, row, token in ((11, 0, 41), (12, 1, 42)):
-        variables["TOP_bda_archive_row"][target] = row
-        variables["TOP_bda_archive_token"][target] = token
-        variables["TOP_archive_subject_kind"][row] = 1
-        variables["TOP_archive_subject_id"][row] = target
-        variables["TOP_archive_bda_token"][row] = token
+    _seed_bda_archive(variables, ((11, 0, 41), (12, 1, 42)))
 
     script.call("TOP_queue_bda_notice", TARGET=11, ASSESSMENT=3, SEQUENCE=41)
     script.call("TOP_queue_bda_notice", TARGET=12, ASSESSMENT=6, SEQUENCE=42)
@@ -2284,12 +2290,9 @@ def test_bda_dispatch_discards_a_stale_head_before_opening_the_next_notice():
     script = TargetScript()
     variables = script.countries[1]["vars"]
     variables["TOP_bda_notice_open"] = 1
-    for target, row, token in ((11, 0, 41), (12, 1, 42)):
-        variables["TOP_bda_archive_row"][target] = row
-        variables["TOP_bda_archive_token"][target] = token
-        variables["TOP_archive_subject_kind"][row] = 1
-        variables["TOP_archive_subject_id"][row] = target
-        variables["TOP_archive_bda_token"][row] = token
+    entries = ((11, 0, 41), (12, 1, 42))
+    _seed_bda_archive(variables, entries)
+    for target, _, token in entries:
         script.call("TOP_queue_bda_notice", TARGET=target, ASSESSMENT=3, SEQUENCE=token)
 
     variables["TOP_archive_bda_token"][0] = 99

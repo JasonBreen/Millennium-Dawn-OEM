@@ -253,11 +253,7 @@ def test_monthly_host_refresh_resolves_changed_state_controller(state):
 def test_monthly_organization_truth_tracks_the_recorded_state_controller(state):
     script = TargetScript()
     script.state(state, 3)
-    script.globals["TOP_group_created"][12] = 1
-    script.globals["TOP_group_window"][12] = 1
-    script.globals["TOP_group_destroyed"][12] = 0
-    script.globals["TOP_group_host"][12] = 2
-    script.globals["TOP_group_state"][12] = state
+    script.organization_truth(12, host=2, state=state)
     script.stubs.add("TOP_activate_candidates")
 
     script.run("TOP_global_monthly", 1)
@@ -269,11 +265,7 @@ def test_monthly_organization_truth_tracks_the_recorded_state_controller(state):
 def test_monthly_truth_clears_zero_state_hosts_without_opening_country_zero_scope():
     script = TargetScript()
     script.target(1, host=2, state=0)
-    script.globals["TOP_group_created"][12] = 1
-    script.globals["TOP_group_window"][12] = 1
-    script.globals["TOP_group_destroyed"][12] = 0
-    script.globals["TOP_group_host"][12] = 2
-    script.globals["TOP_group_state"][12] = 0
+    script.organization_truth(12, host=2, state=0)
     script.stubs.add("TOP_activate_candidates")
 
     script.run("TOP_global_monthly", 1)
