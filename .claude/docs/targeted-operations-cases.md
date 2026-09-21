@@ -1,85 +1,188 @@
-# Targeted Operations: Country Cases
+# Targeted Operations: Typed Cases and Lifecycle
 
-Each actor reserves one case per recorded target country. Other countries have independent
-cases, collection assignments, mandates, timed missions, and assessments. The player may keep
-several country cases open; AI admits at most three and processes one new proposal per staggered
-CT tick. One actor review dialog and one incoming host-consent dialog remain separate limits.
+Person and organization cases have separate storage. A subject is always identified
+by both kind and stable ID. Organization IDs are never placed in person arrays, and
+native raid callbacks remain person-only.
 
-## Persistent records
+## Dossiers and packages
 
-`TOP_case_*` arrays are indexed by permanent person ID. They record host, state, method, expiry,
-consent, phase, due date, sequence, facility, review rigor, civilian assurance, and collection.
-`TOP_active_cases` contains only reserved cases. A country's increasing `TOP_case_counter`
-assigns a new sequence at designation. A review snapshots that sequence and rechecks it at
-approval. Flat `TOP_authorized_*` and `TOP_pending_*` values are execution/display snapshots;
-they do not grant authority and may change when the player selects another dossier.
+Dossier knowledge is country-owned and persists independently of a case. A Cold
+dossier can exist without a package. A package can be paused, collecting, ready, in
+review, or waiting behind authority without changing physical truth.
 
-Phases:
+`TOP_package_state` and `TOP_org_package_state` encode package lifecycle. The shared
+`TOP_collecting_subjects` array uses a typed key: person IDs are stored directly and
+organization IDs are stored with an offset of 1000. This supports three simultaneous
+focused assignments across either kind without conflating their registries.
 
-- **0:** Closed. No country slot or authority.
-- **1:** Designated for collection, with a 182-day reservation.
-- **2:** Native operation authorized for 91 days.
-- **3:** Timed mission in progress, with a recorded 28-day due date and 91-day authority.
-- **4:** Waiting for the already-resolved assessment. Expiry cannot free this country slot.
-- **5:** Assessment ready. The player confirms it to close the case; AI acknowledges it on
-  the pending-country tick. Confirmation never repeats a reward or rolls another outcome.
+Creating a package charges 25 Political Power once. Pause and resume do not charge.
+Abandonment clears package state and removes the collection key, but it does not clear
+belief axes, believed location, reports, or dossier visibility.
 
-Designation checks the discovered person's authored role, credible host, existing country slot,
-and exceptional political authority. Collection can continue independently for each case.
-Starting collection costs 25 Political Power only when that assignment was inactive. Returning
-from a review uses its recorded person and sequence rather than the current selection.
+## Person cases
 
-`TOP_close_case = { TARGET = ID SEQUENCE = SEQUENCE }` closes only a matching generation.
-Player revocation can close phases 1–3. It cannot skip assessment in phases 4–5. Cancelling
-the review dialog leaves its designated case available for collection. Host changes require
-closing the old reservation and obtaining a new designation and host review.
+`TOP_case_*` arrays are indexed by permanent person ID. They record:
+
+- host and state;
+- method and sequence;
+- mandate expiry and mission due date;
+- phase and consent;
+- frozen identity, location, pattern, and lead age;
+- access, host posture, doctrine, rigor, and capability;
+- protection country, attribution, harm, result, and BDA;
+- archive row and token;
+- oversight and crisis state;
+- visit binding for authored state-visit operations.
+
+Person phases are:
+
+- **0:** closed;
+- **1:** immutable review case;
+- **2:** approved waiting mandate;
+- **3:** preparation or operation in progress;
+- **4:** physical result recorded and BDA pending;
+- **5:** report ready for closure and archive access.
+
+`TOP_active_cases` may contain several people in the same host. There is no
+one-person-per-country exclusion. `TOP_case_counter` assigns a monotonically
+increasing sequence. Every review, preparation, operation, callback, archive write,
+and close action rechecks the relevant sequence.
+
+`TOP_close_case` accepts an explicit person and sequence and closes only that
+generation. A current GUI selection cannot redirect it. Physical status and dossier
+beliefs remain outside the case and are not erased by closure.
+
+## Organization cases
+
+`TOP_org_case_*` arrays are indexed by stable organization ID. They record host,
+state, selected facility objective, sequence, mandate and operation timing, frozen
+verification, location, activity, lead age, access, posture, doctrine, rigor,
+capability, attribution, harm, result, archive binding, and oversight.
+
+Organization phases mirror person phases where meaningful:
+
+- **0:** closed;
+- **1:** immutable facility review;
+- **2:** approved waiting mandate;
+- **3:** timed facility operation in progress;
+- **4:** resolved result and attribution processing;
+- **5:** report and archive ready.
+
+Organizations do not have killed, captured, retired, custody, prosecution, or
+succession phases. A facility result can damage a state and replace a timed disruption
+but cannot modify any person's lifecycle.
+
+## One operation slot
+
+Approval does not reserve capacity. `TOP_operation_subject_kind`,
+`TOP_operation_subject_id`, and `TOP_operation_sequence` are the authoritative
+country operation binding. Kind zero is free, one is a person, and two is an
+organization. The binding is created only by Begin Preparation or Begin Operation.
+
+While the slot is occupied, other packages can collect, reviews can proceed, and
+mandates can wait. Launch validation refuses a second operation without changing the
+blocked case. The slot is released when a timed or native physical result enters BDA,
+or when the player uses TOP Stand Down on a prepared native case.
+
+Flat `TOP_authorized_*`, `TOP_pending_*`, and `TOP_proposal_*` values are display and
+execution snapshots. They do not grant authority. Only the matching typed case arrays
+and operation binding do.
+
+## Movement and wrong-location behavior
+
+Global movement changes physical truth only. It does not rewrite beliefs, proposals,
+or prepared cases. At resolution, one intelligence roll is compared with all three
+frozen axes and the recorded location is compared with physical truth.
+
+A wrong-location or no-contact outcome:
+
+- consumes the operational mandate;
+- preserves the package and identity or verification knowledge;
+- sets location or facility-location confidence to zero;
+- reduces pattern or activity by 15;
+- returns the package to development;
+- records the attempted subject, method, state, host, and sequence;
+- never retargets or changes method.
+
+False-state reports remain in the believed host. If no alternate controlled state
+exists, location becomes unresolved.
 
 ## Native callback constraint
 
-The documented raid outcome scope exposes actor, victim, target state, and target province,
-but no per-instance numeric token. The person and method are authored into each raid definition.
-Launch and callback both validate the actor's person/method/state case. Changing a dossier or
-operating in another country cannot redirect that callback.
+The HOI4 raid callback exposes actor, target state, and the generated raid definition,
+but it does not expose a safe arbitrary per-instance numeric token. Generated TOP
+raids therefore carry a permanent person and method. Launch and callback validate the
+country's person, method, state, sequence, phase, and operation binding.
 
-Renewing an identical **open** phase-2 mandate preserves its sequence and prepared native raid.
-Native map cancellation leaves that mandate open. Changing method or state requires closing
-the old case first; a timed mission cannot be restarted by renewing its mandate.
+Renewing an identical still-open waiting mandate can preserve its prepared native
+instance. Native map cancellation is not treated as closure because no reliable
+cancellation callback exists. TOP Stand Down is the authoritative release action.
 
-Once a native case closes, its person/method/state tuple enters
-`TOP_retired_native_bindings`. That exact tuple cannot be authorized again. A different
-actionable state or another method is required. This restriction prevents an arbitrarily late
-callback from an older raid being accepted by a newly created identical mandate. It is an
-engine compatibility constraint, not a claim about real operational practice.
+Once a native case closes, its person, method, and state tuple enters
+`TOP_retired_native_bindings`. A late callback for that tuple cannot be accepted by a
+new case. The tuple key remains `person * 20000 + state * 2 + method` for person IDs,
+states 1 through 9999, and native methods 1 and 2. Retired tuples are never discarded
+to make a stale callback valid.
 
-The tuple key is `person * 20000 + state * 2 + method`; native states must be 1–9999 and
-methods 1–2. Keys fit exactly in single-precision integers for this registry. The finite key
-space is bounded by authored/generated people, game states, and the two native methods.
-No historical tuple is discarded to make a stale callback valid again.
+## Physical truth, BDA, and attribution
 
-## Assessment and protection
+Resolution changes global person lifecycle or organization disruption exactly once.
+Capture is immediately confirmed and creates global custody. Lethal person results
+store physical truth immediately, release operation capacity, and schedule 14-day
+BDA. BDA may change report wording or certainty based on frozen identity confidence.
+It cannot call kill or capture again.
 
-The first successful resolver changes global lifecycle and records rewards once. A delayed
-assessment reveals that recorded result. Other actors pursuing the same person wait for global
-death confirmation before their cases can be confirmed. Custody produces an immediate recorded
-assessment. Release does not restore authority to an already completed operation.
+The initial exposure roll stores attribution from zero through three. A separate
+14-day investigation may raise it by one tier at most. It can never lower attribution
+or create a new physical result. Suppressive oversight modifies the investigation
+chance on the same case record.
 
-Protection and counterintelligence are sampled for the attempted operation before removal.
-The exposure bonus remains available after a successful action retires the protected official.
-Timed success subtracts the protection penalty; native results may drop one outcome tier using
-that percentage chance. See [security policies](targeted-operations-security.md).
+Historical OEF, Iraq, ISIS, Soleimani, visit, and political-roster events consult
+global truth before applying their fallbacks. They cannot kill, capture, retire,
+reward, or replace the same identity twice.
 
-## Acceptance beyond the Python contract tests
+## Archive
 
-- Prepare simultaneous cases in two countries; cancelling, expiring, or confirming one must
-  preserve the other. Attempt two people in one country and check the designation explanation.
-- Change dossier, facility selection, and state controller while review or preparation runs.
-- Renew the identical native case and verify that preparation survives in the engine.
-- Close a native case and attempt the same tuple again; it must be refused. Deliver the old
-  callback after authorizing another state or method and verify it has no effect.
-- Let two actors pursue one person. Keep the second case reserved until the first actor's
-  recorded death assessment is confirmed globally. Confirm each actor's case separately.
-- Save/reload in all five active phases and while the security popup is open. Verify that no
-  operation depends on temporary UI scratch values or the current dossier.
+The country archive is a 128-row circular array. Every row stores typed identity,
+objective, method, state, host, frozen intelligence, lead age, access, posture,
+doctrine, rigor, physical result, BDA, attribution, harm, custodian or disposition,
+date, and sequence.
 
-Static script execution does not establish native raid delivery, graphical layout, DLC
-availability, or natural campaign balance. Those checks require HOI4 runtime evidence.
+The row is written from the case snapshot, not the current selection. BDA updates the
+matching row through its archive token. Rollover reuses the oldest cursor row only
+after removing its prior row reference. Person and organization cases both use the
+same typed archive format.
+
+## Oversight queue
+
+Several cases can become oversight-eligible before the player answers the first
+event. Each case sets its own pending value and appends a typed key to
+`TOP_oversight_queue`. The country-level dispatcher only assigns
+`TOP_oversight_subject_kind` and `TOP_oversight_subject_id` when no oversight event is
+already active.
+
+Resolving the event writes the selected response to the matching person or
+organization case, clears that case's open value, clears the country pointer, and
+immediately dispatches the next key. This prevents an operation finishing on the
+same day from overwriting another event's subject.
+
+## Acceptance beyond static tests
+
+- Collect two people and one organization in the same host, fill all three slots,
+  and save and reload.
+- Approve several mandates and verify none occupies the operation slot until Begin
+  Preparation or Begin Operation.
+- Launch one case and confirm every other launch is blocked without package or
+  mandate loss. Confirm BDA pending frees capacity.
+- Change selection during review, preparation, operation, BDA, and archive browsing.
+  Every callback and report must retain its recorded subject and sequence.
+- Move the target after review. Exercise no contact, wrong state, escape, partial,
+  capture, kill, and facility damage in separate saves.
+- Cancel and renew a native raid through TOP, then deliver an old callback after a
+  later case exists. The old tuple must not attach.
+- Resolve two oversight-eligible operations close together. The second event must
+  retain its own subject after the first response.
+- Save and reload in each person and organization phase and at archive rollover.
+
+Static tests do not establish native callback timing, DLC availability, rendering,
+or save serialization. Record those as separate runtime evidence.

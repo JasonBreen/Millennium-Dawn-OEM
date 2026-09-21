@@ -124,7 +124,7 @@ def test_mixed_case_reference_suggests_the_lowercase_tag(tmp_path):
 def test_legacy_table_targets_exist_and_keys_do_not():
     tag_files = sorted((REPO_ROOT / "common" / "technology_tags").glob("*.txt"))
     if not tag_files:
-        pytest.skip("common/technology_tags not available in sparse checkout")
+        pytest.skip("common/technology_tags is not checked out")
     known = load_known_categories(tag_files)
     known_lower = {k.lower() for k in known}
     assert set(_LEGACY_CATEGORIES.values()) <= known

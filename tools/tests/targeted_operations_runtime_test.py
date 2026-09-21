@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from great_ai_race_state_model_test import _named_block
@@ -17,6 +18,9 @@ CASE_TRIGGERS = (
 ).read_text(encoding="utf-8")
 CORE_EFFECTS = (
     ROOT / "common/scripted_effects/00_targeted_operations_effects.txt"
+).read_text(encoding="utf-8")
+CORE_TRIGGERS = (
+    ROOT / "common/scripted_triggers/01_targeted_operations_triggers.txt"
 ).read_text(encoding="utf-8")
 EVENTS = (ROOT / "events/Targeted Operations Runtime.txt").read_text(encoding="utf-8")
 OPINION_MODIFIERS = (
@@ -106,7 +110,7 @@ def test_headline_visit_schedule_and_fixed_story_bindings():
 
 def test_visit_cases_snapshot_story_and_require_the_active_token_for_execution():
     for field in ("token", "status", "story"):
-        assert f"TOP_case_visit_{field}^TOP_selected" in CASES
+        assert f"TOP_case_visit_{field}^TOP_arg_target" in CASES
     execution = _named_block(TRIGGERS, "TOP_case_visit_execution_valid")
     assert (
         "TOP_case_visit_token^TOP_case_visit_target = global.TOP_visit_active_token^TOP_case_visit_target"
@@ -120,8 +124,22 @@ def test_visit_cases_snapshot_story_and_require_the_active_token_for_execution()
     assert "TOP_case_visit_execution_valid = yes" in CASE_TRIGGERS
     assert (
         "var = TOP_case_until^TOP_arg_target value = global.TOP_clock compare = greater_than_or_equals"
-        in CASE_TRIGGERS
+        not in _named_block(CASE_TRIGGERS, "TOP_case_binding_valid")
     )
+    assert "TOP_case_until^TOP_arg_target > global.TOP_clock" in _named_block(
+        CASE_TRIGGERS, "TOP_can_begin_person_operation"
+    )
+    stood_down = _named_block(CORE_TRIGGERS, "TOP_native_callback_matches_stood_down")
+    for requirement in (
+        "TOP_native_callback_matches_stood_down_tuple = yes",
+        "TOP_case_until^TOP_target > global.TOP_clock",
+        "TOP_authored_role_eligible = yes",
+        "TOP_person_access_available = yes",
+        "is_controlled_by = var:PREV.TOP_access_host",
+        "TOP_case_visit_execution_valid = yes",
+        "TOP_person_operational_eligible = yes",
+    ):
+        assert requirement in stood_down
 
 
 def test_cancelled_visit_closes_preparation_but_underway_operation_fails_closed():
@@ -186,7 +204,9 @@ def test_crisis_constants_deltas_bands_and_single_war_path():
         "type = topple_government }"
     ) in EVENTS
     assert EVENTS.count("major = yes") == 1
-    assert "every_country" not in EFFECTS
+    initializer = _named_block(EFFECTS, "TOP_start_exposed_kill_crisis")
+    assert initializer.count("every_country = {") == 1
+    assert EFFECTS.count("every_country = {") == 2
     assert "every_country" not in EVENTS
     assert "every_other_country" not in EFFECTS
     assert "every_other_country" not in EVENTS
@@ -210,10 +230,12 @@ def test_repeat_incident_and_timeout_dispatch_the_ultimatum_band():
 
     repeat_news = initializer.index("news_event = { id = TOP_crisis.11 days = 1 }")
     repeat_branch_start = initializer.rfind("\t\telse_if = {", 0, repeat_news)
-    unmatched_news = initializer.index("news_event = { id = TOP_crisis.12 days = 1 }")
-    unmatched_branch_start = initializer.rfind("\t\telse_if = {", 0, unmatched_news)
-    repeat_branch = initializer[repeat_branch_start:unmatched_branch_start]
-    unmatched_branch = initializer[unmatched_branch_start:]
+    queued_branch_start = initializer.index(
+        "add_to_array = { global.TOP_crisis_queue_actors = global.TOP_crisis_candidate_actor }"
+    )
+    queued_branch_start = initializer.rfind("\t\telse_if = {", 0, queued_branch_start)
+    repeat_branch = initializer[repeat_branch_start:queued_branch_start]
+    queued_branch = initializer[queued_branch_start:]
     assert (
         "global.TOP_crisis_candidate_actor = global.TOP_crisis_actor" in repeat_branch
     )
@@ -221,19 +243,55 @@ def test_repeat_incident_and_timeout_dispatch_the_ultimatum_band():
         "global.TOP_crisis_candidate_protection = global.TOP_crisis_protection"
         in repeat_branch
     )
+    assert "global.TOP_crisis_capture = 1" in repeat_branch
+    assert "TOP_result = 2" in repeat_branch
+    assert "global.TOP_crisis_target = TOP_target" in repeat_branch
     assert "global.TOP_crisis_repeat_tension" in repeat_branch
-    assert "global.TOP_crisis_tension" not in unmatched_branch
-    assert "TOP_unmatched_incident_actor = THIS" in unmatched_branch
-    assert (
-        "TOP_unmatched_incident_protection = "
-        "global.TOP_crisis_candidate_protection" in unmatched_branch
-    )
-    assert (
-        "TOP_unmatched_incident_host = global.TOP_crisis_candidate_host"
-        in unmatched_branch
-    )
+    for field in (
+        "actors",
+        "protections",
+        "hosts",
+        "targets",
+        "states",
+        "results",
+        "attributions",
+        "consents",
+        "visit_statuses",
+        "visit_stories",
+        "visit_tokens",
+        "sequences",
+    ):
+        assert f"global.TOP_crisis_queue_{field}" in queued_branch
+
+    dispatcher = _named_block(EFFECTS, "TOP_dispatch_next_strategic_crisis")
+    assert "global.TOP_crisis_queue_targets^num > 0" in dispatcher
+    assert "TOP_start_exposed_kill_crisis = yes" in dispatcher
+    for field in (
+        "actors",
+        "protections",
+        "hosts",
+        "targets",
+        "states",
+        "results",
+        "attributions",
+        "consents",
+        "visit_statuses",
+        "visit_stories",
+        "visit_tokens",
+        "sequences",
+    ):
+        assert (
+            f"remove_from_array = {{ array = global.TOP_crisis_queue_{field} index = 0 }}"
+            in dispatcher
+        )
 
     timeout = _named_block(EFFECTS, "TOP_process_crisis")
+    principals = _named_block(TRIGGERS, "TOP_crisis_principals_valid")
+    assert "global.TOP_crisis_actor > 0" in principals
+    assert "global.TOP_crisis_protection > 0" in principals
+    assert "var:global.TOP_crisis_actor = { exists = yes }" in principals
+    assert "var:global.TOP_crisis_protection = { exists = yes }" in principals
+    assert "NOT = { TOP_crisis_principals_valid = yes }" in timeout
     assert "global.TOP_crisis_story < 1" in timeout
     assert "global.TOP_crisis_story > 6" in timeout
     assert "global.TOP_crisis_visit_token < 1" in timeout
@@ -248,6 +306,7 @@ def test_repeat_incident_and_timeout_dispatch_the_ultimatum_band():
     assert "global.TOP_crisis_story = 0" in cleanup
     assert "global.TOP_crisis_visit_token = 0" in cleanup
     assert "global.TOP_crisis_stage = 0" in cleanup
+    assert "TOP_dispatch_next_strategic_crisis = yes" in cleanup
 
 
 def test_unmatched_exposed_killing_uses_independent_news_snapshots():
@@ -255,7 +314,7 @@ def test_unmatched_exposed_killing_uses_independent_news_snapshots():
     event_start = EVENTS.rfind("news_event = {", 0, event_id)
     event_end = EVENTS.index("\ncountry_event = {", event_id)
     event = EVENTS[event_start:event_end]
-    assert "picture = GFX_USA_event_cia" in event
+    assert "picture = GFX_news_gulf_terror" in event
     assert "is_triggered_only = yes" in event
     assert "major = yes" not in event
     option = event[event.index("\toption = {") :]
@@ -277,7 +336,7 @@ def test_unmatched_exposed_killing_uses_independent_news_snapshots():
     assert "global.TOP_crisis_" not in independent_desc
 
 
-def test_crisis_preserves_physical_home_and_host_and_deduplicates_faction_consultations():
+def test_crisis_preserves_hosts_and_dispatches_deduplicated_support_consultations():
     initializer = _named_block(EFFECTS, "TOP_start_exposed_kill_crisis")
     assert (
         "OVERLORD = { set_variable = { global.TOP_crisis_candidate_actor = THIS } }"
@@ -290,17 +349,112 @@ def test_crisis_preserves_physical_home_and_host_and_deduplicates_faction_consul
     assert "global.TOP_crisis_candidate_host = TOP_authorized_host" in initializer
     assert "global.TOP_crisis_candidate_protection = THIS" not in initializer
     assert "global.TOP_crisis_candidate_host = THIS" not in initializer
-    assert initializer.count("country_event = { id = TOP_crisis.7 days = 1 }") == 2
-    assert (
-        "global.TOP_crisis_protection_faction_leader = "
-        "global.TOP_crisis_actor_faction_leader"
-    ) in initializer
+    assert initializer.count("country_event = { id = TOP_crisis.7 days = 1 }") == 1
+    assert "every_country = {" in initializer
+    assert "is_in_faction_with = var:global.TOP_crisis_actor" in initializer
+    assert "is_in_faction_with = var:global.TOP_crisis_protection" in initializer
+    assert "is_guaranteed_by = PREV" in initializer
+    assert "TOP_crisis_support_token = global.TOP_crisis_token" in initializer
     faction_event = _named_block(TRIGGERS, "TOP_crisis_faction_event_valid")
     assert "global.TOP_crisis_actor_faction_leader = THIS" in faction_event
     assert "global.TOP_crisis_protection_faction_leader = THIS" in faction_event
+    assert "TOP_crisis_support_token = global.TOP_crisis_token" in faction_event
     faction_event_start = EVENTS.index("\tid = TOP_crisis.7")
-    faction_event = EVENTS[faction_event_start : faction_event_start + 400]
+    faction_event = EVENTS[faction_event_start : faction_event_start + 4000]
     assert "minor_flavor = yes" in faction_event
+    for option in ("a", "b", "c", "g", "e", "f"):
+        assert f"name = TOP_crisis.7.{option}" in faction_event
+    for option in ("a", "b", "c", "g", "e", "f"):
+        assert (
+            f'log = "[GetDateText]: [Root.GetName]: TOP_crisis.7.{option} executed"'
+            in faction_event
+        )
+
+
+def test_crisis_cleanup_waits_for_bound_participant_notices():
+    initializer = _named_block(EFFECTS, "TOP_start_exposed_kill_crisis")
+    cleanup = _named_block(EFFECTS, "TOP_cleanup_crisis")
+    recount = _named_block(EFFECTS, "TOP_recount_crisis_participant_notices")
+    finish = _named_block(EFFECTS, "TOP_finish_crisis_participant_notice")
+    processor = _named_block(EFFECTS, "TOP_process_crisis")
+    host_gate = _named_block(TRIGGERS, "TOP_crisis_host_event_valid")
+    faction_gate = _named_block(TRIGGERS, "TOP_crisis_faction_event_valid")
+
+    assert "global.TOP_crisis_participant_pending = 0" in initializer
+    assert (
+        initializer.count("TOP_crisis_participant_token = global.TOP_crisis_token") == 2
+    )
+    assert (
+        len(
+            re.findall(
+                r"(?<!global\.)TOP_crisis_participant_pending = 1",
+                initializer,
+            )
+        )
+        == 2
+    )
+    assert (
+        initializer.count(
+            "add_to_variable = { global.TOP_crisis_participant_pending = 1 }"
+        )
+        == 2
+    )
+
+    assert "TOP_recount_crisis_participant_notices = yes" in cleanup
+    assert cleanup.index(
+        "TOP_recount_crisis_participant_notices = yes"
+    ) < cleanup.index("global.TOP_crisis_participant_pending > 0")
+    assert "global.TOP_crisis_participant_pending = 0" in recount
+    assert "every_country = {" in recount
+    assert "exists = yes" in recount
+    assert "TOP_crisis_participant_pending = 1" in recount
+    assert "TOP_crisis_participant_token = global.TOP_crisis_token" in recount
+    assert "add_to_variable = { global.TOP_crisis_participant_pending = 1 }" in recount
+    assert "global.TOP_crisis_participant_pending > 0" in cleanup
+    assert "global.TOP_crisis_cleanup_requested = 1" in cleanup
+    assert cleanup.index("global.TOP_crisis_participant_pending > 0") < cleanup.index(
+        "TOP_crisis_cleanup_token = global.TOP_crisis_token"
+    )
+    assert cleanup.index("global.TOP_crisis_cleanup_requested = 0") < cleanup.index(
+        "TOP_dispatch_next_strategic_crisis = yes"
+    )
+
+    assert "TOP_crisis_participant_token = global.TOP_crisis_token" in finish
+    assert "global.TOP_crisis_participant_pending = 0" in finish
+    assert "global.TOP_crisis_cleanup_requested = 1" in finish
+    for field in (
+        "TOP_crisis_participant_pending",
+        "TOP_crisis_participant_token",
+        "TOP_crisis_token",
+        "TOP_crisis_counterpart",
+        "TOP_crisis_target",
+        "TOP_crisis_support_token",
+        "TOP_crisis_support_side",
+    ):
+        assert f"{field} = 0" in finish
+
+    for gate in (host_gate, faction_gate):
+        assert "TOP_crisis_participant_pending = 1" in gate
+        assert "TOP_crisis_participant_token = global.TOP_crisis_token" in gate
+    assert EVENTS.count("TOP_finish_crisis_participant_notice = yes") == 8
+    assert processor.count("global.TOP_crisis_cleanup_requested = 0") == 3
+    assert "global.TOP_crisis_cleanup_requested = 1" in processor
+    assert "TOP_recount_crisis_participant_notices = yes" in processor
+    assert "global.TOP_crisis_participant_pending = 0" in processor
+    assert processor.index(
+        "TOP_recount_crisis_participant_notices = yes"
+    ) < processor.index("global.TOP_crisis_cleanup_requested = 0")
+
+    repeat_news = initializer.index("news_event = { id = TOP_crisis.11 days = 1 }")
+    repeat_branch_start = initializer.rfind("\t\telse_if = {", 0, repeat_news)
+    queue_write = initializer.index(
+        "add_to_array = { global.TOP_crisis_queue_actors = global.TOP_crisis_candidate_actor }"
+    )
+    queued_branch_start = initializer.rfind("\t\telse_if = {", 0, queue_write)
+    repeat_branch = initializer[repeat_branch_start:queued_branch_start]
+    queued_branch = initializer[queued_branch_start:]
+    assert "global.TOP_crisis_cleanup_requested = 0" in repeat_branch
+    assert "global.TOP_crisis_cleanup_requested = 0" not in queued_branch
 
 
 def test_crisis_gate_requires_exact_live_headline_visit_and_lethal_result():
@@ -337,6 +491,19 @@ def test_visit_retention_and_dossier_refresh_share_full_live_revalidation():
         assert "global.TOP_visit_host^TOP_visit_trigger_target = THIS" in gate
         assert "var:TOP_visit_trigger_state = { is_controlled_by = PREV }" in gate
         assert "TOP_visit_story_valid = yes" in gate
+    invite = _named_block(TRIGGERS, "TOP_visit_can_invite")
+    arrival = _named_block(TRIGGERS, "TOP_visit_can_arrive")
+    assert "TOP_visit_pressure_allows_travel = yes" in invite
+    assert "TOP_visit_pressure_allows_travel = yes" in arrival
+    assert "TOP_visit_pressure_allows_travel = yes" in planned
+    assert "TOP_visit_pressure_allows_travel = yes" not in active
+    pressure_gate = _named_block(TRIGGERS, "TOP_visit_pressure_allows_travel")
+    assert "global.TOP_pressure^TOP_visit_trigger_target" in pressure_gate
+    assert (
+        "global.TOP_group_pressure^TOP_visit_pressure_group multiply = 0.5"
+        in pressure_gate
+    )
+    assert "TOP_visit_effective_pressure < 75" in pressure_gate
     assert (
         "global.TOP_visit_planned_token^TOP_visit_trigger_target = "
         "global.TOP_visit_token^TOP_visit_trigger_target"

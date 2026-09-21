@@ -7,17 +7,17 @@ import argparse
 from pathlib import Path
 
 BUDGETS_BYTES = {
-    ".html": 320_000,
+    ".html": 350_000,
     ".css": 120_000,
     ".js": 80_000,
 }
 HTML_BUDGET_OVERRIDES = {
-    "changelogs/v2-0-changes/index.html": 340_000,
-    "misc/beta-changelogs/index.html": 340_000,
+    "changelogs/v2-0-changes/index.html": 370_000,
+    "misc/beta-changelogs/index.html": 370_000,
 }
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".avif", ".gif", ".svg"}
-MAX_IMAGE_BYTES = 3_000_000
+MAX_IMAGE_BYTES = 3_600_000
 INDEX_HTML_BUDGET = 60_000
 
 

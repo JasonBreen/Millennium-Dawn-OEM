@@ -26,7 +26,10 @@ def source(path):
 class ReviewScript(TargetedScript):
     """Execute approval source with engine diplomacy and core eligibility as fixtures."""
 
-    country_trigger_fields = {"has_political_power": "power"}
+    country_trigger_fields = {
+        "has_political_power": "power",
+        "num_of_controlled_states": "states",
+    }
 
     def __init__(self, designated=True):
         self.effects = _parse_race_script(source(EFFECT_PATH))
@@ -40,11 +43,26 @@ class ReviewScript(TargetedScript):
             )
         )
         self.effects.update(
+            _parse_race_script(
+                source("common/scripted_effects/06_targeted_operations_redesign.txt")
+            )
+        )
+        self.effects.update(
+            _parse_race_script(
+                source(
+                    "common/scripted_effects/07_targeted_operations_organization_cases.txt"
+                )
+            )
+        )
+        self.effects.update(
             TOP_refresh_view=[],
             TOP_enroll_pending_actor=[],
             TOP_initialize_global=[],
             TOP_country_initialize=[],
             TOP_build_view=[],
+            TOP_get_defensive_modifiers=[],
+            TOP_get_organization_defensive_modifiers=[],
+            TOP_get_protection_country=[],
         )
         self.triggers = _parse_race_script(source(TRIGGER_PATH))
         core_triggers = _parse_race_script(
@@ -53,7 +71,19 @@ class ReviewScript(TargetedScript):
         self.triggers.update(core_triggers)
         self.triggers.update(
             _parse_race_script(
+                source(
+                    "common/scripted_triggers/03_targeted_operations_political_roster.txt"
+                )
+            )
+        )
+        self.triggers.update(
+            _parse_race_script(
                 source("common/scripted_triggers/04_targeted_operations_cases.txt")
+            )
+        )
+        self.triggers.update(
+            _parse_race_script(
+                source("common/scripted_triggers/07_targeted_operations_redesign.txt")
             )
         )
         self.countries = {
@@ -61,7 +91,10 @@ class ReviewScript(TargetedScript):
                 "vars": {},
                 "exists": country > 0,
                 "ai": False,
+                "tag": {0: "---", 1: "USA", 2: "YEM", 3: "PAK", 100: "STATE"}[country],
+                "flags": {},
                 "techs": {"special_forces_tech_1", "decryption1"},
+                "missions": set(),
                 "power": 200,
                 "authority": True,
                 "enhanced": False,
@@ -69,15 +102,22 @@ class ReviewScript(TargetedScript):
                 "allies": set(),
                 "wars": set(),
                 "facilities": {1, 2, 3},
+                "states": 1,
+                "war": False,
+                "civil_war": False,
             }
             for country in (0, 1, 2, 3, 100)
         }
         self.countries[100]["controller"] = 2
+        for country in self.countries.values():
+            country["vars"]["TOP_liaison_partners"] = []
         manifest = json.loads(source("tools/data/targeted_operations.json"))
         self.globals = {
             "TOP_clock": 7,
             "TOP_status^num": manifest["capacity"],
             "TOP_registry_capacity": manifest["capacity"],
+            "TOP_rule_mode": 2,
+            "TOP_group_class^num": len(manifest["groups"]) + 1,
         }
         self.temps, self.events, self.event_targets, self.scope_stack = {}, [], {}, []
         for target in (1, 2):
@@ -87,16 +127,31 @@ class ReviewScript(TargetedScript):
             self.globals[f"TOP_state^{target}"] = 100
             self.globals[f"TOP_host^{target}"] = 2
             self.globals[f"TOP_group_ct^{target}"] = target - 1
+            self.globals[f"TOP_group_class^{target}"] = 1
+            self.globals[f"TOP_leader_role^{target}"] = 0
         self.globals["active_terror_orgs"] = [0, 1]
         self.globals["TOP_active_targets"] = [1, 2]
         self.actor = self.countries[1]["vars"]
-        self.actor.update(TOP_selected=1, TOP_selected_facility=1)
+        self.actor.update(
+            TOP_selected=1,
+            TOP_selected_kind=1,
+            TOP_selected_facility=1,
+            TOP_doctrine=2,
+            TOP_collecting_subjects=[],
+            TOP_organization_dossiers=[],
+            TOP_attribution_pending_people=[],
+            TOP_attribution_pending_organizations=[],
+        )
         self.actor["TOP_dossiers"] = [1, 2]
         self.actor["TOP_active_cases"] = []
         self.actor["TOP_retired_native_bindings"] = []
         for target in (1, 2):
             self.actor[f"TOP_known^{target}"] = 1
             self.actor[f"TOP_confidence^{target}"] = 95
+            self.actor[f"TOP_identity_confidence^{target}"] = 95
+            self.actor[f"TOP_location_confidence^{target}"] = 95
+            self.actor[f"TOP_pattern_confidence^{target}"] = 95
+            self.actor[f"TOP_package_state^{target}"] = 1
             self.actor[f"TOP_lead_age^{target}"] = 0
             self.actor[f"TOP_lead_state^{target}"] = 100
             self.actor[f"TOP_lead_host^{target}"] = 2
@@ -142,6 +197,8 @@ class ReviewScript(TargetedScript):
             result = True
         elif key == "TOP_authored_capture_override":
             result = operand == "no"
+        elif key == "TOP_authored_civilian_mandate_valid":
+            result = operand == "no"
         elif key == "TOP_exceptional_authority":
             result = country["authority"] == (operand == "yes")
         elif key in {
@@ -155,12 +212,29 @@ class ReviewScript(TargetedScript):
             result = (self.temps["TOP_facility_kind"] in state["facilities"]) == (
                 operand == "yes"
             )
+        elif key == "TOP_organization_facility_available":
+            state = self.countries[self.temps["TOP_facility_state"]]
+            result = (self.temps["TOP_facility_objective"] in state["facilities"]) == (
+                operand == "yes"
+            )
         elif key in {
             "western_conservatism_are_in_power",
             "western_liberals_are_in_power",
             "western_social_democrats_are_in_power",
         }:
             result = country["enhanced"] == (operand == "yes")
+        elif key in {
+            "western_autocrats_are_in_power",
+            "emerging_autocracy_are_in_power",
+            "emerging_hardline_shiite_are_in_power",
+            "salafist_caliphate_are_in_power",
+            "neutrality_neutral_autocracy_are_in_power",
+            "nationalist_fascist_are_in_power",
+            "nationalist_military_junta_are_in_power",
+        }:
+            result = operand != "yes"
+        elif key == "has_civil_war":
+            result = country["civil_war"] == (operand == "yes")
         elif key == "is_controlled_by":
             result = country.get("controller", 0) == self.value(operand, identifier)
         elif key in {"has_war_with", "is_in_faction_with"}:
@@ -220,6 +294,8 @@ class ReviewScript(TargetedScript):
 
     def call(self, name, identifier=1, **parameters):
         # Effects read TOP_arg_* temp variables now; see the core harness.
+        if name == "TOP_answer_host_request" and "CONSENT" in parameters:
+            parameters["POSTURE"] = 4 if parameters.pop("CONSENT") else 5
         for key, value in parameters.items():
             self.temps[f"TOP_arg_{key.lower()}"] = value
         self.execute([(name, "=", "yes")], identifier)
@@ -236,6 +312,19 @@ class ReviewScript(TargetedScript):
         self.run("TOP_open_senior_review")
         self.run("TOP_close_review_event")
         self.run("TOP_approve_review")
+
+    def begin_operation(self, target=None):
+        target = target or self.actor["TOP_selected"]
+        self.call("TOP_begin_person_operation", TARGET=target)
+
+    def set_axes(self, target, value):
+        for axis in (
+            "identity_confidence",
+            "location_confidence",
+            "pattern_confidence",
+        ):
+            self.actor[f"TOP_{axis}^{target}"] = value
+        self.actor[f"TOP_confidence^{target}"] = value
 
     def binding(self, target=1, method=2, state=100):
         # TOP_case_binding_valid no longer takes parameters: the engine cannot
@@ -267,7 +356,8 @@ def test_reselection_during_review_commits_only_the_immutable_snapshot_once():
     review.ready_for_host()
     review.actor["TOP_selected"] = 2
     review.run("TOP_send_host_request")
-    assert review.event_targets["TOP_host_request_sender"] == 1
+    assert "TOP_host_request_sender" not in review.event_targets
+    assert review.countries[2]["vars"]["TOP_incoming_actor"] == 1
     review.call("TOP_answer_host_request", identifier=2, CONSENT=1)
     review.run("TOP_close_review_event")
     review.run("TOP_approve_review")
@@ -295,25 +385,32 @@ def test_old_host_reply_cannot_approve_even_an_identical_later_proposal():
     assert review.countries[2]["vars"]["TOP_incoming_actor"] == 0
 
 
-def test_identical_native_renewal_extends_the_same_prepared_case_binding():
+def test_approval_waits_for_explicit_preparation_before_binding_native_operation():
     review = ReviewScript()
     review.approve_unilateral()
     original_until = review.actor["TOP_authorized_until"]
     original_sequence = review.case(1, "sequence")
-    assert review.binding()
-    review.globals["TOP_clock"] += 7
-    review.approve_unilateral()
-    assert review.actor["TOP_authorized_until"] == original_until + 7
+    assert review.case(1, "phase") == 2
+    assert review.actor.get("TOP_operation_subject_kind", 0) == 0
+    assert not review.binding()
+
+    review.begin_operation()
+    assert review.case(1, "phase") == 3
+    assert review.actor["TOP_operation_subject_kind"] == 1
+    assert review.actor["TOP_operation_subject_id"] == 1
+    assert review.actor["TOP_operation_sequence"] == original_sequence
+    assert review.actor["TOP_authorized_until"] == original_until
     assert review.case(1, "sequence") == original_sequence
     assert review.actor["TOP_active_cases"] == [1]
     assert review.binding()
-    assert review.countries[1]["power"] == 100
+    assert review.countries[1]["power"] == 150
 
 
 @pytest.mark.parametrize("changed", ("target", "method", "state"))
 def test_explicit_replacement_cannot_accept_the_retired_native_callback(changed):
     review = ReviewScript()
     review.approve_unilateral()
+    review.begin_operation()
     review.call("TOP_close_case", TARGET=1, SEQUENCE=review.case(1, "sequence"))
     method = 2
     if changed == "target":
@@ -324,6 +421,7 @@ def test_explicit_replacement_cannot_accept_the_retired_native_callback(changed)
         review.move_target(1, 101, 2)
     review.approve_unilateral(method)
     assert not review.binding()
+    review.begin_operation()
     assert review.binding(
         target=review.actor["TOP_authorized_target"],
         method=review.actor["TOP_authorized_method"],
@@ -345,44 +443,52 @@ def test_two_host_approvals_preserve_both_immutable_native_cases():
     assert {
         name: value for name, value in review.actor.items() if name.endswith("^1")
     } == first
+    assert not review.binding(target=1, method=2, state=100)
+    assert not review.binding(target=2, method=1, state=101)
+    review.begin_operation(target=1)
     assert review.binding(target=1, method=2, state=100)
+    review.begin_operation(target=2)
+    assert review.case(2, "phase") == 2
+    assert not review.binding(target=2, method=1, state=101)
+    review.call("TOP_close_case", TARGET=1, SEQUENCE=review.case(1, "sequence"))
+    review.begin_operation(target=2)
     assert review.binding(target=2, method=1, state=101)
     assert review.countries[1]["power"] == 100
 
 
-def test_second_person_in_same_host_cannot_replace_an_active_approval():
+def test_two_people_in_same_host_can_hold_parallel_waiting_mandates():
     review = ReviewScript()
     review.approve_unilateral()
     sequence = review.case(1, "sequence")
     review.actor["TOP_selected"] = 2
     review.approve_unilateral()
-    assert review.actor["TOP_active_cases"] == [1]
+    assert review.actor["TOP_active_cases"] == [1, 2]
     assert review.case(1, "sequence") == sequence
     assert review.case(1, "phase") == 2
-    assert review.case(2, "phase") == 0
-    assert review.countries[1]["power"] == 150
-    assert review.binding()
+    assert review.case(2, "phase") == 2
+    assert review.countries[1]["power"] == 100
+
+    review.begin_operation(target=1)
+    review.begin_operation(target=2)
+    assert review.case(1, "phase") == 3
+    assert review.case(2, "phase") == 2
+    assert review.binding(target=1)
 
 
 @pytest.mark.parametrize(
     "phase", [4, 5], ids=["assessment_pending", "confirmation_pending"]
 )
-def test_unconfirmed_assessment_blocks_that_host_but_allows_other_hosts(phase):
+def test_unconfirmed_assessment_does_not_block_another_same_host_package(phase):
     review = ReviewScript()
     review.actor["TOP_case_phase^1"] = phase
     review.actor["TOP_selected"] = 2
-    review.approve_unilateral()
-    assert review.case(1, "phase") == phase
-    assert review.case(2, "phase") == 0
-    assert review.countries[1]["power"] == 200
-    review.move_target(2, 101, 3)
     review.approve_unilateral()
     assert review.case(1, "phase") == phase
     assert review.case(2, "phase") == 2
     assert review.countries[1]["power"] == 150
 
 
-def test_commit_rechecks_host_occupancy_after_staff_review():
+def test_commit_does_not_reintroduce_the_removed_one_case_per_host_limit():
     review = ReviewScript()
     review.ready_for_host()
     review.run("TOP_open_senior_review")
@@ -390,25 +496,27 @@ def test_commit_rechecks_host_occupancy_after_staff_review():
     review.actor["TOP_active_cases"].append(2)
     review.actor.update({"TOP_case_phase^2": 2, "TOP_case_host^2": 2})
     review.run("TOP_approve_review")
-    assert review.case(1, "phase") == 1
+    assert review.case(1, "phase") == 2
     assert review.case(2, "phase") == 2
-    assert review.countries[1]["power"] == 200
+    assert review.countries[1]["power"] == 150
 
 
 def test_closed_native_tuple_cannot_be_reused_even_by_a_fresh_review():
     review = ReviewScript()
     review.approve_unilateral()
+    review.begin_operation()
     sequence = review.case(1, "sequence")
     review.call("TOP_close_case", TARGET=1, SEQUENCE=sequence)
     retired = list(review.actor["TOP_retired_native_bindings"])
     assert len(retired) == 1
     review.approve_unilateral()
-    assert review.case(1, "phase") == 1
-    assert review.case(1, "sequence") != sequence
+    assert review.case(1, "phase") == 0
+    assert review.case(1, "sequence") == sequence
     assert not review.binding()
     assert review.countries[1]["power"] == 150
     review.approve_unilateral(method=1)
     assert review.case(1, "phase") == 2
+    review.begin_operation()
     assert review.binding(method=1)
     assert review.actor["TOP_retired_native_bindings"] == retired
 
@@ -420,11 +528,13 @@ def test_closing_the_case_during_review_invalidates_its_saved_sequence():
     review.run("TOP_close_review_event")
     saved_sequence = review.actor["TOP_proposal_case_sequence"]
     review.call("TOP_close_case", TARGET=1, SEQUENCE=saved_sequence)
-    review.run("TOP_designate_selected")
-    assert review.case(1, "sequence") != saved_sequence
     review.run("TOP_approve_review")
-    assert review.case(1, "phase") == 1
+    assert review.case(1, "phase") == 0
     assert review.countries[1]["power"] == 200
+    review.run("TOP_cancel_review")
+    review.call("TOP_begin_review", METHOD=2)
+    assert review.case(1, "sequence") != saved_sequence
+    assert review.actor["TOP_proposal_stage"] == 1
 
 
 def test_core_commit_requires_senior_review_and_consumes_it_once():
@@ -441,7 +551,7 @@ def test_core_commit_requires_senior_review_and_consumes_it_once():
     assert review.countries[1]["power"] == 150
 
 
-def test_returning_review_to_collection_pays_normal_cost_for_original_person():
+def test_returning_review_resumes_the_original_package_without_another_cost():
     review = ReviewScript()
     review.call("TOP_begin_review", METHOD=2)
     review.actor["TOP_selected"] = 2
@@ -450,17 +560,18 @@ def test_returning_review_to_collection_pays_normal_cost_for_original_person():
     option = _extract_block(text, text.rfind("option = {", 0, option_at))
     effect = _parse_race_script(_named_block(option, "hidden_effect"))["hidden_effect"]
     review.execute(effect, 1)
-    assert review.case(1, "collecting") == 1
+    assert review.actor["TOP_package_state^1"] == 2
+    assert review.actor["TOP_collecting_subjects"] == [1]
     assert review.actor["TOP_proposal_stage"] == 0
-    assert review.countries[1]["power"] == 175
+    assert review.countries[1]["power"] == 200
 
 
 def test_return_to_existing_collection_does_not_charge_twice():
     review = ReviewScript()
     review.call("TOP_begin_review", METHOD=2)
-    review.actor["TOP_case_collecting^1"] = 1
     review.run("TOP_return_recorded_collection")
-    assert review.case(1, "collecting") == 1
+    assert review.actor["TOP_package_state^1"] == 2
+    assert review.actor["TOP_collecting_subjects"] == [1]
     assert review.countries[1]["power"] == 200
 
 
@@ -471,11 +582,15 @@ def test_stale_return_to_collection_cannot_charge_or_reopen_a_closed_case(recrea
     saved_sequence = review.case(1, "sequence")
     review.call("TOP_close_case", TARGET=1, SEQUENCE=saved_sequence)
     if recreate:
-        review.run("TOP_designate_selected")
+        review.run("TOP_close_review_event")
+        review.run("TOP_cancel_review")
+        review.call("TOP_begin_review", METHOD=2)
         assert review.case(1, "sequence") != saved_sequence
+        review.actor["TOP_proposal_case_sequence"] = saved_sequence
     review.run("TOP_return_recorded_collection")
     assert review.case(1, "phase") == int(recreate)
-    assert review.case(1, "collecting") == 0
+    assert review.actor["TOP_package_state^1"] == (3 if recreate else 1)
+    assert review.actor["TOP_collecting_subjects"] == []
     assert review.countries[1]["power"] == 200
 
 
@@ -513,7 +628,7 @@ def test_actor_window_tombstone_prevents_stale_approval_and_releases_on_close(ex
     assert review.actor["TOP_proposal_sequence"] == sequence + 1
 
 
-@pytest.mark.parametrize("method", (1, 2, 3, 4, 5, 6))
+@pytest.mark.parametrize("method", (1, 2, 3, 4, 5))
 def test_all_methods_reach_review_with_required_capabilities(method):
     review = ReviewScript()
     review.call("TOP_begin_review", METHOD=method)
@@ -534,7 +649,8 @@ def test_missing_capability_cannot_bypass_review_backend(method, tech):
 
 
 @pytest.mark.parametrize(
-    "changed", ("controller", "state", "status", "authority", "funding", "confidence")
+    "changed",
+    ("controller", "status", "authority", "doctrine", "funding", "capability"),
 )
 def test_changed_case_invalidates_senior_approval_without_spending(changed):
     review = ReviewScript()
@@ -542,29 +658,45 @@ def test_changed_case_invalidates_senior_approval_without_spending(changed):
     review.run("TOP_open_senior_review")
     if changed == "controller":
         review.countries[100]["controller"] = 3
-    elif changed == "state":
-        review.actor["TOP_lead_state^1"] = 101
     elif changed == "status":
         review.globals["TOP_status^1"] = 2
     elif changed == "authority":
-        review.countries[1]["authority"] = False
+        review.globals["TOP_rule_mode"] = 1
+        review.globals["TOP_group_class^1"] = 2
+    elif changed == "doctrine":
+        review.actor["TOP_doctrine"] = 1
     elif changed == "funding":
         review.countries[1]["power"] = 49
     else:
-        review.actor["TOP_confidence^1"] = 59
+        review.countries[1]["techs"].remove("special_forces_tech_1")
     power = review.countries[1]["power"]
     review.run("TOP_approve_review")
     assert review.countries[1]["power"] == power
     assert "TOP_authorized_target" not in review.actor
 
 
-def test_enhanced_lethal_review_rejects_a_feasible_capture_alternative():
+def test_current_dossier_changes_do_not_rewrite_an_immutable_review_snapshot():
+    review = ReviewScript()
+    review.ready_for_host()
+    review.run("TOP_open_senior_review")
+    review.actor["TOP_lead_state^1"] = 101
+    review.actor["TOP_lead_host^1"] = 3
+    review.set_axes(1, 0)
+    review.run("TOP_approve_review")
+    assert review.case(1, "phase") == 2
+    assert review.case(1, "state") == 100
+    assert review.case(1, "host") == 2
+    assert review.case(1, "identity") == 95
+    assert review.countries[1]["power"] == 150
+
+
+def test_feasible_capture_warns_but_does_not_veto_a_lethal_method():
     review = ReviewScript()
     review.countries[1]["enhanced"] = True
     review.countries[2]["opinion"][1] = 75
     review.call("TOP_begin_review", METHOD=1)
     assert review.actor["TOP_proposal_capture_feasible"] == 1
-    assert not review.condition(review.triggers["TOP_review_staff_ready"], 1)
+    assert review.condition(review.triggers["TOP_review_staff_ready"], 1)
     review.run("TOP_cancel_review")
     review.run("TOP_close_review_event")
     review.call("TOP_begin_review", METHOD=2)
@@ -574,32 +706,69 @@ def test_enhanced_lethal_review_rejects_a_feasible_capture_alternative():
 def test_political_target_uses_enhanced_review_even_for_standard_government():
     review = ReviewScript()
     review.globals["TOP_political^1"] = 1
+    review.globals["TOP_leader_role^1"] = 1
+    review.set_axes(1, 79)
+    review.call("TOP_begin_review", METHOD=2)
+    assert review.actor.get("TOP_proposal_stage", 0) == 0
+
+    review.set_axes(1, 80)
     review.call("TOP_begin_review", METHOD=2)
     assert review.actor["TOP_proposal_rigor"] == 2
-    review.actor["TOP_confidence^1"] = 75
-    assert not review.condition(review.triggers["TOP_review_staff_ready"], 1)
+    assert review.condition(review.triggers["TOP_review_staff_ready"], 1)
 
 
-def test_sabotage_keeps_facility_selection_fixed_and_rechecks_availability():
+def test_leader_assassination_final_confirmation_commits_the_waiting_mandate():
     review = ReviewScript()
-    review.actor["TOP_selected_facility"] = 3
-    review.ready_for_host(method=6)
-    review.actor["TOP_selected_facility"] = 1
-    review.run("TOP_open_senior_review")
+    review.globals["TOP_political^1"] = 1
+    review.globals["TOP_leader_role^1"] = 1
+    review.approve_unilateral(method=3)
+    assert review.actor["TOP_proposal_stage"] == 5
+    assert review.case(1, "phase") == 1
+    assert review.countries[1]["power"] == 200
+
     review.run("TOP_close_review_event")
-    assert review.actor["TOP_proposal_facility"] == 3
-    review.countries[100]["facilities"].remove(3)
-    review.run("TOP_approve_review")
-    assert "TOP_authorized_target" not in review.actor
+    review.run("TOP_confirm_leader_assassination")
+
+    assert review.case(1, "phase") == 2
+    assert review.case(1, "method") == 3
+    assert review.countries[1]["power"] == 150
+    assert review.actor.get("TOP_proposal_stage", 0) == 0
+
+
+def test_facility_sabotage_uses_the_typed_organization_review_path():
+    person_start = _named_block(
+        source("common/scripted_triggers/01_targeted_operations_triggers.txt"),
+        "TOP_method_startable",
+    )
+    organization_review = _named_block(
+        source("common/scripted_effects/07_targeted_operations_organization_cases.txt"),
+        "TOP_begin_organization_review",
+    )
+    organization_valid = _named_block(
+        source("common/scripted_triggers/07_targeted_operations_redesign.txt"),
+        "TOP_organization_review_valid",
+    )
+    assert "NOT = { check_variable = { TOP_requested_method = 6 } }" in person_start
+    assert "set_variable = { TOP_proposal_subject_kind = 2 }" in organization_review
+    assert "set_variable = { TOP_proposal_method = 6 }" in organization_review
+    assert (
+        "set_variable = { TOP_proposal_objective = TOP_selected_facility }"
+        in organization_review
+    )
+    assert "TOP_facility_operational_eligible = yes" in organization_valid
+    assert "TOP_facility_access_available = yes" in organization_valid
 
 
 def test_annual_opportunity_grants_once_and_report_acknowledgement_has_no_payload():
     review = ReviewScript()
-    review.actor["TOP_confidence^1"] = 40
-    review.actor["TOP_confidence^2"] = 10
+    review.set_axes(1, 40)
+    review.set_axes(2, 10)
     review.run("TOP_modern_opportunities_2024")
     review.run("TOP_modern_country_opportunity")
     assert review.actor["TOP_confidence^1"] == 65
+    assert review.actor["TOP_identity_confidence^1"] == 65
+    assert review.actor["TOP_location_confidence^1"] == 65
+    assert review.actor["TOP_pattern_confidence^1"] == 65
     assert review.actor["TOP_modern_2024_target"] == 1
     assert review.events == [(1, "TOP_opportunity.1")]
     review.run("TOP_modern_country_opportunity")
@@ -641,13 +810,13 @@ def test_modern_opportunities_never_create_or_reactivate_an_ineligible_target(bl
 
 def test_modern_threat_priority_and_yearly_report_snapshots_are_independent():
     review = ReviewScript()
-    review.actor["TOP_confidence^1"] = 20
-    review.actor["TOP_confidence^2"] = 40
+    review.set_axes(1, 20)
+    review.set_axes(2, 40)
     review.globals["active_terror_org_threat_lvl^0"] = 60
     review.run("TOP_modern_opportunities_2024")
     review.run("TOP_modern_country_opportunity")
     assert review.actor["TOP_modern_2024_target"] == 1
-    review.actor["TOP_confidence^2"] = 90
+    review.set_axes(2, 90)
     review.globals["active_terror_org_threat_lvl^0"] = 0
     review.run("TOP_modern_opportunities_2025")
     review.run("TOP_modern_country_opportunity")
@@ -658,8 +827,8 @@ def test_modern_threat_priority_and_yearly_report_snapshots_are_independent():
 def test_modern_annual_marker_never_moves_backwards_and_ai_needs_no_popup():
     review = ReviewScript()
     review.countries[1]["ai"] = True
-    review.actor["TOP_confidence^1"] = 40
-    review.actor["TOP_confidence^2"] = 10
+    review.set_axes(1, 40)
+    review.set_axes(2, 10)
     review.run("TOP_modern_opportunities_2026")
     review.run("TOP_modern_opportunities_2024")
     assert review.globals["TOP_modern_year"] == 2026
@@ -702,16 +871,32 @@ def test_event_defaults_defer_and_options_have_matching_logs_and_localisation():
             assert f'{name} executed"' in body
 
 
+def test_final_leader_assassination_confirmation_revalidates_full_authority():
+    text = source(EVENT_PATH)
+    event_at = text.index("id = TOP_authorization.5\n")
+    event = _extract_block(text, text.rfind("country_event = {", 0, event_at))
+    authorize = _named_block(event, "option")
+
+    assert (
+        "trigger = { TOP_review_can_confirm_leader_assassination = yes }" in authorize
+    )
+    assert "TOP_confirm_leader_assassination = yes" in authorize
+
+
 def test_snapshot_identity_and_host_slot_have_single_writers():
     effects = _parse_race_script(source(EFFECT_PATH))
     for name, body in effects.items():
         rendered = repr(body)
         if name != "TOP_begin_review":
             for field in ("target", "method", "state", "host", "sequence"):
-                assert not re.search(
-                    rf"'set_variable'.*?\[\('TOP_proposal_{field}'", rendered
+                assert (
+                    f"('set_variable', '=', [('TOP_proposal_{field}'," not in rendered
                 )
-        if name not in {"TOP_send_host_request", "TOP_answer_host_request"}:
+        if name not in {
+            "TOP_send_host_request",
+            "TOP_answer_host_request",
+            "TOP_clear_incoming_host_request",
+        }:
             assert "TOP_incoming_actor" not in rendered
     assert "TOP_selected" not in _named_block(source(EFFECT_PATH), "TOP_approve_review")
     assert "TOP_selected" not in _named_block(source(TRIGGER_PATH), "TOP_review_valid")
@@ -722,22 +907,28 @@ def test_novichok_is_a_russia_only_high_exposure_timed_method():
         source("common/scripted_triggers/01_targeted_operations_triggers.txt"),
         "TOP_method_startable",
     )
-    review = _named_block(source(TRIGGER_PATH), "TOP_review_valid")
+    access = _named_block(
+        source("common/scripted_triggers/01_targeted_operations_triggers.txt"),
+        "TOP_person_access_available",
+    )
+    review = _named_block(source(TRIGGER_PATH), "TOP_person_review_valid")
     lethal = _named_block(source(TRIGGER_PATH), "TOP_review_lethal")
-    core = source("common/scripted_effects/00_targeted_operations_effects.txt")
+    resolution = source("common/scripted_effects/08_targeted_operations_resolution.txt")
     gui = source("common/scripted_guis/01_targeted_operations_gui.txt")
     layout = source("interface/targeted_operations.gui")
     assert "TOP_requested_method = 7" in startable
-    assert "original_tag = SOV" in startable
-    assert "has_tech = decryption2" in startable
-    assert "TOP_confidence^TOP_selected > 89" in startable
+    assert "TOP_identity_confidence^TOP_selected > 89" in startable
+    assert "TOP_access_method = 7" in access
+    assert "original_tag = SOV" in access
+    assert "has_tech = decryption2" in access
     assert "TOP_proposal_method < 8" in review
     assert "TOP_proposal_method = 7" in review
-    assert "has_tech = decryption2" in review
+    assert "TOP_person_access_available = yes" in review
+    assert "TOP_proposal_identity > 89" in review
     assert "TOP_proposal_method = 7" in lethal
-    assert "TOP_method = 7" in _named_block(core, "TOP_complete_operation")
-    exposure = _named_block(core, "TOP_apply_exposure")
-    assert "TOP_exposure_chance = 65" in exposure
-    assert "TOP_exposure_chance = 90" in exposure
+    assert "TOP_method = 7" in _named_block(resolution, "TOP_resolve_person_operation")
+    exposure = _named_block(source(EFFECT_PATH), "TOP_calculate_person_proposal_risks")
+    assert "TOP_proposal_method = 7" in exposure
+    assert "TOP_proposal_exposure_score = 65" in exposure
     assert "set_temp_variable = { TOP_arg_method = 7 } TOP_begin_review = yes" in gui
     assert 'name = "TOP_novichok"' in layout

@@ -34,17 +34,10 @@ country_event = {
 		name = TOP_authorization.1.b
 		trigger = {
 			check_variable = { TOP_proposal_stage = 1 }
-			check_variable = { global.TOP_status^TOP_proposal_target = 1 }
-			check_variable = { TOP_case_sequence^TOP_proposal_target = TOP_proposal_case_sequence }
-			check_variable = { TOP_case_phase^TOP_proposal_target > 0 }
-			check_variable = { TOP_case_phase^TOP_proposal_target < 4 }
-			OR = { check_variable = { TOP_case_collecting^TOP_proposal_target = 1 } has_political_power > 24 }
+			check_variable = { TOP_collecting_subjects^num < 3 }
 		}
 		log = "[GetDateText]: [This.GetName]: TOP_authorization.1.b executed"
 		custom_effect_tooltip = TOP_return_collection_tt
-		effect_tooltip = {
-			if = { limit = { check_variable = { TOP_case_collecting^TOP_proposal_target = 0 } } add_political_power = -25 }
-		}
 		hidden_effect = {
 			TOP_return_recorded_collection = yes
 			TOP_close_review_event = yes
@@ -147,14 +140,15 @@ country_event = {
 
 	option = {
 		name = TOP_authorization.3.b
+		trigger = { TOP_host_request_matches = yes }
 		log = "[GetDateText]: [This.GetName]: TOP_authorization.3.b executed"
 		custom_effect_tooltip = TT_IF_WE_DECLINE
 		effect_tooltip = { custom_effect_tooltip = TOP_host_refusal_tt }
-		hidden_effect = { set_temp_variable = { TOP_arg_consent = -1 } TOP_answer_host_request = yes }
+		hidden_effect = { set_temp_variable = { TOP_arg_posture = 5 } TOP_answer_host_request = yes }
 		ai_chance = {
 			base = 40
 			modifier = { add = 100 has_war_with = var:TOP_incoming_actor }
-			modifier = { add = 30 has_opinion = { target = event_target:TOP_host_request_sender value < 0 } }
+			modifier = { add = 30 has_opinion = { target = var:TOP_incoming_actor value < 0 } }
 			modifier = { factor = 0.25 is_in_faction_with = var:TOP_incoming_actor }
 		}
 	}
@@ -165,15 +159,41 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: TOP_authorization.3.a executed"
 		custom_effect_tooltip = TT_IF_WE_ACCEPT
 		effect_tooltip = { custom_effect_tooltip = TOP_host_consent_tt }
-		hidden_effect = { set_temp_variable = { TOP_arg_consent = 1 } TOP_answer_host_request = yes }
+		hidden_effect = { set_temp_variable = { TOP_arg_posture = 4 } TOP_answer_host_request = yes }
 		ai_chance = {
 			base = 10
 			modifier = { add = 70 is_in_faction_with = var:TOP_incoming_actor }
 			modifier = { add = 50 is_subject_of = var:TOP_incoming_actor }
-			modifier = { add = 30 has_opinion = { target = event_target:TOP_host_request_sender value > 49 } }
+			modifier = { add = 30 has_opinion = { target = var:TOP_incoming_actor value > 49 } }
 			modifier = { factor = 0 has_war_with = var:TOP_incoming_actor }
-			modifier = { factor = 0 has_opinion = { target = event_target:TOP_host_request_sender value < -49 } }
+			modifier = { factor = 0 has_opinion = { target = var:TOP_incoming_actor value < -49 } }
 		}
+	}
+
+	option = {
+		name = TOP_authorization.3.c
+		trigger = { TOP_host_request_matches = yes }
+		log = "[GetDateText]: [This.GetName]: TOP_authorization.3.c executed"
+		custom_effect_tooltip = TOP_host_tolerated_tt
+		hidden_effect = { set_temp_variable = { TOP_arg_posture = 3 } TOP_answer_host_request = yes }
+		ai_chance = { base = 30 modifier = { add = 25 has_opinion = { target = var:TOP_incoming_actor value > 24 } } }
+	}
+
+	option = {
+		name = TOP_authorization.3.f
+		trigger = { TOP_host_request_matches = yes }
+		log = "[GetDateText]: [This.GetName]: TOP_authorization.3.f executed"
+		custom_effect_tooltip = TOP_host_intelligence_only_tt
+		hidden_effect = { set_temp_variable = { TOP_arg_posture = 2 } TOP_answer_host_request = yes }
+		ai_chance = { base = 25 modifier = { add = 30 has_opinion = { target = var:TOP_incoming_actor value > 0 } } }
+	}
+
+	option = {
+		name = TOP_authorization.3.g
+		trigger = { TOP_host_request_matches = no }
+		log = "[GetDateText]: [This.GetName]: TOP_authorization.3.g executed"
+		TOP_clear_incoming_host_request = yes
+		ai_chance = { base = 100 }
 	}
 
 }
@@ -212,7 +232,6 @@ country_event = {
 		}
 		log = "[GetDateText]: [This.GetName]: TOP_authorization.4.a executed"
 		custom_effect_tooltip = TOP_mandate_approved_tt
-		effect_tooltip = { add_political_power = -50 }
 		hidden_effect = {
 			TOP_close_review_event = yes
 			TOP_approve_review = yes
@@ -234,7 +253,6 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: TOP_authorization.4.b executed"
 		custom_effect_tooltip = TOP_mandate_approved_tt
 		custom_effect_tooltip = TOP_unilateral_review_tt
-		effect_tooltip = { add_political_power = -50 }
 		hidden_effect = {
 			TOP_close_review_event = yes
 			TOP_approve_review = yes
@@ -246,6 +264,36 @@ country_event = {
 		}
 	}
 
+}
+
+country_event = {
+	id = TOP_authorization.5
+	title = TOP_authorization.5.t
+	desc = TOP_authorization.5.d
+	picture = GFX_USA_event_cia
+	is_triggered_only = yes
+
+	option = {
+		name = TOP_authorization.5.a
+		trigger = { TOP_review_can_confirm_leader_assassination = yes }
+		log = "[GetDateText]: [This.GetName]: TOP_authorization.5.a executed"
+		custom_effect_tooltip = TOP_assassination_confirmation_tt
+		hidden_effect = {
+			TOP_close_review_event = yes
+			TOP_confirm_leader_assassination = yes
+		}
+		ai_chance = { base = 0 }
+	}
+
+	option = {
+		name = TOP_authorization.5.b
+		log = "[GetDateText]: [This.GetName]: TOP_authorization.5.b executed"
+		hidden_effect = {
+			TOP_close_review_event = yes
+			TOP_cancel_review = yes
+		}
+		ai_chance = { base = 100 }
+	}
 }
 
 country_event = {

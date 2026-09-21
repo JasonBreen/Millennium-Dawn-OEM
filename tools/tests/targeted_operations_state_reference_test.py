@@ -46,8 +46,23 @@ STATE_GUARDS = (
     ),
     (
         "scripted_triggers/01_targeted_operations_triggers.txt",
-        "TOP_can_authorize",
-        "TOP_lead_state^TOP_selected",
+        "TOP_person_package_ready",
+        "TOP_lead_state^TOP_arg_target",
+    ),
+    (
+        "scripted_triggers/01_targeted_operations_triggers.txt",
+        "TOP_organization_package_ready",
+        "TOP_org_lead_state^TOP_group_target",
+    ),
+    (
+        "scripted_triggers/01_targeted_operations_triggers.txt",
+        "TOP_person_access_available",
+        "TOP_access_state",
+    ),
+    (
+        "scripted_triggers/01_targeted_operations_triggers.txt",
+        "TOP_facility_access_available",
+        "TOP_access_state",
     ),
     (
         "scripted_triggers/01_targeted_operations_triggers.txt",
@@ -56,7 +71,12 @@ STATE_GUARDS = (
     ),
     (
         "scripted_triggers/02_targeted_operations_authorization_triggers.txt",
-        "TOP_review_valid",
+        "TOP_person_review_valid",
+        "TOP_proposal_state",
+    ),
+    (
+        "scripted_triggers/07_targeted_operations_redesign.txt",
+        "TOP_organization_review_valid",
         "TOP_proposal_state",
     ),
     (
@@ -90,6 +110,96 @@ def _location_guards(statements, variable):
         elif isinstance(operand, list):
             found.extend(_location_guards(operand, variable))
     return found
+
+
+def _effect_text(path, name):
+    text = (ROOT / path).read_text(encoding="utf-8")
+    return _named_block(text, name)
+
+
+def test_nested_registry_location_selection_writes_back_to_country_scope():
+    registry = (
+        ROOT / "common/scripted_effects/01_targeted_operations_registry.txt"
+    ).read_text(encoding="utf-8")
+    for group in (1, 17):
+        choice = _named_block(registry, f"TOP_choose_location_{group}")
+        activation = _named_block(registry, f"TOP_activate_group_{group}")
+        assert "ROOT.TOP_activation_state = THIS" in choice
+        assert "set_temp_variable = { TOP_activation_state = THIS }" not in choice
+        assert "PREV.TOP_activation_host = controller" in activation
+
+
+def test_numeric_loop_selectors_write_results_to_the_owner_frame():
+    find_org = _effect_text(
+        "common/scripted_effects/00_targeted_operations_effects.txt",
+        "TOP_find_group_org",
+    )
+    country_tick = _effect_text(
+        "common/scripted_effects/00_targeted_operations_effects.txt",
+        "TOP_country_tick",
+    )
+    modern = _effect_text(
+        "common/scripted_effects/02_targeted_operations_authorization_effects.txt",
+        "TOP_modern_country_opportunity",
+    )
+    political = _effect_text(
+        "common/scripted_effects/03_targeted_operations_political_roster.txt",
+        "TOP_political_country_opportunities",
+    )
+    successor = _effect_text(
+        "common/scripted_effects/01_targeted_operations_world.txt",
+        "TOP_choose_successor",
+    )
+    visit = _effect_text(
+        "common/scripted_effects/05_targeted_operations_runtime.txt",
+        "TOP_visit_country_opportunities",
+    )
+    liaison = _effect_text(
+        "common/scripted_effects/09_targeted_operations_depth.txt",
+        "TOP_request_liaison",
+    )
+    linked = _effect_text(
+        "common/scripted_effects/09_targeted_operations_depth.txt",
+        "TOP_exploit_linked_targets",
+    )
+
+    assert "PREV.TOP_org_slot = top_find_i" in find_org
+    assert "PREV.TOP_new_dossiers_this_tick = 1" in country_tick
+    assert "PREV.TOP_modern_candidate = top_modern_target" in modern
+    assert "PREV.TOP_modern_best_score = TOP_modern_score" in modern
+    assert "PREV.TOP_political_candidate = top_political_person" in political
+    assert "PREV.TOP_political_lowest = TOP_political_score" in political
+    assert "PREV.TOP_candidate = top_generated_id" in successor
+    assert "global.TOP_state^PREV.TOP_predecessor" in successor
+    assert "PREV.TOP_visit_open_candidate = top_visit_person" in visit
+    assert "TOP_visit_trigger_state = PREV.TOP_visit_open_state" in visit
+    assert "PREV.TOP_liaison_pair_found = 1" in liaison
+    assert "PREV.TOP_liaison_pair_until^top_liaison_index" in liaison
+    assert "PREV.TOP_linked_first = top_linked_target" in linked
+    assert "PREV.TOP_linked_second = top_linked_target" in linked
+    assert linked.count("PREV.TOP_linked_best_score = TOP_linked_score") == 2
+
+
+def test_state_and_fifo_selectors_do_not_depend_on_loop_local_temporaries():
+    visit = _effect_text(
+        "common/scripted_effects/05_targeted_operations_runtime.txt",
+        "TOP_visit_country_opportunities",
+    )
+    oversight = _effect_text(
+        "common/scripted_effects/09_targeted_operations_depth.txt",
+        "TOP_dispatch_next_oversight",
+    )
+    transfer = _effect_text(
+        "common/scripted_effects/01_targeted_operations_world.txt",
+        "TOP_transfer_recorded_custody",
+    )
+
+    assert "ROOT.TOP_visit_open_state = THIS" in visit
+    assert "TOP_oversight_queue^0" in oversight
+    assert "for_each_loop" not in oversight
+    assert (
+        "global.TOP_custody_state^PREV.TOP_transfer_recipient_target = THIS" in transfer
+    )
 
 
 @pytest.mark.parametrize("entry", STATE_GUARDS)
@@ -139,6 +249,31 @@ def test_monthly_host_refresh_resolves_changed_state_controller(state):
     assert script.globals["TOP_host"][1] == 3
 
 
+@pytest.mark.parametrize("state", (ENCODED_STATE, 105))
+def test_monthly_organization_truth_tracks_the_recorded_state_controller(state):
+    script = TargetScript()
+    script.state(state, 3)
+    script.organization_truth(12, host=2, state=state)
+    script.stubs.add("TOP_activate_candidates")
+
+    script.run("TOP_global_monthly", 1)
+
+    assert script.globals["TOP_group_host"][12] == 3
+    assert script.globals["TOP_group_state"][12] in script.countries[3]["states"]
+
+
+def test_monthly_truth_clears_zero_state_hosts_without_opening_country_zero_scope():
+    script = TargetScript()
+    script.target(1, host=2, state=0)
+    script.organization_truth(12, host=2, state=0)
+    script.stubs.add("TOP_activate_candidates")
+
+    script.run("TOP_global_monthly", 1)
+
+    assert script.globals["TOP_host"][1] == 0
+    assert script.globals["TOP_group_host"][12] == 0
+
+
 @pytest.mark.parametrize("state", (ENCODED_STATE, 105, 0))
 @pytest.mark.parametrize("kind", (1, 2, 3))
 def test_facility_availability_keeps_building_and_missing_state_requirements(
@@ -174,9 +309,12 @@ def test_host_review_and_case_preserve_state_and_normal_cost(state, method):
     review.run("TOP_approve_review")
     assert review.case(1, "state") == state
     assert review.case(1, "consent") == 1
-    assert review.case(1, "phase") == (2 if method == 2 else 3)
+    assert review.case(1, "phase") == 2
     assert review.actor["TOP_authorized_state"] == state
     assert review.countries[1]["power"] == 150
+    assert not review.binding(method=method, state=state)
+    review.begin_operation()
+    assert review.case(1, "phase") == 3
     assert review.binding(method=method, state=state)
     review.run("TOP_approve_review")
     assert review.countries[1]["power"] == 150
@@ -213,6 +351,7 @@ def test_retired_encoded_native_binding_cannot_be_recycled():
     review = ReviewScript()
     review.move_target(1, ENCODED_STATE, 2)
     review.approve_unilateral()
+    review.begin_operation()
     assert review.binding(state=ENCODED_STATE)
     sequence = review.case(1, "sequence")
     review.call("TOP_close_case", TARGET=1, SEQUENCE=sequence)
@@ -220,10 +359,11 @@ def test_retired_encoded_native_binding_cannot_be_recycled():
         [20000 + ENCODED_STATE * 2 + 2]
     )
     review.approve_unilateral()
-    assert review.case(1, "phase") == 1
+    assert review.case(1, "phase") == 0
     assert not review.binding(state=ENCODED_STATE)
     assert review.countries[1]["power"] == 150
     review.approve_unilateral(method=1)
     assert review.case(1, "phase") == 2
+    review.begin_operation()
     assert review.binding(method=1, state=ENCODED_STATE)
     assert review.countries[1]["power"] == 100

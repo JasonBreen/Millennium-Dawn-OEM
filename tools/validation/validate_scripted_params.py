@@ -115,12 +115,27 @@ _SET_TEMP_RE = re.compile(
 )
 _CALL_RE = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*=\s*yes\b")
 _KW_OPEN_RE = re.compile(r"\b([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*\{")
+_CLOSE_BRACE_RE = re.compile(r"\}")
 
 
 _PARAM_TOKEN_RE = re.compile(r"\$[A-Za-z_]\w*\$")
 # A top-level definition may be indented: 00_peace_deal_triggers.txt indents
 # its own by two tabs. Depth decides what is a definition, not column.
 _DEF_OR_BRACE_RE = re.compile(r"([{}])|([A-Za-z_]\w*)\s*=\s*\{")
+
+_NORMALIZE_SET_TEMP_RE = re.compile(r"\bset_temp_variable\s*=\s*\{")
+_NORMALIZE_NAME_RE = re.compile(r"\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=")
+
+_CONTRACT_HEADER_RE = re.compile(r"^#\s*[Pp]arameters?\s*:")
+_CONTRACT_SEP_RE = re.compile(r"^[-=*]+$")
+_CONTRACT_STV_RE = re.compile(
+    r"set_temp_variable\s*=\s*\{\s*([A-Za-z][A-Za-z0-9_]*)\s*="
+)
+_CONTRACT_PLAIN_RE = re.compile(r"^[-\*]?\s*([A-Za-z][A-Za-z0-9_]*)\s*[-:]")
+_CONTRACT_DEF_RE = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)\s*=\s*\{")
+
+_TAG_FILE_RE = re.compile(r'^\s*([A-Z0-9_]{3})\s*=\s*"')
+_ALIAS_FILE_RE = re.compile(r"^\s*([A-Za-z0-9_]{3})\s*=\s*\{")
 
 
 def _block_end(text: str, open_brace_index: int) -> int:
@@ -240,22 +255,20 @@ def _load_valid_country_tags(mod_path: str) -> "frozenset[str]":
 
     def _build() -> "frozenset[str]":
         valid: Set[str] = set()
-        tag_re = re.compile(r'^\s*([A-Z0-9_]{3})\s*=\s*"')
         for fp in tag_files:
             try:
                 with open(fp, "r", encoding="utf-8-sig") as fh:
                     for line in fh:
-                        m = tag_re.match(line)
+                        m = _TAG_FILE_RE.match(line)
                         if m:
                             valid.add(m.group(1))
             except Exception:
                 continue
-        alias_re = re.compile(r"^\s*([A-Za-z0-9_]{3})\s*=\s*\{")
         for fp in alias_files:
             try:
                 with open(fp, "r", encoding="utf-8-sig") as fh:
                     for line in fh:
-                        m = alias_re.match(line)
+                        m = _ALIAS_FILE_RE.match(line)
                         if m:
                             valid.add(m.group(1))
             except Exception:
@@ -317,7 +330,7 @@ def _parse_effect_contracts_from_file(
         stripped = lines[i].strip()
 
         # Look for "# Parameters:" or "# Parameter:" comment block
-        if re.match(r"^#\s*[Pp]arameters?\s*:", stripped):
+        if _CONTRACT_HEADER_RE.match(stripped):
             params_required: List[str] = []
             params_optional: List[str] = []
             j = i + 1
@@ -327,14 +340,12 @@ def _parse_effect_contracts_from_file(
                 if not pline.startswith("#"):
                     break
                 inner = pline.lstrip("#").strip()
-                if not inner or re.match(r"^[-=*]+$", inner):
+                if not inner or _CONTRACT_SEP_RE.match(inner):
                     j += 1
                     continue
 
                 # "# set_temp_variable = { param_name = ... }"
-                stv_m = re.search(
-                    r"set_temp_variable\s*=\s*\{\s*([A-Za-z][A-Za-z0-9_]*)\s*=", inner
-                )
+                stv_m = _CONTRACT_STV_RE.search(inner)
                 if stv_m:
                     pname = stv_m.group(1)
                     if "optional" in inner.lower():
@@ -345,7 +356,7 @@ def _parse_effect_contracts_from_file(
                     continue
 
                 # "# - param_name: ..." or "# - param_name - ..."
-                plain_m = re.match(r"^[-\*]?\s*([A-Za-z][A-Za-z0-9_]*)\s*[-:]", inner)
+                plain_m = _CONTRACT_PLAIN_RE.match(inner)
                 if plain_m:
                     pname = plain_m.group(1)
                     skip_words = {
@@ -377,7 +388,7 @@ def _parse_effect_contracts_from_file(
             while k < len(lines) and not lines[k].strip():
                 k += 1
             if k < len(lines):
-                def_m = re.match(r"^([A-Za-z][A-Za-z0-9_]*)\s*=\s*\{", lines[k].strip())
+                def_m = _CONTRACT_DEF_RE.match(lines[k].strip())
                 if def_m and (params_required or params_optional):
                     eff_name = def_m.group(1)
                     if eff_name not in HARDCODED_CONTRACTS:
@@ -396,13 +407,10 @@ def _normalize_multiline_set_temp(text: str) -> str:
     """Collapse multi-line set_temp_variable blocks without changing line numbers."""
     normalized = []
     cursor = 0
-    pattern = re.compile(r"\bset_temp_variable\s*=\s*\{")
 
-    while match := pattern.search(text, cursor):
+    while match := _NORMALIZE_SET_TEMP_RE.search(text, cursor):
         block_start = match.end() - 1
-        name_match = re.match(
-            r"\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=", text[block_start + 1 :]
-        )
+        name_match = _NORMALIZE_NAME_RE.match(text, block_start + 1)
         if not name_match:
             normalized.append(text[cursor : match.end()])
             cursor = match.end()
@@ -479,7 +487,7 @@ def _tokenize(text: str) -> List[Tuple[str, int, str, str]]:
                     ),
                 )
             )
-        for m in re.finditer(r"\}", raw):
+        for m in _CLOSE_BRACE_RE.finditer(raw):
             line_tokens.append((m.start(), 0, ("close", lineno, "", "")))
         for m in _CALL_RE.finditer(raw):
             line_tokens.append((m.start(), 0, ("call", lineno, m.group(1), "")))

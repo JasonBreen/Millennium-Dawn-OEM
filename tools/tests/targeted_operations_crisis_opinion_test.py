@@ -46,6 +46,10 @@ class CrisisOpinionScript(TargetScript):
         )
         for actor in (1, 2, 3):
             self.countries[actor]["vars"]["TOP_crisis_token"] = 7
+        self.countries[3]["vars"].update(
+            TOP_crisis_participant_pending=1,
+            TOP_crisis_participant_token=7,
+        )
 
     def condition_statement(self, statement, identifier):
         if statement[0] == "subtract_from_temp_variable":
@@ -145,7 +149,7 @@ def test_crisis_option_changes_only_the_respondents_opinion(
 def test_invalid_crisis_does_not_apply_opinions_or_costs(effect, invalid):
     script = CrisisOpinionScript()
     if invalid == "disabled":
-        script.globals["TOP_rule_enabled"] = 0
+        script.globals["TOP_rule_mode"] = 0
     elif invalid == "stale":
         script.countries[2]["vars"]["TOP_crisis_token"] = 6
     else:
@@ -165,3 +169,15 @@ def test_sanctions_require_the_recorded_victim():
 
     assert not script.opinions
     assert not script.changes
+
+
+def test_crisis_with_annexed_principal_cleans_up_instead_of_repeating_ultimatum():
+    script = CrisisOpinionScript()
+    script.globals.update(TOP_crisis_tension=100, TOP_crisis_until=99)
+    script.countries[2]["exists"] = False
+
+    script.run("TOP_process_crisis", 1)
+
+    assert script.external["TOP_cleanup_crisis", 1] == 1
+    assert not script.opinions
+    assert not script.events
