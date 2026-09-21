@@ -1,3 +1,4 @@
+import functools
 import json
 import re
 import sys
@@ -344,14 +345,37 @@ def _extract_block(text, brace_index):
     raise AssertionError("unbalanced scripted block")
 
 
+@functools.lru_cache(maxsize=128)
+def _get_named_block_pattern(name):
+    return re.compile(rf"(?m)^[ \t]*{re.escape(name)}\s*=\s*\{{")
+
+
+@functools.lru_cache(maxsize=128)
+def _get_event_block_pattern(event_id):
+    return re.compile(rf"(?m)^\tid\s*=\s*{re.escape(event_id)}$")
+
+
+_STATE_DELTAS_PATTERN = re.compile(
+    r"add_to_variable\s*=\s*\{\s*"
+    r"(FRA_corporate_[A-Za-z0-9_]+)\s*=\s*(-?\d+(?:\.\d+)?)\s*\}"
+)
+_EFFECT_DEF_PATTERN = re.compile(r"(?m)^([A-Za-z0-9_]+)\s*=\s*\{")
+_RECONSTRUCT_CALL_PATTERN = re.compile(
+    r"\b(FRA_corporate_systems_[A-Za-z0-9_]+)\s*=\s*yes"
+)
+_CAPSTONE_FLAG_PATTERN = re.compile(
+    r"set_country_flag\s*=\s*FRA_corporate_systems_[A-Za-z0-9_]*capstone"
+)
+
+
 def _named_block(text, name):
-    match = re.search(rf"(?m)^[ \t]*{re.escape(name)}\s*=\s*\{{", text)
+    match = _get_named_block_pattern(name).search(text)
     assert match, name
     return _extract_block(text, text.index("{", match.start()))
 
 
 def _child_blocks(text, name):
-    pattern = re.compile(rf"(?m)^[ \t]*{re.escape(name)}\s*=\s*\{{")
+    pattern = _get_named_block_pattern(name)
     return [
         _extract_block(text, text.index("{", match.start()))
         for match in pattern.finditer(text)
@@ -359,7 +383,7 @@ def _child_blocks(text, name):
 
 
 def _event_block(text, event_id):
-    match = re.search(rf"(?m)^\tid\s*=\s*{re.escape(event_id)}$", text)
+    match = _get_event_block_pattern(event_id).search(text)
     assert match, event_id
     start = text.rfind("country_event = {", 0, match.start())
     assert start >= 0
@@ -367,11 +391,10 @@ def _event_block(text, event_id):
 
 
 def _state_deltas(block):
-    pattern = re.compile(
-        r"add_to_variable\s*=\s*\{\s*"
-        r"(FRA_corporate_[A-Za-z0-9_]+)\s*=\s*(-?\d+(?:\.\d+)?)\s*\}"
-    )
-    return {variable: Decimal(value) for variable, value in pattern.findall(block)}
+    return {
+        variable: Decimal(value)
+        for variable, value in _STATE_DELTAS_PATTERN.findall(block)
+    }
 
 
 def _expected_deltas(short_deltas):
@@ -381,7 +404,7 @@ def _expected_deltas(short_deltas):
 def _effect_definitions(text):
     return {
         match.group(1): _extract_block(text, text.index("{", match.start()))
-        for match in re.finditer(r"(?m)^([A-Za-z0-9_]+)\s*=\s*\{", text)
+        for match in _EFFECT_DEF_PATTERN.finditer(text)
     }
 
 
@@ -483,9 +506,7 @@ def test_reconstruction_is_reward_free_ordered_and_terminal():
             continue
         reachable.add(name)
         body = definitions[name]
-        for called in re.findall(
-            r"\b(FRA_corporate_systems_[A-Za-z0-9_]+)\s*=\s*yes", body
-        ):
+        for called in _RECONSTRUCT_CALL_PATTERN.findall(body):
             if called in definitions:
                 pending.append(called)
 
@@ -928,10 +949,7 @@ def test_startup_modes_monthly_recovery_and_dashboard_state_are_registered():
         assert "picture = " in block
         assert "allowed =" not in block
     effects = EFFECTS_PATH.read_text(encoding="utf-8")
-    assert not re.search(
-        r"set_country_flag\s*=\s*FRA_corporate_systems_[A-Za-z0-9_]*capstone",
-        effects,
-    )
+    assert not _CAPSTONE_FLAG_PATTERN.search(effects)
 
 
 def test_contract_callers_and_scenarios_match_the_live_scripts():
