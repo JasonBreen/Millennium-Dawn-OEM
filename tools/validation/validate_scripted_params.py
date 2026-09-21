@@ -392,17 +392,18 @@ def _parse_effect_contracts_from_file(
     return contracts
 
 
+_MULTILINE_SET_TEMP_RE = re.compile(r"\bset_temp_variable\s*=\s*\{")
+_VAR_NAME_RE = re.compile(r"\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=")
+
+
 def _normalize_multiline_set_temp(text: str) -> str:
     """Collapse multi-line set_temp_variable blocks without changing line numbers."""
     normalized = []
     cursor = 0
-    pattern = re.compile(r"\bset_temp_variable\s*=\s*\{")
 
-    while match := pattern.search(text, cursor):
+    while match := _MULTILINE_SET_TEMP_RE.search(text, cursor):
         block_start = match.end() - 1
-        name_match = re.match(
-            r"\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=", text[block_start + 1 :]
-        )
+        name_match = _VAR_NAME_RE.match(text, block_start + 1)
         if not name_match:
             normalized.append(text[cursor : match.end()])
             cursor = match.end()
