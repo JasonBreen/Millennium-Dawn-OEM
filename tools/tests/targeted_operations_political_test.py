@@ -454,6 +454,20 @@ def test_foreign_civilian_mandate_requires_live_war_and_cannot_override_capture(
     assert not game.trigger("TOP_authored_civilian_mandate_valid", 141, "SOV")
 
 
+def test_full_sandbox_civilian_gate_is_reachable():
+    source = (
+        ROOT / "common/scripted_triggers/01_targeted_operations_triggers.txt"
+    ).read_text(encoding="utf-8")
+    block = _named_block(source, "TOP_person_operational_eligible")
+    setter = "set_temp_variable = { TOP_civilian_valid_target = TOP_target }"
+    # A setter always evaluates true, so inside the OR it satisfies the branch
+    # on its own and the mandate guard is never reached.
+    assert block.index(setter) < block.index("has_civil_war = yes")
+    assert block.index("has_civil_war = yes") < block.index(
+        "TOP_authored_civilian_mandate_valid = yes"
+    )
+
+
 def test_wartime_opportunities_use_one_serving_person_and_a_country_cooldown():
     game = PoliticalScript()
     game.countries[game.tags["SOV"]]["leader"] = "Vladimir Putin"
