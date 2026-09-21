@@ -865,7 +865,7 @@ Bugfix:
 - [UKR] Added a support ships for ukranian navy
 - [ISR] Added submarine production for Israel (INS Tkuma)
 - [CZE] Fixed Petr Pavel's political branch not being available after Pavel retires from the army
-- [SOV] Renamed misspelled SUB_subject_rebeliion_flag to SUB_subject_rebellion_flag across all call sites; save-incompatible. Pre-existing saves with the old flag will lose their rebellion-blocking state, allowing affected subjects to rebel again
+- [SOV] Renamed misspelled SUB_subject_rebeliion_flag to SUB_subject_rebellion_flag across all call sites; save-incompatible (pre-existing saves with the old flag will lose their rebellion-blocking state, allowing affected subjects to rebel again)
 - [SOV] Initialized SUB_ekb_level alongside SUB_moscow_level in SOV history so subject city level checks return correct values from game start
 - [DEN] Fixed gulf exploitation income missing the \*0.0003 multiplier, which made the income contribution effectively zero
 - [WAA] Fixed narcotics income missing original_tag = WAA guard, which could grant income to any country that briefly held the WAA_Narcotics_Producer idea
@@ -1236,7 +1236,7 @@ Localization:
 - [JAP] Fixed depopulation national spirit descriptions displaying "§Y2 4 years§!" instead of "§Y2 to 4 years§!" across five national spirit desc keys
 - Fixed [From.GetXxx] scope keyword capitalization to [FROM.GetXxx] throughout the events localisation file
 - Refreshed landmark descriptions for the 2000s setting and consolidated all landmark loc into a single file for easier maintenance
-- Fixed artillery tech tier labels. artillery_4 was "ART 2035" at the 2045 row and artillery_5 was "ART 2045" at the 2065 row; relabelled to match the actual 20-year tech unlock cadence (Issue #1511)
+- Fixed artillery tech tier labels: artillery_4 was "ART 2035" at the 2045 row and artillery_5 was "ART 2045" at the 2065 row; relabelled to match the actual 20-year tech unlock cadence (Issue #1511)
 - Fixed nine broken dynamic-modifier tooltip substitutions in MD_dm_modifiers (mobilization_laws, trade_laws, economy, political_advisor, tank/naval/aircraft/materiel manufacturer, and industrial concern cost factors) that referenced non-existent loc tokens and spammed the error log (Issue #1504)
 - Added display strings and tooltip helpers for the elite_forces_doctrine_cost_factor and equipment_doctrine_cost_factor modifiers so they render with the army doctrine cost icon in idea and dynamic_modifier tooltips, and removed the orphan special_forces_doctrine_cost_factor_tt entry that pointed at a non-existent modifier (Issue #662)
 - Removed "NATO" word from Polish UPR path which gets Ukraine closer to Poland OR NATO. It looked weird when NATO didn't exist or Poland wasn't part of it.
