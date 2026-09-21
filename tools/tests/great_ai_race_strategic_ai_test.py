@@ -1027,6 +1027,31 @@ def test_refinery_strategy_uses_prepare_or_recovery_weight_and_aborts_for_humans
     assert not any(race.condition(entry["enable"], 1) for entry in refinery)
 
 
+@pytest.mark.parametrize("stage,weight", [(0, "25"), (1, "50")])
+def test_network_strategy_uses_prepare_or_recovery_weight_and_aborts_for_humans(
+    stage, weight
+):
+    race, country = _planner(stage=stage, year=2019)
+    _capacity(race, country, 1, [1, 0.5, 1, 1, 1, 1])
+    country["war"] = bool(stage)
+    race.run("ai_race_ai_update_plan", 1)
+    assert country["vars"]["ai_race_ai_priority"] == 2
+    strategies = _parse_race_script(AI_STRATEGIES.read_text(encoding="utf-8"))
+    network = [
+        dict((key, value) for key, _, value in strategies[name])
+        for name in ("ai_race_ai_prepare_network", "ai_race_ai_recover_network")
+    ]
+    active = [entry for entry in network if race.condition(entry["enable"], 1)]
+    assert len(active) == 1
+    assert dict((key, value) for key, _, value in active[0]["ai_strategy"]) == {
+        "type": "build_building",
+        "id": "internet_station",
+        "value": weight,
+    }
+    country["ai"] = False
+    assert not any(race.condition(entry["enable"], 1) for entry in network)
+
+
 def test_wartime_support_research_skips_civilian_expansion_for_paid_material_recovery():
     race, country = _planner(stage=1, year=2019)
     _capacity(race, country, 1, [0.25, 0.25, 1.5, 0.5, 1, 1])
