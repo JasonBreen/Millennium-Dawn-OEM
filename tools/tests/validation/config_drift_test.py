@@ -244,6 +244,7 @@ def test_tools_checkout_exposes_consumed_configuration():
         ".github/workflows/pr-cache-cleanup.yml",
         ".github/workflows/pr-housekeeping.yml",
         ".github/workflows/issue-triage.yml",
+        "common/technology_tags",
         "common/scripted_guis/01_targeted_operations_gui.txt",
         "gfx/leaders/generic_politicians/latin_female_001.dds",
         "docs/src/content/resources/developer-setup.md",
@@ -273,6 +274,7 @@ def test_unit_checkouts_include_required_content_sources(
     for required in (
         ".github/workflows/docs-quality.yml",
         ".github/workflows/tools-validation.yml",
+        "common/technology_tags",
         "common/scripted_guis/00_missiles_scripted_guis.txt",
         "common/scripted_guis/01_targeted_operations_gui.txt",
         "common/scripted_guis/03_targeted_operations_security.txt",
