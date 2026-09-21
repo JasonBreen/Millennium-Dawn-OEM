@@ -1,3 +1,13 @@
+TOP_visit_pressure_allows_travel = {
+	set_temp_variable = { TOP_visit_effective_pressure = global.TOP_pressure^TOP_visit_trigger_target }
+	set_temp_variable = { TOP_visit_pressure_group = global.TOP_affiliation^TOP_visit_trigger_target }
+	if = {
+		limit = { check_variable = { TOP_visit_pressure_group > 0 } check_variable = { TOP_visit_pressure_group < global.TOP_group_pressure^num } }
+		add_to_temp_variable = { TOP_visit_effective_pressure = { value = global.TOP_group_pressure^TOP_visit_pressure_group multiply = 0.5 } }
+	}
+	check_variable = { TOP_visit_effective_pressure < 75 }
+}
+
 TOP_visit_can_invite = {
 	TOP_enabled = yes
 	check_variable = { TOP_visit_trigger_target > 0 }
@@ -12,6 +22,7 @@ TOP_visit_can_invite = {
 	check_variable = { global.TOP_status^TOP_visit_trigger_target = 1 }
 	check_variable = { global.TOP_political^TOP_visit_trigger_target = 1 }
 	check_variable = { global.TOP_civilian^TOP_visit_trigger_target = 0 }
+	TOP_visit_pressure_allows_travel = yes
 	set_temp_variable = { TOP_role_target = TOP_visit_trigger_target }
 	TOP_authored_role_eligible = yes
 	check_variable = { global.TOP_visit_status^TOP_visit_trigger_target = 0 }
@@ -29,6 +40,7 @@ TOP_visit_can_arrive = {
 	check_variable = { global.TOP_visit_host^TOP_visit_trigger_target = THIS }
 	check_variable = { global.TOP_visit_state^TOP_visit_trigger_target = TOP_visit_trigger_state }
 	check_variable = { global.TOP_status^TOP_visit_trigger_target = 1 }
+	TOP_visit_pressure_allows_travel = yes
 	set_temp_variable = { TOP_role_target = TOP_visit_trigger_target }
 	TOP_authored_role_eligible = yes
 	var:TOP_visit_trigger_state = { is_controlled_by = PREV }
@@ -51,6 +63,7 @@ TOP_visit_planned_runtime_valid = {
 	check_variable = { global.TOP_visit_host^TOP_visit_trigger_target = THIS }
 	check_variable = { global.TOP_visit_state^TOP_visit_trigger_target = TOP_visit_trigger_state }
 	check_variable = { global.TOP_status^TOP_visit_trigger_target = 1 }
+	TOP_visit_pressure_allows_travel = yes
 	set_temp_variable = { TOP_role_target = TOP_visit_trigger_target }
 	TOP_authored_role_eligible = yes
 	var:TOP_visit_trigger_state = { is_controlled_by = PREV }
@@ -240,6 +253,8 @@ TOP_crisis_actor_event_valid = {
 
 TOP_crisis_host_event_valid = {
 	TOP_crisis_event_valid = yes
+	check_variable = { TOP_crisis_participant_pending = 1 }
+	check_variable = { TOP_crisis_participant_token = global.TOP_crisis_token }
 	check_variable = { global.TOP_crisis_host = THIS }
 	NOT = { check_variable = { global.TOP_crisis_host = global.TOP_crisis_actor } }
 	NOT = { check_variable = { global.TOP_crisis_host = global.TOP_crisis_protection } }
@@ -247,6 +262,8 @@ TOP_crisis_host_event_valid = {
 
 TOP_crisis_faction_event_valid = {
 	TOP_crisis_event_valid = yes
+	check_variable = { TOP_crisis_participant_pending = 1 }
+	check_variable = { TOP_crisis_participant_token = global.TOP_crisis_token }
 	OR = {
 		check_variable = { global.TOP_crisis_actor_faction_leader = THIS }
 		check_variable = { global.TOP_crisis_protection_faction_leader = THIS }
@@ -255,6 +272,13 @@ TOP_crisis_faction_event_valid = {
 	NOT = { check_variable = { global.TOP_crisis_actor = THIS } }
 	NOT = { check_variable = { global.TOP_crisis_protection = THIS } }
 	NOT = { check_variable = { global.TOP_crisis_host = THIS } }
+}
+
+TOP_crisis_principals_valid = {
+	check_variable = { global.TOP_crisis_actor > 0 }
+	check_variable = { global.TOP_crisis_protection > 0 }
+	var:global.TOP_crisis_actor = { exists = yes }
+	var:global.TOP_crisis_protection = { exists = yes }
 }
 
 TOP_crisis_tension_settlement = {

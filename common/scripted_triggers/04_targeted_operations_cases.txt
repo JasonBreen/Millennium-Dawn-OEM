@@ -43,13 +43,12 @@ TOP_case_binding_valid = {
 	check_variable = { TOP_case_phase^TOP_arg_target = 3 }
 	check_variable = { TOP_case_method^TOP_arg_target = TOP_arg_method }
 	check_variable = { TOP_case_state^TOP_arg_target = TOP_arg_state }
-	check_variable = { var = TOP_case_until^TOP_arg_target value = global.TOP_clock compare = greater_than_or_equals }
 	check_variable = { TOP_operation_subject_kind = 1 }
 	check_variable = { TOP_operation_subject_id = TOP_arg_target }
 	check_variable = { TOP_operation_sequence = TOP_case_sequence^TOP_arg_target }
 	check_variable = { global.TOP_status^TOP_arg_target = 1 }
 	set_temp_variable = { TOP_expected_host = TOP_case_host^TOP_arg_target }
-	var:TOP_case_state^TOP_arg_target = { is_controlled_by = var:TOP_expected_host }
+	var:TOP_case_state^TOP_arg_target = { is_controlled_by = var:PREV.TOP_expected_host }
 	set_temp_variable = { TOP_role_target = TOP_arg_target }
 	TOP_authored_role_eligible = yes
 	set_temp_variable = { TOP_target = TOP_arg_target }
@@ -75,7 +74,7 @@ TOP_can_begin_person_operation = {
 	set_temp_variable = { TOP_access_state = TOP_case_state^TOP_arg_target }
 	set_temp_variable = { TOP_access_host = TOP_case_host^TOP_arg_target }
 	TOP_person_access_available = yes
-	var:TOP_case_state^TOP_arg_target = { is_controlled_by = var:TOP_access_host }
+	var:TOP_case_state^TOP_arg_target = { is_controlled_by = var:PREV.TOP_access_host }
 	if = {
 		limit = { check_variable = { TOP_case_method^TOP_arg_target = 5 } }
 		check_variable = { TOP_case_host_posture^TOP_arg_target = 4 }
@@ -97,4 +96,15 @@ TOP_can_revoke_case = {
 # block of its own.
 TOP_selected_role_and_host_locked = {
 	always = no
+}
+# Reads TOP_target, TOP_case_result_context and TOP_case_result_sequence.
+TOP_case_result_binding_valid = {
+	check_variable = { TOP_case_result_context = 1 }
+	check_variable = { TOP_target > 0 }
+	check_variable = { TOP_target < global.TOP_registry_capacity }
+	check_variable = { TOP_authorized_target = TOP_target }
+	check_variable = { TOP_case_phase^TOP_target > 0 }
+	check_variable = { TOP_case_sequence^TOP_target = TOP_case_result_sequence }
+	check_variable = { TOP_case_method^TOP_target = TOP_authorized_method }
+	check_variable = { TOP_case_state^TOP_target = TOP_authorized_state }
 }

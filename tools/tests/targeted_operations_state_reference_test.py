@@ -112,6 +112,96 @@ def _location_guards(statements, variable):
     return found
 
 
+def _effect_text(path, name):
+    text = (ROOT / path).read_text(encoding="utf-8")
+    return _named_block(text, name)
+
+
+def test_nested_registry_location_selection_writes_back_to_country_scope():
+    registry = (
+        ROOT / "common/scripted_effects/01_targeted_operations_registry.txt"
+    ).read_text(encoding="utf-8")
+    for group in (1, 17):
+        choice = _named_block(registry, f"TOP_choose_location_{group}")
+        activation = _named_block(registry, f"TOP_activate_group_{group}")
+        assert "ROOT.TOP_activation_state = THIS" in choice
+        assert "set_temp_variable = { TOP_activation_state = THIS }" not in choice
+        assert "PREV.TOP_activation_host = controller" in activation
+
+
+def test_numeric_loop_selectors_write_results_to_the_owner_frame():
+    find_org = _effect_text(
+        "common/scripted_effects/00_targeted_operations_effects.txt",
+        "TOP_find_group_org",
+    )
+    country_tick = _effect_text(
+        "common/scripted_effects/00_targeted_operations_effects.txt",
+        "TOP_country_tick",
+    )
+    modern = _effect_text(
+        "common/scripted_effects/02_targeted_operations_authorization_effects.txt",
+        "TOP_modern_country_opportunity",
+    )
+    political = _effect_text(
+        "common/scripted_effects/03_targeted_operations_political_roster.txt",
+        "TOP_political_country_opportunities",
+    )
+    successor = _effect_text(
+        "common/scripted_effects/01_targeted_operations_world.txt",
+        "TOP_choose_successor",
+    )
+    visit = _effect_text(
+        "common/scripted_effects/05_targeted_operations_runtime.txt",
+        "TOP_visit_country_opportunities",
+    )
+    liaison = _effect_text(
+        "common/scripted_effects/09_targeted_operations_depth.txt",
+        "TOP_request_liaison",
+    )
+    linked = _effect_text(
+        "common/scripted_effects/09_targeted_operations_depth.txt",
+        "TOP_exploit_linked_targets",
+    )
+
+    assert "PREV.TOP_org_slot = top_find_i" in find_org
+    assert "PREV.TOP_new_dossiers_this_tick = 1" in country_tick
+    assert "PREV.TOP_modern_candidate = top_modern_target" in modern
+    assert "PREV.TOP_modern_best_score = TOP_modern_score" in modern
+    assert "PREV.TOP_political_candidate = top_political_person" in political
+    assert "PREV.TOP_political_lowest = TOP_political_score" in political
+    assert "PREV.TOP_candidate = top_generated_id" in successor
+    assert "global.TOP_state^PREV.TOP_predecessor" in successor
+    assert "PREV.TOP_visit_open_candidate = top_visit_person" in visit
+    assert "TOP_visit_trigger_state = PREV.TOP_visit_open_state" in visit
+    assert "PREV.TOP_liaison_pair_found = 1" in liaison
+    assert "PREV.TOP_liaison_pair_until^top_liaison_index" in liaison
+    assert "PREV.TOP_linked_first = top_linked_target" in linked
+    assert "PREV.TOP_linked_second = top_linked_target" in linked
+    assert linked.count("PREV.TOP_linked_best_score = TOP_linked_score") == 2
+
+
+def test_state_and_fifo_selectors_do_not_depend_on_loop_local_temporaries():
+    visit = _effect_text(
+        "common/scripted_effects/05_targeted_operations_runtime.txt",
+        "TOP_visit_country_opportunities",
+    )
+    oversight = _effect_text(
+        "common/scripted_effects/09_targeted_operations_depth.txt",
+        "TOP_dispatch_next_oversight",
+    )
+    transfer = _effect_text(
+        "common/scripted_effects/01_targeted_operations_world.txt",
+        "TOP_transfer_recorded_custody",
+    )
+
+    assert "ROOT.TOP_visit_open_state = THIS" in visit
+    assert "TOP_oversight_queue^0" in oversight
+    assert "for_each_loop" not in oversight
+    assert (
+        "global.TOP_custody_state^PREV.TOP_transfer_recipient_target = THIS" in transfer
+    )
+
+
 @pytest.mark.parametrize("entry", STATE_GUARDS)
 @pytest.mark.parametrize("state", (ENCODED_STATE, 101, 0))
 def test_location_presence_guards_accept_nonzero_state_references(entry, state):
@@ -157,6 +247,39 @@ def test_monthly_host_refresh_resolves_changed_state_controller(state):
     script.run("TOP_global_monthly", 1)
     assert script.globals["TOP_state"][1] == state
     assert script.globals["TOP_host"][1] == 3
+
+
+@pytest.mark.parametrize("state", (ENCODED_STATE, 105))
+def test_monthly_organization_truth_tracks_the_recorded_state_controller(state):
+    script = TargetScript()
+    script.state(state, 3)
+    script.globals["TOP_group_created"][12] = 1
+    script.globals["TOP_group_window"][12] = 1
+    script.globals["TOP_group_destroyed"][12] = 0
+    script.globals["TOP_group_host"][12] = 2
+    script.globals["TOP_group_state"][12] = state
+    script.stubs.add("TOP_activate_candidates")
+
+    script.run("TOP_global_monthly", 1)
+
+    assert script.globals["TOP_group_host"][12] == 3
+    assert script.globals["TOP_group_state"][12] in script.countries[3]["states"]
+
+
+def test_monthly_truth_clears_zero_state_hosts_without_opening_country_zero_scope():
+    script = TargetScript()
+    script.target(1, host=2, state=0)
+    script.globals["TOP_group_created"][12] = 1
+    script.globals["TOP_group_window"][12] = 1
+    script.globals["TOP_group_destroyed"][12] = 0
+    script.globals["TOP_group_host"][12] = 2
+    script.globals["TOP_group_state"][12] = 0
+    script.stubs.add("TOP_activate_candidates")
+
+    script.run("TOP_global_monthly", 1)
+
+    assert script.globals["TOP_host"][1] == 0
+    assert script.globals["TOP_group_host"][12] == 0
 
 
 @pytest.mark.parametrize("state", (ENCODED_STATE, 105, 0))

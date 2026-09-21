@@ -148,7 +148,7 @@ country_event = {
 		ai_chance = {
 			base = 40
 			modifier = { add = 100 has_war_with = var:TOP_incoming_actor }
-			modifier = { add = 30 has_opinion = { target = event_target:TOP_host_request_sender value < 0 } }
+			modifier = { add = 30 has_opinion = { target = var:TOP_incoming_actor value < 0 } }
 			modifier = { factor = 0.25 is_in_faction_with = var:TOP_incoming_actor }
 		}
 	}
@@ -164,9 +164,9 @@ country_event = {
 			base = 10
 			modifier = { add = 70 is_in_faction_with = var:TOP_incoming_actor }
 			modifier = { add = 50 is_subject_of = var:TOP_incoming_actor }
-			modifier = { add = 30 has_opinion = { target = event_target:TOP_host_request_sender value > 49 } }
+			modifier = { add = 30 has_opinion = { target = var:TOP_incoming_actor value > 49 } }
 			modifier = { factor = 0 has_war_with = var:TOP_incoming_actor }
-			modifier = { factor = 0 has_opinion = { target = event_target:TOP_host_request_sender value < -49 } }
+			modifier = { factor = 0 has_opinion = { target = var:TOP_incoming_actor value < -49 } }
 		}
 	}
 
@@ -176,7 +176,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: TOP_authorization.3.c executed"
 		custom_effect_tooltip = TOP_host_tolerated_tt
 		hidden_effect = { set_temp_variable = { TOP_arg_posture = 3 } TOP_answer_host_request = yes }
-		ai_chance = { base = 30 modifier = { add = 25 has_opinion = { target = event_target:TOP_host_request_sender value > 24 } } }
+		ai_chance = { base = 30 modifier = { add = 25 has_opinion = { target = var:TOP_incoming_actor value > 24 } } }
 	}
 
 	option = {
@@ -185,7 +185,15 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: TOP_authorization.3.f executed"
 		custom_effect_tooltip = TOP_host_intelligence_only_tt
 		hidden_effect = { set_temp_variable = { TOP_arg_posture = 2 } TOP_answer_host_request = yes }
-		ai_chance = { base = 25 modifier = { add = 30 has_opinion = { target = event_target:TOP_host_request_sender value > 0 } } }
+		ai_chance = { base = 25 modifier = { add = 30 has_opinion = { target = var:TOP_incoming_actor value > 0 } } }
+	}
+
+	option = {
+		name = TOP_authorization.3.g
+		trigger = { TOP_host_request_matches = no }
+		log = "[GetDateText]: [This.GetName]: TOP_authorization.3.g executed"
+		TOP_clear_incoming_host_request = yes
+		ai_chance = { base = 100 }
 	}
 
 }
@@ -267,7 +275,7 @@ country_event = {
 
 	option = {
 		name = TOP_authorization.5.a
-		trigger = { check_variable = { TOP_proposal_stage = 5 } TOP_review_is_leader_assassination = yes TOP_review_valid = yes }
+		trigger = { TOP_review_can_confirm_leader_assassination = yes }
 		log = "[GetDateText]: [This.GetName]: TOP_authorization.5.a executed"
 		custom_effect_tooltip = TOP_assassination_confirmation_tt
 		hidden_effect = {

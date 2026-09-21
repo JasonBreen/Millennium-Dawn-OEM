@@ -42,7 +42,10 @@ def test_country_case_arrays_use_registry_capacity_at_startup():
         for name, _, operand in script.effects["TOP_initialize_cases"]
         if name == "resize_array"
     ]
-    assert len(case_arrays) == len(set(case_arrays)) == 36
+    assert len(case_arrays) == len(set(case_arrays)) == 39
+    assert "TOP_case_native_prepared" in case_arrays
+    assert "TOP_case_native_success_bonus" in case_arrays
+    assert "TOP_case_native_success_penalty" in case_arrays
     assert all(name.startswith("TOP_case_") for name in case_arrays)
     assert {
         "TOP_case_identity",
@@ -68,6 +71,7 @@ def test_country_case_arrays_use_registry_capacity_at_startup():
     group_capacity = len(script.globals["TOP_group_class"])
     assert len(organization_arrays) == len(set(organization_arrays))
     assert all(name.startswith("TOP_org_case_") for name in organization_arrays)
+    assert "TOP_org_case_protection" in organization_arrays
     assert {name: len(country_vars[name]) for name in organization_arrays} == {
         name: group_capacity for name in organization_arrays
     }

@@ -7,7 +7,7 @@ TOP_get_protection_country = {
 		if = { limit = { check_variable = { TOP_target = 131 } check_variable = { TOP_security_country = 0 } BLR = { exists = yes OR = { has_country_leader = { name = "Alexander Lukashenko" ruling_only = yes } has_country_leader = { name = "Aleksandr Lukashenko" ruling_only = yes } } } } set_temp_variable = { TOP_security_country = BLR } }
 		if = { limit = { check_variable = { TOP_target = 132 } check_variable = { TOP_security_country = 0 } UKR = { exists = yes OR = { has_country_leader = { name = "Volodymyr Zelenskyy" ruling_only = yes } has_country_leader = { name = "Volodymyr Zelensky" ruling_only = yes } } } } set_temp_variable = { TOP_security_country = UKR } }
 		if = { limit = { check_variable = { TOP_target = 133 } check_variable = { TOP_security_country = 0 } PER = { exists = yes OR = { has_country_leader = { name = "Sayyid Ali Hosseini Khamenei" ruling_only = yes } has_country_leader = { name = "Ali Khamenei" ruling_only = yes } has_idea = PER_sayyid_ali_hosseini_khamenei } } } set_temp_variable = { TOP_security_country = PER } }
-		if = { limit = { check_variable = { TOP_target = 134 } check_variable = { TOP_security_country = 0 } PER = { exists = yes OR = { has_country_leader = { name = "Mojtaba Khamenei" ruling_only = yes } has_idea = PER_top_mojtaba_supreme_leader } } } set_temp_variable = { TOP_security_country = PER } }
+		if = { limit = { check_variable = { TOP_target = 134 } check_variable = { TOP_security_country = 0 } TOP_person_134_serving = yes } set_temp_variable = { TOP_security_country = PER } }
 		if = { limit = { check_variable = { TOP_target = 135 } check_variable = { TOP_security_country = 0 } PER = { exists = yes has_character = PER_mohammad_jafari TOP_iran_has_authored_service = yes } } set_temp_variable = { TOP_security_country = PER } }
 		if = { limit = { check_variable = { TOP_target = 135 } check_variable = { TOP_security_country = 0 } HEZ = { exists = yes has_character = HEZ_mohammad_jafari } } set_temp_variable = { TOP_security_country = HEZ } }
 		if = { limit = { check_variable = { TOP_target = 136 } check_variable = { TOP_security_country = 0 } PER = { exists = yes has_character = PER_top_hossein_salami TOP_iran_has_authored_service = yes } } set_temp_variable = { TOP_security_country = PER } }
@@ -15,6 +15,7 @@ TOP_get_protection_country = {
 		if = { limit = { check_variable = { TOP_target = 138 } check_variable = { TOP_security_country = 0 } PER = { exists = yes has_character = PER_top_esmail_qaani TOP_iran_has_authored_service = yes } } set_temp_variable = { TOP_security_country = PER } }
 		if = { limit = { check_variable = { TOP_target = 139 } check_variable = { TOP_security_country = 0 } PER = { exists = yes has_character = PER_amir_hajizadeh TOP_iran_has_authored_service = yes } } set_temp_variable = { TOP_security_country = PER } }
 		if = { limit = { check_variable = { TOP_target = 140 } check_variable = { TOP_security_country = 0 } PER = { exists = yes has_character = PER_ali_fadavi TOP_iran_has_authored_service = yes } } set_temp_variable = { TOP_security_country = PER } }
+		if = { limit = { check_variable = { TOP_target = 141 } check_variable = { TOP_security_country = 0 } TOP_person_141_serving = yes } set_temp_variable = { TOP_security_country = USA } }
 		if = { limit = { check_variable = { TOP_target = 144 } check_variable = { TOP_security_country = 0 } TOP_person_144_serving = yes } set_temp_variable = { TOP_security_country = CHI } }
 		if = { limit = { check_variable = { TOP_target = 146 } check_variable = { TOP_security_country = 0 } TOP_person_146_serving = yes } set_temp_variable = { TOP_security_country = NKO } }
 		if = { limit = { check_variable = { TOP_target = 147 } check_variable = { TOP_security_country = 0 } TOP_person_147_serving = yes } set_temp_variable = { TOP_security_country = BRM } }
@@ -41,24 +42,59 @@ TOP_prepare_authored_service = {
 	}
 }
 
+TOP_retire_SOV_vladimir_putin = {
+	if = {
+		limit = { has_country_leader = { name = "Vladimir Putin" ruling_only = yes } }
+		kill_country_leader = yes
+		set_variable = { Conservative_leader = 2 }
+		create_country_leader = {
+			name = "Vyacheslav Volodin"
+			picture = "Vyacheslav_Volodin.dds"
+			ideology = Conservative
+			traits = { emerging_Conservative }
+		}
+	}
+}
+
+TOP_retire_SOV_dmitry_medvedev = {
+	if = {
+		limit = { OR = { has_country_leader = { name = "Dimitry Medvedev" ruling_only = yes } has_country_leader = { name = "Dmitry Medvedev" ruling_only = yes } } }
+		kill_country_leader = yes
+		set_variable = { Conservative_leader = 4 }
+		create_country_leader = {
+			name = "Alexey Dyumin"
+			picture = "Alexey_Dyumin.dds"
+			ideology = Conservative
+			traits = { emerging_Conservative }
+		}
+	}
+}
+
+TOP_retire_UKR_volodymyr_zelenskyy = {
+	if = {
+		limit = { OR = { has_country_leader = { name = "Volodymyr Zelenskyy" ruling_only = yes } has_country_leader = { name = "Volodymyr Zelensky" ruling_only = yes } } }
+		kill_country_leader = yes
+		set_variable = { Neutral_Libertarian_leader = 2 }
+		create_country_leader = {
+			name = "Hennadiy Balashov"
+			picture = "gfx/leaders/UKR/ukr_balashov.dds"
+			ideology = Neutral_Libertarian
+			traits = { neutrality_Neutral_Libertarian inexperienced }
+		}
+	}
+	if = { limit = { has_character = UKR_volodymyr_zelensky } retire_character = UKR_volodymyr_zelensky }
+}
+
 TOP_retire_political_roster = {
 	if = {
 		limit = { TOP_enabled = yes }
 		if = {
 			limit = { check_variable = { TOP_target = 129 } }
-			SOV = {
-				if = { limit = { OR = { has_country_leader = { name = "Vladimir Putin" ruling_only = yes } } } kill_country_leader = yes
-					set_leader_SOV = yes
-				}
-			}
+			SOV = { TOP_retire_SOV_vladimir_putin = yes }
 		}
 		if = {
 			limit = { check_variable = { TOP_target = 130 } }
-			SOV = {
-				if = { limit = { OR = { has_country_leader = { name = "Dimitry Medvedev" ruling_only = yes } has_country_leader = { name = "Dmitry Medvedev" ruling_only = yes } } } kill_country_leader = yes
-					set_leader_SOV = yes
-				}
-			}
+			SOV = { TOP_retire_SOV_dmitry_medvedev = yes }
 		}
 		if = {
 			limit = { check_variable = { TOP_target = 131 } }
@@ -70,12 +106,7 @@ TOP_retire_political_roster = {
 		}
 		if = {
 			limit = { check_variable = { TOP_target = 132 } }
-			UKR = {
-				if = { limit = { OR = { has_country_leader = { name = "Volodymyr Zelenskyy" ruling_only = yes } has_country_leader = { name = "Volodymyr Zelensky" ruling_only = yes } } } kill_country_leader = yes
-					set_leader_UKR = yes
-				}
-				if = { limit = { has_character = UKR_volodymyr_zelensky } retire_character = UKR_volodymyr_zelensky }
-			}
+			UKR = { TOP_retire_UKR_volodymyr_zelenskyy = yes }
 		}
 		if = {
 			limit = { check_variable = { TOP_target = 133 } }
@@ -159,10 +190,10 @@ TOP_political_country_opportunities = {
 					TOP_authored_role_eligible = yes
 					check_variable = { global.TOP_host^top_political_person > 0 }
 					TOP_exceptional_authority = yes
-					check_variable = { TOP_political_score < TOP_political_lowest }
+					check_variable = { TOP_political_score < PREV.TOP_political_lowest }
 				}
-				set_temp_variable = { TOP_political_candidate = top_political_person }
-				set_temp_variable = { TOP_political_lowest = TOP_political_score }
+				set_temp_variable = { PREV.TOP_political_candidate = top_political_person }
+				set_temp_variable = { PREV.TOP_political_lowest = TOP_political_score }
 			}
 		}
 		if = { limit = { check_variable = { TOP_political_candidate > 0 } } set_temp_variable = { TOP_arg_target = TOP_political_candidate } set_temp_variable = { TOP_arg_amount = 25 } TOP_add_target_lead = yes }

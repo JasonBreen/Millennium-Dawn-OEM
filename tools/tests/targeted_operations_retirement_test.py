@@ -46,6 +46,7 @@ def test_identity_is_durable_while_location_pattern_and_age_change_monthly():
     variables["international_terror_org_intel"][1] = 0
     variables["TOP_pattern_confidence"][1] = 20
 
+    script.globals["TOP_clock"] += 28
     script.run("TOP_country_tick", 1)
 
     assert variables["TOP_identity_confidence"][1] == 15

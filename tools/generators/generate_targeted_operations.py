@@ -14,6 +14,8 @@ GLOBAL_FIELDS = (
     "host",
     "custodian",
     "custody_state",
+    "custody_actor",
+    "custody_sequence",
     "affiliation",
     "political",
     "civilian",
@@ -36,6 +38,7 @@ COUNTRY_FIELDS = (
     "lead_state",
     "lead_host",
     "lead_age",
+    "lead_report_clock",
     "assessment",
     "mandates",
     "attempts",
@@ -43,7 +46,13 @@ COUNTRY_FIELDS = (
     "bda_result",
     "bda_method",
     "bda_state",
+    "bda_token",
+    "bda_archive_row",
+    "bda_archive_token",
+    "bda_identity",
     "capture_exploited",
+    "exchange_country",
+    "exchange_until",
     "identity_confidence",
     "location_confidence",
     "pattern_confidence",
@@ -75,6 +84,7 @@ ORG_COUNTRY_FIELDS = (
     "lead_state",
     "lead_host",
     "lead_age",
+    "lead_report_clock",
     "package_state",
     "collection_focus",
     "mandates",
@@ -537,7 +547,15 @@ def registry(data: dict) -> str:
         ]
         + [
             f"resize_array = {{ TOP_archive_{field} = 128 }}"
-            for field in ("target", "result", "method", "day", "state")
+            for field in (
+                "target",
+                "result",
+                "method",
+                "day",
+                "state",
+                "disposition",
+                "custody_token",
+            )
         ],
     )
     years = sorted(
@@ -590,7 +608,7 @@ def registry(data: dict) -> str:
             f"\tTOP_choose_location_{gid} = yes",
             "\tif = {",
             "\t\tlimit = { NOT = { check_variable = { TOP_activation_state = 0 } } }",
-            "\t\tvar:TOP_activation_state = { set_temp_variable = { TOP_activation_host = controller } }",
+            "\t\tvar:TOP_activation_state = { set_temp_variable = { PREV.TOP_activation_host = controller } }",
             f"\t\tset_variable = {{ global.TOP_group_state^{gid} = TOP_activation_state }}",
             f"\t\tset_variable = {{ global.TOP_group_host^{gid} = TOP_activation_host }}",
         ]
@@ -610,7 +628,10 @@ def registry(data: dict) -> str:
             ]
         lines += ["\t}", "}"]
         output += "\n" + block(f"TOP_activate_group_{gid}", lines)
-        location = ["set_temp_variable = { TOP_activation_state = 0 }"]
+        location = [
+            "set_temp_variable = { TOP_activation_state = 0 }",
+            "set_temp_variable = { TOP_activation_host = 0 }",
+        ]
         if group["location_policy"] == "group_hq" and "ct_id" in group:
             location += [
                 f"set_temp_variable = {{ TOP_group = {gid} }}",
@@ -618,7 +639,7 @@ def registry(data: dict) -> str:
                 "if = {",
                 "\tlimit = { check_variable = { TOP_org_slot > -1 } NOT = { check_variable = { global.active_terror_hq^TOP_org_slot = 0 } } }",
                 "\tvar:global.active_terror_hq^TOP_org_slot = {",
-                "\t\tif = { limit = { controller = { exists = yes } } set_temp_variable = { TOP_activation_state = THIS } }",
+                "\t\tif = { limit = { controller = { exists = yes } } set_temp_variable = { ROOT.TOP_activation_state = THIS } }",
                 "\t}",
                 "}",
             ]
@@ -632,14 +653,14 @@ def registry(data: dict) -> str:
                 location += [
                     "if = {",
                     f"\tlimit = {{ check_variable = {{ TOP_activation_state = 0 }} {host} = {{ exists = yes num_of_controlled_states > 0 }} }}",
-                    f"\t{host} = {{ capital_scope = {{ if = {{ limit = {{ controller = {{ exists = yes }} }} set_temp_variable = {{ TOP_activation_state = THIS }} }} }} }}",
+                    f"\t{host} = {{ capital_scope = {{ if = {{ limit = {{ controller = {{ exists = yes }} }} set_temp_variable = {{ ROOT.TOP_activation_state = THIS }} }} }} }}",
                     "}",
                 ]
                 continue
             location += [
                 "if = {",
                 f"\tlimit = {{ check_variable = {{ TOP_activation_state = 0 }} {host} = {{ exists = yes num_of_controlled_states > 0 }} }}",
-                f"\t{host} = {{ random_controlled_state = {{ set_temp_variable = {{ TOP_activation_state = THIS }} }} }}",
+                f"\t{host} = {{ random_controlled_state = {{ set_temp_variable = {{ ROOT.TOP_activation_state = THIS }} }} }}",
                 "}",
             ]
         output += "\n" + block(f"TOP_choose_location_{gid}", location)
@@ -661,7 +682,7 @@ def raid(ident: int, method: int) -> str:
         "command_power = 20",
         "arrow = { type = line }",
         "allowed = { TOP_enabled = yes }",
-        f"visible = {{ check_variable = {{ TOP_case_phase^{ident} = 2 }} check_variable = {{ TOP_case_method^{ident} = {method} }} }}",
+        f"visible = {{ check_variable = {{ TOP_case_phase^{ident} = 3 }} check_variable = {{ TOP_case_method^{ident} = {method} }} }}",
         f"show_target = {{ TOP_native_gate_{ident}_{method} = yes }}",
         "available = {",
         f"\tTOP_native_gate_{ident}_{method} = yes",
@@ -699,6 +720,22 @@ def raid(ident: int, method: int) -> str:
             if drone
             else "\t\texperience = { weight = 0.5 start_weight = -0.25 reference = 0.75 }"
         ),
+        "\t\tTOP_native_success_bonus = {",
+        "\t\t\tscope = country",
+        f"\t\t\tformula = {{ base = 1 modifier = {{ factor = var:TOP_case_native_success_bonus^{ident} }} }}",
+        "\t\t\tweight = 1",
+        "\t\t\treference = 100",
+        "\t\t\tcan_actor_affect = no",
+        "\t\t\tcan_target_affect = no",
+        "\t\t}",
+        "\t\tTOP_native_success_penalty = {",
+        "\t\t\tscope = country",
+        f"\t\t\tformula = {{ base = 1 modifier = {{ factor = var:TOP_case_native_success_penalty^{ident} }} }}",
+        "\t\t\tweight = -1",
+        "\t\t\treference = 100",
+        "\t\t\tcan_actor_affect = no",
+        "\t\t\tcan_target_affect = no",
+        "\t\t}",
     ]
     if drone:
         lines += [
@@ -911,7 +948,16 @@ def dispatch(data: dict) -> str:
         ]
         + ["text = { localization_key = TOP_no_target }"],
     )
-    output += block(
+    output += "\n" + block(
+        "defined_text",
+        ["name = TOP_bda_notice_name"]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_bda_notice_target = {ident} }} }} localization_key = TOP_person_{ident} }}"
+            for ident in range(1, data["capacity"])
+        ]
+        + ["text = { localization_key = TOP_no_target }"],
+    )
+    output += "\n" + block(
         "defined_text",
         ["name = TOP_selected_group"]
         + [

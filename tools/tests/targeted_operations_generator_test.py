@@ -245,7 +245,7 @@ def test_all_native_raids_bind_their_own_person_method_and_callback(manifest):
         raid = _named_block(text, token)
         method = "1" if kind == "drone" else "2"
         visible = _named_block(raid, "visible")
-        assert f"TOP_case_phase^{target} = 2" in visible
+        assert f"TOP_case_phase^{target} = 3" in visible
         assert f"TOP_case_method^{target} = {method}" in visible
         assert "TOP_authorized_target" not in visible
         # common/raids/ is parsed before the scripted trigger and effect files
@@ -259,6 +259,13 @@ def test_all_native_raids_bind_their_own_person_method_and_callback(manifest):
                 for key, _, operand in statements
             ), (token, gate)
             assert not any(key == "TOP_native_authorized" for key, _, _ in statements)
+        success = _named_block(_named_block(raid, "success_factors"), "success")
+        assert "TOP_native_success_bonus" in success
+        assert "TOP_native_success_penalty" in success
+        assert f"var:TOP_case_native_success_bonus^{target}" in success
+        assert f"var:TOP_case_native_success_penalty^{target}" in success
+        assert "weight = 1" in success
+        assert "weight = -1" in success
 
         for tier, outcome in enumerate(
             ("failure", "limited_success", "success", "critical_success")
@@ -419,6 +426,8 @@ def test_registry_emits_legacy_and_three_axis_person_and_organization_state(mani
         assert f"global.TOP_group_host^{ident} = TOP_activation_host" in activation
     resize = _named_block(registry, "TOP_resize_country_arrays")
     assert "set_variable" not in resize
+    assert "resize_array = { TOP_lead_report_clock = 161 }" in resize
+    assert "resize_array = { TOP_org_lead_report_clock = 35 }" in resize
     successors = output["common/scripted_effects/01_targeted_operations_successors.txt"]
     assert "TOP_person_129" not in successors
 

@@ -29,6 +29,9 @@ TOP_initialize_cases = {
 	resize_array = { TOP_case_result = global.TOP_registry_capacity }
 	resize_array = { TOP_case_archive_row = global.TOP_registry_capacity }
 	resize_array = { TOP_case_archive_token = global.TOP_registry_capacity }
+	resize_array = { TOP_case_native_prepared = global.TOP_registry_capacity }
+	resize_array = { TOP_case_native_success_bonus = global.TOP_registry_capacity }
+	resize_array = { TOP_case_native_success_penalty = global.TOP_registry_capacity }
 	resize_array = { TOP_case_oversight = global.TOP_registry_capacity }
 	resize_array = { TOP_case_oversight_open = global.TOP_registry_capacity }
 	resize_array = { TOP_case_crisis_opened = global.TOP_registry_capacity }
@@ -66,9 +69,17 @@ TOP_open_person_review_case = {
 	set_variable = { TOP_case_sequence^TOP_arg_target = TOP_case_counter }
 	set_variable = { TOP_case_attribution_due^TOP_arg_target = 0 }
 	set_variable = { TOP_case_attribution_investigated^TOP_arg_target = 0 }
+	set_variable = { TOP_case_attribution^TOP_arg_target = 0 }
+	set_variable = { TOP_case_harm^TOP_arg_target = 0 }
+	set_variable = { TOP_case_result^TOP_arg_target = 0 }
+	set_variable = { TOP_case_archive_row^TOP_arg_target = 0 }
+	set_variable = { TOP_case_archive_token^TOP_arg_target = 0 }
 	set_variable = { TOP_case_oversight^TOP_arg_target = 0 }
 	set_variable = { TOP_case_oversight_open^TOP_arg_target = 0 }
 	set_variable = { TOP_case_crisis_opened^TOP_arg_target = 0 }
+	set_variable = { TOP_case_native_prepared^TOP_arg_target = 0 }
+	set_variable = { TOP_case_native_success_bonus^TOP_arg_target = 0 }
+	set_variable = { TOP_case_native_success_penalty^TOP_arg_target = 0 }
 	set_variable = { TOP_case_host^TOP_arg_target = TOP_lead_host^TOP_arg_target }
 	set_variable = { TOP_case_visit_token^TOP_arg_target = global.TOP_visit_token^TOP_arg_target }
 	set_variable = { TOP_case_visit_status^TOP_arg_target = global.TOP_visit_status^TOP_arg_target }
@@ -111,8 +122,8 @@ TOP_close_case = {
 	if = {
 		limit = { check_variable = { TOP_case_phase^TOP_arg_target > 0 } check_variable = { TOP_case_sequence^TOP_arg_target = TOP_arg_sequence } }
 		if = {
-			limit = { check_variable = { TOP_case_method^TOP_arg_target > 0 } check_variable = { TOP_case_method^TOP_arg_target < 3 } }
-			# Raid callbacks expose no instance token. Never recycle a closed native binding.
+			limit = { check_variable = { TOP_case_native_prepared^TOP_arg_target = 1 } check_variable = { TOP_case_method^TOP_arg_target > 0 } check_variable = { TOP_case_method^TOP_arg_target < 3 } }
+			# Only an unresolved prepared raid can still deliver a stale callback.
 			set_temp_variable = { TOP_binding_key = { value = TOP_arg_target multiply = 20000 } }
 			add_to_temp_variable = { TOP_binding_key = { value = TOP_case_state^TOP_arg_target multiply = 2 } }
 			add_to_temp_variable = { TOP_binding_key = TOP_case_method^TOP_arg_target }
@@ -121,10 +132,17 @@ TOP_close_case = {
 				add_to_array = { TOP_retired_native_bindings = TOP_binding_key }
 			}
 		}
+		if = {
+			limit = { check_variable = { TOP_package_state^TOP_arg_target = 3 } }
+			set_variable = { TOP_package_state^TOP_arg_target = 1 }
+		}
 		set_variable = { TOP_case_phase^TOP_arg_target = 0 }
 		set_variable = { TOP_case_method^TOP_arg_target = 0 }
 		set_variable = { TOP_case_due^TOP_arg_target = 0 }
 		set_variable = { TOP_case_collecting^TOP_arg_target = 0 }
+		set_variable = { TOP_case_native_prepared^TOP_arg_target = 0 }
+		set_variable = { TOP_case_native_success_bonus^TOP_arg_target = 0 }
+		set_variable = { TOP_case_native_success_penalty^TOP_arg_target = 0 }
 		if = {
 			limit = {
 				check_variable = { TOP_operation_subject_kind = 1 }
@@ -144,7 +162,7 @@ TOP_close_case = {
 			set_variable = { TOP_authorized_target = 0 }
 			set_variable = { TOP_pending_target = 0 }
 		}
-		TOP_refresh_view = yes
+		TOP_build_view = yes
 	}
 }
 
@@ -165,7 +183,7 @@ TOP_finish_case = {
 		set_variable = { TOP_case_due^TOP_target = 0 }
 		set_variable = { TOP_case_collecting^TOP_target = 0 }
 		TOP_enroll_pending_actor = yes
-		TOP_refresh_view = yes
+		TOP_build_view = yes
 	}
 }
 
@@ -178,6 +196,19 @@ TOP_begin_person_operation = {
 		set_variable = { TOP_operation_sequence = TOP_case_sequence^TOP_arg_target }
 		set_variable = { TOP_case_phase^TOP_arg_target = 3 }
 		set_variable = { TOP_case_due^TOP_arg_target = 0 }
+		if = {
+			limit = { check_variable = { TOP_case_method^TOP_arg_target > 0 } check_variable = { TOP_case_method^TOP_arg_target < 3 } }
+			set_temp_variable = { TOP_target = TOP_arg_target }
+			TOP_get_defensive_modifiers = yes
+			set_variable = { TOP_case_native_success_bonus^TOP_arg_target = 0 }
+			set_variable = { TOP_case_native_success_penalty^TOP_arg_target = TOP_defensive_success_penalty }
+			set_temp_variable = { TOP_native_group = global.TOP_affiliation^TOP_arg_target }
+			if = {
+				limit = { check_variable = { global.TOP_group_disruption_type^TOP_native_group = 2 } check_variable = { global.TOP_group_disruption_until^TOP_native_group > global.TOP_clock } }
+				set_variable = { TOP_case_native_success_bonus^TOP_arg_target = 10 }
+			}
+			set_variable = { TOP_case_native_prepared^TOP_arg_target = 1 }
+		}
 		if = {
 			limit = { check_variable = { TOP_case_method^TOP_arg_target > 2 } }
 			set_variable = { TOP_case_due^TOP_arg_target = { value = global.TOP_clock add = 28 } }
@@ -237,22 +268,27 @@ TOP_process_cases = {
 		}
 		if = {
 			limit = { check_variable = { TOP_case_phase^TOP_target < 4 } check_variable = { global.TOP_status^TOP_target > 1 } }
-			# Another country's result ends preparation, but the host slot waits for assessment.
-			set_variable = { TOP_assessment^TOP_target = global.TOP_status^TOP_target }
-			if = { limit = { check_variable = { global.TOP_status^TOP_target = 3 } check_variable = { global.TOP_confirmed_dead^TOP_target = 0 } } set_variable = { TOP_assessment^TOP_target = 5 } }
-			set_variable = { TOP_case_phase^TOP_target = 5 }
 			if = {
-				limit = { check_variable = { TOP_assessment^TOP_target = 5 } }
-				set_variable = { TOP_case_phase^TOP_target = 4 }
+				limit = {
+					check_variable = { TOP_operation_subject_kind = 1 }
+					check_variable = { TOP_operation_subject_id = TOP_target }
+					check_variable = { TOP_operation_sequence = TOP_case_sequence^TOP_target }
+				}
+				set_variable = { TOP_operation_subject_kind = 0 }
+				set_variable = { TOP_operation_subject_id = 0 }
+				set_variable = { TOP_operation_sequence = 0 }
 			}
-		}
-		if = {
-			limit = { check_variable = { TOP_case_phase^TOP_target = 4 } check_variable = { global.TOP_confirmed_dead^TOP_target = 1 } }
-			set_variable = { TOP_assessment^TOP_target = 3 }
+			# The case is no longer actionable, but another actor's physical result remains unknown.
+			set_variable = { TOP_assessment^TOP_target = 6 }
 			set_variable = { TOP_case_phase^TOP_target = 5 }
 		}
 		if = {
-			limit = { check_variable = { TOP_case_phase^TOP_target = 3 } check_variable = { TOP_case_due^TOP_target < global.TOP_clock } }
+			limit = {
+				check_variable = { TOP_case_phase^TOP_target = 3 }
+				check_variable = { TOP_case_method^TOP_target > 2 }
+				check_variable = { TOP_case_due^TOP_target > 0 }
+				check_variable = { var = global.TOP_clock value = TOP_case_due^TOP_target compare = greater_than_or_equals }
+			}
 			set_temp_variable = { TOP_case_visit_target = TOP_target }
 			if = {
 				limit = { NOT = { TOP_case_visit_waiting_for_arrival = yes } }
@@ -267,7 +303,7 @@ TOP_process_cases = {
 		if = {
 			limit = {
 				OR = {
-					AND = { check_variable = { TOP_case_phase^top_timer_case < 4 } check_variable = { TOP_case_until^top_timer_case < global.TOP_clock } }
+					AND = { check_variable = { TOP_case_phase^top_timer_case < 3 } check_variable = { var = global.TOP_clock value = TOP_case_until^top_timer_case compare = greater_than_or_equals } }
 					AND = { is_ai = yes check_variable = { TOP_case_phase^top_timer_case = 5 } }
 				}
 			}

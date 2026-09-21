@@ -39,6 +39,28 @@ TOP_setup_extended_runtime = {
 		resize_array = { global.TOP_visit_story_used = 7 }
 	}
 	if = {
+		limit = { TOP_enabled = yes check_variable = { global.TOP_extended_runtime_version < 4 } }
+		clear_array = global.TOP_crisis_queue_actors
+		clear_array = global.TOP_crisis_queue_protections
+		clear_array = global.TOP_crisis_queue_hosts
+		clear_array = global.TOP_crisis_queue_targets
+		clear_array = global.TOP_crisis_queue_states
+		clear_array = global.TOP_crisis_queue_results
+		clear_array = global.TOP_crisis_queue_attributions
+		clear_array = global.TOP_crisis_queue_consents
+		clear_array = global.TOP_crisis_queue_visit_statuses
+		clear_array = global.TOP_crisis_queue_visit_stories
+		clear_array = global.TOP_crisis_queue_visit_tokens
+		clear_array = global.TOP_crisis_queue_sequences
+		set_variable = { global.TOP_extended_runtime_version = 4 }
+	}
+	if = {
+		limit = { TOP_enabled = yes check_variable = { global.TOP_extended_runtime_version < 5 } }
+		set_variable = { global.TOP_crisis_participant_pending = 0 }
+		set_variable = { global.TOP_crisis_cleanup_requested = 0 }
+		set_variable = { global.TOP_extended_runtime_version = 5 }
+	}
+	if = {
 		# Days between open-story visits worldwide; 91 gives about four a year.
 		# Guarded on its own rather than by the version above, so an existing
 		# save picks it up without re-running every constant in this file.
@@ -151,7 +173,7 @@ TOP_end_visit = {
 			}
 			var:global.TOP_visit_return_state^top_visit_target = {
 				if = {
-					limit = { is_controlled_by = var:TOP_visit_restore_host }
+					limit = { is_controlled_by = var:PREV.TOP_visit_restore_host }
 					set_temp_variable = { PREV.TOP_visit_restore_state = THIS }
 				}
 			}
@@ -325,6 +347,7 @@ TOP_refresh_visit_dossiers = {
 				set_variable = { TOP_lead_host^top_visit_target = global.TOP_visit_host^top_visit_target }
 				set_variable = { TOP_lead_state^top_visit_target = global.TOP_visit_state^top_visit_target }
 				set_variable = { TOP_lead_age^top_visit_target = 0 }
+				set_variable = { TOP_lead_report_clock^top_visit_target = global.TOP_clock }
 			}
 		}
 		for_each_loop = {
@@ -348,6 +371,7 @@ TOP_refresh_visit_dossiers = {
 				set_variable = { TOP_lead_host^top_visit_target = global.TOP_visit_host^top_visit_target }
 				set_variable = { TOP_lead_state^top_visit_target = global.TOP_visit_state^top_visit_target }
 				set_variable = { TOP_lead_age^top_visit_target = 0 }
+				set_variable = { TOP_lead_report_clock^top_visit_target = global.TOP_clock }
 			}
 		}
 	}
@@ -418,6 +442,7 @@ TOP_start_exposed_kill_crisis = {
 		}
 		if = {
 			limit = { check_variable = { global.TOP_crisis_active = 0 } }
+			set_temp_variable = { TOP_crisis_enqueued_or_started = 1 }
 			set_variable = { global.TOP_crisis_active = 1 }
 			add_to_variable = { global.TOP_crisis_token = 1 }
 			set_variable = { global.TOP_crisis_actor = global.TOP_crisis_candidate_actor }
@@ -430,7 +455,7 @@ TOP_start_exposed_kill_crisis = {
 			set_variable = { global.TOP_crisis_generic = TOP_strategic_crisis_candidate }
 			set_variable = { global.TOP_crisis_capture = 0 }
 			if = { limit = { check_variable = { TOP_result = 2 } } set_variable = { global.TOP_crisis_capture = 1 } }
-			set_variable = { global.TOP_crisis_attribution = TOP_case_attribution^TOP_target }
+			set_variable = { global.TOP_crisis_attribution = TOP_crisis_recorded_attribution }
 			if = { limit = { check_variable = { global.TOP_crisis_attribution < 2 } } set_variable = { global.TOP_crisis_attribution = 3 } }
 			set_variable = { global.TOP_crisis_war_risk = 0 }
 			var:global.TOP_crisis_candidate_protection = {
@@ -439,7 +464,6 @@ TOP_start_exposed_kill_crisis = {
 						OR = {
 							is_major = yes
 							is_in_faction = yes
-							has_country_flag = TOP_strategic_tripwire
 							has_equipment = { nuclear_missile_equipment > 0 }
 							has_equipment = { nuclear_ballistic_missile_equipment > 0 }
 						}
@@ -467,6 +491,8 @@ TOP_start_exposed_kill_crisis = {
 			set_variable = { global.TOP_crisis_actor_response = 0 }
 			set_variable = { global.TOP_crisis_actor_faction_leader = 0 }
 			set_variable = { global.TOP_crisis_protection_faction_leader = 0 }
+			set_variable = { global.TOP_crisis_participant_pending = 0 }
+			set_variable = { global.TOP_crisis_cleanup_requested = 0 }
 			var:global.TOP_crisis_actor = {
 				if = {
 					limit = { has_war_with = var:global.TOP_crisis_protection }
@@ -503,6 +529,9 @@ TOP_start_exposed_kill_crisis = {
 					set_variable = { TOP_crisis_counterpart = global.TOP_crisis_protection }
 					set_variable = { TOP_crisis_target = global.TOP_crisis_target }
 					set_variable = { TOP_crisis_host_complicit = global.TOP_crisis_host_complicit }
+					set_variable = { TOP_crisis_participant_token = global.TOP_crisis_token }
+					set_variable = { TOP_crisis_participant_pending = 1 }
+					add_to_variable = { global.TOP_crisis_participant_pending = 1 }
 					country_event = { id = TOP_crisis.4 days = 1 }
 				}
 			}
@@ -533,6 +562,9 @@ TOP_start_exposed_kill_crisis = {
 					set_variable = { TOP_crisis_support_token = global.TOP_crisis_token }
 					set_variable = { TOP_crisis_support_side = TOP_crisis_support_dispatch_side }
 					set_variable = { TOP_crisis_target = global.TOP_crisis_target }
+					set_variable = { TOP_crisis_participant_token = global.TOP_crisis_token }
+					set_variable = { TOP_crisis_participant_pending = 1 }
+					add_to_variable = { global.TOP_crisis_participant_pending = 1 }
 					if = {
 						limit = { check_variable = { TOP_crisis_support_dispatch_side = 1 } }
 						set_variable = { TOP_crisis_counterpart = global.TOP_crisis_protection }
@@ -546,11 +578,17 @@ TOP_start_exposed_kill_crisis = {
 		else_if = {
 			limit = {
 				check_variable = { global.TOP_crisis_active = 1 }
+				check_variable = { global.TOP_crisis_cleanup_requested = 0 }
 				check_variable = { global.TOP_crisis_candidate_actor = global.TOP_crisis_actor }
 				check_variable = { global.TOP_crisis_candidate_protection = global.TOP_crisis_protection }
+				OR = {
+					AND = { check_variable = { global.TOP_crisis_capture = 1 } check_variable = { TOP_result = 2 } check_variable = { global.TOP_crisis_target = TOP_target } }
+					AND = { check_variable = { global.TOP_crisis_capture = 0 } NOT = { check_variable = { TOP_result = 2 } } }
+				}
 			}
+			set_temp_variable = { TOP_crisis_enqueued_or_started = 1 }
 			add_to_variable = { global.TOP_crisis_tension = global.TOP_crisis_repeat_tension }
-			if = { limit = { check_variable = { TOP_case_attribution^TOP_target > global.TOP_crisis_attribution } } set_variable = { global.TOP_crisis_attribution = TOP_case_attribution^TOP_target } }
+			if = { limit = { check_variable = { TOP_crisis_recorded_attribution > global.TOP_crisis_attribution } } set_variable = { global.TOP_crisis_attribution = TOP_crisis_recorded_attribution } }
 			clamp_variable = { var = global.TOP_crisis_tension min = 0 max = 100 }
 			if = {
 				limit = {
@@ -564,17 +602,88 @@ TOP_start_exposed_kill_crisis = {
 		}
 		else_if = {
 			limit = { check_variable = { global.TOP_crisis_active = 1 } }
-			var:global.TOP_crisis_candidate_actor = {
-				set_variable = { TOP_unmatched_incident_actor = THIS }
-				set_variable = { TOP_unmatched_incident_protection = global.TOP_crisis_candidate_protection }
-				set_variable = { TOP_unmatched_incident_host = global.TOP_crisis_candidate_host }
-				news_event = { id = TOP_crisis.12 days = 1 }
-			}
+			set_temp_variable = { TOP_crisis_enqueued_or_started = 1 }
+			add_to_array = { global.TOP_crisis_queue_actors = global.TOP_crisis_candidate_actor }
+			add_to_array = { global.TOP_crisis_queue_protections = global.TOP_crisis_candidate_protection }
+			add_to_array = { global.TOP_crisis_queue_hosts = global.TOP_crisis_candidate_host }
+			add_to_array = { global.TOP_crisis_queue_targets = TOP_target }
+			add_to_array = { global.TOP_crisis_queue_states = TOP_operation_state }
+			add_to_array = { global.TOP_crisis_queue_results = TOP_result }
+			add_to_array = { global.TOP_crisis_queue_attributions = TOP_crisis_recorded_attribution }
+			add_to_array = { global.TOP_crisis_queue_consents = TOP_authorized_consent }
+			add_to_array = { global.TOP_crisis_queue_visit_statuses = TOP_authorized_visit_status }
+			add_to_array = { global.TOP_crisis_queue_visit_stories = TOP_authorized_visit_story }
+			add_to_array = { global.TOP_crisis_queue_visit_tokens = TOP_authorized_visit_token }
+			add_to_array = { global.TOP_crisis_queue_sequences = TOP_case_sequence^TOP_target }
 		}
 	}
 	set_variable = { global.TOP_crisis_candidate_actor = 0 }
 	set_variable = { global.TOP_crisis_candidate_protection = 0 }
 	set_variable = { global.TOP_crisis_candidate_host = 0 }
+}
+
+TOP_dispatch_next_strategic_crisis = {
+	if = {
+		limit = { check_variable = { global.TOP_crisis_active = 0 } check_variable = { global.TOP_crisis_queue_targets^num > 0 } }
+		set_variable = { global.TOP_crisis_dispatch_actor = global.TOP_crisis_queue_actors^0 }
+		set_variable = { global.TOP_crisis_dispatch_protection = global.TOP_crisis_queue_protections^0 }
+		set_variable = { global.TOP_crisis_dispatch_host = global.TOP_crisis_queue_hosts^0 }
+		set_variable = { global.TOP_crisis_dispatch_target = global.TOP_crisis_queue_targets^0 }
+		set_variable = { global.TOP_crisis_dispatch_state = global.TOP_crisis_queue_states^0 }
+		set_variable = { global.TOP_crisis_dispatch_result = global.TOP_crisis_queue_results^0 }
+		set_variable = { global.TOP_crisis_dispatch_attribution = global.TOP_crisis_queue_attributions^0 }
+		set_variable = { global.TOP_crisis_dispatch_consent = global.TOP_crisis_queue_consents^0 }
+		set_variable = { global.TOP_crisis_dispatch_visit_status = global.TOP_crisis_queue_visit_statuses^0 }
+		set_variable = { global.TOP_crisis_dispatch_visit_story = global.TOP_crisis_queue_visit_stories^0 }
+		set_variable = { global.TOP_crisis_dispatch_visit_token = global.TOP_crisis_queue_visit_tokens^0 }
+		remove_from_array = { array = global.TOP_crisis_queue_actors index = 0 }
+		remove_from_array = { array = global.TOP_crisis_queue_protections index = 0 }
+		remove_from_array = { array = global.TOP_crisis_queue_hosts index = 0 }
+		remove_from_array = { array = global.TOP_crisis_queue_targets index = 0 }
+		remove_from_array = { array = global.TOP_crisis_queue_states index = 0 }
+		remove_from_array = { array = global.TOP_crisis_queue_results index = 0 }
+		remove_from_array = { array = global.TOP_crisis_queue_attributions index = 0 }
+		remove_from_array = { array = global.TOP_crisis_queue_consents index = 0 }
+		remove_from_array = { array = global.TOP_crisis_queue_visit_statuses index = 0 }
+		remove_from_array = { array = global.TOP_crisis_queue_visit_stories index = 0 }
+		remove_from_array = { array = global.TOP_crisis_queue_visit_tokens index = 0 }
+		remove_from_array = { array = global.TOP_crisis_queue_sequences index = 0 }
+		if = {
+			limit = {
+				check_variable = { global.TOP_crisis_dispatch_actor > 0 }
+				check_variable = { global.TOP_crisis_dispatch_protection > 0 }
+				var:global.TOP_crisis_dispatch_actor = { exists = yes }
+				var:global.TOP_crisis_dispatch_protection = { exists = yes }
+			}
+			var:global.TOP_crisis_dispatch_actor = {
+				set_temp_variable = { TOP_target = global.TOP_crisis_dispatch_target }
+				set_temp_variable = { TOP_result = global.TOP_crisis_dispatch_result }
+				set_temp_variable = { TOP_strategic_crisis_candidate = 1 }
+				set_temp_variable = { TOP_exposure_recorded = 1 }
+				set_temp_variable = { TOP_operation_protection_country = global.TOP_crisis_dispatch_protection }
+				set_temp_variable = { TOP_operation_state = global.TOP_crisis_dispatch_state }
+				set_temp_variable = { TOP_crisis_recorded_attribution = global.TOP_crisis_dispatch_attribution }
+				set_variable = { TOP_authorized_host = global.TOP_crisis_dispatch_host }
+				set_variable = { TOP_authorized_consent = global.TOP_crisis_dispatch_consent }
+				set_variable = { TOP_authorized_visit_status = global.TOP_crisis_dispatch_visit_status }
+				set_variable = { TOP_authorized_visit_story = global.TOP_crisis_dispatch_visit_story }
+				set_variable = { TOP_authorized_visit_token = global.TOP_crisis_dispatch_visit_token }
+				TOP_start_exposed_kill_crisis = yes
+			}
+		}
+		set_variable = { global.TOP_crisis_dispatch_actor = 0 }
+		set_variable = { global.TOP_crisis_dispatch_protection = 0 }
+		set_variable = { global.TOP_crisis_dispatch_host = 0 }
+		set_variable = { global.TOP_crisis_dispatch_target = 0 }
+		set_variable = { global.TOP_crisis_dispatch_state = 0 }
+		set_variable = { global.TOP_crisis_dispatch_result = 0 }
+		set_variable = { global.TOP_crisis_dispatch_attribution = 0 }
+		set_variable = { global.TOP_crisis_dispatch_consent = 0 }
+		set_variable = { global.TOP_crisis_dispatch_visit_status = 0 }
+		set_variable = { global.TOP_crisis_dispatch_visit_story = 0 }
+		set_variable = { global.TOP_crisis_dispatch_visit_token = 0 }
+		if = { limit = { check_variable = { global.TOP_crisis_active = 0 } } TOP_dispatch_next_strategic_crisis = yes }
+	}
 }
 
 # Reads TOP_arg_amount.
@@ -597,8 +706,54 @@ TOP_apply_crisis_sanctions = {
 	}
 }
 
-TOP_cleanup_crisis = {
+TOP_finish_crisis_participant_notice = {
 	if = {
+		limit = {
+			check_variable = { TOP_crisis_participant_pending = 1 }
+			check_variable = { TOP_crisis_participant_token = global.TOP_crisis_token }
+		}
+		set_variable = { TOP_crisis_participant_pending = 0 }
+		set_variable = { TOP_crisis_participant_token = 0 }
+		set_variable = { TOP_crisis_token = 0 }
+		set_variable = { TOP_crisis_counterpart = 0 }
+		set_variable = { TOP_crisis_target = 0 }
+		set_variable = { TOP_crisis_host_complicit = 0 }
+		set_variable = { TOP_crisis_support_token = 0 }
+		set_variable = { TOP_crisis_support_side = 0 }
+		subtract_from_variable = { global.TOP_crisis_participant_pending = 1 }
+		clamp_variable = { var = global.TOP_crisis_participant_pending min = 0 max = 1000 }
+		if = {
+			limit = {
+				check_variable = { global.TOP_crisis_participant_pending = 0 }
+				check_variable = { global.TOP_crisis_cleanup_requested = 1 }
+			}
+			TOP_cleanup_crisis = yes
+		}
+	}
+}
+
+TOP_recount_crisis_participant_notices = {
+	set_variable = { global.TOP_crisis_participant_pending = 0 }
+	every_country = {
+		limit = {
+			exists = yes
+			check_variable = { TOP_crisis_participant_pending = 1 }
+			check_variable = { TOP_crisis_participant_token = global.TOP_crisis_token }
+		}
+		add_to_variable = { global.TOP_crisis_participant_pending = 1 }
+	}
+}
+
+TOP_cleanup_crisis = {
+	TOP_recount_crisis_participant_notices = yes
+	if = {
+		limit = {
+			check_variable = { global.TOP_crisis_active = 1 }
+			check_variable = { global.TOP_crisis_participant_pending > 0 }
+		}
+		set_variable = { global.TOP_crisis_cleanup_requested = 1 }
+	}
+	else_if = {
 		limit = { check_variable = { global.TOP_crisis_active = 1 } }
 		set_temp_variable = { TOP_crisis_cleanup_token = global.TOP_crisis_token }
 		set_temp_variable = { TOP_crisis_cleanup_actor = global.TOP_crisis_actor }
@@ -695,6 +850,9 @@ TOP_cleanup_crisis = {
 		set_variable = { global.TOP_crisis_capture = 0 }
 		set_variable = { global.TOP_crisis_attribution = 0 }
 		set_variable = { global.TOP_crisis_war_risk = 0 }
+		set_variable = { global.TOP_crisis_participant_pending = 0 }
+		set_variable = { global.TOP_crisis_cleanup_requested = 0 }
+		TOP_dispatch_next_strategic_crisis = yes
 	}
 }
 
@@ -721,9 +879,24 @@ TOP_settle_crisis = {
 }
 
 TOP_process_crisis = {
+	if = { limit = { check_variable = { global.TOP_crisis_active = 0 } check_variable = { global.TOP_crisis_queue_targets^num > 0 } } TOP_dispatch_next_strategic_crisis = yes }
+	if = {
+		limit = { check_variable = { global.TOP_crisis_active = 1 } check_variable = { global.TOP_crisis_cleanup_requested = 1 } }
+		TOP_recount_crisis_participant_notices = yes
+		if = { limit = { check_variable = { global.TOP_crisis_participant_pending = 0 } } TOP_cleanup_crisis = yes }
+	}
 	if = {
 		limit = {
 			check_variable = { global.TOP_crisis_active = 1 }
+			check_variable = { global.TOP_crisis_cleanup_requested = 0 }
+			NOT = { TOP_crisis_principals_valid = yes }
+		}
+		TOP_cleanup_crisis = yes
+	}
+	else_if = {
+		limit = {
+			check_variable = { global.TOP_crisis_active = 1 }
+			check_variable = { global.TOP_crisis_cleanup_requested = 0 }
 			check_variable = { global.TOP_crisis_generic = 0 }
 			OR = {
 				check_variable = { global.TOP_crisis_story < 1 }
@@ -736,6 +909,7 @@ TOP_process_crisis = {
 	else_if = {
 		limit = {
 			check_variable = { global.TOP_crisis_active = 1 }
+			check_variable = { global.TOP_crisis_cleanup_requested = 0 }
 			check_variable = { global.TOP_crisis_until < global.TOP_clock }
 		}
 		if = {
@@ -776,9 +950,10 @@ TOP_visit_country_opportunities = {
 			}
 		}
 		set_temp_variable = { TOP_visit_open_candidate = 0 }
+		set_temp_variable = { TOP_visit_open_state = 0 }
 		random_owned_state = {
 			limit = { is_controlled_by = ROOT }
-			set_temp_variable = { TOP_visit_open_state = THIS }
+			set_temp_variable = { ROOT.TOP_visit_open_state = THIS }
 		}
 		if = {
 			limit = { NOT = { check_variable = { TOP_visit_open_state = 0 } } }
@@ -788,13 +963,13 @@ TOP_visit_country_opportunities = {
 				value = top_visit_person
 				if = {
 					limit = {
-						check_variable = { TOP_visit_open_candidate = 0 }
+						check_variable = { PREV.TOP_visit_open_candidate = 0 }
 						set_temp_variable = { TOP_visit_trigger_target = top_visit_person }
-						set_temp_variable = { TOP_visit_trigger_state = TOP_visit_open_state }
+						set_temp_variable = { TOP_visit_trigger_state = PREV.TOP_visit_open_state }
 						set_temp_variable = { TOP_visit_trigger_story = 6 }
 						TOP_visit_can_invite = yes
 					}
-					set_temp_variable = { TOP_visit_open_candidate = top_visit_person }
+					set_temp_variable = { PREV.TOP_visit_open_candidate = top_visit_person }
 				}
 			}
 		}

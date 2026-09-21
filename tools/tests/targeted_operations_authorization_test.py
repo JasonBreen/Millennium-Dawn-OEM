@@ -61,6 +61,8 @@ class ReviewScript(TargetedScript):
             TOP_country_initialize=[],
             TOP_build_view=[],
             TOP_get_defensive_modifiers=[],
+            TOP_get_organization_defensive_modifiers=[],
+            TOP_get_protection_country=[],
         )
         self.triggers = _parse_race_script(source(TRIGGER_PATH))
         core_triggers = _parse_race_script(
@@ -136,6 +138,7 @@ class ReviewScript(TargetedScript):
             TOP_selected_facility=1,
             TOP_doctrine=2,
             TOP_collecting_subjects=[],
+            TOP_organization_dossiers=[],
             TOP_attribution_pending_people=[],
             TOP_attribution_pending_organizations=[],
         )
@@ -207,6 +210,11 @@ class ReviewScript(TargetedScript):
         elif key == "TOP_facility_available":
             state = self.countries[self.temps["TOP_facility_state"]]
             result = (self.temps["TOP_facility_kind"] in state["facilities"]) == (
+                operand == "yes"
+            )
+        elif key == "TOP_organization_facility_available":
+            state = self.countries[self.temps["TOP_facility_state"]]
+            result = (self.temps["TOP_facility_objective"] in state["facilities"]) == (
                 operand == "yes"
             )
         elif key in {
@@ -348,7 +356,8 @@ def test_reselection_during_review_commits_only_the_immutable_snapshot_once():
     review.ready_for_host()
     review.actor["TOP_selected"] = 2
     review.run("TOP_send_host_request")
-    assert review.event_targets["TOP_host_request_sender"] == 1
+    assert "TOP_host_request_sender" not in review.event_targets
+    assert review.countries[2]["vars"]["TOP_incoming_actor"] == 1
     review.call("TOP_answer_host_request", identifier=2, CONSENT=1)
     review.run("TOP_close_review_event")
     review.run("TOP_approve_review")
@@ -580,7 +589,7 @@ def test_stale_return_to_collection_cannot_charge_or_reopen_a_closed_case(recrea
         review.actor["TOP_proposal_case_sequence"] = saved_sequence
     review.run("TOP_return_recorded_collection")
     assert review.case(1, "phase") == int(recreate)
-    assert review.actor["TOP_package_state^1"] == 3
+    assert review.actor["TOP_package_state^1"] == (3 if recreate else 1)
     assert review.actor["TOP_collecting_subjects"] == []
     assert review.countries[1]["power"] == 200
 
@@ -706,6 +715,24 @@ def test_political_target_uses_enhanced_review_even_for_standard_government():
     review.call("TOP_begin_review", METHOD=2)
     assert review.actor["TOP_proposal_rigor"] == 2
     assert review.condition(review.triggers["TOP_review_staff_ready"], 1)
+
+
+def test_leader_assassination_final_confirmation_commits_the_waiting_mandate():
+    review = ReviewScript()
+    review.globals["TOP_political^1"] = 1
+    review.globals["TOP_leader_role^1"] = 1
+    review.approve_unilateral(method=3)
+    assert review.actor["TOP_proposal_stage"] == 5
+    assert review.case(1, "phase") == 1
+    assert review.countries[1]["power"] == 200
+
+    review.run("TOP_close_review_event")
+    review.run("TOP_confirm_leader_assassination")
+
+    assert review.case(1, "phase") == 2
+    assert review.case(1, "method") == 3
+    assert review.countries[1]["power"] == 150
+    assert review.actor.get("TOP_proposal_stage", 0) == 0
 
 
 def test_facility_sabotage_uses_the_typed_organization_review_path():
@@ -844,6 +871,18 @@ def test_event_defaults_defer_and_options_have_matching_logs_and_localisation():
             assert f'{name} executed"' in body
 
 
+def test_final_leader_assassination_confirmation_revalidates_full_authority():
+    text = source(EVENT_PATH)
+    event_at = text.index("id = TOP_authorization.5\n")
+    event = _extract_block(text, text.rfind("country_event = {", 0, event_at))
+    authorize = _named_block(event, "option")
+
+    assert (
+        "trigger = { TOP_review_can_confirm_leader_assassination = yes }" in authorize
+    )
+    assert "TOP_confirm_leader_assassination = yes" in authorize
+
+
 def test_snapshot_identity_and_host_slot_have_single_writers():
     effects = _parse_race_script(source(EFFECT_PATH))
     for name, body in effects.items():
@@ -853,7 +892,11 @@ def test_snapshot_identity_and_host_slot_have_single_writers():
                 assert (
                     f"('set_variable', '=', [('TOP_proposal_{field}'," not in rendered
                 )
-        if name not in {"TOP_send_host_request", "TOP_answer_host_request"}:
+        if name not in {
+            "TOP_send_host_request",
+            "TOP_answer_host_request",
+            "TOP_clear_incoming_host_request",
+        }:
             assert "TOP_incoming_actor" not in rendered
     assert "TOP_selected" not in _named_block(source(EFFECT_PATH), "TOP_approve_review")
     assert "TOP_selected" not in _named_block(source(TRIGGER_PATH), "TOP_review_valid")

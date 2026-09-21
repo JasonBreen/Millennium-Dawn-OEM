@@ -16,6 +16,7 @@ country_event = {
 		}
 		set_temp_variable = { TOP_arg_target = TOP_pressure_notice_id }
 		TOP_assign_vip_detail = yes
+		TOP_finish_pressure_notice = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.1.a assigned or renewed VIP protection"
 		ai_chance = { base = 35 }
 	}
@@ -24,6 +25,7 @@ country_event = {
 		name = TOP_redesign.1.b
 		trigger = { TOP_can_fund_deception = yes }
 		TOP_fund_deception = yes
+		TOP_finish_pressure_notice = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.1.b funded defensive deception"
 		ai_chance = { base = 35 modifier = { add = 40 check_variable = { TOP_pressure_notice_tier = 3 } } }
 	}
@@ -32,12 +34,15 @@ country_event = {
 		name = TOP_redesign.1.c
 		trigger = { check_variable = { TOP_pressure_notice_tier = 3 } check_variable = { TOP_pressure_notice_actor > 0 } }
 		var:TOP_pressure_notice_actor = { add_opinion_modifier = { target = PREV modifier = TOP_sovereignty_violation } }
+		TOP_finish_pressure_notice = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.1.c issued a private warning"
 		ai_chance = { base = 25 }
 	}
 
 	option = {
 		name = TOP_redesign.1.e
+		TOP_finish_pressure_notice = yes
+		log = "[GetDateText]: [This.GetName]: TOP_redesign.1.e took no additional defensive action"
 		ai_chance = { base = 10 }
 	}
 }
@@ -54,6 +59,7 @@ country_event = {
 		name = TOP_redesign.2.a
 		trigger = { TOP_can_fund_deception = yes }
 		TOP_fund_deception = yes
+		TOP_finish_pressure_notice = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.2.a seeded deceptive organization reporting"
 		ai_chance = { base = 45 modifier = { add = 40 check_variable = { TOP_pressure_notice_tier = 3 } } }
 	}
@@ -62,12 +68,15 @@ country_event = {
 		name = TOP_redesign.2.b
 		trigger = { check_variable = { TOP_pressure_notice_tier = 3 } check_variable = { TOP_pressure_notice_actor > 0 } }
 		var:TOP_pressure_notice_actor = { add_opinion_modifier = { target = PREV modifier = TOP_sovereignty_violation } }
+		TOP_finish_pressure_notice = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.2.b warned the likely foreign actor"
 		ai_chance = { base = 35 }
 	}
 
 	option = {
 		name = TOP_redesign.2.c
+		TOP_finish_pressure_notice = yes
+		log = "[GetDateText]: [This.GetName]: TOP_redesign.2.c took no additional defensive action"
 		ai_chance = { base = 20 }
 	}
 }
@@ -82,6 +91,29 @@ country_event = {
 
 	option = {
 		name = TOP_redesign.10.a
+		TOP_finish_field_report = yes
+		log = "[GetDateText]: [This.GetName]: TOP_redesign.10.a recorded an immediate field report"
+	}
+}
+
+country_event = {
+	id = TOP_redesign.11
+	title = TOP_redesign.11.t
+	desc = {
+		trigger = { check_variable = { TOP_bda_notice_assessment = 3 } }
+		text = TOP_redesign.11.d_confirmed
+	}
+	desc = {
+		trigger = { NOT = { check_variable = { TOP_bda_notice_assessment = 3 } } }
+		text = TOP_redesign.11.d_inconclusive
+	}
+	picture = GFX_USA_event_cia
+	is_triggered_only = yes
+
+	option = {
+		name = TOP_redesign.11.a
+		TOP_finish_bda_notice = yes
+		log = "[GetDateText]: [This.GetName]: TOP_redesign.11.a acknowledged a delayed battle-damage assessment"
 	}
 }
 
@@ -157,6 +189,7 @@ country_event = {
 
 	option = {
 		name = TOP_redesign.30.a
+		trigger = { TOP_liaison_source_available = yes }
 		set_temp_variable = { TOP_liaison_response_reliability = 1 }
 		TOP_answer_liaison_request = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.30.a shared a trusted liaison snapshot"
@@ -165,6 +198,7 @@ country_event = {
 
 	option = {
 		name = TOP_redesign.30.b
+		trigger = { TOP_liaison_source_available = yes }
 		set_temp_variable = { TOP_liaison_response_reliability = 2 }
 		TOP_answer_liaison_request = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.30.b shared a mixed-reliability liaison snapshot"
@@ -173,6 +207,7 @@ country_event = {
 
 	option = {
 		name = TOP_redesign.30.c
+		trigger = { TOP_liaison_source_available = yes }
 		set_temp_variable = { TOP_liaison_response_reliability = 3 }
 		TOP_answer_liaison_request = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.30.c shared a suspect liaison snapshot"
@@ -181,10 +216,11 @@ country_event = {
 
 	option = {
 		name = TOP_redesign.30.f
+		trigger = { TOP_liaison_deception_available = yes }
 		set_temp_variable = { TOP_liaison_response_reliability = 4 }
 		TOP_answer_liaison_request = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.30.f supplied a deceptive liaison snapshot"
-		ai_chance = { base = 5 modifier = { add = 35 has_opinion = { target = event_target:TOP_liaison_requester value < 0 } } }
+		ai_chance = { base = 5 modifier = { add = 35 has_opinion = { target = var:TOP_incoming_liaison_actor value < 0 } } }
 	}
 
 	option = {
@@ -192,7 +228,7 @@ country_event = {
 		set_temp_variable = { TOP_liaison_response_reliability = 0 }
 		TOP_answer_liaison_request = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.30.e refused the liaison request"
-		ai_chance = { base = 15 modifier = { add = 50 has_opinion = { target = event_target:TOP_liaison_requester value < -49 } } }
+		ai_chance = { base = 15 modifier = { add = 50 has_opinion = { target = var:TOP_incoming_liaison_actor value < -49 } } }
 	}
 }
 
@@ -208,6 +244,8 @@ country_event = {
 		trigger = { set_temp_variable = { TOP_arg_target = TOP_custody_event_target } TOP_can_exploit_capture = yes }
 		set_temp_variable = { TOP_arg_target = TOP_custody_event_target }
 		TOP_exploit_linked_targets = yes
+		if = { limit = { is_ai = yes } TOP_ai_manage_custody = yes }
+		TOP_finish_custody_event = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.40.a exploited linked target intelligence"
 		ai_chance = { base = 45 }
 	}
@@ -217,6 +255,8 @@ country_event = {
 		trigger = { set_temp_variable = { TOP_arg_target = TOP_custody_event_target } TOP_can_exploit_capture = yes }
 		set_temp_variable = { TOP_arg_target = TOP_custody_event_target }
 		TOP_exploit_organization = yes
+		if = { limit = { is_ai = yes } TOP_ai_manage_custody = yes }
+		TOP_finish_custody_event = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.40.b exploited organization intelligence"
 		ai_chance = { base = 35 }
 	}
@@ -226,12 +266,16 @@ country_event = {
 		trigger = { set_temp_variable = { TOP_arg_target = TOP_custody_event_target } TOP_can_exploit_capture = yes }
 		set_temp_variable = { TOP_arg_target = TOP_custody_event_target }
 		TOP_exploit_network_disruption = yes
+		if = { limit = { is_ai = yes } TOP_ai_manage_custody = yes }
+		TOP_finish_custody_event = yes
 		log = "[GetDateText]: [This.GetName]: TOP_redesign.40.c disrupted command and communications"
 		ai_chance = { base = 20 }
 	}
 
 	option = {
 		name = TOP_redesign.40.e
+		TOP_finish_custody_event = yes
+		log = "[GetDateText]: [This.GetName]: TOP_redesign.40.e deferred exploitation"
 		ai_chance = { base = 0 }
 	}
 }

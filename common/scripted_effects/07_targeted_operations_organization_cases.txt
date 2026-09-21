@@ -14,6 +14,7 @@ TOP_initialize_organization_cases = {
 	resize_array = { TOP_org_case_host_posture = global.TOP_group_class^num }
 	resize_array = { TOP_org_case_doctrine = global.TOP_group_class^num }
 	resize_array = { TOP_org_case_capability = global.TOP_group_class^num }
+	resize_array = { TOP_org_case_protection = global.TOP_group_class^num }
 	resize_array = { TOP_org_case_exposure_score = global.TOP_group_class^num }
 	resize_array = { TOP_org_case_harm_risk = global.TOP_group_class^num }
 	resize_array = { TOP_org_case_attribution = global.TOP_group_class^num }
@@ -82,7 +83,7 @@ TOP_abandon_organization_package = {
 
 TOP_cycle_selected_facility = {
 	if = {
-		limit = { TOP_has_selected_organization = yes }
+		limit = { TOP_can_cycle_selected_facility = yes }
 		add_to_variable = { TOP_selected_facility = 1 }
 		if = { limit = { check_variable = { TOP_selected_facility > 3 } } set_variable = { TOP_selected_facility = 1 } }
 		set_temp_variable = { TOP_group_target = TOP_selected_organization }
@@ -118,7 +119,15 @@ TOP_begin_selected_operation = {
 TOP_stand_down_selected = {
 	if = {
 		limit = { TOP_has_selected_target = yes }
-		TOP_revoke_authorization = yes
+		if = {
+			limit = { check_variable = { TOP_case_phase^TOP_selected = 3 } check_variable = { TOP_case_method^TOP_selected > 0 } check_variable = { TOP_case_method^TOP_selected < 3 } }
+			set_variable = { TOP_case_phase^TOP_selected = 2 }
+			set_variable = { TOP_case_due^TOP_selected = 0 }
+			set_variable = { TOP_operation_subject_kind = 0 }
+			set_variable = { TOP_operation_subject_id = 0 }
+			set_variable = { TOP_operation_sequence = 0 }
+		}
+		else = { TOP_revoke_authorization = yes }
 	}
 	else_if = {
 		limit = { TOP_has_selected_organization = yes }
@@ -148,7 +157,11 @@ TOP_confirm_selected_result = {
 }
 
 TOP_calculate_organization_proposal_risks = {
+	set_temp_variable = { TOP_organization_security_host = TOP_proposal_host }
+	TOP_get_organization_defensive_modifiers = yes
+	set_variable = { TOP_proposal_protection = TOP_organization_defensive_success_penalty }
 	set_variable = { TOP_proposal_exposure_score = 25 }
+	add_to_variable = { TOP_proposal_exposure_score = TOP_organization_defensive_exposure_bonus }
 	if = { limit = { check_variable = { TOP_proposal_host_posture = 1 } } add_to_variable = { TOP_proposal_exposure_score = 20 } }
 	else_if = { limit = { check_variable = { TOP_proposal_host_posture = 3 } } add_to_variable = { TOP_proposal_exposure_score = 5 } }
 	else_if = { limit = { check_variable = { TOP_proposal_host_posture = 4 } } subtract_from_variable = { TOP_proposal_exposure_score = 15 } }
@@ -188,6 +201,8 @@ TOP_begin_organization_review = {
 		set_variable = { TOP_proposal_identity = TOP_org_verification^TOP_selected_organization }
 		set_variable = { TOP_proposal_location = TOP_org_location^TOP_selected_organization }
 		set_variable = { TOP_proposal_pattern = TOP_org_activity^TOP_selected_organization }
+		set_temp_variable = { TOP_group_target = TOP_selected_organization }
+		TOP_refresh_organization_lead_age = yes
 		set_variable = { TOP_proposal_lead_age = TOP_org_lead_age^TOP_selected_organization }
 		set_variable = { TOP_proposal_civilian_assurance = TOP_org_activity^TOP_selected_organization }
 		set_variable = { TOP_proposal_access = 3 }
@@ -221,6 +236,11 @@ TOP_open_organization_review_case = {
 	set_variable = { TOP_org_case_sequence^TOP_arg_group = TOP_case_counter }
 	set_variable = { TOP_org_case_attribution_due^TOP_arg_group = 0 }
 	set_variable = { TOP_org_case_attribution_investigated^TOP_arg_group = 0 }
+	set_variable = { TOP_org_case_attribution^TOP_arg_group = 0 }
+	set_variable = { TOP_org_case_harm^TOP_arg_group = 0 }
+	set_variable = { TOP_org_case_result^TOP_arg_group = 0 }
+	set_variable = { TOP_org_case_archive_row^TOP_arg_group = 0 }
+	set_variable = { TOP_org_case_archive_token^TOP_arg_group = 0 }
 	set_variable = { TOP_org_case_oversight^TOP_arg_group = 0 }
 	set_variable = { TOP_org_case_oversight_open^TOP_arg_group = 0 }
 	set_variable = { TOP_org_case_host^TOP_arg_group = TOP_org_lead_host^TOP_arg_group }
@@ -250,6 +270,7 @@ TOP_commit_organization_authorization = {
 		set_variable = { TOP_org_case_host_posture^TOP_group_target = TOP_proposal_host_posture }
 		set_variable = { TOP_org_case_doctrine^TOP_group_target = TOP_proposal_doctrine }
 		set_variable = { TOP_org_case_capability^TOP_group_target = TOP_proposal_capability }
+		set_variable = { TOP_org_case_protection^TOP_group_target = TOP_proposal_protection }
 		set_variable = { TOP_org_case_exposure_score^TOP_group_target = TOP_proposal_exposure_score }
 		set_variable = { TOP_org_case_harm_risk^TOP_group_target = TOP_proposal_harm_risk }
 		set_variable = { TOP_org_case_attribution^TOP_group_target = 0 }
@@ -264,6 +285,10 @@ TOP_commit_organization_authorization = {
 TOP_close_organization_case = {
 	if = {
 		limit = { check_variable = { TOP_org_case_phase^TOP_arg_group > 0 } check_variable = { TOP_org_case_sequence^TOP_arg_group = TOP_arg_sequence } }
+		if = {
+			limit = { check_variable = { TOP_org_package_state^TOP_arg_group = 3 } }
+			set_variable = { TOP_org_package_state^TOP_arg_group = 1 }
+		}
 		set_variable = { TOP_org_case_phase^TOP_arg_group = 0 }
 		set_variable = { TOP_org_case_due^TOP_arg_group = 0 }
 		if = {
@@ -309,11 +334,19 @@ TOP_process_organization_cases = {
 			add_to_array = { TOP_organization_cases_to_close = top_org_case }
 		}
 		else_if = {
-			limit = { check_variable = { TOP_org_case_phase^top_org_case = 3 } check_variable = { TOP_org_case_due^top_org_case < global.TOP_clock } }
-			TOP_resolve_organization_operation = yes
+			limit = {
+				check_variable = { TOP_org_case_phase^top_org_case = 3 }
+				check_variable = { var = global.TOP_clock value = TOP_org_case_due^top_org_case compare = greater_than_or_equals }
+			}
+			set_temp_variable = { TOP_arg_group = top_org_case }
+			if = { limit = { TOP_organization_mission_binding_valid = yes } TOP_resolve_organization_operation = yes }
+			else = { add_to_array = { TOP_organization_cases_to_close = top_org_case } }
 		}
 		else_if = {
-			limit = { check_variable = { TOP_org_case_phase^top_org_case < 4 } check_variable = { TOP_org_case_until^top_org_case < global.TOP_clock } }
+			limit = {
+				check_variable = { TOP_org_case_phase^top_org_case < 3 }
+				check_variable = { var = global.TOP_clock value = TOP_org_case_until^top_org_case compare = greater_than_or_equals }
+			}
 			add_to_array = { TOP_organization_cases_to_close = top_org_case }
 		}
 	}
@@ -353,6 +386,7 @@ TOP_resolve_organization_operation = {
 	}
 	else = {
 		set_temp_variable = { TOP_operation_chance = { value = TOP_org_case_capability^TOP_group_target add = TOP_org_case_activity^TOP_group_target divide = 2 } }
+		subtract_from_temp_variable = { TOP_operation_chance = TOP_org_case_protection^TOP_group_target }
 		if = {
 			limit = { check_variable = { global.TOP_group_disruption_type^TOP_group_target = 2 } check_variable = { global.TOP_group_disruption_until^TOP_group_target > global.TOP_clock } }
 			add_to_temp_variable = { TOP_operation_chance = 10 }
@@ -360,9 +394,14 @@ TOP_resolve_organization_operation = {
 		clamp_temp_variable = { var = TOP_operation_chance min = 5 max = 90 }
 		random = {
 			chance = TOP_operation_chance
-			set_temp_variable = { TOP_result = 11 }
-			TOP_damage_organization_facility = yes
-			TOP_apply_organization_disruption = yes
+			set_temp_variable = { TOP_facility_state = TOP_org_case_state^TOP_group_target }
+			set_temp_variable = { TOP_facility_objective = TOP_org_case_objective^TOP_group_target }
+			if = {
+				limit = { TOP_organization_facility_available = yes }
+				set_temp_variable = { TOP_result = 11 }
+				TOP_damage_organization_facility = yes
+				TOP_apply_organization_disruption = yes
+			}
 		}
 		if = { limit = { check_variable = { TOP_result = 1 } } set_temp_variable = { TOP_result = 9 } }
 	}
@@ -376,12 +415,12 @@ TOP_resolve_organization_operation = {
 	set_variable = { TOP_operation_subject_kind = 0 }
 	set_variable = { TOP_operation_subject_id = 0 }
 	set_variable = { TOP_operation_sequence = 0 }
-	set_variable = { TOP_report_subject_kind = 2 }
-	set_variable = { TOP_report_subject_id = TOP_group_target }
-	set_variable = { TOP_report_result = TOP_result }
-	set_variable = { TOP_report_state = TOP_org_case_state^TOP_group_target }
-	set_variable = { TOP_report_host = TOP_org_case_host^TOP_group_target }
-	if = { limit = { is_ai = no } country_event = { id = TOP_redesign.10 days = 1 } }
+	set_temp_variable = { TOP_report_enqueue_kind = 2 }
+	set_temp_variable = { TOP_report_enqueue_id = TOP_group_target }
+	set_temp_variable = { TOP_report_enqueue_result = TOP_result }
+	set_temp_variable = { TOP_report_enqueue_state = TOP_org_case_state^TOP_group_target }
+	set_temp_variable = { TOP_report_enqueue_host = TOP_org_case_host^TOP_group_target }
+	TOP_queue_field_report = yes
 	TOP_refresh_view = yes
 }
 
@@ -390,11 +429,11 @@ TOP_damage_organization_facility = {
 	set_temp_variable = { TOP_facility_objective = TOP_org_case_objective^TOP_group_target }
 	var:TOP_facility_state = {
 		if = {
-			limit = { check_variable = { TOP_facility_objective = 1 } }
+			limit = { check_variable = { PREV.TOP_facility_objective = 1 } }
 			if = { limit = { infrastructure > 0 } damage_building = { type = infrastructure damage = 1 } }
 		}
 		else_if = {
-			limit = { check_variable = { TOP_facility_objective = 2 } }
+			limit = { check_variable = { PREV.TOP_facility_objective = 2 } }
 			if = { limit = { arms_factory > 0 } damage_building = { type = arms_factory damage = 1 } }
 			else_if = { limit = { infrastructure > 0 } damage_building = { type = infrastructure damage = 1 } }
 		}

@@ -6,9 +6,20 @@ class TargetedScript(RaceScript):
 
     country_trigger_fields = {}
 
+    @staticmethod
+    def _unqualified_temp_name(name):
+        while isinstance(name, str) and (
+            name.startswith("PREV.") or name.startswith("ROOT.")
+        ):
+            name = name.split(".", 1)[1]
+        return name
+
     def value(self, name, identifier):
         if name == "THIS":
             return identifier
+        temp_name = self._unqualified_temp_name(name)
+        if temp_name != name and temp_name in self.temps:
+            return self.temps[temp_name]
         return super().value(name, identifier)
 
     def condition(self, statements, identifier):
@@ -44,7 +55,27 @@ class TargetedScript(RaceScript):
             self.execute_statement(statement, identifier)
 
     def execute_statement(self, statement, identifier):
-        if statement[0] in {"if", "else_if", "else", "hidden_effect"}:
+        key, comparison, operand = statement
+        if key in {
+            "set_temp_variable",
+            "add_to_temp_variable",
+            "subtract_from_temp_variable",
+            "multiply_temp_variable",
+            "divide_temp_variable",
+        }:
+            name, operator, value = operand[0]
+            normalized = self._unqualified_temp_name(name)
+            super().execute(
+                [(key, comparison, [(normalized, operator, value)])], identifier
+            )
+        elif key == "clamp_temp_variable":
+            normalized = []
+            for name, operator, value in operand:
+                if name == "var":
+                    value = self._unqualified_temp_name(value)
+                normalized.append((name, operator, value))
+            super().execute([(key, comparison, normalized)], identifier)
+        elif key in {"if", "else_if", "else", "hidden_effect"}:
             self.execute(statement[2], identifier)
         else:
             super().execute([statement], identifier)

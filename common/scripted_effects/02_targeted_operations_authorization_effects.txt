@@ -55,6 +55,8 @@ TOP_begin_review = {
 		set_variable = { TOP_proposal_identity = TOP_identity_confidence^TOP_proposal_target }
 		set_variable = { TOP_proposal_location = TOP_location_confidence^TOP_proposal_target }
 		set_variable = { TOP_proposal_pattern = TOP_pattern_confidence^TOP_proposal_target }
+		set_temp_variable = { TOP_target = TOP_proposal_target }
+		TOP_refresh_person_lead_age = yes
 		set_variable = { TOP_proposal_lead_age = TOP_lead_age^TOP_proposal_target }
 		set_variable = { TOP_proposal_civilian_assurance = TOP_pattern_confidence^TOP_proposal_target }
 		clamp_variable = { var = TOP_proposal_civilian_assurance min = 0 max = 100 }
@@ -84,9 +86,9 @@ TOP_begin_review = {
 				OR = {
 					check_variable = { TOP_proposal_host = THIS }
 					var:TOP_proposal_host = {
-						NOT = { has_war_with = var:TOP_review_actor }
+						NOT = { has_war_with = PREV }
 						OR = {
-							is_in_faction_with = var:TOP_review_actor
+							is_in_faction_with = PREV
 							has_opinion = { target = PREV value > 49 }
 						}
 					}
@@ -203,7 +205,7 @@ TOP_send_host_request = {
 		var:TOP_proposal_host = {
 			if = {
 				limit = { check_variable = { TOP_incoming_actor = 0 } }
-				set_variable = { TOP_incoming_actor = TOP_review_actor }
+				set_variable = { TOP_incoming_actor = PREV.TOP_review_actor }
 				set_variable = { TOP_incoming_sequence = PREV.TOP_proposal_sequence }
 				set_variable = { TOP_incoming_target = PREV.TOP_proposal_target }
 				set_variable = { TOP_incoming_subject_kind = PREV.TOP_proposal_subject_kind }
@@ -212,11 +214,10 @@ TOP_send_host_request = {
 				set_variable = { TOP_incoming_method = PREV.TOP_proposal_method }
 				set_variable = { TOP_incoming_facility = PREV.TOP_proposal_facility }
 				set_variable = { TOP_incoming_objective = PREV.TOP_proposal_objective }
-				PREV = { save_event_target_as = TOP_host_request_sender }
 				country_event = TOP_authorization.3
 			}
 			else = {
-				var:TOP_review_actor = {
+				PREV = {
 					set_variable = { TOP_proposal_consent = -1 }
 					set_variable = { TOP_proposal_host_posture = 5 }
 					TOP_open_senior_review = yes
@@ -236,19 +237,20 @@ TOP_answer_host_request = {
 			add_to_array = { TOP_liaison_partners = TOP_incoming_actor }
 		}
 		var:TOP_incoming_actor = {
+			set_temp_variable = { TOP_host_response_posture = PREV.TOP_arg_posture }
 			set_variable = { TOP_proposal_consent = 0 }
-			set_variable = { TOP_proposal_host_posture = TOP_arg_posture }
+			set_variable = { TOP_proposal_host_posture = TOP_host_response_posture }
 			if = {
-				limit = { check_variable = { TOP_arg_posture = 4 } }
+				limit = { check_variable = { TOP_host_response_posture = 4 } }
 				set_variable = { TOP_proposal_consent = 1 }
 				TOP_open_senior_review = yes
 			}
 			else_if = {
-				limit = { check_variable = { TOP_arg_posture = 3 } }
+				limit = { check_variable = { TOP_host_response_posture = 3 } }
 				TOP_open_senior_review = yes
 			}
 			else_if = {
-				limit = { check_variable = { TOP_arg_posture = 2 } }
+				limit = { check_variable = { TOP_host_response_posture = 2 } }
 				if = {
 					limit = { check_variable = { TOP_proposal_subject_kind = 1 } }
 					add_to_variable = { TOP_location_confidence^TOP_proposal_target = 20 }
@@ -258,6 +260,7 @@ TOP_answer_host_request = {
 					clamp_variable = { var = TOP_identity_confidence^TOP_proposal_target min = 0 max = 100 }
 					clamp_variable = { var = TOP_pattern_confidence^TOP_proposal_target min = 0 max = 100 }
 					set_variable = { TOP_lead_age^TOP_proposal_target = 0 }
+					set_variable = { TOP_lead_report_clock^TOP_proposal_target = global.TOP_clock }
 					set_variable = { TOP_package_state^TOP_proposal_target = 1 }
 				}
 				else = {
@@ -268,6 +271,7 @@ TOP_answer_host_request = {
 					clamp_variable = { var = TOP_org_verification^TOP_proposal_subject_id min = 0 max = 100 }
 					clamp_variable = { var = TOP_org_activity^TOP_proposal_subject_id min = 0 max = 100 }
 					set_variable = { TOP_org_lead_age^TOP_proposal_subject_id = 0 }
+					set_variable = { TOP_org_lead_report_clock^TOP_proposal_subject_id = global.TOP_clock }
 					set_variable = { TOP_org_package_state^TOP_proposal_subject_id = 1 }
 				}
 				TOP_cancel_review = yes
@@ -289,11 +293,18 @@ TOP_answer_host_request = {
 			}
 		}
 	}
-	# Only consuming the request releases this host slot; cancellation never overwrites its identity.
+	TOP_clear_incoming_host_request = yes
+}
+
+TOP_clear_incoming_host_request = {
 	set_variable = { TOP_incoming_actor = 0 }
 	set_variable = { TOP_incoming_sequence = 0 }
+	set_variable = { TOP_incoming_target = 0 }
 	set_variable = { TOP_incoming_subject_kind = 0 }
 	set_variable = { TOP_incoming_subject_id = 0 }
+	set_variable = { TOP_incoming_state = 0 }
+	set_variable = { TOP_incoming_method = 0 }
+	set_variable = { TOP_incoming_facility = 0 }
 	set_variable = { TOP_incoming_objective = 0 }
 }
 
@@ -328,7 +339,7 @@ TOP_approve_review = {
 
 TOP_confirm_leader_assassination = {
 	if = {
-		limit = { check_variable = { TOP_proposal_stage = 5 } TOP_review_is_leader_assassination = yes TOP_review_valid = yes TOP_can_pay_approval_cost = yes }
+		limit = { TOP_review_can_confirm_leader_assassination = yes }
 		TOP_commit_proposal = yes
 	}
 }
@@ -469,7 +480,7 @@ TOP_modern_country_opportunity = {
 						}
 						AND = {
 							check_variable = { global.TOP_modern_year > 2026 }
-							check_variable = { top_modern_target > TOP_modern_floor }
+							check_variable = { top_modern_target > PREV.TOP_modern_floor }
 							check_variable = { top_modern_target < global.TOP_modern_last }
 							check_variable = { global.TOP_civilian^top_modern_target = 0 }
 							OR = {
@@ -515,9 +526,9 @@ TOP_modern_country_opportunity = {
 					add_to_temp_variable = { TOP_modern_score = 30 }
 				}
 				if = {
-					limit = { check_variable = { TOP_modern_score > TOP_modern_best_score } }
-					set_temp_variable = { TOP_modern_candidate = top_modern_target }
-					set_temp_variable = { TOP_modern_best_score = TOP_modern_score }
+					limit = { check_variable = { TOP_modern_score > PREV.TOP_modern_best_score } }
+					set_temp_variable = { PREV.TOP_modern_candidate = top_modern_target }
+					set_temp_variable = { PREV.TOP_modern_best_score = TOP_modern_score }
 				}
 			}
 		}

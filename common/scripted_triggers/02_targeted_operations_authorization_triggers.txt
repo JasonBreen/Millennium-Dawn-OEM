@@ -70,7 +70,7 @@ TOP_person_review_valid = {
 		TOP_native_binding_unused = yes
 	}
 	set_temp_variable = { TOP_review_expected_host = TOP_proposal_host }
-	var:TOP_proposal_state = { is_controlled_by = var:TOP_review_expected_host }
+	var:TOP_proposal_state = { is_controlled_by = var:PREV.TOP_review_expected_host }
 	var:TOP_proposal_host = { exists = yes }
 	set_temp_variable = { TOP_target = TOP_proposal_target }
 	TOP_person_operational_eligible = yes
@@ -107,8 +107,7 @@ TOP_review_staff_ready = {
 	}
 }
 
-TOP_review_can_approve = {
-	check_variable = { TOP_proposal_stage = 4 }
+TOP_review_authorization_valid = {
 	TOP_review_staff_ready = yes
 	if = {
 		limit = { check_variable = { TOP_proposal_subject_kind = 1 } }
@@ -122,6 +121,24 @@ TOP_review_can_approve = {
 	}
 	if = { limit = { check_variable = { TOP_proposal_doctrine = 1 } } TOP_restrictive_procedure_valid = yes }
 	TOP_can_pay_approval_cost = yes
+}
+
+TOP_review_can_approve = {
+	check_variable = { TOP_proposal_stage = 4 }
+	TOP_review_authorization_valid = yes
+}
+
+TOP_review_can_confirm_leader_assassination = {
+	check_variable = { TOP_proposal_stage = 5 }
+	TOP_review_is_leader_assassination = yes
+	TOP_review_authorization_valid = yes
+}
+
+TOP_review_can_commit_person = {
+	OR = {
+		TOP_review_can_approve = yes
+		TOP_review_can_confirm_leader_assassination = yes
+	}
 }
 
 TOP_host_request_matches = {

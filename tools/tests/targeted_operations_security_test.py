@@ -7,6 +7,7 @@ from targeted_operations_helpers_test import TargetedScript
 
 ROOT = Path(__file__).resolve().parents[2]
 EFFECTS = ROOT / "common/scripted_effects/03_targeted_operations_security.txt"
+REDESIGN_EFFECTS = ROOT / "common/scripted_effects/06_targeted_operations_redesign.txt"
 TRIGGERS = ROOT / "common/scripted_triggers/03_targeted_operations_security.txt"
 
 
@@ -20,6 +21,10 @@ class SecurityScript(TargetedScript):
 
     def __init__(self):
         self.effects = _parse_race_script(EFFECTS.read_text(encoding="utf-8"))
+        redesign = _parse_race_script(REDESIGN_EFFECTS.read_text(encoding="utf-8"))
+        self.effects["TOP_get_effective_person_pressure"] = redesign[
+            "TOP_get_effective_person_pressure"
+        ]
         self.effects["TOP_refresh_vip_details"] = []
         self.triggers = _parse_race_script(TRIGGERS.read_text(encoding="utf-8"))
         self.globals = {"TOP_clock": 7}
@@ -91,6 +96,17 @@ class SecurityScript(TargetedScript):
         self.run("TOP_get_defensive_modifiers", attacker)
         return tuple(
             self.temps[f"TOP_defensive_{name}"]
+            for name in ("collection_penalty", "success_penalty", "exposure_bonus")
+        )
+
+    def organization_modifiers(self, group=23, host=2, attacker=1):
+        self.temps.update(
+            TOP_group_target=group,
+            TOP_organization_security_host=host,
+        )
+        self.run("TOP_get_organization_defensive_modifiers", attacker)
+        return tuple(
+            self.temps[f"TOP_organization_defensive_{name}"]
             for name in ("collection_penalty", "success_penalty", "exposure_bonus")
         )
 
@@ -208,6 +224,45 @@ def test_disabled_system_neither_spends_nor_applies_existing_policy():
     game.purchase("counterintelligence", 3)
     assert game.modifiers() == (0, 0, 0)
     assert game.charges == [(2, -1.5)]
+
+
+def test_state_security_facilities_use_host_policies_and_pressure_hardening():
+    game = SecurityScript()
+    game.globals.update(
+        {
+            "TOP_group_class^TOP_group_target": 2,
+            "TOP_group_pressure^TOP_group_target": 75,
+        }
+    )
+    game.purchase("protection", 3)
+    game.purchase("counterintelligence", 2)
+    assert game.organization_modifiers() == (6, 25, 10)
+    assert game.organization_modifiers(host=1) == (0, 10, 0)
+    game.globals["TOP_group_class^TOP_group_target"] = 1
+    assert game.organization_modifiers() == (6, 15, 10)
+
+
+def test_organization_defense_is_wired_to_collection_review_and_resolution():
+    collection = _named_block(
+        REDESIGN_EFFECTS.read_text(encoding="utf-8"),
+        "TOP_collect_organization_pulse",
+    )
+    organization = (
+        ROOT / "common/scripted_effects/07_targeted_operations_organization_cases.txt"
+    ).read_text(encoding="utf-8")
+    review = _named_block(organization, "TOP_calculate_organization_proposal_risks")
+    resolution = _named_block(organization, "TOP_resolve_organization_operation")
+    assert (
+        "TOP_organization_security_host = TOP_org_lead_host^TOP_group_target"
+        in collection
+    )
+    assert "subtract = TOP_organization_defensive_collection_penalty" in collection
+    assert "TOP_organization_security_host = TOP_proposal_host" in review
+    assert (
+        "TOP_proposal_protection = TOP_organization_defensive_success_penalty" in review
+    )
+    assert "TOP_organization_defensive_exposure_bonus" in review
+    assert "TOP_org_case_protection^TOP_group_target" in resolution
 
 
 def test_ai_policy_changes_do_not_dirty_the_human_window():
@@ -329,4 +384,7 @@ def test_lethal_resolution_snapshots_defensive_exposure_before_retirement():
     )
     assert resolution.index(
         "TOP_calculate_person_consequences = yes"
-    ) < resolution.index("TOP_kill_target = yes")
+    ) < resolution.index("TOP_resolve_target = yes")
+    assert resolution.index(
+        "set_temp_variable = { TOP_case_result_context = 1 }"
+    ) < resolution.index("TOP_resolve_target = yes")

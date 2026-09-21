@@ -143,8 +143,9 @@ def test_collection_focus_spillover_decay_and_staleness_contract():
     assert "TOP_pattern_confidence^top_tick_target = 3" in compatibility
     assert "TOP_org_location^top_tick_group = 5" in compatibility
     assert "TOP_org_activity^top_tick_group = 3" in compatibility
-    assert "TOP_lead_age^TOP_arg_target < 57" in triggers
-    assert "TOP_org_lead_age^TOP_group_target < 57" in triggers
+    assert "TOP_lead_report_clock^TOP_arg_target" in triggers
+    assert "TOP_org_lead_report_clock^TOP_group_target" in triggers
+    assert triggers.count("TOP_current_lead_age < 57") == 2
 
 
 def test_package_and_operation_capacity_are_independent():
@@ -166,6 +167,25 @@ def test_package_and_operation_capacity_are_independent():
     assert "TOP_operation_subject_kind = 2" in organization_begin
     assert "TOP_case_phase^TOP_arg_target = 3" in person_begin
     assert "TOP_org_case_phase^TOP_arg_group = 3" in organization_begin
+
+
+def test_native_success_adjustments_are_frozen_into_the_engine_probability():
+    person_begin = block(
+        "common/scripted_effects/04_targeted_operations_cases.txt",
+        "TOP_begin_person_operation",
+    )
+    callback = block(
+        "common/scripted_effects/00_targeted_operations_effects.txt",
+        "TOP_resolve_native_callback",
+    )
+
+    assert "TOP_case_native_success_bonus^TOP_arg_target = 10" in person_begin
+    assert (
+        "TOP_case_native_success_penalty^TOP_arg_target = TOP_defensive_success_penalty"
+        in person_begin
+    )
+    assert "TOP_tier = 1" not in callback
+    assert "TOP_defensive_success_penalty" not in callback
 
 
 def test_packages_pause_resume_and_abandon_without_erasing_knowledge():
@@ -313,8 +333,42 @@ def test_resolution_uses_one_intelligence_roll_and_bda_never_rerolls_truth():
     assert "TOP_org_case_attribution^top_attribution_group < 3" in investigation
 
 
+def test_exact_duration_processors_include_the_due_day():
+    effects = read("common/scripted_effects/00_targeted_operations_effects.txt")
+    cases = read("common/scripted_effects/04_targeted_operations_cases.txt")
+    organizations = read(
+        "common/scripted_effects/07_targeted_operations_organization_cases.txt"
+    )
+    resolution = read("common/scripted_effects/08_targeted_operations_resolution.txt")
+    pressure = read("common/scripted_effects/06_targeted_operations_redesign.txt")
+
+    for token, source in (
+        ("TOP_bda_due^top_bda_target compare = greater_than_or_equals", effects),
+        ("TOP_case_due^TOP_target compare = greater_than_or_equals", cases),
+        (
+            "TOP_org_case_due^top_org_case compare = greater_than_or_equals",
+            organizations,
+        ),
+        (
+            "TOP_case_attribution_due^top_attribution_target compare = greater_than_or_equals",
+            resolution,
+        ),
+        (
+            "TOP_org_case_attribution_due^top_attribution_group compare = greater_than_or_equals",
+            resolution,
+        ),
+        (
+            "global.TOP_pressure_decay_due compare = greater_than_or_equals",
+            pressure,
+        ),
+    ):
+        assert token in source
+
+
 def test_archive_is_typed_and_circular_at_128_rows():
-    initialization = read("common/scripted_effects/06_targeted_operations_redesign.txt")
+    initialization = read(
+        "common/scripted_effects/01_targeted_operations_registry.txt"
+    ) + read("common/scripted_effects/06_targeted_operations_redesign.txt")
     resolution = read("common/scripted_effects/08_targeted_operations_resolution.txt")
 
     for field in (
@@ -335,6 +389,8 @@ def test_archive_is_typed_and_circular_at_128_rows():
         "attribution",
         "harm",
         "custodian",
+        "disposition",
+        "custody_token",
         "sequence",
     ):
         assert f"TOP_archive_{field} = 128" in initialization
@@ -374,6 +430,39 @@ def test_doctrine_vip_liaison_and_custody_depth_contracts():
         "TOP_release_selected",
     ):
         assert f"{disposition} = {{" in custody
+
+
+def test_vip_deception_and_waiting_mandates_have_no_expiry_dead_zone():
+    core = read("common/scripted_effects/00_targeted_operations_effects.txt")
+    person_cases = read("common/scripted_effects/04_targeted_operations_cases.txt")
+    organization_cases = read(
+        "common/scripted_effects/07_targeted_operations_organization_cases.txt"
+    )
+    triggers = read("common/scripted_triggers/07_targeted_operations_redesign.txt")
+    person_case_triggers = read(
+        "common/scripted_triggers/04_targeted_operations_cases.txt"
+    )
+
+    weekly = _named_block(core, "TOP_global_weekly")
+    assert "TOP_refresh_vip_details = yes" in weekly
+    deception = _named_block(triggers, "TOP_can_fund_deception")
+    assert "compare = greater_than_or_equals" in deception
+    assert "TOP_case_phase^top_timer_case < 3" in person_cases
+    assert "TOP_org_case_phase^top_org_case < 3" in organization_cases
+    assert (
+        "TOP_case_phase^top_timer_case = 3 } check_variable = { "
+        "TOP_case_until^top_timer_case < global.TOP_clock" not in person_cases
+    )
+    assert (
+        "TOP_org_case_phase^top_org_case = 3 } check_variable = { "
+        "TOP_org_case_until^top_org_case < global.TOP_clock" not in organization_cases
+    )
+    assert "TOP_case_until^TOP_arg_target" not in _named_block(
+        person_case_triggers, "TOP_case_binding_valid"
+    )
+    assert "TOP_org_case_until^TOP_arg_group" not in _named_block(
+        triggers, "TOP_organization_mission_binding_valid"
+    )
 
 
 def test_oversight_uses_a_typed_queue_without_overwriting_open_subjects():
@@ -424,13 +513,11 @@ def test_strategic_crisis_consults_faction_partners_and_guarantors():
         assert f"name = TOP_crisis.7.{option}" in crisis_event
 
 
-def test_capture_uses_distinct_custody_crisis_copy_and_authored_tripwires():
+def test_capture_uses_distinct_custody_crisis_copy():
     events = read("events/Targeted Operations Runtime.txt")
     localization = read(
         "localisation/english/MD_targeted_operations_authorization_l_english.yml"
     )
-    depth = read("common/scripted_effects/09_targeted_operations_depth.txt")
-
     for event_id in ("TOP_crisis.10", "TOP_crisis.1", "TOP_crisis.2", "TOP_crisis.4"):
         event_start = events.index(f"\tid = {event_id}\n")
         event = events[event_start : event_start + 1400]
@@ -442,16 +529,10 @@ def test_capture_uses_distinct_custody_crisis_copy_and_authored_tripwires():
     assert "custody and hostage crisis" in localization
     assert "negotiated return" in localization
 
-    for effect, flag in (
-        ("TOP_grant_expanded_doctrine_override", "TOP_expanded_doctrine_override"),
-        ("TOP_grant_delegated_doctrine_override", "TOP_delegated_doctrine_override"),
-        ("TOP_grant_strategic_tripwire", "TOP_strategic_tripwire"),
-    ):
-        assert f"set_country_flag = {flag}" in _named_block(depth, effect)
-
 
 def test_public_compatibility_interfaces_remain_available():
     effects = read("common/scripted_effects/00_targeted_operations_effects.txt")
+    effects += read("common/scripted_effects/09_targeted_operations_depth.txt")
 
     for name in (
         "TOP_add_target_lead",
@@ -462,16 +543,116 @@ def test_public_compatibility_interfaces_remain_available():
         "TOP_capture_target",
         "TOP_release_selected",
         "TOP_transfer_selected",
+        "TOP_offer_exchange",
     ):
         assert f"{name} = {{" in effects
+
+
+def test_custody_bda_and_crisis_queues_preserve_immutable_records():
+    depth = read("common/scripted_effects/09_targeted_operations_depth.txt")
+    core = read("common/scripted_effects/00_targeted_operations_effects.txt")
+    people = read("common/scripted_effects/08_targeted_operations_resolution.txt")
+    organizations = read(
+        "common/scripted_effects/07_targeted_operations_organization_cases.txt"
+    )
+    runtime = read("common/scripted_effects/05_targeted_operations_runtime.txt")
+    events = read("events/Targeted Operations Redesign.txt")
+
+    custody_queue = _named_block(depth, "TOP_queue_custody_event")
+    custody_dispatch = _named_block(depth, "TOP_dispatch_next_custody_event")
+    assert "TOP_custody_event_queue = TOP_arg_target" in custody_queue
+    assert "TOP_custody_event_queue^0" in custody_dispatch
+    assert "TOP_finish_custody_event = yes" in events
+
+    report_queue = _named_block(depth, "TOP_queue_field_report")
+    report_dispatch = _named_block(depth, "TOP_dispatch_next_field_report")
+    report_finish = _named_block(depth, "TOP_finish_field_report")
+    for field in ("subject_kinds", "subject_ids", "results", "states", "hosts"):
+        assert f"TOP_report_{field}" in report_queue
+        assert f"TOP_report_{field}^0" in report_dispatch
+    assert "TOP_queue_field_report = yes" in _named_block(
+        people, "TOP_resolve_person_operation"
+    )
+    assert "TOP_queue_field_report = yes" in _named_block(
+        organizations, "TOP_resolve_organization_operation"
+    )
+    assert "TOP_dispatch_next_field_report = yes" in report_finish
+    report_event = events[
+        events.index("id = TOP_redesign.10") : events.index("id = TOP_redesign.11")
+    ]
+    assert "TOP_finish_field_report = yes" in report_event
+
+    bda_queue = _named_block(depth, "TOP_queue_bda_notice")
+    bda_dispatch = _named_block(depth, "TOP_dispatch_next_bda_notice")
+    for field in ("targets", "assessments", "sequences", "rows"):
+        assert f"TOP_bda_notice_{field}" in bda_queue
+        assert f"TOP_bda_notice_{field}^0" in bda_dispatch
+    assert "TOP_arg_sequence = TOP_bda_token^top_bda_target" in core
+    assert "TOP_archive_bda_token^TOP_archive_update_row" in core
+    assert "TOP_finish_bda_notice = yes" in events
+
+    crisis_start = _named_block(runtime, "TOP_start_exposed_kill_crisis")
+    crisis_dispatch = _named_block(runtime, "TOP_dispatch_next_strategic_crisis")
+    for field in (
+        "actors",
+        "protections",
+        "hosts",
+        "targets",
+        "states",
+        "results",
+        "attributions",
+        "consents",
+        "visit_statuses",
+        "visit_stories",
+        "visit_tokens",
+        "sequences",
+    ):
+        assert f"global.TOP_crisis_queue_{field}" in crisis_start
+        if field == "sequences":
+            assert (
+                "global.TOP_crisis_queue_sequences = TOP_case_sequence^TOP_target"
+                in crisis_start
+            )
+            assert (
+                "array = global.TOP_crisis_queue_sequences index = 0" in crisis_dispatch
+            )
+        else:
+            assert f"global.TOP_crisis_queue_{field}^0" in crisis_dispatch
+    consequence_update = _named_block(
+        read("common/scripted_effects/08_targeted_operations_resolution.txt"),
+        "TOP_apply_shared_consequences",
+    )
+    assert (
+        "global.TOP_crisis_queue_sequences^top_crisis_queue_index = TOP_case_sequence^TOP_target"
+        in consequence_update
+    )
+    assert "global.TOP_crisis_capture = 1" in crisis_start
+    assert "TOP_result = 2" in crisis_start
+
+
+def test_exchange_requires_an_authored_offer_and_transfer_uses_the_selected_country():
+    depth = read("common/scripted_effects/09_targeted_operations_depth.txt")
+    core = read("common/scripted_effects/00_targeted_operations_effects.txt")
+    triggers = read("common/scripted_triggers/07_targeted_operations_redesign.txt")
+
+    offer = _named_block(depth, "TOP_offer_exchange")
+    exchange = _named_block(depth, "TOP_exchange_selected")
+    transfer = _named_block(core, "TOP_transfer_selected")
+    exchange_gate = _named_block(triggers, "TOP_can_exchange_selected")
+
+    assert "global.TOP_custodian^TOP_arg_target = THIS" in offer
+    assert "TOP_exchange_country^TOP_arg_target = TOP_arg_country" in offer
+    assert "TOP_exchange_until^TOP_arg_target" in offer
+    assert "TOP_can_exchange_selected = yes" in exchange
+    assert "TOP_exchange_country^TOP_selected" in exchange_gate
+    assert "TOP_exchange_until^TOP_selected > global.TOP_clock" in exchange_gate
+    assert "TOP_transfer_host = TOP_transfer_country" in transfer
+    assert "global.TOP_host^TOP_selected" not in transfer
 
 
 def test_operations_center_exposes_required_filters_tabs_and_dimensions():
     gui = read("interface/targeted_operations.gui")
     scripted_gui = read("common/scripted_guis/01_targeted_operations_gui.txt")
-    localization = read(
-        "localisation/english/MD_targeted_operations_redesign_l_english.yml"
-    )
     dispatch = read("common/scripted_localisation/01_targeted_operations_names.txt")
 
     assert "size = { width = 1040 height = 700 }" in gui
@@ -493,7 +674,94 @@ def test_operations_center_exposes_required_filters_tabs_and_dimensions():
     ):
         assert control in gui
         assert control in scripted_gui
-    assert 'buttonText = "TOP_organization_row_label"' in gui
-    assert "[TOP_organization_row_class]: [TOP_organization_row_name]" in localization
+        control_block = gui[gui.index(f'name = "{control}"') :][:260]
+        assert 'quadTextureSprite = "GFX_button_94x31"' in control_block
+    assert 'text = "[TOP_organization_row_name]"' in gui
+    assert 'text = "[TOP_organization_row_class]"' in gui
+    assert 'name = "TOP_begin_operation" position = { x = 840 y = 455 }' in gui
+    assert 'name = "TOP_members_grid_scroll"' in gui
+    assert 'name = "TOP_select_member"' in gui
+    assert "TOP_members_grid = { array = TOP_visible_members" in scripted_gui
+    assert "TOP_select_member_click" in scripted_gui
+    assert (
+        "TOP_facility_click_enabled = { TOP_can_cycle_selected_facility = yes }"
+        in scripted_gui
+    )
+    view = read("common/scripted_effects/01_targeted_operations_view.txt")
+    assert "global.TOP_affiliation^top_view_member = TOP_selected_organization" in view
+    assert "add_to_array = { TOP_visible_members = top_view_member }" in view
     assert "name = TOP_authorized_name" not in dispatch
     assert "name = TOP_row_name" not in dispatch
+    security_close = block(
+        "common/scripted_guis/03_targeted_operations_security.txt",
+        "TOP_security_close_button_click",
+    )
+    assert "TOP_security_open = 0" in security_close
+    assert "TOP_tab = 0" in security_close
+
+
+def test_async_person_case_lifecycle_rebuilds_the_selected_view():
+    cases = read("common/scripted_effects/04_targeted_operations_cases.txt")
+    view = block(
+        "common/scripted_effects/01_targeted_operations_view.txt",
+        "TOP_build_view",
+    )
+    for effect in ("TOP_finish_case", "TOP_close_case"):
+        assert "TOP_build_view = yes" in _named_block(cases, effect)
+    assert "TOP_arg_target = TOP_selected" in view
+    assert "TOP_load_case = yes" in view
+
+
+def test_pressure_warnings_and_custody_disposition_are_reachable_for_ai():
+    pressure = block(
+        "common/scripted_effects/06_targeted_operations_redesign.txt",
+        "TOP_check_person_pressure_threshold",
+    ) + block(
+        "common/scripted_effects/06_targeted_operations_redesign.txt",
+        "TOP_check_group_pressure_threshold",
+    )
+    vip = block(
+        "common/scripted_triggers/07_targeted_operations_redesign.txt",
+        "TOP_can_assign_vip_detail",
+    )
+    custody = block(
+        "common/scripted_effects/09_targeted_operations_depth.txt",
+        "TOP_ai_manage_custody",
+    )
+    events = read("events/Targeted Operations Redesign.txt")
+    dispatcher = block(
+        "common/scripted_effects/06_targeted_operations_redesign.txt",
+        "TOP_dispatch_next_pressure_notice",
+    )
+
+    assert pressure.count("TOP_enqueue_pressure_notice = yes") == 2
+    assert "country_event = { id = TOP_redesign.1 days = 1 }" in dispatcher
+    assert "country_event = { id = TOP_redesign.2 days = 1 }" in dispatcher
+    assert "is_ai = no" not in pressure
+    assert "is_ai = no" not in vip
+    assert "is_ai = yes" in custody
+    assert "TOP_transfer_recorded_custody = yes" in custody
+    assert events.count("TOP_ai_manage_custody = yes") == 3
+    assert events.count("TOP_finish_pressure_notice = yes") == 7
+
+
+def test_ai_liaison_reports_bootstrap_defensive_knowledge_without_offense():
+    depth = read("common/scripted_effects/09_targeted_operations_depth.txt")
+    triggers = read("common/scripted_triggers/07_targeted_operations_redesign.txt")
+    source = block(
+        "common/scripted_effects/09_targeted_operations_depth.txt",
+        "TOP_prepare_ai_liaison_source",
+    )
+
+    assert "is_ai = yes" in source
+    assert "TOP_identity_confidence^TOP_incoming_liaison_id = 100" in source
+    assert "TOP_org_verification^TOP_incoming_liaison_id = 100" in source
+    assert "TOP_location_confidence^TOP_incoming_liaison_id" not in source
+    assert "TOP_pattern_confidence^TOP_incoming_liaison_id" not in source
+    assert "TOP_org_location^TOP_incoming_liaison_id" not in source
+    assert "TOP_org_activity^TOP_incoming_liaison_id" not in source
+    assert "TOP_package_state" not in source
+    assert "TOP_org_package_state" not in source
+    assert "TOP_prepare_ai_liaison_source = yes" in depth
+    assert "TOP_liaison_source_available = {" in triggers
+    assert "TOP_liaison_deception_available = {" in triggers

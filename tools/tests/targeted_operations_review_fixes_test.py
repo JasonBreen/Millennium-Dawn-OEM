@@ -33,9 +33,11 @@ def test_collection_rebuild_prunes_inactive_typed_assignments_and_pauses_package
 def test_liaison_merge_never_replaces_a_known_location_with_an_empty_report():
     script = TargetScript()
     variables = script.target(11)
+    script.globals["TOP_clock"] = 100
     variables["TOP_lead_state"][11] = 101
     variables["TOP_lead_host"][11] = 2
     variables["TOP_lead_age"][11] = 40
+    variables["TOP_lead_report_clock"][11] = 60
     script.temps.update(
         TOP_liaison_snapshot_kind=1,
         TOP_liaison_snapshot_id=11,
@@ -56,6 +58,7 @@ def test_liaison_merge_never_replaces_a_known_location_with_an_empty_report():
     variables["TOP_org_lead_state"][2] = 101
     variables["TOP_org_lead_host"][2] = 2
     variables["TOP_org_lead_age"][2] = 35
+    variables["TOP_org_lead_report_clock"][2] = 65
     script.temps.update(
         TOP_liaison_snapshot_kind=2,
         TOP_liaison_snapshot_id=2,
@@ -265,10 +268,31 @@ def test_authoritative_review_gates_and_blocker_cover_pending_consequences():
     )
 
 
+def test_authority_blocker_shows_package_and_reachable_ready_states():
+    scripted_localization = read(
+        "common/scripted_localisation/04_targeted_operations_redesign.txt"
+    )
+    action_start = scripted_localization.index("name = TOP_action_blocker")
+    action_end = scripted_localization.index("\n}\n", action_start)
+    action = scripted_localization[action_start:action_end]
+
+    package = action.index("localization_key = TOP_blocker_package_not_developed")
+    ready = action.index(
+        "TOP_can_begin_selected_operation = yes } localization_key = TOP_blocker_ready"
+    )
+    capability = action.index("localization_key = TOP_blocker_capability")
+    assert "check_variable = { TOP_tab = 2 }" in action[:package]
+    assert ready < capability
+
+
 def test_liaison_eligibility_uses_persistent_relationship_and_free_inbox():
     trigger = block(
         "common/scripted_triggers/07_targeted_operations_redesign.txt",
         "TOP_can_request_liaison",
+    )
+    relationship = block(
+        "common/scripted_triggers/07_targeted_operations_redesign.txt",
+        "TOP_liaison_relationship_available",
     )
     request = block(
         "common/scripted_effects/09_targeted_operations_depth.txt",
@@ -280,7 +304,8 @@ def test_liaison_eligibility_uses_persistent_relationship_and_free_inbox():
     )
 
     assert "TOP_incoming_liaison_actor = 0" in trigger
-    assert "is_in_array = { TOP_liaison_partners = PREV }" in trigger
+    assert "TOP_liaison_relationship_available = yes" in trigger
+    assert "is_in_array = { TOP_liaison_partners = PREV }" in relationship
     assert "TOP_case_host_posture" not in trigger
     assert "TOP_org_case_host_posture" not in trigger
     assert "TOP_liaison_partner = PREV" not in trigger
@@ -288,6 +313,33 @@ def test_liaison_eligibility_uses_persistent_relationship_and_free_inbox():
         "add_political_power = -25"
     )
     assert "add_to_array = { TOP_liaison_partners = TOP_incoming_actor }" in answer
+
+
+def test_liaison_ui_uses_an_eligible_selected_source_instead_of_the_subject_host():
+    selected_trigger = block(
+        "common/scripted_triggers/07_targeted_operations_redesign.txt",
+        "TOP_can_request_selected_liaison",
+    )
+    selected_effect = block(
+        "common/scripted_effects/09_targeted_operations_depth.txt",
+        "TOP_request_selected_liaison",
+    )
+    cycle = block(
+        "common/scripted_effects/09_targeted_operations_depth.txt",
+        "TOP_cycle_liaison_source",
+    )
+    gui = read("interface/targeted_operations.gui")
+
+    assert "TOP_liaison_target_country = TOP_liaison_source" in selected_trigger
+    assert "TOP_liaison_target_country = TOP_liaison_source" in selected_effect
+    assert "TOP_lead_host^TOP_selected" not in selected_trigger
+    assert "TOP_org_lead_host^TOP_selected_organization" not in selected_trigger
+    assert "TOP_lead_host^TOP_selected" not in selected_effect
+    assert "TOP_org_lead_host^TOP_selected_organization" not in selected_effect
+    assert "TOP_liaison_relationship_available = yes" in cycle
+    assert "TOP_liaison_sources = PREV" in cycle
+    assert "TOP_liaison_source = TOP_liaison_sources^TOP_liaison_source_index" in cycle
+    assert 'name = "TOP_liaison_source"' in gui
 
 
 def test_capture_crisis_remote_access_vip_and_frozen_resolution_contracts():
@@ -332,12 +384,5 @@ def test_every_effectful_redesign_event_option_has_exactly_one_log():
         for match in re.finditer(r"(?m)^\toption = \{", events)
     ]
     assert options
-    no_effect_options = {
-        "TOP_redesign.1.e",
-        "TOP_redesign.2.c",
-        "TOP_redesign.10.a",
-        "TOP_redesign.40.e",
-    }
     for option in options:
-        expected_logs = 0 if any(name in option for name in no_effect_options) else 1
-        assert option.count("\n\t\tlog = ") == expected_logs
+        assert option.count("\n\t\tlog = ") == 1

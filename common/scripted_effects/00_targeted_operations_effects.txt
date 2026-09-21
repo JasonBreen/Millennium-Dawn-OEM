@@ -63,11 +63,25 @@ TOP_import_target_location = {
 				set_variable = { global.TOP_state^TOP_target = TOP_import_state }
 			}
 			else = {
-				random_controlled_state = { set_variable = { global.TOP_state^TOP_target = THIS } }
+				random_controlled_state = { set_variable = { global.TOP_state^PREV.TOP_target = THIS } }
 			}
 		}
 		set_temp_variable = { TOP_import_state = 0 }
 	}
+}
+
+# Reads TOP_target.
+TOP_refresh_person_lead_age = {
+	set_variable = { TOP_lead_age^TOP_target = global.TOP_clock }
+	subtract_from_variable = { TOP_lead_age^TOP_target = TOP_lead_report_clock^TOP_target }
+	clamp_variable = { var = TOP_lead_age^TOP_target min = 0 max = 9999 }
+}
+
+# Reads TOP_group_target.
+TOP_refresh_organization_lead_age = {
+	set_variable = { TOP_org_lead_age^TOP_group_target = global.TOP_clock }
+	subtract_from_variable = { TOP_org_lead_age^TOP_group_target = TOP_org_lead_report_clock^TOP_group_target }
+	clamp_variable = { var = TOP_org_lead_age^TOP_group_target min = 0 max = 9999 }
 }
 
 TOP_find_org = {
@@ -84,7 +98,7 @@ TOP_find_group_org = {
 		value = top_find_v
 		if = {
 			limit = { check_variable = { top_find_v = TOP_org_id } }
-			set_temp_variable = { TOP_org_slot = top_find_i }
+			set_temp_variable = { PREV.TOP_org_slot = top_find_i }
 		}
 	}
 }
@@ -121,12 +135,14 @@ TOP_add_target_lead = {
 			clamp_variable = { var = TOP_location_confidence^TOP_target min = 0 max = 100 }
 			clamp_variable = { var = TOP_pattern_confidence^TOP_target min = 0 max = 100 }
 			set_variable = { TOP_lead_age^TOP_target = 0 }
+			set_variable = { TOP_lead_report_clock^TOP_target = global.TOP_clock }
 			set_variable = { TOP_lead_state^TOP_target = global.TOP_state^TOP_target }
 			set_variable = { TOP_lead_host^TOP_target = global.TOP_host^TOP_target }
 			set_temp_variable = { TOP_group_target = global.TOP_affiliation^TOP_target }
 			if = {
 				limit = { check_variable = { TOP_group_target > 0 } }
-				set_variable = { TOP_org_known^TOP_group_target = 1 }
+				set_temp_variable = { TOP_arg_group = TOP_group_target }
+				TOP_discover_organization = yes
 			}
 			if = {
 				limit = { NOT = { is_in_array = { TOP_dossiers = TOP_target } } }
@@ -156,8 +172,8 @@ TOP_grant_group_mandate = {
 	}
 }
 
-# Reads TOP_arg_amount and TOP_arg_group.
-TOP_add_organization_lead = {
+# Reads TOP_arg_group.
+TOP_discover_organization = {
 	if = {
 		limit = { TOP_enabled = yes check_variable = { TOP_arg_group > 0 } }
 		TOP_country_initialize = yes
@@ -173,6 +189,18 @@ TOP_add_organization_lead = {
 				set_variable = { TOP_org_location^TOP_arg_group = 15 }
 			}
 		}
+		if = {
+			limit = { NOT = { is_in_array = { TOP_organization_dossiers = TOP_arg_group } } }
+			add_to_array = { TOP_organization_dossiers = TOP_arg_group }
+		}
+	}
+}
+
+# Reads TOP_arg_amount and TOP_arg_group.
+TOP_add_organization_lead = {
+	if = {
+		limit = { TOP_enabled = yes check_variable = { TOP_arg_group > 0 } }
+		TOP_discover_organization = yes
 		add_to_variable = { TOP_org_verification^TOP_arg_group = TOP_arg_amount }
 		add_to_variable = { TOP_org_location^TOP_arg_group = TOP_arg_amount }
 		add_to_variable = { TOP_org_activity^TOP_arg_group = TOP_arg_amount }
@@ -180,12 +208,9 @@ TOP_add_organization_lead = {
 		clamp_variable = { var = TOP_org_location^TOP_arg_group min = 0 max = 100 }
 		clamp_variable = { var = TOP_org_activity^TOP_arg_group min = 0 max = 100 }
 		set_variable = { TOP_org_lead_age^TOP_arg_group = 0 }
+		set_variable = { TOP_org_lead_report_clock^TOP_arg_group = global.TOP_clock }
 		set_variable = { TOP_org_lead_state^TOP_arg_group = global.TOP_group_state^TOP_arg_group }
 		set_variable = { TOP_org_lead_host^TOP_arg_group = global.TOP_group_host^TOP_arg_group }
-		if = {
-			limit = { NOT = { is_in_array = { TOP_organization_dossiers = TOP_arg_group } } }
-			add_to_array = { TOP_organization_dossiers = TOP_arg_group }
-		}
 	}
 }
 
@@ -214,7 +239,7 @@ TOP_stop_collection = {
 
 TOP_commit_reviewed_authorization = {
 	if = {
-		limit = { TOP_review_can_approve = yes TOP_human_offense = yes TOP_can_pay_approval_cost = yes }
+		limit = { TOP_review_can_commit_person = yes TOP_human_offense = yes TOP_can_pay_approval_cost = yes }
 		TOP_pay_approval_cost = yes
 		# Identical live native renewals retain the case sequence and prepared raid.
 		set_variable = { TOP_case_method^TOP_proposal_target = TOP_proposal_method }
@@ -339,7 +364,8 @@ TOP_country_tick = {
 		for_each_loop = {
 			array = TOP_dossiers
 			value = top_tick_target
-			add_to_variable = { TOP_lead_age^top_tick_target = 28 }
+			set_temp_variable = { TOP_target = top_tick_target }
+			TOP_refresh_person_lead_age = yes
 			add_to_variable = { TOP_liaison_age^top_tick_target = 28 }
 			subtract_from_variable = { TOP_location_confidence^top_tick_target = 5 }
 			subtract_from_variable = { TOP_pattern_confidence^top_tick_target = 3 }
@@ -347,15 +373,12 @@ TOP_country_tick = {
 			clamp_variable = { var = TOP_pattern_confidence^top_tick_target min = 0 max = 100 }
 			set_temp_variable = { TOP_target = top_tick_target }
 			TOP_update_person_compat_confidence = yes
-			if = {
-				limit = { check_variable = { global.TOP_confirmed_dead^top_tick_target = 1 } }
-				set_variable = { TOP_assessment^top_tick_target = 3 }
-			}
 		}
 		for_each_loop = {
 			array = TOP_organization_dossiers
 			value = top_tick_group
-			add_to_variable = { TOP_org_lead_age^top_tick_group = 28 }
+			set_temp_variable = { TOP_group_target = top_tick_group }
+			TOP_refresh_organization_lead_age = yes
 			add_to_variable = { TOP_org_liaison_age^top_tick_group = 28 }
 			subtract_from_variable = { TOP_org_location^top_tick_group = 5 }
 			subtract_from_variable = { TOP_org_activity^top_tick_group = 3 }
@@ -392,7 +415,7 @@ TOP_country_tick = {
 					set_temp_variable = { TOP_arg_target = top_tick_target }
 					set_temp_variable = { TOP_arg_amount = 0 }
 					TOP_add_target_lead = yes
-					set_temp_variable = { TOP_new_dossiers_this_tick = 1 }
+				set_temp_variable = { PREV.TOP_new_dossiers_this_tick = 1 }
 				}
 			}
 		}
@@ -409,6 +432,8 @@ TOP_country_tick = {
 TOP_capture_target = {
 	set_temp_variable = { TOP_target = TOP_arg_target }
 	set_temp_variable = { TOP_result = 2 }
+	set_temp_variable = { TOP_case_result_context = 0 }
+	set_temp_variable = { TOP_case_result_sequence = 0 }
 	TOP_resolve_target = yes
 }
 
@@ -416,6 +441,8 @@ TOP_capture_target = {
 TOP_kill_target = {
 	set_temp_variable = { TOP_target = TOP_arg_target }
 	set_temp_variable = { TOP_result = 3 }
+	set_temp_variable = { TOP_case_result_context = 0 }
+	set_temp_variable = { TOP_case_result_sequence = 0 }
 	TOP_resolve_target = yes
 }
 
@@ -446,10 +473,14 @@ TOP_resolve_target = {
 		remove_from_array = { global.TOP_active_targets = TOP_target }
 		if = {
 			limit = { check_variable = { TOP_result = 2 } }
+			set_variable = { global.TOP_custody_actor^TOP_target = THIS }
+			add_to_variable = { global.TOP_custody_counter = 1 }
+			set_variable = { global.TOP_custody_sequence^TOP_target = global.TOP_custody_counter }
+			set_variable = { global.TOP_exploitation_until^TOP_target = { value = global.TOP_clock add = 14 } }
 			set_temp_variable = { TOP_capture_custodian = THIS }
 			if = {
 				limit = {
-					check_variable = { TOP_authorized_target = TOP_target }
+					TOP_case_result_binding_valid = yes
 					check_variable = { TOP_authorized_method = 5 }
 					check_variable = { TOP_authorized_host > 0 }
 				}
@@ -457,29 +488,36 @@ TOP_resolve_target = {
 			}
 			set_variable = { global.TOP_custodian^TOP_target = TOP_capture_custodian }
 			var:TOP_capture_custodian = {
-				capital_scope = { set_variable = { global.TOP_custody_state^TOP_target = THIS } }
+				set_temp_variable = { TOP_capture_recipient_target = PREV.TOP_target }
+				capital_scope = { set_variable = { global.TOP_custody_state^PREV.TOP_capture_recipient_target = THIS } }
 				TOP_country_initialize = yes
-				set_variable = { TOP_known^TOP_target = 1 }
-				set_variable = { TOP_assessment^TOP_target = 2 }
-				if = { limit = { NOT = { is_in_array = { TOP_dossiers = TOP_target } } } add_to_array = { TOP_dossiers = TOP_target } }
-				set_variable = { TOP_custody_event_target = TOP_target }
-				country_event = { id = TOP_redesign.40 days = 1 }
+				set_variable = { TOP_known^TOP_capture_recipient_target = 1 }
+				set_variable = { TOP_assessment^TOP_capture_recipient_target = 2 }
+				if = { limit = { NOT = { is_in_array = { TOP_dossiers = TOP_capture_recipient_target } } } add_to_array = { TOP_dossiers = TOP_capture_recipient_target } }
 			}
 			if = { limit = { NOT = { is_in_array = { global.TOP_detained_targets = TOP_target } } } add_to_array = { global.TOP_detained_targets = TOP_target } }
 			set_variable = { TOP_assessment^TOP_target = 2 }
-			set_variable = { global.TOP_exploitation_until^TOP_target = { value = global.TOP_clock add = 14 } }
 		}
 		else = {
 			set_variable = { global.TOP_custodian^TOP_target = 0 }
 			set_variable = { global.TOP_confirmed_dead^TOP_target = 1 }
 			remove_from_array = { global.TOP_detained_targets = TOP_target }
+			add_to_variable = { TOP_bda_counter = 1 }
+			set_variable = { TOP_bda_token^TOP_target = TOP_bda_counter }
+			set_variable = { TOP_bda_archive_row^TOP_target = 0 }
+			set_variable = { TOP_bda_archive_token^TOP_target = 0 }
+			set_variable = { TOP_bda_identity^TOP_target = TOP_identity_confidence^TOP_target }
+			if = {
+				limit = { TOP_case_result_binding_valid = yes }
+				set_variable = { TOP_bda_identity^TOP_target = TOP_case_identity^TOP_target }
+			}
 			set_variable = { TOP_assessment^TOP_target = 5 }
 			set_variable = { TOP_bda_result^TOP_target = 3 }
-			set_variable = { TOP_bda_method^TOP_target = TOP_authorized_method }
+			set_variable = { TOP_bda_method^TOP_target = 0 }
 			set_variable = { TOP_bda_state^TOP_target = global.TOP_state^TOP_target }
 			if = {
-				limit = { NOT = { check_variable = { TOP_authorized_target = TOP_target } } }
-				set_variable = { TOP_bda_method^TOP_target = 0 }
+				limit = { TOP_case_result_binding_valid = yes }
+				set_variable = { TOP_bda_method^TOP_target = TOP_authorized_method }
 			}
 			set_variable = { TOP_bda_due^TOP_target = { value = global.TOP_clock add = 14 } }
 			if = {
@@ -512,6 +550,13 @@ TOP_resolve_target = {
 			TOP_choose_successor = yes
 		}
 		TOP_archive_result = yes
+		if = {
+			limit = { check_variable = { TOP_result = 2 } }
+			var:TOP_capture_custodian = {
+				set_temp_variable = { TOP_arg_target = PREV.TOP_target }
+				TOP_queue_custody_event = yes
+			}
+		}
 		TOP_update_iraq_progress = yes
 	}
 }
@@ -524,16 +569,32 @@ TOP_native_result_args = {
 	var:actor_country = {
 		if = {
 			limit = { TOP_mission_binding_valid = yes }
-			set_temp_variable = { TOP_arg_target = TOP_target } TOP_load_case = yes
-
-			TOP_get_defensive_modifiers = yes
-			if = {
-				limit = { check_variable = { TOP_tier > 0 } }
-				random = { chance = TOP_defensive_success_penalty subtract_from_temp_variable = { TOP_tier = 1 } }
-			}
-			TOP_complete_operation = yes
+			TOP_resolve_native_callback = yes
+		}
+		else_if = {
+			limit = { TOP_native_callback_matches_stood_down = yes }
+			TOP_resolve_native_callback = yes
+		}
+		else_if = {
+			limit = { TOP_native_callback_matches_stood_down_tuple = yes }
+			set_temp_variable = { TOP_arg_target = TOP_target }
+			set_temp_variable = { TOP_arg_sequence = TOP_case_sequence^TOP_target }
+			TOP_close_case = yes
+		}
+		else_if = {
+			limit = { TOP_native_callback_matches_current = yes }
+			set_temp_variable = { TOP_arg_target = TOP_target }
+			set_temp_variable = { TOP_arg_sequence = TOP_case_sequence^TOP_target }
+			TOP_close_case = yes
 		}
 	}
+}
+
+TOP_resolve_native_callback = {
+	set_variable = { TOP_case_native_prepared^TOP_target = 0 }
+	set_temp_variable = { TOP_arg_target = TOP_target }
+	TOP_load_case = yes
+	TOP_complete_operation = yes
 }
 
 TOP_complete_operation = {
@@ -629,16 +690,19 @@ TOP_apply_exposure = {
 
 TOP_archive_result = {
 	if = {
-		limit = {
-			check_variable = { TOP_reporting_assessment = 1 }
-			check_variable = { TOP_case_archive_token^TOP_target > 0 }
-			check_variable = { TOP_case_archive_token^TOP_target = TOP_case_sequence^TOP_target }
+		limit = { check_variable = { TOP_reporting_assessment = 1 } }
+		set_temp_variable = { TOP_archive_update_row = TOP_bda_archive_row^TOP_target }
+		if = {
+			limit = {
+				check_variable = { TOP_bda_archive_token^TOP_target > 0 }
+				check_variable = { TOP_bda_archive_token^TOP_target = TOP_bda_token^TOP_target }
+				check_variable = { TOP_archive_subject_kind^TOP_archive_update_row = 1 }
+				check_variable = { TOP_archive_subject_id^TOP_archive_update_row = TOP_target }
+				check_variable = { TOP_archive_bda_token^TOP_archive_update_row = TOP_bda_token^TOP_target }
+			}
+			set_variable = { TOP_archive_result^TOP_archive_update_row = TOP_assessment^TOP_target }
+			set_variable = { TOP_archive_bda^TOP_archive_update_row = TOP_assessment^TOP_target }
 		}
-		set_temp_variable = { TOP_archive_update_row = TOP_case_archive_row^TOP_target }
-		set_variable = { TOP_archive_result^TOP_archive_update_row = TOP_assessment^TOP_target }
-		set_variable = { TOP_archive_bda^TOP_archive_update_row = TOP_assessment^TOP_target }
-		set_variable = { TOP_archive_attribution^TOP_archive_update_row = TOP_case_attribution^TOP_target }
-		set_variable = { TOP_archive_harm^TOP_archive_update_row = TOP_case_harm^TOP_target }
 	}
 	else = {
 		set_variable = { TOP_archive_subject_kind^TOP_archive_cursor = 1 }
@@ -647,6 +711,7 @@ TOP_archive_result = {
 		set_variable = { TOP_archive_result^TOP_archive_cursor = TOP_result }
 		set_variable = { TOP_archive_physical^TOP_archive_cursor = TOP_result }
 		set_variable = { TOP_archive_bda^TOP_archive_cursor = TOP_result }
+		set_variable = { TOP_archive_bda_token^TOP_archive_cursor = 0 }
 		set_variable = { TOP_archive_method^TOP_archive_cursor = 0 }
 		set_variable = { TOP_archive_objective^TOP_archive_cursor = 0 }
 		set_variable = { TOP_archive_state^TOP_archive_cursor = global.TOP_state^TOP_target }
@@ -662,10 +727,17 @@ TOP_archive_result = {
 		set_variable = { TOP_archive_attribution^TOP_archive_cursor = 0 }
 		set_variable = { TOP_archive_harm^TOP_archive_cursor = 0 }
 		set_variable = { TOP_archive_custodian^TOP_archive_cursor = global.TOP_custodian^TOP_target }
+		set_variable = { TOP_archive_disposition^TOP_archive_cursor = 0 }
+		set_variable = { TOP_archive_custody_token^TOP_archive_cursor = 0 }
+		if = {
+			limit = { check_variable = { TOP_result = 2 } }
+			set_variable = { TOP_archive_disposition^TOP_archive_cursor = 1 }
+			set_variable = { TOP_archive_custody_token^TOP_archive_cursor = global.TOP_custody_sequence^TOP_target }
+		}
 		set_variable = { TOP_archive_sequence^TOP_archive_cursor = 0 }
 		set_variable = { TOP_archive_day^TOP_archive_cursor = global.TOP_clock }
 		if = {
-			limit = { check_variable = { TOP_authorized_target = TOP_target } }
+			limit = { TOP_case_result_binding_valid = yes }
 			set_variable = { TOP_archive_method^TOP_archive_cursor = TOP_authorized_method }
 			set_variable = { TOP_archive_state^TOP_archive_cursor = TOP_authorized_state }
 			set_variable = { TOP_archive_host^TOP_archive_cursor = TOP_authorized_host }
@@ -682,11 +754,14 @@ TOP_archive_result = {
 			set_variable = { TOP_archive_sequence^TOP_archive_cursor = TOP_case_sequence^TOP_target }
 			set_variable = { TOP_case_archive_row^TOP_target = TOP_archive_cursor }
 			set_variable = { TOP_case_archive_token^TOP_target = TOP_case_sequence^TOP_target }
-			if = {
-				limit = { check_variable = { TOP_result = 3 } }
-				set_variable = { TOP_archive_result^TOP_archive_cursor = TOP_assessment^TOP_target }
-				set_variable = { TOP_archive_bda^TOP_archive_cursor = TOP_assessment^TOP_target }
-			}
+		}
+		if = {
+			limit = { check_variable = { TOP_result = 3 } }
+			set_variable = { TOP_archive_result^TOP_archive_cursor = TOP_assessment^TOP_target }
+			set_variable = { TOP_archive_bda^TOP_archive_cursor = TOP_assessment^TOP_target }
+			set_variable = { TOP_archive_bda_token^TOP_archive_cursor = TOP_bda_token^TOP_target }
+			set_variable = { TOP_bda_archive_row^TOP_target = TOP_archive_cursor }
+			set_variable = { TOP_bda_archive_token^TOP_target = TOP_bda_token^TOP_target }
 		}
 		remove_from_array = { TOP_archive_rows = TOP_archive_cursor }
 		add_to_array = { TOP_archive_rows = TOP_archive_cursor }
@@ -704,6 +779,10 @@ TOP_global_weekly = {
 		TOP_decay_pressure = yes
 		TOP_process_visits = yes
 		TOP_process_crisis = yes
+		every_country = {
+			limit = { check_variable = { TOP_vip_assignments^num > 0 } }
+			TOP_refresh_vip_details = yes
+		}
 		clear_array = global.TOP_pending_next
 		for_each_scope_loop = {
 			array = global.TOP_pending_actors
@@ -741,14 +820,14 @@ TOP_process_timers = {
 		array = TOP_pending_assessments
 		value = top_bda_target
 		if = {
-			limit = { check_variable = { TOP_bda_due^top_bda_target < global.TOP_clock } }
+			limit = { check_variable = { var = global.TOP_clock value = TOP_bda_due^top_bda_target compare = greater_than_or_equals } }
 			if = {
 				limit = { NOT = { check_variable = { TOP_assessment^top_bda_target = 2 } } }
 				set_variable = { TOP_assessment^top_bda_target = TOP_bda_result^top_bda_target }
 				if = {
 					limit = {
-						check_variable = { TOP_case_archive_token^top_bda_target > 0 }
-						check_variable = { TOP_case_identity^top_bda_target < 80 }
+						check_variable = { TOP_bda_token^top_bda_target > 0 }
+						check_variable = { TOP_bda_identity^top_bda_target < 80 }
 					}
 					set_variable = { TOP_assessment^top_bda_target = 6 }
 				}
@@ -758,6 +837,10 @@ TOP_process_timers = {
 			TOP_apply_legacy_assessment = yes
 			set_temp_variable = { TOP_reporting_assessment = 1 }
 			TOP_archive_result = yes
+			set_temp_variable = { TOP_arg_target = top_bda_target }
+			set_temp_variable = { TOP_arg_assessment = TOP_assessment^top_bda_target }
+			set_temp_variable = { TOP_arg_sequence = TOP_bda_token^top_bda_target }
+			TOP_queue_bda_notice = yes
 
 			set_temp_variable = { TOP_reporting_assessment = 0 }
 			if = {
@@ -783,10 +866,16 @@ TOP_release_selected = {
 		set_variable = { TOP_pattern_confidence^TOP_selected = 0 }
 		set_variable = { TOP_lead_state^TOP_selected = 0 }
 		set_variable = { TOP_lead_age^TOP_selected = 57 }
+		set_variable = { TOP_lead_report_clock^TOP_selected = { value = global.TOP_clock subtract = 57 } }
 		if = { limit = { NOT = { is_in_array = { global.TOP_active_targets = TOP_selected } } } add_to_array = { global.TOP_active_targets = TOP_selected } }
 		set_temp_variable = { TOP_target = TOP_selected }
 		TOP_add_person_pressure_35 = yes
 		TOP_apply_legacy_release = yes
+		set_temp_variable = { TOP_disposition_target = TOP_selected }
+		set_temp_variable = { TOP_disposition_code = 5 }
+		TOP_update_custody_archive = yes
+		set_variable = { TOP_exchange_country^TOP_selected = 0 }
+		set_variable = { TOP_exchange_until^TOP_selected = 0 }
 		TOP_update_iraq_progress = yes
 		TOP_refresh_view = yes
 	}
@@ -794,8 +883,8 @@ TOP_release_selected = {
 
 TOP_transfer_selected = {
 	if = {
-		limit = { TOP_custody_owned = yes }
-		set_temp_variable = { TOP_transfer_host = global.TOP_host^TOP_selected }
+		limit = { TOP_can_transfer_selected = yes }
+		set_temp_variable = { TOP_transfer_host = TOP_transfer_country }
 		set_temp_variable = { TOP_transfer_target = TOP_selected }
 		if = {
 			limit = {
@@ -803,6 +892,8 @@ TOP_transfer_selected = {
 				var:TOP_transfer_host = { exists = yes }
 			}
 			TOP_transfer_recorded_custody = yes
+			set_variable = { TOP_transfer_country = 0 }
+			set_variable = { TOP_transfer_country_index = 0 }
 			TOP_update_iraq_progress = yes
 			TOP_refresh_view = yes
 		}

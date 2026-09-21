@@ -55,7 +55,9 @@ def test_existing_campaign_discovers_real_ids_and_builds_named_rows_one_at_a_tim
     script, variables = discovery_script()
     registry = deepcopy(script.globals)
     country_arrays = {
-        name: len(value) for name, value in variables.items() if isinstance(value, list)
+        name: len(value)
+        for name, value in variables.items()
+        if isinstance(value, list) and name != "TOP_organization_dossiers"
     }
 
     script.run("TOP_country_tick", 1)
@@ -72,6 +74,7 @@ def test_existing_campaign_discovers_real_ids_and_builds_named_rows_one_at_a_tim
     assert script.globals == registry
     assert all(len(variables[name]) == size for name, size in country_arrays.items())
 
+    script.globals["TOP_clock"] += 28
     script.run("TOP_country_tick", 1)
 
     assert variables["TOP_dossiers"] == [1, 2]

@@ -571,6 +571,28 @@ country_event = {
 	}
 
 	option = {
+		name = TOP_crisis.1.c
+		trigger = { TOP_capture_exchange_offer_available = yes }
+		log = "[GetDateText]: [Root.GetName]: TOP_crisis.1.c opened a negotiated exchange channel"
+		set_temp_variable = { TOP_arg_amount = -15 }
+		TOP_adjust_crisis_tension = yes
+		set_temp_variable = { TOP_exchange_offer_target = global.TOP_crisis_target }
+		set_temp_variable = { TOP_exchange_offer_custodian = global.TOP_custodian^TOP_exchange_offer_target }
+		var:TOP_exchange_offer_custodian = {
+			set_temp_variable = { TOP_arg_target = PREV.TOP_exchange_offer_target }
+			set_temp_variable = { TOP_arg_country = PREV }
+			TOP_offer_exchange = yes
+		}
+		var:global.TOP_crisis_actor = { country_event = { id = TOP_crisis.2 days = 2 } }
+		ai_chance = {
+			base = 45
+			modifier = { add = 30 has_stability < 0.50 }
+			modifier = { add = 25 has_war = yes }
+			modifier = { add = -20 check_variable = { TOP_crisis_host_complicit = 1 } }
+		}
+	}
+
+	option = {
 		name = TOP_crisis.1.b
 		log = "[GetDateText]: [Root.GetName]: TOP_crisis.1.b executed"
 		set_temp_variable = { TOP_arg_amount = 10 }
@@ -618,6 +640,7 @@ country_event = {
 		var:global.TOP_crisis_protection = {
 			reverse_add_opinion_modifier = { target = PREV modifier = established_diplomatic_relations }
 		}
+		TOP_finish_crisis_participant_notice = yes
 		ai_chance = {
 			base = 55
 			modifier = { add = 25 has_stability > 0.50 }
@@ -636,6 +659,7 @@ country_event = {
 		var:global.TOP_crisis_actor = {
 			reverse_add_opinion_modifier = { target = PREV modifier = established_diplomatic_relations }
 		}
+		TOP_finish_crisis_participant_notice = yes
 		ai_chance = {
 			base = 25
 			modifier = { add = 45 check_variable = { TOP_crisis_host_complicit = 1 } }
@@ -900,6 +924,7 @@ country_event = {
 		}
 		set_temp_variable = { TOP_arg_amount = 8 }
 		TOP_adjust_crisis_tension = yes
+		TOP_finish_crisis_participant_notice = yes
 		ai_chance = { base = 25 modifier = { add = 20 has_war_support > 0.60 } }
 	}
 
@@ -914,6 +939,7 @@ country_event = {
 		}
 		set_temp_variable = { TOP_arg_amount = 5 }
 		TOP_adjust_crisis_tension = yes
+		TOP_finish_crisis_participant_notice = yes
 		ai_chance = { base = 20 modifier = { add = 25 is_in_faction_with = var:global.TOP_crisis_protection } }
 	}
 
@@ -936,6 +962,7 @@ country_event = {
 		}
 		set_temp_variable = { TOP_arg_amount = -5 }
 		TOP_adjust_crisis_tension = yes
+		TOP_finish_crisis_participant_notice = yes
 		ai_chance = { base = 25 modifier = { add = 30 is_in_faction_with = var:global.TOP_crisis_protection } }
 	}
 
@@ -948,6 +975,7 @@ country_event = {
 		}
 		set_temp_variable = { TOP_arg_amount = -8 }
 		TOP_adjust_crisis_tension = yes
+		TOP_finish_crisis_participant_notice = yes
 		ai_chance = { base = 25 modifier = { add = 25 is_in_faction_with = var:global.TOP_crisis_actor } }
 	}
 
@@ -959,11 +987,14 @@ country_event = {
 		var:global.TOP_crisis_protection = { add_opinion_modifier = { target = PREV modifier = TOP_crisis_settlement } }
 		set_temp_variable = { TOP_arg_amount = -10 }
 		TOP_adjust_crisis_tension = yes
+		TOP_finish_crisis_participant_notice = yes
 		ai_chance = { base = 30 modifier = { add = 20 has_stability > 0.60 } }
 	}
 
 	option = {
 		name = TOP_crisis.7.f
+		log = "[GetDateText]: [Root.GetName]: TOP_crisis.7.f executed"
+		TOP_finish_crisis_participant_notice = yes
 		ai_chance = { base = 10 }
 	}
 }
