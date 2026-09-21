@@ -366,12 +366,17 @@ def _event_block(text, event_id):
     return _extract_block(text, text.index("{", start))
 
 
+STATE_DELTAS_PATTERN = re.compile(
+    r"add_to_variable\s*=\s*\{\s*"
+    r"(FRA_corporate_[A-Za-z0-9_]+)\s*=\s*(-?\d+(?:\.\d+)?)\s*\}"
+)
+
+
 def _state_deltas(block):
-    pattern = re.compile(
-        r"add_to_variable\s*=\s*\{\s*"
-        r"(FRA_corporate_[A-Za-z0-9_]+)\s*=\s*(-?\d+(?:\.\d+)?)\s*\}"
-    )
-    return {variable: Decimal(value) for variable, value in pattern.findall(block)}
+    return {
+        variable: Decimal(value)
+        for variable, value in STATE_DELTAS_PATTERN.findall(block)
+    }
 
 
 def _expected_deltas(short_deltas):
