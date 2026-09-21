@@ -1,131 +1,229 @@
 # Targeted Operations: Authorization
 
-This is a strategic game abstraction inspired by dated public policy documents. It does not
-reproduce targeting techniques or claim that one historical United States policy applies to
-every country, every conflict, or the current real world.
+Authorization is an immutable, player-only state machine. A visible dossier is not
+authority, an approved mandate is not an operation in progress, and Full Sandbox does
+not bypass intelligence, access, review, preparation, attribution, succession, or
+strategic consequences.
 
-## Historical sources
+## Eligibility boundary
 
-- White House, 23 May 2013, [policy standards and procedures fact sheet][ppg]: describes
-  capture preference, confidence about the target and civilian protection, consideration of
-  other governments and alternatives, sovereignty, and senior interagency and legal review
-  for operations outside the United States and areas of active hostilities. The game borrows
-  those strategic review subjects, without treating an intelligence score as a legal finding.
-- Department of Defense, 25 August 2022, [civilian harm action plan fact sheet][chmr]: describes
-  institutional learning, reporting, assessment, and response. This supports separating
-  authorization from the later recorded assessment of an operation.
+The backend checks the game mode and subject class at every offensive entry point.
+Limited Sandbox normally permits militants, requires war or a group or target mandate
+for state-security subjects, and requires authored authority for political and civilian
+subjects. Full Sandbox permits the normal pipeline for every registered foreign
+subject. It does not permit generic domestic assassination. Domestic cases require a
+civil war, coup, or explicit authored emergency route.
 
-Sources consulted 7 September 2026. These are historical references, not current-policy claims.
+Relationships do not create immunity in Full Sandbox. Allies, faction partners,
+guaranteed states, and friendly governments instead affect access, host posture,
+exposure, and consequences.
 
-[ppg]: https://obamawhitehouse.archives.gov/the-press-office/2013/05/23/fact-sheet-us-policy-standards-and-procedures-use-force-counterterrorism/
-[chmr]: https://www.defense.gov/News/Releases/Release/Article/3140007/civilian-harm-mitigation-and-response-action-plan-fact-sheet/
+`TOP_human_offense` is required by designation, review, approval, preparation, native
+raid exposure, and timed launch. A GUI omission is never relied on as the AI boundary.
 
-## Game contract
+## Readiness and methods
 
-- `TOP_begin_review = { METHOD = N }` records the selected person, method, actionable state,
-  controller, and an increasing country-owned proposal sequence. Methods are drone strike
-  (1), capture raid (2), covert lethal action (3), rendition (4), partner detention (5), and
-  sabotage (6). GUI selection changes never rewrite these fields.
-- Stages are staff review (1), sovereignty choice (2), host response (3), and senior review
-  (4). Stage zero is closed. The proposal expires after 42 game-clock days; the weekly pending
-  actor pass also cancels it if intelligence, authority, capabilities, or state control fails.
-- Standard review requires confidence and civilian assurance of at least 60. Enhanced review
-  requires at least 80 in both and rejects lethal proposals with a feasible detention route,
-  except the explicit authored domestic-civil-war emergency override. That override is a fictional
-  campaign policy with its own crisis conditions and consequences, not a real legal exception.
-  Western conservative, liberal, and social democratic governments use enhanced review;
-  political targets always do. These are game balance choices, not national legal categories.
-- Civilian assurance is an abstract staff assessment: nomination confidence minus one quarter
-  of lead age, clamped to 0–100. Domestic jurisdiction, a friendly faction partner, or host
-  opinion above 49 supplies a feasible detention alternative. These coarse diplomatic proxies
-  are game rules, not a representation of real operational feasibility or civilian presence.
-- Host consent is scoped to the immutable case. Refusal or an occupied host request slot does
-  not authorize a partner operation. Other methods can reach a separate unilateral approval
-  choice. A country-wide consent flag cannot replace the recorded case consent.
-- `TOP_review_valid` checks the snapshot without requiring a particular UI selection.
-  `TOP_review_can_approve` additionally requires the senior stage and staff criteria.
-  `TOP_approve_review` calls `TOP_commit_reviewed_authorization` with the proposal intact.
-  Core copies its snapshot into the matching per-person country case, charges 50 Political Power
-  once, and handles the 91-day mandate or timed mission. Approval rechecks the reserved host slot
-  and designation sequence. Other countries can have independent cases and operations. The event itself supplies no target-removal effect.
-- SF technology is required for capture raids and rendition; covert lethal action requires
-  decryption. Methods 3–6 require a foreign host, except method 3 under the explicit domestic
-  civilian-emergency override. Native drone equipment and launch capability
-  remain part of the native raid contract.
-- Sabotage snapshots `TOP_selected_facility` as `TOP_proposal_facility`, clamped to 1–3:
-  civilian industry, infrastructure, or resources. Review and final approval set
-  `TOP_facility_state` and `TOP_facility_kind` for the core `TOP_facility_available` trigger.
-  Changing the GUI facility selection never changes an already submitted proposal.
+Ordinary person and organization review requires all three current belief axes at 60,
+a believed state and host, and lead age below 57 days. A serving political leader
+requires all three axes at 80. The review copies those values into its proposal. Later
+collection or decay cannot improve or weaken the proposal.
 
-## Callback safety
+Methods are encoded as:
 
-Actor event slots remain reserved until their own option is consumed. Cancellation and timeout
-close the proposal but retain an open-window tombstone. Closing the stale window releases it;
-until then a new nomination is unavailable. The first option in each actor event closes or
-defers the case, so unattended player dialogs do not implicitly approve an operation.
+| ID  | Method               | Subject      | Access category                        | Result family                      |
+| --- | -------------------- | ------------ | -------------------------------------- | ---------------------------------- |
+| 1   | Remote strike        | Person       | Stand-off reach                        | Lethal native raid                 |
+| 2   | Direct-action raid   | Person       | Direct-action staging                  | Native capture or lethal result    |
+| 3   | Covert assassination | Person       | Clandestine access                     | Timed lethal result                |
+| 4   | Rendition            | Person       | Clandestine access and custody route   | Timed capture                      |
+| 5   | Partner operation    | Person       | Cooperative partner access             | Timed capture with partner custody |
+| 6   | Facility sabotage    | Organization | Clandestine access                     | Damage and disruption              |
+| 7   | Poison/Novichok      | Person       | Clandestine access plus authored gates | Timed lethal result                |
 
-Each host has one request window backed by immutable actor, sequence, person, method, and state
-fields. Only consuming that window releases the slot. Its reply must match all five fields and
-an unexpired actor proposal waiting for consent. Actor cancellation does not overwrite the host
-record. An old reply therefore cannot approve a later nomination, including an identical case.
+The Novichok route retains the authored Russian and decryption requirements. Method
+overrides belong in the manifest only when an ordinary method is genuinely
+nonsensical for that subject.
 
-A host with an unresolved window returns unavailable to other requests. Those actors can defer
-or seek unilateral authorization. This avoids relying on undocumented event-local numeric
-variables or replacing a record while an old popup still references it. Engine event delivery,
-automatic dismissal, annexation, and save/reload need runtime acceptance; a dropped actor window
-can keep its nomination slot reserved until the corresponding event is acknowledged.
+## Access and host posture
+
+Access has two validations:
+
+1. A plausible route is required to open review.
+2. Exact access is rechecked at senior approval and at Begin Preparation or Begin
+   Operation.
+
+Loss of access after approval blocks launch but preserves the waiting mandate until
+it expires. The system does not change targets or methods. Native raids retain final
+authority over a suitable base, equipment, range, DLC, and engine preparation.
+
+Host posture is frozen as one of:
+
+- unconsulted;
+- intelligence-only;
+- tolerated;
+- cooperative;
+- refused.
+
+Only cooperative posture permits a partner operation. Intelligence-only assistance
+ends the proposal without consuming a mandate, returns the package to development,
+adds 20 location and 5 to each other belief axis, and refreshes the location report.
+Refusal returns the package, adds pressure, and may privately identify the actor. It
+does not itself create public attribution or a strategic crisis.
+
+Each host can hold one unresolved incoming request. Actor cancellation never rewrites
+that request. A response must match actor, proposal sequence, subject kind, subject
+ID, method, objective, state, and host before it can affect a proposal.
+
+## Immutable proposal
+
+`TOP_begin_review` and `TOP_begin_organization_review` record:
+
+- subject kind and stable ID;
+- country-owned proposal and case sequence;
+- method and facility objective;
+- identity or verification, location, and pattern or activity;
+- lead age, believed state, and believed host;
+- access category and host posture;
+- doctrine and review rigor;
+- capability, harm, exposure, and capture-feasibility inputs;
+- a 42-day expiry.
+
+One actor review dialog can be open at a time. Any number of developed packages and
+approved waiting mandates can exist. Cancelling, rejecting, expiring, or invalidating
+a proposal returns its unchanged package. It does not erase intelligence or charge
+approval Political Power.
+
+The review fails closed when status, serving role, operational eligibility, authority,
+controller, capability, access, doctrine, case sequence, or lifecycle no longer
+matches. The current GUI selection is not part of validation.
+
+## Doctrine
+
+Doctrine changes cost 100 Political Power and lock further changes for 365 days.
+Restrictive and Standard are always available. Expanded requires an eligible
+government family, war, or authored emergency. Delegated requires war, civil war, or
+an authored override. Full Sandbox does not relax those institutional requirements.
+
+| Doctrine    | Nonleader approval |  Mandate | Procedure                                               | Risk adjustment |
+| ----------- | -----------------: | -------: | ------------------------------------------------------- | --------------: |
+| Restrictive |              75 PP |  60 days | Cooperation or war is required                          |             -10 |
+| Standard    |              50 PP |  91 days | Full normal review                                      |               0 |
+| Expanded    |              40 PP | 120 days | Consultation is optional when independent access exists |              +5 |
+| Delegated   |              25 PP | 182 days | Compressed nonleader review                             |             +10 |
+
+Delegated nonleader cases skip staff and host consultation and enter senior review
+directly. Organization facility cases count as nonleader cases. Political leaders
+always follow the full procedure, regardless of doctrine.
+
+A political-leader approval always costs 50 Political Power. Doctrine still supplies
+mandate length, consultation constraints, and risk adjustment. Changing doctrine
+invalidates an unfinished proposal whose procedure no longer matches. It never
+changes a previously approved mandate.
+
+## Review stages
+
+Proposal stages are:
+
+- **0, closed:** no active proposal;
+- **1, staff review:** the immutable dossier is presented and checked;
+- **2, host choice:** consultation, tolerated unilateral action, or the next review
+  route is selected;
+- **3, host response:** the matching host owns an unresolved request;
+- **4, senior review:** cost, doctrine, access, capability, and frozen consequence
+  inputs are shown and revalidated;
+- **5, assassination confirmation:** a serving political leader's lethal case receives
+  the dedicated final page.
+
+The dedicated page is explicitly titled `Assassination`. Its final button is
+`Authorize Assassination`, and the selected method remains visible underneath. It
+shows the target's office, frozen intelligence, access route, host posture, succession
+warning, attribution band, civilian-harm band, and strategic-escalation band. Capture
+feasibility produces a prominent warning and modifies consequences. It does not veto
+lethal authorization.
+
+Every political target must have deterministic retirement and a valid authored or
+generated successor fallback before lethal authorization is exposed. The generator
+enforces that contract.
+
+## Approval and operational capacity
+
+Approval creates a phase-2 waiting mandate. It copies the immutable proposal into
+person or organization case arrays and charges approval cost once. It does not occupy
+the operation slot and does not create a native raid or timed mission.
+
+Begin Preparation or Begin Operation:
+
+- revalidates subject kind, ID, sequence, status, role, authority, state, host,
+  access, method, objective, doctrine, and capability;
+- requires the country's one operation slot to be free;
+- reserves that slot with subject kind, ID, sequence, state, host, method, and
+  objective;
+- exposes the exact native raid or starts a 28-day timed operation.
+
+BDA pending releases the operation slot. Waiting mandates remain intact while another
+case executes. Access loss blocks launch without changing the case. Expiry closes an
+unused waiting mandate and preserves the underlying dossier.
+
+For native raids, TOP Stand Down releases the slot and closes the prepared case.
+Engine-side map cancellation cannot be authoritative because HOI4 exposes no safe
+cancellation callback. Reopening an identical still-valid mandate may reuse its
+prepared native instance. Once a native tuple is retired, a late callback for it
+cannot attach to a new operation.
+
+## Resolution and consequence inputs
+
+Authorization does not decide physical success. Resolution uses one intelligence roll
+against all three frozen axes, followed by native or timed tactical resolution only
+when the intelligence gates permit it.
+
+The proposal freezes the inputs used to explain:
+
+- operational success modifiers;
+- attribution exposure;
+- civilian-harm risk;
+- capture feasibility;
+- host cooperation;
+- doctrine and review rigor;
+- strategic escalation.
+
+Exact inputs and adjustments can be shown. Final probability is shown as Low below
+20, Moderate from 20 through 39, High from 40 through 59, and Extreme at 60 or more.
+Ordinary civilian-harm risk is capped at 40. An authored strategic incident may
+override that cap.
+
+## Callback and event safety
+
+Actor event slots remain reserved until their own option is consumed. Timeout closes
+the proposal but retains enough identity to make a stale callback harmless. A host
+response cannot approve a different or later proposal.
+
+Native callbacks are person-only. The generated raid carries person and method, while
+the callback validates actor, person, method, state, case sequence, and prepared
+binding. The operation slot also records typed identity. Organization cases never use
+native raid callbacks.
+
+Oversight is not a second outcome system. Consequence triggers add a typed person or
+organization key to `TOP_oversight_queue`. Only one country-level oversight subject
+is dispatched at a time. Resolving it updates that case's shared consequence record,
+clears the pointer, and dispatches the next queued case.
 
 ## Acceptance scenarios
 
-- Senior refusal, host refusal, busy host, cancellation, and timeout spend no Political Power.
-  Returning the case to active collection pays its normal 25 Political Power collection cost.
-- Reselect another dossier at every stage; approve only the recorded person and state.
-- Cancel while awaiting consent, start another nomination, and answer the old host request.
-  It cannot change the newer proposal; host slots are released only by their own response.
-- Cancel or expire an open actor dialog. Its stale options cannot commit; acknowledgement
-  restores nomination access. Save/reload both actor and host windows before responding.
-- Change host controller, lead state, capability, target status, or political authority before
-  approval. The case fails closed. Enhanced review rejects an available detention alternative.
-- Approve each method with valid capabilities; partner action requires affirmative host
-  consent. Confirm native raid launch remains separate and the final mandate records consent.
-
-## Opportunities for 2024–2026
-
-These are fictional intelligence opportunities shaped by contemporary strategic themes. They
-do not inject historical attacks, force leadership changes, or establish real-world identities,
-locations, survival, or deaths. Three annual effects advance `global.TOP_modern_year`:
-`TOP_modern_opportunities_2024`, `TOP_modern_opportunities_2025`, and
-`TOP_modern_opportunities_2026`. Each is idempotent and cannot move the marker backwards.
-The opportunity window expires after 365 game-clock days, preventing a newly eligible country
-in a later campaign year from receiving an obsolete 2026 report.
-
-The existing staggered country pass calls `TOP_modern_country_opportunity` once when
-`TOP_last_modern_year` trails the marker. It scans only that country's existing dossiers and
-selects one known, living, active, nonpolitical person affiliated with groups 1–7. The score is
-current dossier confidence plus the existing CT organization's threat level, with a 30-point
-theme bonus: Islamic State in 2024; African networks in 2025; Al-Qaeda central or TTP in 2026.
-If no person qualifies, that year's review produces no opportunity and no popup.
-
-Delivery calls the shared lead effect for 25 intelligence points before creating any report.
-Separate `TOP_modern_2024_target`, `TOP_modern_2025_target`, and `TOP_modern_2026_target`
-snapshots keep reports independent. Notifications are pure flavor and are omitted for AI.
-Their text names only an already-known person; exact states remain subject to the dossier's
-confidence gate. No political mandate or operation authorization is granted.
-
-Historical context, verified against primary UN reporting:
-
-- [S/2024/556][un2024], 22 July 2024: regional and external threats, dispersed Islamic State
-  activity, and continued counterterrorism pressure. This supports a broad network review.
-- [S/2025/71/Rev.1][un2025], 6 February 2025: resilient, decentralized networks and increased
-  attention to regional affiliates in Africa. No leadership identity claim is imported.
-- [S/2026/44][un2026], 4 February 2026: persistent threats across regions, Al-Qaeda affiliate
-  connections, and concerns about TTP. This informs the South Asian network emphasis.
-- [S/2026/651][un2026latest], 10 August 2026, information cutoff 9 June 2026: the independent
-  source-manifest review verified broad themes of Sahel/South Asian pressure, regional affiliate
-  emphasis, disruption of Islamic State coordination, and TTP restructuring. These are
-  consistent with the authored 2026 opportunity; they do not prescribe its outcome.
-
-[un2024]: https://docs.un.org/S/2024/556
-[un2025]: https://docs.un.org/S/2025/71/Rev.1
-[un2026]: https://docs.un.org/S/2026/44
-[un2026latest]: https://docs.un.org/S/2026/651
+- Open standard, enhanced, and leader packages at exactly their thresholds. Repeat
+  with a 57-day lead and confirm it is stale.
+- Reselect another dossier at every review stage. Confirm only the recorded subject,
+  method, objective, state, host, and sequence can be approved.
+- Run Restrictive with cooperation and war, Expanded with and without consultation,
+  and Delegated against a nonleader, an organization, and a political leader.
+- Verify Delegated skips directly to senior review for the first two but preserves the
+  full leader path and assassination confirmation for the third.
+- Accept intelligence-only help, tolerate unilateral action, cooperate, refuse, and
+  leave a host request unanswered. Confirm package, pressure, and mandate behavior.
+- Approve several waiting mandates, begin one, and verify every other launch is
+  blocked without losing its mandate or package.
+- Remove access after approval, restore it before expiry, and confirm the exact case
+  resumes without retargeting.
+- Cancel and renew a native raid, Stand Down through TOP, deliver a retired callback,
+  and repeat under all supported DLC combinations.
+- Save and reload during every proposal stage, host response, waiting mandate, native
+  preparation, timed operation, and BDA.

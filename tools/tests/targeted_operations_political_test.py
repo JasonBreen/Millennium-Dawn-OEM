@@ -261,10 +261,10 @@ def test_country_protection_requires_exact_active_serving_identity(target, tag, 
         assert not game.trigger("TOP_has_protected_official", actor=tag)
 
 
-def test_civilian_host_is_never_a_protection_owner():
+def test_authored_civilian_figure_uses_declared_protection_country():
     game = PoliticalScript()
     game.globals["TOP_host^141"] = game.tags["USA"]
-    assert game.protect(141) == 0
+    assert game.protect(141) == game.tags["USA"]
     assert not game.trigger("TOP_has_protected_official", actor="USA")
 
 
@@ -283,6 +283,14 @@ def test_separate_supreme_office_succeeds_without_replacing_president():
     assert iran["leader"] == "Other leader"
 
 
+def test_mojtaba_senior_role_uses_iranian_protection_before_succession():
+    game = PoliticalScript()
+    iran = game.countries[game.tags["PER"]]
+    assert iran["leader"] == "Other leader"
+    assert "PER_top_mojtaba_supreme_leader" not in iran["ideas"]
+    assert game.protect(134) == game.tags["PER"]
+
+
 def test_supreme_ruler_succession_preserves_regime_and_available_candidate():
     game = PoliticalScript()
     iran = game.countries[game.tags["PER"]]
@@ -292,6 +300,28 @@ def test_supreme_ruler_succession_preserves_regime_and_available_candidate():
     assert iran["government"] == "communism"
     game.retire(134)
     assert iran["leader"] == "Existing office successor"
+
+
+@pytest.mark.parametrize(
+    "target,tag,leader,successor",
+    [
+        (129, "SOV", "Vladimir Putin", "Vyacheslav Volodin"),
+        (130, "SOV", "Dimitry Medvedev", "Alexey Dyumin"),
+        (130, "SOV", "Dmitry Medvedev", "Alexey Dyumin"),
+        (132, "UKR", "Volodymyr Zelenskyy", "Hennadiy Balashov"),
+        (132, "UKR", "Volodymyr Zelensky", "Hennadiy Balashov"),
+    ],
+)
+def test_registered_leader_retirement_installs_deterministic_authored_successor(
+    target, tag, leader, successor
+):
+    game = PoliticalScript()
+    country = game.countries[game.tags[tag]]
+    country["leader"] = leader
+
+    game.retire(target)
+
+    assert country["leader"] == successor
 
 
 @pytest.mark.parametrize(
@@ -422,6 +452,20 @@ def test_foreign_civilian_mandate_requires_live_war_and_cannot_override_capture(
     assert not game.trigger("TOP_authored_capture_override", 141, "SOV")
     russia["wars"].clear()
     assert not game.trigger("TOP_authored_civilian_mandate_valid", 141, "SOV")
+
+
+def test_full_sandbox_civilian_gate_is_reachable():
+    source = (
+        ROOT / "common/scripted_triggers/01_targeted_operations_triggers.txt"
+    ).read_text(encoding="utf-8")
+    block = _named_block(source, "TOP_person_operational_eligible")
+    setter = "set_temp_variable = { TOP_civilian_valid_target = TOP_target }"
+    # A setter always evaluates true, so inside the OR it satisfies the branch
+    # on its own and the mandate guard is never reached.
+    assert block.index(setter) < block.index("has_civil_war = yes")
+    assert block.index("has_civil_war = yes") < block.index(
+        "TOP_authored_civilian_mandate_valid = yes"
+    )
 
 
 def test_wartime_opportunities_use_one_serving_person_and_a_country_cooldown():
