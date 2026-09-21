@@ -255,7 +255,7 @@ def test_unmatched_exposed_killing_uses_independent_news_snapshots():
     event_start = EVENTS.rfind("news_event = {", 0, event_id)
     event_end = EVENTS.index("\ncountry_event = {", event_id)
     event = EVENTS[event_start:event_end]
-    assert "picture = GFX_USA_event_cia" in event
+    assert "picture = GFX_USA_collapse_unrest_global_event" in event
     assert "is_triggered_only = yes" in event
     assert "major = yes" not in event
     option = event[event.index("\toption = {") :]

@@ -464,8 +464,8 @@ def test_nko_retirement_preserves_the_active_communist_ideology():
     assert "limit = { check_variable = { ruling_party = 19 } }" in helper
     assert "ideology = Neutral_Communism" in helper
     assert "neutrality_Neutral_Communism" in helper
-    assert "ideology = Communist-State" in helper
-    assert "emerging_Communist-State" in helper
+    assert "ideology = communist_state" in helper
+    assert "emerging_communist_state" in helper
 
 
 def test_maduro_retirement_has_an_idempotent_venezuelan_successor():
