@@ -118,6 +118,7 @@ def test_delivered_tungsten_prevents_the_actual_microchip_shutdown(
             "resource_imported@tungsten": imports,
             "resource_produced@chromium": 2,
             "resource_imported@chromium": 0,
+            "country_microchip_produced": 20,
             "country_microchip_production_var": 0,
         }
     )

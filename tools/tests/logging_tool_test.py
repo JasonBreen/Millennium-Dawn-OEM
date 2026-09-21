@@ -301,6 +301,44 @@ def test_tech_helpers_skip_non_txt_and_undersized_files(tmp_path):
     assert (tech / "small.txt").read_text(encoding="utf-8") == "technologies = {\n"
 
 
+def test_tech_add_inserts_log_into_on_research_complete_blocks(tmp_path):
+    source = _write(
+        tmp_path / "common" / "technologies" / "techs.txt",
+        _padded(
+            "technologies = {\n"
+            "\tTEST_tech_multiline = {\n"
+            "\t\ton_research_complete = {\n"
+            "\t\t\tset_technology = { TEST_tech_2 = 1 }\n"
+            "\t\t}\n"
+            "\t}\n"
+            "\tTEST_tech_single_line = {\n"
+            "\t\ton_research_complete = { set_technology = { TEST_tech_3 = 1 } }\n"
+            "\t}\n"
+            "\tTEST_tech_empty = {\n"
+            "\t\ton_research_complete = {\n"
+            "\t\t}\n"
+            "\t}\n"
+            "}\n"
+        ),
+    )
+
+    assert logging_tool.tech_add(tmp_path) == 2
+    content = source.read_text(encoding="utf-8")
+    assert (
+        "\t\ton_research_complete = {\n"
+        '\t\t\tlog = "[GetDateText]: [Root.GetName]: add tech TEST_tech_multiline"\n'
+        "\t\t\tset_technology = { TEST_tech_2 = 1 }\n"
+        "\t\t}\n"
+    ) in content
+    assert (
+        "\t\ton_research_complete = {\n"
+        '\t\t\tlog = "[GetDateText]: [Root.GetName]: add tech TEST_tech_single_line"\n'
+        "\t\t\tset_technology = { TEST_tech_3 = 1 }\n"
+        "\t\t}\n"
+    ) in content
+    assert logging_tool.tech_add(tmp_path) == 0
+
+
 def test_main_runs_every_processor_against_an_empty_mod(tmp_path, monkeypatch, capsys):
     for relative in (
         "events",

@@ -54,19 +54,18 @@ def influence_sources():
     layout = strip_comments(
         (ROOT / "interface/MD_influence.gui").read_text(encoding="utf-8")
     )
-    return _block(scripted, "scripted_gui"), _elements(
-        _block(layout, "guiTypes"), "containerWindowType"
+    binding = _block(_block(scripted, "scripted_gui"), "countrydiplomacyview_influence")
+    windows = _elements(_block(layout, "guiTypes"), "containerWindowType")
+    windows.update(
+        _elements(windows["MD_countrydiplomacyview_influence"], "containerWindowType")
     )
+    return binding, windows
 
 
-@pytest.mark.parametrize(
-    "name", ("countrydiplomacyview_influence", "countrydiplomacyview_influence_buttons")
-)
-def test_influence_windows_attach_directly_to_selected_country_diplomacy(
-    influence_sources, name
+def test_influence_window_attaches_directly_to_selected_country_diplomacy(
+    influence_sources,
 ):
-    scripted, windows = influence_sources
-    binding = _block(scripted, name)
+    binding, windows = influence_sources
     assert "context_type = selected_country_context" in binding
     assert "parent_window_token = selected_country_view_diplomacy" in binding
     assert "parent_scripted_gui" not in binding
@@ -74,30 +73,29 @@ def test_influence_windows_attach_directly_to_selected_country_diplomacy(
     assert window and window.group(1) in windows
 
 
-def test_button_window_keeps_its_original_position_inside_the_influence_panel(
+def test_button_window_is_nested_at_its_panel_relative_position(
     influence_sources,
 ):
     _, windows = influence_sources
-    panel_x, panel_y = _position(windows["MD_countrydiplomacyview_influence"])
-    assert _position(windows["influence_option_buttons"]) == (panel_x + 198, panel_y)
+    assert _position(windows["influence_option_buttons"]) == (198, 0)
 
 
-def test_influence_text_refresh_stays_separate_from_button_refresh(influence_sources):
-    scripted, _ = influence_sources
-    text = _block(scripted, "countrydiplomacyview_influence")
-    buttons = _block(scripted, "countrydiplomacyview_influence_buttons")
-    assert not re.search(r"\bdirty\s*=", text)
-    assert "dirty = global.update_influence_ui" in buttons
+def test_influence_refresh_and_actions_share_the_selected_country_binding(
+    influence_sources,
+):
+    binding, _ = influence_sources
+    assert "dirty = global.update_influence_ui" in binding
+    assert _block(binding, "triggers")
+    assert _block(binding, "effects")
 
 
 @pytest.mark.parametrize("name", BUTTON_POSITIONS)
 def test_influence_actions_keep_their_controls_and_bindings(influence_sources, name):
-    scripted, windows = influence_sources
+    binding, windows = influence_sources
     controls = _elements(windows["influence_option_buttons"], "buttonType")
     assert controls.keys() == BUTTON_POSITIONS.keys()
     assert _position(controls[name]) == BUTTON_POSITIONS[name]
     assert "pdx_tooltip" in controls[name]
-    binding = _block(scripted, "countrydiplomacyview_influence_buttons")
     assert _block(_block(binding, "triggers"), name + "_visible")
     assert _block(_block(binding, "triggers"), name + "_click_enabled")
     assert _block(_block(binding, "effects"), name + "_click")

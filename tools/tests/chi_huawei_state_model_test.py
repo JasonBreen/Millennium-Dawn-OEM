@@ -145,29 +145,29 @@ FOCUS_READS = {
 
 ONE_SHOTS = (
     (
-        (None, None, ("CAT_internet_tech", "0.10"), None, False),
+        (None, None, ("CAT_internet", "0.10"), None, False),
         (None, None, ("CAT_industry", "0.10"), None, False),
-        ("-4.00", None, ("CAT_computing_tech", "0.15"), None, False),
+        ("-4.00", None, ("CAT_information_technology", "0.15"), None, False),
     ),
     (
         ("2.00", None, None, None, False),
-        ("-3.00", None, ("CAT_computing_tech", "0.15"), None, False),
-        (None, None, ("CAT_internet_tech", "0.15"), None, False),
+        ("-3.00", None, ("CAT_information_technology", "0.15"), None, False),
+        (None, None, ("CAT_internet", "0.15"), None, False),
     ),
     (
-        (None, None, ("CAT_encryption_tech", "0.10"), None, False),
+        (None, None, ("CAT_encryption", "0.10"), None, False),
         (None, None, ("CAT_industry", "0.10"), None, False),
-        ("-4.00", None, ("CAT_encryption_tech", "0.15"), None, False),
+        ("-4.00", None, ("CAT_encryption", "0.15"), None, False),
     ),
     (
-        (None, None, ("CAT_internet_tech", "0.10"), None, False),
-        (None, 5, ("CAT_internet_tech", "0.15"), None, False),
+        (None, None, ("CAT_internet", "0.10"), None, False),
+        (None, 5, ("CAT_internet", "0.15"), None, False),
         ("-3.00", None, None, ("CHI_huawei_security_scrutiny", 730), False),
     ),
     (
-        (None, None, ("CAT_computing_tech", "0.10"), None, False),
-        (None, None, ("CAT_internet_tech", "0.10"), None, False),
-        ("-3.00", None, ("CAT_computing_tech", "0.15"), None, False),
+        (None, None, ("CAT_information_technology", "0.10"), None, False),
+        (None, None, ("CAT_internet", "0.10"), None, False),
+        ("-3.00", None, ("CAT_information_technology", "0.15"), None, False),
     ),
     (
         (None, None, None, ("CHI_huawei_security_scrutiny", 1095), False),
@@ -175,30 +175,30 @@ ONE_SHOTS = (
         (
             None,
             None,
-            ("CAT_encryption_tech", "0.10"),
+            ("CAT_encryption", "0.10"),
             ("CHI_huawei_security_scrutiny", 1460),
             False,
         ),
     ),
     (
-        ("-4.00", None, ("CAT_internet_tech", "0.15"), None, False),
-        (None, 5, ("CAT_internet_tech", "0.10"), None, False),
-        (None, None, ("CAT_computing_tech", "0.15"), None, False),
+        ("-4.00", None, ("CAT_internet", "0.15"), None, False),
+        (None, 5, ("CAT_internet", "0.10"), None, False),
+        (None, None, ("CAT_information_technology", "0.15"), None, False),
     ),
     (
         (None, None, ("CAT_microchips", "0.15"), None, False),
         ("2.00", None, None, None, False),
-        (None, None, ("CAT_computing_tech", "0.10"), None, False),
+        (None, None, ("CAT_information_technology", "0.10"), None, False),
     ),
     (
-        (None, None, ("CAT_ai", "0.10"), None, False),
-        (None, None, ("CAT_computing_tech", "0.15"), None, False),
-        (None, None, ("CAT_ai", "0.15"), None, False),
+        (None, None, ("CAT_artificial_intelligence", "0.10"), None, False),
+        (None, None, ("CAT_information_technology", "0.15"), None, False),
+        (None, None, ("CAT_artificial_intelligence", "0.15"), None, False),
     ),
     (
-        (None, None, ("CAT_ai", "0.15"), None, True),
-        (None, 5, ("CAT_computing_tech", "0.10"), None, False),
-        (None, None, ("CAT_internet_tech", "0.15"), None, False),
+        (None, None, ("CAT_artificial_intelligence", "0.15"), None, True),
+        (None, 5, ("CAT_information_technology", "0.10"), None, False),
+        (None, None, ("CAT_internet", "0.15"), None, False),
     ),
     (
         (None, None, None, ("CHI_huawei_entity_list_shock", 1825), False),
@@ -215,21 +215,21 @@ ONE_SHOTS = (
         (
             None,
             None,
-            ("CAT_computing_tech", "0.15"),
+            ("CAT_information_technology", "0.15"),
             ("CHI_huawei_ecosystem_migration_burden", 1460),
             False,
         ),
         (
             None,
             None,
-            ("CAT_internet_tech", "0.15"),
+            ("CAT_internet", "0.15"),
             ("CHI_huawei_ecosystem_migration_burden", 730),
             False,
         ),
         (
             None,
             None,
-            ("CAT_internet_tech", "0.10"),
+            ("CAT_internet", "0.10"),
             ("CHI_huawei_ecosystem_migration_burden", 365),
             False,
         ),
@@ -254,7 +254,7 @@ ONE_SHOTS = (
             ("CHI_huawei_domestic_yield_ramp", 730),
             False,
         ),
-        (None, None, ("CAT_ai", "0.15"), None, True),
+        (None, None, ("CAT_artificial_intelligence", "0.15"), None, True),
     ),
 )
 

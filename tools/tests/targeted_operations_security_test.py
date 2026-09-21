@@ -1,12 +1,13 @@
 from pathlib import Path
 
 import pytest
-from great_ai_race_state_model_test import _parse_race_script
+from great_ai_race_state_model_test import _named_block, _parse_race_script
 from targeted_operations_core_test import TargetScript
 from targeted_operations_helpers_test import TargetedScript
 
 ROOT = Path(__file__).resolve().parents[2]
 EFFECTS = ROOT / "common/scripted_effects/03_targeted_operations_security.txt"
+REDESIGN_EFFECTS = ROOT / "common/scripted_effects/06_targeted_operations_redesign.txt"
 TRIGGERS = ROOT / "common/scripted_triggers/03_targeted_operations_security.txt"
 
 
@@ -20,6 +21,11 @@ class SecurityScript(TargetedScript):
 
     def __init__(self):
         self.effects = _parse_race_script(EFFECTS.read_text(encoding="utf-8"))
+        redesign = _parse_race_script(REDESIGN_EFFECTS.read_text(encoding="utf-8"))
+        self.effects["TOP_get_effective_person_pressure"] = redesign[
+            "TOP_get_effective_person_pressure"
+        ]
+        self.effects["TOP_refresh_vip_details"] = []
         self.triggers = _parse_race_script(TRIGGERS.read_text(encoding="utf-8"))
         self.globals = {"TOP_clock": 7}
         self.temps, self.scope_stack, self.charges = {}, [], []
@@ -38,6 +44,8 @@ class SecurityScript(TargetedScript):
             }
             for identifier in (0, 1, 2, 3)
         }
+        for country in self.countries.values():
+            country["vars"]["TOP_vip_assignments"] = []
 
     def condition_statement(self, statement, identifier):
         key, comparison, operand = statement
@@ -68,6 +76,8 @@ class SecurityScript(TargetedScript):
             super().execute_statement(statement, identifier)
 
     def run(self, name, identifier=1):
+        if name == "TOP_refresh_vip_details":
+            return
         if name == "modify_treasury_effect":
             amount = self.temps["treasury_change"]
             self.countries[identifier]["vars"]["treasury"] += amount
@@ -86,6 +96,17 @@ class SecurityScript(TargetedScript):
         self.run("TOP_get_defensive_modifiers", attacker)
         return tuple(
             self.temps[f"TOP_defensive_{name}"]
+            for name in ("collection_penalty", "success_penalty", "exposure_bonus")
+        )
+
+    def organization_modifiers(self, group=23, host=2, attacker=1):
+        self.temps.update(
+            TOP_group_target=group,
+            TOP_organization_security_host=host,
+        )
+        self.run("TOP_get_organization_defensive_modifiers", attacker)
+        return tuple(
+            self.temps[f"TOP_organization_defensive_{name}"]
             for name in ("collection_penalty", "success_penalty", "exposure_bonus")
         )
 
@@ -205,6 +226,45 @@ def test_disabled_system_neither_spends_nor_applies_existing_policy():
     assert game.charges == [(2, -1.5)]
 
 
+def test_state_security_facilities_use_host_policies_and_pressure_hardening():
+    game = SecurityScript()
+    game.globals.update(
+        {
+            "TOP_group_class^TOP_group_target": 2,
+            "TOP_group_pressure^TOP_group_target": 75,
+        }
+    )
+    game.purchase("protection", 3)
+    game.purchase("counterintelligence", 2)
+    assert game.organization_modifiers() == (6, 25, 10)
+    assert game.organization_modifiers(host=1) == (0, 10, 0)
+    game.globals["TOP_group_class^TOP_group_target"] = 1
+    assert game.organization_modifiers() == (6, 15, 10)
+
+
+def test_organization_defense_is_wired_to_collection_review_and_resolution():
+    collection = _named_block(
+        REDESIGN_EFFECTS.read_text(encoding="utf-8"),
+        "TOP_collect_organization_pulse",
+    )
+    organization = (
+        ROOT / "common/scripted_effects/07_targeted_operations_organization_cases.txt"
+    ).read_text(encoding="utf-8")
+    review = _named_block(organization, "TOP_calculate_organization_proposal_risks")
+    resolution = _named_block(organization, "TOP_resolve_organization_operation")
+    assert (
+        "TOP_organization_security_host = TOP_org_lead_host^TOP_group_target"
+        in collection
+    )
+    assert "subtract = TOP_organization_defensive_collection_penalty" in collection
+    assert "TOP_organization_security_host = TOP_proposal_host" in review
+    assert (
+        "TOP_proposal_protection = TOP_organization_defensive_success_penalty" in review
+    )
+    assert "TOP_organization_defensive_exposure_bonus" in review
+    assert "TOP_org_case_protection^TOP_group_target" in resolution
+
+
 def test_ai_policy_changes_do_not_dirty_the_human_window():
     game = SecurityScript()
     game.countries[2]["ai"] = True
@@ -262,19 +322,24 @@ def test_parody_badge_has_explicit_non_sponsorship_hover_text():
     assert "no actual sponsorship, endorsement, or affiliation" in text
 
 
-def test_successful_lethal_operation_preserves_pre_retirement_exposure_bonus():
+def test_lethal_resolution_snapshots_defensive_exposure_before_retirement():
     class ExposureScript(TargetScript):
         def __init__(self):
             super().__init__()
             self.effects.update(_parse_race_script(EFFECTS.read_text(encoding="utf-8")))
+            self.effects.update(
+                _parse_race_script(
+                    (
+                        ROOT
+                        / "common/scripted_effects/02_targeted_operations_authorization_effects.txt"
+                    ).read_text(encoding="utf-8")
+                )
+            )
             self.triggers.update(
                 _parse_race_script(TRIGGERS.read_text(encoding="utf-8"))
             )
-            self.stubs.difference_update(
-                {"TOP_get_defensive_modifiers", "TOP_apply_exposure"}
-            )
+            self.stubs.difference_update({"TOP_get_defensive_modifiers"})
             self.stubs.add("TOP_get_protection_country")
-            self.exposure_rolls = []
 
         def run(self, name, identifier):
             if name == "TOP_get_protection_country":
@@ -283,24 +348,43 @@ def test_successful_lethal_operation_preserves_pre_retirement_exposure_bonus():
             else:
                 super().run(name, identifier)
 
-        def execute_statement(self, statement, identifier):
-            key, comparison, operand = statement
-            if key == "random":
-                data = {name: value for name, _, value in operand}
-                self.exposure_rolls.append(self.value(data["chance"], identifier))
-            else:
-                super().execute_statement(statement, identifier)
-
     game = ExposureScript()
-    game.authorize(target=129, method=3)
+    game.globals["TOP_rule_mode"] = 2
+    variables = game.target(ident=129)
     game.countries[2]["vars"].update(
         TOP_counterintelligence_level=3, TOP_counterintelligence_until=182
     )
-    game.temps["TOP_tier"] = 2
-    game.run("TOP_complete_operation", 1)
-    assert game.globals["TOP_status"][129] == 3
-    assert game.external["TOP_retire_registered_character", 1] == 1
-    assert game.temps["TOP_operation_exposure_bonus"] == 15
-    assert game.exposure_rolls[0] == 40
-    game.run("TOP_get_defensive_modifiers", 1)
-    assert game.temps["TOP_defensive_exposure_bonus"] == 0
+    variables.update(
+        TOP_proposal_target=129,
+        TOP_proposal_method=3,
+        TOP_proposal_pattern=85,
+        TOP_proposal_host_posture=1,
+        TOP_proposal_doctrine=2,
+        TOP_proposal_rigor=1,
+    )
+    game.run("TOP_calculate_person_proposal_risks", 1)
+    assert variables["TOP_proposal_exposure_score"] == 60
+    assert variables["TOP_proposal_protection"] == 2
+    assert variables["TOP_proposal_harm_risk"] == 15
+
+    variables["TOP_case_exposure_score"][129] = variables["TOP_proposal_exposure_score"]
+    variables["TOP_case_protection"][129] = variables["TOP_proposal_protection"]
+    variables["TOP_case_harm_risk"][129] = variables["TOP_proposal_harm_risk"]
+    game.call("TOP_kill_target", TARGET=129)
+    game.temps.update(TOP_target=129, TOP_method=3)
+    game.run("TOP_calculate_person_consequences", 1)
+    assert game.temps["TOP_exposure_score"] == 60
+    assert game.temps["TOP_operation_protection_country"] == 2
+
+    resolution = _named_block(
+        (
+            ROOT / "common/scripted_effects/08_targeted_operations_resolution.txt"
+        ).read_text(encoding="utf-8"),
+        "TOP_resolve_person_operation",
+    )
+    assert resolution.index(
+        "TOP_calculate_person_consequences = yes"
+    ) < resolution.index("TOP_resolve_target = yes")
+    assert resolution.index(
+        "set_temp_variable = { TOP_case_result_context = 1 }"
+    ) < resolution.index("TOP_resolve_target = yes")

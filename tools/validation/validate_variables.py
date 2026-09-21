@@ -313,10 +313,8 @@ def process_file_for_flag_syntax(args: Tuple[str, str]) -> Tuple[List[str], List
         return ([], [])
 
     try:
-        from pathlib import Path as _Path
-
-        text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
+        text = Path(filename).read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
         return ([], [])
 
     cleaned = re.sub(r"#[^\n]*", "", text)
@@ -349,10 +347,8 @@ def process_file_for_math_precision(args: Tuple[str, str]) -> List[str]:
     if should_skip_file(filename):
         return []
     try:
-        from pathlib import Path as _Path
-
-        text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
+        text = Path(filename).read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
         return []
 
     # Quote-aware comment strip, then blank quoted-string interiors so a `#` or a
@@ -629,20 +625,19 @@ def collect_clamp_ranges(
     if should_skip_file(filename):
         return [], [], []
     try:
-        from pathlib import Path as _Path
-
-        text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
+        text = Path(filename).read_text(encoding="utf-8-sig", errors="replace")
         cleaned = blank_quoted_strings(strip_comments(text))
-    except Exception:
+    except OSError:
         return [], [], []
     return _scan_clamp_harvest_text(cleaned)
 
 
 def _extract_clamp_checks(cleaned: str, rel: str) -> List[Tuple[str, str, int, int]]:
     checks: List[Tuple[str, str, int, int]] = []
+    offsets = compute_line_offsets(cleaned)
     for pattern in (_CHECKVAR_SHORT_RE, _CHECKVAR_LONG_RE):
         for m in pattern.finditer(cleaned):
-            line = cleaned[: m.start()].count("\n") + 1
+            line = line_for_offset(offsets, m.start())
             checks.append((m.group(1), m.group(2), line, m.end()))
     return checks
 
@@ -687,11 +682,9 @@ def process_file_for_clamp_conflicts(args) -> List[str]:
     if should_skip_file(filename):
         return []
     try:
-        from pathlib import Path as _Path
-
-        text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
+        text = Path(filename).read_text(encoding="utf-8-sig", errors="replace")
         cleaned = blank_quoted_strings(strip_comments(text))
-    except Exception:
+    except OSError:
         return []
     rel = os.path.relpath(filename, mod_path)
     return _resolve_clamp_checks(_extract_clamp_checks(cleaned, rel), rel, ranges)
@@ -991,10 +984,8 @@ def collect_dynamic_modifier_vars(args: Tuple[str, str]) -> List[Tuple[str, str]
     """
     filename, _mod_path = args
     try:
-        from pathlib import Path as _Path
-
-        text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
+        text = Path(filename).read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
         return []
     cleaned = blank_quoted_strings(strip_comments(text))
     return _scan_dynamic_harvest_text(cleaned)
@@ -1031,10 +1022,8 @@ def process_file_for_variable_tooltips(
     if should_skip_file(filename):
         return []
     try:
-        from pathlib import Path as _Path
-
-        text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
+        text = Path(filename).read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
         return []
 
     cleaned = blank_quoted_strings(strip_comments(text))
@@ -1464,10 +1453,8 @@ def process_file_for_orphan_money(
     if should_skip_file(filename):
         return []
     try:
-        from pathlib import Path as _Path
-
-        text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
+        text = Path(filename).read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
         return []
 
     # Quote-aware strip — the naive regex strip broke brace tracking in every
@@ -1634,10 +1621,8 @@ def _scan_shared_file(args) -> Tuple:
     if should_skip_file(filename):
         return _EMPTY_SHARED_RESULT
     try:
-        from pathlib import Path as _Path
-
-        text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
+        text = Path(filename).read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
         return _EMPTY_SHARED_RESULT
     rel = os.path.relpath(filename, mod_path)
 
@@ -2404,7 +2389,7 @@ class Validator(BaseValidator):
             try:
                 with open(fp, "r", encoding="utf-8-sig", errors="replace") as fh:
                     text = blank_quoted_strings(strip_comments(fh.read()))
-            except Exception:
+            except OSError:
                 continue
             for m in _SCRIPTED_EFFECT_DEF_RE.finditer(text):
                 name = m.group(1)
