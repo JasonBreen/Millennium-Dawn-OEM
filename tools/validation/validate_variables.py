@@ -316,7 +316,7 @@ def process_file_for_flag_syntax(args: Tuple[str, str]) -> Tuple[List[str], List
         from pathlib import Path as _Path
 
         text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
+    except (OSError, UnicodeDecodeError):
         return ([], [])
 
     cleaned = re.sub(r"#[^\n]*", "", text)
@@ -352,7 +352,7 @@ def process_file_for_math_precision(args: Tuple[str, str]) -> List[str]:
         from pathlib import Path as _Path
 
         text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
+    except (OSError, UnicodeDecodeError):
         return []
 
     # Quote-aware comment strip, then blank quoted-string interiors so a `#` or a
@@ -633,7 +633,7 @@ def collect_clamp_ranges(
 
         text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
         cleaned = blank_quoted_strings(strip_comments(text))
-    except Exception:
+    except (OSError, UnicodeDecodeError):
         return [], [], []
     return _scan_clamp_harvest_text(cleaned)
 
@@ -691,7 +691,7 @@ def process_file_for_clamp_conflicts(args) -> List[str]:
 
         text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
         cleaned = blank_quoted_strings(strip_comments(text))
-    except Exception:
+    except (OSError, UnicodeDecodeError):
         return []
     rel = os.path.relpath(filename, mod_path)
     return _resolve_clamp_checks(_extract_clamp_checks(cleaned, rel), rel, ranges)
@@ -994,7 +994,7 @@ def collect_dynamic_modifier_vars(args: Tuple[str, str]) -> List[Tuple[str, str]
         from pathlib import Path as _Path
 
         text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
+    except (OSError, UnicodeDecodeError):
         return []
     cleaned = blank_quoted_strings(strip_comments(text))
     return _scan_dynamic_harvest_text(cleaned)
@@ -1034,7 +1034,7 @@ def process_file_for_variable_tooltips(
         from pathlib import Path as _Path
 
         text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
+    except (OSError, UnicodeDecodeError):
         return []
 
     cleaned = blank_quoted_strings(strip_comments(text))
@@ -1467,7 +1467,7 @@ def process_file_for_orphan_money(
         from pathlib import Path as _Path
 
         text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
+    except (OSError, UnicodeDecodeError):
         return []
 
     # Quote-aware strip — the naive regex strip broke brace tracking in every
@@ -1637,7 +1637,7 @@ def _scan_shared_file(args) -> Tuple:
         from pathlib import Path as _Path
 
         text = _Path(filename).read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
+    except (OSError, UnicodeDecodeError):
         return _EMPTY_SHARED_RESULT
     rel = os.path.relpath(filename, mod_path)
 
@@ -2404,7 +2404,7 @@ class Validator(BaseValidator):
             try:
                 with open(fp, "r", encoding="utf-8-sig", errors="replace") as fh:
                     text = blank_quoted_strings(strip_comments(fh.read()))
-            except Exception:
+            except (OSError, UnicodeDecodeError):
                 continue
             for m in _SCRIPTED_EFFECT_DEF_RE.finditer(text):
                 name = m.group(1)

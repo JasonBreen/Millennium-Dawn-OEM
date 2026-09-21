@@ -123,6 +123,18 @@ def test_harvest_separates_temp_and_persistent_writes(tmp_path):
     assert set(persistent) == {"expected_military_sp", "GLOBAL_war_count"}
 
 
+def test_collect_clamp_ranges_handles_oserror(tmp_path):
+    non_existent = tmp_path / "does_not_exist.txt"
+    res = V.collect_clamp_ranges((str(non_existent), str(tmp_path)))
+    assert res == ([], [], [])
+
+
+def test_process_file_for_clamp_conflicts_handles_oserror(tmp_path):
+    non_existent = tmp_path / "does_not_exist.txt"
+    res = V.process_file_for_clamp_conflicts((str(non_existent), str(tmp_path), {}))
+    assert res == []
+
+
 def test_temp_only_variable_clamp_is_not_a_global_invariant(tmp_path):
     # Regression: `clamp_variable = { var = pp_gain min = -500 max = -100 }` sits
     # in a branch AFTER `check_variable = { pp_gain > -50 }` in the same effect,
