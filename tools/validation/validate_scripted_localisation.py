@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Validate scripted localisation definitions and usage in Millennium Dawn."""
 
+import functools
 import glob
 import os
 import re
@@ -90,6 +91,13 @@ def _find_reference_line(path: str, name: str) -> int:
     return find_line_number(path, name, lowercase=True)
 
 
+@functools.lru_cache(maxsize=1024)
+def _get_definition_pattern(name: str) -> re.Pattern:
+    return re.compile(
+        r"name\s*=\s*" + re.escape(name) + r"(?![A-Za-z0-9_-])", re.IGNORECASE
+    )
+
+
 def _find_definition_line(path: str, name: str) -> int:
     # `name = communist` as a substring also matches `name = Communist-State_valid`.
     try:
@@ -99,9 +107,7 @@ def _find_definition_line(path: str, name: str) -> int:
     except OSError:
         return 0
 
-    pattern = re.compile(
-        r"name\s*=\s*" + re.escape(name) + r"(?![A-Za-z0-9_-])", re.IGNORECASE
-    )
+    pattern = _get_definition_pattern(name)
     match = pattern.search(text)
     if match:
         return text.count("\n", 0, match.start()) + 1
