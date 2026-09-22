@@ -697,6 +697,7 @@ ai_race_generic_adapter = {
 	multiply_variable = { ai_race_control_capacity_external = 0.5 }
 }
 
+# Readiness withholds only the funded programme's own capability; the civilian base is not ours to degrade.
 ai_race_refresh_effective_capability = {
 	set_variable = { ai_race_effective_capability = ai_race_capability }
 	if = {
@@ -704,7 +705,9 @@ ai_race_refresh_effective_capability = {
 			ai_race_full_mode = yes
 			check_variable = { ai_race_stage > 0 }
 		}
-		multiply_variable = { ai_race_effective_capability = ai_race_current_readiness }
+		set_temp_variable = { ai_race_unmet_capability = { value = 1 subtract = ai_race_current_readiness max = 0 } }
+		multiply_temp_variable = { ai_race_unmet_capability = ai_race_capability_stock }
+		subtract_from_variable = { ai_race_effective_capability = ai_race_unmet_capability }
 	}
 	clamp_variable = { var = ai_race_effective_capability min = 0 max = 100 }
 }
