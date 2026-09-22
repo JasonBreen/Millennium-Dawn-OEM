@@ -645,10 +645,12 @@ def _block(text, name):
     return body
 
 
+_DIRECT_BLOCKS_PATTERN = re.compile(r"(?m)^\s*([\w@]+)\s*=\s*\{")
+
+
 def _direct_blocks(text):
     position = 0
-    pattern = re.compile(r"(?m)^\s*([\w@]+)\s*=\s*\{")
-    while match := pattern.search(text, position):
+    while match := _DIRECT_BLOCKS_PATTERN.search(text, position):
         body, position = extract_block_from_text(text, match.start())
         assert position >= 0, match.group(1)
         yield match.group(1), body
