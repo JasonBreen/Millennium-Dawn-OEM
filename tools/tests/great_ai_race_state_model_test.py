@@ -1444,19 +1444,37 @@ def test_executed_outcomes_cleanup_preserves_historical_first_until_off():
     assert "ai_race_first_finisher_id" not in race.globals
 
 
-ANTHROPIC_AXES = (
-    "USA_anthropic_frontier_capability",
-    "USA_anthropic_cloud_independence",
-    "USA_anthropic_commercial_reach",
-    "USA_anthropic_governance_strength",
-    "USA_anthropic_safety_discipline",
+ANTHROPIC_MAPPING = (
+    ("ai_race_capability_external", "USA_anthropic_frontier_capability"),
+    ("ai_race_compute_external", "USA_anthropic_cloud_independence"),
+    ("ai_race_deployment_external", "USA_anthropic_commercial_reach"),
+    ("ai_race_control_capacity_external", "USA_anthropic_governance_strength"),
+    ("ai_race_public_confidence_external", "USA_anthropic_safety_discipline"),
 )
-ANTHROPIC_CAPSTONES = (
-    "USA_anthropic_safety_governed_frontier",
-    "USA_anthropic_cloud_aligned_scale",
-    "USA_anthropic_multi_cloud_independence",
-    "USA_anthropic_cautious_research_laboratory",
-)
+ANTHROPIC_AXIS_WEIGHT = 2
+ANTHROPIC_CAPSTONE_DELTAS = {
+    "USA_anthropic_safety_governed_frontier": (
+        ("ai_race_public_confidence_external", 4),
+        ("ai_race_control_capacity_external", 3),
+    ),
+    "USA_anthropic_cloud_aligned_scale": (
+        ("ai_race_compute_external", 4),
+        ("ai_race_deployment_external", 3),
+    ),
+    "USA_anthropic_multi_cloud_independence": (
+        ("ai_race_compute_external", 3),
+        ("ai_race_capability_external", 2),
+    ),
+    "USA_anthropic_cautious_research_laboratory": (
+        ("ai_race_public_confidence_external", 3),
+        ("ai_race_capability_external", 1),
+    ),
+}
+
+
+def _anthropic_block() -> str:
+    effects = EFFECTS_PATH.read_text(encoding="utf-8")
+    return _named_block(effects, "ai_race_usa_anthropic_contribution")
 
 
 def test_anthropic_contribution_runs_on_both_united_states_adapter_paths():
@@ -1467,17 +1485,46 @@ def test_anthropic_contribution_runs_on_both_united_states_adapter_paths():
     assert metrics.count("ai_race_usa_anthropic_contribution = yes") == 2
 
 
+def test_anthropic_axes_map_to_their_exact_external_at_the_stated_weight():
+    block = _anthropic_block()
+
+    for external, axis in ANTHROPIC_MAPPING:
+        expected = (
+            f"add_to_variable = {{ {external} = "
+            f"{{ value = {axis} multiply = {ANTHROPIC_AXIS_WEIGHT} }} }}"
+        )
+        assert block.count(expected) == 1, expected
+
+    # No axis reaches an external it was not assigned to.
+    for _, axis in ANTHROPIC_MAPPING:
+        owner = next(ext for ext, a in ANTHROPIC_MAPPING if a == axis)
+        for line in block.splitlines():
+            if axis in line:
+                assert owner in line, (axis, owner, line.strip())
+
+
+def test_anthropic_capstone_overlays_apply_their_exact_deltas():
+    block = _anthropic_block()
+    branches = re.split(r"(?=has_idea = USA_anthropic_)", block)[1:]
+    assert len(branches) == len(ANTHROPIC_CAPSTONE_DELTAS), len(branches)
+
+    seen = {}
+    for branch in branches:
+        capstone = re.match(r"has_idea = (USA_anthropic_[A-Za-z_]+)", branch).group(1)
+        deltas = re.findall(
+            r"add_to_variable\s*=\s*\{\s*(ai_race_[a-z_]+_external)\s*=\s*(\d+)\s*\}",
+            branch,
+        )
+        seen[capstone] = tuple((name, int(value)) for name, value in deltas)
+
+    assert seen == {k: tuple(v) for k, v in ANTHROPIC_CAPSTONE_DELTAS.items()}
+
+
 def test_anthropic_contribution_is_additive_read_only_and_gated():
-    effects = EFFECTS_PATH.read_text(encoding="utf-8")
-    block = _named_block(effects, "ai_race_usa_anthropic_contribution")
+    block = _anthropic_block()
 
     assert "corporate_history_enabled = yes" in block
     assert "has_country_flag = USA_anthropic_state_initialized" in block
-
-    for axis in ANTHROPIC_AXES:
-        assert axis in block, axis
-    for capstone in ANTHROPIC_CAPSTONES:
-        assert f"has_idea = {capstone}" in block, capstone
 
     # Only external slots move, and only upward from the adapter's own baseline.
     writes = _variable_write_targets(block)
@@ -1485,14 +1532,14 @@ def test_anthropic_contribution_is_additive_read_only_and_gated():
     assert all(target.endswith("_external") for target in writes), writes
     assert not any(target.startswith(UPSTREAM_PREFIXES) for target in writes)
     assert "set_variable" not in block
+    assert "subtract_from_variable" not in block
 
 
 def test_anthropic_capstone_overlay_applies_at_most_once():
-    effects = EFFECTS_PATH.read_text(encoding="utf-8")
-    block = _named_block(effects, "ai_race_usa_anthropic_contribution")
-    capstone_start = block.index(f"has_idea = {ANTHROPIC_CAPSTONES[0]}")
+    block = _anthropic_block()
+    capstone_start = block.index("has_idea = USA_anthropic_safety_governed_frontier")
     tail = block[capstone_start:]
 
     # One if plus three else_if, so the capstones cannot stack.
-    assert tail.count("has_idea = USA_anthropic_") == len(ANTHROPIC_CAPSTONES)
-    assert tail.count("else_if") == len(ANTHROPIC_CAPSTONES) - 1
+    assert tail.count("has_idea = USA_anthropic_") == len(ANTHROPIC_CAPSTONE_DELTAS)
+    assert tail.count("else_if") == len(ANTHROPIC_CAPSTONE_DELTAS) - 1
