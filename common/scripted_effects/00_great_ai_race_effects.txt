@@ -83,6 +83,46 @@ ai_race_initialize_country = {
 	}
 }
 
+# Anthropic feeds the US total through Corporate History; the AI Core axes do not observe it.
+# Lab axes are 0-10 and weighted x2, so a lab shapes the national score without replacing it.
+ai_race_usa_anthropic_contribution = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			OR = {
+				has_country_flag = USA_anthropic_state_initialized
+				has_country_flag = USA_anthropic_reconstruct_complete
+			}
+		}
+		add_to_variable = { ai_race_capability_external = { value = USA_anthropic_frontier_capability multiply = 2 } }
+		add_to_variable = { ai_race_compute_external = { value = USA_anthropic_cloud_independence multiply = 2 } }
+		add_to_variable = { ai_race_deployment_external = { value = USA_anthropic_commercial_reach multiply = 2 } }
+		add_to_variable = { ai_race_control_capacity_external = { value = USA_anthropic_governance_strength multiply = 2 } }
+		add_to_variable = { ai_race_public_confidence_external = { value = USA_anthropic_safety_discipline multiply = 2 } }
+		# The capstones are mutually exclusive, so at most one overlay applies.
+		if = {
+			limit = { has_idea = USA_anthropic_safety_governed_frontier }
+			add_to_variable = { ai_race_public_confidence_external = 4 }
+			add_to_variable = { ai_race_control_capacity_external = 3 }
+		}
+		else_if = {
+			limit = { has_idea = USA_anthropic_cloud_aligned_scale }
+			add_to_variable = { ai_race_compute_external = 4 }
+			add_to_variable = { ai_race_deployment_external = 3 }
+		}
+		else_if = {
+			limit = { has_idea = USA_anthropic_multi_cloud_independence }
+			add_to_variable = { ai_race_compute_external = 3 }
+			add_to_variable = { ai_race_capability_external = 2 }
+		}
+		else_if = {
+			limit = { has_idea = USA_anthropic_cautious_research_laboratory }
+			add_to_variable = { ai_race_public_confidence_external = 3 }
+			add_to_variable = { ai_race_capability_external = 1 }
+		}
+	}
+}
+
 ai_race_rebuild_country_metrics = {
 	if = {
 		limit = { ai_race_active = yes }
@@ -145,6 +185,7 @@ ai_race_rebuild_country_metrics = {
 					}
 					add_to_variable = { ai_race_deployment_external = 1 }
 				}
+				ai_race_usa_anthropic_contribution = yes
 				ai_race_repair_country_state = yes
 			}
 			else = {
@@ -186,6 +227,7 @@ ai_race_rebuild_country_metrics = {
 				add_to_temp_variable = { _tal_tmp = { value = research_slots_from_gdp_c multiply = 10 } }
 				set_variable = { ai_race_talent_external = _tal_tmp }
 				# Other externals left to 0 in fallback
+				ai_race_usa_anthropic_contribution = yes
 				ai_race_repair_country_state = yes
 			}
 		}
