@@ -85,6 +85,35 @@ ai_race_initialize_country = {
 
 # Anthropic feeds the US total through Corporate History; the AI Core axes do not observe it.
 # Lab axes are 0-10 and weighted x2, so a lab shapes the national score without replacing it.
+# Europe buys Anthropic's models rather than owning the lab, so it draws deployment, a little
+# frontier access and public trust, but never compute or control capacity.
+# Covers all three EU shapes: sovereign members hold EU_member, an EU112 federation keeps it,
+# and a formed United States of Europe drops it and carries special formable id 101 instead.
+ai_race_eu_anthropic_contribution = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			NOT = { has_global_flag = GAME_RULE_eu_disabled }
+			OR = {
+				has_idea = EU_member
+				check_variable = { formable_committed_id = 101 }
+			}
+			NOT = { original_tag = USA }
+			NOT = { has_war_with = USA }
+			USA = {
+				exists = yes
+				OR = {
+					has_country_flag = USA_anthropic_state_initialized
+					has_country_flag = USA_anthropic_reconstruct_complete
+				}
+			}
+		}
+		add_to_variable = { ai_race_deployment_external = { value = USA.USA_anthropic_commercial_reach multiply = 1 } }
+		add_to_variable = { ai_race_capability_external = { value = USA.USA_anthropic_frontier_capability multiply = 0.5 } }
+		add_to_variable = { ai_race_public_confidence_external = { value = USA.USA_anthropic_safety_discipline multiply = 0.5 } }
+	}
+}
+
 ai_race_usa_anthropic_contribution = {
 	if = {
 		limit = {
@@ -352,6 +381,8 @@ ai_race_rebuild_country_metrics = {
 		}
 
 		else = { ai_race_generic_adapter = yes }
+
+		ai_race_eu_anthropic_contribution = yes
 
 		set_variable = { ai_race_capability = ai_race_capability_stock }
 		add_to_variable = { ai_race_capability = ai_race_capability_external }
