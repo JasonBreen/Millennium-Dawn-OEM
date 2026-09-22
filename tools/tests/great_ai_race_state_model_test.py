@@ -1601,8 +1601,10 @@ def test_eu_contribution_covers_every_european_union_shape():
 
     # Sovereign members, including an EU112 federation, keep the membership idea.
     assert "has_idea = EU_member" in block
-    # A formed United States of Europe removes EU_member, so it is found by sentinel.
-    assert "check_variable = { formable_committed_id = 101 }" in block
+    # A formed United States of Europe removes EU_member, so it is found by its flag.
+    # The reserved formable id is deliberately not read here: validate_decisions
+    # rejects any inline formable_committed_id literal at or above 100.
+    assert "has_country_flag = USoE" in block
     # Turning the EU off entirely withdraws the contribution.
     assert "NOT = { has_global_flag = GAME_RULE_eu_disabled }" in block
     # The lab has to exist and be running somewhere, and access is not free in wartime.
