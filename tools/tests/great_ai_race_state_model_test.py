@@ -1043,6 +1043,33 @@ def _enrolled_race(
     return race, country
 
 
+@pytest.mark.parametrize("readiness", [0, 0.5, 1])
+def test_readiness_withholds_only_the_funded_share_of_capability(readiness):
+    race, country = _enrolled_race(ratios=[1] * 6)
+    _review_and_commit(race)
+    country["ratios"] = [readiness] * 6
+    race.run("ai_race_refresh_dashboard", 1)
+
+    variables = country["vars"]
+    stock = variables["ai_race_capability_stock"]
+    assert variables["ai_race_stage"] == 1
+    assert stock == 5
+    assert variables["ai_race_effective_capability"] == pytest.approx(
+        variables["ai_race_capability"] - stock * (1 - readiness)
+    )
+
+
+def test_capability_stock_tracks_the_funded_stage_and_clears_with_progression():
+    race, country = _enrolled_race(ratios=[1] * 6)
+    variables = country["vars"]
+    for stage, expected in ((0, 0), (1, 5), (2, 12), (3, 22), (4, 35)):
+        variables["ai_race_stage"] = stage
+        race.run("ai_race_refresh_capability_stock", 1)
+        assert variables["ai_race_capability_stock"] == expected
+    race.run("ai_race_clear_progression_state", 1)
+    assert variables.get("ai_race_capability_stock", 0) == 0
+
+
 def _review_and_commit(race, identifier=1, financing=False):
     race.temps["ai_race_requested_stage"] = (
         race.countries[identifier]["vars"].get("ai_race_stage", 0) + 1
@@ -1176,10 +1203,15 @@ def test_executed_progress_survives_shortage_and_repair_without_replay():
     reloaded.run("ai_race_monthly_dispatch", 1)
     assert reloaded.countries[1]["vars"]["ai_race_stage_months"] == 1
     assert reloaded.countries[1]["ledger"] == ledger
-    assert country["vars"]["ai_race_effective_capability"] == 0
+    variables = country["vars"]
+    assert variables["ai_race_capability_stock"] == 5
+    assert variables["ai_race_effective_capability"] == pytest.approx(
+        variables["ai_race_capability"] - variables["ai_race_capability_stock"]
+    )
     country["ratios"] = [1] * 6
     race.run("ai_race_refresh_dashboard", 1)
-    assert country["vars"]["ai_race_effective_capability"] == 50
+    assert variables["ai_race_effective_capability"] == variables["ai_race_capability"]
+    assert variables["ai_race_effective_capability"] == 50
     assert country["ledger"] == ledger
 
 

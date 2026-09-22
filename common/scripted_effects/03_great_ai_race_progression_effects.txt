@@ -38,10 +38,32 @@ ai_race_refresh_dashboard = {
 
 ai_race_clear_progression_state = {
 	clear_variable = ai_race_stage
+	clear_variable = ai_race_capability_stock
 	clear_variable = ai_race_stage_months
 	clear_variable = ai_race_stage_entry_month
 	clear_variable = ai_race_last_progress_month
 	ai_race_defer_review = yes
+}
+
+# Race-owned capability from the funded programme; adapters only see civilian corporate state.
+ai_race_refresh_capability_stock = {
+	set_variable = { ai_race_capability_stock = 0 }
+	if = {
+		limit = { check_variable = { ai_race_stage = 1 } }
+		set_variable = { ai_race_capability_stock = 5 }
+	}
+	else_if = {
+		limit = { check_variable = { ai_race_stage = 2 } }
+		set_variable = { ai_race_capability_stock = 12 }
+	}
+	else_if = {
+		limit = { check_variable = { ai_race_stage = 3 } }
+		set_variable = { ai_race_capability_stock = 22 }
+	}
+	else_if = {
+		limit = { check_variable = { ai_race_stage = 4 } }
+		set_variable = { ai_race_capability_stock = 35 }
+	}
 }
 
 ai_race_defer_review = {
@@ -164,6 +186,7 @@ ai_race_commit_review = {
 		multiply_temp_variable = { treasury_change = -1 }
 		modify_treasury_effect = yes
 		set_variable = { ai_race_stage = ai_race_quote_stage }
+		ai_race_refresh_capability_stock = yes
 		clear_variable = ai_race_stage_months
 		ai_race_get_month_token = yes
 		set_variable = { ai_race_stage_entry_month = ai_race_current_month }
@@ -186,6 +209,7 @@ ai_race_commit_review = {
 		}
 		ai_race_defer_review = yes
 		ai_race_refresh_operating_state = yes
+		ai_race_rebuild_country_metrics = yes
 		ai_race_refresh_offer = yes
 		ai_race_refresh_effective_capability = yes
 	}
