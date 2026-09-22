@@ -25,6 +25,11 @@ def _named_block(text: str, name: str) -> str:
     raise AssertionError(f"Unclosed block {name}")
 
 
+SC_CONSIDER_ACTION = _named_block(
+    EFFECTS_PATH.read_text(encoding="utf-8"), "un_ai_sc_consider_action"
+)
+
+
 def _tension_ladder(block: str) -> list[tuple[int, int]]:
     """Pairs of (tension threshold, action type) in the order the chain tests them."""
     pattern = re.compile(
@@ -36,10 +41,7 @@ def _tension_ladder(block: str) -> list[tuple[int, int]]:
 
 
 def test_security_council_tension_ladder_is_ordered_high_to_low():
-    block = _named_block(
-        EFFECTS_PATH.read_text(encoding="utf-8"), "un_ai_sc_consider_action"
-    )
-    ladder = _tension_ladder(block)
+    ladder = _tension_ladder(SC_CONSIDER_ACTION)
 
     assert len(ladder) >= 2, ladder
     thresholds = [threshold for threshold, _ in ladder]
@@ -51,10 +53,7 @@ def test_security_council_tension_ladder_is_ordered_high_to_low():
 
 
 def test_arms_embargo_stays_reachable_and_is_not_reproposed():
-    block = _named_block(
-        EFFECTS_PATH.read_text(encoding="utf-8"), "un_ai_sc_consider_action"
-    )
-    ladder = _tension_ladder(block)
+    ladder = _tension_ladder(SC_CONSIDER_ACTION)
     types = [action for _, action in ladder]
 
     assert 4 in types, f"Arms embargo branch missing: {ladder}"
@@ -63,15 +62,12 @@ def test_arms_embargo_stays_reachable_and_is_not_reproposed():
     assert (
         embargo > sanctions
     ), f"Arms embargo needs the stricter threshold: embargo {embargo}, sanctions {sanctions}"
-    assert "NOT = { has_idea = unsc_arms_embargo }" in block
+    assert "NOT = { has_idea = unsc_arms_embargo }" in SC_CONSIDER_ACTION
 
 
 def test_proposal_marks_the_subject_so_it_cannot_be_double_queued():
-    block = _named_block(
-        EFFECTS_PATH.read_text(encoding="utf-8"), "un_ai_sc_consider_action"
-    )
-    assert "set_global_flag = sc_action_against@THIS" in block
-    assert "NOT = { has_global_flag = sc_action_against@THIS }" in block
-    assert block.index(
+    assert "set_global_flag = sc_action_against@THIS" in SC_CONSIDER_ACTION
+    assert "NOT = { has_global_flag = sc_action_against@THIS }" in SC_CONSIDER_ACTION
+    assert SC_CONSIDER_ACTION.index(
         "NOT = { has_global_flag = sc_action_against@THIS }"
-    ) < block.index("set_global_flag = sc_action_against@THIS")
+    ) < SC_CONSIDER_ACTION.index("set_global_flag = sc_action_against@THIS")
