@@ -43,6 +43,7 @@ GLOBAL_STATE = (
 )
 UPSTREAM_PREFIXES = (
     "USA_ai_core_",
+    "USA_anthropic_",
     "CHI_huawei_",
     "CHI_ic_inf_nsc",
     "energy_",
@@ -1473,3 +1474,182 @@ def test_executed_outcomes_cleanup_preserves_historical_first_until_off():
     race.mode = "disabled"
     race.run("ai_race_monthly_dispatch", 1)
     assert "ai_race_first_finisher_id" not in race.globals
+
+
+ANTHROPIC_MAPPING = (
+    ("ai_race_capability_external", "USA_anthropic_frontier_capability"),
+    ("ai_race_compute_external", "USA_anthropic_cloud_independence"),
+    ("ai_race_deployment_external", "USA_anthropic_commercial_reach"),
+    ("ai_race_control_capacity_external", "USA_anthropic_governance_strength"),
+    ("ai_race_public_confidence_external", "USA_anthropic_safety_discipline"),
+)
+ANTHROPIC_AXIS_WEIGHT = 2
+ANTHROPIC_CAPSTONE_DELTAS = {
+    "USA_anthropic_safety_governed_frontier": (
+        ("ai_race_public_confidence_external", 4),
+        ("ai_race_control_capacity_external", 3),
+    ),
+    "USA_anthropic_cloud_aligned_scale": (
+        ("ai_race_compute_external", 4),
+        ("ai_race_deployment_external", 3),
+    ),
+    "USA_anthropic_multi_cloud_independence": (
+        ("ai_race_compute_external", 3),
+        ("ai_race_capability_external", 2),
+    ),
+    "USA_anthropic_cautious_research_laboratory": (
+        ("ai_race_public_confidence_external", 3),
+        ("ai_race_capability_external", 1),
+    ),
+}
+
+
+def _anthropic_block() -> str:
+    effects = EFFECTS_PATH.read_text(encoding="utf-8")
+    return _named_block(effects, "ai_race_usa_anthropic_contribution")
+
+
+def test_anthropic_contribution_runs_on_both_united_states_adapter_paths():
+    effects = EFFECTS_PATH.read_text(encoding="utf-8")
+    metrics = _named_block(effects, "ai_race_rebuild_country_metrics")
+
+    # Corporate History on and its fallback both reach the lab overlay.
+    assert metrics.count("ai_race_usa_anthropic_contribution = yes") == 2
+
+
+def test_anthropic_axes_map_to_their_exact_external_at_the_stated_weight():
+    block = _anthropic_block()
+
+    for external, axis in ANTHROPIC_MAPPING:
+        expected = (
+            f"add_to_variable = {{ {external} = "
+            f"{{ value = {axis} multiply = {ANTHROPIC_AXIS_WEIGHT} }} }}"
+        )
+        assert block.count(expected) == 1, expected
+
+    # No axis reaches an external it was not assigned to.
+    for _, axis in ANTHROPIC_MAPPING:
+        owner = next(ext for ext, a in ANTHROPIC_MAPPING if a == axis)
+        for line in block.splitlines():
+            if axis in line:
+                assert owner in line, (axis, owner, line.strip())
+
+
+def test_anthropic_capstone_overlays_apply_their_exact_deltas():
+    block = _anthropic_block()
+    branches = re.split(r"(?=has_idea = USA_anthropic_)", block)[1:]
+    assert len(branches) == len(ANTHROPIC_CAPSTONE_DELTAS), len(branches)
+
+    seen = {}
+    for branch in branches:
+        capstone = re.match(r"has_idea = (USA_anthropic_[A-Za-z_]+)", branch).group(1)
+        deltas = re.findall(
+            r"add_to_variable\s*=\s*\{\s*(ai_race_[a-z_]+_external)\s*=\s*(\d+)\s*\}",
+            branch,
+        )
+        seen[capstone] = tuple((name, int(value)) for name, value in deltas)
+
+    assert seen == {k: tuple(v) for k, v in ANTHROPIC_CAPSTONE_DELTAS.items()}
+
+
+def test_anthropic_contribution_is_additive_read_only_and_gated():
+    block = _anthropic_block()
+
+    assert "corporate_history_enabled = yes" in block
+    assert "has_country_flag = USA_anthropic_state_initialized" in block
+
+    # Only external slots move, and only upward from the adapter's own baseline.
+    writes = _variable_write_targets(block)
+    assert writes
+    assert all(target.endswith("_external") for target in writes), writes
+    assert not any(target.startswith(UPSTREAM_PREFIXES) for target in writes)
+    assert "set_variable" not in block
+    assert "subtract_from_variable" not in block
+
+
+def test_anthropic_capstone_overlay_applies_at_most_once():
+    block = _anthropic_block()
+    capstone_start = block.index("has_idea = USA_anthropic_safety_governed_frontier")
+    tail = block[capstone_start:]
+
+    # One if plus three else_if, so the capstones cannot stack.
+    assert tail.count("has_idea = USA_anthropic_") == len(ANTHROPIC_CAPSTONE_DELTAS)
+    assert tail.count("else_if") == len(ANTHROPIC_CAPSTONE_DELTAS) - 1
+
+
+EU_ANTHROPIC_MAPPING = (
+    ("ai_race_deployment_external", "USA_anthropic_commercial_reach", "1"),
+    ("ai_race_capability_external", "USA_anthropic_frontier_capability", "0.5"),
+    ("ai_race_public_confidence_external", "USA_anthropic_safety_discipline", "0.5"),
+)
+# Buying a lab's models is not owning it: no compute, no control capacity.
+EU_ANTHROPIC_WITHHELD = (
+    "ai_race_compute_external",
+    "ai_race_control_capacity_external",
+)
+
+
+def _eu_anthropic_block() -> str:
+    effects = EFFECTS_PATH.read_text(encoding="utf-8")
+    return _named_block(effects, "ai_race_eu_anthropic_contribution")
+
+
+def test_eu_contribution_runs_after_every_adapter_has_written_its_externals():
+    effects = EFFECTS_PATH.read_text(encoding="utf-8")
+    metrics = _named_block(effects, "ai_race_rebuild_country_metrics")
+
+    assert metrics.count("ai_race_eu_anthropic_contribution = yes") == 1
+    # The generic adapter assigns externals with set_variable, so an EU overlay
+    # placed before it would be overwritten instead of added.
+    assert metrics.index("ai_race_generic_adapter = yes") < metrics.index(
+        "ai_race_eu_anthropic_contribution = yes"
+    )
+    assert metrics.index("ai_race_eu_anthropic_contribution = yes") < metrics.index(
+        "set_variable = { ai_race_capability = ai_race_capability_stock }"
+    )
+
+
+def test_eu_anthropic_mapping_is_exact_and_withholds_ownership_axes():
+    block = _eu_anthropic_block()
+
+    for external, axis, weight in EU_ANTHROPIC_MAPPING:
+        expected = (
+            f"add_to_variable = {{ {external} = "
+            f"{{ value = USA.{axis} multiply = {weight} }} }}"
+        )
+        assert block.count(expected) == 1, expected
+
+    for withheld in EU_ANTHROPIC_WITHHELD:
+        assert withheld not in block, withheld
+
+    writes = _variable_write_targets(block)
+    assert writes == {external for external, _, _ in EU_ANTHROPIC_MAPPING}, writes
+    assert not any(target.startswith(UPSTREAM_PREFIXES) for target in writes)
+    assert "set_variable" not in block
+
+
+def test_eu_contribution_covers_every_european_union_shape():
+    block = _eu_anthropic_block()
+
+    # Sovereign members, including an EU112 federation, keep the membership idea.
+    assert "has_idea = EU_member" in block
+    # A formed United States of Europe removes EU_member, so it is found by its flag.
+    # The reserved formable id is deliberately not read here: validate_decisions
+    # rejects any inline formable_committed_id literal at or above 100.
+    assert "has_country_flag = USoE" in block
+    # Turning the EU off entirely withdraws the contribution.
+    assert "NOT = { has_global_flag = GAME_RULE_eu_disabled }" in block
+    # The lab has to exist and be running somewhere, and access is not free in wartime.
+    assert "has_country_flag = USA_anthropic_state_initialized" in block
+    assert "NOT = { has_war_with = USA }" in block
+    assert "NOT = { original_tag = USA }" in block
+    assert "corporate_history_enabled = yes" in block
+
+
+def test_eu111_formation_drops_membership_so_the_sentinel_is_required():
+    """The sentinel branch is load-bearing, not belt-and-braces."""
+    voting = (
+        ROOT / "common" / "scripted_effects" / "99_EU_voting_scripted_effects.txt"
+    ).read_text(encoding="utf-8")
+    result = _named_block(voting, "focus_EU111_QMV_result")
+    assert "remove_ideas = EU_member" in result
