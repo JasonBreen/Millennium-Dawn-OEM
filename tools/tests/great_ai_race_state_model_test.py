@@ -17,6 +17,10 @@ GAME_RULES_PATH = ROOT / "common" / "game_rules" / "00_game_rules.txt"
 DECISIONS_PATH = ROOT / "common" / "decisions" / "MD_great_ai_race_decisions.txt"
 GAME_RULES_LOC_PATH = ROOT / "localisation" / "english" / "MD_game_rules_l_english.yml"
 RACE_LOC_PATH = ROOT / "localisation" / "english" / "MD_great_ai_race_l_english.yml"
+RACE_GUI_PATH = ROOT / "interface" / "MD_great_ai_race.gui"
+SCRIPTED_LOC_PATH = (
+    ROOT / "common" / "scripted_localisation" / "01_great_ai_race_localisation.txt"
+)
 
 COUNTRY_CAPABILITIES = (
     "capability",
@@ -1653,3 +1657,115 @@ def test_eu111_formation_drops_membership_so_the_sentinel_is_required():
     ).read_text(encoding="utf-8")
     result = _named_block(voting, "focus_EU111_QMV_result")
     assert "remove_ideas = EU_member" in result
+
+
+def test_dashboard_capability_inputs_are_sampled_before_the_lab_overlay():
+    effects = EFFECTS_PATH.read_text(encoding="utf-8")
+    metrics = _named_block(effects, "ai_race_rebuild_country_metrics")
+    assert (
+        metrics.count(
+            "set_variable = { ai_race_capability_national_input = ai_race_capability_external }"
+        )
+        == 3
+    )
+    assert (
+        metrics.count(
+            "set_variable = { ai_race_capability_lab_overlay = ai_race_capability_external }"
+        )
+        == 3
+    )
+    assert (
+        metrics.count(
+            "subtract_from_variable = { ai_race_capability_lab_overlay = ai_race_capability_national_input }"
+        )
+        == 3
+    )
+    assert metrics.count("clear_variable = ai_race_capability_lab_overlay") == 1
+    assert metrics.index("ai_race_eu_anthropic_contribution = yes") < metrics.rindex(
+        "set_variable = { ai_race_capability_lab_overlay = ai_race_capability_external }"
+    )
+
+
+@pytest.mark.parametrize("readiness,expected", [(0, 0), (0.5, 17.5), (1, 35)])
+def test_dashboard_usable_funded_share_runs_from_source(readiness, expected):
+    race, country = _enrolled_race()
+    variables = country["vars"]
+    variables.update(
+        ai_race_stage=4,
+        ai_race_capability_stock=35,
+        ai_race_capability=100,
+        ai_race_current_readiness=readiness,
+    )
+    race.run("ai_race_refresh_effective_capability", 1)
+    assert variables["ai_race_capability_funded_usable"] == pytest.approx(expected)
+    variables["ai_race_stage"] = 0
+    race.run("ai_race_refresh_effective_capability", 1)
+    assert variables["ai_race_capability_funded_usable"] == 0
+
+
+@pytest.mark.parametrize("mode", ["outcomes_only", "disabled"])
+def test_dashboard_funded_share_is_hidden_outside_full_mode(mode):
+    race, country = _enrolled_race(mode=mode)
+    variables = country["vars"]
+    variables.update(
+        ai_race_stage=4,
+        ai_race_capability_stock=35,
+        ai_race_capability=100,
+        ai_race_current_readiness=1,
+    )
+    race.run("ai_race_refresh_effective_capability", 1)
+    assert variables["ai_race_capability_funded_usable"] == 0
+
+
+def test_dashboard_breakdown_has_all_score_inputs_and_is_reachable():
+    gui = RACE_GUI_PATH.read_text(encoding="utf-8")
+    loc = RACE_LOC_PATH.read_text(encoding="utf-8-sig")
+    scripted = SCRIPTED_LOC_PATH.read_text(encoding="utf-8")
+    assert 'pdx_tooltip = "[ai_race_capability_breakdown]"' in gui
+    for value in (
+        "ai_race_capability_national_input",
+        "ai_race_capability_lab_overlay",
+        "ai_race_capability_external",
+        "ai_race_capability_stock",
+        "ai_race_capability_funded_usable",
+        "ai_race_effective_capability",
+    ):
+        assert f"[?ROOT.{value}|1]" in loc
+    assert (
+        "ai_race_full_mode = yes"
+        in scripted.split("name = ai_race_capability_breakdown", 1)[1].split(
+            "name = ai_race_current_bottleneck", 1
+        )[0]
+    )
+
+
+@pytest.mark.parametrize(
+    "ratios,expected",
+    [
+        ([1, 1, 1, 1, 1, 1], "none"),
+        ([0.5, 0.5, 0.5, 0.5, 0.5, 0.5], "civs"),
+        ([1, 0.5, 0.5, 1, 1, 1], "network"),
+        ([1, 1, 0.5, 0.5, 1, 1], "power"),
+        ([1, 1, 1, 0.5, 0.5, 1], "microchips"),
+        ([1, 1, 1, 1, 0.5, 0.5], "composites"),
+        ([1, 1, 1, 1, 1, 0.5], "oil"),
+    ],
+)
+def test_dashboard_bottleneck_source_order_resolves_ties(ratios, expected):
+    scripted = SCRIPTED_LOC_PATH.read_text(encoding="utf-8")
+    start = scripted.index("name = ai_race_current_bottleneck")
+    block = scripted[start : scripted.index("\n}", start)]
+    choices = re.findall(
+        r"ai_race_current_(civs|network|power|microchips|composites|oil)_ratio "
+        r"= ai_race_current_readiness",
+        block,
+    )
+    assert choices == list(RaceScript.criteria)
+    readiness = min(ratios)
+    selected = (
+        "none"
+        if readiness == 1
+        else next(name for name in choices if ratios[choices.index(name)] == readiness)
+    )
+    assert selected == expected
+    assert f"AI_RACE_bottleneck_{selected}" in block
