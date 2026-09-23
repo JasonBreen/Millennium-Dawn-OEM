@@ -22,12 +22,14 @@ TOP_build_view = {
 	set_variable = { TOP_view_collection_penalty = 0 }
 	set_variable = { TOP_view_protection_penalty = 0 }
 	set_variable = { TOP_view_exposure_bonus = 0 }
+	set_variable = { TOP_view_lead_age = 0 }
 	if = {
 		limit = { TOP_has_selected_target = yes }
 		set_temp_variable = { TOP_arg_target = TOP_selected }
 		TOP_load_case = yes
 		set_temp_variable = { TOP_target = TOP_selected }
 		TOP_refresh_person_lead_age = yes
+		set_variable = { TOP_view_lead_age = TOP_lead_age^TOP_selected }
 		TOP_get_defensive_modifiers = yes
 		set_variable = { TOP_view_collection_penalty = TOP_defensive_collection_penalty }
 		set_variable = { TOP_view_protection_penalty = TOP_defensive_success_penalty }
@@ -49,6 +51,7 @@ TOP_build_view = {
 		limit = { TOP_has_selected_organization = yes }
 		set_temp_variable = { TOP_group_target = TOP_selected_organization }
 		TOP_refresh_organization_lead_age = yes
+		set_variable = { TOP_view_lead_age = TOP_org_lead_age^TOP_selected_organization }
 		if = { limit = { TOP_group_operational = yes } set_variable = { TOP_view_subject_active = 1 } }
 		if = { limit = { TOP_organization_package_ready = yes } set_variable = { TOP_view_package_ready = 1 } }
 		if = { limit = { TOP_organization_operational_eligible = yes } set_variable = { TOP_view_authority_available = 1 } }
@@ -75,6 +78,7 @@ TOP_build_view = {
 	clear_array = TOP_visible_people
 	clear_array = TOP_visible_organizations
 	clear_array = TOP_visible_archive
+	clear_array = TOP_visible_history
 	if = {
 		limit = { NOT = { check_variable = { TOP_kind_filter = 2 } } }
 		for_each_loop = {
@@ -128,5 +132,21 @@ TOP_build_view = {
 		}
 	}
 	for_each_loop = { array = TOP_archive_rows value = top_view_archive add_to_array = { TOP_visible_archive = top_view_archive } }
+	if = {
+		limit = { check_variable = { TOP_tab = 6 } }
+		for_each_loop = {
+			array = TOP_history_rows
+			value = top_history_row
+			if = {
+				limit = {
+					OR = {
+						AND = { TOP_has_selected_target = yes check_variable = { TOP_history_subject_kind^top_history_row = 1 } check_variable = { TOP_history_subject_id^top_history_row = TOP_selected } }
+						AND = { TOP_has_selected_organization = yes check_variable = { TOP_history_subject_kind^top_history_row = 2 } check_variable = { TOP_history_subject_id^top_history_row = TOP_selected_organization } }
+					}
+				}
+				add_to_array = { TOP_visible_history = top_history_row }
+			}
+		}
+	}
 	TOP_refresh_view = yes
 }

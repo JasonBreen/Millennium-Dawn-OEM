@@ -117,27 +117,43 @@ TOP_add_target_lead = {
 				if = {
 					limit = { check_variable = { global.TOP_public_identity^TOP_target = 1 } }
 					set_variable = { TOP_identity_confidence^TOP_target = 100 }
+					set_variable = { TOP_identity_source^TOP_target = 1 }
 					set_variable = { TOP_location_confidence^TOP_target = 0 }
 					set_variable = { TOP_pattern_confidence^TOP_target = 0 }
 				}
 				else = {
 					set_variable = { TOP_identity_confidence^TOP_target = 15 }
 					set_variable = { TOP_location_confidence^TOP_target = 15 }
+					set_variable = { TOP_identity_source^TOP_target = 2 }
+					set_variable = { TOP_location_source^TOP_target = 2 }
 					set_variable = { TOP_pattern_confidence^TOP_target = 0 }
 				}
 			}
 			set_variable = { TOP_known^TOP_target = 1 }
 			set_variable = { TOP_assessment^TOP_target = 1 }
+			set_temp_variable = { TOP_old_identity = TOP_identity_confidence^TOP_target }
+			set_temp_variable = { TOP_old_location = TOP_location_confidence^TOP_target }
+			set_temp_variable = { TOP_old_pattern = TOP_pattern_confidence^TOP_target }
 			add_to_variable = { TOP_identity_confidence^TOP_target = TOP_arg_amount }
 			add_to_variable = { TOP_location_confidence^TOP_target = TOP_arg_amount }
 			add_to_variable = { TOP_pattern_confidence^TOP_target = TOP_arg_amount }
 			clamp_variable = { var = TOP_identity_confidence^TOP_target min = 0 max = 100 }
 			clamp_variable = { var = TOP_location_confidence^TOP_target min = 0 max = 100 }
 			clamp_variable = { var = TOP_pattern_confidence^TOP_target min = 0 max = 100 }
+			if = { limit = { check_variable = { TOP_identity_confidence^TOP_target > TOP_old_identity } } set_variable = { TOP_identity_source^TOP_target = 2 } }
+			if = { limit = { check_variable = { TOP_location_confidence^TOP_target > TOP_old_location } } set_variable = { TOP_location_source^TOP_target = 2 } }
+			if = { limit = { check_variable = { TOP_pattern_confidence^TOP_target > TOP_old_pattern } } set_variable = { TOP_pattern_source^TOP_target = 2 } }
+			set_temp_variable = { TOP_old_lead_state = TOP_lead_state^TOP_target }
+			set_temp_variable = { TOP_old_lead_host = TOP_lead_host^TOP_target }
+			set_temp_variable = { TOP_old_lead_clock = TOP_lead_report_clock^TOP_target }
 			set_variable = { TOP_lead_age^TOP_target = 0 }
 			set_variable = { TOP_lead_report_clock^TOP_target = global.TOP_clock }
 			set_variable = { TOP_lead_state^TOP_target = global.TOP_state^TOP_target }
 			set_variable = { TOP_lead_host^TOP_target = global.TOP_host^TOP_target }
+			if = {
+				limit = { OR = { NOT = { check_variable = { TOP_lead_state^TOP_target = TOP_old_lead_state } } NOT = { check_variable = { TOP_lead_host^TOP_target = TOP_old_lead_host } } NOT = { check_variable = { TOP_lead_report_clock^TOP_target = TOP_old_lead_clock } } } }
+				set_variable = { TOP_lead_source^TOP_target = 2 }
+			}
 			set_temp_variable = { TOP_group_target = global.TOP_affiliation^TOP_target }
 			if = {
 				limit = { check_variable = { TOP_group_target > 0 } }
@@ -183,10 +199,13 @@ TOP_discover_organization = {
 			if = {
 				limit = { check_variable = { global.TOP_group_public_identity^TOP_arg_group = 1 } }
 				set_variable = { TOP_org_verification^TOP_arg_group = 100 }
+				set_variable = { TOP_org_verification_source^TOP_arg_group = 1 }
 			}
 			else = {
 				set_variable = { TOP_org_verification^TOP_arg_group = 15 }
 				set_variable = { TOP_org_location^TOP_arg_group = 15 }
+				set_variable = { TOP_org_verification_source^TOP_arg_group = 2 }
+				set_variable = { TOP_org_location_source^TOP_arg_group = 2 }
 			}
 		}
 		if = {
@@ -201,16 +220,29 @@ TOP_add_organization_lead = {
 	if = {
 		limit = { TOP_enabled = yes check_variable = { TOP_arg_group > 0 } }
 		TOP_discover_organization = yes
+		set_temp_variable = { TOP_old_verification = TOP_org_verification^TOP_arg_group }
+		set_temp_variable = { TOP_old_location = TOP_org_location^TOP_arg_group }
+		set_temp_variable = { TOP_old_activity = TOP_org_activity^TOP_arg_group }
 		add_to_variable = { TOP_org_verification^TOP_arg_group = TOP_arg_amount }
 		add_to_variable = { TOP_org_location^TOP_arg_group = TOP_arg_amount }
 		add_to_variable = { TOP_org_activity^TOP_arg_group = TOP_arg_amount }
 		clamp_variable = { var = TOP_org_verification^TOP_arg_group min = 0 max = 100 }
 		clamp_variable = { var = TOP_org_location^TOP_arg_group min = 0 max = 100 }
 		clamp_variable = { var = TOP_org_activity^TOP_arg_group min = 0 max = 100 }
+		if = { limit = { check_variable = { TOP_org_verification^TOP_arg_group > TOP_old_verification } } set_variable = { TOP_org_verification_source^TOP_arg_group = 2 } }
+		if = { limit = { check_variable = { TOP_org_location^TOP_arg_group > TOP_old_location } } set_variable = { TOP_org_location_source^TOP_arg_group = 2 } }
+		if = { limit = { check_variable = { TOP_org_activity^TOP_arg_group > TOP_old_activity } } set_variable = { TOP_org_activity_source^TOP_arg_group = 2 } }
+		set_temp_variable = { TOP_old_lead_state = TOP_org_lead_state^TOP_arg_group }
+		set_temp_variable = { TOP_old_lead_host = TOP_org_lead_host^TOP_arg_group }
+		set_temp_variable = { TOP_old_lead_clock = TOP_org_lead_report_clock^TOP_arg_group }
 		set_variable = { TOP_org_lead_age^TOP_arg_group = 0 }
 		set_variable = { TOP_org_lead_report_clock^TOP_arg_group = global.TOP_clock }
 		set_variable = { TOP_org_lead_state^TOP_arg_group = global.TOP_group_state^TOP_arg_group }
 		set_variable = { TOP_org_lead_host^TOP_arg_group = global.TOP_group_host^TOP_arg_group }
+		if = {
+			limit = { OR = { NOT = { check_variable = { TOP_org_lead_state^TOP_arg_group = TOP_old_lead_state } } NOT = { check_variable = { TOP_org_lead_host^TOP_arg_group = TOP_old_lead_host } } NOT = { check_variable = { TOP_org_lead_report_clock^TOP_arg_group = TOP_old_lead_clock } } } }
+			set_variable = { TOP_org_lead_source^TOP_arg_group = 2 }
+		}
 	}
 }
 
@@ -223,6 +255,9 @@ TOP_collect_selected = {
 	if = {
 		limit = { TOP_can_collect = yes }
 		set_variable = { TOP_package_state^TOP_selected = 2 }
+		set_temp_variable = { TOP_arg_target = TOP_selected }
+		set_temp_variable = { TOP_history_current_event = 2 }
+		TOP_log_person_milestone = yes
 		if = { limit = { check_variable = { TOP_collection_focus^TOP_selected = 0 } } set_variable = { TOP_collection_focus^TOP_selected = 2 } }
 		set_temp_variable = { TOP_subject_key = TOP_selected }
 		if = { limit = { NOT = { is_in_array = { TOP_collecting_subjects = TOP_subject_key } } } add_to_array = { TOP_collecting_subjects = TOP_subject_key } }
@@ -232,6 +267,10 @@ TOP_collect_selected = {
 
 TOP_stop_collection = {
 	set_variable = { TOP_package_state^TOP_selected = 1 }
+	set_temp_variable = { TOP_arg_target = TOP_selected }
+	set_temp_variable = { TOP_history_current_event = 3 }
+	set_temp_variable = { TOP_history_current_reason = 21 }
+	TOP_log_person_milestone = yes
 	set_temp_variable = { TOP_subject_key = TOP_selected }
 	remove_from_array = { TOP_collecting_subjects = TOP_subject_key }
 	TOP_refresh_view = yes
@@ -263,6 +302,9 @@ TOP_commit_reviewed_authorization = {
 		set_variable = { TOP_case_attribution^TOP_proposal_target = 0 }
 		set_variable = { TOP_case_harm^TOP_proposal_target = 0 }
 		set_variable = { TOP_case_phase^TOP_proposal_target = 2 }
+		set_temp_variable = { TOP_arg_target = TOP_proposal_target }
+		set_temp_variable = { TOP_history_current_event = 5 }
+		TOP_log_person_milestone = yes
 		set_variable = { TOP_case_due^TOP_proposal_target = 0 }
 		set_temp_variable = { TOP_arg_target = TOP_proposal_target } TOP_load_case = yes
 		TOP_enroll_pending_actor = yes
@@ -278,7 +320,7 @@ TOP_revoke_authorization = {
 	}
 	if = {
 		limit = { TOP_can_revoke_case = yes }
-		set_temp_variable = { TOP_arg_target = TOP_selected } set_temp_variable = { TOP_arg_sequence = TOP_case_sequence^TOP_selected } TOP_close_case = yes
+		set_temp_variable = { TOP_arg_target = TOP_selected } set_temp_variable = { TOP_arg_sequence = TOP_case_sequence^TOP_selected } set_temp_variable = { TOP_history_current_reason = 26 } TOP_close_case = yes
 	}
 	TOP_build_view = yes
 }

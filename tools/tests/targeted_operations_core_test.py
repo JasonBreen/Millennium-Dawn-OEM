@@ -1098,8 +1098,10 @@ def test_last_registry_slot_has_all_arrays_and_can_be_resolved():
                 "TOP_pressure_notice_ids",
                 "TOP_pressure_notice_tiers",
                 "TOP_pressure_notice_actors",
+                "TOP_visible_history",
             }
             and not name.startswith("TOP_archive_")
+            and not name.startswith("TOP_history_")
             and not name.startswith("TOP_org_")
         ):
             assert len(array) == capacity, name

@@ -164,6 +164,9 @@ TOP_prepare_liaison_snapshot = {
 		limit = { check_variable = { TOP_liaison_snapshot_kind = 1 } }
 		set_temp_variable = { TOP_target = TOP_liaison_snapshot_id }
 		TOP_refresh_person_lead_age = yes
+		set_temp_variable = { TOP_old_lead_state = TOP_lead_state^TOP_liaison_snapshot_id }
+		set_temp_variable = { TOP_old_lead_host = TOP_lead_host^TOP_liaison_snapshot_id }
+		set_temp_variable = { TOP_old_lead_clock = TOP_lead_report_clock^TOP_liaison_snapshot_id }
 		set_temp_variable = { TOP_liaison_axis_1 = { value = TOP_identity_confidence^TOP_liaison_snapshot_id multiply = TOP_liaison_multiplier } }
 		set_temp_variable = { TOP_liaison_axis_2 = { value = TOP_location_confidence^TOP_liaison_snapshot_id multiply = TOP_liaison_multiplier } }
 		set_temp_variable = { TOP_liaison_axis_3 = { value = TOP_pattern_confidence^TOP_liaison_snapshot_id multiply = TOP_liaison_multiplier } }
@@ -213,9 +216,9 @@ TOP_merge_liaison_snapshot = {
 		TOP_refresh_person_lead_age = yes
 		set_temp_variable = { TOP_liaison_location_stronger = 0 }
 		if = { limit = { check_variable = { TOP_liaison_axis_2 > TOP_location_confidence^TOP_liaison_snapshot_id } } set_temp_variable = { TOP_liaison_location_stronger = 1 } }
-		if = { limit = { check_variable = { TOP_liaison_axis_1 > TOP_identity_confidence^TOP_liaison_snapshot_id } } set_variable = { TOP_identity_confidence^TOP_liaison_snapshot_id = TOP_liaison_axis_1 } }
-		if = { limit = { check_variable = { TOP_liaison_axis_2 > TOP_location_confidence^TOP_liaison_snapshot_id } } set_variable = { TOP_location_confidence^TOP_liaison_snapshot_id = TOP_liaison_axis_2 } }
-		if = { limit = { check_variable = { TOP_liaison_axis_3 > TOP_pattern_confidence^TOP_liaison_snapshot_id } } set_variable = { TOP_pattern_confidence^TOP_liaison_snapshot_id = TOP_liaison_axis_3 } }
+		if = { limit = { check_variable = { TOP_liaison_axis_1 > TOP_identity_confidence^TOP_liaison_snapshot_id } } set_variable = { TOP_identity_confidence^TOP_liaison_snapshot_id = TOP_liaison_axis_1 } set_variable = { TOP_identity_source^TOP_liaison_snapshot_id = 4 } }
+		if = { limit = { check_variable = { TOP_liaison_axis_2 > TOP_location_confidence^TOP_liaison_snapshot_id } } set_variable = { TOP_location_confidence^TOP_liaison_snapshot_id = TOP_liaison_axis_2 } set_variable = { TOP_location_source^TOP_liaison_snapshot_id = 4 } }
+		if = { limit = { check_variable = { TOP_liaison_axis_3 > TOP_pattern_confidence^TOP_liaison_snapshot_id } } set_variable = { TOP_pattern_confidence^TOP_liaison_snapshot_id = TOP_liaison_axis_3 } set_variable = { TOP_pattern_source^TOP_liaison_snapshot_id = 4 } }
 		if = {
 			limit = {
 				check_variable = { TOP_liaison_state > 0 }
@@ -226,6 +229,10 @@ TOP_merge_liaison_snapshot = {
 			set_variable = { TOP_lead_host^TOP_liaison_snapshot_id = TOP_liaison_host }
 			set_variable = { TOP_lead_age^TOP_liaison_snapshot_id = TOP_liaison_age }
 			set_variable = { TOP_lead_report_clock^TOP_liaison_snapshot_id = { value = global.TOP_clock subtract = TOP_liaison_age } }
+			if = {
+				limit = { OR = { NOT = { check_variable = { TOP_lead_state^TOP_liaison_snapshot_id = TOP_old_lead_state } } NOT = { check_variable = { TOP_lead_host^TOP_liaison_snapshot_id = TOP_old_lead_host } } NOT = { check_variable = { TOP_lead_report_clock^TOP_liaison_snapshot_id = TOP_old_lead_clock } } } }
+				set_variable = { TOP_lead_source^TOP_liaison_snapshot_id = 4 }
+			}
 		}
 		set_variable = { TOP_liaison_age^TOP_liaison_snapshot_id = TOP_liaison_age }
 		set_variable = { TOP_liaison_reliability^TOP_liaison_snapshot_id = TOP_liaison_response_reliability }
@@ -236,11 +243,14 @@ TOP_merge_liaison_snapshot = {
 	else = {
 		set_temp_variable = { TOP_group_target = TOP_liaison_snapshot_id }
 		TOP_refresh_organization_lead_age = yes
+		set_temp_variable = { TOP_old_lead_state = TOP_org_lead_state^TOP_liaison_snapshot_id }
+		set_temp_variable = { TOP_old_lead_host = TOP_org_lead_host^TOP_liaison_snapshot_id }
+		set_temp_variable = { TOP_old_lead_clock = TOP_org_lead_report_clock^TOP_liaison_snapshot_id }
 		set_temp_variable = { TOP_liaison_location_stronger = 0 }
 		if = { limit = { check_variable = { TOP_liaison_axis_2 > TOP_org_location^TOP_liaison_snapshot_id } } set_temp_variable = { TOP_liaison_location_stronger = 1 } }
-		if = { limit = { check_variable = { TOP_liaison_axis_1 > TOP_org_verification^TOP_liaison_snapshot_id } } set_variable = { TOP_org_verification^TOP_liaison_snapshot_id = TOP_liaison_axis_1 } }
-		if = { limit = { check_variable = { TOP_liaison_axis_2 > TOP_org_location^TOP_liaison_snapshot_id } } set_variable = { TOP_org_location^TOP_liaison_snapshot_id = TOP_liaison_axis_2 } }
-		if = { limit = { check_variable = { TOP_liaison_axis_3 > TOP_org_activity^TOP_liaison_snapshot_id } } set_variable = { TOP_org_activity^TOP_liaison_snapshot_id = TOP_liaison_axis_3 } }
+		if = { limit = { check_variable = { TOP_liaison_axis_1 > TOP_org_verification^TOP_liaison_snapshot_id } } set_variable = { TOP_org_verification^TOP_liaison_snapshot_id = TOP_liaison_axis_1 } set_variable = { TOP_org_verification_source^TOP_liaison_snapshot_id = 4 } }
+		if = { limit = { check_variable = { TOP_liaison_axis_2 > TOP_org_location^TOP_liaison_snapshot_id } } set_variable = { TOP_org_location^TOP_liaison_snapshot_id = TOP_liaison_axis_2 } set_variable = { TOP_org_location_source^TOP_liaison_snapshot_id = 4 } }
+		if = { limit = { check_variable = { TOP_liaison_axis_3 > TOP_org_activity^TOP_liaison_snapshot_id } } set_variable = { TOP_org_activity^TOP_liaison_snapshot_id = TOP_liaison_axis_3 } set_variable = { TOP_org_activity_source^TOP_liaison_snapshot_id = 4 } }
 		if = {
 			limit = {
 				check_variable = { TOP_liaison_state > 0 }
@@ -251,6 +261,10 @@ TOP_merge_liaison_snapshot = {
 			set_variable = { TOP_org_lead_host^TOP_liaison_snapshot_id = TOP_liaison_host }
 			set_variable = { TOP_org_lead_age^TOP_liaison_snapshot_id = TOP_liaison_age }
 			set_variable = { TOP_org_lead_report_clock^TOP_liaison_snapshot_id = { value = global.TOP_clock subtract = TOP_liaison_age } }
+			if = {
+				limit = { OR = { NOT = { check_variable = { TOP_org_lead_state^TOP_liaison_snapshot_id = TOP_old_lead_state } } NOT = { check_variable = { TOP_org_lead_host^TOP_liaison_snapshot_id = TOP_old_lead_host } } NOT = { check_variable = { TOP_org_lead_report_clock^TOP_liaison_snapshot_id = TOP_old_lead_clock } } } }
+				set_variable = { TOP_org_lead_source^TOP_liaison_snapshot_id = 4 }
+			}
 		}
 		set_variable = { TOP_org_liaison_age^TOP_liaison_snapshot_id = TOP_liaison_age }
 		set_variable = { TOP_org_liaison_reliability^TOP_liaison_snapshot_id = TOP_liaison_response_reliability }
