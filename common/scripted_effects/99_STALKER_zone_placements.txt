@@ -1,0 +1,42 @@
+STALKER_register_zone_001_ukraine = {
+	if = {
+		limit = { STALKER_scenario_enabled = yes }
+		698 = {
+			set_state_flag = STALKER_zone_location
+			set_state_flag = STALKER_zone_anchor
+			set_variable = { STALKER_zone_id = 1 }
+			if = {
+				limit = { NOT = { is_in_array = { global.STALKER_zone_location_states = THIS } } }
+				add_to_array = { global.STALKER_zone_location_states = THIS }
+			}
+			if = {
+				limit = { NOT = { is_in_array = { global.STALKER_zone_anchor_states = THIS } } }
+				add_to_array = { global.STALKER_zone_anchor_states = THIS }
+			}
+		}
+	}
+}
+
+STALKER_activate_zone_001_ukraine = {
+	if = {
+		limit = { STALKER_scenario_enabled = yes }
+		STALKER_initialize_zone_registry = yes
+		for_each_scope_loop = {
+			array = global.STALKER_zone_anchor_states
+			if = {
+				limit = {
+					STALKER_is_zone_location = yes
+					has_state_flag = STALKER_zone_anchor
+					check_variable = { STALKER_zone_id = 1 }
+					NOT = { STALKER_is_active_zone = yes }
+				}
+				if = {
+					limit = { controller = { exists = yes } }
+					save_event_target_as = STALKER_zone_event_target
+					controller = { country_event = STALKER.1 }
+				}
+				else = { STALKER_activate_zone = yes }
+			}
+		}
+	}
+}
