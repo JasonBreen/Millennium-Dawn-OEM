@@ -86,7 +86,7 @@ ai_race_initialize_country = {
 	}
 }
 
-# Anthropic feeds the US total through Corporate History; the AI Core axes do not observe it.
+# Anthropic's capstone can change USA AI Core; its live lab state also feeds this overlay.
 # Lab axes are 0-10 and weighted x2, so a lab shapes the national score without replacing it.
 # Europe buys Anthropic's models rather than owning the lab, so it draws deployment, a little
 # frontier access and public trust, but never compute or control capacity.
@@ -717,7 +717,7 @@ ai_race_generic_adapter = {
 	multiply_variable = { ai_race_control_capacity_external = 0.5 }
 }
 
-# Readiness withholds only the funded programme's own capability; the civilian base is not ours to degrade.
+# Apply readiness to funded stock before the final cap, preserving the external base.
 ai_race_refresh_effective_capability = {
 	set_variable = { ai_race_effective_capability = ai_race_capability }
 	set_variable = { ai_race_capability_funded_usable = 0 }
@@ -726,10 +726,10 @@ ai_race_refresh_effective_capability = {
 			ai_race_full_mode = yes
 			check_variable = { ai_race_stage > 0 }
 		}
+		set_variable = { ai_race_effective_capability = ai_race_capability_external }
 		set_variable = { ai_race_capability_funded_usable = { value = ai_race_capability_stock multiply = ai_race_current_readiness } }
-		set_temp_variable = { ai_race_unmet_capability = { value = 1 subtract = ai_race_current_readiness max = 0 } }
-		multiply_temp_variable = { ai_race_unmet_capability = ai_race_capability_stock }
-		subtract_from_variable = { ai_race_effective_capability = ai_race_unmet_capability }
+		set_temp_variable = { ai_race_ready_funded_capability = { value = ai_race_capability_stock multiply = ai_race_current_readiness } }
+		add_to_variable = { ai_race_effective_capability = ai_race_ready_funded_capability }
 	}
 	clamp_variable = { var = ai_race_effective_capability min = 0 max = 100 }
 }

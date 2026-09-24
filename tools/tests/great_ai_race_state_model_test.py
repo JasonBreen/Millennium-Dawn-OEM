@@ -725,6 +725,9 @@ class RaceScript:
                 }.items():
                     variables[f"ai_race_offer_{key}_{field}"] = value
         elif name == "ai_race_rebuild_country_metrics":
+            variables["ai_race_capability_external"] = max(
+                0, country["capability"] - variables.get("ai_race_capability_stock", 0)
+            )
             variables["ai_race_capability"] = country["capability"]
         elif name == "ai_race_create_financing":
             country["ledger"].append(
@@ -1060,8 +1063,46 @@ def test_readiness_withholds_only_the_funded_share_of_capability(readiness):
     assert variables["ai_race_stage"] == 1
     assert stock == 5
     assert variables["ai_race_effective_capability"] == pytest.approx(
-        variables["ai_race_capability"] - stock * (1 - readiness)
+        variables["ai_race_capability_external"] + stock * readiness
     )
+
+
+@pytest.mark.parametrize("readiness,expected", [(0, 80), (0.5, 97.5), (1, 100)])
+def test_executed_funded_share_is_added_before_cap(readiness, expected):
+    race, country = _enrolled_race()
+    variables = country["vars"]
+    variables.update(
+        ai_race_stage=4,
+        ai_race_capability_external=80,
+        ai_race_capability_stock=35,
+        ai_race_capability=100,
+        ai_race_current_readiness=readiness,
+    )
+
+    for _ in range(2):
+        race.run("ai_race_refresh_effective_capability", 1)
+        assert variables["ai_race_effective_capability"] == pytest.approx(expected)
+        assert variables["ai_race_capability"] == 100
+
+    variables["ai_race_capability_stock"] = 0
+    variables["ai_race_capability"] = 80
+    race.run("ai_race_refresh_effective_capability", 1)
+    assert variables["ai_race_effective_capability"] == 80
+
+
+@pytest.mark.parametrize("mode", ["full", "outcomes_only", "disabled"])
+def test_executed_unfunded_or_non_full_mode_keeps_combined_capability(mode):
+    race, country = _enrolled_race(mode=mode)
+    variables = country["vars"]
+    variables.update(
+        ai_race_stage=0 if mode == "full" else 4,
+        ai_race_capability_external=80,
+        ai_race_capability_stock=35,
+        ai_race_capability=100,
+        ai_race_current_readiness=0,
+    )
+    race.run("ai_race_refresh_effective_capability", 1)
+    assert variables["ai_race_effective_capability"] == 100
 
 
 def test_capability_stock_tracks_the_funded_stage_and_clears_with_progression():
