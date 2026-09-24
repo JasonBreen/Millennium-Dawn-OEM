@@ -151,6 +151,39 @@ def test_liaison_confidence_gain_does_not_relabel_unchanged_local_lead():
     assert variables["TOP_lead_report_clock"][11] == 90
 
 
+def test_liaison_age_cache_requires_matching_subject_kind_for_overlapping_ids():
+    script = TargetScript()
+    variables = script.target(2)
+    script.organization_truth(2, state=101, public=True)
+    variables["TOP_enabled"] = 1
+    variables["TOP_view_lead_age"] = 99
+    variables["TOP_lead_age"][2] = 11
+    script.globals["TOP_clock"] = 100
+
+    script.temps.update(
+        TOP_liaison_snapshot_kind=2,
+        TOP_liaison_snapshot_id=2,
+        TOP_liaison_axis_1=50,
+        TOP_liaison_axis_2=95,
+        TOP_liaison_axis_3=50,
+        TOP_liaison_state=102,
+        TOP_liaison_host=3,
+        TOP_liaison_age=1,
+        TOP_liaison_response_reliability=1,
+        TOP_liaison_leak_chance=0,
+    )
+    script.run("TOP_merge_liaison_snapshot", 1)
+    assert variables["TOP_view_lead_age"] == 99
+
+    variables["TOP_selected_kind"] = 2
+    variables["TOP_selected_organization"] = 2
+    variables["TOP_view_lead_age"] = 88
+    variables["TOP_org_lead_age"][2] = 12
+    script.temps.update(TOP_liaison_snapshot_kind=1)
+    script.run("TOP_merge_liaison_snapshot", 1)
+    assert variables["TOP_view_lead_age"] == 88
+
+
 def test_organization_sources_follow_authored_collection_and_liaison_reports():
     script = TargetScript()
     script.organization_truth(2, state=101, public=True)
