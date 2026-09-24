@@ -34,6 +34,10 @@ TOP_designate_selected_organization = {
 		add_political_power = -25
 		set_variable = { TOP_org_package_state^TOP_selected_organization = 1 }
 		set_variable = { TOP_org_collection_focus^TOP_selected_organization = 2 }
+		add_to_variable = { TOP_org_history_cycle^TOP_selected_organization = 1 }
+		set_temp_variable = { TOP_arg_group = TOP_selected_organization }
+		set_temp_variable = { TOP_history_current_event = 1 }
+		TOP_log_organization_milestone = yes
 		TOP_build_view = yes
 	}
 }
@@ -42,6 +46,9 @@ TOP_collect_selected_organization = {
 	if = {
 		limit = { TOP_can_collect_organization = yes }
 		set_variable = { TOP_org_package_state^TOP_selected_organization = 2 }
+		set_temp_variable = { TOP_arg_group = TOP_selected_organization }
+		set_temp_variable = { TOP_history_current_event = 2 }
+		TOP_log_organization_milestone = yes
 		if = { limit = { check_variable = { TOP_org_collection_focus^TOP_selected_organization = 0 } } set_variable = { TOP_org_collection_focus^TOP_selected_organization = 2 } }
 		set_temp_variable = { TOP_subject_key = { value = TOP_selected_organization add = 1000 } }
 		if = { limit = { NOT = { is_in_array = { TOP_collecting_subjects = TOP_subject_key } } } add_to_array = { TOP_collecting_subjects = TOP_subject_key } }
@@ -53,6 +60,10 @@ TOP_stop_organization_collection = {
 	if = {
 		limit = { TOP_has_selected_organization = yes check_variable = { TOP_org_package_state^TOP_selected_organization = 2 } }
 		set_variable = { TOP_org_package_state^TOP_selected_organization = 1 }
+		set_temp_variable = { TOP_arg_group = TOP_selected_organization }
+		set_temp_variable = { TOP_history_current_event = 3 }
+		set_temp_variable = { TOP_history_current_reason = 21 }
+		TOP_log_organization_milestone = yes
 		set_temp_variable = { TOP_subject_key = { value = TOP_selected_organization add = 1000 } }
 		remove_from_array = { TOP_collecting_subjects = TOP_subject_key }
 		TOP_refresh_view = yes
@@ -65,6 +76,10 @@ TOP_abandon_person_package = {
 		set_temp_variable = { TOP_subject_key = TOP_selected }
 		remove_from_array = { TOP_collecting_subjects = TOP_subject_key }
 		set_variable = { TOP_package_state^TOP_selected = 0 }
+		set_temp_variable = { TOP_arg_target = TOP_selected }
+		set_temp_variable = { TOP_history_current_event = 9 }
+		set_temp_variable = { TOP_history_current_reason = 25 }
+		TOP_log_person_milestone = yes
 		set_variable = { TOP_collection_focus^TOP_selected = 0 }
 		TOP_build_view = yes
 	}
@@ -76,6 +91,10 @@ TOP_abandon_organization_package = {
 		set_temp_variable = { TOP_subject_key = { value = TOP_selected_organization add = 1000 } }
 		remove_from_array = { TOP_collecting_subjects = TOP_subject_key }
 		set_variable = { TOP_org_package_state^TOP_selected_organization = 0 }
+		set_temp_variable = { TOP_arg_group = TOP_selected_organization }
+		set_temp_variable = { TOP_history_current_event = 9 }
+		set_temp_variable = { TOP_history_current_reason = 25 }
+		TOP_log_organization_milestone = yes
 		set_variable = { TOP_org_collection_focus^TOP_selected_organization = 0 }
 		TOP_build_view = yes
 	}
@@ -122,6 +141,10 @@ TOP_stand_down_selected = {
 		if = {
 			limit = { check_variable = { TOP_case_phase^TOP_selected = 3 } check_variable = { TOP_case_method^TOP_selected > 0 } check_variable = { TOP_case_method^TOP_selected < 3 } }
 			set_variable = { TOP_case_phase^TOP_selected = 2 }
+			set_temp_variable = { TOP_arg_target = TOP_selected }
+			set_temp_variable = { TOP_history_current_event = 3 }
+			set_temp_variable = { TOP_history_current_reason = 26 }
+			TOP_log_person_milestone = yes
 			set_variable = { TOP_case_due^TOP_selected = 0 }
 			set_variable = { TOP_operation_subject_kind = 0 }
 			set_variable = { TOP_operation_subject_id = 0 }
@@ -139,6 +162,7 @@ TOP_stand_down_selected = {
 			limit = { check_variable = { TOP_org_case_phase^TOP_selected_organization > 0 } check_variable = { TOP_org_case_phase^TOP_selected_organization < 4 } }
 			set_temp_variable = { TOP_arg_group = TOP_selected_organization }
 			set_temp_variable = { TOP_arg_sequence = TOP_org_case_sequence^TOP_selected_organization }
+			set_temp_variable = { TOP_history_current_reason = 26 }
 			TOP_close_organization_case = yes
 		}
 	}
@@ -247,6 +271,8 @@ TOP_open_organization_review_case = {
 	set_variable = { TOP_org_case_state^TOP_arg_group = TOP_org_lead_state^TOP_arg_group }
 	set_variable = { TOP_org_case_phase^TOP_arg_group = 1 }
 	set_variable = { TOP_org_case_until^TOP_arg_group = { value = global.TOP_clock add = 42 } }
+	set_temp_variable = { TOP_history_current_event = 4 }
+	TOP_log_organization_milestone = yes
 	if = { limit = { NOT = { is_in_array = { TOP_active_organization_cases = TOP_arg_group } } } add_to_array = { TOP_active_organization_cases = TOP_arg_group } }
 	TOP_enroll_pending_actor = yes
 }
@@ -260,6 +286,9 @@ TOP_commit_organization_authorization = {
 		set_variable = { TOP_org_case_state^TOP_group_target = TOP_proposal_state }
 		set_variable = { TOP_org_case_until^TOP_group_target = { value = global.TOP_clock add = TOP_mandate_days } }
 		set_variable = { TOP_org_case_phase^TOP_group_target = 2 }
+		set_temp_variable = { TOP_arg_group = TOP_group_target }
+		set_temp_variable = { TOP_history_current_event = 5 }
+		TOP_log_organization_milestone = yes
 		set_variable = { TOP_org_case_due^TOP_group_target = 0 }
 		set_variable = { TOP_org_case_objective^TOP_group_target = TOP_proposal_objective }
 		set_variable = { TOP_org_case_verification^TOP_group_target = TOP_proposal_identity }
@@ -285,6 +314,12 @@ TOP_commit_organization_authorization = {
 TOP_close_organization_case = {
 	if = {
 		limit = { check_variable = { TOP_org_case_phase^TOP_arg_group > 0 } check_variable = { TOP_org_case_sequence^TOP_arg_group = TOP_arg_sequence } }
+		set_temp_variable = { TOP_history_current_event = 8 }
+		if = { limit = { check_variable = { TOP_history_current_reason = 0 } check_variable = { TOP_org_case_result^TOP_arg_group = 0 } check_variable = { global.TOP_group_destroyed^TOP_arg_group = 1 } } set_temp_variable = { TOP_history_current_reason = 23 } }
+		if = { limit = { check_variable = { TOP_history_current_reason = 0 } check_variable = { TOP_org_case_phase^TOP_arg_group = 5 } } set_temp_variable = { TOP_history_current_reason = 24 } }
+		if = { limit = { check_variable = { TOP_history_current_reason = 0 } check_variable = { var = global.TOP_clock value = TOP_org_case_until^TOP_arg_group compare = greater_than_or_equals } check_variable = { TOP_org_case_phase^TOP_arg_group < 3 } } set_temp_variable = { TOP_history_current_reason = 22 } }
+		if = { limit = { check_variable = { TOP_history_current_reason = 0 } check_variable = { TOP_org_case_phase^TOP_arg_group = 3 } } set_temp_variable = { TOP_history_current_reason = 23 } }
+		TOP_log_organization_milestone = yes
 		if = {
 			limit = { check_variable = { TOP_org_package_state^TOP_arg_group = 3 } }
 			set_variable = { TOP_org_package_state^TOP_arg_group = 1 }
@@ -314,6 +349,9 @@ TOP_begin_organization_operation = {
 		set_variable = { TOP_operation_subject_id = TOP_arg_group }
 		set_variable = { TOP_operation_sequence = TOP_org_case_sequence^TOP_arg_group }
 		set_variable = { TOP_org_case_phase^TOP_arg_group = 3 }
+		set_temp_variable = { TOP_history_current_event = 10 }
+		set_temp_variable = { TOP_history_current_reason = { value = TOP_org_case_objective^TOP_arg_group add = 40 } }
+		TOP_log_organization_milestone = yes
 		set_variable = { TOP_org_case_due^TOP_arg_group = { value = global.TOP_clock add = 28 } }
 		set_temp_variable = { TOP_group_target = TOP_arg_group }
 		set_temp_variable = { TOP_group_pressure_gain = 20 }
@@ -377,6 +415,7 @@ TOP_resolve_organization_operation = {
 		}
 		set_temp_variable = { TOP_result = 7 }
 		set_variable = { TOP_org_location^TOP_group_target = 0 }
+		set_variable = { TOP_org_location_source^TOP_group_target = 0 }
 		subtract_from_variable = { TOP_org_activity^TOP_group_target = 15 }
 		clamp_variable = { var = TOP_org_activity^TOP_group_target min = 0 max = 100 }
 		set_variable = { TOP_org_package_state^TOP_group_target = 1 }
@@ -410,6 +449,10 @@ TOP_resolve_organization_operation = {
 	TOP_add_group_pressure = yes
 	TOP_calculate_organization_consequences = yes
 	set_variable = { TOP_org_case_result^TOP_group_target = TOP_result }
+	set_temp_variable = { TOP_arg_group = TOP_group_target }
+	set_temp_variable = { TOP_history_current_event = 7 }
+	set_temp_variable = { TOP_history_current_reason = TOP_result }
+	TOP_log_organization_milestone = yes
 	TOP_apply_organization_consequences = yes
 	TOP_archive_organization_result = yes
 	set_variable = { TOP_org_case_phase^TOP_group_target = 5 }
