@@ -83,6 +83,7 @@ def test_liaison_source_changes_only_for_accepted_assessment_and_lead():
     script = TargetScript()
     variables = script.target(11)
     script.globals["TOP_clock"] = 100
+    variables["TOP_enabled"] = 1
     variables["TOP_lead_report_clock"][11] = 95
     variables["TOP_lead_age"][11] = 5
     for field in ("identity", "location", "pattern", "lead"):
@@ -107,12 +108,14 @@ def test_liaison_source_changes_only_for_accepted_assessment_and_lead():
     assert variables["TOP_lead_state"][11] == 101
 
     script.temps.update(TOP_liaison_axis_2=95, TOP_liaison_age=1)
+    variables["TOP_view_lead_age"] = 5
     script.run("TOP_merge_liaison_snapshot", 1)
     assert [
         variables[f"TOP_{field}_source"][11]
         for field in ("identity", "location", "pattern", "lead")
     ] == [3, 4, 3, 4]
     assert variables["TOP_lead_state"][11] == 102
+    assert variables["TOP_view_lead_age"] == 1
 
 
 def test_liaison_confidence_gain_does_not_relabel_unchanged_local_lead():
@@ -166,6 +169,9 @@ def test_organization_sources_follow_authored_collection_and_liaison_reports():
     assert variables["TOP_org_activity_source"][2] == 3
 
     script.globals["TOP_clock"] = 100
+    variables["TOP_enabled"] = 1
+    variables["TOP_selected_kind"] = 2
+    variables["TOP_selected_organization"] = 2
     variables["TOP_org_lead_report_clock"][2] = 95
     script.temps.update(
         TOP_liaison_snapshot_kind=2,
@@ -185,6 +191,9 @@ def test_organization_sources_follow_authored_collection_and_liaison_reports():
     script.run("TOP_merge_liaison_snapshot", 1)
     assert variables["TOP_org_location_source"][2] == 4
     assert variables["TOP_org_lead_source"][2] == 4
+    variables["TOP_view_lead_age"] = 5
+    script.run("TOP_merge_liaison_snapshot", 1)
+    assert variables["TOP_view_lead_age"] == 1
 
 
 def test_host_report_labels_only_axes_it_can_raise():
