@@ -155,6 +155,8 @@ def test_liaison_age_cache_requires_matching_subject_kind_for_overlapping_ids():
     script = TargetScript()
     variables = script.target(2)
     script.organization_truth(2, state=101, public=True)
+    script.globals["TOP_group_class"][2] = 1
+    variables["TOP_org_known"][2] = 1
     variables["TOP_enabled"] = 1
     variables["TOP_view_lead_age"] = 99
     variables["TOP_lead_age"][2] = 11
