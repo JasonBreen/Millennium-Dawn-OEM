@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from great_ai_race_state_model_test import _parse_race_script
+from great_ai_race_state_model_test import _extract_block, _parse_race_script
 from targeted_operations_authorization_test import ReviewScript
 from targeted_operations_core_test import TargetScript
 
@@ -90,6 +90,36 @@ def test_liaison_source_changes_only_for_accepted_assessment_and_lead():
     assert variables["TOP_lead_state"][11] == 102
 
 
+def test_liaison_confidence_gain_does_not_relabel_unchanged_local_lead():
+    script = TargetScript()
+    variables = script.target(11)
+    script.globals["TOP_clock"] = 100
+    variables["TOP_lead_state"][11] = 101
+    variables["TOP_lead_host"][11] = 2
+    variables["TOP_lead_age"][11] = 10
+    variables["TOP_lead_report_clock"][11] = 90
+    variables["TOP_lead_source"][11] = 3
+    variables["TOP_location_confidence"][11] = 20
+    script.temps.update(
+        TOP_liaison_snapshot_kind=1,
+        TOP_liaison_snapshot_id=11,
+        TOP_liaison_axis_1=50,
+        TOP_liaison_axis_2=80,
+        TOP_liaison_axis_3=50,
+        TOP_liaison_state=101,
+        TOP_liaison_host=2,
+        TOP_liaison_age=10,
+        TOP_liaison_response_reliability=1,
+        TOP_liaison_leak_chance=0,
+    )
+
+    script.run("TOP_merge_liaison_snapshot", 1)
+
+    assert variables["TOP_location_source"][11] == 4
+    assert variables["TOP_lead_source"][11] == 3
+    assert variables["TOP_lead_report_clock"][11] == 90
+
+
 def test_organization_sources_follow_authored_collection_and_liaison_reports():
     script = TargetScript()
     script.organization_truth(2, state=101, public=True)
@@ -145,6 +175,74 @@ def test_host_report_labels_only_axes_it_can_raise():
     assert review.actor["TOP_location_confidence^1"] == 100
     assert review.actor["TOP_location_source^1"] == 5
     assert review.actor["TOP_lead_source^1"] == 5
+
+
+def test_host_report_marks_encoded_person_and_organization_leads():
+    encoded_state = -10737.40617
+    person = ReviewScript()
+    person.ready_for_host()
+    person.run("TOP_send_host_request")
+    person.globals["TOP_clock"] = 1
+    person.actor["TOP_lead_state^1"] = encoded_state
+    person.actor["TOP_lead_report_clock^1"] = 0
+    person.call("TOP_answer_host_request", identifier=2, POSTURE=2)
+    assert person.actor["TOP_lead_source^1"] == 5
+
+    host_answer = (
+        ROOT
+        / "common/scripted_effects/02_targeted_operations_authorization_effects.txt"
+    ).read_text(encoding="utf-8")
+    assert (
+        "NOT = { check_variable = { TOP_org_lead_state^TOP_proposal_subject_id = 0 } }"
+        in host_answer
+    )
+
+
+def test_review_return_records_resumed_collection():
+    review = ReviewScript()
+    review.call("TOP_begin_review", METHOD=2)
+
+    review.run("TOP_return_recorded_collection")
+
+    rows = review.actor["TOP_history_rows"]
+    assert review.actor[f"TOP_history_event^{int(rows[-1])}"] == 2
+    assert review.actor[f"TOP_history_subject_kind^{int(rows[-1])}"] == 1
+    assert review.actor[f"TOP_history_subject_id^{int(rows[-1])}"] == 1
+
+
+def test_source_and_freshness_dispatchers_require_a_current_lead():
+    source = (
+        ROOT / "common/scripted_localisation/05_targeted_operations_sources.txt"
+    ).read_text(encoding="utf-8")
+    script = TargetScript()
+    variables = script.target(11)
+    variables["TOP_selected"] = 11
+    variables["TOP_lead_source"][11] = 3
+
+    for name, expected_when_present in (
+        ("TOP_selected_lead_source", "TOP_source_3"),
+        ("TOP_selected_lead_freshness", "TOP_lead_freshness_known"),
+    ):
+        start = source.rfind("defined_text = {", 0, source.index(f"name = {name}"))
+        entries = _parse_race_script(_extract_block(source, start))["defined_text"]
+
+        def selected_key():
+            for key, _, fields in entries:
+                if key != "text":
+                    continue
+                values = {field: value for field, _, value in fields}
+                if "trigger" not in values or script.condition(values["trigger"], 1):
+                    return values["localization_key"]
+            raise AssertionError("No matching defined text")
+
+        variables["TOP_lead_state"][11] = -10737.40617
+        assert selected_key() == expected_when_present
+        variables["TOP_lead_state"][11] = 0
+        assert selected_key() == (
+            "TOP_source_0"
+            if name == "TOP_selected_lead_source"
+            else "TOP_lead_freshness_none"
+        )
 
 
 def test_person_case_milestones_follow_real_package_transitions():
@@ -251,3 +349,22 @@ def test_history_view_follows_selected_subject():
     variables["TOP_selected"] = 12
     script.run("TOP_build_view", 1)
     assert variables["TOP_visible_history"] == [1]
+
+
+def test_history_wrap_refreshes_an_open_tab_when_another_subject_replaces_its_row():
+    script = TargetScript()
+    variables = script.target(11)
+    script.target(12)
+    variables["TOP_tab"] = 6
+    variables["TOP_selected_kind"] = 1
+    variables["TOP_selected"] = 11
+    variables["TOP_history_rows"] = [0]
+    variables["TOP_visible_history"] = [0]
+    variables["TOP_history_cursor"] = 0
+    before = script.external["TOP_refresh_view", 1]
+    script.temps["TOP_history_current_event"] = 2
+
+    script.call("TOP_log_person_milestone", TARGET=12)
+
+    assert variables["TOP_visible_history"] == []
+    assert script.external["TOP_refresh_view", 1] == before + 1

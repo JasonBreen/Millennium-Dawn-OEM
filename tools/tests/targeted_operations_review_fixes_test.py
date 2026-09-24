@@ -28,6 +28,22 @@ def test_collection_rebuild_prunes_inactive_typed_assignments_and_pauses_package
     assert variables["TOP_package_state"][12] == 2
     assert variables["TOP_package_state"][15] == 1
     assert variables["TOP_org_package_state"][2] == 1
+    suspended = [
+        (
+            variables["TOP_history_subject_kind"][int(row)],
+            variables["TOP_history_subject_id"][int(row)],
+        )
+        for row in variables["TOP_history_rows"]
+    ]
+    assert suspended == [(1, 11), (1, 15), (2, 2)]
+    assert [
+        variables["TOP_history_event"][int(row)]
+        for row in variables["TOP_history_rows"]
+    ] == [3, 3, 3]
+    assert [
+        variables["TOP_history_reason"][int(row)]
+        for row in variables["TOP_history_rows"]
+    ] == [23, 23, 23]
 
 
 def test_liaison_merge_never_replaces_a_known_location_with_an_empty_report():
