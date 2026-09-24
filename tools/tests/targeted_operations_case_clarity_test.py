@@ -94,10 +94,13 @@ def test_liaison_confidence_gain_does_not_relabel_unchanged_local_lead():
     script = TargetScript()
     variables = script.target(11)
     script.globals["TOP_clock"] = 100
-    variables["TOP_lead_state"][11] = 101
-    variables["TOP_lead_host"][11] = 2
-    variables["TOP_lead_age"][11] = 10
-    variables["TOP_lead_report_clock"][11] = 90
+    for field, value in (
+        ("TOP_lead_state", 101),
+        ("TOP_lead_host", 2),
+        ("TOP_lead_age", 10),
+        ("TOP_lead_report_clock", 90),
+    ):
+        variables[field][11] = value
     variables["TOP_lead_source"][11] = 3
     variables["TOP_location_confidence"][11] = 20
     script.temps.update(
