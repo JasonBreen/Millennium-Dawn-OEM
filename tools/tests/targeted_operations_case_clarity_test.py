@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from great_ai_race_state_model_test import _extract_block, _parse_race_script
@@ -5,6 +6,23 @@ from targeted_operations_authorization_test import ReviewScript
 from targeted_operations_core_test import TargetScript
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_released_assessment_axes_do_not_show_stale_sources():
+    localisation = (
+        ROOT / "common/scripted_localisation/05_targeted_operations_sources.txt"
+    ).read_text(encoding="utf-8")
+    for name, confidence in (
+        ("TOP_selected_axis_2_source", "TOP_location_confidence"),
+        ("TOP_selected_axis_3_source", "TOP_pattern_confidence"),
+    ):
+        match = re.search(rf"name = {name}\b", localisation)
+        assert match
+        definition = _extract_block(
+            localisation, localisation.rfind("defined_text", 0, match.start())
+        )
+        gate = f"check_variable = {{ {confidence}^TOP_selected > 0 }}"
+        assert definition.count(gate) == 5
 
 
 def test_public_identity_and_authored_lead_keep_distinct_sources():
