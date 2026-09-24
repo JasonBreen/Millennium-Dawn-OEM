@@ -4,6 +4,9 @@
 ai_race_clear_country_state = {
 	clear_variable = ai_race_capability_stock
 	clear_variable = ai_race_capability_external
+	clear_variable = ai_race_capability_national_input
+	clear_variable = ai_race_capability_lab_overlay
+	clear_variable = ai_race_capability_funded_usable
 	clear_variable = ai_race_capability
 	clear_variable = ai_race_compute_stock
 	clear_variable = ai_race_compute_external
@@ -156,6 +159,8 @@ ai_race_rebuild_country_metrics = {
 	if = {
 		limit = { ai_race_active = yes }
 		clear_variable = ai_race_capability_external
+		clear_variable = ai_race_capability_national_input
+		clear_variable = ai_race_capability_lab_overlay
 		clear_variable = ai_race_compute_external
 		clear_variable = ai_race_talent_external
 		clear_variable = ai_race_deployment_external
@@ -214,7 +219,10 @@ ai_race_rebuild_country_metrics = {
 					}
 					add_to_variable = { ai_race_deployment_external = 1 }
 				}
+				set_variable = { ai_race_capability_national_input = ai_race_capability_external }
 				ai_race_usa_anthropic_contribution = yes
+				set_variable = { ai_race_capability_lab_overlay = ai_race_capability_external }
+				subtract_from_variable = { ai_race_capability_lab_overlay = ai_race_capability_national_input }
 				ai_race_repair_country_state = yes
 			}
 			else = {
@@ -256,7 +264,10 @@ ai_race_rebuild_country_metrics = {
 				add_to_temp_variable = { _tal_tmp = { value = research_slots_from_gdp_c multiply = 10 } }
 				set_variable = { ai_race_talent_external = _tal_tmp }
 				# Other externals left to 0 in fallback
+				set_variable = { ai_race_capability_national_input = ai_race_capability_external }
 				ai_race_usa_anthropic_contribution = yes
+				set_variable = { ai_race_capability_lab_overlay = ai_race_capability_external }
+				subtract_from_variable = { ai_race_capability_lab_overlay = ai_race_capability_national_input }
 				ai_race_repair_country_state = yes
 			}
 		}
@@ -382,7 +393,16 @@ ai_race_rebuild_country_metrics = {
 
 		else = { ai_race_generic_adapter = yes }
 
+		if = {
+			limit = { NOT = { original_tag = USA } }
+			set_variable = { ai_race_capability_national_input = ai_race_capability_external }
+		}
 		ai_race_eu_anthropic_contribution = yes
+		if = {
+			limit = { NOT = { original_tag = USA } }
+			set_variable = { ai_race_capability_lab_overlay = ai_race_capability_external }
+			subtract_from_variable = { ai_race_capability_lab_overlay = ai_race_capability_national_input }
+		}
 
 		set_variable = { ai_race_capability = ai_race_capability_stock }
 		add_to_variable = { ai_race_capability = ai_race_capability_external }
@@ -700,12 +720,14 @@ ai_race_generic_adapter = {
 # Apply readiness to funded stock before the final cap, preserving the external base.
 ai_race_refresh_effective_capability = {
 	set_variable = { ai_race_effective_capability = ai_race_capability }
+	set_variable = { ai_race_capability_funded_usable = 0 }
 	if = {
 		limit = {
 			ai_race_full_mode = yes
 			check_variable = { ai_race_stage > 0 }
 		}
 		set_variable = { ai_race_effective_capability = ai_race_capability_external }
+		set_variable = { ai_race_capability_funded_usable = { value = ai_race_capability_stock multiply = ai_race_current_readiness } }
 		set_temp_variable = { ai_race_ready_funded_capability = { value = ai_race_capability_stock multiply = ai_race_current_readiness } }
 		add_to_variable = { ai_race_effective_capability = ai_race_ready_funded_capability }
 	}
