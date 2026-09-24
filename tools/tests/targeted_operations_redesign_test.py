@@ -567,7 +567,15 @@ def test_custody_bda_and_crisis_queues_preserve_immutable_records():
     report_queue = _named_block(depth, "TOP_queue_field_report")
     report_dispatch = _named_block(depth, "TOP_dispatch_next_field_report")
     report_finish = _named_block(depth, "TOP_finish_field_report")
-    for field in ("subject_kinds", "subject_ids", "results", "states", "hosts"):
+    for field in (
+        "subject_kinds",
+        "subject_ids",
+        "results",
+        "states",
+        "hosts",
+        "objectives",
+        "impacts",
+    ):
         assert f"TOP_report_{field}" in report_queue
         assert f"TOP_report_{field}^0" in report_dispatch
     assert "TOP_queue_field_report = yes" in _named_block(
@@ -576,11 +584,21 @@ def test_custody_bda_and_crisis_queues_preserve_immutable_records():
     assert "TOP_queue_field_report = yes" in _named_block(
         organizations, "TOP_resolve_organization_operation"
     )
+    facility_damage = _named_block(organizations, "TOP_damage_organization_facility")
+    assert (
+        facility_damage.count("set_temp_variable = { PREV.TOP_report_enqueue_impact =")
+        == 5
+    )
+    assert "set_temp_variable = { TOP_report_enqueue_impact =" not in facility_damage
     assert "TOP_dispatch_next_field_report = yes" in report_finish
     report_event = events[
         events.index("id = TOP_redesign.10") : events.index("id = TOP_redesign.11")
     ]
     assert "TOP_finish_field_report = yes" in report_event
+    assert "TOP_report_subject_kind = 1" in report_event
+    assert "text = TOP_redesign.10.d" in report_event
+    assert "text = TOP_redesign.10.d_organization_success" in report_event
+    assert "text = TOP_redesign.10.d_organization_failure" in report_event
 
     bda_queue = _named_block(depth, "TOP_queue_bda_notice")
     bda_dispatch = _named_block(depth, "TOP_dispatch_next_bda_notice")

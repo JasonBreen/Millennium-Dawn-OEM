@@ -749,6 +749,8 @@ def test_facility_sabotage_damages_the_map_without_removing_a_person(objective):
     assert variables["TOP_archive_objective"][0] == objective
     assert variables["TOP_archive_result"][0] == 11
     assert script.external["damage_building", 101] == 1
+    assert variables["TOP_report_objective"] == objective
+    assert variables["TOP_report_impact"] == objective
     assert script.globals["TOP_group_disruption_type"][2] == objective
     assert script.globals["TOP_group_disruption_until"][2] == 90
     assert script.globals["TOP_status"] == original_person_status
@@ -798,6 +800,79 @@ def test_organization_operation_cannot_report_damage_when_no_fallback_exists(
     assert variables["TOP_archive_result"][0] == 9
     assert script.external["damage_building", 101] == 0
     assert script.globals["TOP_group_disruption_type"][2] == 0
+
+
+def test_training_report_records_infrastructure_fallback():
+    script = TargetScript()
+    variables = script.authorize_organization(objective=2, host=2, state=101)
+    script.countries[101]["vars"].update(arms_factory=0, infrastructure=1)
+
+    script.run("TOP_resolve_organization_operation", 1)
+
+    assert variables["TOP_report_result"] == 11
+    assert variables["TOP_report_objective"] == 2
+    assert variables["TOP_report_impact"] == 1
+    assert script.external["damage_building", 101] == 1
+
+
+def test_failed_organization_report_records_attempt_without_damage():
+    script = TargetScript()
+    variables = script.authorize_organization(objective=1, host=2, state=101)
+    variables["TOP_org_case_verification"][2] = 0
+
+    script.run("TOP_resolve_organization_operation", 1)
+
+    assert variables["TOP_report_result"] == 1
+    assert variables["TOP_report_objective"] == 1
+    assert variables["TOP_report_impact"] == 0
+    assert script.external["damage_building", 101] == 0
+    assert script.globals["TOP_group_disruption_type"][2] == 0
+
+
+def test_open_field_report_preserves_queued_objective_and_impact_after_reload():
+    script = TargetScript()
+    variables = script.authorize_organization(group=2, objective=2, host=3, state=102)
+    script.run("TOP_resolve_organization_operation", 1)
+    assert variables["TOP_report_objective"] == 2
+    assert variables["TOP_report_impact"] == 2
+
+    variables["TOP_selected_organization"] = 3
+    variables["TOP_org_case_objective"][2] = 1
+    script.authorize_organization(group=3, objective=3, host=2, state=101)
+    script.countries[101]["vars"]["industrial_complex"] = 0
+    script.run("TOP_resolve_organization_operation", 1)
+    assert script.external["add_dynamic_modifier", 101] == 1
+    assert variables["TOP_report_subject_ids"] == [3]
+    assert variables["TOP_report_objectives"] == [3]
+    assert variables["TOP_report_impacts"] == [4]
+
+    script.temps.update(
+        TOP_report_enqueue_kind=1,
+        TOP_report_enqueue_id=11,
+        TOP_report_enqueue_result=1,
+        TOP_report_enqueue_state=101,
+        TOP_report_enqueue_host=2,
+        TOP_report_enqueue_objective=0,
+        TOP_report_enqueue_impact=0,
+    )
+    script.run("TOP_queue_field_report", 1)
+    restored = script.persisted_clone()
+    reports = restored.countries[1]["vars"]
+
+    assert reports["TOP_report_subject_id"] == 2
+    assert reports["TOP_report_objective"] == 2
+    assert reports["TOP_report_impact"] == 2
+    restored.run("TOP_finish_field_report", 1)
+    assert reports["TOP_report_subject_kind"] == 2
+    assert reports["TOP_report_subject_id"] == 3
+    assert reports["TOP_report_objective"] == 3
+    assert reports["TOP_report_impact"] == 4
+    restored.run("TOP_finish_field_report", 1)
+    assert reports["TOP_report_subject_kind"] == 1
+    assert reports["TOP_report_subject_id"] == 11
+    assert reports["TOP_report_objective"] == 0
+    assert reports["TOP_report_impact"] == 0
+    assert reports["TOP_report_subject_ids"] == []
 
 
 def test_partner_operation_revalidates_cooperative_posture_before_execution():
@@ -1090,6 +1165,8 @@ def test_last_registry_slot_has_all_arrays_and_can_be_resolved():
                 "TOP_report_results",
                 "TOP_report_states",
                 "TOP_report_hosts",
+                "TOP_report_objectives",
+                "TOP_report_impacts",
                 "TOP_bda_notice_targets",
                 "TOP_bda_notice_assessments",
                 "TOP_bda_notice_sequences",
