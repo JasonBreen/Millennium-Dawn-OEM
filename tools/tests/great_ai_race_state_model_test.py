@@ -1147,7 +1147,6 @@ def test_executed_normal_and_emergency_transactions(financing, ratios, principal
     "change",
     [
         "treasury",
-        "gdp",
         "ratio",
         "date",
         "tech",
@@ -1162,8 +1161,6 @@ def test_executed_confirmation_rechecks_and_charges_nothing_on_invalid_state(cha
     race.run("ai_race_begin_review", 1)
     if change == "treasury":
         country["vars"]["treasury"] = 49.999
-    elif change == "gdp":
-        country["vars"]["gdp_total"] += 1
     elif change == "ratio":
         country["ratios"][0] = 0.999
     elif change == "date":
@@ -1182,6 +1179,25 @@ def test_executed_confirmation_rechecks_and_charges_nothing_on_invalid_state(cha
     assert country["vars"]["ai_race_stage"] == 0
     assert country["ledger"] == []
     assert race.events[-1] == (1, "ai_race.11")
+
+
+@pytest.mark.parametrize("financing", [False, True])
+def test_executed_gdp_change_invalidates_only_financed_confirmation(financing):
+    ratios = [1, 1, 0.75, 1, 1, 1] if financing else [1] * 6
+    race, country = _enrolled_race(ratios=ratios)
+    race.temps["ai_race_requested_stage"] = 1
+    race.run("ai_race_begin_review", 1)
+    country["vars"]["gdp_total"] += 1
+    race.temps["ai_race_requested_financing"] = int(financing)
+    race.run("ai_race_commit_review", 1)
+    if financing:
+        assert race.charges == []
+        assert country["vars"]["ai_race_stage"] == 0
+        assert country["ledger"] == []
+        assert race.events[-1] == (1, "ai_race.11")
+    else:
+        assert race.charges == [(1, -50)]
+        assert country["vars"]["ai_race_stage"] == 1
 
 
 @pytest.mark.parametrize("action", ["cancel", "expired", "duplicate"])
