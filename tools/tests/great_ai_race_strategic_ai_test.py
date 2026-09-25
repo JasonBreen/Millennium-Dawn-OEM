@@ -745,6 +745,7 @@ def test_every_research_strategy_matches_technology_year_and_has_live_abort_gate
         for filename in ("industry.txt", "engineering.txt")
     )
     race, country = _planner(year=2090)
+    country["vars"]["ai_race_ai_target_stage"] = 1
     visited = 0
     for name, statements in strategies.items():
         data = {key: value for key, _, value in statements}
@@ -1044,6 +1045,28 @@ def test_refinery_strategy_uses_prepare_or_recovery_weight_and_aborts_for_humans
     }
     country["ai"] = False
     assert not any(race.condition(entry["enable"], 1) for entry in refinery)
+
+
+@pytest.mark.parametrize("plan", ["missing", "dormant"])
+def test_every_strategy_is_gated_on_an_active_plan(plan):
+    strategies = _parse_race_script(AI_STRATEGIES.read_text(encoding="utf-8"))
+    enables = {
+        name: dict((key, value) for key, _, value in statements)["enable"]
+        for name, statements in strategies.items()
+    }
+    for name, enable in enables.items():
+        key, _, operand = enable[0]
+        assert key == "check_variable", name
+        assert tuple(operand[0]) == ("ai_race_ai_target_stage", ">", "0"), name
+    race, country = _planner(year=2019)
+    _capacity(race, country, 1, [1, 0.5, 1, 1, 1, 1])
+    race.run("ai_race_ai_update_plan", 1)
+    assert any(race.condition(enable, 1) for enable in enables.values())
+    if plan == "missing":
+        del country["vars"]["ai_race_ai_target_stage"]
+    else:
+        country["vars"]["ai_race_ai_target_stage"] = 0
+    assert not any(race.condition(enable, 1) for enable in enables.values())
 
 
 @pytest.mark.parametrize("stage,weight", [(0, "25"), (1, "50")])
