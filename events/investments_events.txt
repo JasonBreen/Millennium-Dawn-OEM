@@ -561,6 +561,16 @@ country_event = {
 					precompute_state_construction_data = yes
 				}
 				calculate_project_duration = yes
+				set_temp_variable = { investment_ai_spendable_cash = treasury }
+				if = {
+					limit = { ai_race_ai_expansion_permitted = yes }
+					subtract_from_temp_variable = { investment_ai_spendable_cash = ai_race_ai_savings_target }
+				}
+				set_temp_variable = { investment_ai_reserve_blocked = 0 }
+				if = {
+					limit = { check_variable = { var = investment_ai_spendable_cash value = project_monetary_cost^-1 compare = less_than } }
+					set_temp_variable = { investment_ai_reserve_blocked = 1 }
+				}
 
 				# Log Values
 				set_temp_variable = { pd = project_construction_duration^-2 }
@@ -571,6 +581,7 @@ country_event = {
 
 				if = {
 					limit = {
+						check_variable = { var = investment_ai_spendable_cash value = project_monetary_cost^-1 compare = greater_than_or_equals }
 						# Only allow projects between 0 and 700. If construction speed goes negative you'll get instant failing projects
 						check_variable = { project_construction_duration^-2 < 700 }
 						check_variable = { project_construction_duration^-2 > 0 }
@@ -596,10 +607,16 @@ country_event = {
 					log = "[GetDateText]: [This.GetName]: Investment Succeeded: project type [?pbt] (x [?pba]) in [?abt.GetName], Project Duration: [?pd], Nation [?ROOT.investments_nation_target.GetName], score = [?abs]"
 				}
 				else = {
-					var:AI_best_country = {
-						set_country_flag = { flag = recently_failed_to_invest value = 1 days = 75 }
+					if = {
+						limit = { check_variable = { investment_ai_reserve_blocked = 0 } }
+						var:AI_best_country = {
+							set_country_flag = { flag = recently_failed_to_invest value = 1 days = 75 }
+						}
+						log = "[GetDateText]: [This.GetName]: Investment Failed: project_construction_duration out of range or slot unavailable in [?abt.GetName]. Duration: [?pd], score: [?abs]. Skipping this investment pulse."
 					}
-					log = "[GetDateText]: [This.GetName]: Investment Failed: project_construction_duration out of range or slot unavailable in [?abt.GetName]. Duration: [?pd], score: [?abs]. Skipping this investment pulse."
+					else = {
+						log = "[GetDateText]: [This.GetName]: Investment deferred to protect AI Race savings."
+					}
 				}
 			}
 			else = {
