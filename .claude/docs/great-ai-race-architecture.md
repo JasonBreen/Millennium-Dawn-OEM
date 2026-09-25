@@ -263,8 +263,8 @@ Four free stage reviews open confirmation events. Defer is the first option and 
 default. Quotes expire after seven days; a nine-day pending-review flag prevents duplicate
 dialogs without permanently locking progression.
 
-Confirmation rechecks the stage, prerequisites, treasury, GDP, financing terms, and all six quoted
-readiness ratios. Changed terms charge nothing and require a fresh review. The event option
+Confirmation rechecks the stage, prerequisites, treasury, and all six quoted readiness ratios.
+Emergency financing also rechecks GDP and financing terms; a direct payment does not depend on them. Changed terms charge nothing and require a fresh review. The event option
 delegates all gameplay to the authoritative transaction.
 
 The first terminal transaction sends one global announcement. Human terminal finishers receive a
