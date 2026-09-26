@@ -100,7 +100,7 @@ class StrategicRaceScript(RaceScript):
         )
         country["techs"].update(
             {
-                "internet1",
+                "internet_1",
                 "microchip_production_1",
                 "composite_production_1",
                 "fuel_silos",
@@ -1084,7 +1084,7 @@ def test_wartime_support_research_skips_civilian_expansion_for_paid_material_rec
     race, country = _planner(stage=1, year=2019)
     _capacity(race, country, 1, [0.25, 0.25, 1.5, 0.5, 1, 1])
     country["war"] = True
-    country["researchable"] = {"construction1", "internet2", "basic_computing"}
+    country["researchable"] = {"construction1", "internet_2", "basic_computing"}
     race.run("ai_race_ai_update_plan", 1)
     assert country["vars"]["ai_race_ai_support_need"] == 4
     assert country["vars"]["ai_race_ai_support_tech"] == 201
