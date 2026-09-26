@@ -1369,9 +1369,14 @@ def test_ai_bootstrap_and_capacity_strategies_are_bounded():
     assert "id = microchip_plant value = 50" in hybrid
     assert "microchip_plant_total < 8" in sovereign
     assert "id = microchip_plant value = 75" in sovereign
-    assert "CAT_microchips = 18.0" in focuses
-    assert "CAT_information_technology = 8.0" in focuses
-    assert "CAT_microchips = 8.0" in focuses
+    war_production = _named_block(focuses, "ai_focus_war_production_SOV")
+    peaceful = _named_block(focuses, "ai_focus_peaceful_SOV")
+    assert "CAT_microchips = 6" in war_production
+    assert "CAT_information_technology = 8" in war_production
+    assert "CAT_microchips = 4" in peaceful
+    assert "CAT_information_technology = 7" in peaceful
+    weights = re.findall(r"(?m)^\s*CAT_[^=]+ = ([0-9.]+)$", focuses)
+    assert weights and all(1 <= float(weight) <= 10 for weight in weights)
 
 
 def test_manifest_registers_the_national_ecosystem_contract():
