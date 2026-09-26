@@ -276,6 +276,116 @@ STALKER_zone_management_category = {
 		}
 	}
 
+	STALKER_seize_perimeter_artifacts = {
+		icon = GFX_decision_generic_police_action
+		state_target = yes
+		target_array = global.STALKER_active_zone_anchors
+
+		target_root_trigger = {
+			STALKER_scenario_enabled = yes
+			original_tag = UKR
+			NOT = { has_global_flag = STALKER_kaimanov_outbreak_started }
+			check_variable = { global.STALKER_smuggled_artifacts > 4.99 }
+		}
+
+		target_trigger = {
+			FROM = {
+				STALKER_is_active_zone_anchor = yes
+				check_variable = { STALKER_zone_id = 1 }
+				is_controlled_by = ROOT
+			}
+		}
+
+		cost = 50
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision STALKER_seize_perimeter_artifacts in [FROM.GetName]"
+			custom_effect_tooltip = STALKER_seize_perimeter_artifacts_tt
+			hidden_effect = {
+				add_to_variable = { global.STALKER_smuggled_artifacts = -5 }
+				add_to_variable = { STALKER_artifact_stockpile = 5 }
+				FROM = {
+					add_to_variable = { STALKER_zone_bandits = -10 }
+					add_to_variable = { STALKER_zone_containment = 5 }
+					STALKER_clamp_zone_society = yes
+				}
+			}
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	STALKER_belarus_border_seizure = {
+		icon = GFX_decision_generic_police_action
+		allowed = { original_tag = BLR }
+
+		visible = {
+			STALKER_scenario_enabled = yes
+			NOT = { has_global_flag = STALKER_kaimanov_outbreak_started }
+			698 = { STALKER_is_active_zone_anchor = yes }
+		}
+
+		available = { check_variable = { global.STALKER_smuggled_artifacts > 4.99 } }
+		cost = 35
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision STALKER_belarus_border_seizure"
+			custom_effect_tooltip = STALKER_belarus_border_seizure_tt
+			hidden_effect = {
+				add_to_variable = { global.STALKER_smuggled_artifacts = -5 }
+				add_to_variable = { STALKER_artifact_stockpile = 5 }
+			}
+		}
+
+		ai_will_do = { base = 3 }
+	}
+
+	STALKER_request_zone_research_access = {
+		icon = GFX_decision_generic_research
+		state_target = yes
+		target_array = global.STALKER_active_zone_anchors
+
+		target_root_trigger = {
+			STALKER_scenario_enabled = yes
+			is_ai = no
+			NOT = { STALKER_controls_active_zone = yes }
+			NOT = { has_country_flag = STALKER_zone_research_access }
+		}
+
+		target_trigger = {
+			FROM = {
+				STALKER_is_active_zone_anchor = yes
+				NOT = { has_state_flag = STALKER_zone_policy_pending }
+				NOT = { has_state_flag = STALKER_access_request_cooldown }
+				controller = {
+					exists = yes
+					NOT = { tag = ROOT }
+					NOT = { has_war_with = ROOT }
+				}
+			}
+		}
+
+		cost = 25
+		days_re_enable = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision STALKER_request_zone_research_access in [FROM.GetName]"
+			custom_effect_tooltip = STALKER_request_zone_research_access_tt
+			hidden_effect = {
+				save_event_target_as = STALKER_access_requester
+				FROM = {
+					set_state_flag = { flag = STALKER_access_request_cooldown value = 1 days = 365 }
+					save_event_target_as = STALKER_zone_event_target
+					controller = { country_event = STALKER.21 }
+				}
+			}
+		}
+
+		ai_will_do = { base = 0 }
+	}
+
 	STALKER_xlab_expedition = {
 		icon = GFX_decision_generic_research
 		fixed_random_seed = no
