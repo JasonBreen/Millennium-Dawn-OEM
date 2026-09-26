@@ -8202,7 +8202,6 @@ country_event = {
 
 		trigger = {
 			date > 2007.01.01
-			date < 2020.01.01
 			OR = {
 				controls_state = 698 #Kyiv
 				controls_state = 699 #Vinnytsia
@@ -10310,7 +10309,14 @@ country_event = {
 country_event = {
 	id = ukraine_develop_btr3.2
 	title = ukraine_develop_btr3.2.name
-	desc = ukraine_develop_btr3.2.desc
+	desc = {
+		trigger = { controls_state = 696 }
+		text = ukraine_develop_btr3.2.desc
+	}
+	desc = {
+		trigger = { NOT = { controls_state = 696 } }
+		text = ukraine_develop_btr3.kharkiv_lost.desc
+	}
 	picture = GFX_ukraine_btr3u_uae_tender_procurement
 	is_triggered_only = yes
 	fire_only_once = yes
@@ -10324,6 +10330,7 @@ country_event = {
 	option = {
 		name = ukraine_develop_btr3.2.a
 		log = "[GetDateText]: [This.GetName]: ukraine_develop_btr3.2.a executed"
+		trigger = { controls_state = 696 } # Kharkiv
 
 		ai_chance = { base = 100 }
 
@@ -10380,12 +10387,27 @@ country_event = {
 			}
 		}
 	}
+
+	option = {
+		name = ukraine_develop_btr3.2.b
+		log = "[GetDateText]: [This.GetName]: ukraine_develop_btr3.2.b executed"
+		trigger = { NOT = { controls_state = 696 } } # Kharkiv
+		set_country_flag = UKR_develop_btr3_uae_tender_terminated_flag
+		ai_chance = { base = 1 }
+	}
 }
 
 country_event = {
 	id = ukraine_develop_btr3.3
 	title = ukraine_develop_btr3.3.name
-	desc = ukraine_develop_btr3.3.desc
+	desc = {
+		trigger = { controls_state = 696 }
+		text = ukraine_develop_btr3.3.desc
+	}
+	desc = {
+		trigger = { NOT = { controls_state = 696 } }
+		text = ukraine_develop_btr3.kharkiv_lost.desc
+	}
 	picture = GFX_ukraine_btr3u_uae_tender_procurement
 	is_triggered_only = yes
 	fire_only_once = yes
@@ -10398,6 +10420,7 @@ country_event = {
 	option = {
 		name = ukraine_develop_btr3.3.a
 		log = "[GetDateText]: [This.GetName]: ukraine_develop_btr3.3.a executed"
+		trigger = { controls_state = 696 } # Kharkiv
 
 		ai_chance = { base = 80 }
 
@@ -10454,12 +10477,27 @@ country_event = {
 			}
 		}
 	}
+
+	option = {
+		name = ukraine_develop_btr3.3.b
+		log = "[GetDateText]: [This.GetName]: ukraine_develop_btr3.3.b executed"
+		trigger = { NOT = { controls_state = 696 } } # Kharkiv
+		set_country_flag = UKR_develop_btr3_uae_tender_terminated_flag
+		ai_chance = { base = 1 }
+	}
 }
 
 country_event = {
 	id = ukraine_develop_btr3.4
 	title = ukraine_develop_btr3.4.name
-	desc = ukraine_develop_btr3.4.desc
+	desc = {
+		trigger = { controls_state = 696 }
+		text = ukraine_develop_btr3.4.desc
+	}
+	desc = {
+		trigger = { NOT = { controls_state = 696 } }
+		text = ukraine_develop_btr3.kharkiv_lost.desc
+	}
 	picture = GFX_ukraine_btr3u_uae_tender_license
 	is_triggered_only = yes
 	fire_only_once = yes
@@ -10475,6 +10513,7 @@ country_event = {
 	option = {
 		name = ukraine_develop_btr3.4.a
 		log = "[GetDateText]: [This.GetName]: ukraine_develop_btr3.4.a executed"
+		trigger = { controls_state = 696 } # Kharkiv
 
 		ai_chance = { base = 80 }
 
@@ -10514,6 +10553,7 @@ country_event = {
 		ai_chance = { base = 20 }
 
 		trigger = {
+			controls_state = 696 # Kharkiv
 			UAE = {
 				has_opinion = {
 					target = UKR
@@ -10559,12 +10599,27 @@ country_event = {
 
 		#set_country_flag = UKR_develop_btr3_uae_tender_license_flag
 	}
+
+	option = {
+		name = ukraine_develop_btr3.4.c
+		log = "[GetDateText]: [This.GetName]: ukraine_develop_btr3.4.c executed"
+		trigger = { NOT = { controls_state = 696 } } # Kharkiv
+		set_country_flag = UKR_develop_btr3_uae_tender_terminated_flag
+		ai_chance = { base = 1 }
+	}
 }
 
 country_event = {
 	id = ukraine_develop_btr3.5
 	title = ukraine_develop_btr3.5.name
-	desc = ukraine_develop_btr3.5.desc
+	desc = {
+		trigger = { controls_state = 696 }
+		text = ukraine_develop_btr3.5.desc
+	}
+	desc = {
+		trigger = { NOT = { controls_state = 696 } }
+		text = ukraine_develop_btr3.kharkiv_lost.desc
+	}
 	picture = GFX_ukraine_btr3u_uae_tender_license
 	is_triggered_only = yes
 
@@ -10578,6 +10633,13 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: ukraine_develop_btr3.5.a executed"
 
 		ai_chance = { base = 90 }
+		trigger = {
+			controls_state = 696 # Kharkiv
+			UAE = {
+				has_opinion = { target = UKR value > 49 }
+				influence_higher_10 = yes
+			}
+		}
 
 		if = {
 			limit = {
@@ -10631,8 +10693,11 @@ country_event = {
 
 		ai_chance = { base = 10 }
 
-		696 = { #Kharkiv
-			add_state_modifier = { modifier = { state_productivity_growth_modifier = -0.02 } }
+		if = {
+			limit = { controls_state = 696 }
+			696 = { #Kharkiv
+				add_state_modifier = { modifier = { state_productivity_growth_modifier = -0.02 } }
+			}
 		}
 
 		UAE = {
@@ -10649,7 +10714,14 @@ country_event = {
 country_event = {
 	id = ukraine_develop_btr3.6
 	title = ukraine_develop_btr3.6.name
-	desc = ukraine_develop_btr3.6.desc
+	desc = {
+		trigger = { controls_state = 696 }
+		text = ukraine_develop_btr3.6.desc
+	}
+	desc = {
+		trigger = { NOT = { controls_state = 696 } }
+		text = ukraine_develop_btr3.kharkiv_lost.desc
+	}
 	picture = GFX_ukraine_btr3u_uae_tender_license
 	is_triggered_only = yes
 
@@ -10663,6 +10735,13 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: ukraine_develop_btr3.6.a executed"
 
 		ai_chance = { base = 90 }
+		trigger = {
+			controls_state = 696 # Kharkiv
+			UAE = {
+				has_opinion = { target = UKR value > 49 }
+				influence_higher_10 = yes
+			}
+		}
 
 		if = {
 			limit = {
@@ -10716,8 +10795,11 @@ country_event = {
 
 		ai_chance = { base = 10 }
 
-		696 = { #Kharkiv
-			add_state_modifier = { modifier = { state_productivity_growth_modifier = -0.02 } }
+		if = {
+			limit = { controls_state = 696 }
+			696 = { #Kharkiv
+				add_state_modifier = { modifier = { state_productivity_growth_modifier = -0.02 } }
+			}
 		}
 
 		UAE = {
@@ -10734,7 +10816,14 @@ country_event = {
 country_event = {
 	id = ukraine_develop_btr3.7
 	title = ukraine_develop_btr3.7.name
-	desc = ukraine_develop_btr3.7.desc
+	desc = {
+		trigger = { controls_state = 696 }
+		text = ukraine_develop_btr3.7.desc
+	}
+	desc = {
+		trigger = { NOT = { controls_state = 696 } }
+		text = ukraine_develop_btr3.kharkiv_lost.desc
+	}
 	picture = GFX_ukraine_btr3u_uae_tender_license
 	is_triggered_only = yes
 
@@ -10748,6 +10837,13 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: ukraine_develop_btr3.7.a executed"
 
 		ai_chance = { base = 90 }
+		trigger = {
+			controls_state = 696 # Kharkiv
+			UAE = {
+				has_opinion = { target = UKR value > 49 }
+				influence_higher_10 = yes
+			}
+		}
 
 		if = {
 			limit = {
@@ -10801,8 +10897,11 @@ country_event = {
 
 		ai_chance = { base = 10 }
 
-		696 = { #Kharkiv
-			add_state_modifier = { modifier = { state_productivity_growth_modifier = -0.02 } }
+		if = {
+			limit = { controls_state = 696 }
+			696 = { #Kharkiv
+				add_state_modifier = { modifier = { state_productivity_growth_modifier = -0.02 } }
+			}
 		}
 
 		UAE = {
