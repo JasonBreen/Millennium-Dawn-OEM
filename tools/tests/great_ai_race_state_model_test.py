@@ -218,6 +218,8 @@ def test_country_adapters_use_one_energy_guard_and_all_ai_technology_tiers():
     assert "unfulfilled_energy_demand_var" not in rebuild
 
     assert rebuild.count("ai_race_count_ai_technology = yes") == 2
+    generic_adapter = _named_block(effects, "ai_race_generic_adapter")
+    assert generic_adapter.count("ai_race_count_ai_technology = yes") == 1
     ladder = _named_block(effects, "ai_race_count_ai_technology")
     for tier in range(1, 15):
         assert (
