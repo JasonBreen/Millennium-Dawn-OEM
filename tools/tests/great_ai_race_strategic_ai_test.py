@@ -396,7 +396,10 @@ def test_weekly_savings_uses_the_new_owner_power_multiplier():
     race.run("ai_race_ai_refresh_savings", 1)
     assert country["vars"]["ai_race_ai_savings_target"] == 154
     country["vars"]["ai_race_sampled_power_multiplier"] = 2
+    race.run("calculate_energy_use", 1)
+    owner_calls = list(race.owner_calls)
     race.run("ai_race_ai_refresh_savings", 1)
+    assert race.owner_calls == owner_calls
     assert country["vars"]["ai_race_ai_power_required"] == 4
     assert country["vars"]["ai_race_ai_readiness"] == 0.5
     assert country["vars"]["ai_race_ai_savings_target"] == 0
@@ -873,6 +876,9 @@ def test_terminal_country_only_keeps_capacity_recovery_preferences():
 def test_owner_order_revalues_savings_after_billing_and_before_discretionary_debt():
     on_actions = (ROOT / "common/on_actions/MD_on_actions.txt").read_text(
         encoding="utf-8"
+    )
+    assert on_actions.index("ingame_update_setup = yes") < on_actions.index(
+        "ai_race_ai_refresh_savings = yes"
     )
     assert (
         on_actions.index("ai_race_commit_weekly_bill = yes")
