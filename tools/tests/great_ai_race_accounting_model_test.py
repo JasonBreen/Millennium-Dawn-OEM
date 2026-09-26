@@ -707,15 +707,41 @@ def test_script_readiness_uses_all_six_clamped_ratios_and_scales_power_units(
 
 def test_script_quote_snapshots_gdp_and_divides_principal_into_520_payments(scripts):
     body = _compact(_block(scripts["capacity"], "ai_race_refresh_offer"))
-    _ordered(
-        body,
-        "ai_race_refresh_capacity_sample = yes",
-        "ai_race_offer_readiness = 1",
-    )
+    assert "ai_race_refresh_capacity_sample = yes" not in body
     operating = _block(scripts["capacity"], "ai_race_refresh_operating_state")
     _ordered(
         operating, "calculate_energy_use = yes", "ai_race_refresh_capacity_sample = yes"
     )
+    direct_blocks = list(_direct_blocks(operating))
+    full_mode = next(
+        block
+        for name, block in direct_blocks
+        if name == "if" and "ai_race_full_mode = yes" in block
+    )
+    outcomes_only = next(block for name, block in direct_blocks if name == "else")
+    assert full_mode.count("ai_race_refresh_capacity_sample = yes") == 1
+    assert outcomes_only.count("ai_race_refresh_capacity_sample = yes") == 1
+    root = Path(__file__).resolve().parents[2]
+    callers = [
+        scripts["progression"],
+        scripts["actions"],
+        strip_comments(
+            (root / "common/scripted_effects/00_great_ai_race_effects.txt").read_text(
+                encoding="utf-8-sig"
+            )
+        ),
+    ]
+    offers = 0
+    for text in callers:
+        previous = 0
+        for match in re.finditer(r"ai_race_refresh_offer = yes", text):
+            assert (
+                "ai_race_refresh_operating_state = yes"
+                in text[previous : match.start()]
+            )
+            previous = match.end()
+            offers += 1
+    assert offers == 8
     for name in ("ai_race_capture_quote", "ai_race_commit_review"):
         entry = _block(scripts["progression"], name)
         _ordered(
