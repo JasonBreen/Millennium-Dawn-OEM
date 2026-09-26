@@ -712,7 +712,15 @@ def test_script_quote_snapshots_gdp_and_divides_principal_into_520_payments(scri
     _ordered(
         operating, "calculate_energy_use = yes", "ai_race_refresh_capacity_sample = yes"
     )
-    assert operating.count("ai_race_refresh_capacity_sample = yes") == 2
+    direct_blocks = list(_direct_blocks(operating))
+    full_mode = next(
+        block
+        for name, block in direct_blocks
+        if name == "if" and "ai_race_full_mode = yes" in block
+    )
+    outcomes_only = next(block for name, block in direct_blocks if name == "else")
+    assert full_mode.count("ai_race_refresh_capacity_sample = yes") == 1
+    assert outcomes_only.count("ai_race_refresh_capacity_sample = yes") == 1
     root = Path(__file__).resolve().parents[2]
     callers = [
         scripts["progression"],
