@@ -678,3 +678,74 @@ news_event = {
 
 	option = { name = STALKER.24.a }
 }
+
+news_event = {
+	id = STALKER.25
+	title = STALKER.25.t
+	desc = STALKER.25.d
+	picture = GFX_nuclear_power_plant
+	major = yes
+	is_triggered_only = yes
+
+	trigger = {
+		STALKER_scenario_enabled = yes
+		has_global_flag = STALKER_kaimanov_outbreak_started
+	}
+
+	option = { name = STALKER.25.a }
+}
+
+country_event = {
+	id = STALKER.26
+	title = STALKER.26.t
+	desc = STALKER.26.d
+	picture = GFX_nuclear_power_plant
+	is_triggered_only = yes
+
+	trigger = {
+		STALKER_scenario_enabled = yes
+		has_global_flag = STALKER_kaimanov_outbreak_started
+		has_event_target = STALKER_zone_event_target
+		event_target:STALKER_zone_event_target = {
+			STALKER_is_active_zone_anchor = yes
+			check_variable = { STALKER_zone_id = 1 }
+			is_controlled_by = ROOT
+		}
+	}
+
+	option = {
+		name = STALKER.26.a
+		log = "[GetDateText]: [This.GetName]: STALKER.26.a executed"
+		custom_effect_tooltip = STALKER.26.a_tt
+		hidden_effect = {
+			event_target:STALKER_zone_event_target = {
+				if = {
+					limit = { is_controlled_by = ROOT }
+					add_to_variable = { STALKER_zone_containment = 20 }
+					add_to_variable = { STALKER_zone_exploitation = -10 }
+					STALKER_clamp_zone_society = yes
+					ROOT = { STALKER_refresh_zone_administration = yes }
+				}
+			}
+		}
+		ai_chance = { base = 80 }
+	}
+
+	option = {
+		name = STALKER.26.b
+		log = "[GetDateText]: [This.GetName]: STALKER.26.b executed"
+		custom_effect_tooltip = STALKER.26.b_tt
+		hidden_effect = {
+			event_target:STALKER_zone_event_target = {
+				if = {
+					limit = { is_controlled_by = ROOT }
+					add_to_variable = { STALKER_zone_containment = -10 }
+					add_to_variable = { STALKER_zone_exploitation = 20 }
+					STALKER_clamp_zone_society = yes
+					ROOT = { STALKER_refresh_zone_administration = yes }
+				}
+			}
+		}
+		ai_chance = { base = 20 }
+	}
+}
