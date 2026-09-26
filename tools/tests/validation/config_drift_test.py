@@ -145,6 +145,7 @@ def test_test_suite_replaces_old_workflows():
         "mod-tests",
         "docs-quality",
         "report",
+        "gate",
     }
     assert "pull_request" in _workflow_trigger(CI_WORKFLOW)
     assert "pull_request_target" not in _workflow_trigger(CI_WORKFLOW)
@@ -582,6 +583,18 @@ def test_report_job_posts_comment_and_checks():
         step for step in report["steps"] if step.get("name") == "Set up Python"
     )
     assert setup["uses"].startswith("actions/setup-python@")
+
+
+def test_suite_gate_requires_every_validation_job():
+    workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
+    gate = workflow["jobs"]["gate"]
+    assert gate["name"] == "Test suite gate"
+    assert gate["if"] == "${{ always() }}"
+    assert set(gate["needs"]) == set(workflow["jobs"]) - {"gate"}
+    failure_step = gate["steps"][0]
+    for job in gate["needs"]:
+        assert f"needs.{job}.result" in failure_step["if"]
+    assert failure_step["run"] == "exit 1"
 
 
 def test_report_restores_baseline_and_supports_old_base_generators():
