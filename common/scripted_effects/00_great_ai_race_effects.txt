@@ -167,7 +167,7 @@ ai_race_rebuild_country_metrics = {
 		clear_variable = ai_race_control_capacity_external
 		clear_variable = ai_race_public_confidence_external
 
-		# Rebuild external contributions from canonical owner systems (Prompt 2).
+		# Rebuild external contributions from canonical owner systems.
 		# USA uses USA AI Industry Core axes as read-only inputs with deterministic fallbacks.
 		if = {
 			limit = { original_tag = USA }
@@ -216,22 +216,8 @@ ai_race_rebuild_country_metrics = {
 			else = {
 				# Corporate History Off or uninitialized: use ordinary tech, energy, and research slots.
 				# Capability: approximate from AI tech depth (each level adds +5, up to 14 tiers)
-				set_temp_variable = { _cap_tmp = 0 }
-				if = { limit = { has_tech = artificial_intelligence_1 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_2 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_3 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_4 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_5 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_6 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_7 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_8 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_9 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_10 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_11 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_12 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_13 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_14 } add_to_temp_variable = { _cap_tmp = 5 } }
-				set_variable = { ai_race_capability_external = _cap_tmp }
+				ai_race_count_ai_technology = yes
+				set_variable = { ai_race_capability_external = ai_race_generic_technology }
 				# Compute: microchip production and energy availability (thin heuristic)
 				set_temp_variable = {
 					_cmp_raw = {
@@ -345,22 +331,8 @@ ai_race_rebuild_country_metrics = {
 			}
 			else = {
 				# Corporate History Off or uninitialized: use ordinary tech and research slots.
-				set_temp_variable = { _cap_tmp = 0 }
-				if = { limit = { has_tech = artificial_intelligence_1 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_2 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_3 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_4 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_5 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_6 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_7 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_8 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_9 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_10 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_11 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_12 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_13 } add_to_temp_variable = { _cap_tmp = 5 } }
-				if = { limit = { has_tech = artificial_intelligence_14 } add_to_temp_variable = { _cap_tmp = 5 } }
-				set_variable = { ai_race_capability_external = _cap_tmp }
+				ai_race_count_ai_technology = yes
+				set_variable = { ai_race_capability_external = ai_race_generic_technology }
 				set_temp_variable = { _cmp_tmp = { value = research_slots_from_gdp multiply = 10 } }
 				add_to_temp_variable = { _cmp_tmp = { value = research_slots_from_gdp_c multiply = 10 } }
 				if = { limit = { has_idea = CHI_semiconductor_backwardness } subtract_from_temp_variable = { _cmp_tmp = 20 } }
@@ -422,7 +394,6 @@ ai_race_refresh_participants = {
 ai_race_rebuild_frontier_and_ranking = {
 	clear_array = global.ai_race_ranked_participants
 	clear_variable = global.ai_race_frontier_capability
-	clear_variable = global.ai_race_leader_id
 	set_temp_variable = { ai_race_sort_for_purchase = 0 }
 	ai_race_sort_participants = yes
 	set_temp_variable = { ai_race_next_rank = 1 }
@@ -432,10 +403,6 @@ ai_race_rebuild_frontier_and_ranking = {
 		var:ai_race_ranked_country = {
 			add_to_array = { global.ai_race_ranked_participants = THIS }
 			set_variable = { ai_race_rank = ai_race_next_rank }
-			if = {
-				limit = { check_variable = { ai_race_next_rank = 1 } }
-				set_variable = { global.ai_race_leader_id = THIS.id }
-			}
 			if = {
 				limit = { check_variable = { ai_race_effective_capability > global.ai_race_frontier_capability } }
 				set_variable = { global.ai_race_frontier_capability = ai_race_effective_capability }
@@ -466,7 +433,6 @@ ai_race_repair_global_state = {
 		clamp_variable = { var = global.ai_race_temperature min = 0 max = 100 }
 		clamp_variable = { var = global.ai_race_frontier_pressure min = 0 max = 100 }
 		clamp_variable = { var = global.ai_race_epoch min = 0 }
-		clamp_variable = { var = global.ai_race_dirty_update_var min = 0 }
 	}
 }
 
@@ -481,9 +447,7 @@ ai_race_initialize_global = {
 		clear_variable = global.ai_race_frontier_capability
 		clear_variable = global.ai_race_temperature
 		clear_variable = global.ai_race_frontier_pressure
-		clear_variable = global.ai_race_leader_id
 		clear_variable = global.ai_race_epoch
-		clear_variable = global.ai_race_dirty_update_var
 		set_global_flag = GLOBAL_ai_race_initialized
 		# Publish a current projection on the first eligible pulse without advancing scheduled state.
 		ai_race_rebuild_derived_state = yes
@@ -521,13 +485,6 @@ ai_race_quarterly_reconcile = {
 		}
 		ai_race_rebuild_derived_state = yes
 		add_to_variable = { global.ai_race_epoch = 1 }
-		if = {
-			limit = { check_variable = { global.ai_race_dirty_update_var < 10000 } }
-			add_to_variable = { global.ai_race_dirty_update_var = 1 }
-		}
-		else = {
-			set_variable = { global.ai_race_dirty_update_var = 1 }
-		}
 	}
 }
 
@@ -546,13 +503,11 @@ ai_race_teardown_global = {
 	clear_variable = global.ai_race_frontier_capability
 	clear_variable = global.ai_race_temperature
 	clear_variable = global.ai_race_frontier_pressure
-	clear_variable = global.ai_race_leader_id
 	clear_variable = global.ai_race_first_finisher_id
 	clear_variable = global.ai_race_epoch
 	clear_variable = global.ai_race_last_processed_quarter
 	clear_variable = global.ai_race_last_processed_month
 	clear_variable = global.ai_race_last_discovery_year
-	clear_variable = global.ai_race_dirty_update_var
 	clr_global_flag = GLOBAL_ai_race_initialized
 }
 
@@ -666,7 +621,7 @@ ai_race_debug_log_state = {
 }
 
 
-ai_race_generic_adapter = {
+ai_race_count_ai_technology = {
 	set_temp_variable = { ai_race_generic_technology = 0 }
 	if = { limit = { has_tech = artificial_intelligence_1 } add_to_temp_variable = { ai_race_generic_technology = 5 } }
 	if = { limit = { has_tech = artificial_intelligence_2 } add_to_temp_variable = { ai_race_generic_technology = 5 } }
@@ -682,6 +637,10 @@ ai_race_generic_adapter = {
 	if = { limit = { has_tech = artificial_intelligence_12 } add_to_temp_variable = { ai_race_generic_technology = 5 } }
 	if = { limit = { has_tech = artificial_intelligence_13 } add_to_temp_variable = { ai_race_generic_technology = 5 } }
 	if = { limit = { has_tech = artificial_intelligence_14 } add_to_temp_variable = { ai_race_generic_technology = 5 } }
+}
+
+ai_race_generic_adapter = {
+	ai_race_count_ai_technology = yes
 	set_variable = { ai_race_capability_external = ai_race_generic_technology }
 	set_variable = { ai_race_compute_external = resource@microchips }
 	multiply_variable = { ai_race_compute_external = 2 }

@@ -40,10 +40,8 @@ GLOBAL_STATE = (
     "global.ai_race_frontier_capability",
     "global.ai_race_temperature",
     "global.ai_race_frontier_pressure",
-    "global.ai_race_leader_id",
     "global.ai_race_epoch",
     "global.ai_race_last_processed_quarter",
-    "global.ai_race_dirty_update_var",
 )
 UPSTREAM_PREFIXES = (
     "USA_ai_core_",
@@ -165,7 +163,6 @@ def test_first_enabled_pulse_publishes_without_advancing_scheduled_state():
     assert "ai_race_rebuild_frontier_and_ranking = yes" in rebuild
     assert "global.ai_race_epoch" not in rebuild
     assert "global.ai_race_last_processed_quarter" not in rebuild
-    assert "global.ai_race_dirty_update_var" not in rebuild
     assert "ai_race_rebuild_derived_state = yes" in quarterly
     assert "add_to_variable = { global.ai_race_epoch = 1 }" in quarterly
     assert on_actions.count("ai_race_monthly_dispatch = yes") == 1
@@ -221,15 +218,18 @@ def test_country_adapters_use_one_energy_guard_and_all_ai_technology_tiers():
     assert "check_variable = { energy_balance < 0 }" not in rebuild
     assert "unfulfilled_energy_demand_var" not in rebuild
 
+    assert rebuild.count("ai_race_count_ai_technology = yes") == 2
+    ladder = _named_block(effects, "ai_race_count_ai_technology")
     for tier in range(1, 15):
         assert (
             len(
                 re.findall(
-                    rf"\bhas_tech\s*=\s*artificial_intelligence_{tier}\b", rebuild
+                    rf"\bhas_tech\s*=\s*artificial_intelligence_{tier}\b", effects
                 )
             )
-            == 2
+            == 1
         )
+        assert f"has_tech = artificial_intelligence_{tier} }}" in ladder
 
     first_clear = rebuild.index("clear_variable = ai_race_capability_external")
     first_owner_read = rebuild.index("USA_ai_core_frontier_capability")
@@ -262,11 +262,9 @@ def test_rebuild_is_idempotent_and_quarter_wrapper_owns_replay_mutation():
     for scheduled in (
         "global.ai_race_epoch",
         "global.ai_race_last_processed_quarter",
-        "global.ai_race_dirty_update_var",
     ):
         assert scheduled not in rebuild
     assert "add_to_variable = { global.ai_race_epoch = 1 }" in quarterly
-    assert "global.ai_race_dirty_update_var" in quarterly
     assert "global.ai_race_last_processed_quarter" in dispatch
     assert "ai_race_quarterly_reconcile = yes" not in debug_repair
     assert "ai_race_rebuild_derived_state = yes" in debug_repair
@@ -1383,7 +1381,7 @@ def test_executed_ranking_stage_progress_capability_id_and_frontier_are_distinct
         )
     race.run("ai_race_rebuild_frontier_and_ranking", 4)
     assert race.globals["ai_race_ranked_participants"] == [3, 1, 2, 4]
-    assert race.globals["ai_race_leader_id"] == 3
+    assert race.countries[3]["vars"]["ai_race_rank"] == 1
     assert race.globals["ai_race_frontier_capability"] == 80
     assert race.countries[3]["vars"]["ai_race_frontier_gap"] == -60
     assert "ai_race_first_finisher_id" not in race.globals
@@ -1416,7 +1414,7 @@ def test_executed_simultaneous_autonomous_terminal_candidates_have_one_historica
     race.countries[1]["exists"] = False
     race.run("ai_race_rebuild_derived_state", 2)
     assert race.globals["ai_race_first_finisher_id"] == 1
-    assert race.globals["ai_race_leader_id"] == 2
+    assert race.countries[2]["vars"]["ai_race_rank"] == 1
 
 
 @pytest.mark.parametrize(
