@@ -342,8 +342,10 @@ def test_savings_include_upfront_and_52_weeks_with_only_prudent_new_installment(
     _capacity(race, country, 1, [readiness] * 6)
     _choose_target(race)
     race.run("ai_race_ai_calculate_savings", 1)
+    assert country["vars"]["ai_race_ai_savings_target"] == pytest.approx(
+        154 + payment * 52 if target else 0
+    )
     assert country["vars"]["ai_race_ai_savings_target"] == pytest.approx(target)
-    assert country["vars"]["ai_race_ai_projected_payment"] == pytest.approx(payment)
 
 
 @pytest.mark.parametrize(
@@ -358,9 +360,6 @@ def test_savings_financing_uses_strict_debt_and_nonnegative_weekly_boundaries(
     _capacity(race, country, 1, [0.75] * 6)
     _choose_target(race)
     race.run("ai_race_ai_calculate_savings", 1)
-    assert country["vars"]["ai_race_ai_projected_payment"] == pytest.approx(
-        expected_payment
-    )
     assert country["vars"]["ai_race_ai_savings_target"] == pytest.approx(
         154 + expected_payment * 52
     )
