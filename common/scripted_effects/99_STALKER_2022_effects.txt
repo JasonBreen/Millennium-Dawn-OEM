@@ -1,0 +1,73 @@
+# The 2022 arc runs from the monthly pulse so its events reach whoever controls the Zone at the time.
+STALKER_monthly_2022_arc_pulse = {
+	if = {
+		limit = {
+			STALKER_scenario_enabled = yes
+			date > 2022.02.28
+			NOT = { has_global_flag = STALKER_battle_for_the_zone }
+		}
+		set_global_flag = STALKER_battle_for_the_zone
+		STALKER_begin_battle_for_the_zone = yes
+	}
+	else_if = {
+		limit = {
+			STALKER_scenario_enabled = yes
+			date > 2022.10.31
+			has_global_flag = STALKER_battle_for_the_zone
+			NOT = { has_global_flag = STALKER_kaimanov_outcome }
+		}
+		STALKER_trigger_kaimanov_outcome = yes
+	}
+}
+
+STALKER_begin_battle_for_the_zone = {
+	for_each_scope_loop = {
+		array = global.STALKER_active_zone_anchors
+		if = {
+			limit = {
+				STALKER_is_active_zone_anchor = yes
+				check_variable = { STALKER_zone_id = 1 }
+			}
+			log = "[GetDateText]: The Battle for the Zone begins in [THIS.GetName]"
+			add_to_variable = { STALKER_zone_activity = 20 }
+			add_to_variable = { STALKER_zone_containment = -15 }
+			clamp_variable = { var = STALKER_zone_activity min = 0 max = 100 }
+			STALKER_clamp_zone_society = yes
+			if = {
+				limit = { controller = { exists = yes } }
+				save_event_target_as = STALKER_zone_event_target
+				controller = { country_event = STALKER.30 }
+			}
+		}
+	}
+}
+
+# Skif spares the Doctor and enters the eighth pod: geographic containment of the original Zone fails.
+STALKER_trigger_kaimanov_outcome = {
+	set_global_flag = STALKER_kaimanov_outcome
+	log = "[GetDateText]: STALKER Kaimanov outcome reached"
+	news_event = STALKER.31
+	for_each_scope_loop = {
+		array = global.STALKER_active_zone_anchors
+		if = {
+			limit = {
+				STALKER_is_active_zone_anchor = yes
+				check_variable = { STALKER_zone_id = 1 }
+			}
+			add_to_variable = { STALKER_zone_activity = 20 }
+			add_to_variable = { STALKER_zone_containment = -20 }
+			clamp_variable = { var = STALKER_zone_activity min = 0 max = 100 }
+			STALKER_clamp_zone_society = yes
+			if = {
+				limit = { controller = { exists = yes } }
+				save_event_target_as = STALKER_zone_event_target
+				controller = { country_event = STALKER.33 }
+			}
+		}
+	}
+	if = {
+		limit = { STALKER_global_zones_enabled = yes }
+		set_global_flag = STALKER_global_proliferation
+		news_event = { id = STALKER.32 days = 30 }
+	}
+}
