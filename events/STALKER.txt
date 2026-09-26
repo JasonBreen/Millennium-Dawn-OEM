@@ -729,7 +729,21 @@ country_event = {
 				}
 			}
 		}
-		ai_chance = { base = 50 }
+		ai_chance = {
+			base = 50
+			modifier = {
+				add = 30
+				event_target:STALKER_zone_event_target = { check_variable = { STALKER_zone_containment < 30 } }
+			}
+			modifier = {
+				factor = 0
+				has_political_power < 50
+			}
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
 	}
 
 	option = {
@@ -751,7 +765,13 @@ country_event = {
 				}
 			}
 		}
-		ai_chance = { base = 30 }
+		ai_chance = {
+			base = 30
+			modifier = {
+				add = 20
+				event_target:STALKER_zone_event_target = { check_variable = { STALKER_zone_exploitation > 29 } }
+			}
+		}
 	}
 
 	option = {
@@ -771,14 +791,27 @@ country_event = {
 				}
 			}
 		}
-		ai_chance = { base = 20 }
+		ai_chance = {
+			base = 20
+			modifier = {
+				add = -15
+				event_target:STALKER_zone_event_target = { check_variable = { STALKER_zone_bandits > 49 } }
+			}
+		}
 	}
 }
 
 news_event = {
 	id = STALKER.31
 	title = STALKER.31.t
-	desc = STALKER.31.d
+	desc = {
+		trigger = { STALKER_global_zones_enabled = yes }
+		text = STALKER.31.d
+	}
+	desc = {
+		trigger = { NOT = { STALKER_global_zones_enabled = yes } }
+		text = STALKER.31.d_contained
+	}
 	picture = GFX_fukushima_nuclear_disaster_news
 	major = yes
 	is_triggered_only = yes
@@ -830,7 +863,21 @@ country_event = {
 				}
 			}
 		}
-		ai_chance = { base = 60 }
+		ai_chance = {
+			base = 60
+			modifier = {
+				add = 20
+				event_target:STALKER_zone_event_target = { check_variable = { STALKER_zone_containment < 30 } }
+			}
+			modifier = {
+				factor = 0
+				has_political_power < 50
+			}
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
+		}
 	}
 
 	option = {
@@ -850,6 +897,47 @@ country_event = {
 				}
 			}
 		}
-		ai_chance = { base = 40 }
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				event_target:STALKER_zone_event_target = { check_variable = { STALKER_zone_exploitation > 29 } }
+			}
+		}
+	}
+}
+
+# Routing events: the yearly dispatch fires these on 1 March and 1 November 2022, and each reaches the Zone's controller at that moment.
+country_event = {
+	id = STALKER.34
+	hidden = yes
+	is_triggered_only = yes
+
+	trigger = {
+		STALKER_scenario_enabled = yes
+		NOT = { has_global_flag = STALKER_battle_for_the_zone }
+	}
+
+	immediate = {
+		log = "[GetDateText]: [This.GetName]: STALKER.34 immediate executed"
+		set_global_flag = STALKER_battle_for_the_zone
+		STALKER_begin_battle_for_the_zone = yes
+	}
+}
+
+country_event = {
+	id = STALKER.35
+	hidden = yes
+	is_triggered_only = yes
+
+	trigger = {
+		STALKER_scenario_enabled = yes
+		has_global_flag = STALKER_battle_for_the_zone
+		NOT = { has_global_flag = STALKER_kaimanov_outcome }
+	}
+
+	immediate = {
+		log = "[GetDateText]: [This.GetName]: STALKER.35 immediate executed"
+		STALKER_trigger_kaimanov_outcome = yes
 	}
 }
