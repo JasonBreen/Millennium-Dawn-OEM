@@ -1,7 +1,7 @@
 """Check TOP lifecycle wiring and inspect its opt-in HOI4 game.log markers.
 
 Run ``wiring`` before launching the mod. In a new campaign, open the HOI4
-console and enter ``effect set_global_flag = TOP_diagnostics_enabled``. Let two
+console and enter ``effect TOP_enable_diagnostics = yes``. Let two
 weekly pulses pass, then run ``log <game.log> --expect-mode limited`` (or
 ``full`` / ``off``). Log evidence proves the hooks executed in that campaign;
 the static wiring check alone does not.
