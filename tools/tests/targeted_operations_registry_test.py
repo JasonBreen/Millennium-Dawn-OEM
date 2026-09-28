@@ -32,6 +32,29 @@ def test_checked_in_registry_matches_manifest() -> None:
     assert generator.registry(manifest) == REGISTRY_PATH.read_text(encoding="utf-8")
 
 
+def test_existing_representations_resolve_to_shipped_files() -> None:
+    manifest = generator.load_manifest(ROOT)
+    for target in manifest["targets"]:
+        for representation in target["existing_representations"]:
+            assert (ROOT / representation["path"]).is_file(), (
+                target["id"],
+                representation["path"],
+            )
+
+
+def test_authored_successor_requires_group_pool_even_without_successors(
+    tmp_path: Path,
+) -> None:
+    manifest = copy.deepcopy(generator.load_manifest(ROOT))
+    group = next(group for group in manifest["groups"] if group["id"] == 22)
+    group["succession"] = []
+    write_manifest(tmp_path, manifest)
+    with pytest.raises(
+        ValueError, match="Authored successor missing from group pool: 145"
+    ):
+        generator.load_manifest(tmp_path)
+
+
 def test_authored_identity_keys_cannot_be_reassigned(tmp_path: Path) -> None:
     manifest = copy.deepcopy(generator.load_manifest(ROOT))
     manifest["targets"][0]["key"], manifest["targets"][1]["key"] = (
