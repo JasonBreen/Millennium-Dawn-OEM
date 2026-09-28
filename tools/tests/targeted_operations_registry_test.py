@@ -195,12 +195,19 @@ def test_facility_objectives_can_override_known_defaults() -> None:
 
 def test_check_reports_drift_without_rewriting_output(tmp_path: Path) -> None:
     write_manifest(tmp_path, generator.load_manifest(ROOT))
+    for relative in (
+        "common/scripted_triggers/03_targeted_operations_political_roster.txt",
+        "common/scripted_effects/03_targeted_operations_political_roster.txt",
+    ):
+        roster = tmp_path / relative
+        roster.parent.mkdir(parents=True, exist_ok=True)
+        roster.write_text(
+            (ROOT / relative).read_text(encoding="utf-8"), encoding="utf-8"
+        )
     output = tmp_path / "common/scripted_effects/01_targeted_operations_registry.txt"
-    output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", encoding="utf-8", newline="") as stream:
         stream.write("stale\n")
 
-    assert generator.generate(tmp_path, check=True) == [
-        "common/scripted_effects/01_targeted_operations_registry.txt"
-    ]
+    changed = generator.generate(tmp_path, check=True)
+    assert "common/scripted_effects/01_targeted_operations_registry.txt" in changed
     assert output.read_text(encoding="utf-8") == "stale\n"

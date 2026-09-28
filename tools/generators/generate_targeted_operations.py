@@ -1,4 +1,4 @@
-"""Generate stable Targeted Operations identity and dossier storage definitions."""
+"""Compile the authored target registry and identity-bound native raid definitions."""
 
 from __future__ import annotations
 
@@ -487,6 +487,24 @@ def load_manifest(root: Path) -> dict:
             if target["successors"] != expected:
                 raise ValueError(f"Incomplete successor binding for {target['id']}")
 
+    trigger_text = (
+        root / "common/scripted_triggers/03_targeted_operations_political_roster.txt"
+    ).read_text(encoding="utf-8")
+    retirement_text = (
+        root / "common/scripted_effects/03_targeted_operations_political_roster.txt"
+    ).read_text(encoding="utf-8")
+    for target in data["targets"]:
+        if target["leader_role"] in {
+            "head_of_state",
+            "head_of_government",
+            "senior_political",
+            "state_security_official",
+        }:
+            ident = target["id"]
+            if f"TOP_person_{ident}_serving = {{" not in trigger_text:
+                raise ValueError(f"Missing serving trigger for leader {ident}")
+            if f"check_variable = {{ TOP_target = {ident} }}" not in retirement_text:
+                raise ValueError(f"Missing retirement handling for leader {ident}")
     return data
 
 
@@ -494,6 +512,9 @@ def registry(data: dict) -> str:
     capacity = data["capacity"]
     group_capacity = max(group["id"] for group in data["groups"]) + 1
     lines = [
+        f"set_variable = {{ global.TOP_registry_capacity = {capacity} }}",
+    ]
+    lines += [
         f"resize_array = {{ global.TOP_{field} = {capacity} }}"
         for field in GLOBAL_FIELDS
     ]
@@ -501,7 +522,10 @@ def registry(data: dict) -> str:
         lines.append(
             f"resize_array = {{ global.TOP_group_{field} = {group_capacity} }}"
         )
-    lines.append(f"resize_array = {{ global.TOP_backlash = {group_capacity} }}")
+    lines += [
+        f"resize_array = {{ global.TOP_backlash = {group_capacity} }}",
+        "set_variable = { global.TOP_clock = 0 }",
+    ]
     for group in data["groups"]:
         gid = group["id"]
         lines += [
@@ -548,24 +572,544 @@ def registry(data: dict) -> str:
             )
         ],
     )
+    years = sorted(
+        {target["activation_year"] for target in data["targets"]}
+        | {group["year"] for group in data["groups"]}
+    )
+    for year in years:
+        output += "\n" + block(
+            f"TOP_open_windows_{year}",
+            [
+                f"set_variable = {{ global.TOP_window^{t['id']} = 1 }}"
+                for t in data["targets"]
+                if t["activation_year"] == year
+            ]
+            + [
+                f"set_variable = {{ global.TOP_group_window^{g['id']} = 1 }}"
+                for g in data["groups"]
+                if g["year"] == year
+            ]
+            + [
+                f"set_variable = {{ global.TOP_group_created^{g['id']} = 1 }}"
+                for g in data["groups"]
+                if g["year"] == year and "ct_id" not in g
+            ],
+        )
+    output += "\n" + block(
+        "TOP_open_start_windows",
+        [
+            f"if = {{ limit = {{ date > {year - 1}.12.31 }} TOP_open_windows_{year} = yes }}"
+            for year in years
+        ],
+    )
+    output += "\n" + block(
+        "TOP_activate_candidates",
+        [f"TOP_activate_group_{g['id']} = yes" for g in data["groups"]],
+    )
+    for group in data["groups"]:
+        gid = group["id"]
+        conditions = [
+            f"check_variable = {{ global.TOP_group_destroyed^{gid} = 0 }}",
+            f"check_variable = {{ global.TOP_group_window^{gid} = 1 }}",
+        ]
+        if gid == 3:
+            conditions.append(
+                "OR = { ISI = { exists = yes } has_global_flag = GLOBAL_operation_iraqi_freedom_succeeded IRQ = { has_war = yes } }"
+            )
+        lines = ["if = {", "\tlimit = { " + " ".join(conditions) + " }"]
+        lines += [
+            f"\tTOP_choose_location_{gid} = yes",
+            "\tif = {",
+            "\t\tlimit = { NOT = { check_variable = { TOP_activation_state = 0 } } }",
+            "\t\tvar:TOP_activation_state = { set_temp_variable = { PREV.TOP_activation_host = controller } }",
+            f"\t\tset_variable = {{ global.TOP_group_state^{gid} = TOP_activation_state }}",
+            f"\t\tset_variable = {{ global.TOP_group_host^{gid} = TOP_activation_host }}",
+        ]
+        for target in (t for t in data["targets"] if t["group"] == gid):
+            ident = target["id"]
+            role_gate = (
+                f" TOP_authored_role_eligible_{ident} = yes" if ident >= 129 else ""
+            )
+            lines += [
+                "\t\tif = {",
+                f"\t\t\tlimit = {{ check_variable = {{ global.TOP_status^{ident} = 0 }} check_variable = {{ global.TOP_window^{ident} = 1 }}{role_gate} }}",
+                f"\t\t\tset_variable = {{ global.TOP_status^{ident} = 1 }}",
+                f"\t\t\tset_variable = {{ global.TOP_host^{ident} = TOP_activation_host }}",
+                f"\t\t\tset_variable = {{ global.TOP_state^{ident} = TOP_activation_state }}",
+                f"\t\t\tadd_to_array = {{ global.TOP_active_targets = {ident} }}",
+                "\t\t}",
+            ]
+        lines += ["\t}", "}"]
+        output += "\n" + block(f"TOP_activate_group_{gid}", lines)
+        location = [
+            "set_temp_variable = { TOP_activation_state = 0 }",
+            "set_temp_variable = { TOP_activation_host = 0 }",
+        ]
+        if group["location_policy"] == "group_hq" and "ct_id" in group:
+            location += [
+                f"set_temp_variable = {{ TOP_group = {gid} }}",
+                "TOP_find_group_org = yes",
+                "if = {",
+                "\tlimit = { check_variable = { TOP_org_slot > -1 } NOT = { check_variable = { global.active_terror_hq^TOP_org_slot = 0 } } }",
+                "\tvar:global.active_terror_hq^TOP_org_slot = {",
+                "\t\tif = { limit = { controller = { exists = yes } } set_temp_variable = { ROOT.TOP_activation_state = THIS } }",
+                "\t}",
+                "}",
+            ]
+        hosts = dict.fromkeys(
+            group.get("movement_hosts", [])
+            + [group["host"]]
+            + group.get("regional_hosts", [])
+        )
+        for host in hosts:
+            if group["location_policy"] == "country_capital":
+                location += [
+                    "if = {",
+                    f"\tlimit = {{ check_variable = {{ TOP_activation_state = 0 }} {host} = {{ exists = yes num_of_controlled_states > 0 }} }}",
+                    f"\t{host} = {{ capital_scope = {{ if = {{ limit = {{ controller = {{ exists = yes }} }} set_temp_variable = {{ ROOT.TOP_activation_state = THIS }} }} }} }}",
+                    "}",
+                ]
+                continue
+            location += [
+                "if = {",
+                f"\tlimit = {{ check_variable = {{ TOP_activation_state = 0 }} {host} = {{ exists = yes num_of_controlled_states > 0 }} }}",
+                f"\t{host} = {{ random_controlled_state = {{ set_temp_variable = {{ ROOT.TOP_activation_state = THIS }} }} }}",
+                "}",
+            ]
+        output += "\n" + block(f"TOP_choose_location_{gid}", location)
+    return output
+
+
+def raid(ident: int, method: int) -> str:
+    drone = method == 1
+    kind = "drone" if drone else "capture"
+    lines = [
+        f"category = {'drone_strike_raids' if drone else 'special_forces_raids'}",
+        (
+            "custom_map_icon = GFX_raid_type_icon_targeted_drone_strike"
+            if drone
+            else "custom_map_icon = GFX_raid_type_icon_direct_action_raid_supply"
+        ),
+        f"days_to_prepare = {14 if drone else 28}",
+        "days_re_enable = 30",
+        "command_power = 20",
+        "arrow = { type = line }",
+        f"visible = {{ TOP_enabled = yes check_variable = {{ TOP_case_phase^{ident} = 3 }} check_variable = {{ TOP_case_method^{ident} = {method} }} }}",
+        f"show_target = {{ TOP_native_gate_{ident}_{method} = yes }}",
+        "available = {",
+        f"\tTOP_native_gate_{ident}_{method} = yes",
+    ]
+    if not drone:
+        lines.append("\thas_tech = special_forces_tech_1")
+    lines += [
+        "}",
+        f"launchable = {{ TOP_native_gate_{ident}_{method} = yes }}",
+        "target_type = { state = { always = yes } }",
+        "unit_requirements = {",
+    ]
+    lines += [
+        (
+            "\tequipment = { type = { small_plane_suicide_airframe cv_small_plane_suicide_airframe } amount = { min = 1 } }"
+            if drone
+            else "\tbattalion_types = { Special_Forces = { min = 2 } }"
+        )
+    ]
+    lines += [
+        "}",
+        "launch_sound = raid_launch_marine",
+        "target_icon = GFX_other_target_icon",
+        (
+            "starting_point = { types = { air_base } }"
+            if drone
+            else "starting_point = { types = { air_base naval_base } }"
+        ),
+        "success_factors = {",
+        "\tsuccess = {",
+        f"\t\tbase = {0.15 if drone else 0.25}",
+        "\t\tintel = { weight = 0.5 start_weight = -0.1 start_reference = 10 reference = 100 }",
+        (
+            "\t\texperience = { weight = 0.3 start_weight = -0.2 reference = 1 }"
+            if drone
+            else "\t\texperience = { weight = 0.5 start_weight = -0.25 reference = 0.75 }"
+        ),
+        "\t\tTOP_native_success_bonus = {",
+        "\t\t\tscope = country",
+        f"\t\t\tformula = {{ base = 1 modifier = {{ factor = var:TOP_case_native_success_bonus^{ident} }} }}",
+        "\t\t\tweight = 1",
+        "\t\t\treference = 100",
+        "\t\t\tcan_actor_affect = no",
+        "\t\t\tcan_target_affect = no",
+        "\t\t}",
+        "\t\tTOP_native_success_penalty = {",
+        "\t\t\tscope = country",
+        f"\t\t\tformula = {{ base = 1 modifier = {{ factor = var:TOP_case_native_success_penalty^{ident} }} }}",
+        "\t\t\tweight = -1",
+        "\t\t\treference = 100",
+        "\t\t\tcan_actor_affect = no",
+        "\t\t\tcan_target_affect = no",
+        "\t\t}",
+    ]
+    if drone:
+        lines += [
+            "\t\tair_agility = { reference = 200 weight = 0.5 start_weight = -0.5 }",
+            "\t\treliability = { reference = 1 weight = 0.2 start_weight = -0.1 }",
+            "\t\tanti_air = { reference = 5 weight = -0.25 }",
+            "\t\tradar = { reference = 1 weight = -0.15 }",
+        ]
+    else:
+        lines += [
+            "\t\torganisation = { reference = 100 weight = 0.2 start_weight = -0.1 }",
+            "\t\tstrength = { reference = 1 weight = 0.15 start_weight = -0.05 }",
+        ]
+    lines += [
+        "\t}",
+        "\tcritical = { base = 0.05 }",
+        "\tdisaster = { base = 0.05 }",
+        "}",
+        "success_levels = {",
+    ]
+    for tier, name in enumerate(
+        ("failure", "limited_success", "success", "critical_success")
+    ):
+        lines += [
+            f"\t{name} = {{",
+            "\t\tactor_effects = {",
+            f"\t\t\tset_temp_variable = {{ TOP_target = {ident} }}",
+            f"\t\t\tset_temp_variable = {{ TOP_method = {method} }}",
+            f"\t\t\tset_temp_variable = {{ TOP_tier = {tier} }}",
+            "\t\t\tTOP_native_result_args = yes",
+            "\t\t}",
+            "\t}",
+        ]
+    lines += [
+        "}",
+        "ai_will_do = { base = 0 }",
+    ]
+    return block(f"TOP_{kind}_{ident}", lines)
+
+
+def names(data: dict) -> dict[str, str]:
+    result = {str(t["id"]): t["name"] for t in data["targets"]}
+    roots = ["Kamal", "Yusuf", "Farid", "Salim", "Nabil", "Hamid", "Musa"]
+    regional = {
+        4: ["Rahim Khan", "Daud Wazir", "Karim Shah", "Rafiq Khan"],
+        5: ["Musa Umar", "Sani Bello", "Ibrahim Yusuf", "Ali Garba"],
+        6: ["Yusuf Hassan", "Mahad Ali", "Abdi Mahmud", "Omar Farah"],
+        8: ["Ojok Okello", "Otim Ocen", "Ochan Ouma", "Oryem Otim"],
+        9: ["Rizal Pratama", "Arif Santoso", "Dimas Yusuf", "Fajar Rahman"],
+        10: ["Amir Sulaiman", "Karim Usman", "Rashid Hassan", "Faisal Ali"],
+    }
+    for ident in range(data["generated_start"], data["generated_end"]):
+        ordinal = ident - data["generated_start"]
+        pool = regional.get(ordinal % 10 + 1, roots)
+        result[str(ident)] = (
+            f"{pool[(ordinal // 10) % len(pool)]} (Successor {ordinal + 1})"
+        )
+    return result
+
+
+def localisation(data: dict) -> str:
+    lines = ["l_english:"]
+    for ident, name in names(data).items():
+        lines += [
+            f' TOP_person_{ident}: "{name}"',
+            f' TOP_drone_{ident}: "Remote Strike: {name}"',
+            f' TOP_drone_{ident}_desc: "Conduct the authorized native map operation against this target package."',
+            f' TOP_capture_{ident}: "Capture Raid: {name}"',
+            f' TOP_capture_{ident}_desc: "Attempt to secure this target alive through a native special-forces raid."',
+        ]
+    for target in data["targets"]:
+        lines.append(
+            f' TOP_person_{target["id"]}_role: "{target["role"].replace("_", " ").title()}"'
+        )
+        if target.get("legacy_isi_id") is not None:
+            ident, name = target["id"], target["name"]
+            lines += [
+                f' TOP_legacy_person_{ident}_dead_t: "Death of {name} Confirmed"',
+                f' TOP_legacy_person_{ident}_dead_d: "The death of Islamic State figure {name} has been confirmed following a targeted operation. The organization must replace the lost experience and contacts while adapting to the disruption."',
+                f' TOP_legacy_person_{ident}_captured_t: "{name} Detained"',
+                f' TOP_legacy_person_{ident}_captured_d: "Islamic State figure {name} has been taken into custody. Intelligence assessment and detention arrangements are continuing as the organization adapts to the loss of a senior member."',
+            ]
+    lines += [
+        ' TOP_legacy_bin_laden_captured_t: "Osama bin Laden Detained"',
+        ' TOP_legacy_bin_laden_captured_d: "Osama bin Laden has been taken into custody. His detention removes the leader of al-Qaeda from its active network and opens a new phase of intelligence assessment and decisions over his custody."',
+        ' TOP_legacy_bin_laden_dead_d: "The death of Osama bin Laden has been confirmed following a targeted operation. Al-Qaeda has lost its leader, but surviving networks and potential successors remain active."',
+        ' TOP_legacy_saddam_captured_d: "Saddam Hussein has been taken into custody. His detention counts toward the hunt for Iraqi fugitives, while any prosecution or sentence requires him to remain securely detained."',
+        ' TOP_legacy_soleimani_dead_d: "The death of Qasem Soleimani has been confirmed following a targeted operation. Iran and other regional governments are considering their responses, with consequences depending on the campaign and the authority behind the operation."',
+    ]
+    lines += [
+        ' TOP_political_authority: "Exceptional Political Authority"',
+        ' TOP_political_authority_desc: "Serving officials require exceptional authority before an operation can enter review. Civilian political figures require an explicit mandate from an authored campaign crisis."',
+        ' TOP_civilian_emergency_case: "Extend the Emergency Mandate"',
+        ' TOP_civilian_emergency_case_desc: "An authoritarian government facing civil war in the United States, or fighting a war against the United States, may use its political crisis to extend a coercive mandate to civilian activist Charlie Kirk. The case remains subject to senior review. A domestic mandate permits an exceptional lethal review only while the civil war and political crisis continue. The decision reduces Stability and War Support."',
+    ]
+    for group in data["groups"]:
+        lines.append(f' TOP_group_{group["id"]}: "{group["name"]}"')
+    return "\n".join(lines) + "\n"
+
+
+def dispatch(data: dict) -> str:
+    output = ""
+    selectors = [
+        ("TOP_selected_name", "TOP_selected"),
+        ("TOP_person_row_name", "v"),
+        ("TOP_open_visit_name", "TOP_open_visit_target"),
+    ]
+    latest_year = max(target["activation_year"] for target in data["targets"])
+    selectors += [
+        (f"TOP_modern_{year}_name", f"TOP_modern_{year}_target")
+        for year in range(2024, latest_year + 1)
+    ]
+    for name, variable in selectors:
+        lines = [f"name = {name}"]
+        lines += [
+            f"text = {{ trigger = {{ check_variable = {{ {variable} = {ident} }} }} localization_key = TOP_person_{ident} }}"
+            for ident in range(1, data["capacity"])
+        ]
+        lines.append("text = { localization_key = TOP_no_target }")
+        output += block("defined_text", lines) + "\n"
+    output += block(
+        "defined_text",
+        ["name = TOP_selected_organization_name"]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_selected_organization = {group['id']} }} }} localization_key = TOP_group_{group['id']} }}"
+            for group in data["groups"]
+        ]
+        + ["text = { localization_key = TOP_no_target }"],
+    )
+    output += "\n" + block(
+        "defined_text",
+        ["name = TOP_organization_row_name"]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ v = {group['id']} }} }} localization_key = TOP_group_{group['id']} }}"
+            for group in data["groups"]
+        ]
+        + ["text = { localization_key = TOP_no_target }"],
+    )
+    output += "\n" + block(
+        "defined_text",
+        ["name = TOP_proposal_name"]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_proposal_subject_kind = 2 }} check_variable = {{ TOP_proposal_subject_id = {group['id']} }} }} localization_key = TOP_group_{group['id']} }}"
+            for group in data["groups"]
+        ]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_proposal_subject_kind = 1 }} check_variable = {{ TOP_proposal_target = {ident} }} }} localization_key = TOP_person_{ident} }}"
+            for ident in range(1, data["capacity"])
+        ]
+        + ["text = { localization_key = TOP_no_target }"],
+    )
+    output += "\n" + block(
+        "defined_text",
+        ["name = TOP_archive_name"]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_archive_subject_kind^v = 2 }} check_variable = {{ TOP_archive_subject_id^v = {group['id']} }} }} localization_key = TOP_group_{group['id']} }}"
+            for group in data["groups"]
+        ]
+        + [
+            f"text = {{ trigger = {{ NOT = {{ check_variable = {{ TOP_archive_subject_kind^v = 2 }} }} check_variable = {{ TOP_archive_subject_id^v = {ident} }} }} localization_key = TOP_person_{ident} }}"
+            for ident in range(1, data["capacity"])
+        ]
+        + ["text = { localization_key = TOP_no_target }"],
+    )
+    output += "\n" + block(
+        "defined_text",
+        ["name = TOP_incoming_subject_name"]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_incoming_subject_kind = 2 }} check_variable = {{ TOP_incoming_subject_id = {group['id']} }} }} localization_key = TOP_group_{group['id']} }}"
+            for group in data["groups"]
+        ]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_incoming_subject_kind = 1 }} check_variable = {{ TOP_incoming_subject_id = {ident} }} }} localization_key = TOP_person_{ident} }}"
+            for ident in range(1, data["capacity"])
+        ]
+        + ["text = { localization_key = TOP_no_target }"],
+    )
+    output += "\n" + block(
+        "defined_text",
+        ["name = TOP_report_subject_name"]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_report_subject_kind = 2 }} check_variable = {{ TOP_report_subject_id = {group['id']} }} }} localization_key = TOP_group_{group['id']} }}"
+            for group in data["groups"]
+        ]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_report_subject_kind = 1 }} check_variable = {{ TOP_report_subject_id = {ident} }} }} localization_key = TOP_person_{ident} }}"
+            for ident in range(1, data["capacity"])
+        ]
+        + ["text = { localization_key = TOP_no_target }"],
+    )
+    output += "\n" + block(
+        "defined_text",
+        ["name = TOP_incoming_liaison_subject_name"]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_incoming_liaison_kind = 2 }} check_variable = {{ TOP_incoming_liaison_id = {group['id']} }} }} localization_key = TOP_group_{group['id']} }}"
+            for group in data["groups"]
+        ]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_incoming_liaison_kind = 1 }} check_variable = {{ TOP_incoming_liaison_id = {ident} }} }} localization_key = TOP_person_{ident} }}"
+            for ident in range(1, data["capacity"])
+        ]
+        + ["text = { localization_key = TOP_no_target }"],
+    )
+    output += "\n" + block(
+        "defined_text",
+        ["name = TOP_custody_event_name"]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_custody_event_target = {ident} }} }} localization_key = TOP_person_{ident} }}"
+            for ident in range(1, data["capacity"])
+        ]
+        + ["text = { localization_key = TOP_no_target }"],
+    )
+    output += "\n" + block(
+        "defined_text",
+        ["name = TOP_bda_notice_name"]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_bda_notice_target = {ident} }} }} localization_key = TOP_person_{ident} }}"
+            for ident in range(1, data["capacity"])
+        ]
+        + ["text = { localization_key = TOP_no_target }"],
+    )
+    output += "\n" + block(
+        "defined_text",
+        ["name = TOP_selected_group"]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ global.TOP_affiliation^TOP_selected = {g['id']} }} }} localization_key = TOP_group_{g['id']} }}"
+            for g in data["groups"]
+        ]
+        + ["text = { localization_key = TOP_no_target }"],
+    )
+    output += "\n" + block(
+        "defined_text",
+        [
+            "name = TOP_selected_role",
+            "text = { trigger = { check_variable = { global.TOP_office^TOP_selected = 1 } } localization_key = TOP_role_leader }",
+        ]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_selected = {t['id']} }} }} localization_key = TOP_person_{t['id']}_role }}"
+            for t in data["targets"]
+        ]
+        + ["text = { localization_key = TOP_role_successor }"],
+    )
+    output += "\n" + block(
+        "defined_text",
+        ["name = TOP_proposal_role_name"]
+        + [
+            f"text = {{ trigger = {{ check_variable = {{ TOP_proposal_target = {target['id']} }} }} localization_key = TOP_person_{target['id']}_role }}"
+            for target in data["targets"]
+        ]
+        + ["text = { localization_key = TOP_role_successor }"],
+    )
+    return output
+
+
+def native_gates(data: dict) -> str:
+    """One concrete gate per raid.
+
+    A raid cannot call TOP_native_authorized with parameters: common/raids/ is
+    parsed before the scripted trigger files register, and the engine does not
+    substitute $PARAM$ for a trigger in any case. Each gate sets the temp
+    variables the trigger reads and is called as a plain `= yes`.
+    """
+    blocks = []
+    for ident in range(1, data["capacity"]):
+        for method in (1, 2):
+            blocks.append(
+                "\n".join(
+                    [
+                        f"TOP_native_gate_{ident}_{method} = {{",
+                        f"\tset_temp_variable = {{ TOP_arg_target = {ident} }}",
+                        f"\tset_temp_variable = {{ TOP_arg_method = {method} }}",
+                        "\tTOP_native_authorized = yes",
+                        "}",
+                    ]
+                )
+            )
+    header = (
+        "# Generated by tools/generators/generate_targeted_operations.py.\n"
+        "# One gate per raid; see native_gates() for why raids cannot call the\n"
+        "# parameterised trigger directly.\n\n"
+    )
+    return header + "\n\n".join(blocks) + "\n"
+
+
+def render(data: dict) -> dict[str, str]:
+    raids = (
+        "types = {\n"
+        + "\n".join(
+            "\n".join("\t" + line for line in raid(ident, method).splitlines())
+            for ident in range(1, data["capacity"])
+            for method in (1, 2)
+        )
+        + "\n}\n"
+    )
+    return {
+        "common/scripted_effects/01_targeted_operations_registry.txt": registry(data),
+        "common/scripted_effects/01_targeted_operations_successors.txt": successors(
+            data
+        ),
+        "common/raids/targeted_operations_raids.txt": raids,
+        "common/scripted_triggers/06_targeted_operations_native_gates.txt": native_gates(
+            data
+        ),
+        "common/scripted_localisation/01_targeted_operations_names.txt": dispatch(data),
+        "localisation/english/MD_targeted_operations_roster_l_english.yml": localisation(
+            data
+        ),
+    }
+
+
+def successors(data: dict) -> str:
+    lines = ["set_temp_variable = { TOP_candidate = 0 }"]
+    for group in data["groups"]:
+        for ident in group.get("succession", []):
+            lines.append(
+                f"if = {{ limit = {{ check_variable = {{ TOP_group = {group['id']} }} check_variable = {{ TOP_candidate = 0 }} check_variable = {{ global.TOP_status^{ident} = 1 }} }} set_temp_variable = {{ TOP_candidate = {ident} }} }}"
+            )
+    output = block("TOP_select_authored_successor", lines)
+    installations, retirements = [], []
+    people = names(data)
+    movement_tags = {2: "AQY", 3: "ISI", 4: "TTP", 6: "SHB"}
+    for ident in range(data["generated_start"], data["generated_end"]):
+        group = (ident - data["generated_start"]) % 10 + 1
+        tag = movement_tags.get(group)
+        if tag:
+            name = people[str(ident)]
+            installations += [
+                "if = {",
+                f"\tlimit = {{ check_variable = {{ TOP_target = {ident} }} check_variable = {{ global.TOP_status^{ident} = 1 }} }}",
+                f"\t{tag} = {{",
+                "\t\tif = {",
+                f'\t\t\tlimit = {{ exists = yes has_government = fascism NOT = {{ has_country_leader = {{ name = "{name}" ruling_only = yes }} }} }}',
+                f'\t\t\tcreate_country_leader = {{ name = "{name}" picture = "gfx/interface/scripted_gui/countries/IRQ/card_unknown.dds" ideology = Caliphate traits = {{ salafist_Caliphate }} }}',
+                f"\t\t\tset_variable = {{ Caliphate_leader = {1000 + ident} }}",
+                "\t\t}",
+                "\t}",
+                "}",
+            ]
+            retirements.append(
+                f'if = {{ limit = {{ check_variable = {{ TOP_target = {ident} }} }} {tag} = {{ if = {{ limit = {{ has_country_leader = {{ name = "{name}" ruling_only = yes }} }} kill_country_leader = yes }} }} }}'
+            )
+    output += "\n" + block("TOP_install_generated_office", installations)
+    output += "\n" + block("TOP_retire_generated_office", retirements)
     return output
 
 
 def generate(root: Path, check: bool = False) -> list[str]:
-    relative = "common/scripted_effects/01_targeted_operations_registry.txt"
-    path = root / relative
-    content = registry(load_manifest(root))
-    current = None
-    if path.exists():
-        with path.open("r", encoding="utf-8", newline="") as stream:
-            current = stream.read()
-    if current == content:
-        return []
-    if not check:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with path.open("w", encoding="utf-8", newline="") as stream:
-            stream.write(content)
-    return [relative]
+    changed = []
+    for relative, content in render(load_manifest(root)).items():
+        path = root / relative
+        encoding = "utf-8-sig" if path.suffix == ".yml" else "utf-8"
+        current = None
+        if path.exists():
+            with path.open(encoding=encoding, newline="") as stream:
+                current = stream.read()
+        if current != content:
+            changed.append(relative)
+            if not check:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                with path.open("w", encoding=encoding, newline="") as stream:
+                    stream.write(content)
+    return changed
 
 
 def main() -> int:
