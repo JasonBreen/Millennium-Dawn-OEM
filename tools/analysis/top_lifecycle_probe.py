@@ -16,12 +16,13 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from decimal import Decimal
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from shared_utils import extract_block_from_text  # noqa: E402
+from shared_utils import extract_block_from_text, strip_comments  # noqa: E402
 
 PROBE_RE = re.compile(
     r"TOP_PROBE mode=(?P<mode>-?\d+(?:\.\d+)?) "
@@ -54,6 +55,7 @@ def check_wiring(root: Path) -> list[str]:
         "weekly": "common/on_actions/MD_on_actions.txt",
         "ct": "common/scripted_effects/00_ct_effects.txt",
         "effects": "common/scripted_effects/00_targeted_operations_effects.txt",
+        "game_rule": "common/game_rules/01_targeted_operations.txt",
         "registry": "common/scripted_effects/01_targeted_operations_registry.txt",
         "triggers": "common/scripted_triggers/01_targeted_operations_triggers.txt",
         "case_triggers": "common/scripted_triggers/04_targeted_operations_cases.txt",
@@ -63,7 +65,7 @@ def check_wiring(root: Path) -> list[str]:
     }
     try:
         source = {
-            name: (root / path).read_text(encoding="utf-8-sig")
+            name: strip_comments((root / path).read_text(encoding="utf-8-sig"))
             for name, path in paths.items()
         }
     except OSError as error:
@@ -128,6 +130,24 @@ def check_wiring(root: Path) -> list[str]:
             require(guard_block, "TOP_global_weekly", "on_weekly global guard")
 
     effects = source["effects"]
+    game_rule = get_block(source["game_rule"], "TOP_game_rule")
+    cache_rule = get_block(effects, "TOP_cache_game_rule")
+    for option in (
+        "TOP_limited_sandbox_option",
+        "TOP_full_sandbox_option",
+        "TOP_disabled_option",
+    ):
+        if re.search(rf"(?m)^\s*name\s*=\s*{option}\s*$", game_rule) is None:
+            failures.append(f"TOP_game_rule lacks {option}")
+    for option in ("TOP_limited_sandbox_option", "TOP_full_sandbox_option"):
+        if (
+            re.search(
+                rf"has_game_rule\s*=\s*\{{\s*rule\s*=\s*TOP_game_rule\s+option\s*=\s*{option}\s*\}}",
+                cache_rule,
+            )
+            is None
+        ):
+            failures.append(f"TOP_cache_game_rule does not read {option}")
     require(
         get_block(effects, "TOP_initialize_global"),
         "TOP_setup_registry",
@@ -159,10 +179,29 @@ def check_wiring(root: Path) -> list[str]:
         or "global.TOP_diag_country_ticks = 1" not in country_tick
     ):
         failures.append("TOP_country_tick lacks the opt-in diagnostic counter")
-    for name in ("TOP_setup_registry", "TOP_resize_country_arrays"):
-        get_block(source["registry"], name)
-    trigger_code = re.sub(r"(?m)#.*$", "", source["triggers"])
-    if "has_game_rule" in trigger_code:
+    if (
+        "check_variable = { TOP_known^num = global.TOP_registry_capacity }"
+        not in country_tick
+    ):
+        failures.append("TOP_country_tick counts countries without initialized storage")
+    get_block(source["registry"], "TOP_setup_registry")
+    resize = get_block(source["registry"], "TOP_resize_country_arrays")
+    capacity = re.search(
+        r"global\.TOP_registry_capacity\s*=\s*(\d+)", source["registry"]
+    )
+    if capacity is None:
+        failures.append("TOP registry lacks a numeric capacity")
+    elif (
+        re.search(
+            rf"resize_array\s*=\s*\{{\s*TOP_known\s*=\s*{capacity.group(1)}\s*\}}",
+            resize,
+        )
+        is None
+    ):
+        failures.append(
+            "TOP_resize_country_arrays does not resize TOP_known to capacity"
+        )
+    if "has_game_rule" in source["triggers"]:
         failures.append(
             "TOP scripted triggers evaluate has_game_rule before a game exists"
         )
@@ -194,23 +233,26 @@ def check_wiring(root: Path) -> list[str]:
     return failures
 
 
-def parse_probes(log: str) -> list[dict[str, int]]:
+def parse_probes(log: str) -> list[dict[str, Decimal]]:
     probes = []
     for match in PROBE_RE.finditer(log):
         probes.append(
-            {name: int(float(value)) for name, value in match.groupdict().items()}
+            {name: Decimal(value) for name, value in match.groupdict().items()}
         )
     return probes
 
 
 def check_probes(
-    probes: list[dict[str, int]], mode: str, capacity: int, min_samples: int = 2
+    probes: list[dict[str, Decimal]], mode: str, capacity: int, min_samples: int = 2
 ) -> list[str]:
     failures = []
     if len(probes) < min_samples:
         return [f"Found {len(probes)} TOP_PROBE samples; need {min_samples}"]
     expected_mode = MODES[mode]
     for number, probe in enumerate(probes, 1):
+        for name, value in probe.items():
+            if Decimal(str(value)) != Decimal(str(value)).to_integral_value():
+                failures.append(f"Sample {number}: non-integral {name} {value}")
         if probe["mode"] != expected_mode:
             failures.append(f"Sample {number}: mode {probe['mode']} != {expected_mode}")
         expected_capacity = 0 if mode == "off" else capacity
@@ -224,12 +266,13 @@ def check_probes(
         for previous, current in zip(probes, probes[1:]):
             if current["clock"] - previous["clock"] != 7:
                 failures.append("TOP clock did not advance by seven between samples")
-        if not any(probe["country_ticks"] > 0 for probe in probes[1:]):
-            failures.append("No staggered country tick appeared after the first sample")
+        for number, probe in enumerate(probes[1:], 2):
+            if probe["country_ticks"] <= 0:
+                failures.append(f"Sample {number}: no staggered country tick")
     return failures
 
 
-def parse_slot_events(log: str) -> list[dict[str, str | int]]:
+def parse_slot_events(log: str) -> list[dict[str, str | Decimal]]:
     events = []
     for match in SLOT_RE.finditer(log):
         values = match.groupdict()
@@ -238,7 +281,7 @@ def parse_slot_events(log: str) -> list[dict[str, str | int]]:
                 "event": values["event"],
                 "actor": values["actor"],
                 **{
-                    name: int(float(values[name]))
+                    name: Decimal(values[name])
                     for name in ("kind", "id", "seq", "clock")
                 },
             }
@@ -246,12 +289,18 @@ def parse_slot_events(log: str) -> list[dict[str, str | int]]:
     return events
 
 
-def check_slot_events(events: list[dict[str, str | int]]) -> list[str]:
+def check_slot_events(events: list[dict[str, str | Decimal]]) -> list[str]:
     failures = []
     active: dict[str, tuple[int, int, int]] = {}
     completed = {1: 0, 2: 0}
     for number, event in enumerate(events, 1):
         actor = str(event["actor"])
+        if any(
+            Decimal(str(event[name])) != Decimal(str(event[name])).to_integral_value()
+            for name in ("kind", "id", "seq", "clock")
+        ):
+            failures.append(f"Trace {number}: non-integral slot value for {actor}")
+            continue
         slot = (int(event["kind"]), int(event["id"]), int(event["seq"]))
         if slot[0] not in completed or slot[1] <= 0 or slot[2] <= 0:
             failures.append(f"Trace {number}: invalid slot {slot} for {actor}")

@@ -933,3 +933,26 @@ def test_novichok_is_a_russia_only_high_exposure_timed_method():
     assert "TOP_proposal_exposure_score = 65" in exposure
     assert "set_temp_variable = { TOP_arg_method = 7 } TOP_begin_review = yes" in gui
     assert 'name = "TOP_novichok"' in layout
+
+
+@pytest.mark.parametrize(
+    ("path", "actor", "expected_modifiers"),
+    [
+        (EVENT_PATH, "TOP_incoming_actor", 5),
+        (
+            "events/Targeted Operations Redesign.txt",
+            "TOP_incoming_liaison_actor",
+            2,
+        ),
+    ],
+)
+def test_host_ai_opinion_modifiers_use_supported_country_scope(
+    path, actor, expected_modifiers
+):
+    text = source(path)
+    assert "has_opinion = { target = var:" not in text
+    lines = [line for line in text.splitlines() if "has_opinion = {" in line]
+    assert len(lines) == expected_modifiers
+    for line in lines:
+        assert f"check_variable = {{ {actor} = FROM }}" in line
+        assert "has_opinion = { target = FROM " in line

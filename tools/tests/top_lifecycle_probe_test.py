@@ -15,6 +15,7 @@ SOURCE_PATHS = (
     "common/on_actions/MD_on_actions.txt",
     "common/scripted_effects/00_ct_effects.txt",
     "common/scripted_effects/00_targeted_operations_effects.txt",
+    "common/game_rules/01_targeted_operations.txt",
     "common/scripted_effects/01_targeted_operations_registry.txt",
     "common/scripted_triggers/01_targeted_operations_triggers.txt",
     "common/scripted_triggers/04_targeted_operations_cases.txt",
@@ -102,7 +103,7 @@ def test_probe_rejects_duplicate_weekly_dispatch_and_missing_country_tick():
     )
     failures = top_lifecycle_probe.check_probes(probes, "full", 161)
     assert "TOP clock did not advance by seven between samples" in failures
-    assert "No staggered country tick appeared after the first sample" in failures
+    assert "Sample 2: no staggered country tick" in failures
 
 
 def test_probe_requires_enough_native_samples():
@@ -225,3 +226,93 @@ def test_cli_rejects_registry_without_capacity(tmp_path):
         top_lifecycle_probe.main(
             ["--root", str(tmp_path), "log", str(log), "--expect-mode", "off"]
         )
+
+
+def test_wiring_ignores_commented_diagnostic_and_clock_effects(tmp_path):
+    copy_sources(tmp_path)
+    effects = tmp_path / "common/scripted_effects/00_targeted_operations_effects.txt"
+    effects.write_bytes(
+        effects.read_bytes()
+        .replace(
+            b"set_global_flag = TOP_diagnostics_enabled",
+            b"# set_global_flag = TOP_diagnostics_enabled",
+        )
+        .replace(
+            b"add_to_variable = { global.TOP_clock = 7 }",
+            b"# add_to_variable = { global.TOP_clock = 7 }",
+        )
+    )
+    failures = top_lifecycle_probe.check_wiring(tmp_path)
+    assert "TOP_enable_diagnostics does not set the diagnostic flag" in failures
+    assert "TOP_global_weekly does not advance the clock by seven" in failures
+
+
+def test_wiring_requires_game_rule_and_exact_option_ids(tmp_path):
+    copy_sources(tmp_path)
+    rule = tmp_path / "common/game_rules/01_targeted_operations.txt"
+    rule.write_bytes(
+        rule.read_bytes().replace(
+            b"name = TOP_full_sandbox_option", b"name = TOP_renamed_full_option"
+        )
+    )
+    assert (
+        "TOP_game_rule lacks TOP_full_sandbox_option"
+        in top_lifecycle_probe.check_wiring(tmp_path)
+    )
+    rule.unlink()
+    assert (
+        "Cannot read TOP wiring source" in top_lifecycle_probe.check_wiring(tmp_path)[0]
+    )
+
+
+def test_wiring_requires_country_storage_and_checked_tick_counter(tmp_path):
+    copy_sources(tmp_path)
+    registry = tmp_path / "common/scripted_effects/01_targeted_operations_registry.txt"
+    registry.write_bytes(
+        registry.read_bytes().replace(
+            b"resize_array = { TOP_known = 161 }",
+            b"# resize_array = { TOP_known = 161 }",
+        )
+    )
+    effects = tmp_path / "common/scripted_effects/00_targeted_operations_effects.txt"
+    effects.write_bytes(
+        effects.read_bytes().replace(
+            b"check_variable = { TOP_known^num = global.TOP_registry_capacity }",
+            b"always = yes",
+        )
+    )
+    failures = top_lifecycle_probe.check_wiring(tmp_path)
+    assert "TOP_resize_country_arrays does not resize TOP_known to capacity" in failures
+    assert "TOP_country_tick counts countries without initialized storage" in failures
+
+
+def test_probe_rejects_each_missing_weekly_country_tick():
+    probes = top_lifecycle_probe.parse_probes(
+        "TOP_PROBE mode=1 clock=7 registry=161 country_ticks=0\n"
+        "TOP_PROBE mode=1 clock=14 registry=161 country_ticks=32\n"
+        "TOP_PROBE mode=1 clock=21 registry=161 country_ticks=0\n"
+    )
+    assert "Sample 3: no staggered country tick" in top_lifecycle_probe.check_probes(
+        probes, "limited", 161
+    )
+
+
+def test_probe_rejects_fractional_lifecycle_values():
+    probes = top_lifecycle_probe.parse_probes(
+        "TOP_PROBE mode=1.5 clock=7.5 registry=161.5 country_ticks=0\n"
+        "TOP_PROBE mode=1.5 clock=14.5 registry=161.5 country_ticks=3.5\n"
+    )
+    failures = top_lifecycle_probe.check_probes(probes, "limited", 161)
+    for field in ("mode", "clock", "registry"):
+        assert f"Sample 1: non-integral {field}" in "\n".join(failures)
+    assert "Sample 2: non-integral country_ticks 3.5" in failures
+
+
+def test_slot_trace_rejects_fractional_values():
+    events = top_lifecycle_probe.parse_slot_events(
+        "TOP_SLOT event=begin actor=USA kind=1.5 id=12 seq=3 clock=14\n"
+    )
+    assert (
+        "Trace 1: non-integral slot value for USA"
+        in top_lifecycle_probe.check_slot_events(events)
+    )
