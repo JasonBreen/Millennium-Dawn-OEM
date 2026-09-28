@@ -490,9 +490,6 @@ def registry(data: dict) -> str:
     capacity = data["capacity"]
     group_capacity = max(group["id"] for group in data["groups"]) + 1
     lines = [
-        f"set_variable = {{ global.TOP_registry_capacity = {capacity} }}",
-    ]
-    lines += [
         f"resize_array = {{ global.TOP_{field} = {capacity} }}"
         for field in GLOBAL_FIELDS
     ]
@@ -500,10 +497,7 @@ def registry(data: dict) -> str:
         lines.append(
             f"resize_array = {{ global.TOP_group_{field} = {group_capacity} }}"
         )
-    lines += [
-        f"resize_array = {{ global.TOP_backlash = {group_capacity} }}",
-        "set_variable = { global.TOP_clock = 0 }",
-    ]
+    lines.append(f"resize_array = {{ global.TOP_backlash = {group_capacity} }}")
     for group in data["groups"]:
         gid = group["id"]
         lines += [
