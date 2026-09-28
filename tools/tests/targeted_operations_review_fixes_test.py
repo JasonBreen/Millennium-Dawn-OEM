@@ -9,6 +9,7 @@ from targeted_operations_redesign_test import block, read
 def test_top_raid_and_political_category_use_dynamic_rule_gates():
     category = read("common/decisions/categories/targeted_operations_political.txt")
     assert "allowed = { TOP_enabled = yes }" not in category
+    assert "allowed = { always = yes }" in category
     assert "visible = { TOP_enabled = yes }" in category
 
 
@@ -70,6 +71,40 @@ def test_false_location_keeps_the_lead_when_no_other_state_is_found():
             "if = { limit = { NOT = { check_variable = { TOP_false_state = 0 } } } "
             f"set_variable = {{ {field} = TOP_false_state }} }}"
         ) in effect
+
+
+def test_extended_runtime_initializes_once_without_save_version_migrations():
+    redesign = block(
+        "common/scripted_effects/06_targeted_operations_redesign.txt",
+        "TOP_initialize_redesign_global",
+    )
+    runtime = read("common/scripted_effects/05_targeted_operations_runtime.txt")
+    setup = block(
+        "common/scripted_effects/05_targeted_operations_runtime.txt",
+        "TOP_setup_extended_runtime",
+    )
+    assert "TOP_setup_extended_runtime = yes" in redesign
+    assert "TOP_extended_runtime_version" not in runtime
+    assert "TOP_setup_extended_runtime = yes" not in runtime
+    assert "global.TOP_visit_open_interval = 91" in setup
+    assert "clear_array = global.TOP_crisis_queue_actors" in setup
+
+
+def test_isi_formation_and_replacements_install_the_selected_successor():
+    events = read("events/Iran.txt")
+    assert events.count("TOP_target = global.TOP_group_leader^3") == 4
+    assert events.count("TOP_apply_office_successor = yes") == 4
+    assert events.count("global.TOP_status^29 < 2") == 1
+
+
+def test_prosecuted_iraqi_cards_keep_a_resolution_indicator():
+    for target in range(56, 64):
+        trigger = block(
+            "common/scripted_guis/99_IRQ_scripted_guis.txt",
+            f"TOP_card_{target}_captured_visible",
+        )
+        assert f"global.TOP_status^{target} = 2" in trigger
+        assert f"global.TOP_status^{target} = 4" in trigger
 
 
 def test_collection_rebuild_prunes_inactive_typed_assignments_and_pauses_packages():
