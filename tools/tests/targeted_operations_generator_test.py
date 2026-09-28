@@ -262,6 +262,8 @@ def test_all_native_raids_bind_their_own_person_method_and_callback(manifest):
         raid = _named_block(text, token)
         method = "1" if kind == "drone" else "2"
         visible = _named_block(raid, "visible")
+        assert "allowed =" not in raid
+        assert "TOP_enabled = yes" in visible
         assert f"TOP_case_phase^{target} = 3" in visible
         assert f"TOP_case_method^{target} = {method}" in visible
         assert "TOP_authorized_target" not in visible

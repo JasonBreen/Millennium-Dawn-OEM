@@ -6,6 +6,42 @@ from targeted_operations_model_test import _extract_block
 from targeted_operations_redesign_test import block, read
 
 
+def test_top_raid_and_political_category_use_dynamic_rule_gates():
+    category = read("common/decisions/categories/targeted_operations_political.txt")
+    assert "allowed = { TOP_enabled = yes }" not in category
+    assert "visible = { TOP_enabled = yes }" in category
+
+
+def test_ct_registration_copies_the_host_region_to_the_caller():
+    effect = block(
+        "common/scripted_effects/01_targeted_operations_world.txt",
+        "TOP_append_ct_organization",
+    )
+    assert (
+        "PREV = { set_temp_variable = { TOP_ct_region = PREV.region_idx } }" in effect
+    )
+    assert "global.active_terror_org_region = TOP_ct_region" in effect
+
+
+def test_iraqi_hunt_imports_selected_state_and_stops_resolved_saddam_loop():
+    events = read("events/Middle East Peace Plan.txt")
+    assert events.count("TOP_import_state = PREV.TOP_import_state") == 5
+    relocation = events[
+        events.index("country_event = { # Saddam Relocation (bi-monthly)") :
+    ]
+    assert (
+        "TOP_enabled = yes check_variable = { global.TOP_status^56 > 1 }" in relocation
+    )
+
+
+def test_prosecuted_iraqi_fugitives_count_toward_resolution():
+    effect = block(
+        "common/scripted_effects/01_targeted_operations_legacy_effects.txt",
+        "TOP_update_iraq_progress",
+    )
+    assert "global.TOP_status^top_iraq_target < 5" in effect
+
+
 def test_collection_rebuild_prunes_inactive_typed_assignments_and_pauses_packages():
     script = TargetScript()
     variables = script.target(11)
