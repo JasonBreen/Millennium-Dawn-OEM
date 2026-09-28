@@ -10,9 +10,14 @@ TOP_cache_game_rule = {
 	}
 }
 
+TOP_enable_diagnostics = {
+	set_global_flag = TOP_diagnostics_enabled
+}
+
 TOP_initialize_global = {
 	if = {
-		limit = { TOP_enabled = yes check_variable = { global.TOP_registry_capacity = 0 } }
+		limit = { TOP_enabled = yes check_variable = { global.TOP_status^num = 0 } }
+		set_variable = { global.TOP_clock = 0 }
 		TOP_setup_registry = yes
 	}
 }
@@ -33,7 +38,8 @@ TOP_global_weekly = {
 	}
 	if = {
 		limit = { has_global_flag = TOP_diagnostics_enabled }
-		log = "TOP_PROBE mode=[?global.TOP_rule_mode] clock=[?global.TOP_clock] registry=[?global.TOP_registry_capacity] country_ticks=[?global.TOP_diag_country_ticks]"
+		set_temp_variable = { TOP_probe_registry = global.TOP_status^num }
+		log = "TOP_PROBE mode=[?global.TOP_rule_mode] clock=[?global.TOP_clock] registry=[?TOP_probe_registry] country_ticks=[?global.TOP_diag_country_ticks]"
 		set_variable = { global.TOP_diag_country_ticks = 0 }
 	}
 }

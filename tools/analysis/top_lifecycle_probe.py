@@ -1,7 +1,7 @@
 """Check TOP lifecycle wiring and inspect its opt-in HOI4 game.log markers.
 
 Run ``wiring`` before launching the mod. In a new campaign, open the HOI4
-console and enter ``effect set_global_flag = TOP_diagnostics_enabled``. Let two
+console and enter ``effect TOP_enable_diagnostics = yes``. Let two
 weekly pulses pass, then run ``log <game.log> --expect-mode limited`` (or
 ``full`` / ``off``). Log evidence proves the hooks executed in that campaign;
 the static wiring check alone does not.
@@ -117,6 +117,10 @@ def check_wiring(root: Path) -> list[str]:
         "TOP_resize_country_arrays",
         "TOP_country_initialize",
     )
+    if "set_global_flag = TOP_diagnostics_enabled" not in named_block(
+        source["lifecycle"], "TOP_enable_diagnostics"
+    ):
+        failures.append("TOP_enable_diagnostics does not set the diagnostic flag")
     global_weekly = named_block(source["lifecycle"], "TOP_global_weekly")
     require(global_weekly, "TOP_cache_game_rule", "TOP_global_weekly")
     require(global_weekly, "TOP_initialize_global", "TOP_global_weekly")
@@ -195,9 +199,12 @@ def main(argv: list[str] | None = None) -> int:
         registry = (
             args.root / "common/scripted_effects/01_targeted_operations_registry.txt"
         ).read_text(encoding="utf-8")
-        match = re.search(r"global\.TOP_registry_capacity\s*=\s*(\d+)", registry)
+        match = re.search(
+            r"resize_array\s*=\s*\{\s*global\.TOP_status\s*=\s*(\d+)\s*\}",
+            registry,
+        )
         if match is None:
-            parser.error("generated registry lacks TOP_registry_capacity")
+            parser.error("generated registry lacks TOP_status capacity")
         probes = parse_probes(args.game_log.read_text(encoding="utf-8-sig"))
         failures = check_probes(
             probes, args.expect_mode, int(match.group(1)), args.min_samples

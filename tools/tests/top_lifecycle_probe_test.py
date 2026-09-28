@@ -3,6 +3,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "analysis"))
 
 import top_lifecycle_probe
@@ -10,11 +12,7 @@ import top_lifecycle_probe
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_current_lifecycle_wiring_is_reachable():
-    assert top_lifecycle_probe.check_wiring(ROOT) == []
-
-
-def test_wiring_detects_removed_country_tick(tmp_path):
+def copy_wiring_files(root: Path) -> None:
     paths = (
         "common/on_actions/00_on_actions.txt",
         "common/on_actions/MD_on_actions.txt",
@@ -24,9 +22,17 @@ def test_wiring_detects_removed_country_tick(tmp_path):
         "common/scripted_triggers/01_targeted_operations_triggers.txt",
     )
     for relative in paths:
-        target = tmp_path / relative
+        target = root / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes((ROOT / relative).read_bytes())
+
+
+def test_current_lifecycle_wiring_is_reachable():
+    assert top_lifecycle_probe.check_wiring(ROOT) == []
+
+
+def test_wiring_detects_removed_country_tick(tmp_path):
+    copy_wiring_files(tmp_path)
     ct_effects = tmp_path / "common/scripted_effects/00_ct_effects.txt"
     ct_effects.write_bytes(
         ct_effects.read_bytes()
@@ -41,6 +47,23 @@ def test_wiring_detects_removed_country_tick(tmp_path):
     assert "ct_staggered_country_tick does not call TOP_country_tick" in failures
     assert "add_on_creation does not call counter_terror_nation_startup" in failures
     assert "on_weekly dispatches 0 CT country buckets; expected four" in failures
+
+
+def test_wiring_requires_a_console_diagnostics_setter(tmp_path):
+    copy_wiring_files(tmp_path)
+    lifecycle = (
+        tmp_path / "common/scripted_effects/00_targeted_operations_lifecycle.txt"
+    )
+    lifecycle.write_text(
+        lifecycle.read_text(encoding="utf-8").replace(
+            "set_global_flag = TOP_diagnostics_enabled", "always = yes"
+        ),
+        encoding="utf-8",
+    )
+    assert (
+        "TOP_enable_diagnostics does not set the diagnostic flag"
+        in top_lifecycle_probe.check_wiring(tmp_path)
+    )
 
 
 def test_limited_mode_requires_weekly_country_ticks():
@@ -76,3 +99,40 @@ def test_probe_requires_enough_native_samples():
     assert top_lifecycle_probe.check_probes([], "limited", 161) == [
         "Found 0 TOP_PROBE samples; need 2"
     ]
+
+
+def test_probe_rejects_wrong_mode_and_registry_capacity():
+    probes = top_lifecycle_probe.parse_probes(
+        "TOP_PROBE mode=2 clock=7 registry=160 country_ticks=0\n"
+        "TOP_PROBE mode=2 clock=14 registry=160 country_ticks=1\n"
+    )
+    failures = top_lifecycle_probe.check_probes(probes, "limited", 161)
+    assert "Sample 1: mode 2 != 1" in failures
+    assert "Sample 1: registry 160 != 161" in failures
+
+
+def test_cli_reads_capacity_from_generated_array(tmp_path, capsys):
+    log = tmp_path / "game.log"
+    log.write_text(
+        "TOP_PROBE mode=0 clock=0 registry=0 country_ticks=0\n" * 2,
+        encoding="utf-8",
+    )
+    assert (
+        top_lifecycle_probe.main(
+            ["--root", str(ROOT), "log", str(log), "--expect-mode", "off"]
+        )
+        == 0
+    )
+    assert "PASS: 2 native TOP_PROBE samples in off mode" in capsys.readouterr().out
+
+
+def test_cli_rejects_registry_without_capacity(tmp_path):
+    registry = tmp_path / "common/scripted_effects/01_targeted_operations_registry.txt"
+    registry.parent.mkdir(parents=True)
+    registry.write_text("TOP_setup_registry = {}\n", encoding="utf-8")
+    log = tmp_path / "game.log"
+    log.write_text("", encoding="utf-8")
+    with pytest.raises(SystemExit, match="2"):
+        top_lifecycle_probe.main(
+            ["--root", str(tmp_path), "log", str(log), "--expect-mode", "off"]
+        )
