@@ -474,12 +474,16 @@ def load_manifest(root: Path) -> dict:
             raise ValueError(f"Duplicate or self successor for {target['id']}")
         if any(affiliations[i] != target["group"] for i in target["successors"]):
             raise ValueError("Person successor belongs to another organization")
+        group_pool = groups[target["group"]].get("succession", [])
+        if (
+            target["role_eligibility"].get("kind") == "authored_successor_pool"
+            and target["id"] not in group_pool
+        ):
+            raise ValueError(
+                f"Authored successor missing from group pool: {target['id']}"
+            )
         if target["successors"]:
-            expected = [
-                ident
-                for ident in groups[target["group"]].get("succession", [])
-                if ident != target["id"]
-            ]
+            expected = [ident for ident in group_pool if ident != target["id"]]
             if target["successors"] != expected:
                 raise ValueError(f"Incomplete successor binding for {target['id']}")
 

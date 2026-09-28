@@ -51,6 +51,7 @@ def manifest():
         "consequence_profile",
         "duplicate_successor",
         "incomplete_successor",
+        "missing_authored_pool",
     ],
 )
 def test_manifest_rejects_ambiguous_or_cross_group_identities(
@@ -121,14 +122,30 @@ def test_manifest_rejects_ambiguous_or_cross_group_identities(
         data["targets"][0]["consequence_profile"] = "political_leader"
     elif defect == "duplicate_successor":
         data["targets"][0]["successors"].append(data["targets"][0]["successors"][0])
+    elif defect == "missing_authored_pool":
+        next(group for group in data["groups"] if group["id"] == 22)["succession"] = []
     else:
         data["targets"][0]["successors"].pop()
     path = tmp_path / "tools/data/targeted_operations.json"
     path.parent.mkdir(parents=True)
     with path.open("w", encoding="utf-8", newline="") as stream:
         json.dump(data, stream)
-    with pytest.raises(ValueError):
+    expected = (
+        "Authored successor missing from group pool: 145"
+        if defect == "missing_authored_pool"
+        else None
+    )
+    with pytest.raises(ValueError, match=expected):
         GENERATOR.load_manifest(tmp_path)
+
+
+def test_existing_representations_resolve_to_shipped_files(manifest):
+    for target in manifest["targets"]:
+        for representation in target["existing_representations"]:
+            assert (ROOT / representation["path"]).is_file(), (
+                target["id"],
+                representation["path"],
+            )
 
 
 def test_facility_overrides_can_add_or_remove_known_objectives(manifest):
@@ -531,18 +548,20 @@ def test_manifest_declares_classes_location_policy_and_2027_2032_roster(manifest
     }
     assert set(range(56, 65)) | set(range(129, 142)) <= public_people
     assert set(range(135, 141)) <= public_people
-    unbound_future_pool = {142, 143, 145, 148, 157}
+    future_successor_pool = {142: 2, 143: 7, 145: 22, 148: 23, 157: 24}
     assert all(
         next(target for target in manifest["targets"] if target["id"] == ident)[
             "leader_role"
         ]
         == "none"
-        for ident in unbound_future_pool
+        for ident in future_successor_pool
     )
     assert all(
-        ident not in group.get("succession", [])
-        for ident in unbound_future_pool
-        for group in manifest["groups"]
+        ident
+        in next(group for group in manifest["groups"] if group["id"] == group_id)[
+            "succession"
+        ]
+        for ident, group_id in future_successor_pool.items()
     )
 
 
