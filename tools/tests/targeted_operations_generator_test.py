@@ -5,8 +5,8 @@ from copy import deepcopy
 from pathlib import Path
 
 import pytest
-from targeted_operations_model_test import _named_block, _parse_race_script
 from targeted_operations_manifest_helpers_test import mutate_manifest
+from targeted_operations_model_test import _named_block, _parse_race_script
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location(
