@@ -35,9 +35,20 @@ AUTH_LOCALISATION = AUTH_LOCALISATION_PATH.read_text(encoding="utf-8-sig")
 YEARLY = (ROOT / "common/scripted_effects/00_yearly_effects.txt").read_text(
     encoding="utf-8"
 )
+REGISTRY = (ROOT / "common/scripted_effects/01_targeted_operations_registry.txt").read_text(
+    encoding="utf-8"
+)
 WRAPPERS = (
     ROOT / "common/scripted_triggers/05_targeted_operations_arg_wrappers.txt"
 ).read_text(encoding="utf-8")
+
+
+def test_every_post_start_window_is_dispatched_by_its_yearly_effect():
+    years = set(re.findall(r"(?m)^TOP_open_windows_(\d{4}) = \{", REGISTRY))
+    assert years
+    for year in years - {"2000"}:
+        yearly = _named_block(YEARLY, f"trigger_year_{year}_events")
+        assert f"TOP_open_windows_{year} = yes" in yearly
 
 
 def test_2026_yearly_hook_opens_maduro_before_reviewing_opportunities():
