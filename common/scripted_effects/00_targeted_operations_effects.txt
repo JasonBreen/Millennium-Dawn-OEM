@@ -404,6 +404,10 @@ TOP_country_tick = {
 		limit = { TOP_enabled = yes }
 		TOP_country_initialize = yes
 		TOP_security_country_tick = yes
+		if = {
+			limit = { has_global_flag = TOP_diagnostics_enabled }
+			add_to_variable = { global.TOP_diag_country_ticks = 1 }
+		}
 	}
 	if = {
 		limit = { TOP_country_eligible = yes }
@@ -857,6 +861,11 @@ TOP_global_weekly = {
 			value = top_pending_actor
 			add_to_array = { global.TOP_pending_actors = top_pending_actor }
 		}
+	}
+	if = {
+		limit = { has_global_flag = TOP_diagnostics_enabled }
+		log = "TOP_PROBE mode=[?global.TOP_rule_mode] clock=[?global.TOP_clock] registry=[?global.TOP_registry_capacity] country_ticks=[?global.TOP_diag_country_ticks]"
+		set_variable = { global.TOP_diag_country_ticks = 0 }
 	}
 }
 
