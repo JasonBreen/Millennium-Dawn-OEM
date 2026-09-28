@@ -355,6 +355,8 @@ def test_retirement_never_removes_an_unrelated_current_ruler(target, tag):
 def test_irgc_roles_need_recruited_character_and_current_service(target, token):
     game = PoliticalScript()
     iran = game.countries[game.tags["PER"]]
+    if target in (136, 138):
+        game.globals[f"TOP_window^{target}"] = 1
     assert not game.trigger("TOP_authored_role_eligible", target)
     iran["characters"].add(token)
     assert game.trigger("TOP_authored_role_eligible", target)
@@ -379,14 +381,33 @@ def test_legacy_officials_keep_their_pre_expansion_role_eligibility():
 @pytest.mark.parametrize(
     "target,token", [(136, "PER_top_hossein_salami"), (138, "PER_top_esmail_qaani")]
 )
-def test_added_advisors_are_recruited_once_and_never_resurrected(target, token):
+def test_added_advisors_start_in_history_and_require_top_window(target, token):
+    history = (ROOT / "history/countries/PER - Iran.txt").read_text(encoding="utf-8")
+    effects = (
+        ROOT / "common/scripted_effects/03_targeted_operations_political_roster.txt"
+    ).read_text(encoding="utf-8")
+    characters = (ROOT / "common/characters/PER_targeted_operations.txt").read_text(
+        encoding="utf-8"
+    )
+    assert f"recruit_character = {token}" in history
+    assert f"recruit_character = {token}" not in effects
+    advisor = _named_block(characters, token)
+    assert (
+        f"visible = {{ TOP_enabled = yes check_variable = {{ global.TOP_window^{target} = 1 }} }}"
+        in advisor
+    )
+    assert (
+        f"available = {{ TOP_enabled = yes TOP_iran_has_authored_service = yes check_variable = {{ global.TOP_window^{target} = 1 }} }}"
+        in advisor
+    )
+
     game = PoliticalScript()
     iran = game.countries[game.tags["PER"]]
-    game.globals.update({f"TOP_window^{target}": 1, f"TOP_status^{target}": 0})
-    game.run("TOP_prepare_authored_service")
-    assert token in iran["characters"]
+    iran["characters"].add(token)
+    assert not game.trigger("TOP_authored_role_eligible", target)
+    game.globals[f"TOP_window^{target}"] = 1
+    assert game.trigger("TOP_authored_role_eligible", target)
     game.retire(target)
-    game.run("TOP_prepare_authored_service")
     assert token not in iran["characters"]
 
 

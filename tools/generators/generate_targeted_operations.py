@@ -604,8 +604,7 @@ def registry(data: dict) -> str:
     )
     output += "\n" + block(
         "TOP_activate_candidates",
-        ["TOP_prepare_authored_service = yes"]
-        + [f"TOP_activate_group_{g['id']} = yes" for g in data["groups"]],
+        [f"TOP_activate_group_{g['id']} = yes" for g in data["groups"]],
     )
     for group in data["groups"]:
         gid = group["id"]

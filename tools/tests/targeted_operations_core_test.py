@@ -134,7 +134,6 @@ class TargetScript(TargetedScript):
             "TOP_security_country_tick",
             "TOP_get_protection_country",
             "TOP_build_view",
-            "TOP_prepare_authored_service",
             "TOP_refresh_visit_dossiers",
             "TOP_political_country_opportunities",
             "TOP_visit_country_opportunities",
