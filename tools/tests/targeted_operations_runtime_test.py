@@ -35,9 +35,9 @@ AUTH_LOCALISATION = AUTH_LOCALISATION_PATH.read_text(encoding="utf-8-sig")
 YEARLY = (ROOT / "common/scripted_effects/00_yearly_effects.txt").read_text(
     encoding="utf-8"
 )
-REGISTRY = (ROOT / "common/scripted_effects/01_targeted_operations_registry.txt").read_text(
-    encoding="utf-8"
-)
+REGISTRY = (
+    ROOT / "common/scripted_effects/01_targeted_operations_registry.txt"
+).read_text(encoding="utf-8")
 WRAPPERS = (
     ROOT / "common/scripted_triggers/05_targeted_operations_arg_wrappers.txt"
 ).read_text(encoding="utf-8")
