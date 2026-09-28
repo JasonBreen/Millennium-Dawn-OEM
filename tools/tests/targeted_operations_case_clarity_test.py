@@ -75,6 +75,7 @@ def test_focused_collection_relabels_only_axes_that_increase():
     assert variables["TOP_lead_source"][11] == 2
 
     variables["TOP_collection_focus"][11] = 2
+    script.globals["TOP_clock"] = 100
     script.run("TOP_apply_person_collection_gain", 1)
     assert variables["TOP_lead_source"][11] == 3
 

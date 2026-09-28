@@ -12,20 +12,20 @@ def test_top_raid_and_political_category_use_dynamic_rule_gates():
     assert "visible = { TOP_enabled = yes }" in category
 
 
-def test_ct_registration_copies_the_host_region_to_the_caller():
+def test_ct_registration_reads_the_unscoped_host_region():
+    # Temp variables are unscoped, so the caller reads region_idx directly, as 00_ct_effects.txt does.
     effect = block(
         "common/scripted_effects/01_targeted_operations_world.txt",
         "TOP_append_ct_organization",
     )
-    assert (
-        "PREV = { set_temp_variable = { TOP_ct_region = PREV.region_idx } }" in effect
-    )
-    assert "global.active_terror_org_region = TOP_ct_region" in effect
+    assert "PREV.region_idx" not in effect
+    assert "global.active_terror_org_region = region_idx" in effect
 
 
 def test_iraqi_hunt_imports_selected_state_and_stops_resolved_saddam_loop():
     events = read("events/Middle East Peace Plan.txt")
-    assert events.count("TOP_import_state = PREV.TOP_import_state") == 5
+    assert "PREV.TOP_import_state" not in events
+    assert events.count("set_temp_variable = { TOP_import_state = THIS }") == 5
     relocation = events[
         events.index("country_event = { # Saddam Relocation (bi-monthly)") :
     ]
@@ -40,6 +40,36 @@ def test_prosecuted_iraqi_fugitives_count_toward_resolution():
         "TOP_update_iraq_progress",
     )
     assert "global.TOP_status^top_iraq_target < 5" in effect
+
+
+def test_both_al_shabaab_founding_options_install_the_current_successor():
+    events = read("events/Somalia.txt")
+    options = [
+        events[events.index(f"name = somalia.10.{letter}") :][:4000]
+        for letter in ("a", "b")
+    ]
+    for option in options:
+        assert (
+            "set_temp_variable = { TOP_target = global.TOP_group_leader^6 }" in option
+        )
+        assert "TOP_apply_office_successor = yes" in option
+
+
+def test_false_location_keeps_the_lead_when_no_other_state_is_found():
+    for name, field in (
+        ("TOP_maybe_false_person_location", "TOP_lead_state^TOP_target"),
+        (
+            "TOP_maybe_false_organization_location",
+            "TOP_org_lead_state^TOP_group_target",
+        ),
+    ):
+        effect = block(
+            "common/scripted_effects/06_targeted_operations_redesign.txt", name
+        )
+        assert (
+            "if = { limit = { NOT = { check_variable = { TOP_false_state = 0 } } } "
+            f"set_variable = {{ {field} = TOP_false_state }} }}"
+        ) in effect
 
 
 def test_collection_rebuild_prunes_inactive_typed_assignments_and_pauses_packages():
