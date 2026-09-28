@@ -17,6 +17,8 @@ SOURCE_PATHS = (
     "common/scripted_triggers/01_targeted_operations_triggers.txt",
     "common/scripted_triggers/04_targeted_operations_cases.txt",
     "common/scripted_triggers/07_targeted_operations_redesign.txt",
+    "common/scripted_effects/04_targeted_operations_cases.txt",
+    "common/scripted_effects/07_targeted_operations_organization_cases.txt",
 )
 
 
@@ -105,3 +107,38 @@ def test_probe_requires_enough_native_samples():
     assert top_lifecycle_probe.check_probes([], "limited", 161) == [
         "Found 0 TOP_PROBE samples; need 2"
     ]
+
+
+def test_slot_trace_accepts_completed_person_and_organization_operations():
+    events = top_lifecycle_probe.parse_slot_events(
+        "TOP_SLOT event=begin actor=USA kind=1 id=12 seq=3 clock=14\n"
+        "TOP_SLOT event=begin actor=FRA kind=2 id=7 seq=1 clock=14\n"
+        "TOP_SLOT event=end actor=USA kind=1 id=12 seq=3 clock=42\n"
+        "TOP_SLOT event=end actor=FRA kind=2 id=7 seq=1 clock=42\n"
+    )
+    assert top_lifecycle_probe.check_slot_events(events) == []
+
+
+def test_slot_trace_rejects_overlap_and_mismatched_release():
+    events = top_lifecycle_probe.parse_slot_events(
+        "TOP_SLOT event=begin actor=USA kind=1 id=12 seq=3 clock=14\n"
+        "TOP_SLOT event=begin actor=USA kind=2 id=7 seq=1 clock=14\n"
+        "TOP_SLOT event=end actor=USA kind=1 id=12 seq=4 clock=42\n"
+    )
+    failures = top_lifecycle_probe.check_slot_events(events)
+    assert "Trace 2: USA began (2, 7, 1) while (1, 12, 3) was active" in failures
+    assert "Trace 3: USA ended (1, 12, 4) instead of (1, 12, 3)" in failures
+    assert "USA still holds slot (1, 12, 3)" in failures
+
+
+def test_wiring_detects_missing_organization_slot_trace(tmp_path):
+    copy_sources(tmp_path)
+    cases = (
+        tmp_path
+        / "common/scripted_effects/07_targeted_operations_organization_cases.txt"
+    )
+    cases.write_bytes(cases.read_bytes().replace(b"TOP_trace_slot_begin = yes", b""))
+    assert (
+        "organization operation begin lacks one slot trace"
+        in top_lifecycle_probe.check_wiring(tmp_path)
+    )

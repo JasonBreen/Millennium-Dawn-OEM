@@ -5,6 +5,10 @@ console and enter ``effect set_global_flag = TOP_diagnostics_enabled``. Let two
 weekly pulses pass, then run ``log <game.log> --expect-mode limited`` (or
 ``full`` / ``off``). Log evidence proves the hooks executed in that campaign;
 the static wiring check alone does not.
+
+To check the shared operation slot, begin and finish one person operation and
+one organization operation in the same fresh game session, then run
+``operations <game.log>``. The trace is emitted only while diagnostics are on.
 """
 
 from __future__ import annotations
@@ -24,6 +28,11 @@ PROBE_RE = re.compile(
     r"clock=(?P<clock>-?\d+(?:\.\d+)?) "
     r"registry=(?P<registry>-?\d+(?:\.\d+)?) "
     r"country_ticks=(?P<country_ticks>-?\d+(?:\.\d+)?)"
+)
+SLOT_RE = re.compile(
+    r"TOP_SLOT event=(?P<event>begin|end) actor=(?P<actor>[A-Z0-9_]+) "
+    r"kind=(?P<kind>\d+(?:\.\d+)?) id=(?P<id>\d+(?:\.\d+)?) "
+    r"seq=(?P<seq>\d+(?:\.\d+)?) clock=(?P<clock>\d+(?:\.\d+)?)"
 )
 MODES = {"off": 0, "limited": 1, "full": 2}
 
@@ -49,6 +58,8 @@ def check_wiring(root: Path) -> list[str]:
         "triggers": "common/scripted_triggers/01_targeted_operations_triggers.txt",
         "case_triggers": "common/scripted_triggers/04_targeted_operations_cases.txt",
         "redesign_triggers": "common/scripted_triggers/07_targeted_operations_redesign.txt",
+        "person_cases": "common/scripted_effects/04_targeted_operations_cases.txt",
+        "organization_cases": "common/scripted_effects/07_targeted_operations_organization_cases.txt",
     }
     try:
         source = {
@@ -164,6 +175,18 @@ def check_wiring(root: Path) -> list[str]:
         failures.append(
             "Person and organization operations do not share the single slot gate"
         )
+    for name in ("TOP_trace_slot_begin", "TOP_trace_slot_end"):
+        if "TOP_diagnostics_enabled" not in get_block(source["effects"], name):
+            failures.append(f"{name} is not diagnostic-only")
+    for source_name, label, ends in (
+        ("person_cases", "person", 3),
+        ("organization_cases", "organization", 3),
+    ):
+        text = source[source_name]
+        if text.count("TOP_trace_slot_begin = yes") != 1:
+            failures.append(f"{label} operation begin lacks one slot trace")
+        if text.count("TOP_trace_slot_end = yes") != ends:
+            failures.append(f"{label} operation releases lack {ends} slot traces")
     return failures
 
 
@@ -202,6 +225,57 @@ def check_probes(
     return failures
 
 
+def parse_slot_events(log: str) -> list[dict[str, str | int]]:
+    events = []
+    for match in SLOT_RE.finditer(log):
+        values = match.groupdict()
+        events.append(
+            {
+                "event": values["event"],
+                "actor": values["actor"],
+                **{
+                    name: int(float(values[name]))
+                    for name in ("kind", "id", "seq", "clock")
+                },
+            }
+        )
+    return events
+
+
+def check_slot_events(events: list[dict[str, str | int]]) -> list[str]:
+    failures = []
+    active: dict[str, tuple[int, int, int]] = {}
+    completed = {1: 0, 2: 0}
+    for number, event in enumerate(events, 1):
+        actor = str(event["actor"])
+        slot = (int(event["kind"]), int(event["id"]), int(event["seq"]))
+        if slot[0] not in completed or slot[1] <= 0 or slot[2] <= 0:
+            failures.append(f"Trace {number}: invalid slot {slot} for {actor}")
+            continue
+        if event["event"] == "begin":
+            if actor in active:
+                failures.append(
+                    f"Trace {number}: {actor} began {slot} while {active[actor]} was active"
+                )
+            else:
+                active[actor] = slot
+        elif actor not in active:
+            failures.append(f"Trace {number}: {actor} ended {slot} without a begin")
+        elif active[actor] != slot:
+            failures.append(
+                f"Trace {number}: {actor} ended {slot} instead of {active[actor]}"
+            )
+        else:
+            completed[slot[0]] += 1
+            del active[actor]
+    for actor, slot in active.items():
+        failures.append(f"{actor} still holds slot {slot}")
+    for kind, label in ((1, "person"), (2, "organization")):
+        if completed[kind] == 0:
+            failures.append(f"No completed {label} operation in TOP_SLOT trace")
+    return failures
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -215,12 +289,16 @@ def main(argv: list[str] | None = None) -> int:
     log_parser.add_argument("game_log", type=Path)
     log_parser.add_argument("--expect-mode", choices=MODES, required=True)
     log_parser.add_argument("--min-samples", type=int, default=2)
+    operations_parser = subparsers.add_parser(
+        "operations", help="check native person and organization slot transitions"
+    )
+    operations_parser.add_argument("game_log", type=Path)
     args = parser.parse_args(argv)
 
     if args.command == "wiring":
         failures = check_wiring(args.root)
         label = "static TOP lifecycle wiring"
-    else:
+    elif args.command == "log":
         registry = (
             args.root / "common/scripted_effects/01_targeted_operations_registry.txt"
         ).read_text(encoding="utf-8")
@@ -232,6 +310,10 @@ def main(argv: list[str] | None = None) -> int:
             probes, args.expect_mode, int(match.group(1)), args.min_samples
         )
         label = f"{len(probes)} native TOP_PROBE samples in {args.expect_mode} mode"
+    else:
+        events = parse_slot_events(args.game_log.read_text(encoding="utf-8-sig"))
+        failures = check_slot_events(events)
+        label = f"{len(events)} native TOP_SLOT transitions"
     if failures:
         for failure in failures:
             print(f"FAIL: {failure}")

@@ -119,6 +119,7 @@ class ReviewScript(TargetedScript):
             "TOP_rule_mode": 2,
             "TOP_group_class^num": len(manifest["groups"]) + 1,
         }
+        self.global_flags = {}
         self.temps, self.events, self.event_targets, self.scope_stack = {}, [], {}, []
         for target in (1, 2):
             self.globals[f"TOP_status^{target}"] = 1
