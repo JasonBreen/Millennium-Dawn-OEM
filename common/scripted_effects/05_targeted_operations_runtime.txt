@@ -1,7 +1,6 @@
 TOP_setup_extended_runtime = {
 	if = {
-		limit = { TOP_enabled = yes check_variable = { global.TOP_extended_runtime_version < 3 } }
-		set_variable = { global.TOP_extended_runtime_version = 3 }
+		limit = { TOP_enabled = yes }
 		set_variable = { global.TOP_annual_lead_gain = 25 }
 		set_variable = { global.TOP_official_review_penalty = 20 }
 		set_variable = { global.TOP_visit_notice_days = 60 }
@@ -18,9 +17,7 @@ TOP_setup_extended_runtime = {
 		set_variable = { global.TOP_crisis_settlement_apology_pp = -25 }
 		set_variable = { global.TOP_crisis_settlement_denial_pp = -50 }
 		set_variable = { global.TOP_crisis_settlement_defiance_pp = -75 }
-	}
-	if = {
-		limit = { TOP_enabled = yes check_variable = { global.TOP_visit_status^num < global.TOP_registry_capacity } }
+		set_variable = { global.TOP_visit_open_interval = 91 }
 		resize_array = { global.TOP_visit_status = global.TOP_registry_capacity }
 		resize_array = { global.TOP_visit_token = global.TOP_registry_capacity }
 		resize_array = { global.TOP_visit_planned_token = global.TOP_registry_capacity }
@@ -33,13 +30,7 @@ TOP_setup_extended_runtime = {
 		resize_array = { global.TOP_visit_state = global.TOP_registry_capacity }
 		resize_array = { global.TOP_visit_return_host = global.TOP_registry_capacity }
 		resize_array = { global.TOP_visit_return_state = global.TOP_registry_capacity }
-	}
-	if = {
-		limit = { TOP_enabled = yes check_variable = { global.TOP_visit_story_used^num < 7 } }
 		resize_array = { global.TOP_visit_story_used = 7 }
-	}
-	if = {
-		limit = { TOP_enabled = yes check_variable = { global.TOP_extended_runtime_version < 4 } }
 		clear_array = global.TOP_crisis_queue_actors
 		clear_array = global.TOP_crisis_queue_protections
 		clear_array = global.TOP_crisis_queue_hosts
@@ -52,20 +43,8 @@ TOP_setup_extended_runtime = {
 		clear_array = global.TOP_crisis_queue_visit_stories
 		clear_array = global.TOP_crisis_queue_visit_tokens
 		clear_array = global.TOP_crisis_queue_sequences
-		set_variable = { global.TOP_extended_runtime_version = 4 }
-	}
-	if = {
-		limit = { TOP_enabled = yes check_variable = { global.TOP_extended_runtime_version < 5 } }
 		set_variable = { global.TOP_crisis_participant_pending = 0 }
 		set_variable = { global.TOP_crisis_cleanup_requested = 0 }
-		set_variable = { global.TOP_extended_runtime_version = 5 }
-	}
-	if = {
-		# Days between open-story visits worldwide; 91 gives about four a year.
-		# Guarded on its own rather than by the version above, so an existing
-		# save picks it up without re-running every constant in this file.
-		limit = { TOP_enabled = yes check_variable = { global.TOP_visit_open_interval < 1 } }
-		set_variable = { global.TOP_visit_open_interval = 91 }
 	}
 }
 
@@ -79,7 +58,6 @@ TOP_setup_visit_country = {
 
 # Reads TOP_arg_state, TOP_arg_story, TOP_arg_target.
 TOP_plan_visit = {
-	TOP_setup_extended_runtime = yes
 	TOP_setup_visit_country = yes
 	set_temp_variable = { top_visit_target = TOP_arg_target }
 	set_temp_variable = { TOP_visit_destination = TOP_arg_state }
@@ -251,7 +229,6 @@ TOP_revalidate_active_visit = {
 }
 
 TOP_process_visits = {
-	TOP_setup_extended_runtime = yes
 	clear_array = global.TOP_planned_visits_next
 	for_each_loop = {
 		array = global.TOP_planned_visits
@@ -421,7 +398,6 @@ TOP_snapshot_crisis_coalition_balance = {
 }
 
 TOP_start_exposed_kill_crisis = {
-	TOP_setup_extended_runtime = yes
 	set_temp_variable = { TOP_crisis_actual_actor = THIS }
 	set_temp_variable = { TOP_crisis_actual_protection = TOP_operation_protection_country }
 	set_variable = { global.TOP_crisis_candidate_actor = THIS }

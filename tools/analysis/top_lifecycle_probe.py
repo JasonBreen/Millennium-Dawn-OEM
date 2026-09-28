@@ -246,6 +246,8 @@ def check_probes(
     probes: list[dict[str, Decimal]], mode: str, capacity: int, min_samples: int = 2
 ) -> list[str]:
     failures = []
+    if min_samples < 2:
+        return ["TOP_PROBE requires at least two samples"]
     if len(probes) < min_samples:
         return [f"Found {len(probes)} TOP_PROBE samples; need {min_samples}"]
     expected_mode = MODES[mode]
@@ -263,6 +265,11 @@ def check_probes(
         if mode == "off" and (probe["clock"] != 0 or probe["country_ticks"] != 0):
             failures.append(f"Sample {number}: Off mode advanced TOP state")
     if mode != "off":
+        for number, probe in enumerate(probes, 1):
+            if probe["clock"] <= 0 or probe["clock"] % 7:
+                failures.append(
+                    f"Sample {number}: clock {probe['clock']:g} is not a positive multiple of seven"
+                )
         for previous, current in zip(probes, probes[1:]):
             if current["clock"] - previous["clock"] != 7:
                 failures.append("TOP clock did not advance by seven between samples")
@@ -347,6 +354,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     operations_parser.add_argument("game_log", type=Path)
     args = parser.parse_args(argv)
+    if args.command == "log" and args.min_samples < 2:
+        parser.error("--min-samples must be at least 2")
 
     if args.command == "wiring":
         failures = check_wiring(args.root)

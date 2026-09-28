@@ -663,8 +663,8 @@ def test_open_story_is_reusable_where_the_authored_stories_are_spent():
     assert "global.TOP_visit_story_used^TOP_visit_trigger_story = 0" in gate
     setup = _named_block(EFFECTS, "TOP_setup_extended_runtime")
     assert "resize_array = { global.TOP_visit_story_used = 7 }" in setup
-    assert "global.TOP_visit_open_interval < 1" in setup
     assert "global.TOP_visit_open_interval = 91" in setup
+    assert "TOP_extended_runtime_version" not in setup
 
 
 def test_open_story_dispatcher_throttles_globally_and_frees_a_stalled_host():

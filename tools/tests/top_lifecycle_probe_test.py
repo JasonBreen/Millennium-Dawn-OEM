@@ -110,6 +110,19 @@ def test_probe_requires_enough_native_samples():
     assert top_lifecycle_probe.check_probes([], "limited", 161) == [
         "Found 0 TOP_PROBE samples; need 2"
     ]
+    assert top_lifecycle_probe.check_probes([], "off", 161, min_samples=0) == [
+        "TOP_PROBE requires at least two samples"
+    ]
+
+
+def test_enabled_probe_clocks_start_on_the_seven_day_phase():
+    probes = top_lifecycle_probe.parse_probes(
+        "TOP_PROBE mode=1 clock=1 registry=161 country_ticks=1\n"
+        "TOP_PROBE mode=1 clock=8 registry=161 country_ticks=1\n"
+    )
+    failures = top_lifecycle_probe.check_probes(probes, "limited", 161)
+    assert "Sample 1: clock 1 is not a positive multiple of seven" in failures
+    assert "Sample 2: clock 8 is not a positive multiple of seven" in failures
 
 
 def test_slot_trace_accepts_completed_person_and_organization_operations():
@@ -207,6 +220,23 @@ def test_cli_reads_generated_capacity_and_reports_off_mode(tmp_path, capsys):
         == 0
     )
     assert "PASS: 2 native TOP_PROBE samples in off mode" in capsys.readouterr().out
+
+
+def test_cli_rejects_fewer_than_two_required_samples(tmp_path):
+    log = tmp_path / "game.log"
+    log.write_text("", encoding="utf-8")
+    with pytest.raises(SystemExit, match="2"):
+        top_lifecycle_probe.main(
+            ["log", str(log), "--expect-mode", "off", "--min-samples", "0"]
+        )
+
+
+def test_off_rule_preserves_achievements():
+    rules = (ROOT / "common/game_rules/01_targeted_operations.txt").read_text(
+        encoding="utf-8"
+    )
+    off = rules[rules.index("name = TOP_disabled_option") :]
+    assert "allow_achievements = yes" in off[: off.index("}")]
 
 
 def test_cli_reports_slot_trace_failures(tmp_path, capsys):

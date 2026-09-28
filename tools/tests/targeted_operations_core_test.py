@@ -35,6 +35,7 @@ class TargetScript(TargetedScript):
             "01_targeted_operations_world.txt",
             "01_targeted_operations_registry.txt",
             "04_targeted_operations_cases.txt",
+            "05_targeted_operations_runtime.txt",
             "06_targeted_operations_redesign.txt",
             "07_targeted_operations_organization_cases.txt",
             "08_targeted_operations_resolution.txt",
