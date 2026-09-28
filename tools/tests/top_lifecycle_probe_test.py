@@ -3,6 +3,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "analysis"))
 
 import top_lifecycle_probe
@@ -142,3 +144,84 @@ def test_wiring_detects_missing_organization_slot_trace(tmp_path):
         "organization operation begin lacks one slot trace"
         in top_lifecycle_probe.check_wiring(tmp_path)
     )
+
+
+def test_wiring_requires_a_console_diagnostics_setter(tmp_path):
+    copy_sources(tmp_path)
+    effects = tmp_path / "common/scripted_effects/00_targeted_operations_effects.txt"
+    effects.write_bytes(
+        effects.read_bytes().replace(
+            b"set_global_flag = TOP_diagnostics_enabled", b"always = yes"
+        )
+    )
+    assert (
+        "TOP_enable_diagnostics does not set the diagnostic flag"
+        in top_lifecycle_probe.check_wiring(tmp_path)
+    )
+
+
+def test_wiring_reports_unreadable_source(tmp_path):
+    assert (
+        "Cannot read TOP wiring source" in top_lifecycle_probe.check_wiring(tmp_path)[0]
+    )
+
+
+def test_named_block_reports_missing_or_unbalanced_blocks():
+    with pytest.raises(ValueError, match="Missing block: TOP_missing"):
+        top_lifecycle_probe.named_block("", "TOP_missing")
+    with pytest.raises(ValueError, match="Unbalanced block: TOP_missing"):
+        top_lifecycle_probe.named_block("TOP_missing = {", "TOP_missing")
+
+
+def test_probe_rejects_wrong_mode_and_registry_capacity():
+    probes = top_lifecycle_probe.parse_probes(
+        "TOP_PROBE mode=2 clock=7 registry=160 country_ticks=0\n"
+        "TOP_PROBE mode=2 clock=14 registry=160 country_ticks=1\n"
+    )
+    failures = top_lifecycle_probe.check_probes(probes, "limited", 161)
+    assert "Sample 1: mode 2 != 1" in failures
+    assert "Sample 1: registry 160 != 161" in failures
+
+
+def test_slot_trace_rejects_invalid_and_orphaned_transitions():
+    events = top_lifecycle_probe.parse_slot_events(
+        "TOP_SLOT event=begin actor=USA kind=0 id=0 seq=0 clock=7\n"
+        "TOP_SLOT event=end actor=USA kind=1 id=12 seq=3 clock=14\n"
+    )
+    failures = top_lifecycle_probe.check_slot_events(events)
+    assert "Trace 1: invalid slot (0, 0, 0) for USA" in failures
+    assert "Trace 2: USA ended (1, 12, 3) without a begin" in failures
+
+
+def test_cli_reads_generated_capacity_and_reports_off_mode(tmp_path, capsys):
+    log = tmp_path / "game.log"
+    log.write_text(
+        "TOP_PROBE mode=0 clock=0 registry=0 country_ticks=0\n" * 2,
+        encoding="utf-8",
+    )
+    assert (
+        top_lifecycle_probe.main(
+            ["--root", str(ROOT), "log", str(log), "--expect-mode", "off"]
+        )
+        == 0
+    )
+    assert "PASS: 2 native TOP_PROBE samples in off mode" in capsys.readouterr().out
+
+
+def test_cli_reports_slot_trace_failures(tmp_path, capsys):
+    log = tmp_path / "game.log"
+    log.write_text("", encoding="utf-8")
+    assert top_lifecycle_probe.main(["operations", str(log)]) == 1
+    assert "No completed person operation" in capsys.readouterr().out
+
+
+def test_cli_rejects_registry_without_capacity(tmp_path):
+    registry = tmp_path / "common/scripted_effects/01_targeted_operations_registry.txt"
+    registry.parent.mkdir(parents=True)
+    registry.write_text("TOP_setup_registry = {}\n", encoding="utf-8")
+    log = tmp_path / "game.log"
+    log.write_text("", encoding="utf-8")
+    with pytest.raises(SystemExit, match="2"):
+        top_lifecycle_probe.main(
+            ["--root", str(tmp_path), "log", str(log), "--expect-mode", "off"]
+        )

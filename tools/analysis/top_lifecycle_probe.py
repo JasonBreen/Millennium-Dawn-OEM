@@ -138,6 +138,10 @@ def check_wiring(root: Path) -> list[str]:
         "TOP_resize_country_arrays",
         "TOP_country_initialize",
     )
+    if "set_global_flag = TOP_diagnostics_enabled" not in get_block(
+        effects, "TOP_enable_diagnostics"
+    ):
+        failures.append("TOP_enable_diagnostics does not set the diagnostic flag")
     global_weekly = get_block(effects, "TOP_global_weekly")
     require(global_weekly, "TOP_cache_game_rule", "TOP_global_weekly")
     require(global_weekly, "TOP_initialize_global", "TOP_global_weekly")
