@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 from targeted_operations_model_test import _named_block, _parse_race_script
+from targeted_operations_manifest_helpers_test import mutate_manifest
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location(
@@ -58,74 +59,7 @@ def test_manifest_rejects_ambiguous_or_cross_group_identities(
     tmp_path, manifest, defect
 ):
     data = deepcopy(manifest)
-    if defect == "duplicate_id":
-        data["targets"][1]["id"] = data["targets"][0]["id"]
-    elif defect == "duplicate_key":
-        data["targets"][1]["key"] = data["targets"][0]["key"]
-    elif defect == "duplicate_group":
-        data["groups"][1]["id"] = data["groups"][0]["id"]
-    elif defect == "duplicate_ct_slot":
-        data["groups"][1]["ct_id"] = data["groups"][0]["ct_id"]
-    elif defect == "foreign_successor":
-        data["targets"][0]["successors"].append(64)
-    elif defect == "missing_successor":
-        data["targets"][0]["successors"].append(999)
-    elif defect == "foreign_group_successor":
-        data["groups"][0]["succession"].append(64)
-    elif defect == "generated_overlap":
-        data["targets"][-1]["id"] = 65
-    elif defect == "generated_end":
-        data["generated_end"] = 130
-    elif defect == "capacity":
-        data["capacity"] += 1
-    elif defect == "target_class":
-        data["targets"][0]["target_class"] = "person"
-    elif defect == "group_class":
-        data["groups"][0]["group_class"] = "organization"
-    elif defect == "location_policy":
-        data["groups"][0]["location_policy"] = "random_state"
-    elif defect == "unknown_source":
-        data["targets"][0]["sources"].append("missing_source")
-    elif defect == "stable_target_key":
-        data["targets"][0]["key"], data["targets"][1]["key"] = (
-            data["targets"][1]["key"],
-            data["targets"][0]["key"],
-        )
-    elif defect == "stable_group_key":
-        data["groups"][0]["key"], data["groups"][1]["key"] = (
-            data["groups"][1]["key"],
-            data["groups"][0]["key"],
-        )
-    elif defect == "negative_ct_slot":
-        data["groups"][0]["ct_id"] = -1
-    elif defect == "group_public_identity":
-        data["groups"][0]["public_identity"] = True
-    elif defect == "target_public_identity":
-        data["targets"][0]["public_identity"] = True
-    elif defect == "facility_default":
-        data["facility_objective_defaults"]["state_security"] = [
-            "command",
-            "funding",
-        ]
-    elif defect == "empty_facility_override":
-        data["groups"][0]["facility_objectives"] = []
-    elif defect == "unknown_facility_override":
-        data["groups"][0]["facility_objectives"] = ["safehouse"]
-    elif defect == "leader_role":
-        data["targets"][0]["leader_role"] = "president"
-    elif defect == "leader_office":
-        leader = next(
-            target for target in data["targets"] if target["leader_role"] != "none"
-        )
-        leader["role_eligibility"]["office_keys"] = []
-    elif defect == "consequence_profile":
-        data["targets"][0]["consequence_profile"] = "political_leader"
-    elif defect == "duplicate_successor":
-        data["targets"][0]["successors"].append(data["targets"][0]["successors"][0])
-    elif defect == "missing_authored_pool":
-        next(group for group in data["groups"] if group["id"] == 22)["succession"] = []
-    else:
-        data["targets"][0]["successors"].pop()
+    mutate_manifest(data, defect)
     path = tmp_path / "tools/data/targeted_operations.json"
     path.parent.mkdir(parents=True)
     with path.open("w", encoding="utf-8", newline="") as stream:
