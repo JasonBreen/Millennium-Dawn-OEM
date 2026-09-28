@@ -26,6 +26,19 @@ PROBE_RE = re.compile(
     r"country_ticks=(?P<country_ticks>-?\d+(?:\.\d+)?)"
 )
 MODES = {"off": 0, "limited": 1, "full": 2}
+RULE_OPTIONS = (
+    "TOP_limited_sandbox_option",
+    "TOP_full_sandbox_option",
+    "TOP_disabled_option",
+)
+COMMENT_RE = re.compile(r'"[^"\n]*"|#[^\n]*')
+
+
+def strip_comments(text: str) -> str:
+    """Drop HOI4 comments so commented-out statements do not satisfy checks."""
+    return COMMENT_RE.sub(
+        lambda match: match.group(0) if match.group(0).startswith('"') else "", text
+    )
 
 
 def named_block(text: str, name: str) -> str:
@@ -47,9 +60,10 @@ def check_wiring(root: Path) -> list[str]:
         "lifecycle": "common/scripted_effects/00_targeted_operations_lifecycle.txt",
         "registry": "common/scripted_effects/01_targeted_operations_registry.txt",
         "triggers": "common/scripted_triggers/01_targeted_operations_triggers.txt",
+        "rules": "common/game_rules/01_targeted_operations.txt",
     }
     source = {
-        name: (root / path).read_text(encoding="utf-8-sig")
+        name: strip_comments((root / path).read_text(encoding="utf-8-sig"))
         for name, path in paths.items()
     }
     failures = []
@@ -131,8 +145,27 @@ def check_wiring(root: Path) -> list[str]:
         "TOP_country_initialize",
         "TOP_country_tick",
     )
-    for name in ("TOP_setup_registry", "TOP_resize_country_arrays"):
-        named_block(source["registry"], name)
+    named_block(source["registry"], "TOP_setup_registry")
+    capacity = re.search(
+        r"resize_array\s*=\s*\{\s*global\.TOP_status\s*=\s*(\d+)\s*\}",
+        source["registry"],
+    )
+    country_arrays = named_block(source["registry"], "TOP_resize_country_arrays")
+    if capacity is None or not re.search(
+        rf"resize_array\s*=\s*\{{\s*TOP_known\s*=\s*{capacity.group(1)}\s*\}}",
+        country_arrays,
+    ):
+        failures.append(
+            "TOP_resize_country_arrays does not size TOP_known to the registry capacity"
+        )
+    rule = named_block(source["rules"], "TOP_game_rule")
+    for option in RULE_OPTIONS:
+        if not re.search(rf"(?m)^\s*name\s*=\s*{option}\s*$", rule):
+            failures.append(f"TOP_game_rule lacks option {option}")
+    cache = named_block(source["lifecycle"], "TOP_cache_game_rule")
+    for option in RULE_OPTIONS[:2]:
+        if f"has_game_rule = {{ rule = TOP_game_rule option = {option} }}" not in cache:
+            failures.append(f"TOP_cache_game_rule does not read {option}")
     if "has_game_rule" in source["triggers"]:
         failures.append(
             "TOP scripted triggers evaluate has_game_rule before a game exists"
@@ -142,38 +175,47 @@ def check_wiring(root: Path) -> list[str]:
     return failures
 
 
-def parse_probes(log: str) -> list[dict[str, int]]:
+def parse_probes(log: str) -> list[dict[str, float]]:
     probes = []
     for match in PROBE_RE.finditer(log):
-        probes.append(
-            {name: int(float(value)) for name, value in match.groupdict().items()}
-        )
+        probes.append({name: float(value) for name, value in match.groupdict().items()})
     return probes
 
 
 def check_probes(
-    probes: list[dict[str, int]], mode: str, capacity: int, min_samples: int = 2
+    probes: list[dict[str, float]], mode: str, capacity: int, min_samples: int = 2
 ) -> list[str]:
     failures = []
-    if len(probes) < min_samples:
-        return [f"Found {len(probes)} TOP_PROBE samples; need {min_samples}"]
+    if len(probes) < max(min_samples, 2):
+        return [f"Found {len(probes)} TOP_PROBE samples; need {max(min_samples, 2)}"]
     expected_mode = MODES[mode]
     for number, probe in enumerate(probes, 1):
+        fractional = [name for name, value in probe.items() if not value.is_integer()]
+        if fractional:
+            failures.append(f"Sample {number}: non-integer {', '.join(fractional)}")
         if probe["mode"] != expected_mode:
-            failures.append(f"Sample {number}: mode {probe['mode']} != {expected_mode}")
+            failures.append(
+                f"Sample {number}: mode {probe['mode']:g} != {expected_mode}"
+            )
         expected_capacity = 0 if mode == "off" else capacity
         if probe["registry"] != expected_capacity:
             failures.append(
-                f"Sample {number}: registry {probe['registry']} != {expected_capacity}"
+                f"Sample {number}: registry {probe['registry']:g} != {expected_capacity}"
             )
         if mode == "off" and (probe["clock"] != 0 or probe["country_ticks"] != 0):
             failures.append(f"Sample {number}: Off mode advanced TOP state")
     if mode != "off":
+        for number, probe in enumerate(probes, 1):
+            if probe["clock"] <= 0 or probe["clock"] % 7:
+                failures.append(
+                    f"Sample {number}: clock {probe['clock']:g} is not a positive multiple of seven"
+                )
         for previous, current in zip(probes, probes[1:]):
             if current["clock"] - previous["clock"] != 7:
                 failures.append("TOP clock did not advance by seven between samples")
-        if not any(probe["country_ticks"] > 0 for probe in probes[1:]):
-            failures.append("No staggered country tick appeared after the first sample")
+        for number, probe in enumerate(probes[1:], 2):
+            if probe["country_ticks"] <= 0:
+                failures.append(f"Sample {number}: no staggered country tick")
     return failures
 
 
@@ -191,6 +233,8 @@ def main(argv: list[str] | None = None) -> int:
     log_parser.add_argument("--expect-mode", choices=MODES, required=True)
     log_parser.add_argument("--min-samples", type=int, default=2)
     args = parser.parse_args(argv)
+    if args.command == "log" and args.min_samples < 2:
+        parser.error("--min-samples must be at least 2")
 
     if args.command == "wiring":
         failures = check_wiring(args.root)
