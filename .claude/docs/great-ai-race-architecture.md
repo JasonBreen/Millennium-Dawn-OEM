@@ -242,16 +242,27 @@ active race target; cash above that reserve remains available for repayment. Man
 expenses, scheduled installments, ordinary borrowing, and separate weekly-surplus debt repayment
 retain their existing behavior. Live expansion guards release protection during war or crisis.
 
-The current upstream investment owner scores a destination and then quotes its
-selected project. The port tests exact affordability against treasury after the
-active race savings target is reserved. An insufficient quote defers without a
-failure penalty or success cooldown. `investments_ai_pending` remains the owner's
-offer lock and also delays a race stage purchase.
+The investment owner checks the reserve before scoring new discretionary outgoing projects and
+again against the selected project's exact cost before dispatch. A failed reserve check defers
+without failure penalties or success cooldowns. Selected-state quotes use the actual recipient
+controller, and project slots remain distinct from building types.
 
-Upstream does not yet have OEM's frozen, generation-bound autonomous offer record.
-Late responses, annexation, a returned recipient, and reload therefore require a
-separate investment-owner integration and native acceptance before this port is
-ready to ship. The race does not take ownership of investment commitments.
+Dispatched autonomous offers have an investment-owned frozen record of recipient, state, type,
+amount, cost, duration, and original response date. An unresolved offer blocks another autonomous
+proposal and delays race purchases. Matching acceptance or rejection resolves the record;
+acceptance retains the existing charges. The native 13-day response timeout remains in force.
+An orphan is removed only after recipient disappearance and the response window plus a two-day
+dispatch margin. An investment-owned annexation generation records disappearance even when the
+recipient returns between weekly passes. Reload does not renew the deadline.
+
+Each investor assigns a monotonically increasing offer generation. The 21 generation bits are
+captured as saved event targets pointing to the investor or recipient, so their immutable scope
+identities survive delayed dispatch, popup lifetime, annexation, and reload. Matching every bit
+prevents a retired popup from accepting or rejecting a newer offer to the same recipient and
+state. The counter is never cleared or wrapped; exhausting 2,097,151 generations defers further
+autonomous offers without spending or penalties. Dispatch also checks identity before sending.
+Refusal notifications cannot clear a newer offer, and race-mode cleanup never clears investment
+commitments.
 
 ## Decisions and notifications
 
