@@ -1,5 +1,5 @@
 import pytest
-from equipment_variant_context import VariantContext, event_pool_targets, script_nodes
+from equipment_variant_context import VariantContext, event_pool_targets, script_nodes, value
 from shared_utils import FileOpener
 from validate_equipment_variants import (
     Validator,
@@ -689,3 +689,12 @@ def test_negated_country_comparison_cannot_supply_history(guard):
     assert check_variant_availability(
         event_body(reward(), trigger=guard), UNLOCKS, context
     )
+
+
+def test_value_helper():
+    nodes = script_nodes('container = { quoted = "hello" unquoted = world empty_block = {} }')
+    container = nodes[0]
+    assert value(container, "quoted") == "hello"
+    assert value(container, "unquoted") == "world"
+    assert value(container, "empty_block") is None
+    assert value(container, "missing") is None
