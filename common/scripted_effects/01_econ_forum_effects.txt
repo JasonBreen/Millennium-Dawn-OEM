@@ -634,13 +634,19 @@ econ_forum_convene_summit = {
 				has_country_flag = SOV_western_sanctions
 				NOT = { has_country_flag = econ_forum_boycott_reported }
 				NOT = {
-					any_country = {
-						OR = {
-							has_idea = NATO_member
-							has_idea = EU_member
-						}
-						check_variable = { econ_forum_status^num > ef_i }
-						check_variable = { econ_forum_status^ef_i > 2 }
+					any_of_scopes = {
+						array = global.nato_members
+						exists = yes
+						check_variable = { econ_forum_last^num > ef_i }
+						check_variable = { econ_forum_last^ef_i > 2 }
+					}
+				}
+				NOT = {
+					any_of_scopes = {
+						array = global.EU_member
+						exists = yes
+						check_variable = { econ_forum_last^num > ef_i }
+						check_variable = { econ_forum_last^ef_i > 2 }
 					}
 				}
 			}
@@ -828,10 +834,6 @@ econ_forum_ai_decide_attendance = {
 		add_to_temp_variable = { ef_chance = -100 }
 	}
 	if = {
-		limit = { econ_forum_boycotts_host = yes }
-		add_to_temp_variable = { ef_chance = -100 }
-	}
-	if = {
 		limit = { econ_forum_brics_partner = yes }
 		add_to_temp_variable = { ef_chance = 15 }
 	}
@@ -869,6 +871,10 @@ econ_forum_ai_decide_attendance = {
 		}
 	}
 	clamp_temp_variable = { var = ef_chance min = 0 max = 95 }
+	if = {
+		limit = { econ_forum_boycotts_host = yes }
+		set_temp_variable = { ef_chance = 0 }
+	}
 
 	set_temp_variable = { ef_head_chance = { value = ef_chance multiply = 0.4 } }
 	set_temp_variable_to_random = { var = ef_roll min = 0 max = 100 }
