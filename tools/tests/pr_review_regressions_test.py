@@ -21,13 +21,16 @@ def _named_block(text: str, name: str) -> str:
     raise AssertionError(f"unterminated block {name}")
 
 
-def test_expand_money_supply_ai_blocks_negative_treasury():
+def test_expand_money_supply_ai_is_crisis_only():
+    # Upstream's currency rework (#4970): the AI prints money only in debt, with a
+    # strong currency and low inflation.
     decisions = MONETARY_DECISIONS.read_text(encoding="utf-8")
     decision = _named_block(decisions, "monetary_policy_expand_money_supply")
     ai_will_do = _named_block(decision, "ai_will_do")
 
-    assert "check_variable = { treasury < 0 }" in ai_will_do
-    assert "NOT = { check_variable = { treasury < 0 } }" not in ai_will_do
+    assert "NOT = { check_variable = { treasury < 0 } }" in ai_will_do
+    assert "currency_strength > currency_strength_base" in ai_will_do
+    assert "check_variable = { inflation_rate_var > 0.05 }" in ai_will_do
 
 
 def test_reviewed_chi_decisions_use_a_defined_icon():
