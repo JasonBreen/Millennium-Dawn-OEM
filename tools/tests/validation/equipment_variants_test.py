@@ -1,5 +1,10 @@
 import pytest
-from equipment_variant_context import VariantContext, event_pool_targets, script_nodes, value
+from equipment_variant_context import (
+    VariantContext,
+    event_pool_targets,
+    script_nodes,
+    value,
+)
 from shared_utils import FileOpener
 from validate_equipment_variants import (
     Validator,
