@@ -44,6 +44,7 @@ env:
     resources/documentation
     .claude
     CLAUDE.md
+    validation_config.json
     *.mod
     .workspace-manifest
     .validation_cache
@@ -373,6 +374,7 @@ jobs:
             resources/documentation
             .claude
             CLAUDE.md
+            validation_config.json
           sparse-checkout-cone-mode: false
 
       - name: Install trusted tooling
@@ -381,13 +383,13 @@ jobs:
           mkdir -p resources
           cp -a trusted/resources/documentation resources/
           cp -a trusted/.claude .
-          cp -a trusted/CLAUDE.md .
+          cp -a trusted/CLAUDE.md trusted/validation_config.json .
 
       - name: Compute validator code hash
         id: toolshash
         run: >-
           echo "hash=${{ hashFiles('tools/validation/**',
-          'tools/shared_utils.py') }}" >> "$GITHUB_OUTPUT"
+          'tools/shared_utils.py', 'validation_config.json') }}" >> "$GITHUB_OUTPUT"
 
       # The shared cache is read-only here; the workspace uses an artifact.
       - name: Restore shared validator disk cache
@@ -961,7 +963,9 @@ jobs:
           path: trusted
           fetch-depth: 1
           persist-credentials: false
-          sparse-checkout: tools
+          sparse-checkout: |
+            tools
+            validation_config.json
           sparse-checkout-cone-mode: false
 
       - name: Set up Python
@@ -1037,6 +1041,7 @@ jobs:
             tools/report_lib
             tools/validation
             tools/shared_utils.py
+            validation_config.json
           sparse-checkout-cone-mode: false
 
       # Same source hash as prepare-workspace: the baseline cache entry is
@@ -1046,7 +1051,7 @@ jobs:
         id: toolshash
         run: >-
           echo "hash=${{ hashFiles('tools/validation/**',
-          'tools/shared_utils.py') }}" >> "$GITHUB_OUTPUT"
+          'tools/shared_utils.py', 'validation_config.json') }}" >> "$GITHUB_OUTPUT"
 
       # Latest main-side validation baseline (saved nightly by
       # validator-cache.yml's check-baseline job). A miss (cold cache,
