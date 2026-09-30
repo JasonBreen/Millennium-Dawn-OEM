@@ -173,6 +173,45 @@ def print_scan_results(categories: Dict, total_size: int):
             print()
 
 
+def _prompt_file_action(file_info: Dict, category_label: str) -> str:
+    """Prompt user for action on a single file."""
+    rel_path = file_info["path"].relative_to(RESOURCES_DIR)
+    print(f"\n[{category_label}] {rel_path} ({format_size(file_info['size'])})")
+    print(f"  Modified: {file_info['modified'].strftime('%Y-%m-%d')}")
+
+    while True:
+        choice = input("  Action [d/a/k/q]: ").strip().lower()
+        if choice in ["d", "delete"]:
+            return "delete"
+        elif choice in ["a", "archive"]:
+            return "archive"
+        elif choice in ["k", "keep"]:
+            return "keep"
+        elif choice in ["q", "quit"]:
+            return "quit"
+        else:
+            print("  Invalid choice. Please enter d, a, k, or q.")
+
+
+def _process_category_files(
+    files: List[Dict],
+    category_label: str,
+    to_remove: List[Path],
+    to_archive: List[Path],
+) -> bool:
+    """Process a list of files for a category. Return False if user quit early."""
+    sorted_files = sorted(files, key=lambda x: x["size"], reverse=True)
+    for file_info in sorted_files:
+        action = _prompt_file_action(file_info, category_label)
+        if action == "delete":
+            to_remove.append(file_info["path"])
+        elif action == "archive":
+            to_archive.append(file_info["path"])
+        elif action == "quit":
+            return False
+    return True
+
+
 def interactive_cleanup(categories: Dict) -> Tuple[List[Path], List[Path]]:
     """Interactive cleanup mode."""
     print("\n" + "=" * 80)
@@ -185,51 +224,11 @@ def interactive_cleanup(categories: Dict) -> Tuple[List[Path], List[Path]]:
     to_remove = []
     to_archive = []
 
-    # Process legacy files first
-    for file_info in sorted(
-        categories["legacy"], key=lambda x: x["size"], reverse=True
-    ):
-        rel_path = file_info["path"].relative_to(RESOURCES_DIR)
-        print(f"\n[LEGACY] {rel_path} ({format_size(file_info['size'])})")
-        print(f"  Modified: {file_info['modified'].strftime('%Y-%m-%d')}")
-
-        while True:
-            choice = input("  Action [d/a/k/q]: ").strip().lower()
-            if choice in ["d", "delete"]:
-                to_remove.append(file_info["path"])
-                break
-            elif choice in ["a", "archive"]:
-                to_archive.append(file_info["path"])
-                break
-            elif choice in ["k", "keep"]:
-                break
-            elif choice in ["q", "quit"]:
-                return to_remove, to_archive
-            else:
-                print("  Invalid choice. Please enter d, a, k, or q.")
-
-    # Process unintegrated files
-    for file_info in sorted(
-        categories["unintegrated"], key=lambda x: x["size"], reverse=True
-    ):
-        rel_path = file_info["path"].relative_to(RESOURCES_DIR)
-        print(f"\n[UNINTEGRATED] {rel_path} ({format_size(file_info['size'])})")
-        print(f"  Modified: {file_info['modified'].strftime('%Y-%m-%d')}")
-
-        while True:
-            choice = input("  Action [d/a/k/q]: ").strip().lower()
-            if choice in ["d", "delete"]:
-                to_remove.append(file_info["path"])
-                break
-            elif choice in ["a", "archive"]:
-                to_archive.append(file_info["path"])
-                break
-            elif choice in ["k", "keep"]:
-                break
-            elif choice in ["q", "quit"]:
-                return to_remove, to_archive
-            else:
-                print("  Invalid choice. Please enter d, a, k, or q.")
+    for cat_key, label in [("legacy", "LEGACY"), ("unintegrated", "UNINTEGRATED")]:
+        if not _process_category_files(
+            categories.get(cat_key, []), label, to_remove, to_archive
+        ):
+            break
 
     return to_remove, to_archive
 
