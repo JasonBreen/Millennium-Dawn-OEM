@@ -744,7 +744,7 @@ def test_validation_config_reaches_every_validator_run():
     workflow = yaml.safe_load(text)
     assert "validation_config.json" in workflow["env"]["WORKSPACE_PATHS"].split()
     for job, step_name in (
-        ("prepare-workspace", "Checkout PR workspace"),
+        ("prepare-workspace", "Checkout validation tooling"),
         ("report", "Checkout report tooling"),
     ):
         checkout = next(
@@ -943,3 +943,37 @@ def test_nightly_and_cache_workflows_keep_expected_permissions():
     text = PR_CACHE_WORKFLOW.read_text(encoding="utf-8")
     assert '"${cache_url}?ref=${ref}&per_page=100"' in text
     assert text.count("cache_ids=$(gh api --paginate") == 2
+
+
+def test_validation_config_reaches_the_oem_pipelines():
+    pipeline_text = (CI_WORKFLOW.parent / "coding-pipeline.yml").read_text(
+        encoding="utf-8"
+    )
+    pipeline = yaml.safe_load(pipeline_text)
+    assert "validation_config.json" in pipeline["env"]["WORKSPACE_PATHS"].split()
+    for job, step_name in (
+        ("prepare-workspace", "Checkout trusted tooling"),
+        ("validate-paths", "Checkout trusted tooling"),
+        ("validation-report", "Checkout report tooling"),
+    ):
+        checkout = next(
+            step
+            for step in pipeline["jobs"][job]["steps"]
+            if step.get("name") == step_name
+        )
+        assert (
+            "validation_config.json" in checkout["with"]["sparse-checkout"].split()
+        ), job
+    hashes = re.findall(r"hashFiles\('tools/validation/\*\*',[^)]*\)", pipeline_text)
+    assert hashes and all("'validation_config.json'" in h for h in hashes)
+
+    tools = yaml.safe_load(
+        (CI_WORKFLOW.parent / "tools-validation.yml").read_text(encoding="utf-8")
+    )
+    for step_name in ("Checkout (unit tests)", "Checkout (staged integration)"):
+        checkout = next(
+            step
+            for step in tools["jobs"]["checks"]["steps"]
+            if step.get("name") == step_name
+        )
+        assert "validation_config.json" in checkout["with"]["sparse-checkout"].split()
