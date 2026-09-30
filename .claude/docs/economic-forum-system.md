@@ -116,7 +116,7 @@ it keeps 95% of its prestige.
 
 1. **Preparation** opens two months before the summit month. The host gets
    `3 + prestige / 25` personal invitations. Standing invitations go to last
-   year's attendees, core members and, above 60 prestige, every country in
+   year's attendees, core members and, at 60 prestige or more, every country in
    `global.PR_regional_or_greater_powers`. A human invitee gets `econ_forum.2`,
    Each invitation queues its forum id in `econ_forum_invite_queue` and each
    event claims the oldest one in `immediate`, saving the host as
@@ -140,6 +140,11 @@ after its strongest rival's (counter-programming) or six months after it. Foundi
 or rescheduling a summit one or two months away opens preparation at once; one
 month away leaves no time for personal invitations, for AI hosts too. A reschedule
 that lands on the current month refunds its 50 PP and starts no cooldown.
+
+AI hosts reschedule through `econ_forum_ai_reschedule`, run after the monthly
+timing pass. A host with over 50 PP and no reschedule in two years whose summit
+falls within a month of a stronger rival's pays 50 PP and moves six months past
+it. The AI never counter-programs, which would only set up the next clash.
 
 An AI host of a state-led forum buys one sponsor package (3.0 treasury) when its
 treasury is above 10 and one speaker attempt (50 PP) when it has more than 150 PP.
@@ -221,7 +226,6 @@ government, but only to forums with prestige 30 or more, or as a core member.
 
 ## Known Limits and Next Phases
 
-- AI hosts do not reschedule.
 - A seat owner that already hosts a forum cannot inherit a second one, so that
   forum stands vacant until the seat changes hands or its owner stops hosting.
 
