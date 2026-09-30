@@ -690,13 +690,23 @@ def test_preview_draws_the_strip_and_writes_nothing_else(tmp_path, keys, icon_x)
         )
 
 
-@pytest.mark.parametrize("missing", ["sprite", "texture"])
-def test_main_reports_missing_preview_icons_without_writing(
-    tmp_path, monkeypatch, missing
+@pytest.mark.parametrize(
+    ("problem", "message"),
+    [
+        ("sprite", "GFX_ledger_icon_small_space"),
+        ("texture", "GFX_ledger_icon_small_space"),
+        ("parent", "could not render preview"),
+        ("format", "unknown file extension"),
+        ("unwritable", "cannot save preview"),
+    ],
+)
+def test_main_reports_invalid_previews_without_writing(
+    tmp_path, monkeypatch, problem, message
 ):
     image, module, repo, art = _art(tmp_path)
     _preview_icons(image, repo, ("space", "un"))
-    if missing == "sprite":
+    preview = tmp_path / "strip.png"
+    if problem == "sprite":
         gfx_path = "interface/MD_countrymissilesview.gfx"
         _write(
             repo / gfx_path,
@@ -704,15 +714,22 @@ def test_main_reports_missing_preview_icons_without_writing(
                 'name = "GFX_ledger_icon_small_space"', 'name = "other_sprite"'
             ),
         )
-    else:
+    elif problem == "texture":
         (art / "ledger_icon_small_space.dds").unlink()
+    elif problem == "parent":
+        preview = tmp_path / "missing" / "strip.png"
+    elif problem == "format":
+        preview = tmp_path / "strip.unsupported"
+    else:
+
+        def denied_save(*_args, **_kwargs):
+            raise PermissionError("cannot save preview")
+
+        monkeypatch.setattr(image.Image, "save", denied_save)
     monkeypatch.setattr(module, "REPO_ROOT", repo)
     before = {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()}
-    preview = tmp_path / "strip.png"
 
-    with pytest.raises(
-        SystemExit, match="ERROR:.*GFX_ledger_icon_small_space"
-    ) as error:
+    with pytest.raises(SystemExit, match=f"ERROR:.*{message}") as error:
         module.main(
             [
                 "forums",
@@ -726,7 +743,7 @@ def test_main_reports_missing_preview_icons_without_writing(
             ]
         )
 
-    if missing == "texture":
+    if problem == "texture":
         assert "ledger_icon_small_space.dds" in str(error.value)
     assert not preview.exists()
     assert {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()} == before

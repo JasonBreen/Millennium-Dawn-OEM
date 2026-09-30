@@ -362,9 +362,9 @@ def write_preview(repo, key, gui, gfx, sprite, icon, preview):
             key,
             icon.convert("RGBA"),
         )
+        strip.save(preview)
     except (OSError, ValueError, NotImplementedError) as error:
         raise ToolError(f"could not render preview: {error}") from error
-    strip.save(preview)
 
 
 def loc_value(text):
