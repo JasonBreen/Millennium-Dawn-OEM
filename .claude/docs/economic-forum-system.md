@@ -169,12 +169,28 @@ instead of holding a second summit that year.
 | Same faction as host                            | +10                    |
 | Core member                                     | +15                    |
 | At war with host                                | -100                   |
+| NATO or EU member, host under Western sanctions | set to 0 after all     |
+| Host and guest both in BRICS                    | +15                    |
+| BRICS or Asian guest of a host pivoting East    | +10                    |
 | Each track on the program that interests them   | + track prestige × 0.1 |
 | Led a delegation to each other forum last cycle | -10 each               |
 | More prestigious forum within one month         | -20                    |
 
 A roll under the chance attends. A roll under 40% of the chance sends the head of
 government, but only to forums with prestige 30 or more, or as a core member.
+
+### Russia and BRICS
+
+- A host with `SOV_western_sanctions` is boycotted: a NATO or EU AI government's
+  attendance chance is set to 0 after every other factor. The first summit it holds
+  with no NATO or EU delegation recorded fires `econ_forum_news.7` once
+  (`econ_forum_boycott_reported` on the host).
+- A full BRICS member (`RAJ_BRICS`) hosting sends standing invitations to every other
+  full member; full and associate members get +15 toward each other's forums.
+- A sanctioned host can take **Pivot to the East** (50 PP) outside preparation, since
+  invitations go out when preparation opens: for 365 days
+  (`econ_forum_pivot_east`), BRICS members and Asian nations get standing
+  invitations and +10 attendance. The AI takes it with 100 PP or more.
 
 ## Score
 

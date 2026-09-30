@@ -266,6 +266,8 @@ econ_forum_open_preparation = {
 					check_variable = { global.econ_forum_prestige^ef_i > 59 }
 					is_in_array = { global.PR_regional_or_greater_powers = THIS.id }
 				}
+				econ_forum_brics_standing_guest = yes
+				econ_forum_pivot_east_guest = yes
 			}
 		}
 		econ_forum_ensure_country_arrays = yes
@@ -283,6 +285,8 @@ econ_forum_open_preparation = {
 						check_variable = { global.econ_forum_prestige^ef_i > 59 }
 						is_in_array = { global.PR_regional_or_greater_powers = THIS.id }
 					}
+					econ_forum_brics_standing_guest = yes
+					econ_forum_pivot_east_guest = yes
 				}
 			}
 			econ_forum_send_invitation = yes
@@ -623,6 +627,34 @@ econ_forum_convene_summit = {
 		econ_forum_record_attendance = yes
 	}
 
+	# The first summit a sanctioned host holds without the West makes the news.
+	var:ef_host = {
+		if = {
+			limit = {
+				has_country_flag = SOV_western_sanctions
+				NOT = { has_country_flag = econ_forum_boycott_reported }
+				NOT = {
+					any_of_scopes = {
+						array = global.nato_members
+						exists = yes
+						check_variable = { econ_forum_last^num > ef_i }
+						check_variable = { econ_forum_last^ef_i > 2 }
+					}
+				}
+				NOT = {
+					any_of_scopes = {
+						array = global.EU_member
+						exists = yes
+						check_variable = { econ_forum_last^num > ef_i }
+						check_variable = { econ_forum_last^ef_i > 2 }
+					}
+				}
+			}
+			set_country_flag = econ_forum_boycott_reported
+			news_event = econ_forum_news.7
+		}
+	}
+
 	# Leading every other active forum in a track on the program adds 3 corporate points.
 	set_temp_variable = { ef_sector_points = 0 }
 	for_loop_effect = {
@@ -801,6 +833,14 @@ econ_forum_ai_decide_attendance = {
 		limit = { has_war_with = event_target:econ_forum_host_target }
 		add_to_temp_variable = { ef_chance = -100 }
 	}
+	if = {
+		limit = { econ_forum_brics_partner = yes }
+		add_to_temp_variable = { ef_chance = 15 }
+	}
+	if = {
+		limit = { econ_forum_pivot_east_guest = yes }
+		add_to_temp_variable = { ef_chance = 10 }
+	}
 
 	# Each track on the program that matters to us adds a tenth of the forum's standing in it.
 	for_loop_effect = {
@@ -831,6 +871,10 @@ econ_forum_ai_decide_attendance = {
 		}
 	}
 	clamp_temp_variable = { var = ef_chance min = 0 max = 95 }
+	if = {
+		limit = { econ_forum_boycotts_host = yes }
+		set_temp_variable = { ef_chance = 0 }
+	}
 
 	set_temp_variable = { ef_head_chance = { value = ef_chance multiply = 0.4 } }
 	set_temp_variable_to_random = { var = ef_roll min = 0 max = 100 }

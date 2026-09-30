@@ -190,3 +190,42 @@ econ_forum_can_be_invited = {
 econ_forum_summit_spacing_ok = {
 	check_variable = { ef_after_last > 10 }
 }
+
+# Country scope, temp ef_host set. NATO and EU governments stay away from a host under Western sanctions.
+econ_forum_boycotts_host = {
+	OR = {
+		has_idea = NATO_member
+		has_idea = EU_member
+	}
+	var:ef_host = { has_country_flag = SOV_western_sanctions }
+}
+
+# Country scope, temp ef_host set. A full BRICS member hosting invites every other full member.
+econ_forum_brics_standing_guest = {
+	has_idea = RAJ_BRICS
+	var:ef_host = { has_idea = RAJ_BRICS }
+}
+
+# Country scope, temp ef_host set. Full and associate BRICS members favour each other's forums.
+econ_forum_brics_partner = {
+	OR = {
+		has_idea = RAJ_BRICS
+		has_idea = RAJ_BRICS_associate
+	}
+	var:ef_host = {
+		OR = {
+			has_idea = RAJ_BRICS
+			has_idea = RAJ_BRICS_associate
+		}
+	}
+}
+
+# Country scope, temp ef_host set. A host that pivoted to the East courts BRICS members and Asian nations.
+econ_forum_pivot_east_guest = {
+	var:ef_host = { has_country_flag = econ_forum_pivot_east }
+	OR = {
+		has_idea = RAJ_BRICS
+		has_idea = RAJ_BRICS_associate
+		has_country_flag = asian_nation_flag
+	}
+}
