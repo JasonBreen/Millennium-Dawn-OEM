@@ -94,8 +94,15 @@ def tab_icon(repo, source):
     else:
         path, styled = os.path.join(repo, source), False
     with Image.open(path) as image:
-        if styled and image.size == ICON_SIZE:
-            return image.convert("RGBA")
+        if styled:
+            out = Image.new("RGBA", ICON_SIZE)
+            out.paste(
+                image.convert("RGBA"),
+                tuple(
+                    (target - size) // 2 for target, size in zip(ICON_SIZE, image.size)
+                ),
+            )
+            return out
         return restyle(image)
 
 
@@ -133,13 +140,18 @@ def render_strip(repo, menu, gfx, frames, frame_width, new_key, new_icon):
         )
         if selected:
             icon = new_icon
-        elif sprite in textures and os.path.exists(
-            os.path.join(repo, textures[sprite])
-        ):
-            with Image.open(os.path.join(repo, textures[sprite])) as image:
-                icon = image.convert("RGBA")
         else:
-            continue
+            if sprite not in textures:
+                raise ValueError(
+                    f"no texture defined for existing tab sprite {sprite!r}"
+                )
+            path = os.path.join(repo, textures[sprite])
+            if not os.path.isfile(path):
+                raise ValueError(
+                    f"missing texture {textures[sprite]!r} for existing tab sprite {sprite!r}"
+                )
+            with Image.open(path) as image:
+                icon = image.convert("RGBA")
         strip.alpha_composite(icon, (STRIP_X + int(icon_x), 4 + int(icon_y)))
     return strip
 

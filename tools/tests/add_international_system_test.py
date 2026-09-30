@@ -535,6 +535,28 @@ def test_a_premade_icon_is_written_as_the_tab_icon(tmp_path):
         assert icon.convert("RGBA").getpixel((5, 5)) == (200, 150, 90, 255)
 
 
+@pytest.mark.parametrize(
+    ("name", "size"), [("missile", (26, 27)), ("satellite", (27, 27))]
+)
+def test_styled_icons_are_padded_without_changing_their_pixels(tmp_path, name, size):
+    image, module, repo, art = _art(tmp_path)
+    original = image.new("RGBA", size, (200, 150, 90, 255))
+    original.putpixel((0, 0), (10, 20, 30, 80))
+    original.putpixel((size[0] - 1, size[1] - 1), (90, 40, 20, 190))
+    original.save(art / f"ledger_icon_small_{name}.dds")
+
+    module.add_system(str(repo), "forums", "Forums", "Forums.", icon=name)
+
+    with image.open(art / "ledger_icon_small_forums.dds") as icon:
+        icon = icon.convert("RGBA")
+        left = (28 - size[0]) // 2
+        assert icon.size == (28, 27)
+        assert icon.crop((left, 0, left + size[0], 27)).tobytes() == original.tobytes()
+        for x in range(28):
+            if not left <= x < left + size[0]:
+                assert icon.crop((x, 0, x + 1, 27)).tobytes() == bytes(27 * 4)
+
+
 def test_other_images_are_fitted_and_recoloured(tmp_path):
     image, module, repo, art = _art(tmp_path)
     logo = tmp_path / "logo.png"
@@ -581,20 +603,74 @@ def test_bad_icon_requests_stop_without_writing(tmp_path, setup, icon, message):
     assert not (repo / "localisation").exists()
 
 
+def _image_error(module, repo, icon, monkeypatch):
+    monkeypatch.setattr(module, "REPO_ROOT", repo)
+    before = {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()}
+
+    with pytest.raises(SystemExit, match="ERROR: could not read icon") as error:
+        module.main(
+            ["forums", "Forums", "--description", "Forums.", "--icon", str(icon)]
+        )
+
+    assert repr(str(icon)) in str(error.value)
+    assert {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()} == before
+    return str(error.value)
+
+
+@pytest.mark.parametrize("contents", [b"not an image", b"<svg></svg>"])
+def test_main_reports_invalid_image_data_without_writing(
+    tmp_path, monkeypatch, contents
+):
+    _, module, repo, _ = _art(tmp_path)
+    icon = tmp_path / "broken.png"
+    icon.write_bytes(contents)
+
+    _image_error(module, repo, icon, monkeypatch)
+
+
+def test_main_reports_unsupported_dds_formats_without_writing(tmp_path, monkeypatch):
+    image, module, repo, _ = _art(tmp_path)
+    icon = tmp_path / "unsupported.dds"
+    image.new("RGBA", (28, 27)).save(icon)
+    data = bytearray(icon.read_bytes())
+    data[80:84] = (4).to_bytes(4, "little")
+    data[84:88] = b"NONE"
+    icon.write_bytes(data)
+
+    assert "pixel format" in _image_error(module, repo, icon, monkeypatch)
+
+
+def test_main_reports_unreadable_images_without_writing(tmp_path, monkeypatch):
+    image, module, repo, _ = _art(tmp_path)
+    icon = tmp_path / "unreadable.png"
+    image.new("RGBA", (28, 27)).save(icon)
+
+    def unreadable(path):
+        raise PermissionError(f"cannot open {path}")
+
+    monkeypatch.setattr(image, "open", unreadable)
+
+    assert "cannot open" in _image_error(module, repo, icon, monkeypatch)
+
+
+def _preview_icons(image, repo, keys):
+    gfx = _read(repo, "interface/MD_countrymissilesview.gfx")
+    for key in keys:
+        texture = f"gfx/interface/scripted_gui/missiles/ledger_icon_small_{key}.dds"
+        image.new("RGBA", (28, 27), (200, 150, 90, 255)).save(repo / texture)
+        gfx = gfx.replace(
+            f'name = "GFX_ledger_icon_small_{key}"',
+            f'name = "GFX_ledger_icon_small_{key}"\n\t\ttexturefile = "{texture}"',
+        )
+    _write(repo / "interface/MD_countrymissilesview.gfx", gfx)
+
+
 @pytest.mark.parametrize(
     ("keys", "icon_x"), [(("space", "un"), 31), (tuple("abcdef"), 20)]
 )
 def test_preview_draws_the_strip_and_writes_nothing_else(tmp_path, keys, icon_x):
     image, module, repo, art = _art(tmp_path, keys)
-    gfx = _read(repo, "interface/MD_countrymissilesview.gfx")
-    _write(
-        repo / "interface/MD_countrymissilesview.gfx",
-        gfx.replace(
-            f'name = "GFX_ledger_icon_small_{keys[0]}"',
-            f'name = "GFX_ledger_icon_small_{keys[0]}"\n\t\ttexturefile = '
-            '"gfx/interface/scripted_gui/missiles/ledger_icon_small_missile.dds"',
-        ),
-    )
+    _preview_icons(image, repo, keys)
     before = {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()}
     preview = tmp_path / "strip.png"
 
@@ -614,8 +690,51 @@ def test_preview_draws_the_strip_and_writes_nothing_else(tmp_path, keys, icon_x)
         )
 
 
+@pytest.mark.parametrize("missing", ["sprite", "texture"])
+def test_main_reports_missing_preview_icons_without_writing(
+    tmp_path, monkeypatch, missing
+):
+    image, module, repo, art = _art(tmp_path)
+    _preview_icons(image, repo, ("space", "un"))
+    if missing == "sprite":
+        gfx_path = "interface/MD_countrymissilesview.gfx"
+        _write(
+            repo / gfx_path,
+            _read(repo, gfx_path).replace(
+                'name = "GFX_ledger_icon_small_space"', 'name = "other_sprite"'
+            ),
+        )
+    else:
+        (art / "ledger_icon_small_space.dds").unlink()
+    monkeypatch.setattr(module, "REPO_ROOT", repo)
+    before = {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()}
+    preview = tmp_path / "strip.png"
+
+    with pytest.raises(
+        SystemExit, match="ERROR:.*GFX_ledger_icon_small_space"
+    ) as error:
+        module.main(
+            [
+                "forums",
+                "Forums",
+                "--description",
+                "Forums.",
+                "--icon",
+                "missile",
+                "--preview",
+                str(preview),
+            ]
+        )
+
+    if missing == "texture":
+        assert "ledger_icon_small_space.dds" in str(error.value)
+    assert not preview.exists()
+    assert {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()} == before
+
+
 def test_preview_reuses_an_existing_narrow_sprite_and_the_icon_on_disk(tmp_path):
     image, module, repo, art = _full_strip(tmp_path)
+    _preview_icons(image, repo, tuple("abcdef"))
     image.new("RGBA", (136, 53), (9, 9, 9, 255)).save(
         art / "missiles_gui_ledger_btn_narrow.dds"
     )

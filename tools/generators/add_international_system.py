@@ -324,7 +324,10 @@ def resolve_icon(repo, key, icon):
         raise ToolError(
             f"unknown icon {icon!r}: use a premade name (--list-icons) or an image path"
         )
-    return tab_icon(repo, icon)
+    try:
+        return tab_icon(repo, icon)
+    except (OSError, ValueError, NotImplementedError) as error:
+        raise ToolError(f"could not read icon {icon!r}: {error}") from error
 
 
 def write_preview(repo, key, gui, gfx, sprite, icon, preview):
@@ -349,15 +352,18 @@ def write_preview(repo, key, gui, gfx, sprite, icon, preview):
         frames, width = narrow_frames(repo, wide, narrow), narrow
     if icon is None:
         icon = Image.open(os.path.join(art, f"ledger_icon_small_{key}.dds"))
-    strip = render_strip(
-        repo,
-        gui[start:end],
-        gfx,
-        frames.convert("RGBA"),
-        width,
-        key,
-        icon.convert("RGBA"),
-    )
+    try:
+        strip = render_strip(
+            repo,
+            gui[start:end],
+            gfx,
+            frames.convert("RGBA"),
+            width,
+            key,
+            icon.convert("RGBA"),
+        )
+    except (OSError, ValueError, NotImplementedError) as error:
+        raise ToolError(f"could not render preview: {error}") from error
     strip.save(preview)
 
 
