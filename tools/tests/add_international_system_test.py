@@ -2,6 +2,7 @@ import importlib.util
 import json
 import re
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -663,6 +664,88 @@ def _preview_icons(image, repo, keys):
             f'name = "GFX_ledger_icon_small_{key}"\n\t\ttexturefile = "{texture}"',
         )
     _write(repo / "interface/MD_countrymissilesview.gfx", gfx)
+
+
+@pytest.mark.parametrize("asset", ["wide", "narrow", "generated", "icon"])
+@pytest.mark.parametrize("problem", ["corrupt", "unsupported", "unreadable"])
+def test_main_reports_invalid_preview_assets(tmp_path, monkeypatch, asset, problem):
+    keys = tuple("abcdef") if asset in {"narrow", "generated"} else ("space", "un")
+    image, module, repo, art = _art(tmp_path, keys)
+    _preview_icons(image, repo, keys)
+    filename = "missiles_gui_ledger_btn.dds"
+    if asset == "narrow":
+        filename = "missiles_gui_ledger_btn_narrow.dds"
+    elif asset == "icon":
+        filename = "ledger_icon_small_forums.dds"
+    target = art / filename
+    image.new("RGBA", (136, 53) if asset == "narrow" else (28, 27)).save(target)
+    if problem == "corrupt":
+        target.write_bytes(b"not an image")
+    elif problem == "unsupported":
+        data = bytearray(target.read_bytes())
+        data[80:84] = (4).to_bytes(4, "little")
+        data[84:88] = b"NONE"
+        target.write_bytes(data)
+    else:
+        original_open = image.open
+
+        def denied_open(path, *args, **kwargs):
+            if Path(path) == target:
+                raise PermissionError(f"cannot open {path}")
+            return original_open(path, *args, **kwargs)
+
+        monkeypatch.setattr(image, "open", denied_open)
+    monkeypatch.setattr(module, "REPO_ROOT", repo)
+    before = {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()}
+    preview = tmp_path / "strip.png"
+    arguments = [
+        "forums",
+        "Forums",
+        "--description",
+        "Forums.",
+        "--preview",
+        str(preview),
+    ]
+    if asset != "icon":
+        arguments += ["--icon", "missile"]
+
+    with pytest.raises(SystemExit, match="ERROR: could not render preview"):
+        module.main(arguments)
+
+    assert not preview.exists()
+    assert {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()} == before
+
+
+@pytest.mark.parametrize("failure", ["encode", "create", "flush", "replace"])
+def test_main_reports_icon_write_failures_without_partial_files(
+    tmp_path, monkeypatch, failure
+):
+    image, module, repo, art = _art(tmp_path)
+    shared = sys.modules["shared_utils"]
+
+    def failed_write(*_args, **_kwargs):
+        raise OSError("icon write failed")
+
+    if failure == "encode":
+        monkeypatch.setattr(image.Image, "save", failed_write)
+    elif failure == "create":
+        monkeypatch.setattr(shared.tempfile, "NamedTemporaryFile", failed_write)
+    elif failure == "flush":
+        monkeypatch.setattr(shared.os, "fsync", failed_write)
+    else:
+        monkeypatch.setattr(shared.os, "replace", failed_write)
+    monkeypatch.setattr(module, "REPO_ROOT", repo)
+    before = {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()}
+
+    with pytest.raises(
+        SystemExit, match="ERROR: could not write icon.*icon write failed"
+    ):
+        module.main(
+            ["forums", "Forums", "--description", "Forums.", "--icon", "missile"]
+        )
+
+    assert not (art / "ledger_icon_small_forums.dds").exists()
+    assert {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()} == before
 
 
 @pytest.mark.parametrize(

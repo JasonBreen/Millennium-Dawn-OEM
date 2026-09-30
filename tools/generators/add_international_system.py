@@ -21,6 +21,7 @@ import os
 import re
 import sys
 from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -340,19 +341,19 @@ def write_preview(repo, key, gui, gfx, sprite, icon, preview):
     )
     (_, wide, _), (_, narrow, _) = LAYOUTS
     art = os.path.join(repo, ART_DIR)
-    if sprite == WIDE_SPRITE:
-        frames, width = (
-            Image.open(os.path.join(art, "missiles_gui_ledger_btn.dds")),
-            wide,
-        )
-    elif os.path.exists(os.path.join(art, "missiles_gui_ledger_btn_narrow.dds")):
-        frames = Image.open(os.path.join(art, "missiles_gui_ledger_btn_narrow.dds"))
-        width = narrow
-    else:
-        frames, width = narrow_frames(repo, wide, narrow), narrow
-    if icon is None:
-        icon = Image.open(os.path.join(art, f"ledger_icon_small_{key}.dds"))
     try:
+        if sprite == WIDE_SPRITE:
+            frames, width = (
+                Image.open(os.path.join(art, "missiles_gui_ledger_btn.dds")),
+                wide,
+            )
+        elif os.path.exists(os.path.join(art, "missiles_gui_ledger_btn_narrow.dds")):
+            frames = Image.open(os.path.join(art, "missiles_gui_ledger_btn_narrow.dds"))
+            width = narrow
+        else:
+            frames, width = narrow_frames(repo, wide, narrow), narrow
+        if icon is None:
+            icon = Image.open(os.path.join(art, f"ledger_icon_small_{key}.dds"))
         strip = render_strip(
             repo,
             gui[start:end],
@@ -527,7 +528,13 @@ def add_system(
         return [preview], order, openers
     written = sorted(files)
     if new_icon is not None:
-        new_icon.save(os.path.join(repo, ART_DIR, f"ledger_icon_small_{key}.dds"))
+        target = os.path.join(repo, ART_DIR, f"ledger_icon_small_{key}.dds")
+        try:
+            with BytesIO() as buffer:
+                new_icon.save(buffer, format="DDS")
+                atomic_write_bytes(target, buffer.getvalue())
+        except (OSError, ValueError, NotImplementedError) as error:
+            raise ToolError(f"could not write icon {target!r}: {error}") from error
         written.append(f"{ART_DIR}/ledger_icon_small_{key}.dds")
     if sprite == NARROW_SPRITE:
         narrow = make_narrow_sprite(repo)
