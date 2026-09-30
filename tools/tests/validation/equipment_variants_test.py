@@ -697,7 +697,9 @@ def test_negated_country_comparison_cannot_supply_history(guard):
 
 
 def test_value_helper():
-    nodes = script_nodes('container = { quoted = "hello" unquoted = world empty_block = {} }')
+    nodes = script_nodes(
+        'container = { quoted = "hello" unquoted = world empty_block = {} }'
+    )
     container = nodes[0]
     assert value(container, "quoted") == "hello"
     assert value(container, "unquoted") == "world"
