@@ -50,6 +50,8 @@ class TestRunPy:
         assert result.returncode == 0, result.stderr
         assert "standardize" in result.stdout
         assert "run.py" not in result.stdout  # HIDDEN
+        assert "add_international_system" in result.stdout
+        assert "international_system_art" not in result.stdout
 
     def test_help_exits_zero(self):
         """--help / -h exits 0 and prints usage."""
@@ -61,10 +63,13 @@ class TestRunPy:
         assert result.returncode == 0
         assert "Usage:" in result.stdout or "run.py" in result.stdout
 
-    def test_unknown_tool_exits_nonzero(self):
+    @pytest.mark.parametrize(
+        "tool", ["nonexistent_tool_xyz", "international_system_art"]
+    )
+    def test_unknown_tool_exits_nonzero(self, tool):
         """An unknown tool name exits with code 1 and prints a message."""
         result = subprocess.run(
-            [sys.executable, str(TOOLS / "run.py"), "nonexistent_tool_xyz"],
+            [sys.executable, str(TOOLS / "run.py"), tool],
             capture_output=True,
             text=True,
         )

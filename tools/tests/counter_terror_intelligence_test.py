@@ -187,7 +187,7 @@ def test_operations_center_organization_tabs_use_separate_lifecycle(tab, expecte
     assert panel_body_key(script) == expected
 
 
-def test_unselected_operations_center_explains_typed_cold_dossiers():
+def test_unselected_operations_center_explains_cold_dossier_workflow():
     localisation = source(
         "localisation/english/MD_targeted_operations_redesign_l_english.yml"
     )
@@ -200,6 +200,10 @@ def test_unselected_operations_center_explains_typed_cold_dossiers():
 
     assert "[TOP_selected_" not in value
     assert "[?TOP_" not in value
-    assert "person or organization" in value
-    assert "Cold dossiers" in value
-    assert "Knowledge and operational authority are independent" in value
+    assert "pick a target" in value
+    assert "§YCold§!" in value
+    assert "no open case yet" in value
+    assert value.index("Designate Case") < value.index("Collect Intelligence")
+    assert value.index("Collect Intelligence") < value.index("Authority")
+    assert "review and, if approved" in value
+    assert value.index("Authority") < value.index("Begin Preparation / Operation")
