@@ -116,7 +116,7 @@ it keeps 95% of its prestige.
 
 1. **Preparation** opens two months before the summit month. The host gets
    `3 + prestige / 25` personal invitations. Standing invitations go to last
-   year's attendees, core members and, above 60 prestige, every country in
+   year's attendees, core members and, at 60 prestige or more, every country in
    `global.PR_regional_or_greater_powers`. A human invitee gets `econ_forum.2`,
    Each invitation queues its forum id in `econ_forum_invite_queue` and each
    event claims the oldest one in `immediate`, saving the host as
