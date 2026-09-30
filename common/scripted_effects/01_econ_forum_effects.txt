@@ -143,7 +143,51 @@ econ_forum_monthly_update = {
 			}
 		}
 	}
+	econ_forum_ai_reschedule = yes
 	econ_forum_refresh_open_screens = yes
+}
+
+# An AI host whose summit falls within a month of a stronger rival's moves it half a year away, on the
+# same terms as the Avoid the Rival decision. The AI never counter-programs, which would only set up the next clash.
+econ_forum_ai_reschedule = {
+	for_loop_effect = {
+		end = global.econ_forum_host^num
+		value = ef_i
+
+		if = {
+			limit = {
+				check_variable = { global.econ_forum_host^ef_i > 0 }
+				check_variable = { global.econ_forum_preparing^ef_i = 0 }
+			}
+			set_temp_variable = { ef_host = global.econ_forum_host^ef_i }
+			var:ef_host = {
+				if = {
+					limit = {
+						is_ai = yes
+						NOT = { has_country_flag = econ_forum_rescheduled }
+						has_political_power > 50
+					}
+					econ_forum_find_rival = yes
+					set_temp_variable = { ef_own_prestige = global.econ_forum_prestige^ef_i }
+					if = {
+						limit = {
+							check_variable = { ef_rival > -1 }
+							check_variable = { ef_rival_prestige > ef_own_prestige }
+						}
+						set_temp_variable = { ef_clash = { value = global.econ_forum_month^ef_i subtract = global.econ_forum_month^ef_rival add = 13 } }
+						modulo_temp_variable = { ef_clash = 12 }
+						# 0, 1 or 2 means the two summits are at most a month apart.
+						if = {
+							limit = { check_variable = { ef_clash < 3 } }
+							add_political_power = -50
+							set_temp_variable = { ef_offset = 6 }
+							econ_forum_reschedule = yes
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 # A forum follows its seat. When the seat state's owner is not the host, the old host loses the forum, alive or
