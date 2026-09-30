@@ -1235,7 +1235,7 @@ class TestWholeReport:
         )
         tags = re.findall(r"(?m)^([A-Z]{3})_ai_behavior = \{", rules)
 
-        assert len(tags) == 63
+        assert len(tags) == 65
         for tag in tags:
             rule = report.parse_rule(str(REPO_ROOT), tag)
             assert rule is not None
