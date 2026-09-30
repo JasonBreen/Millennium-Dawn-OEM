@@ -69,7 +69,18 @@ def test_audio_discovery_filters_nonfiles_and_other_formats(sandbox, capsys):
 
 
 @pytest.mark.parametrize(
-    "stdout,returncode,expected", [("1\n", 0, True), ("2", 0, False), ("1", 1, False)]
+    "stdout,returncode,expected",
+    [
+        ("1\n", 0, True),
+        ("1", 0, True),
+        (" 1 \n", 0, True),
+        ("2", 0, False),
+        ("6", 0, False),
+        ("0", 0, False),
+        ("invalid", 0, False),
+        ("", 0, False),
+        ("1", 1, False),
+    ],
 )
 def test_mono_probe_stream_and_channel_parsing(
     monkeypatch, stdout, returncode, expected
