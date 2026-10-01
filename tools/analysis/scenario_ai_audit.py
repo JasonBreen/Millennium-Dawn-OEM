@@ -170,9 +170,10 @@ def dispatching_files(repo, key):
 
 def dispatch_sites(texts, eid):
     """Yield (file name, text, position, delayed) for every dispatch of eid."""
-    plain = re.compile(rf"\bcountry_event\s*=\s*{re.escape(eid)}\b")
+    command = r"\b(?:country|news|state)_event"
+    plain = re.compile(rf"{command}\s*=\s*{re.escape(eid)}\b")
     full = re.compile(
-        rf"\bcountry_event\s*=\s*\{{[^}}]*\bid\s*=\s*{re.escape(eid)}\b[^}}]*\}}"
+        rf"{command}\s*=\s*\{{[^}}]*\bid\s*=\s*{re.escape(eid)}\b[^}}]*\}}"
     )
     for name, text in texts:
         if eid not in text:

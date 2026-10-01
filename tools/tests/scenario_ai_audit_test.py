@@ -42,11 +42,11 @@ XX_category = {
 """
 
 
-def _event(eid, options, trigger="", extra=""):
+def _event(eid, options, trigger="", extra="", kind="country_event"):
     opts = "".join(
         f"\toption = {{\n\t\tname = {eid}.{i}\n{o}\t}}\n" for i, o in enumerate(options)
     )
-    return f"country_event = {{\n\tid = {eid}\n\ttitle = {eid}.t\n\tis_triggered_only = yes\n{extra}\ttrigger = {{ {trigger} }}\n{opts}}}\n\n"
+    return f"{kind} = {{\n\tid = {eid}\n\ttitle = {eid}.t\n\tis_triggered_only = yes\n{extra}\ttrigger = {{ {trigger} }}\n{opts}}}\n\n"
 
 
 WEIGHTED = ["\t\tai_chance = { base = 60 }\n", "\t\tai_chance = { base = 40 }\n"]
@@ -62,6 +62,13 @@ EVENTS = (
     + _event(
         "XX.7",
         WEIGHTED,
+        extra="\tdesc = { text = x trigger = { check_variable = { global.XX_event_zone_id = 1 } } }\n",
+    )
+    + _event("XX.8", WEIGHTED, kind="news_event")
+    + _event(
+        "XX.9",
+        WEIGHTED,
+        kind="state_event",
         extra="\tdesc = { text = x trigger = { check_variable = { global.XX_event_zone_id = 1 } } }\n",
     )
 )
@@ -80,6 +87,11 @@ XX_pulse = {
 	}
 	country_event = { id = XX.7 days = 30 }
 	country_event = { id = XX.5 }
+	if = {
+		limit = { is_ai = no }
+		news_event = XX.8
+	}
+	random_state = { state_event = { id = XX.9 days = 5 } }
 }
 """
 
@@ -97,7 +109,7 @@ def _repo(tmp_path):
 def test_audit_findings(tmp_path):
     mod = _module()
     results, count = mod.audit(_repo(tmp_path), "XX")
-    assert count == 7
+    assert count == 9
     decisions = {name: msg for _, name, msg in results["decisions"]}
     assert decisions == {
         "XX_no_weight": "decision has no ai_will_do",
@@ -114,6 +126,14 @@ def test_audit_findings(tmp_path):
         "XX.7",
         "delayed dispatch in 99_XX_effects.txt and the event reads a shared global",
     ) in dispatch
+    assert (
+        "XX.8",
+        "has AI weights but every dispatch is player-only (is_ai = no)",
+    ) in dispatch
+    assert (
+        "XX.9",
+        "delayed dispatch in 99_XX_effects.txt and the event reads a shared global",
+    ) in dispatch
     assert not any(eid in ("XX.3", "XX.4", "XX.5") for eid, _ in dispatch)
 
 
@@ -121,6 +141,6 @@ def test_main_prints_report(tmp_path, capsys):
     mod = _module()
     assert mod.main(["XX", "--repo", str(_repo(tmp_path))]) == 0
     out = capsys.readouterr().out
-    assert out.startswith("XX: 7 events checked, 5 finding(s)")
-    assert "## dispatch (2)" in out
+    assert out.startswith("XX: 9 events checked, 7 finding(s)")
+    assert "## dispatch (4)" in out
     assert "- XX_decisions.txt: XX_zero: decision ai_will_do is 0" in out

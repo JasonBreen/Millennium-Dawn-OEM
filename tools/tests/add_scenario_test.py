@@ -81,15 +81,31 @@ def test_new_scaffolds_the_scenario(tmp_path):
     assert "The next free block is 10–19." in doc and "# Silent Hill Scenario" in doc
     index = _read(repo / ".claude/docs/documentation-references.md")
     assert index.index("silenthill-scenario.md") < index.index("stalker-scenario.md")
-    assert len(written) == 9
+    assert len(written) == 10
+    assert written[-1] == ".claude/docs/documentation-references.md"
 
 
 def test_new_skips_index_when_absent_or_present(tmp_path):
     mod = _module()
     repo = _repo(tmp_path)
     (repo / ".claude/docs/documentation-references.md").unlink()
-    mod.add_scenario(repo, "DEUSEX", "Deus Ex", "Someone is pulling the strings.")
+    written = mod.add_scenario(
+        repo, "DEUSEX", "Deus Ex", "Someone is pulling the strings."
+    )
     assert (repo / ".claude/docs/deusex-scenario.md").exists()
+    assert ".claude/docs/documentation-references.md" not in written
+
+
+def test_new_refuses_any_existing_rule_loc_key(tmp_path):
+    mod = _module()
+    repo = _repo(tmp_path)
+    loc = repo / "localisation/english/MD_game_rules_l_english.yml"
+    _write(loc, _read(loc) + ' RULE_OVERLOOK_SCENARIO_ENABLED_DESC: "x"\n', bom=True)
+    with pytest.raises(mod.ToolError, match="RULE_OVERLOOK_SCENARIO_ENABLED_DESC"):
+        mod.add_scenario(repo, "OVERLOOK", "Overlook", "x")
+    assert "rule_overlook_scenario" not in _read(
+        repo / "common/game_rules/00_game_rules.txt"
+    )
 
 
 @pytest.mark.parametrize(

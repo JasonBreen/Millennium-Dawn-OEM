@@ -208,8 +208,10 @@ def add_scenario(repo, key, name, description):
     if re.search(rf"^rule_{lower}_scenario\s*=", rules, re.M):
         raise ToolError(f"rule_{lower}_scenario already exists in {RULES}")
     rules_loc = read(repo, RULES_LOC)
-    if f" RULE_{key}_SCENARIO:" in rules_loc:
-        raise ToolError(f"RULE_{key}_SCENARIO already exists in {RULES_LOC}")
+    for suffix in ("", "_DISABLED", "_DISABLED_DESC", "_ENABLED", "_ENABLED_DESC"):
+        loc_key = f"RULE_{key}_SCENARIO{suffix}"
+        if re.search(rf"^\s*{loc_key}:", rules_loc, re.M):
+            raise ToolError(f"{loc_key} already exists in {RULES_LOC}")
     taken = namespace_taken(repo, key)
     if taken:
         raise ToolError(f"event namespace {key} is already used in events/{taken}")
@@ -227,6 +229,7 @@ def add_scenario(repo, key, name, description):
     )
     for rel, text in files.items():
         write(repo, rel, text, bom=rel.endswith(".yml"))
+    written = [RULES, RULES_LOC, *files]
     index_path = repo / DOC_INDEX
     if index_path.exists():
         index = read(repo, DOC_INDEX)
@@ -235,7 +238,8 @@ def add_scenario(repo, key, name, description):
             at = index.index(INDEX_ANCHOR)
             index = index[:at] + row + index[at:]
             write(repo, DOC_INDEX, index)
-    return [RULES, RULES_LOC, *files]
+            written.append(DOC_INDEX)
+    return written
 
 
 def add_subsystem(repo, key, subsystem, display):
