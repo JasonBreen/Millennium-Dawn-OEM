@@ -239,9 +239,21 @@ econ_forum_ensure_country_arrays = {
 		limit = { check_variable = { econ_forum_agenda^num < 8 } }
 		resize_array = { array = econ_forum_agenda value = 0 size = 8 }
 	}
+	if = {
+		limit = { check_variable = { econ_forum_boycott^num < 8 } }
+		resize_array = { array = econ_forum_sponsor_cycle value = 0 size = 8 }
+		resize_array = { array = econ_forum_bid_cycle value = 0 size = 8 }
+		resize_array = { array = econ_forum_boycott value = 0 size = 8 }
+	}
 }
 
 econ_forum_open_preparation = {
+	# Each preparation is a new cycle; guests may sponsor and bid once per cycle.
+	if = {
+		limit = { check_variable = { global.econ_forum_cycle^num < 8 } }
+		resize_array = { array = global.econ_forum_cycle value = 0 size = 8 }
+	}
+	add_to_variable = { global.econ_forum_cycle^ef_i = 1 }
 	set_variable = { global.econ_forum_preparing^ef_i = 1 }
 	set_variable = { global.econ_forum_sponsors^ef_i = 0 }
 	set_variable = { global.econ_forum_speakers^ef_i = 0 }
@@ -317,7 +329,10 @@ econ_forum_open_preparation = {
 econ_forum_send_invitation = {
 	econ_forum_ensure_country_arrays = yes
 	if = {
-		limit = { check_variable = { econ_forum_status^ef_i = 0 } }
+		limit = {
+			check_variable = { econ_forum_status^ef_i = 0 }
+			check_variable = { econ_forum_boycott^ef_i = 0 }
+		}
 		set_variable = { econ_forum_status^ef_i = 1 }
 		if = {
 			limit = { is_ai = no }
@@ -330,13 +345,16 @@ econ_forum_send_invitation = {
 econ_forum_send_personal_invitation = {
 	econ_forum_ensure_country_arrays = yes
 	if = {
-		limit = {
-			is_ai = no
-			check_variable = { econ_forum_status^ef_i = 0 }
+		limit = { check_variable = { econ_forum_boycott^ef_i = 0 } }
+		if = {
+			limit = {
+				is_ai = no
+				check_variable = { econ_forum_status^ef_i = 0 }
+			}
+			econ_forum_notify_invitee = yes
 		}
-		econ_forum_notify_invitee = yes
+		set_variable = { econ_forum_status^ef_i = 2 }
 	}
-	set_variable = { econ_forum_status^ef_i = 2 }
 }
 
 # Invitee scope. Queues the forum id; each econ_forum.2 claims the oldest queued forum in its immediate, so
@@ -485,6 +503,106 @@ econ_forum_apply_agendas = {
 		}
 		set_variable = { econ_forum_agenda^ef_i = 0 }
 	}
+}
+
+# Guest scope, from the Forums tab row of forum v. Pays for a session at someone else's summit.
+econ_forum_sponsor_session = {
+	if = {
+		limit = { econ_forum_can_sponsor = yes }
+		add_political_power = -10
+		set_temp_variable = { treasury_change = -1.5 }
+		modify_treasury_effect = yes
+		set_variable = { global.econ_forum_sponsors^v = { value = global.econ_forum_sponsors^v add = 3 min = 25 } }
+		set_variable = { econ_forum_sponsor_cycle^v = global.econ_forum_cycle^v }
+		var:global.econ_forum_host^v = { add_opinion_modifier = { target = ROOT modifier = econ_forum_session_sponsor } }
+		econ_forum_refresh_open_screens = yes
+	}
+}
+
+# Guest scope, from the Forums tab row of forum v. A delegation that is going asks for a headline slot.
+econ_forum_bid_to_speak = {
+	if = {
+		limit = { econ_forum_can_bid = yes }
+		add_political_power = -25
+		set_variable = { econ_forum_bid_cycle^v = global.econ_forum_cycle^v }
+		set_temp_variable = { ef_bid_chance = 40 }
+		if = {
+			limit = { check_variable = { econ_forum_status^v = 4 } }
+			add_to_temp_variable = { ef_bid_chance = 20 }
+		}
+		if = {
+			limit = {
+				OR = {
+					has_idea = super_power
+					has_idea = great_power
+				}
+			}
+			add_to_temp_variable = { ef_bid_chance = 10 }
+		}
+		set_temp_variable_to_random = { var = ef_roll min = 0 max = 100 }
+		set_variable = { econ_forum_bid_result = 0 }
+		set_variable = { econ_forum_bid_forum = v }
+		if = {
+			limit = { check_variable = { ef_roll < ef_bid_chance } }
+			set_variable = { econ_forum_bid_result = 1 }
+			add_to_variable = { global.econ_forum_speakers^v = 1 }
+			set_temp_variable = { ef_keynote = { value = global.econ_forum_prestige^v multiply = 0.002 } }
+			if = {
+				limit = {
+					OR = {
+						NOT = { has_dynamic_modifier = { modifier = econ_forum_keynote_modifier } }
+						check_variable = { econ_forum_keynote_bonus < ef_keynote }
+					}
+				}
+				set_variable = { econ_forum_keynote_bonus = ef_keynote }
+				add_dynamic_modifier = { modifier = econ_forum_keynote_modifier days = 365 }
+			}
+		}
+		country_event = econ_forum.6
+		econ_forum_refresh_open_screens = yes
+	}
+}
+
+# Guest scope, from the Forums tab row of forum v. Starts or ends a public boycott.
+econ_forum_toggle_boycott = {
+	if = {
+		limit = { check_variable = { econ_forum_boycott^v = 1 } }
+		set_variable = { econ_forum_boycott^v = 0 }
+	}
+	else_if = {
+		limit = { econ_forum_can_boycott = yes }
+		add_political_power = -25
+		set_variable = { econ_forum_boycott^v = 1 }
+		set_variable = { econ_forum_status^v = 0 }
+		set_temp_variable = { ef_boycott_cost = 2 }
+		if = {
+			limit = {
+				OR = {
+					has_idea = super_power
+					has_idea = great_power
+				}
+			}
+			set_temp_variable = { ef_boycott_cost = 5 }
+		}
+		subtract_from_variable = { global.econ_forum_prestige^v = ef_boycott_cost }
+		clamp_variable = { var = global.econ_forum_prestige^v min = 0 max = 100 }
+		var:global.econ_forum_host^v = {
+			add_opinion_modifier = { target = ROOT modifier = econ_forum_boycotted }
+			if = {
+				limit = {
+					ROOT = {
+						OR = {
+							has_idea = super_power
+							has_idea = great_power
+						}
+					}
+				}
+				set_variable = { econ_forum_news_boycotter = ROOT.id }
+				news_event = econ_forum_news.8
+			}
+		}
+	}
+	econ_forum_refresh_open_screens = yes
 }
 
 # Selects track ef_t for forum ef_i while fewer than three are on the program.
@@ -1169,6 +1287,7 @@ econ_forum_add_deal_targets = {
 
 # Temps are es_* so rebuilding from inside a forum effect never clobbers its ef_* loop variables.
 econ_forum_build_screen = {
+	econ_forum_ensure_country_arrays = yes
 	clear_array = econ_forum_screen_rows
 	for_loop_effect = {
 		end = global.econ_forum_host^num

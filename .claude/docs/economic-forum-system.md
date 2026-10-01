@@ -16,7 +16,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-5`, `econ_forum_news.1-7`.
+- `events/EconomicForums.txt`: `econ_forum.1-6`, `econ_forum_news.1-8`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -46,6 +46,7 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_last_heads`     | Heads of government at the last summit          |
 | `econ_forum_last_ministers` | Ministerial delegations at the last summit      |
 | `econ_forum_last_score`     | Score of the last summit                        |
+| `econ_forum_cycle`          | Preparations opened; a guest action's cycle id  |
 
 | Id  | Forum                               | Month | Founder            | Core members        |
 | --- | ----------------------------------- | ----- | ------------------ | ------------------- |
@@ -77,6 +78,8 @@ Per-country arrays use the same forum index:
 - `econ_forum_last`: level at that forum's last summit (0, 3 or 4).
 - `econ_forum_streak`: consecutive summits attended.
 - `econ_forum_agenda`: this cycle's delegation agenda. 0 none, 1 investors, 2 deals, 3 showcase.
+- `econ_forum_sponsor_cycle`, `econ_forum_bid_cycle`: the forum cycle a guest last sponsored or bid in.
+- `econ_forum_boycott`: 1 while the country boycotts that forum.
 
 A host carries `econ_forum_hosted` (its forum id), the flag `econ_forum_preparing`
 while preparing, and `econ_forum_view_selected` / `econ_forum_view_prestige`, a
@@ -208,6 +211,19 @@ then clears its agenda:
 | Investors | `econ_forum_investor_pitch_modifier` for 365 days: the delegation bonus again, stronger kept     |
 | Deals     | `econ_forum_summit_deal` (+15, decay 1) both ways with the host and every other attending guest |
 | Showcase  | Influence in the host, `prestige × 0.02`%, doubled for a head of government; +2 to each program track that interests the guest |
+
+## Guest Actions
+
+Each forum row in the International Systems Forums tab has three buttons for any player who does not host it
+(`econ_forum_guest_row`). They are player-only; the AI does not use them.
+
+| Button  | Requirements                                                           | Effect                                                                                                                |
+| ------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Sponsor | Preparing, under 25 sponsor points, once a cycle, not boycotting, at peace with the host; $1.5B, 10 PP | +3 sponsor points (cap 25); the host gains `econ_forum_session_sponsor` (+10) toward us                                  |
+| Speak   | Preparing, our delegation going (status 3 or 4), under 3 speakers, once a cycle; 25 PP | 40% chance, +20 with a head of government, +10 as a great or super power. A win adds a speaker and `econ_forum_keynote_modifier` (foreign influence, `prestige × 0.002`) for 365 days; `econ_forum.6` reports either way |
+| Boycott | 25 PP to start; ending is free                                         | Cancels our delegation; the forum loses 2 prestige (5 for a great or super power); the host gains `econ_forum_boycotted` (-30) toward us; no invitations reach us until we rejoin; a great or super power fires `econ_forum_news.8` |
+
+`econ_forum_open_preparation` increments `econ_forum_cycle`, which resets the once-a-cycle limits.
 
 ## Score
 
