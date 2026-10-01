@@ -169,9 +169,9 @@ country_event = {
 	trigger = {
 		STALKER_meme_content_enabled = yes
 		NOT = { has_global_flag = STALKER_alice_said_hello }
-		check_variable = { global.STALKER_event_zone_id = 27 }
 		has_event_target = STALKER_zone_event_target
 		event_target:STALKER_zone_event_target = {
+			check_variable = { STALKER_zone_id = 27 }
 			STALKER_is_active_zone_anchor = yes
 			is_controlled_by = ROOT
 		}
@@ -194,17 +194,17 @@ country_event = {
 						is_controlled_by = ROOT
 					}
 				}
-				event_target:STALKER_zone_event_target = {
-					add_to_variable = { STALKER_zone_containment = 2 }
-					STALKER_clamp_zone_society = yes
-				}
+				set_variable = { global.STALKER_alice_choice = 1 }
+				set_global_flag = { flag = STALKER_alice_return_wait value = 1 days = 180 }
 			}
+			else = { clr_global_flag = STALKER_alice_said_hello }
 		}
 		ai_chance = { base = 1 }
 	}
 
 	option = {
 		name = STALKER.105.b
+		trigger = { NOT = { has_political_power < 25 } }
 		log = "[GetDateText]: [This.GetName]: STALKER.105.b executed"
 		custom_effect_tooltip = STALKER.105.b_tt
 		hidden_effect = {
@@ -215,10 +215,125 @@ country_event = {
 						is_controlled_by = ROOT
 					}
 				}
+				set_variable = { global.STALKER_alice_choice = 2 }
+				set_global_flag = { flag = STALKER_alice_return_wait value = 1 days = 180 }
+				add_political_power = -25
 				event_target:STALKER_zone_event_target = {
-					add_to_variable = { STALKER_zone_exploitation = 3 }
+					add_to_variable = { STALKER_zone_exploitation = 5 }
+					add_to_variable = { STALKER_zone_activity = 5 }
+					STALKER_clamp_zone_society = yes
+					clamp_variable = { var = STALKER_zone_activity min = 0 max = 100 }
+					ROOT = { STALKER_refresh_zone_administration = yes }
+				}
+			}
+			else = { clr_global_flag = STALKER_alice_said_hello }
+		}
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = STALKER.105.c
+		log = "[GetDateText]: [This.GetName]: STALKER.105.c executed"
+		custom_effect_tooltip = STALKER.105.c_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					event_target:STALKER_zone_event_target = {
+						STALKER_is_active_zone_anchor = yes
+						is_controlled_by = ROOT
+					}
+				}
+				set_variable = { global.STALKER_alice_choice = 3 }
+				set_global_flag = { flag = STALKER_alice_return_wait value = 1 days = 180 }
+				event_target:STALKER_zone_event_target = {
+					add_to_variable = { STALKER_zone_containment = 5 }
+					add_to_variable = { STALKER_zone_exploitation = -3 }
 					STALKER_clamp_zone_society = yes
 					ROOT = { STALKER_refresh_zone_administration = yes }
+				}
+			}
+			else = { clr_global_flag = STALKER_alice_said_hello }
+		}
+		ai_chance = { base = 1 }
+	}
+}
+
+country_event = {
+	id = STALKER.106
+	title = STALKER.106.t
+	desc = {
+		text = STALKER.106.d_observed
+		trigger = { check_variable = { global.STALKER_alice_choice = 1 } }
+	}
+	desc = {
+		text = STALKER.106.d_contact
+		trigger = { check_variable = { global.STALKER_alice_choice = 2 } }
+	}
+	desc = {
+		text = STALKER.106.d_restricted
+		trigger = { check_variable = { global.STALKER_alice_choice = 3 } }
+	}
+	picture = GFX_crime_fighting
+	is_triggered_only = yes
+
+	trigger = {
+		STALKER_meme_content_enabled = yes
+		NOT = { has_global_flag = STALKER_alice_returned }
+		check_variable = { global.STALKER_alice_choice > 0 }
+		has_event_target = STALKER_zone_event_target
+		event_target:STALKER_zone_event_target = {
+			check_variable = { STALKER_zone_id = 27 }
+			STALKER_is_active_zone_anchor = yes
+			is_controlled_by = ROOT
+		}
+	}
+
+	immediate = {
+		log = "[GetDateText]: [This.GetName]: STALKER.106 immediate executed"
+		set_global_flag = STALKER_alice_returned
+	}
+
+	option = {
+		name = STALKER.106.a
+		log = "[GetDateText]: [This.GetName]: STALKER.106.a executed"
+		custom_effect_tooltip = STALKER.106.a_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					event_target:STALKER_zone_event_target = {
+						STALKER_is_active_zone_anchor = yes
+						is_controlled_by = ROOT
+					}
+				}
+				event_target:STALKER_zone_event_target = {
+					add_to_variable = { STALKER_zone_exploitation = 5 }
+					add_to_variable = { STALKER_zone_activity = 5 }
+					STALKER_clamp_zone_society = yes
+					clamp_variable = { var = STALKER_zone_activity min = 0 max = 100 }
+					ROOT = { STALKER_refresh_zone_administration = yes }
+				}
+			}
+		}
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = STALKER.106.b
+		log = "[GetDateText]: [This.GetName]: STALKER.106.b executed"
+		custom_effect_tooltip = STALKER.106.b_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					event_target:STALKER_zone_event_target = {
+						STALKER_is_active_zone_anchor = yes
+						is_controlled_by = ROOT
+					}
+				}
+				event_target:STALKER_zone_event_target = {
+					add_to_variable = { STALKER_zone_containment = 5 }
+					add_to_variable = { STALKER_zone_activity = -5 }
+					STALKER_clamp_zone_society = yes
+					clamp_variable = { var = STALKER_zone_activity min = 0 max = 100 }
 				}
 			}
 		}
