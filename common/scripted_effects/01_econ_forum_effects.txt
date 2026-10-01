@@ -255,6 +255,7 @@ econ_forum_ensure_country_arrays = {
 		resize_array = { array = econ_forum_bid_cycle value = 0 size = 8 }
 		resize_array = { array = econ_forum_boycott value = 0 size = 8 }
 		resize_array = { array = econ_forum_boycott_cycle value = 0 size = 8 }
+		resize_array = { array = econ_forum_keynote_booked value = 0 size = 8 }
 	}
 }
 
@@ -557,6 +558,7 @@ econ_forum_bid_to_speak = {
 			limit = { check_variable = { ef_roll < ef_bid_chance } }
 			set_variable = { econ_forum_bid_result = 1 }
 			add_to_variable = { global.econ_forum_speakers^v = 1 }
+			set_variable = { econ_forum_keynote_booked^v = { value = global.econ_forum_cycle^v add = 1 } }
 			set_temp_variable = { ef_keynote = { value = global.econ_forum_prestige^v multiply = 0.002 } }
 			# Every win restarts the year; a stronger running keynote keeps its value.
 			if = {
@@ -567,6 +569,7 @@ econ_forum_bid_to_speak = {
 					}
 				}
 				set_variable = { econ_forum_keynote_bonus = ef_keynote }
+				set_variable = { econ_forum_keynote_forum = v }
 			}
 			add_dynamic_modifier = { modifier = econ_forum_keynote_modifier days = 365 }
 		}
@@ -586,9 +589,23 @@ econ_forum_toggle_boycott = {
 		add_political_power = -25
 		set_variable = { econ_forum_boycott^v = 1 }
 		set_variable = { econ_forum_status^v = 0 }
+		set_variable = { econ_forum_agenda^v = 0 }
 		var:global.econ_forum_host^v = { add_opinion_modifier = { target = ROOT modifier = econ_forum_boycotted } }
 		# The prestige hit and the news land once a cycle, so rejoining and boycotting again repeats neither.
 		set_temp_variable = { ef_cycle_tag = { value = global.econ_forum_cycle^v add = 1 } }
+		# A keynote booked this cycle goes undelivered: the summit loses the speaker and we lose its reward.
+		if = {
+			limit = { check_variable = { econ_forum_keynote_booked^v = ef_cycle_tag } }
+			set_variable = { econ_forum_keynote_booked^v = 0 }
+			subtract_from_variable = { global.econ_forum_speakers^v = 1 }
+			clamp_variable = { var = global.econ_forum_speakers^v min = 0 max = 3 }
+			if = {
+				limit = { check_variable = { econ_forum_keynote_forum = v } }
+				remove_dynamic_modifier = { modifier = econ_forum_keynote_modifier }
+				clear_variable = econ_forum_keynote_bonus
+				clear_variable = econ_forum_keynote_forum
+			}
+		}
 		if = {
 			limit = { NOT = { check_variable = { econ_forum_boycott_cycle^v = ef_cycle_tag } } }
 			set_variable = { econ_forum_boycott_cycle^v = ef_cycle_tag }
