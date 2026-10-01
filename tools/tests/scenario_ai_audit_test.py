@@ -32,6 +32,24 @@ XX_category = {
 		complete_effect = { add_political_power = 1 }
 		ai_will_do = { base = 0 }
 	}
+	XX_remove_only = {
+		cost = 10
+		remove_effect = { add_political_power = 1 }
+	}
+	XX_ai_only_zero = {
+		available = { NOT = { is_ai = no } }
+		complete_effect = { add_political_power = 1 }
+		ai_will_do = { base = 0 }
+	}
+	XX_or_zero = {
+		visible = { OR = { is_ai = no has_war = yes } }
+		complete_effect = { add_political_power = 1 }
+		ai_will_do = { base = 0 }
+	}
+	XX_scoped_player = {
+		visible = { FROM = { controller = { is_ai = no } } }
+		complete_effect = { add_political_power = 1 }
+	}
 	XX_fine = {
 		complete_effect = { add_political_power = 1 }
 		ai_will_do = { base = 5 }
@@ -66,6 +84,15 @@ EVENTS = (
     )
     + _event("XX.8", WEIGHTED, kind="news_event")
     + _event(
+        "XX.10",
+        [
+            '\t\tlog = "fired # 1" ai_chance = { base = 60 }\n',
+            "\t\tai_chance = { base = 40 }\n",
+        ],
+        trigger="OR = { is_ai = no has_war = yes }",
+        extra="\tdesc = { text = x trigger = { check_variable = { global.XX_event_zone_id = 1 } } }\n",
+    )
+    + _event(
         "XX.9",
         WEIGHTED,
         kind="state_event",
@@ -92,6 +119,7 @@ XX_pulse = {
 		news_event = XX.8
 	}
 	random_state = { state_event = { id = XX.9 days = 5 } }
+	country_event = { id = XX.10 hours = 6 }
 }
 """
 
@@ -109,11 +137,15 @@ def _repo(tmp_path):
 def test_audit_findings(tmp_path):
     mod = _module()
     results, count = mod.audit(_repo(tmp_path), "XX")
-    assert count == 9
+    assert count == 10
     decisions = {name: msg for _, name, msg in results["decisions"]}
+    zero = "decision ai_will_do is 0; the AI never takes it"
     assert decisions == {
         "XX_no_weight": "decision has no ai_will_do",
-        "XX_zero": "decision ai_will_do is 0; the AI never takes it",
+        "XX_zero": zero,
+        "XX_remove_only": "decision has no ai_will_do",
+        "XX_ai_only_zero": zero,
+        "XX_or_zero": zero,
     }
     options = {eid: msg for _, eid, msg in results["event options"]}
     assert options == {"XX.1": "1 of 2 options have no ai_chance"}
@@ -134,6 +166,16 @@ def test_audit_findings(tmp_path):
         "XX.9",
         "delayed dispatch in 99_XX_effects.txt and the event reads a shared global",
     ) in dispatch
+    assert dispatch >= {
+        (
+            "XX.10",
+            "delayed dispatch in 99_XX_effects.txt and the event reads a shared global",
+        )
+    }
+    assert (
+        "XX.10",
+        "has AI weights but every dispatch is player-only (is_ai = no)",
+    ) not in dispatch
     assert not any(eid in ("XX.3", "XX.4", "XX.5") for eid, _ in dispatch)
 
 
@@ -141,6 +183,6 @@ def test_main_prints_report(tmp_path, capsys):
     mod = _module()
     assert mod.main(["XX", "--repo", str(_repo(tmp_path))]) == 0
     out = capsys.readouterr().out
-    assert out.startswith("XX: 9 events checked, 7 finding(s)")
-    assert "## dispatch (4)" in out
+    assert out.startswith("XX: 10 events checked, 11 finding(s)")
+    assert "## dispatch (5)" in out
     assert "- XX_decisions.txt: XX_zero: decision ai_will_do is 0" in out

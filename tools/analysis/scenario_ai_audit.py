@@ -22,16 +22,38 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from shared.paths import REPO_ROOT
-from shared_utils import read_text_strict
+from shared_utils import read_text_strict, strip_comments
 
 BLOCK_RE = re.compile(r"([\w.@:\-]+)\s*=\s*\{")
 PLAYER_ONLY_RE = re.compile(r"\bis_ai\s*=\s*no\b")
 ZERO_RE = re.compile(r"^(?:base|factor)\s*=\s*0(?:\.0+)?$")
+DELAY_RE = re.compile(r"\b(?:days|hours|random_days|random_hours)\s*=")
 GATE_KEYS = ("allowed", "visible", "available", "target_root_trigger", "target_trigger")
+DECISION_KEYS = (
+    "complete_effect",
+    "remove_effect",
+    "timeout_effect",
+    "ai_will_do",
+    "available",
+    "cost",
+    "days_mission_timeout",
+)
+# Blocks whose children are not all required, so an is_ai = no inside them
+# does not prove the AI is excluded.
+NOT_REQUIRED = {"NOT", "OR", "NOR", "NAND", "count_triggers"}
 
 
-def strip_comments(text):
-    return re.sub(r"#[^\n]*", "", text)
+def top_level(text):
+    """Return text with every nested { ... } block removed."""
+    out, depth = [], 0
+    for ch in text:
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+        elif depth == 0:
+            out.append(ch)
+    return "".join(out)
 
 
 def blocks(text):
@@ -63,6 +85,21 @@ def squash(text):
     return re.sub(r"\s+", " ", text or "").strip()
 
 
+def requires_player(text):
+    """True when the triggers in text, read as an AND, require is_ai = no.
+
+    Scope blocks and AND are followed; NOT, OR and similar are not, because an
+    is_ai = no inside them does not exclude the AI.
+    """
+    if PLAYER_ONLY_RE.search(top_level(text)):
+        return True
+    return any(
+        requires_player(inner)
+        for name, inner, _ in blocks(text)
+        if name not in NOT_REQUIRED
+    )
+
+
 def scenario_files(repo, folder, key):
     base = repo / folder
     return sorted([*base.glob(f"{key}.txt"), *base.glob(f"{key}_*.txt")])
@@ -74,12 +111,9 @@ def audit_decisions(repo, key):
         text = strip_comments(read_text_strict(str(path)))
         for _category, cat_body, _ in blocks(text):
             for name, body, _ in blocks(cat_body):
-                if not any(
-                    k in body for k in ("complete_effect", "ai_will_do", "available")
-                ):
+                if not any(re.search(rf"\b{k}\s*=", body) for k in DECISION_KEYS):
                     continue
-                gate = " ".join(squash(child(body, k)) for k in GATE_KEYS)
-                if PLAYER_ONLY_RE.search(gate):
+                if any(requires_player(child(body, k) or "") for k in GATE_KEYS):
                     continue
                 ai = child(body, "ai_will_do")
                 if ai is None:
@@ -183,7 +217,7 @@ def dispatch_sites(texts, eid):
         for m in full.finditer(text):
             if re.search(r"\b(?:title|is_triggered_only|picture)\s*=", m.group(0)):
                 continue  # the event's own definition, not a dispatch
-            yield name, text, m.start(), bool(re.search(r"\bdays\s*=", m.group(0)))
+            yield name, text, m.start(), bool(DELAY_RE.search(m.group(0)))
 
 
 def audit_dispatch(repo, key, event_map):
@@ -193,10 +227,10 @@ def audit_dispatch(repo, key, event_map):
     for eid, (fname, body) in sorted(event_map.items()):
         sites = list(dispatch_sites(texts, eid))
         trigger = child(body, "trigger") or ""
-        player_only_event = bool(PLAYER_ONLY_RE.search(trigger))
+        player_only_event = requires_player(trigger)
         if sites and has_weights(body) and not player_only_event:
             if all(
-                any(PLAYER_ONLY_RE.search(lim) for lim in enclosing_limits(t, p))
+                any(requires_player(lim) for lim in enclosing_limits(t, p))
                 for _, t, p, _ in sites
             ):
                 findings.append(

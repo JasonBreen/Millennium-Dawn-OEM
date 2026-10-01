@@ -178,6 +178,19 @@ def test_subsystems_take_consecutive_blocks(tmp_path):
     )
 
 
+def test_subsystem_refuses_an_occupied_block(tmp_path):
+    mod = _module()
+    repo = _repo(tmp_path)
+    mod.add_scenario(repo, "SILENTHILL", "Silent Hill", "x")
+    _write(
+        repo / "events/SILENTHILL_early.txt",
+        "country_event = {\n\tid = SILENTHILL.12\n}\n",
+    )
+    with pytest.raises(mod.ToolError, match=r"SILENTHILL\.12"):
+        mod.add_subsystem(repo, "SILENTHILL", "order", "The Order")
+    assert not (repo / "events/SILENTHILL_order.txt").exists()
+
+
 def test_subsystem_on_a_stalker_style_doc(tmp_path):
     mod = _module()
     repo = tmp_path / "repo"

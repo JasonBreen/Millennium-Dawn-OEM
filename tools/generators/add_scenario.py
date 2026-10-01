@@ -259,6 +259,17 @@ def add_subsystem(repo, key, subsystem, display):
     if not match:
         raise ToolError(f"{p['doc']} has no 'The next free block is N–M.' line")
     first, last = int(match.group(1)), int(match.group(2))
+    id_re = re.compile(rf"\bid\s*=\s*{re.escape(key)}\.(\d+)\b")
+    for path in sorted(
+        [*repo.glob(f"events/{key}.txt"), *repo.glob(f"events/{key}_*.txt")]
+    ):
+        used = [int(n) for n in id_re.findall(read_text_strict(str(path)))]
+        clash = [n for n in used if first <= n <= last]
+        if clash:
+            raise ToolError(
+                f"event-ID block {first}–{last} is already used in {path.name} "
+                f"({key}.{clash[0]}); fix the doc's next free block line"
+            )
     events = f"events/{key}_{subsystem}.txt"
     loc = f"localisation/english/MD_{key}_{subsystem}_l_english.yml"
     effects = f"common/scripted_effects/99_{key}_{subsystem}_effects.txt"
