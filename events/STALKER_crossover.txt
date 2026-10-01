@@ -180,14 +180,25 @@ country_event = {
 	immediate = {
 		log = "[GetDateText]: [This.GetName]: STALKER.105 immediate executed"
 		set_global_flag = STALKER_alice_said_hello
-		set_global_flag = { flag = STALKER_alice_return_wait value = 1 days = 180 }
 	}
 
 	option = {
 		name = STALKER.105.a
 		log = "[GetDateText]: [This.GetName]: STALKER.105.a executed"
 		custom_effect_tooltip = STALKER.105.a_tt
-		hidden_effect = { set_variable = { global.STALKER_alice_choice = 1 } }
+		hidden_effect = {
+			if = {
+				limit = {
+					event_target:STALKER_zone_event_target = {
+						STALKER_is_active_zone_anchor = yes
+						is_controlled_by = ROOT
+					}
+				}
+				set_variable = { global.STALKER_alice_choice = 1 }
+				set_global_flag = { flag = STALKER_alice_return_wait value = 1 days = 180 }
+			}
+			else = { clr_global_flag = STALKER_alice_said_hello }
+		}
 		ai_chance = { base = 1 }
 	}
 
@@ -197,7 +208,6 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: STALKER.105.b executed"
 		custom_effect_tooltip = STALKER.105.b_tt
 		hidden_effect = {
-			set_variable = { global.STALKER_alice_choice = 2 }
 			if = {
 				limit = {
 					event_target:STALKER_zone_event_target = {
@@ -205,6 +215,8 @@ country_event = {
 						is_controlled_by = ROOT
 					}
 				}
+				set_variable = { global.STALKER_alice_choice = 2 }
+				set_global_flag = { flag = STALKER_alice_return_wait value = 1 days = 180 }
 				add_political_power = -25
 				event_target:STALKER_zone_event_target = {
 					add_to_variable = { STALKER_zone_exploitation = 5 }
@@ -214,6 +226,7 @@ country_event = {
 					ROOT = { STALKER_refresh_zone_administration = yes }
 				}
 			}
+			else = { clr_global_flag = STALKER_alice_said_hello }
 		}
 		ai_chance = { base = 1 }
 	}
@@ -223,7 +236,6 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: STALKER.105.c executed"
 		custom_effect_tooltip = STALKER.105.c_tt
 		hidden_effect = {
-			set_variable = { global.STALKER_alice_choice = 3 }
 			if = {
 				limit = {
 					event_target:STALKER_zone_event_target = {
@@ -231,6 +243,8 @@ country_event = {
 						is_controlled_by = ROOT
 					}
 				}
+				set_variable = { global.STALKER_alice_choice = 3 }
+				set_global_flag = { flag = STALKER_alice_return_wait value = 1 days = 180 }
 				event_target:STALKER_zone_event_target = {
 					add_to_variable = { STALKER_zone_containment = 5 }
 					add_to_variable = { STALKER_zone_exploitation = -3 }
@@ -238,6 +252,7 @@ country_event = {
 					ROOT = { STALKER_refresh_zone_administration = yes }
 				}
 			}
+			else = { clr_global_flag = STALKER_alice_said_hello }
 		}
 		ai_chance = { base = 1 }
 	}

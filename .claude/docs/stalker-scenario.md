@@ -75,8 +75,9 @@ names and events against the in-game text as documented by the S.T.A.L.K.E.R. Wi
 - **Crossover (100–109):** `STALKER_crossover.txt`; loc `_crossover_`;
   `99_STALKER_meme_effects.txt`. Crossover content is player-only: the pulse targets human-held Zones
   only. The first roll on Lake Mungo (Zone 27) fires Alice's one-time contact, STALKER.105. Its choice
-  goes in `global.STALKER_alice_choice`, and 180 days later the return, STALKER.106, answers that
-  choice. The return waits while an AI holds Lake Mungo.
+  goes in `global.STALKER_alice_choice`, and 180 days after the answer the return, STALKER.106,
+  answers that choice. The return waits while an AI holds Lake Mungo. If the Zone changes hands before
+  the answer, nothing is recorded and the introduction can reach the next holder.
 - **Footprint (110–119):** `STALKER_footprint.txt`; loc `_footprint_`;
   `99_STALKER_footprint_effects.txt`. Zones spread, recede and drift; anchors never move, because event
   text names a Zone through literal state IDs. A reference Zone at its full footprint can split once:
