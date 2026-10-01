@@ -264,8 +264,13 @@ commitments.
 ## Decisions and notifications
 
 One Decisions dashboard shows national progress, current physical requirements, benefits, rank,
-next investment, financing, and public rival stages. Foreign financial ledgers are never rendered.
-Country-scope dynamic rows avoid per-country localisation or interface definitions.
+next investment, and financing. The public leaderboard lives in its own International Systems
+tab, The Great AI Race (`01_international_ai_race_gui.txt`, `MD_international_ai_race.gui`): every
+ranked participant's stage and capability, the first Frontier AI finisher, and a status line for
+Off, before 2016, no participants, and Outcomes Only. It refreshes on `ai_race_gui_dirty`, and
+opening it calls `ai_race_refresh_gui` only while the race is enabled, so Off creates no state.
+Foreign financial ledgers are never rendered. Country-scope dynamic rows avoid per-country
+localisation or interface definitions.
 
 Four free stage reviews open confirmation events. Defer is the first option and the timeout
 default. Quotes expire after seven days; a nine-day pending-review flag prevents duplicate
