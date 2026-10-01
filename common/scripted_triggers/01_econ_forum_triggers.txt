@@ -237,12 +237,12 @@ econ_forum_pivot_east_guest = {
 # Forums tab row of forum v, in the viewing country's scope. Someone else runs it.
 econ_forum_guest_row = {
 	check_variable = { global.econ_forum_host^v > 0 }
-	NOT = { check_variable = { global.econ_forum_host^v = ROOT.id } }
+	NOT = { check_variable = { global.econ_forum_host^v = THIS.id } }
 }
 
 econ_forum_can_sponsor = {
 	econ_forum_guest_row = yes
-	var:global.econ_forum_host^v = { NOT = { has_war_with = ROOT } }
+	var:global.econ_forum_host^v = { NOT = { has_war_with = PREV } }
 	check_variable = { global.econ_forum_preparing^v = 1 }
 	check_variable = { global.econ_forum_sponsors^v < 25 }
 	NOT = { check_variable = { econ_forum_sponsor_cycle^v = global.econ_forum_cycle^v } }
@@ -264,7 +264,7 @@ econ_forum_can_request = {
 	econ_forum_guest_row = yes
 	var:global.econ_forum_host^v = {
 		is_ai = yes
-		NOT = { has_war_with = ROOT }
+		NOT = { has_war_with = PREV }
 	}
 	check_variable = { global.econ_forum_preparing^v = 1 }
 	# Requests close with the host's invitations, a month before the summit.
