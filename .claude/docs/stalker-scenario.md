@@ -73,7 +73,8 @@ names and events against the in-game text as documented by the S.T.A.L.K.E.R. Wi
 - **Mutants (90–99):** `STALKER_mutants.txt`; loc `_mutants_`; `STALKER_mutant_decisions.txt`;
   `99_STALKER_mutant_effects.txt`.
 - **Crossover (100–109):** `STALKER_crossover.txt`; loc `_crossover_`;
-  `99_STALKER_meme_effects.txt`.
+  `99_STALKER_meme_effects.txt`. The first crossover roll on Lake Mungo (Zone 27) fires the one-time
+  STALKER.105 instead of a random joke.
 - **Footprint (110–119):** `STALKER_footprint.txt`; loc `_footprint_`;
   `99_STALKER_footprint_effects.txt`. Zones spread, recede and drift; anchors never move, because event
   text names a Zone through literal state IDs. A reference Zone at its full footprint can split once:
