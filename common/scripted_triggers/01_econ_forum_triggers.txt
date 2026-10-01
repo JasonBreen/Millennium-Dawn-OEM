@@ -183,6 +183,10 @@ econ_forum_can_be_invited = {
 			check_variable = { econ_forum_status^PREV.econ_forum_hosted < 2 }
 		}
 	}
+	OR = {
+		check_variable = { econ_forum_boycott^num < 8 }
+		NOT = { check_variable = { econ_forum_boycott^PREV.econ_forum_hosted = 1 } }
+	}
 }
 
 # Temp ef_after_last set: months from the forum's last summit to the next one. Summits stay at least
@@ -228,4 +232,36 @@ econ_forum_pivot_east_guest = {
 		has_idea = RAJ_BRICS_associate
 		has_country_flag = asian_nation_flag
 	}
+}
+
+# Forums tab row of forum v, in the viewing country's scope. Someone else runs it.
+econ_forum_guest_row = {
+	check_variable = { global.econ_forum_host^v > 0 }
+	NOT = { check_variable = { global.econ_forum_host^v = ROOT.id } }
+}
+
+econ_forum_can_sponsor = {
+	econ_forum_guest_row = yes
+	var:global.econ_forum_host^v = { NOT = { has_war_with = ROOT } }
+	check_variable = { global.econ_forum_preparing^v = 1 }
+	check_variable = { global.econ_forum_sponsors^v < 25 }
+	NOT = { check_variable = { econ_forum_sponsor_cycle^v = global.econ_forum_cycle^v } }
+	check_variable = { econ_forum_boycott^v = 0 }
+	has_political_power > 9
+	check_variable = { treasury > 1.49 }
+}
+
+econ_forum_can_bid = {
+	econ_forum_guest_row = yes
+	check_variable = { global.econ_forum_preparing^v = 1 }
+	check_variable = { global.econ_forum_speakers^v < 3 }
+	check_variable = { econ_forum_status^v > 2 }
+	NOT = { check_variable = { econ_forum_bid_cycle^v = global.econ_forum_cycle^v } }
+	has_political_power > 24
+}
+
+econ_forum_can_boycott = {
+	econ_forum_guest_row = yes
+	check_variable = { econ_forum_boycott^v = 0 }
+	has_political_power > 24
 }
