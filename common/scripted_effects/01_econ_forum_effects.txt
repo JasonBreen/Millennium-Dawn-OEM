@@ -254,6 +254,7 @@ econ_forum_ensure_country_arrays = {
 		resize_array = { array = econ_forum_sponsor_cycle value = 0 size = 8 }
 		resize_array = { array = econ_forum_bid_cycle value = 0 size = 8 }
 		resize_array = { array = econ_forum_boycott value = 0 size = 8 }
+		resize_array = { array = econ_forum_boycott_cycle value = 0 size = 8 }
 	}
 }
 
@@ -557,6 +558,7 @@ econ_forum_bid_to_speak = {
 			set_variable = { econ_forum_bid_result = 1 }
 			add_to_variable = { global.econ_forum_speakers^v = 1 }
 			set_temp_variable = { ef_keynote = { value = global.econ_forum_prestige^v multiply = 0.002 } }
+			# Every win restarts the year; a stronger running keynote keeps its value.
 			if = {
 				limit = {
 					OR = {
@@ -565,8 +567,8 @@ econ_forum_bid_to_speak = {
 					}
 				}
 				set_variable = { econ_forum_keynote_bonus = ef_keynote }
-				add_dynamic_modifier = { modifier = econ_forum_keynote_modifier days = 365 }
 			}
+			add_dynamic_modifier = { modifier = econ_forum_keynote_modifier days = 365 }
 		}
 		country_event = econ_forum.6
 		econ_forum_refresh_open_screens = yes
@@ -584,31 +586,35 @@ econ_forum_toggle_boycott = {
 		add_political_power = -25
 		set_variable = { econ_forum_boycott^v = 1 }
 		set_variable = { econ_forum_status^v = 0 }
-		set_temp_variable = { ef_boycott_cost = 2 }
+		var:global.econ_forum_host^v = { add_opinion_modifier = { target = ROOT modifier = econ_forum_boycotted } }
+		# The prestige hit and the news land once a cycle, so rejoining and boycotting again repeats neither.
+		set_temp_variable = { ef_cycle_tag = { value = global.econ_forum_cycle^v add = 1 } }
 		if = {
-			limit = {
-				OR = {
-					has_idea = super_power
-					has_idea = great_power
-				}
-			}
-			set_temp_variable = { ef_boycott_cost = 5 }
-		}
-		subtract_from_variable = { global.econ_forum_prestige^v = ef_boycott_cost }
-		clamp_variable = { var = global.econ_forum_prestige^v min = 0 max = 100 }
-		var:global.econ_forum_host^v = {
-			add_opinion_modifier = { target = ROOT modifier = econ_forum_boycotted }
+			limit = { NOT = { check_variable = { econ_forum_boycott_cycle^v = ef_cycle_tag } } }
+			set_variable = { econ_forum_boycott_cycle^v = ef_cycle_tag }
+			set_temp_variable = { ef_boycott_cost = 2 }
 			if = {
 				limit = {
-					ROOT = {
-						OR = {
-							has_idea = super_power
-							has_idea = great_power
-						}
+					OR = {
+						has_idea = super_power
+						has_idea = great_power
 					}
 				}
-				set_variable = { econ_forum_news_boycotter = ROOT.id }
-				news_event = econ_forum_news.8
+				set_temp_variable = { ef_boycott_cost = 5 }
+			}
+			subtract_from_variable = { global.econ_forum_prestige^v = ef_boycott_cost }
+			clamp_variable = { var = global.econ_forum_prestige^v min = 0 max = 100 }
+			if = {
+				limit = {
+					OR = {
+						has_idea = super_power
+						has_idea = great_power
+					}
+				}
+				var:global.econ_forum_host^v = {
+					set_variable = { econ_forum_news_boycotter = ROOT.id }
+					news_event = econ_forum_news.8
+				}
 			}
 		}
 	}
