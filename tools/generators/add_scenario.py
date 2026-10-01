@@ -140,10 +140,17 @@ def scenario_files(key, name):
             "\t\t}\n"
             "\t}\n"
             "\n"
+            "\t# on_monthly fires for every country; the flag runs the pulse once a month.\n"
             "\ton_monthly = {\n"
             "\t\teffect = {\n"
-            f"\t\t\tif = {{\n\t\t\t\tlimit = {{ {key}_scenario_enabled = yes }}\n"
-            f"\t\t\t\t{key}_monthly_pulse = yes\n\t\t\t}}\n"
+            "\t\t\tif = {\n"
+            "\t\t\t\tlimit = {\n"
+            f"\t\t\t\t\t{key}_scenario_enabled = yes\n"
+            f"\t\t\t\t\tNOT = {{ has_global_flag = {key}_monthly_pulse_done }}\n"
+            "\t\t\t\t}\n"
+            f"\t\t\t\tset_global_flag = {{ flag = {key}_monthly_pulse_done value = 1 days = 27 }}\n"
+            f"\t\t\t\t{key}_monthly_pulse = yes\n"
+            "\t\t\t}\n"
             "\t\t}\n"
             "\t}\n"
             "}\n"
@@ -170,7 +177,8 @@ event IDs, so parallel work does not collide. It ships on OEM only. Built like S
 - **Event IDs.** Use only your subsystem's block. Never reuse or renumber an ID.
 - **Gate everything** on `{key}_scenario_enabled = yes`. It reads a global flag that startup sets from
   `rule_{lower}_scenario`; never read the rule from a trigger that can run at load.
-- **Monthly work.** Add a line to `{key}_monthly_pulse` in `{p["pulse"]}`.
+- **Monthly work.** Add a line to `{key}_monthly_pulse` in `{p["pulse"]}`. It runs once a month,
+  in the scope of whichever country ticks first, so scope explicitly into what it touches.
 - **AI.** Every decision and event option gets AI weights, and the AI must actually receive the
   content. If something is player-only, say so here. Check with `/scenario-audit {key}`.
 - **Context.** Bind delayed events to a fixed state or a per-event target. Never read a shared

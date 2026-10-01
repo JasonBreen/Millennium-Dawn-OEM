@@ -71,6 +71,11 @@ def test_new_scaffolds_the_scenario(tmp_path):
     on_actions = _read(repo / "common/on_actions/99_SILENTHILL_on_actions.txt")
     assert "random_country = { SILENTHILL_initialize_scenario = yes }" in on_actions
     assert "SILENTHILL_monthly_pulse = yes" in on_actions
+    assert (
+        "set_global_flag = { flag = SILENTHILL_monthly_pulse_done value = 1 days = 27 }"
+        in on_actions
+    )
+    assert "NOT = { has_global_flag = SILENTHILL_monthly_pulse_done }" in on_actions
     assert _read(repo / "events/SILENTHILL.txt") == "add_namespace = SILENTHILL\n"
     assert (
         (repo / "localisation/english/MD_SILENTHILL_l_english.yml")

@@ -22,7 +22,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from shared.paths import REPO_ROOT
-from shared_utils import read_text_strict, strip_comments
+from shared_utils import blank_quoted_strings, read_text_strict, strip_comments
 
 BLOCK_RE = re.compile(r"([\w.@:\-]+)\s*=\s*\{")
 PLAYER_ONLY_RE = re.compile(r"\bis_ai\s*=\s*no\b")
@@ -41,6 +41,14 @@ DECISION_KEYS = (
 # Blocks whose children are not all required, so an is_ai = no inside them
 # does not prove the AI is excluded.
 NOT_REQUIRED = {"NOT", "OR", "NOR", "NAND", "count_triggers"}
+# Blocks that keep the acting country (ROOT) in scope.
+ACTOR_BLOCKS = {"AND", "ROOT", "hidden_trigger", "custom_trigger_tooltip"}
+DISPATCH_ROOTS = ("common", "events", "history")
+
+
+def read_script(path):
+    """Read script with comments removed and quoted text blanked, offsets kept."""
+    return blank_quoted_strings(strip_comments(read_text_strict(str(path))))
 
 
 def top_level(text):
@@ -85,18 +93,20 @@ def squash(text):
     return re.sub(r"\s+", " ", text or "").strip()
 
 
-def requires_player(text):
+def requires_player(text, follow_scopes=True):
     """True when the triggers in text, read as an AND, require is_ai = no.
 
-    Scope blocks and AND are followed; NOT, OR and similar are not, because an
-    is_ai = no inside them does not exclude the AI.
+    NOT, OR and similar are never followed, because an is_ai = no inside them
+    does not exclude the AI. With follow_scopes=False only blocks that keep the
+    acting country in scope are followed, so a target's is_ai = no (FROM,
+    controller, ...) does not count; use that for decision gates.
     """
     if PLAYER_ONLY_RE.search(top_level(text)):
         return True
     return any(
-        requires_player(inner)
+        requires_player(inner, follow_scopes)
         for name, inner, _ in blocks(text)
-        if name not in NOT_REQUIRED
+        if name not in NOT_REQUIRED and (follow_scopes or name in ACTOR_BLOCKS)
     )
 
 
@@ -108,12 +118,15 @@ def scenario_files(repo, folder, key):
 def audit_decisions(repo, key):
     findings = []
     for path in scenario_files(repo, "common/decisions", key):
-        text = strip_comments(read_text_strict(str(path)))
+        text = read_script(path)
         for _category, cat_body, _ in blocks(text):
             for name, body, _ in blocks(cat_body):
                 if not any(re.search(rf"\b{k}\s*=", body) for k in DECISION_KEYS):
                     continue
-                if any(requires_player(child(body, k) or "") for k in GATE_KEYS):
+                if any(
+                    requires_player(child(body, k) or "", follow_scopes=False)
+                    for k in GATE_KEYS
+                ):
                     continue
                 ai = child(body, "ai_will_do")
                 if ai is None:
@@ -133,7 +146,7 @@ def events(repo, key):
     """Map event id -> (file name, event body) for the scenario's events."""
     found = {}
     for path in scenario_files(repo, "events", key):
-        text = strip_comments(read_text_strict(str(path)))
+        text = read_script(path)
         for kind, body, _ in blocks(text):
             if kind not in ("country_event", "news_event", "state_event"):
                 continue
@@ -194,11 +207,10 @@ def dispatching_files(repo, key):
     """Read once every script file that mentions one of the scenario's event IDs."""
     needle = f"{key}."
     texts = []
-    for folder in ("common", "events"):
+    for folder in DISPATCH_ROOTS:
         for path in (repo / folder).rglob("*.txt"):
-            raw = read_text_strict(str(path))
-            if needle in raw:
-                texts.append((path.name, strip_comments(raw)))
+            if needle in read_text_strict(str(path)):
+                texts.append((path.name, read_script(path)))
     return texts
 
 

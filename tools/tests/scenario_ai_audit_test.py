@@ -50,6 +50,10 @@ XX_category = {
 		visible = { FROM = { controller = { is_ai = no } } }
 		complete_effect = { add_political_power = 1 }
 	}
+	XX_root_player = {
+		visible = { ROOT = { is_ai = no } }
+		complete_effect = { add_political_power = 1 }
+	}
 	XX_fine = {
 		complete_effect = { add_political_power = 1 }
 		ai_will_do = { base = 5 }
@@ -86,7 +90,7 @@ EVENTS = (
     + _event(
         "XX.10",
         [
-            '\t\tlog = "fired # 1" ai_chance = { base = 60 }\n',
+            '\t\tlog = "fired # 1 } {" ai_chance = { base = 60 }\n',
             "\t\tai_chance = { base = 40 }\n",
         ],
         trigger="OR = { is_ai = no has_war = yes }",
@@ -131,6 +135,10 @@ def _repo(tmp_path):
     _write(repo / "events/XX_core.txt", EVENTS)
     _write(repo / "common/scripted_effects/99_XX_effects.txt", EFFECTS)
     _write(repo / "common/scripted_effects/unrelated.txt", "x = { y = yes }\n")
+    _write(
+        repo / "history/countries/XXX - Test.txt",
+        "capital = 1\ncountry_event = { id = XX.8 days = 1 }\n",
+    )
     return repo
 
 
@@ -146,6 +154,7 @@ def test_audit_findings(tmp_path):
         "XX_remove_only": "decision has no ai_will_do",
         "XX_ai_only_zero": zero,
         "XX_or_zero": zero,
+        "XX_scoped_player": "decision has no ai_will_do",
     }
     options = {eid: msg for _, eid, msg in results["event options"]}
     assert options == {"XX.1": "1 of 2 options have no ai_chance"}
@@ -158,10 +167,11 @@ def test_audit_findings(tmp_path):
         "XX.7",
         "delayed dispatch in 99_XX_effects.txt and the event reads a shared global",
     ) in dispatch
+    # XX.8 is also sent, ungated, from a history file.
     assert (
         "XX.8",
         "has AI weights but every dispatch is player-only (is_ai = no)",
-    ) in dispatch
+    ) not in dispatch
     assert (
         "XX.9",
         "delayed dispatch in 99_XX_effects.txt and the event reads a shared global",
@@ -184,5 +194,5 @@ def test_main_prints_report(tmp_path, capsys):
     assert mod.main(["XX", "--repo", str(_repo(tmp_path))]) == 0
     out = capsys.readouterr().out
     assert out.startswith("XX: 10 events checked, 11 finding(s)")
-    assert "## dispatch (5)" in out
+    assert "## dispatch (4)" in out
     assert "- XX_decisions.txt: XX_zero: decision ai_will_do is 0" in out
