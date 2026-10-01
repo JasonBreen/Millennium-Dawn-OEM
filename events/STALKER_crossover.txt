@@ -158,3 +158,70 @@ country_event = {
 		ai_chance = { base = 1 }
 	}
 }
+
+country_event = {
+	id = STALKER.105
+	title = STALKER.105.t
+	desc = STALKER.105.d
+	picture = GFX_crime_fighting
+	is_triggered_only = yes
+
+	trigger = {
+		STALKER_meme_content_enabled = yes
+		NOT = { has_global_flag = STALKER_alice_said_hello }
+		check_variable = { global.STALKER_event_zone_id = 27 }
+		has_event_target = STALKER_zone_event_target
+		event_target:STALKER_zone_event_target = {
+			STALKER_is_active_zone_anchor = yes
+			is_controlled_by = ROOT
+		}
+	}
+
+	immediate = {
+		log = "[GetDateText]: [This.GetName]: STALKER.105 immediate executed"
+		set_global_flag = STALKER_alice_said_hello
+	}
+
+	option = {
+		name = STALKER.105.a
+		log = "[GetDateText]: [This.GetName]: STALKER.105.a executed"
+		custom_effect_tooltip = STALKER.105.a_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					event_target:STALKER_zone_event_target = {
+						STALKER_is_active_zone_anchor = yes
+						is_controlled_by = ROOT
+					}
+				}
+				event_target:STALKER_zone_event_target = {
+					add_to_variable = { STALKER_zone_containment = 2 }
+					STALKER_clamp_zone_society = yes
+				}
+			}
+		}
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = STALKER.105.b
+		log = "[GetDateText]: [This.GetName]: STALKER.105.b executed"
+		custom_effect_tooltip = STALKER.105.b_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					event_target:STALKER_zone_event_target = {
+						STALKER_is_active_zone_anchor = yes
+						is_controlled_by = ROOT
+					}
+				}
+				event_target:STALKER_zone_event_target = {
+					add_to_variable = { STALKER_zone_exploitation = 3 }
+					STALKER_clamp_zone_society = yes
+					ROOT = { STALKER_refresh_zone_administration = yes }
+				}
+			}
+		}
+		ai_chance = { base = 1 }
+	}
+}
