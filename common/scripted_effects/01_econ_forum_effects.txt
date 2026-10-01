@@ -210,6 +210,16 @@ econ_forum_check_succession = {
 				clr_country_flag = econ_forum_preparing
 			}
 		}
+		# A cancelled cycle never reaches the tally, so its replies and agendas are cleared here.
+		if = {
+			limit = { check_variable = { global.econ_forum_preparing^ef_i = 1 } }
+			every_country = {
+				limit = { check_variable = { econ_forum_status^num > ef_i } }
+				set_variable = { econ_forum_status^ef_i = 0 }
+				econ_forum_ensure_country_arrays = yes
+				set_variable = { econ_forum_agenda^ef_i = 0 }
+			}
+		}
 		set_variable = { global.econ_forum_preparing^ef_i = 0 }
 		if = {
 			limit = { var:ef_seat_owner = { NOT = { has_variable = econ_forum_hosted } } }
@@ -234,6 +244,10 @@ econ_forum_ensure_country_arrays = {
 		resize_array = { array = econ_forum_status value = 0 size = 8 }
 		resize_array = { array = econ_forum_last value = 0 size = 8 }
 		resize_array = { array = econ_forum_streak value = 0 size = 8 }
+	}
+	if = {
+		limit = { check_variable = { econ_forum_agenda^num < 8 } }
+		resize_array = { array = econ_forum_agenda value = 0 size = 8 }
 	}
 }
 
@@ -346,33 +360,140 @@ econ_forum_notify_invitee = {
 # the political power the option charged, refunded when the forum changed hands or closed meanwhile. The seat
 # saved by the event pins the reply to the forum that sent it.
 econ_forum_answer_invitation = {
+	econ_forum_resolve_invitation = yes
+	if = {
+		limit = {
+			check_variable = { ef_i > -1 }
+			check_variable = { econ_forum_status^ef_i > 0 }
+			check_variable = { econ_forum_status^ef_i < 3 }
+		}
+		set_variable = { econ_forum_status^ef_i = ef_answer }
+		if = {
+			limit = {
+				check_variable = { ef_answer > 2 }
+				is_ai = no
+			}
+			country_event = econ_forum.5
+		}
+	}
+	else = {
+		add_political_power = ef_cost
+	}
+}
+
+# Invitee scope, from an invitation event or the agenda event it sends. Sets ef_i to the forum the saved inviter
+# and seat point to while it is still preparing that summit, or to -1 when it changed hands or closed.
+econ_forum_resolve_invitation = {
 	set_temp_variable = { ef_i = -1 }
 	set_temp_variable = { ef_invite_seat = 0 }
 	if = {
 		limit = { has_event_target = econ_forum_invite_seat }
 		event_target:econ_forum_invite_seat = { set_temp_variable = { ef_invite_seat = THIS } }
 	}
-	event_target:econ_forum_inviter = {
-		if = {
-			limit = { has_variable = econ_forum_hosted }
-			set_temp_variable = { ef_i = econ_forum_hosted }
-			set_temp_variable = { ef_inviter_id = THIS.id }
+	if = {
+		limit = { has_event_target = econ_forum_inviter }
+		event_target:econ_forum_inviter = {
+			if = {
+				limit = { has_variable = econ_forum_hosted }
+				set_temp_variable = { ef_i = econ_forum_hosted }
+				set_temp_variable = { ef_inviter_id = THIS.id }
+			}
 		}
 	}
 	if = {
 		limit = {
 			check_variable = { ef_i > -1 }
-			NOT = { check_variable = { ef_invite_seat = 0 } }
-			check_variable = { global.econ_forum_seat^ef_i = ef_invite_seat }
-			check_variable = { global.econ_forum_host^ef_i = ef_inviter_id }
-			check_variable = { global.econ_forum_preparing^ef_i = 1 }
-			check_variable = { econ_forum_status^ef_i > 0 }
-			check_variable = { econ_forum_status^ef_i < 3 }
+			OR = {
+				check_variable = { ef_invite_seat = 0 }
+				NOT = { check_variable = { global.econ_forum_seat^ef_i = ef_invite_seat } }
+				NOT = { check_variable = { global.econ_forum_host^ef_i = ef_inviter_id } }
+				NOT = { check_variable = { global.econ_forum_preparing^ef_i = 1 } }
+			}
 		}
-		set_variable = { econ_forum_status^ef_i = ef_answer }
+		set_temp_variable = { ef_i = -1 }
 	}
-	else = {
-		add_political_power = ef_cost
+	if = {
+		limit = { check_variable = { ef_i > -1 } }
+		econ_forum_ensure_country_arrays = yes
+	}
+}
+
+# Invitee scope, from econ_forum.5. Records agenda ef_agenda (1 investors, 2 deals, 3 showcase) for a delegation
+# still going to the forum that invited us.
+econ_forum_set_agenda = {
+	econ_forum_resolve_invitation = yes
+	if = {
+		limit = {
+			check_variable = { ef_i > -1 }
+			check_variable = { econ_forum_status^ef_i > 2 }
+		}
+		set_variable = { econ_forum_agenda^ef_i = ef_agenda }
+	}
+}
+
+# Summit scope, after the attendance tally. Each delegation's agenda pays out, then clears for the next cycle.
+econ_forum_apply_agendas = {
+	for_each_scope_loop = {
+		array = ef_attendees
+
+		if = {
+			limit = { check_variable = { econ_forum_agenda^ef_i = 1 } }
+			set_temp_variable = { ef_bonus = { value = ef_prestige multiply = -0.0005 } }
+			if = {
+				limit = { check_variable = { econ_forum_last^ef_i = 4 } }
+				multiply_temp_variable = { ef_bonus = 2 }
+			}
+			if = {
+				limit = {
+					OR = {
+						NOT = { has_dynamic_modifier = { modifier = econ_forum_investor_pitch_modifier } }
+						NOT = { check_variable = { econ_forum_pitch_bonus < ef_bonus } }
+					}
+				}
+				set_variable = { econ_forum_pitch_bonus = ef_bonus }
+				add_dynamic_modifier = { modifier = econ_forum_investor_pitch_modifier days = 365 }
+			}
+		}
+		else_if = {
+			limit = { check_variable = { econ_forum_agenda^ef_i = 2 } }
+			add_opinion_modifier = { target = event_target:econ_forum_host_target modifier = econ_forum_summit_deal }
+			reverse_add_opinion_modifier = { target = event_target:econ_forum_host_target modifier = econ_forum_summit_deal }
+			for_each_scope_loop = {
+				array = ef_attendees
+
+				if = {
+					limit = { NOT = { tag = PREV } }
+					add_opinion_modifier = { target = PREV modifier = econ_forum_summit_deal }
+					reverse_add_opinion_modifier = { target = PREV modifier = econ_forum_summit_deal }
+				}
+			}
+		}
+		else_if = {
+			limit = { check_variable = { econ_forum_agenda^ef_i = 3 } }
+			set_temp_variable = { percent_change = { value = ef_prestige multiply = 0.02 } }
+			if = {
+				limit = { check_variable = { econ_forum_last^ef_i = 4 } }
+				multiply_temp_variable = { percent_change = 2 }
+			}
+			set_temp_variable = { tag_index = THIS.id }
+			set_temp_variable = { influence_target = ef_host }
+			change_influence_percentage = yes
+			for_loop_effect = {
+				end = 6
+				value = ef_t
+
+				set_temp_variable = { ef_idx = { value = ef_i multiply = 6 add = ef_t } }
+				if = {
+					limit = {
+						check_variable = { global.econ_forum_tracks^ef_idx = 1 }
+						econ_forum_interested_in_track = yes
+					}
+					add_to_variable = { global.econ_forum_track_prestige^ef_idx = 2 }
+					clamp_variable = { var = global.econ_forum_track_prestige^ef_idx min = 0 max = 100 }
+				}
+			}
+		}
+		set_variable = { econ_forum_agenda^ef_i = 0 }
 	}
 }
 
@@ -626,6 +747,7 @@ econ_forum_convene_summit = {
 		}
 		econ_forum_record_attendance = yes
 	}
+	econ_forum_apply_agendas = yes
 
 	# The first summit a sanctioned host holds without the West makes the news.
 	var:ef_host = {
@@ -891,6 +1013,24 @@ econ_forum_ai_decide_attendance = {
 			}
 			set_variable = { econ_forum_status^ef_i = 4 }
 		}
+		# Poorer delegations court investors, great powers show off, everyone else trades favors.
+		econ_forum_ensure_country_arrays = yes
+		if = {
+			limit = { check_variable = { gdp_per_capita < 20 } }
+			set_variable = { econ_forum_agenda^ef_i = 1 }
+		}
+		else_if = {
+			limit = {
+				OR = {
+					has_idea = super_power
+					has_idea = great_power
+				}
+			}
+			set_variable = { econ_forum_agenda^ef_i = 3 }
+		}
+		else = {
+			set_variable = { econ_forum_agenda^ef_i = 2 }
+		}
 	}
 	else = {
 		set_variable = { econ_forum_status^ef_i = -1 }
@@ -939,6 +1079,8 @@ econ_forum_record_attendance = {
 	else = {
 		set_variable = { econ_forum_last^ef_i = 0 }
 		set_variable = { econ_forum_streak^ef_i = 0 }
+		econ_forum_ensure_country_arrays = yes
+		set_variable = { econ_forum_agenda^ef_i = 0 }
 	}
 	set_variable = { econ_forum_status^ef_i = 0 }
 }

@@ -16,7 +16,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-4`, `econ_forum_news.1-5`.
+- `events/EconomicForums.txt`: `econ_forum.1-5`, `econ_forum_news.1-7`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -76,6 +76,7 @@ Per-country arrays use the same forum index:
   invitation, 3 ministers attend, 4 head of government attends, -1 declined.
 - `econ_forum_last`: level at that forum's last summit (0, 3 or 4).
 - `econ_forum_streak`: consecutive summits attended.
+- `econ_forum_agenda`: this cycle's delegation agenda. 0 none, 1 investors, 2 deals, 3 showcase.
 
 A host carries `econ_forum_hosted` (its forum id), the flag `econ_forum_preparing`
 while preparing, and `econ_forum_view_selected` / `econ_forum_view_prestige`, a
@@ -191,6 +192,22 @@ government, but only to forums with prestige 30 or more, or as a core member.
   invitations go out when preparation opens: for 365 days
   (`econ_forum_pivot_east`), BRICS members and Asian nations get standing
   invitations and +10 attendance. The AI takes it with 100 PP or more.
+
+## Delegation Agenda
+
+A human guest who accepts an invitation (`econ_forum.2`) gets `econ_forum.5` and picks what its delegation
+pushes. The event inherits the invitation's inviter and seat, and `econ_forum_resolve_invitation` checks both
+again, so the agenda lands on the forum that invited it or not at all. An AI guest picks when it decides to
+attend: GDP per capita under 20 courts investors, a great or super power showcases, any other country deals.
+
+After the attendance tally, `econ_forum_apply_agendas` pays every attending guest (the host has no agenda),
+then clears its agenda:
+
+| Agenda    | Payoff                                                                                         |
+| --------- | ---------------------------------------------------------------------------------------------- |
+| Investors | `econ_forum_investor_pitch_modifier` for 365 days: the delegation bonus again, stronger kept     |
+| Deals     | `econ_forum_summit_deal` (+15, decay 1) both ways with the host and every other attending guest |
+| Showcase  | Influence in the host, `prestige × 0.02`%, doubled for a head of government; +2 to each program track that interests the guest |
 
 ## Score
 
