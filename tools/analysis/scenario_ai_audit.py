@@ -26,7 +26,6 @@ from shared_utils import blank_quoted_strings, read_text_strict, strip_comments
 
 BLOCK_RE = re.compile(r"([\w.@:\-]+)\s*=\s*\{")
 PLAYER_ONLY_RE = re.compile(r"\bis_ai\s*=\s*no\b")
-ZERO_RE = re.compile(r"^(?:base|factor)\s*=\s*0(?:\.0+)?$")
 DELAY_RE = re.compile(r"\b(?:days|hours|random_days|random_hours)\s*=")
 GATE_KEYS = ("allowed", "visible", "available", "target_root_trigger", "target_trigger")
 DECISION_KEYS = (
@@ -44,6 +43,15 @@ NOT_REQUIRED = {"NOT", "OR", "NOR", "NAND", "count_triggers"}
 # Blocks that keep the acting country (ROOT) in scope.
 ACTOR_BLOCKS = {"AND", "ROOT", "hidden_trigger", "custom_trigger_tooltip"}
 DISPATCH_ROOTS = ("common", "events", "history")
+EVENT_KINDS = ("country_event", "news_event", "state_event")
+# Fields only an event definition has; a dispatch block has id and timing only.
+DEFINITION_RE = re.compile(
+    r"\b(?:title|desc|option|picture|is_triggered_only|trigger|mean_time_to_happen)\s*="
+)
+# Effect blocks that run their contents in the same scope.
+SAME_SCOPE = {"if", "else_if", "else", "hidden_effect", "random_list", "random", "AND"}
+ADD_RE = re.compile(r"\badd\s*=")
+NAME_BEFORE_RE = re.compile(r"([\w.@:\-]+)\s*=\s*$")
 
 
 def read_script(path):
@@ -89,10 +97,6 @@ def child(body, key):
     return None
 
 
-def squash(text):
-    return re.sub(r"\s+", " ", text or "").strip()
-
-
 def requires_player(text, follow_scopes=True):
     """True when the triggers in text, read as an AND, require is_ai = no.
 
@@ -131,7 +135,7 @@ def audit_decisions(repo, key):
                 ai = child(body, "ai_will_do")
                 if ai is None:
                     findings.append((path.name, name, "decision has no ai_will_do"))
-                elif ZERO_RE.match(squash(ai)):
+                elif always_zero(ai):
                     findings.append(
                         (
                             path.name,
@@ -148,7 +152,7 @@ def events(repo, key):
     for path in scenario_files(repo, "events", key):
         text = read_script(path)
         for kind, body, _ in blocks(text):
-            if kind not in ("country_event", "news_event", "state_event"):
+            if kind not in EVENT_KINDS:
                 continue
             match = re.search(r"\bid\s*=\s*([\w.]+)", body)
             if match:
@@ -180,37 +184,66 @@ def audit_event_options(event_map):
     return findings
 
 
-def enclosing_limits(text, pos):
-    """Return the limit bodies of every block that encloses pos."""
-    limits, depth, starts = [], 0, []
+def always_zero(ai):
+    """True when ai_will_do starts at 0 and no modifier can add to it."""
+    start = re.search(r"\b(?:base|factor)\s*=\s*(-?\d+(?:\.\d+)?)", top_level(ai))
+    return bool(start) and float(start.group(1)) == 0 and not ADD_RE.search(ai)
+
+
+def gated_for_player(text, pos):
+    """True when a condition around pos requires is_ai = no of the receiving scope.
+
+    Walks the enclosing blocks from the inside out. Each limit is read through
+    the scope blocks between it and the dispatch (controller = { ... } and the
+    like); a scope it does not name, such as every_country, breaks the chain.
+    """
+    path, depth = [], 0
     for i in range(pos - 1, -1, -1):
         ch = text[i]
         if ch == "}":
             depth += 1
-        elif ch == "{":
-            if depth:
-                depth -= 1
-            else:
-                starts.append(i)
-    for start in starts:
-        depth, j = 1, start + 1
-        while j < len(text) and depth:
-            depth += {"{": 1, "}": -1}.get(text[j], 0)
-            j += 1
-        limit = child(text[start + 1 : j - 1], "limit")
-        if limit is not None:
-            limits.append(limit)
-    return limits
+            continue
+        if ch != "{":
+            continue
+        if depth:
+            depth -= 1
+            continue
+        name_match = NAME_BEFORE_RE.search(text[max(0, i - 200) : i])
+        name = name_match.group(1) if name_match else ""
+        end, level = i + 1, 1
+        while end < len(text) and level:
+            level += {"{": 1, "}": -1}.get(text[end], 0)
+            end += 1
+        limit = child(text[i + 1 : end - 1], "limit")
+        for scope in path:
+            if limit is None:
+                break
+            limit = child(limit, scope)
+        if limit is not None and requires_player(limit, follow_scopes=False):
+            return True
+        if name not in SAME_SCOPE and not name.isdigit():
+            path.insert(0, name)
+    return False
 
 
 def dispatching_files(repo, key):
-    """Read once every script file that mentions one of the scenario's event IDs."""
+    """Read once every script file that mentions one of the scenario's event IDs.
+
+    Each entry also carries the start offsets of the file's own top-level event
+    definitions, so a definition is never mistaken for a dispatch.
+    """
     needle = f"{key}."
     texts = []
     for folder in DISPATCH_ROOTS:
         for path in (repo / folder).rglob("*.txt"):
             if needle in read_text_strict(str(path)):
-                texts.append((path.name, read_script(path)))
+                text = read_script(path)
+                definitions = {
+                    start
+                    for kind, body, start in blocks(text)
+                    if kind in EVENT_KINDS and DEFINITION_RE.search(body)
+                }
+                texts.append((path.name, text, definitions))
     return texts
 
 
@@ -221,14 +254,14 @@ def dispatch_sites(texts, eid):
     full = re.compile(
         rf"{command}\s*=\s*\{{[^}}]*\bid\s*=\s*{re.escape(eid)}\b[^}}]*\}}"
     )
-    for name, text in texts:
+    for name, text, definitions in texts:
         if eid not in text:
             continue
         for m in plain.finditer(text):
             yield name, text, m.start(), False
         for m in full.finditer(text):
-            if re.search(r"\b(?:title|is_triggered_only|picture)\s*=", m.group(0)):
-                continue  # the event's own definition, not a dispatch
+            if m.start() in definitions:
+                continue
             yield name, text, m.start(), bool(DELAY_RE.search(m.group(0)))
 
 
@@ -239,12 +272,9 @@ def audit_dispatch(repo, key, event_map):
     for eid, (fname, body) in sorted(event_map.items()):
         sites = list(dispatch_sites(texts, eid))
         trigger = child(body, "trigger") or ""
-        player_only_event = requires_player(trigger)
+        player_only_event = requires_player(trigger, follow_scopes=False)
         if sites and has_weights(body) and not player_only_event:
-            if all(
-                any(requires_player(lim) for lim in enclosing_limits(t, p))
-                for _, t, p, _ in sites
-            ):
+            if all(gated_for_player(t, p) for _, t, p, _ in sites):
                 findings.append(
                     (
                         fname,

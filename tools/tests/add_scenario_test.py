@@ -196,6 +196,18 @@ def test_subsystem_refuses_an_occupied_block(tmp_path):
     assert not (repo / "events/SILENTHILL_order.txt").exists()
 
 
+def test_subsystem_refuses_a_pulse_defined_elsewhere(tmp_path):
+    mod = _module()
+    repo = _repo(tmp_path)
+    mod.add_scenario(repo, "SILENTHILL", "Silent Hill", "x")
+    _write(
+        repo / "common/scripted_effects/99_SILENTHILL_misc_effects.txt",
+        "SILENTHILL_monthly_order_pulse = {\n\tlog = x\n}\n",
+    )
+    with pytest.raises(mod.ToolError, match="already defined in 99_SILENTHILL_misc"):
+        mod.add_subsystem(repo, "SILENTHILL", "order", "The Order")
+
+
 def test_subsystem_on_a_stalker_style_doc(tmp_path):
     mod = _module()
     repo = tmp_path / "repo"

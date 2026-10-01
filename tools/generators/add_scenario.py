@@ -288,6 +288,10 @@ def add_subsystem(repo, key, subsystem, display):
     pulse = read(repo, p["pulse"])
     if f"{pulse_name} = yes" in pulse:
         raise ToolError(f"{pulse_name} is already in {p['pulse']}")
+    definition = re.compile(rf"^\s*{re.escape(pulse_name)}\s*=\s*\{{", re.M)
+    for path in sorted((repo / "common/scripted_effects").glob("*.txt")):
+        if definition.search(read_text_strict(str(path))):
+            raise ToolError(f"{pulse_name} is already defined in {path.name}")
     head = re.search(rf"^{key}_monthly_pulse\s*=\s*\{{", pulse, re.M)
     if not head:
         raise ToolError(f"{p['pulse']} does not define {key}_monthly_pulse")

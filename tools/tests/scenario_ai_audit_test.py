@@ -14,7 +14,8 @@ def _module():
 
 def _write(path, text):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
+    with open(path, "w", encoding="utf-8", newline="") as handle:
+        handle.write(text)
 
 
 DECISIONS = """
@@ -57,6 +58,14 @@ XX_category = {
 	XX_fine = {
 		complete_effect = { add_political_power = 1 }
 		ai_will_do = { base = 5 }
+	}
+	XX_factor_zero = {
+		complete_effect = { add_political_power = 1 }
+		ai_will_do = { base = 0 modifier = { factor = 2 has_war = yes } }
+	}
+	XX_add_rescues = {
+		complete_effect = { add_political_power = 1 }
+		ai_will_do = { base = 0 modifier = { add = 5 has_war = yes } }
 	}
 	# a comment = { not a decision }
 	XX_flavor = { icon = x }
@@ -102,6 +111,11 @@ EVENTS = (
         kind="state_event",
         extra="\tdesc = { text = x trigger = { check_variable = { global.XX_event_zone_id = 1 } } }\n",
     )
+    + _event("XX.11", WEIGHTED, trigger="FROM = { is_ai = no }")
+    + _event("XX.12", WEIGHTED)
+    + "country_event = {\n\tid = XX.13\n\tdesc = { text = x }\n\ttitle = XX.13.t\n"
+    + "\toption = { name = a ai_chance = { base = 60 } }\n"
+    + "\toption = { name = b ai_chance = { base = 40 } }\n}\n"
 )
 
 EFFECTS = """
@@ -124,6 +138,12 @@ XX_pulse = {
 	}
 	random_state = { state_event = { id = XX.9 days = 5 } }
 	country_event = { id = XX.10 hours = 6 }
+	if = {
+		limit = { is_ai = no }
+		country_event = XX.11
+		every_country = { country_event = XX.12 }
+		country_event = XX.13
+	}
 }
 """
 
@@ -145,7 +165,7 @@ def _repo(tmp_path):
 def test_audit_findings(tmp_path):
     mod = _module()
     results, count = mod.audit(_repo(tmp_path), "XX")
-    assert count == 10
+    assert count == 13
     decisions = {name: msg for _, name, msg in results["decisions"]}
     zero = "decision ai_will_do is 0; the AI never takes it"
     assert decisions == {
@@ -155,6 +175,7 @@ def test_audit_findings(tmp_path):
         "XX_ai_only_zero": zero,
         "XX_or_zero": zero,
         "XX_scoped_player": "decision has no ai_will_do",
+        "XX_factor_zero": zero,
     }
     options = {eid: msg for _, eid, msg in results["event options"]}
     assert options == {"XX.1": "1 of 2 options have no ai_chance"}
@@ -186,6 +207,13 @@ def test_audit_findings(tmp_path):
         "XX.10",
         "has AI weights but every dispatch is player-only (is_ai = no)",
     ) not in dispatch
+    player_only = "has AI weights but every dispatch is player-only (is_ai = no)"
+    # A FROM-scoped trigger does not make the receiver player-only.
+    assert ("XX.11", player_only) in dispatch
+    # every_country between the gate and the dispatch reaches AI countries.
+    assert ("XX.12", player_only) not in dispatch
+    # A definition with desc before title is still not a dispatch site.
+    assert ("XX.13", player_only) in dispatch
     assert not any(eid in ("XX.3", "XX.4", "XX.5") for eid, _ in dispatch)
 
 
@@ -193,6 +221,6 @@ def test_main_prints_report(tmp_path, capsys):
     mod = _module()
     assert mod.main(["XX", "--repo", str(_repo(tmp_path))]) == 0
     out = capsys.readouterr().out
-    assert out.startswith("XX: 10 events checked, 11 finding(s)")
-    assert "## dispatch (4)" in out
+    assert out.startswith("XX: 13 events checked, 14 finding(s)")
+    assert "## dispatch (6)" in out
     assert "- XX_decisions.txt: XX_zero: decision ai_will_do is 0" in out
