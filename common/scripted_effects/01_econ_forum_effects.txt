@@ -266,6 +266,11 @@ econ_forum_open_preparation = {
 		resize_array = { array = global.econ_forum_cycle value = 0 size = 8 }
 	}
 	add_to_variable = { global.econ_forum_cycle^ef_i = 1 }
+	if = {
+		limit = { check_variable = { global.econ_forum_guest_speakers^num < 8 } }
+		resize_array = { array = global.econ_forum_guest_speakers value = 0 size = 8 }
+	}
+	set_variable = { global.econ_forum_guest_speakers^ef_i = 0 }
 	set_variable = { global.econ_forum_preparing^ef_i = 1 }
 	set_variable = { global.econ_forum_sponsors^ef_i = 0 }
 	set_variable = { global.econ_forum_speakers^ef_i = 0 }
@@ -517,6 +522,31 @@ econ_forum_apply_agendas = {
 	}
 }
 
+# Summit scope. Every attending guest that booked a keynote this cycle delivers it: a year of foreign
+# influence, the stronger running keynote keeping its value. Bookings from cancelled cycles never match.
+econ_forum_deliver_keynotes = {
+	set_temp_variable = { ef_cycle_tag = { value = global.econ_forum_cycle^ef_i add = 1 } }
+	set_temp_variable = { ef_keynote = { value = ef_prestige multiply = 0.002 } }
+	for_each_scope_loop = {
+		array = ef_attendees
+
+		if = {
+			limit = { check_variable = { econ_forum_keynote_booked^ef_i = ef_cycle_tag } }
+			set_variable = { econ_forum_keynote_booked^ef_i = 0 }
+			if = {
+				limit = {
+					OR = {
+						NOT = { has_dynamic_modifier = { modifier = econ_forum_keynote_modifier } }
+						check_variable = { econ_forum_keynote_bonus < ef_keynote }
+					}
+				}
+				set_variable = { econ_forum_keynote_bonus = ef_keynote }
+			}
+			add_dynamic_modifier = { modifier = econ_forum_keynote_modifier days = 365 }
+		}
+	}
+}
+
 # Guest scope, from the Forums tab row of forum v. Pays for a session at someone else's summit.
 econ_forum_sponsor_session = {
 	if = {
@@ -558,20 +588,8 @@ econ_forum_bid_to_speak = {
 			limit = { check_variable = { ef_roll < ef_bid_chance } }
 			set_variable = { econ_forum_bid_result = 1 }
 			add_to_variable = { global.econ_forum_speakers^v = 1 }
+			add_to_variable = { global.econ_forum_guest_speakers^v = 1 }
 			set_variable = { econ_forum_keynote_booked^v = { value = global.econ_forum_cycle^v add = 1 } }
-			set_temp_variable = { ef_keynote = { value = global.econ_forum_prestige^v multiply = 0.002 } }
-			# Every win restarts the year; a stronger running keynote keeps its value.
-			if = {
-				limit = {
-					OR = {
-						NOT = { has_dynamic_modifier = { modifier = econ_forum_keynote_modifier } }
-						check_variable = { econ_forum_keynote_bonus < ef_keynote }
-					}
-				}
-				set_variable = { econ_forum_keynote_bonus = ef_keynote }
-				set_variable = { econ_forum_keynote_forum = v }
-			}
-			add_dynamic_modifier = { modifier = econ_forum_keynote_modifier days = 365 }
 		}
 		country_event = econ_forum.6
 		econ_forum_refresh_open_screens = yes
@@ -593,21 +611,17 @@ econ_forum_toggle_boycott = {
 		var:global.econ_forum_host^v = { add_opinion_modifier = { target = ROOT modifier = econ_forum_boycotted } }
 		# The prestige hit and the news land once a cycle, so rejoining and boycotting again repeats neither.
 		set_temp_variable = { ef_cycle_tag = { value = global.econ_forum_cycle^v add = 1 } }
-		# A keynote booked this cycle goes undelivered: the summit loses the speaker and we lose its reward.
+		# A keynote booked this cycle goes undelivered, so the summit loses that speaker.
 		if = {
-			limit = { check_variable = { econ_forum_keynote_booked^v = ef_cycle_tag } }
+			limit = {
+				check_variable = { econ_forum_keynote_booked^v = ef_cycle_tag }
+				check_variable = { global.econ_forum_preparing^v = 1 }
+			}
 			set_variable = { econ_forum_keynote_booked^v = 0 }
 			subtract_from_variable = { global.econ_forum_speakers^v = 1 }
 			clamp_variable = { var = global.econ_forum_speakers^v min = 0 max = 3 }
-			if = {
-				limit = {
-					check_variable = { econ_forum_keynote_forum = v }
-					has_dynamic_modifier = { modifier = econ_forum_keynote_modifier }
-				}
-				remove_dynamic_modifier = { modifier = econ_forum_keynote_modifier }
-				clear_variable = econ_forum_keynote_bonus
-				clear_variable = econ_forum_keynote_forum
-			}
+			subtract_from_variable = { global.econ_forum_guest_speakers^v = 1 }
+			clamp_variable = { var = global.econ_forum_guest_speakers^v min = 0 max = 3 }
 		}
 		if = {
 			limit = { NOT = { check_variable = { econ_forum_boycott_cycle^v = ef_cycle_tag } } }
@@ -708,7 +722,7 @@ econ_forum_ai_prepare = {
 			limit = { check_variable = { treasury > 10 } }
 			set_temp_variable = { treasury_change = -3 }
 			modify_treasury_effect = yes
-			add_to_variable = { global.econ_forum_sponsors^ef_i = 5 }
+			set_variable = { global.econ_forum_sponsors^ef_i = { value = global.econ_forum_sponsors^ef_i add = 5 min = 25 } }
 		}
 		if = {
 			limit = { has_political_power > 150 }
@@ -749,7 +763,7 @@ econ_forum_try_book_speaker = {
 			limit = {
 				NOT = { check_variable = { ef_i = 0 } }
 				check_variable = { global.econ_forum_preparing^0 = 1 }
-				check_variable = { global.econ_forum_speakers^0 > 0 }
+				check_variable = { global.econ_forum_speakers^0 > global.econ_forum_guest_speakers^0 }
 			}
 			add_to_variable = { global.econ_forum_speakers^0 = -1 }
 			set_variable = { econ_forum_speaker_result = 2 }
@@ -986,6 +1000,7 @@ econ_forum_convene_summit = {
 
 	# After the track update, so a showcase's sector boost is not averaged away.
 	econ_forum_apply_agendas = yes
+	econ_forum_deliver_keynotes = yes
 
 	# Heads of government we drew away from a clashing rival cost it a point of prestige each, up to 5.
 	if = {
