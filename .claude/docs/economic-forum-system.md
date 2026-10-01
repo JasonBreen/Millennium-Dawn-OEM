@@ -230,9 +230,10 @@ Each forum row in the International Systems Forums tab has four buttons for any 
 AI regional and greater powers use Sponsor, Speak and Boycott on the same terms as a player. Request stays
 player-only, since AI attendance comes from invitations.
 
-- **Preparation** (`econ_forum_ai_guest_preparation`, after the host prepares): a boycotter whose opinion of the
-  host is above -10 rejoins. Otherwise, one with opinion below -50, outside the host's faction and with over 74 PP
-  boycotts 20% of the time. Otherwise, an invitee with opinion above 25, over 49 PP and treasury over 20 sponsors
+- **Rejoin** (`econ_forum_ai_guests_rejoin`, before invitations go out): a boycotter whose opinion of the host is
+  above -10 rejoins, so it is invited to that summit.
+- **Preparation** (`econ_forum_ai_guest_preparation`, after the host prepares): one with opinion below -50, outside
+  the host's faction and with over 74 PP boycotts 20% of the time. Otherwise, an invitee with opinion above 25, over 49 PP and treasury over 20 sponsors
   30% of the time, only while the forum has under 15 sponsor points. The WEF's partners already fund 15, so AI
   guests top up lesser forums.
 - **Summit** (`econ_forum_convene_summit`): an AI delegation that decides to attend, with over 99 PP, bids for a

@@ -290,6 +290,9 @@ econ_forum_open_preparation = {
 		set_variable = { global.econ_forum_tracks^ef_idx = 0 }
 	}
 
+	# Before invitations go out, so a government that rejoins is invited to this summit.
+	econ_forum_ai_guests_rejoin = yes
+
 	# Recurring guests and core members are invited automatically; an indispensable forum invites every regional power.
 	every_country = {
 		limit = {
@@ -644,8 +647,27 @@ econ_forum_request_invitation = {
 	}
 }
 
+# Forum ef_i, before its invitations go out. An AI boycotter whose anger has cooled rejoins.
+econ_forum_ai_guests_rejoin = {
+	set_temp_variable = { v = ef_i }
+	var:ef_host = { save_event_target_as = econ_forum_guest_host }
+	for_each_scope_loop = {
+		array = global.PR_regional_or_greater_powers
+
+		if = {
+			limit = {
+				is_ai = yes
+				check_variable = { econ_forum_boycott^num > ef_i }
+				check_variable = { econ_forum_boycott^v = 1 }
+				has_opinion = { target = event_target:econ_forum_guest_host value > -10 }
+			}
+			econ_forum_toggle_boycott = yes
+		}
+	}
+}
+
 # Forum ef_i, after its invitations go out. Each AI regional or greater power that does not host it acts as a
-# guest: a boycotter whose anger has cooled rejoins, a hostile one may boycott, a friendly invitee may sponsor.
+# guest: a hostile one may boycott, a friendly invitee may sponsor.
 econ_forum_ai_guest_preparation = {
 	set_temp_variable = { v = ef_i }
 	var:ef_host = { save_event_target_as = econ_forum_guest_host }
@@ -659,13 +681,6 @@ econ_forum_ai_guest_preparation = {
 			}
 			econ_forum_ensure_country_arrays = yes
 			if = {
-				limit = {
-					check_variable = { econ_forum_boycott^v = 1 }
-					has_opinion = { target = event_target:econ_forum_guest_host value > -10 }
-				}
-				econ_forum_toggle_boycott = yes
-			}
-			else_if = {
 				limit = {
 					has_opinion = { target = event_target:econ_forum_guest_host value < -50 }
 					NOT = { is_in_faction_with = event_target:econ_forum_guest_host }
