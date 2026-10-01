@@ -7,7 +7,8 @@ Add content to the subsystem that owns it, and touch shared files only through t
 ## Rules
 
 - **Own files only.** New events, decisions, effects and localisation go in the subsystem's
-  files. A new subsystem gets new files and the next free event-ID block.
+  files. A new subsystem gets new files and the next free event-ID block: run `/scenario-subsystem`
+  (`tools/generators/add_scenario.py subsystem`). Other opt-in scenarios start from `/new-scenario`.
 - **Event IDs.** Use only your subsystem's block. Never reuse or renumber an ID.
 - **Localisation.** Keys live in the subsystem's `MD_STALKER_<subsystem>_l_english.yml`. Keys
   used by two or more subsystems live in the core file `MD_STALKER_l_english.yml`.
