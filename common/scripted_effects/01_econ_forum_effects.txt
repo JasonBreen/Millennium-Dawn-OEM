@@ -256,6 +256,7 @@ econ_forum_ensure_country_arrays = {
 		resize_array = { array = econ_forum_boycott value = 0 size = 8 }
 		resize_array = { array = econ_forum_boycott_cycle value = 0 size = 8 }
 		resize_array = { array = econ_forum_keynote_booked value = 0 size = 8 }
+		resize_array = { array = econ_forum_request_cycle value = 0 size = 8 }
 	}
 }
 
@@ -288,6 +289,9 @@ econ_forum_open_preparation = {
 		set_temp_variable = { ef_idx = { value = ef_i multiply = 6 add = ef_t } }
 		set_variable = { global.econ_forum_tracks^ef_idx = 0 }
 	}
+
+	# Before invitations go out, so a government that rejoins is invited to this summit.
+	econ_forum_ai_guests_rejoin = yes
 
 	# Recurring guests and core members are invited automatically; an indispensable forum invites every regional power.
 	every_country = {
@@ -340,6 +344,8 @@ econ_forum_open_preparation = {
 			econ_forum_ai_prepare = yes
 		}
 	}
+	# After the host's own sponsor package, so guests never push a forum past the cap.
+	econ_forum_ai_guest_preparation = yes
 }
 
 # Invitee scope. status 1 is a standing invitation, 2 a personal one from the host.
@@ -547,7 +553,7 @@ econ_forum_deliver_keynotes = {
 	}
 }
 
-# Guest scope, from the Forums tab row of forum v. Pays for a session at someone else's summit.
+# Guest scope, forum v (a Forums tab row, or the AI guest pass). Pays for a session at someone else's summit.
 econ_forum_sponsor_session = {
 	if = {
 		limit = { econ_forum_can_sponsor = yes }
@@ -556,12 +562,12 @@ econ_forum_sponsor_session = {
 		modify_treasury_effect = yes
 		set_variable = { global.econ_forum_sponsors^v = { value = global.econ_forum_sponsors^v add = 3 min = 25 } }
 		set_variable = { econ_forum_sponsor_cycle^v = global.econ_forum_cycle^v }
-		var:global.econ_forum_host^v = { add_opinion_modifier = { target = ROOT modifier = econ_forum_session_sponsor } }
+		var:global.econ_forum_host^v = { add_opinion_modifier = { target = PREV modifier = econ_forum_session_sponsor } }
 		econ_forum_refresh_open_screens = yes
 	}
 }
 
-# Guest scope, from the Forums tab row of forum v. A delegation that is going asks for a headline slot.
+# Guest scope, forum v (a Forums tab row, or the AI guest pass). A delegation that is going asks for a headline slot.
 econ_forum_bid_to_speak = {
 	if = {
 		limit = { econ_forum_can_bid = yes }
@@ -591,12 +597,121 @@ econ_forum_bid_to_speak = {
 			add_to_variable = { global.econ_forum_guest_speakers^v = 1 }
 			set_variable = { econ_forum_keynote_booked^v = { value = global.econ_forum_cycle^v add = 1 } }
 		}
-		country_event = econ_forum.6
+		if = {
+			limit = { is_ai = no }
+			country_event = econ_forum.6
+		}
 		econ_forum_refresh_open_screens = yes
 	}
 }
 
-# Guest scope, from the Forums tab row of forum v. Starts or ends a public boycott.
+# Guest scope, from the Forums tab row of forum v. Asks an AI host for an invitation to the summit in preparation;
+# lesser forums, great powers and friends of the host get in more easily.
+econ_forum_request_invitation = {
+	if = {
+		limit = { econ_forum_can_request = yes }
+		add_political_power = -15
+		set_variable = { econ_forum_request_cycle^v = global.econ_forum_cycle^v }
+		set_temp_variable = { ef_request_chance = { value = 100 subtract = global.econ_forum_prestige^v multiply = 0.3 add = 30 } }
+		var:global.econ_forum_host^v = {
+			if = {
+				limit = { has_opinion = { target = PREV value > 25 } }
+				add_to_temp_variable = { ef_request_chance = 15 }
+			}
+			else_if = {
+				limit = { has_opinion = { target = PREV value < -25 } }
+				add_to_temp_variable = { ef_request_chance = -20 }
+			}
+		}
+		if = {
+			limit = {
+				OR = {
+					has_idea = super_power
+					has_idea = great_power
+				}
+			}
+			add_to_temp_variable = { ef_request_chance = 20 }
+		}
+		clamp_temp_variable = { var = ef_request_chance min = 5 max = 95 }
+		set_temp_variable_to_random = { var = ef_roll min = 0 max = 100 }
+		if = {
+			limit = { check_variable = { ef_roll < ef_request_chance } }
+			set_temp_variable = { ef_i = v }
+			econ_forum_send_invitation = yes
+		}
+		else = {
+			set_variable = { econ_forum_request_forum = v }
+			country_event = econ_forum.7
+		}
+		econ_forum_refresh_open_screens = yes
+	}
+}
+
+# Forum ef_i, before its invitations go out. An AI boycotter whose anger has cooled rejoins.
+econ_forum_ai_guests_rejoin = {
+	set_temp_variable = { v = ef_i }
+	var:ef_host = { save_event_target_as = econ_forum_guest_host }
+	for_each_scope_loop = {
+		array = global.PR_regional_or_greater_powers
+
+		if = {
+			limit = {
+				is_ai = yes
+				check_variable = { econ_forum_boycott^num > ef_i }
+				check_variable = { econ_forum_boycott^v = 1 }
+				has_opinion = { target = event_target:econ_forum_guest_host value > -10 }
+			}
+			econ_forum_toggle_boycott = yes
+		}
+	}
+}
+
+# Forum ef_i, after its invitations go out. Each AI regional or greater power that does not host it acts as a
+# guest: a hostile one may boycott, a friendly invitee may sponsor.
+econ_forum_ai_guest_preparation = {
+	set_temp_variable = { v = ef_i }
+	var:ef_host = { save_event_target_as = econ_forum_guest_host }
+	for_each_scope_loop = {
+		array = global.PR_regional_or_greater_powers
+
+		if = {
+			limit = {
+				is_ai = yes
+				econ_forum_guest_row = yes
+			}
+			econ_forum_ensure_country_arrays = yes
+			if = {
+				limit = {
+					has_opinion = { target = event_target:econ_forum_guest_host value < -50 }
+					NOT = { is_in_faction_with = event_target:econ_forum_guest_host }
+					has_political_power > 74
+					econ_forum_can_boycott = yes
+				}
+				random = {
+					chance = 20
+					econ_forum_toggle_boycott = yes
+				}
+			}
+			else_if = {
+				limit = {
+					check_variable = { econ_forum_status^v > 0 }
+					has_opinion = { target = event_target:econ_forum_guest_host value > 25 }
+					# Guests top up lesser forums; a well-funded one does not need them.
+					check_variable = { global.econ_forum_sponsors^v < 15 }
+					has_political_power > 49
+					check_variable = { treasury > 20 }
+					econ_forum_can_sponsor = yes
+				}
+				random = {
+					chance = 30
+					econ_forum_sponsor_session = yes
+				}
+			}
+		}
+	}
+}
+
+# Guest scope, forum v (a Forums tab row, or the AI guest pass). Starts or ends a public boycott.
 econ_forum_toggle_boycott = {
 	if = {
 		limit = { check_variable = { econ_forum_boycott^v = 1 } }
@@ -608,7 +723,7 @@ econ_forum_toggle_boycott = {
 		set_variable = { econ_forum_boycott^v = 1 }
 		set_variable = { econ_forum_status^v = 0 }
 		set_variable = { econ_forum_agenda^v = 0 }
-		var:global.econ_forum_host^v = { add_opinion_modifier = { target = ROOT modifier = econ_forum_boycotted } }
+		var:global.econ_forum_host^v = { add_opinion_modifier = { target = PREV modifier = econ_forum_boycotted } }
 		# The prestige hit and the news land once a cycle, so rejoining and boycotting again repeats neither.
 		set_temp_variable = { ef_cycle_tag = { value = global.econ_forum_cycle^v add = 1 } }
 		# A keynote booked this cycle goes undelivered, so the summit loses that speaker.
@@ -646,7 +761,7 @@ econ_forum_toggle_boycott = {
 					}
 				}
 				var:global.econ_forum_host^v = {
-					set_variable = { econ_forum_news_boycotter = ROOT.id }
+					set_variable = { econ_forum_news_boycotter = PREV.id }
 					news_event = econ_forum_news.8
 				}
 			}
@@ -890,6 +1005,7 @@ econ_forum_convene_summit = {
 
 	var:ef_host = { save_event_target_as = econ_forum_host_target }
 
+	set_temp_variable = { v = ef_i }
 	every_country = {
 		limit = {
 			check_variable = { econ_forum_status^num > ef_i }
@@ -902,6 +1018,17 @@ econ_forum_convene_summit = {
 				check_variable = { econ_forum_status^ef_i < 3 }
 			}
 			econ_forum_ai_decide_attendance = yes
+			if = {
+				limit = {
+					is_in_array = { global.PR_regional_or_greater_powers = THIS.id }
+					has_political_power > 99
+					econ_forum_can_bid = yes
+				}
+				random = {
+					chance = 40
+					econ_forum_bid_to_speak = yes
+				}
+			}
 		}
 		econ_forum_record_attendance = yes
 	}

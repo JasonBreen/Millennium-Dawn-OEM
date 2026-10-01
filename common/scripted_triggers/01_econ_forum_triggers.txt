@@ -237,12 +237,12 @@ econ_forum_pivot_east_guest = {
 # Forums tab row of forum v, in the viewing country's scope. Someone else runs it.
 econ_forum_guest_row = {
 	check_variable = { global.econ_forum_host^v > 0 }
-	NOT = { check_variable = { global.econ_forum_host^v = ROOT.id } }
+	NOT = { check_variable = { global.econ_forum_host^v = THIS.id } }
 }
 
 econ_forum_can_sponsor = {
 	econ_forum_guest_row = yes
-	var:global.econ_forum_host^v = { NOT = { has_war_with = ROOT } }
+	var:global.econ_forum_host^v = { NOT = { has_war_with = PREV } }
 	check_variable = { global.econ_forum_preparing^v = 1 }
 	check_variable = { global.econ_forum_sponsors^v < 25 }
 	NOT = { check_variable = { econ_forum_sponsor_cycle^v = global.econ_forum_cycle^v } }
@@ -258,6 +258,26 @@ econ_forum_can_bid = {
 	check_variable = { econ_forum_status^v > 2 }
 	NOT = { check_variable = { econ_forum_bid_cycle^v = global.econ_forum_cycle^v } }
 	has_political_power > 24
+}
+
+econ_forum_can_request = {
+	econ_forum_guest_row = yes
+	var:global.econ_forum_host^v = {
+		is_ai = yes
+		NOT = { has_war_with = PREV }
+	}
+	check_variable = { global.econ_forum_preparing^v = 1 }
+	# Requests close with the host's invitations, a month before the summit.
+	set_temp_variable = { ef_request_gap = global.econ_forum_month^v }
+	subtract_from_temp_variable = { ef_request_gap = global.month }
+	OR = {
+		check_variable = { ef_request_gap = 2 }
+		check_variable = { ef_request_gap = -10 }
+	}
+	check_variable = { econ_forum_status^v = 0 }
+	check_variable = { econ_forum_boycott^v = 0 }
+	NOT = { check_variable = { econ_forum_request_cycle^v = global.econ_forum_cycle^v } }
+	has_political_power > 14
 }
 
 econ_forum_can_boycott = {

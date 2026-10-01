@@ -16,7 +16,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-6`, `econ_forum_news.1-8`.
+- `events/EconomicForums.txt`: `econ_forum.1-7`, `econ_forum_news.1-8`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -78,7 +78,8 @@ Per-country arrays use the same forum index:
 - `econ_forum_last`: level at that forum's last summit (0, 3 or 4).
 - `econ_forum_streak`: consecutive summits attended.
 - `econ_forum_agenda`: this cycle's delegation agenda. 0 none, 1 investors, 2 deals, 3 showcase.
-- `econ_forum_sponsor_cycle`, `econ_forum_bid_cycle`: the forum cycle a guest last sponsored or bid in.
+- `econ_forum_sponsor_cycle`, `econ_forum_bid_cycle`, `econ_forum_request_cycle`: the forum cycle a guest last
+  sponsored, bid or requested an invitation in.
 - `econ_forum_boycott`: 1 while the country boycotts that forum.
 
 A host carries `econ_forum_hosted` (its forum id), the flag `econ_forum_preparing`
@@ -214,14 +215,30 @@ then clears its agenda:
 
 ## Guest Actions
 
-Each forum row in the International Systems Forums tab has three buttons for any player who does not host it
-(`econ_forum_guest_row`). They are player-only; the AI does not use them.
+Each forum row in the International Systems Forums tab has four buttons for any player who does not host it
+(`econ_forum_guest_row`).
 
 | Button  | Requirements                                                           | Effect                                                                                                                |
 | ------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | Sponsor | Preparing, under 25 sponsor points, once a cycle, not boycotting, at peace with the host; $1.5B, 10 PP | +3 sponsor points (cap 25); the host gains `econ_forum_session_sponsor` (+10) toward us                                  |
 | Speak   | Preparing, our delegation going (status 3 or 4), under 3 speakers, once a cycle; 25 PP | 40% chance, +20 with a head of government, +10 as a great or super power. A win books a speaker (`econ_forum_keynote_booked`, counted in `global.econ_forum_guest_speakers`, which WEF poaching cannot take). `econ_forum_deliver_keynotes` pays at the summit, to an attending booker only: `econ_forum_keynote_modifier` (foreign influence, `prestige × 0.002`, the stronger value kept) for 365 days. `econ_forum.6` reports the bid either way |
+| Request | Preparing with invitations open (the first month, not the last), an AI host at peace with us, no invitation or refusal yet, not boycotting, once a cycle; 15 PP | Chance `30 + (100 - prestige) × 0.3`, +20 as a great or super power, +15 if the host's opinion of us is above 25, -20 below -25, clamped 5-95. A yes sends a standing invitation (`econ_forum.2`); a no fires `econ_forum.7` |
 | Boycott | 25 PP to start; ending is free                                         | Cancels our delegation and its agenda, and releases a keynote booked for the summit in preparation; the forum loses 2 prestige (5 for a great or super power); the host gains `econ_forum_boycotted` (-30) toward us; no invitations reach us until we rejoin; a great or super power fires `econ_forum_news.8`. The prestige loss and news land once a cycle (`econ_forum_boycott_cycle`); boycotters cannot be invited (`econ_forum_can_be_invited`) |
+
+### AI Guests
+
+AI regional and greater powers use Sponsor, Speak and Boycott on the same terms as a player. Request stays
+player-only, since AI attendance comes from invitations.
+
+- **Rejoin** (`econ_forum_ai_guests_rejoin`, before invitations go out): a boycotter whose opinion of the host is
+  above -10 rejoins, so it is invited to that summit.
+- **Preparation** (`econ_forum_ai_guest_preparation`, after the host prepares): one with opinion below -50, outside
+  the host's faction and with over 74 PP boycotts 20% of the time. Otherwise, an invitee with opinion above 25, over 49 PP and treasury over 20 sponsors
+  30% of the time, only while the forum has under 15 sponsor points. The WEF's partners already fund 15, so AI
+  guests top up lesser forums.
+- **Summit** (`econ_forum_convene_summit`): an AI delegation that decides to attend, with over 99 PP, bids for a
+  free headline slot 40% of the time, before attendance is recorded. A win counts toward that summit's score and
+  pays its keynote with the others.
 
 `econ_forum_open_preparation` increments `econ_forum_cycle`, which resets the once-a-cycle limits.
 
