@@ -256,6 +256,7 @@ econ_forum_ensure_country_arrays = {
 		resize_array = { array = econ_forum_boycott value = 0 size = 8 }
 		resize_array = { array = econ_forum_boycott_cycle value = 0 size = 8 }
 		resize_array = { array = econ_forum_keynote_booked value = 0 size = 8 }
+		resize_array = { array = econ_forum_request_cycle value = 0 size = 8 }
 	}
 }
 
@@ -592,6 +593,48 @@ econ_forum_bid_to_speak = {
 			set_variable = { econ_forum_keynote_booked^v = { value = global.econ_forum_cycle^v add = 1 } }
 		}
 		country_event = econ_forum.6
+		econ_forum_refresh_open_screens = yes
+	}
+}
+
+# Guest scope, from the Forums tab row of forum v. Asks an AI host for an invitation to the summit in preparation;
+# lesser forums, great powers and friends of the host get in more easily.
+econ_forum_request_invitation = {
+	if = {
+		limit = { econ_forum_can_request = yes }
+		add_political_power = -15
+		set_variable = { econ_forum_request_cycle^v = global.econ_forum_cycle^v }
+		set_temp_variable = { ef_request_chance = { value = 100 subtract = global.econ_forum_prestige^v multiply = 0.3 add = 30 } }
+		var:global.econ_forum_host^v = {
+			if = {
+				limit = { has_opinion = { target = ROOT value > 25 } }
+				add_to_temp_variable = { ef_request_chance = 15 }
+			}
+			else_if = {
+				limit = { has_opinion = { target = ROOT value < -25 } }
+				add_to_temp_variable = { ef_request_chance = -20 }
+			}
+		}
+		if = {
+			limit = {
+				OR = {
+					has_idea = super_power
+					has_idea = great_power
+				}
+			}
+			add_to_temp_variable = { ef_request_chance = 20 }
+		}
+		clamp_temp_variable = { var = ef_request_chance min = 5 max = 95 }
+		set_temp_variable_to_random = { var = ef_roll min = 0 max = 100 }
+		if = {
+			limit = { check_variable = { ef_roll < ef_request_chance } }
+			set_temp_variable = { ef_i = v }
+			econ_forum_send_invitation = yes
+		}
+		else = {
+			set_variable = { econ_forum_request_forum = v }
+			country_event = econ_forum.7
+		}
 		econ_forum_refresh_open_screens = yes
 	}
 }
