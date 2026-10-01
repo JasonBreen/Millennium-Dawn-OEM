@@ -18,9 +18,12 @@ Project slash commands for Claude Code. Each directory holds a `SKILL.md` whose 
 | `/md-tick-profiler`    | Flamegraph of the daily/weekly/monthly scripted tick load            |
 | `/new-focus`           | Scaffold a country focus tree file with loc stubs                    |
 | `/new-namelist`        | Scaffold division/ship/air namelists for a TAG                       |
+| `/new-scenario`        | Scaffold an opt-in scenario built like STALKER                       |
 | `/open-pr`             | Create a draft PR with summary, linked issues, changelog             |
 | `/party-names`         | Fill a country's subideology party names, descs, and hooks           |
 | `/rework-brief`        | Reframe a rework task issue into a mechanic-by-mechanic design brief |
+| `/scenario-audit`      | Audit a scenario's AI coverage and delayed-event context             |
+| `/scenario-subsystem`  | Add a subsystem with the next free event-ID block to a scenario      |
 | `/search-filter-check` | Validate focus `search_filters` against the approved list            |
 | `/spirit-removal-desc` | Append the removal footer to a TAG's starting spirit descriptions    |
 | `/standardize`         | Auto-standardize a mod file with the standardization tools           |
