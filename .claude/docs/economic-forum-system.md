@@ -203,7 +203,7 @@ pushes. The event inherits the invitation's inviter and seat, and `econ_forum_re
 again, so the agenda lands on the forum that invited it or not at all. An AI guest picks when it decides to
 attend: GDP per capita under 20 courts investors, a great or super power showcases, any other country deals.
 
-After the attendance tally, `econ_forum_apply_agendas` pays every attending guest (the host has no agenda),
+After the summit score and the track update, `econ_forum_apply_agendas` pays every attending guest (the host has no agenda),
 then clears its agenda:
 
 | Agenda    | Payoff                                                                                         |
