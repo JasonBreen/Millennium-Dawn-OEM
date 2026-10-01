@@ -3,6 +3,26 @@ STALKER_monthly_meme_pulse = {
 	if = {
 		limit = {
 			STALKER_meme_content_enabled = yes
+			has_global_flag = STALKER_alice_said_hello
+			NOT = { has_global_flag = STALKER_alice_return_wait }
+			NOT = { has_global_flag = STALKER_alice_returned }
+			1221 = {
+				check_variable = { STALKER_zone_id = 27 }
+				STALKER_is_active_zone_anchor = yes
+				controller = {
+					exists = yes
+					is_ai = no
+				}
+			}
+		}
+		1221 = {
+			STALKER_target_zone = yes
+			controller = { country_event = STALKER.106 }
+		}
+	}
+	if = {
+		limit = {
+			STALKER_meme_content_enabled = yes
 			NOT = { has_global_flag = STALKER_meme_cooldown }
 		}
 		random = {
@@ -22,7 +42,7 @@ STALKER_monthly_meme_pulse = {
 				controller = {
 					if = {
 						limit = {
-							check_variable = { global.STALKER_event_zone_id = 27 }
+							event_target:STALKER_zone_event_target = { check_variable = { STALKER_zone_id = 27 } }
 							NOT = { has_global_flag = STALKER_alice_said_hello }
 						}
 						country_event = STALKER.105
