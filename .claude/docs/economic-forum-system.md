@@ -252,14 +252,15 @@ The news is `econ_forum_news.9` when anyone followed, naming the leader's forum 
 ### Councils
 
 A forum with 50 or more prestige can launch one standing council, for good, on its strongest track at that moment
-(`econ_forum_launch_council`): the player host's decision costs 100 PP, an AI host of a state-led forum pays 100 PP
-when it has over 150, and the WEF's partners launch it free. `econ_forum_news.11` announces it.
+(`econ_forum_launch_council`): the player host of a state-led forum takes a 100 PP decision, an AI host pays 100 PP
+when it has over 150 (before its speaker purchase), and the WEF's partners launch it free when preparation opens,
+whoever hosts it. `econ_forum_news.11` announces it.
 
 Members are governments that attended the forum's last two summits (`econ_forum_streak` 2 or more):
 
 - AI attendance +10.
-- `econ_forum_council_session`, after attendance: each member present gets its track's modifier for 365 days and
-  adds 1 to the summit score, up to 10.
+- `econ_forum_council_session`, after attendance: each member present, the host included, gets its track's
+  modifier for 365 days and adds 1 to the summit score, up to 10 (`econ_forum_council_member_present`).
 
 | Track          | Modifier                           | Bonus |
 | -------------- | ---------------------------------- | ----- |
