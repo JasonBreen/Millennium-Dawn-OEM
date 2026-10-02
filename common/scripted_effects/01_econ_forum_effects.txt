@@ -361,6 +361,15 @@ econ_forum_open_preparation = {
 			econ_forum_ai_prepare = yes
 		}
 	}
+	# The WEF's partners launch its council once it qualifies, whoever hosts it.
+	if = {
+		limit = {
+			check_variable = { global.econ_forum_state_led^ef_i = 0 }
+			check_variable = { global.econ_forum_council^ef_i = 0 }
+			check_variable = { global.econ_forum_prestige^ef_i > 49 }
+		}
+		econ_forum_launch_council = yes
+	}
 	# After the host's own sponsor package, so guests never push a forum past the cap.
 	econ_forum_ai_guest_preparation = yes
 }
@@ -580,34 +589,45 @@ econ_forum_council_session = {
 
 			if = {
 				limit = { check_variable = { econ_forum_streak^ef_i > 1 } }
-				add_to_temp_variable = { ef_council_points = 1 }
-				if = {
-					limit = { check_variable = { global.econ_forum_council^ef_i = 1 } }
-					add_dynamic_modifier = { modifier = econ_forum_council_0 days = 365 }
-				}
-				if = {
-					limit = { check_variable = { global.econ_forum_council^ef_i = 2 } }
-					add_dynamic_modifier = { modifier = econ_forum_council_1 days = 365 }
-				}
-				if = {
-					limit = { check_variable = { global.econ_forum_council^ef_i = 3 } }
-					add_dynamic_modifier = { modifier = econ_forum_council_2 days = 365 }
-				}
-				if = {
-					limit = { check_variable = { global.econ_forum_council^ef_i = 4 } }
-					add_dynamic_modifier = { modifier = econ_forum_council_3 days = 365 }
-				}
-				if = {
-					limit = { check_variable = { global.econ_forum_council^ef_i = 5 } }
-					add_dynamic_modifier = { modifier = econ_forum_council_4 days = 365 }
-				}
-				if = {
-					limit = { check_variable = { global.econ_forum_council^ef_i = 6 } }
-					add_dynamic_modifier = { modifier = econ_forum_council_5 days = 365 }
-				}
+				econ_forum_council_member_present = yes
+			}
+		}
+		var:ef_host = {
+			if = {
+				limit = { check_variable = { econ_forum_streak^ef_i > 1 } }
+				econ_forum_council_member_present = yes
 			}
 		}
 		clamp_temp_variable = { var = ef_council_points min = 0 max = 10 }
+	}
+}
+
+# Member scope, at its forum's summit: a point for the score and the council's sector bonus for a year.
+econ_forum_council_member_present = {
+	add_to_temp_variable = { ef_council_points = 1 }
+	if = {
+		limit = { check_variable = { global.econ_forum_council^ef_i = 1 } }
+		add_dynamic_modifier = { modifier = econ_forum_council_0 days = 365 }
+	}
+	if = {
+		limit = { check_variable = { global.econ_forum_council^ef_i = 2 } }
+		add_dynamic_modifier = { modifier = econ_forum_council_1 days = 365 }
+	}
+	if = {
+		limit = { check_variable = { global.econ_forum_council^ef_i = 3 } }
+		add_dynamic_modifier = { modifier = econ_forum_council_2 days = 365 }
+	}
+	if = {
+		limit = { check_variable = { global.econ_forum_council^ef_i = 4 } }
+		add_dynamic_modifier = { modifier = econ_forum_council_3 days = 365 }
+	}
+	if = {
+		limit = { check_variable = { global.econ_forum_council^ef_i = 5 } }
+		add_dynamic_modifier = { modifier = econ_forum_council_4 days = 365 }
+	}
+	if = {
+		limit = { check_variable = { global.econ_forum_council^ef_i = 6 } }
+		add_dynamic_modifier = { modifier = econ_forum_council_5 days = 365 }
 	}
 }
 
@@ -1039,13 +1059,6 @@ econ_forum_ai_prepare = {
 		add_to_variable = { global.econ_forum_sponsors^ef_i = 15 }
 		econ_forum_try_book_speaker = yes
 		econ_forum_try_book_speaker = yes
-		if = {
-			limit = {
-				check_variable = { global.econ_forum_council^ef_i = 0 }
-				check_variable = { global.econ_forum_prestige^ef_i > 49 }
-			}
-			econ_forum_launch_council = yes
-		}
 	}
 	else = {
 		if = {
@@ -1055,11 +1068,6 @@ econ_forum_ai_prepare = {
 			set_variable = { global.econ_forum_sponsors^ef_i = { value = global.econ_forum_sponsors^ef_i add = 5 min = 25 } }
 		}
 		if = {
-			limit = { has_political_power > 150 }
-			add_political_power = -50
-			econ_forum_try_book_speaker = yes
-		}
-		if = {
 			limit = {
 				check_variable = { global.econ_forum_council^ef_i = 0 }
 				check_variable = { global.econ_forum_prestige^ef_i > 49 }
@@ -1067,6 +1075,11 @@ econ_forum_ai_prepare = {
 			}
 			add_political_power = -100
 			econ_forum_launch_council = yes
+		}
+		if = {
+			limit = { has_political_power > 150 }
+			add_political_power = -50
+			econ_forum_try_book_speaker = yes
 		}
 	}
 	for_loop_effect = {
