@@ -253,9 +253,11 @@ The news is `econ_forum_news.9` when anyone followed, naming the leader's forum 
 The host of a state-led forum books ceremonies with invited governments during preparation: up to three a summit,
 recorded on the guest as `econ_forum_ceremony^forum = 1` and cleared when the next preparation opens.
 
-- **Player host:** `econ_forum_plan_ceremony`, 15 PP, targeting any invited government (status above 0) at peace.
+- **Player host:** `econ_forum_plan_ceremony`, 15 PP, targeting an invited regional or greater power (status above
+  0) at peace.
 - **AI host:** after its invitations, with over 100 PP, up to two invitees it likes (opinion above 25), 15 PP each.
-- **Human guest:** `econ_forum.8` announces it; declining (`econ_forum_decline_ceremony`) frees the slot.
+- **Human guest:** `econ_forum.8` announces it, claiming its forum from `econ_forum_ceremony_queue` and saving the
+  host as `econ_forum_ceremony_host`; declining (`econ_forum_decline_ceremony`) frees that slot.
 - **AI guest:** +10 attendance chance while a ceremony is booked.
 
 At the summit, after attendance, `econ_forum_close_ceremonies` signs one for each attending guest with a booking:
