@@ -444,6 +444,25 @@ econ_forum_answer_invitation = {
 			}
 			country_event = econ_forum.5
 		}
+		# Staying home gives back what the host booked for us.
+		if = {
+			limit = {
+				check_variable = { ef_answer = -1 }
+				check_variable = { econ_forum_ceremony^ef_i = 1 }
+			}
+			set_variable = { econ_forum_ceremony^ef_i = 0 }
+			subtract_from_variable = { global.econ_forum_ceremonies^ef_i = 1 }
+			clamp_variable = { var = global.econ_forum_ceremonies^ef_i min = 0 max = 3 }
+		}
+		if = {
+			limit = {
+				check_variable = { ef_answer = -1 }
+				check_variable = { econ_forum_room^ef_i = 1 }
+			}
+			set_variable = { econ_forum_room^ef_i = 0 }
+			subtract_from_variable = { global.econ_forum_room_seats^ef_i = 1 }
+			clamp_variable = { var = global.econ_forum_room_seats^ef_i min = 0 max = 4 }
+		}
 	}
 	else = {
 		add_political_power = ef_cost
@@ -712,7 +731,8 @@ econ_forum_invite_to_room = {
 	}
 }
 
-# Guest scope, from econ_forum.11: we give back the seat offered by the host the event saved.
+# Guest scope, from econ_forum.11: we give back the seat offered by the host the event saved, only at the forum whose
+# seat the event also saved.
 econ_forum_decline_room = {
 	if = {
 		limit = {
@@ -720,8 +740,17 @@ econ_forum_decline_room = {
 			event_target:econ_forum_room_host = { has_variable = econ_forum_hosted }
 		}
 		event_target:econ_forum_room_host = { set_temp_variable = { ef_i = econ_forum_hosted } }
+		set_temp_variable = { ef_room_seat = 0 }
 		if = {
-			limit = { check_variable = { econ_forum_room^ef_i = 1 } }
+			limit = { has_event_target = econ_forum_room_seat }
+			event_target:econ_forum_room_seat = { set_temp_variable = { ef_room_seat = THIS } }
+		}
+		if = {
+			limit = {
+				check_variable = { global.econ_forum_seat^ef_i = ef_room_seat }
+				check_variable = { global.econ_forum_preparing^ef_i = 1 }
+				check_variable = { econ_forum_room^ef_i = 1 }
+			}
 			set_variable = { econ_forum_room^ef_i = 0 }
 			subtract_from_variable = { global.econ_forum_room_seats^ef_i = 1 }
 			clamp_variable = { var = global.econ_forum_room_seats^ef_i min = 0 max = 4 }
@@ -1334,6 +1363,7 @@ econ_forum_ai_prepare = {
 				check_variable = { econ_forum_status^num > ef_i }
 				check_variable = { econ_forum_status^ef_i > 0 }
 				check_variable = { econ_forum_room^ef_i = 0 }
+				NOT = { has_war_with = PREV }
 				OR = {
 					has_idea = great_power
 					has_idea = super_power

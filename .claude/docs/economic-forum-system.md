@@ -271,13 +271,15 @@ tooltip shows each forum's message, council and last ceremonies.
 
 Each summit can hold an invitation-only private room: a closed session where a few heads of state meet chief
 executives and investors, as Davos does. Seats are recorded on the guest as `econ_forum_room^forum = 1` and reset
-when preparation opens; a boycott gives the seat back.
+when preparation opens; a boycott or a declined invitation gives the seat back.
 
 - **AI organizers**, the WEF's included, seat `1 + prestige / 30` invited governments (max 4) in
-  `econ_forum_ai_prepare`: great or super powers, or governments the host likes (opinion above 50).
+  `econ_forum_ai_prepare`: great or super powers, or governments the host likes (opinion above 50), never one at
+  war with the host.
 - **Player host:** `econ_forum_invite_to_private_room`, 10 PP, an invited regional or greater power, up to 4 seats.
 - **Human guest:** `econ_forum.11` offers the seat (queued like invitations, host saved as `econ_forum_room_host`);
-  declining (`econ_forum_decline_room`) frees it.
+  declining (`econ_forum_decline_room`) frees it, only at the forum whose seat the event saved
+  (`econ_forum_room_seat`) and while it is preparing.
 - **AI guest:** +10 attendance while seated.
 
 At the summit, after attendance, `econ_forum_hold_private_room` gathers every seated government that attended plus
@@ -367,7 +369,8 @@ recorded on the guest as `econ_forum_ceremony^forum = 1` and cleared when the ne
 - **AI host:** after its invitations, with over 100 PP, up to two invitees it likes (opinion above 25), 15 PP each.
 - **Human guest:** `econ_forum.8` announces it, claiming its forum from `econ_forum_ceremony_queue` and saving the
   host as `econ_forum_ceremony_host`; declining (`econ_forum_decline_ceremony`) frees that slot.
-- **Boycott:** a guest that boycotts the forum (`econ_forum_start_boycott`) loses its ceremony, and the slot frees.
+- **Boycott or decline:** a guest that boycotts the forum (`econ_forum_start_boycott`) or declines its invitation
+  (`econ_forum_answer_invitation`) loses its ceremony, and the slot frees.
 - **AI guest:** +10 attendance chance while a ceremony is booked.
 
 At the summit, after attendance, `econ_forum_close_ceremonies` signs one for each attending guest with a booking:
