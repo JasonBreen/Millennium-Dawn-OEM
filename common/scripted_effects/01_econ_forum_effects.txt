@@ -324,6 +324,7 @@ econ_forum_open_preparation = {
 					}
 					econ_forum_brics_standing_guest = yes
 					econ_forum_pivot_east_guest = yes
+					check_variable = { econ_forum_walkout_host = ef_host }
 				}
 			}
 			econ_forum_send_invitation = yes
@@ -716,58 +717,125 @@ econ_forum_toggle_boycott = {
 	if = {
 		limit = { check_variable = { econ_forum_boycott^v = 1 } }
 		set_variable = { econ_forum_boycott^v = 0 }
+		clear_variable = econ_forum_walkout_host
 	}
 	else_if = {
 		limit = { econ_forum_can_boycott = yes }
-		add_political_power = -25
-		set_variable = { econ_forum_boycott^v = 1 }
-		set_variable = { econ_forum_status^v = 0 }
-		set_variable = { econ_forum_agenda^v = 0 }
-		var:global.econ_forum_host^v = { add_opinion_modifier = { target = PREV modifier = econ_forum_boycotted } }
-		# The prestige hit and the news land once a cycle, so rejoining and boycotting again repeats neither.
-		set_temp_variable = { ef_cycle_tag = { value = global.econ_forum_cycle^v add = 1 } }
-		# A keynote booked this cycle goes undelivered, so the summit loses that speaker.
+		econ_forum_start_boycott = yes
+		if = {
+			limit = { check_variable = { ef_boycott_news = 1 } }
+			econ_forum_lead_walkout = yes
+		}
+	}
+	econ_forum_refresh_open_screens = yes
+}
+
+# Guest scope, forum v. Pays for and records a boycott. ef_boycott_news is 1 after a great or super power's first
+# boycott of the cycle, which makes the news.
+econ_forum_start_boycott = {
+	set_temp_variable = { ef_boycott_news = 0 }
+	add_political_power = -25
+	set_variable = { econ_forum_boycott^v = 1 }
+	set_variable = { econ_forum_status^v = 0 }
+	set_variable = { econ_forum_agenda^v = 0 }
+	var:global.econ_forum_host^v = { add_opinion_modifier = { target = PREV modifier = econ_forum_boycotted } }
+	# The prestige hit and the news land once a cycle, so rejoining and boycotting again repeats neither.
+	set_temp_variable = { ef_cycle_tag = { value = global.econ_forum_cycle^v add = 1 } }
+	# A keynote booked this cycle goes undelivered, so the summit loses that speaker.
+	if = {
+		limit = {
+			check_variable = { econ_forum_keynote_booked^v = ef_cycle_tag }
+			check_variable = { global.econ_forum_preparing^v = 1 }
+		}
+		set_variable = { econ_forum_keynote_booked^v = 0 }
+		subtract_from_variable = { global.econ_forum_speakers^v = 1 }
+		clamp_variable = { var = global.econ_forum_speakers^v min = 0 max = 3 }
+		subtract_from_variable = { global.econ_forum_guest_speakers^v = 1 }
+		clamp_variable = { var = global.econ_forum_guest_speakers^v min = 0 max = 3 }
+	}
+	if = {
+		limit = { NOT = { check_variable = { econ_forum_boycott_cycle^v = ef_cycle_tag } } }
+		set_variable = { econ_forum_boycott_cycle^v = ef_cycle_tag }
+		set_temp_variable = { ef_boycott_cost = 2 }
 		if = {
 			limit = {
-				check_variable = { econ_forum_keynote_booked^v = ef_cycle_tag }
-				check_variable = { global.econ_forum_preparing^v = 1 }
+				OR = {
+					has_idea = super_power
+					has_idea = great_power
+				}
 			}
-			set_variable = { econ_forum_keynote_booked^v = 0 }
-			subtract_from_variable = { global.econ_forum_speakers^v = 1 }
-			clamp_variable = { var = global.econ_forum_speakers^v min = 0 max = 3 }
-			subtract_from_variable = { global.econ_forum_guest_speakers^v = 1 }
-			clamp_variable = { var = global.econ_forum_guest_speakers^v min = 0 max = 3 }
+			set_temp_variable = { ef_boycott_cost = 5 }
 		}
+		subtract_from_variable = { global.econ_forum_prestige^v = ef_boycott_cost }
+		clamp_variable = { var = global.econ_forum_prestige^v min = 0 max = 100 }
 		if = {
-			limit = { NOT = { check_variable = { econ_forum_boycott_cycle^v = ef_cycle_tag } } }
-			set_variable = { econ_forum_boycott_cycle^v = ef_cycle_tag }
-			set_temp_variable = { ef_boycott_cost = 2 }
-			if = {
-				limit = {
-					OR = {
-						has_idea = super_power
-						has_idea = great_power
-					}
+			limit = {
+				OR = {
+					has_idea = super_power
+					has_idea = great_power
 				}
-				set_temp_variable = { ef_boycott_cost = 5 }
 			}
-			subtract_from_variable = { global.econ_forum_prestige^v = ef_boycott_cost }
-			clamp_variable = { var = global.econ_forum_prestige^v min = 0 max = 100 }
+			set_temp_variable = { ef_boycott_news = 1 }
+		}
+	}
+}
+
+# Guest scope, forum v: a great or super power whose boycott just made the news. AI governments in its faction that
+# are not in the host's faction and do not like the host follow it out half the time. If the leader hosts a forum,
+# that forum gains a point of prestige per follower and invites them while they stay out.
+econ_forum_lead_walkout = {
+	set_temp_variable = { ef_walkouts = 0 }
+	set_temp_variable = { ef_leader_forum = -1 }
+	if = {
+		limit = { has_variable = econ_forum_hosted }
+		set_temp_variable = { ef_leader_forum = econ_forum_hosted }
+	}
+	var:global.econ_forum_host^v = { save_event_target_as = econ_forum_walkout_host }
+	if = {
+		limit = { is_in_faction = yes }
+		every_country = {
+			limit = {
+				is_ai = yes
+				is_in_faction_with = PREV
+				econ_forum_guest_row = yes
+				NOT = { is_in_faction_with = event_target:econ_forum_walkout_host }
+				NOT = { has_opinion = { target = event_target:econ_forum_walkout_host value > 25 } }
+			}
+			econ_forum_ensure_country_arrays = yes
 			if = {
-				limit = {
-					OR = {
-						has_idea = super_power
-						has_idea = great_power
+				limit = { econ_forum_can_boycott = yes }
+				random = {
+					chance = 50
+					econ_forum_start_boycott = yes
+					add_to_temp_variable = { ef_walkouts = 1 }
+					if = {
+						limit = { check_variable = { ef_leader_forum > -1 } }
+						set_variable = { econ_forum_walkout_host = PREV.id }
 					}
-				}
-				var:global.econ_forum_host^v = {
-					set_variable = { econ_forum_news_boycotter = PREV.id }
-					news_event = econ_forum_news.8
 				}
 			}
 		}
 	}
-	econ_forum_refresh_open_screens = yes
+	if = {
+		limit = {
+			check_variable = { ef_leader_forum > -1 }
+			check_variable = { ef_walkouts > 0 }
+		}
+		add_to_variable = { global.econ_forum_prestige^ef_leader_forum = ef_walkouts }
+		clamp_variable = { var = global.econ_forum_prestige^ef_leader_forum min = 0 max = 100 }
+	}
+	var:global.econ_forum_host^v = {
+		set_variable = { econ_forum_news_boycotter = PREV.id }
+		if = {
+			limit = { check_variable = { ef_walkouts > 0 } }
+			set_variable = { econ_forum_news_walkouts = ef_walkouts }
+			set_variable = { econ_forum_news_rival = ef_leader_forum }
+			news_event = econ_forum_news.9
+		}
+		else = {
+			news_event = econ_forum_news.8
+		}
+	}
 }
 
 # Selects track ef_t for forum ef_i while fewer than three are on the program.

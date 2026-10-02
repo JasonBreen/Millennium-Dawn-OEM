@@ -16,7 +16,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-7`, `econ_forum_news.1-8`.
+- `events/EconomicForums.txt`: `econ_forum.1-7`, `econ_forum_news.1-9`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -81,6 +81,8 @@ Per-country arrays use the same forum index:
 - `econ_forum_sponsor_cycle`, `econ_forum_bid_cycle`, `econ_forum_request_cycle`: the forum cycle a guest last
   sponsored, bid or requested an invitation in.
 - `econ_forum_boycott`: 1 while the country boycotts that forum.
+- `econ_forum_walkout_host` (plain variable): the leader of a walkout this country followed, while that leader
+  hosts a forum; cleared when the country rejoins.
 
 A host carries `econ_forum_hosted` (its forum id), the flag `econ_forum_preparing`
 while preparing, and `econ_forum_view_selected` / `econ_forum_view_prestige`, a
@@ -224,6 +226,22 @@ Each forum row in the International Systems Forums tab has four buttons for any 
 | Speak   | Preparing, our delegation going (status 3 or 4), under 3 speakers, once a cycle; 25 PP | 40% chance, +20 with a head of government, +10 as a great or super power. A win books a speaker (`econ_forum_keynote_booked`, counted in `global.econ_forum_guest_speakers`, which WEF poaching cannot take). `econ_forum_deliver_keynotes` pays at the summit, to an attending booker only: `econ_forum_keynote_modifier` (foreign influence, `prestige × 0.002`, the stronger value kept) for 365 days. `econ_forum.6` reports the bid either way |
 | Request | Preparing with invitations open (the first month, not the last), an AI host at peace with us, no invitation or refusal yet, not boycotting, once a cycle; 15 PP | Chance `30 + (100 - prestige) × 0.3`, +20 as a great or super power, +15 if the host's opinion of us is above 25, -20 below -25, clamped 5-95. A yes sends a standing invitation (`econ_forum.2`); a no fires `econ_forum.7` |
 | Boycott | 25 PP to start; ending is free                                         | Cancels our delegation and its agenda, and releases a keynote booked for the summit in preparation; the forum loses 2 prestige (5 for a great or super power); the host gains `econ_forum_boycotted` (-30) toward us; no invitations reach us until we rejoin; a great or super power fires `econ_forum_news.8`. The prestige loss and news land once a cycle (`econ_forum_boycott_cycle`); boycotters cannot be invited (`econ_forum_can_be_invited`) |
+
+### Walkouts
+
+A great or super power's first boycott of a forum in a cycle (`econ_forum_start_boycott` sets `ef_boycott_news`)
+runs `econ_forum_lead_walkout`. Every AI government in the boycotter's faction follows it out half the time if it:
+
+- does not host the forum and is not in the host's faction,
+- does not like the host (opinion 25 or less),
+- can afford a boycott (`econ_forum_can_boycott`).
+
+Each follower pays and counts as its own boycott: 25 PP, prestige loss, the host's opinion modifier, a booked
+keynote released. If the leader hosts a forum of its own, that forum gains 1 prestige per follower, and each
+follower gets `econ_forum_walkout_host` and a standing invitation to the leader's summits until it rejoins.
+
+The news is `econ_forum_news.9` when anyone followed, naming the leader's forum when there is one (via
+`econ_forum_news_rival` on the host), and `econ_forum_news.8` otherwise.
 
 ### AI Guests
 
