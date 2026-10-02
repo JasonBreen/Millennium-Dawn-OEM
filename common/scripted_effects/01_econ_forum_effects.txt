@@ -58,6 +58,8 @@ econ_forum_setup = {
 	resize_array = { array = global.econ_forum_last_ceremonies value = 0 size = 9 }
 	# Council track + 1; 0 until the forum launches one.
 	resize_array = { array = global.econ_forum_council value = 0 size = 9 }
+	# This cycle's summit message: 0 none, 1 open for business, 2 strategic autonomy, 3 media blitz.
+	resize_array = { array = global.econ_forum_message value = 0 size = 9 }
 	# Six program tracks per forum, indexed forum * 6 + track.
 	resize_array = { array = global.econ_forum_tracks value = 0 size = 54 }
 	resize_array = { array = global.econ_forum_track_prestige value = 0 size = 54 }
@@ -286,6 +288,7 @@ econ_forum_open_preparation = {
 	set_variable = { global.econ_forum_preparing^ef_i = 1 }
 	set_variable = { global.econ_forum_sponsors^ef_i = 0 }
 	set_variable = { global.econ_forum_ceremonies^ef_i = 0 }
+	set_variable = { global.econ_forum_message^ef_i = 0 }
 	set_variable = { global.econ_forum_speakers^ef_i = 0 }
 	set_variable = { global.econ_forum_track_count^ef_i = 0 }
 	set_variable = { global.econ_forum_invites_left^ef_i = { value = global.econ_forum_prestige^ef_i divide = 25 round = yes add = 3 } }
@@ -1345,9 +1348,23 @@ econ_forum_convene_summit = {
 		limit = { check_variable = { ef_clash_forum > -1 } }
 		add_to_temp_variable = { ef_score = 5 }
 	}
+	if = {
+		limit = { check_variable = { global.econ_forum_message^ef_i = 1 } }
+		add_to_temp_variable = { ef_score = 3 }
+	}
+	else_if = {
+		limit = { check_variable = { global.econ_forum_message^ef_i = 3 } }
+		add_to_temp_variable = { ef_score = 5 }
+	}
 	clamp_temp_variable = { var = ef_score min = 0 max = 100 }
 
-	set_variable = { global.econ_forum_prestige^ef_i = { value = ef_score subtract = ef_prestige multiply = 0.3 add = ef_prestige clamp = { min = 0 max = 100 } } }
+	# A media blitz raises the stakes both ways.
+	set_temp_variable = { ef_pull = 0.3 }
+	if = {
+		limit = { check_variable = { global.econ_forum_message^ef_i = 3 } }
+		set_temp_variable = { ef_pull = 0.5 }
+	}
+	set_variable = { global.econ_forum_prestige^ef_i = { value = ef_score subtract = ef_prestige multiply = ef_pull add = ef_prestige clamp = { min = 0 max = 100 } } }
 	set_variable = { global.econ_forum_last_heads^ef_i = ef_heads }
 	set_variable = { global.econ_forum_last_ministers^ef_i = ef_ministers }
 	set_variable = { global.econ_forum_last_score^ef_i = ef_score }
@@ -1493,6 +1510,25 @@ econ_forum_ai_decide_attendance = {
 	if = {
 		limit = { is_in_faction_with = event_target:econ_forum_host_target }
 		add_to_temp_variable = { ef_chance = 10 }
+	}
+	if = {
+		limit = { check_variable = { global.econ_forum_message^ef_i = 1 } }
+		add_to_temp_variable = { ef_chance = 10 }
+	}
+	else_if = {
+		limit = { check_variable = { global.econ_forum_message^ef_i = 2 } }
+		if = {
+			limit = {
+				OR = {
+					econ_forum_is_core_member = yes
+					is_in_faction_with = event_target:econ_forum_host_target
+				}
+			}
+			add_to_temp_variable = { ef_chance = 15 }
+		}
+		else = {
+			add_to_temp_variable = { ef_chance = -10 }
+		}
 	}
 	if = {
 		limit = { econ_forum_is_core_member = yes }

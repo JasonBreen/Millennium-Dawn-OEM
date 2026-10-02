@@ -51,6 +51,7 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_ceremonies`     | Signing ceremonies booked this cycle (max 3)    |
 | `econ_forum_last_ceremonies`| Ceremonies signed at the last summit            |
 | `econ_forum_council`        | Council track + 1; 0 until launched             |
+| `econ_forum_message`        | This cycle's summit message (0 none, 1-3)       |
 
 | Id  | Forum                               | Month | Founder            | Core members        |
 | --- | ----------------------------------- | ----- | ------------------ | ------------------- |
@@ -248,6 +249,17 @@ follower gets `econ_forum_walkout_host` and a standing invitation to the leader'
 
 The news is `econ_forum_news.9` when anyone followed, naming the leader's forum when there is one (via
 `econ_forum_news_rival` on the host), and `econ_forum_news.8` otherwise.
+
+### Summit Messages
+
+A player host picks one message per summit during preparation (25 PP each, reset when preparation opens). The AI
+does not pick one.
+
+| Message            | Decision                     | Effect                                                                                  |
+| ------------------ | ---------------------------- | --------------------------------------------------------------------------------------- |
+| Open for Business  | `econ_forum_message_open`     | Every invited AI government +10 attendance; score +3                                   |
+| Strategic Autonomy | `econ_forum_message_autonomy` | Core members and the host's faction +15 attendance, every other AI invitee -10          |
+| Media Blitz        | `econ_forum_message_media`    | $2B more; score +5, and prestige moves 50% toward the score instead of 30%, both ways |
 
 ### Councils
 
