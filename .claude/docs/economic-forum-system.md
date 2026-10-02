@@ -17,7 +17,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-7`, `econ_forum_news.1-10`.
+- `events/EconomicForums.txt`: `econ_forum.1-8`, `econ_forum_news.1-10`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -48,6 +48,8 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_last_ministers` | Ministerial delegations at the last summit      |
 | `econ_forum_last_score`     | Score of the last summit                        |
 | `econ_forum_cycle`          | Preparations opened; a guest action's cycle id  |
+| `econ_forum_ceremonies`     | Signing ceremonies booked this cycle (max 3)    |
+| `econ_forum_last_ceremonies`| Ceremonies signed at the last summit            |
 
 | Id  | Forum                               | Month | Founder            | Core members        |
 | --- | ----------------------------------- | ----- | ------------------ | ------------------- |
@@ -245,6 +247,21 @@ follower gets `econ_forum_walkout_host` and a standing invitation to the leader'
 
 The news is `econ_forum_news.9` when anyone followed, naming the leader's forum when there is one (via
 `econ_forum_news_rival` on the host), and `econ_forum_news.8` otherwise.
+
+### Signing Ceremonies
+
+The host of a state-led forum books ceremonies with invited governments during preparation: up to three a summit,
+recorded on the guest as `econ_forum_ceremony^forum = 1` and cleared when the next preparation opens.
+
+- **Player host:** `econ_forum_plan_ceremony`, 15 PP, targeting any invited government (status above 0) at peace.
+- **AI host:** after its invitations, with over 100 PP, up to two invitees it likes (opinion above 25), 15 PP each.
+- **Human guest:** `econ_forum.8` announces it; declining (`econ_forum_decline_ceremony`) frees the slot.
+- **AI guest:** +10 attendance chance while a ceremony is booked.
+
+At the summit, after attendance, `econ_forum_close_ceremonies` signs one for each attending guest with a booking:
+`econ_forum_signed_agreement` (+20, decay 1) both ways, and the guest gets `econ_forum_deal@<host>`, so the host's
+investors favour it for 365 days, the reverse of the agreement every attendee signs. Each ceremony adds 3 to the
+summit score. `econ_forum_last_ceremonies` feeds the standing lines and the host's summit report.
 
 ### Breakaway Forum
 
