@@ -1084,6 +1084,46 @@ econ_forum_ai_prepare = {
 			econ_forum_try_book_speaker = yes
 		}
 	}
+	# Summit message: a sanctioned or East-pivoting host rallies its friends, a forum under 50 prestige opens its doors,
+	# and a state-led forum whose last summit beat its prestige pays for a media blitz.
+	if = {
+		limit = {
+			OR = {
+				check_variable = { global.econ_forum_state_led^ef_i = 0 }
+				has_political_power > 75
+			}
+		}
+		if = {
+			limit = {
+				OR = {
+					has_country_flag = SOV_western_sanctions
+					has_country_flag = econ_forum_pivot_east
+				}
+			}
+			set_variable = { global.econ_forum_message^ef_i = 2 }
+		}
+		else_if = {
+			limit = { check_variable = { global.econ_forum_prestige^ef_i < 50 } }
+			set_variable = { global.econ_forum_message^ef_i = 1 }
+		}
+		else_if = {
+			limit = {
+				check_variable = { global.econ_forum_state_led^ef_i = 1 }
+				check_variable = { global.econ_forum_last_score^ef_i > global.econ_forum_prestige^ef_i }
+				check_variable = { treasury > 30 }
+			}
+			set_temp_variable = { treasury_change = -2 }
+			modify_treasury_effect = yes
+			set_variable = { global.econ_forum_message^ef_i = 3 }
+		}
+		if = {
+			limit = {
+				check_variable = { global.econ_forum_state_led^ef_i = 1 }
+				check_variable = { global.econ_forum_message^ef_i > 0 }
+			}
+			add_political_power = -25
+		}
+	}
 	for_loop_effect = {
 		end = global.econ_forum_invites_left^ef_i
 		value = ef_n

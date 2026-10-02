@@ -252,8 +252,11 @@ The news is `econ_forum_news.9` when anyone followed, naming the leader's forum 
 
 ### Summit Messages
 
-A player host picks one message per summit during preparation (25 PP each, reset when preparation opens). The AI
-does not pick one.
+A player host picks one message per summit during preparation (25 PP each, reset when preparation opens).
+An AI host picks in `econ_forum_ai_prepare`, paying 25 PP for a state-led forum when it has over 75:
+Strategic Autonomy under Western sanctions or Pivot to the East, Open for Business below 50 prestige, and a Media
+Blitz for a state-led forum whose last summit scored above its prestige, with treasury over 30. The Forums tab row
+tooltip shows each forum's message, council and last ceremonies.
 
 | Message            | Decision                     | Effect                                                                                  |
 | ------------------ | ---------------------------- | --------------------------------------------------------------------------------------- |
