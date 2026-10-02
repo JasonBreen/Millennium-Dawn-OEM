@@ -4,7 +4,8 @@
 
 # STARTUP ONLY: build the forum registry. 0 World Economic Forum, 1 Visegrad Economic Conference,
 # 2 St. Petersburg International Economic Forum, 3 Boao Forum for Asia, 4 Global South Economic Forum,
-# 5 African Development Conference, 6 Arctic Economic Forum, 7 Transatlantic Technology Forum.
+# 5 African Development Conference, 6 Arctic Economic Forum, 7 Transatlantic Technology Forum,
+# 8 Independent Economic Forum (a breakaway).
 econ_forum_setup = {
 	add_to_array = { global.econ_forum_host = SWI }
 	add_to_array = { global.econ_forum_host = 0 }
@@ -14,7 +15,9 @@ econ_forum_setup = {
 	add_to_array = { global.econ_forum_host = 0 }
 	add_to_array = { global.econ_forum_host = 0 }
 	add_to_array = { global.econ_forum_host = 0 }
+	add_to_array = { global.econ_forum_host = 0 }
 	add_to_array = { global.econ_forum_state_led = 0 }
+	add_to_array = { global.econ_forum_state_led = 1 }
 	add_to_array = { global.econ_forum_state_led = 1 }
 	add_to_array = { global.econ_forum_state_led = 1 }
 	add_to_array = { global.econ_forum_state_led = 1 }
@@ -30,6 +33,7 @@ econ_forum_setup = {
 	add_to_array = { global.econ_forum_prestige = 0 }
 	add_to_array = { global.econ_forum_prestige = 0 }
 	add_to_array = { global.econ_forum_prestige = 0 }
+	add_to_array = { global.econ_forum_prestige = 0 }
 	add_to_array = { global.econ_forum_month = 1 }
 	add_to_array = { global.econ_forum_month = 9 }
 	add_to_array = { global.econ_forum_month = 6 }
@@ -38,20 +42,21 @@ econ_forum_setup = {
 	add_to_array = { global.econ_forum_month = 5 }
 	add_to_array = { global.econ_forum_month = 10 }
 	add_to_array = { global.econ_forum_month = 4 }
+	add_to_array = { global.econ_forum_month = 1 }
 
-	resize_array = { array = global.econ_forum_seat value = 0 size = 8 }
-	resize_array = { array = global.econ_forum_preparing value = 0 size = 8 }
-	resize_array = { array = global.econ_forum_months_since value = 12 size = 8 }
-	resize_array = { array = global.econ_forum_invites_left value = 0 size = 8 }
-	resize_array = { array = global.econ_forum_sponsors value = 0 size = 8 }
-	resize_array = { array = global.econ_forum_speakers value = 0 size = 8 }
-	resize_array = { array = global.econ_forum_track_count value = 0 size = 8 }
-	resize_array = { array = global.econ_forum_last_heads value = 0 size = 8 }
-	resize_array = { array = global.econ_forum_last_ministers value = 0 size = 8 }
-	resize_array = { array = global.econ_forum_last_score value = 0 size = 8 }
+	resize_array = { array = global.econ_forum_seat value = 0 size = 9 }
+	resize_array = { array = global.econ_forum_preparing value = 0 size = 9 }
+	resize_array = { array = global.econ_forum_months_since value = 12 size = 9 }
+	resize_array = { array = global.econ_forum_invites_left value = 0 size = 9 }
+	resize_array = { array = global.econ_forum_sponsors value = 0 size = 9 }
+	resize_array = { array = global.econ_forum_speakers value = 0 size = 9 }
+	resize_array = { array = global.econ_forum_track_count value = 0 size = 9 }
+	resize_array = { array = global.econ_forum_last_heads value = 0 size = 9 }
+	resize_array = { array = global.econ_forum_last_ministers value = 0 size = 9 }
+	resize_array = { array = global.econ_forum_last_score value = 0 size = 9 }
 	# Six program tracks per forum, indexed forum * 6 + track.
-	resize_array = { array = global.econ_forum_tracks value = 0 size = 48 }
-	resize_array = { array = global.econ_forum_track_prestige value = 0 size = 48 }
+	resize_array = { array = global.econ_forum_tracks value = 0 size = 54 }
+	resize_array = { array = global.econ_forum_track_prestige value = 0 size = 54 }
 
 	set_temp_variable = { ef_i = 0 }
 	SWI = { econ_forum_register_host = yes }
@@ -72,6 +77,7 @@ econ_forum_register_host = {
 		if = { limit = { check_variable = { ef_i = 5 } } set_state_flag = econ_forum_seat_5 }
 		if = { limit = { check_variable = { ef_i = 6 } } set_state_flag = econ_forum_seat_6 }
 		if = { limit = { check_variable = { ef_i = 7 } } set_state_flag = econ_forum_seat_7 }
+		if = { limit = { check_variable = { ef_i = 8 } } set_state_flag = econ_forum_seat_8 }
 	}
 	econ_forum_init_track_prestige = yes
 }
@@ -240,36 +246,36 @@ econ_forum_check_succession = {
 # Country scope. One slot per forum; raise the sizes with the registry.
 econ_forum_ensure_country_arrays = {
 	if = {
-		limit = { check_variable = { econ_forum_status^num < 8 } }
-		resize_array = { array = econ_forum_status value = 0 size = 8 }
-		resize_array = { array = econ_forum_last value = 0 size = 8 }
-		resize_array = { array = econ_forum_streak value = 0 size = 8 }
+		limit = { check_variable = { econ_forum_status^num < 9 } }
+		resize_array = { array = econ_forum_status value = 0 size = 9 }
+		resize_array = { array = econ_forum_last value = 0 size = 9 }
+		resize_array = { array = econ_forum_streak value = 0 size = 9 }
 	}
 	if = {
-		limit = { check_variable = { econ_forum_agenda^num < 8 } }
-		resize_array = { array = econ_forum_agenda value = 0 size = 8 }
+		limit = { check_variable = { econ_forum_agenda^num < 9 } }
+		resize_array = { array = econ_forum_agenda value = 0 size = 9 }
 	}
 	if = {
-		limit = { check_variable = { econ_forum_boycott^num < 8 } }
-		resize_array = { array = econ_forum_sponsor_cycle value = 0 size = 8 }
-		resize_array = { array = econ_forum_bid_cycle value = 0 size = 8 }
-		resize_array = { array = econ_forum_boycott value = 0 size = 8 }
-		resize_array = { array = econ_forum_boycott_cycle value = 0 size = 8 }
-		resize_array = { array = econ_forum_keynote_booked value = 0 size = 8 }
-		resize_array = { array = econ_forum_request_cycle value = 0 size = 8 }
+		limit = { check_variable = { econ_forum_boycott^num < 9 } }
+		resize_array = { array = econ_forum_sponsor_cycle value = 0 size = 9 }
+		resize_array = { array = econ_forum_bid_cycle value = 0 size = 9 }
+		resize_array = { array = econ_forum_boycott value = 0 size = 9 }
+		resize_array = { array = econ_forum_boycott_cycle value = 0 size = 9 }
+		resize_array = { array = econ_forum_keynote_booked value = 0 size = 9 }
+		resize_array = { array = econ_forum_request_cycle value = 0 size = 9 }
 	}
 }
 
 econ_forum_open_preparation = {
 	# Each preparation is a new cycle; guests may sponsor and bid once per cycle.
 	if = {
-		limit = { check_variable = { global.econ_forum_cycle^num < 8 } }
-		resize_array = { array = global.econ_forum_cycle value = 0 size = 8 }
+		limit = { check_variable = { global.econ_forum_cycle^num < 9 } }
+		resize_array = { array = global.econ_forum_cycle value = 0 size = 9 }
 	}
 	add_to_variable = { global.econ_forum_cycle^ef_i = 1 }
 	if = {
-		limit = { check_variable = { global.econ_forum_guest_speakers^num < 8 } }
-		resize_array = { array = global.econ_forum_guest_speakers value = 0 size = 8 }
+		limit = { check_variable = { global.econ_forum_guest_speakers^num < 9 } }
+		resize_array = { array = global.econ_forum_guest_speakers value = 0 size = 9 }
 	}
 	set_variable = { global.econ_forum_guest_speakers^ef_i = 0 }
 	set_variable = { global.econ_forum_preparing^ef_i = 1 }
@@ -1495,6 +1501,57 @@ econ_forum_found = {
 	set_variable = { global.econ_forum_prestige^ef_i = 15 }
 	econ_forum_register_host = yes
 	news_event = { id = econ_forum_news.1 days = 1 }
+	econ_forum_open_if_due = yes
+	econ_forum_refresh_open_screens = yes
+}
+
+# Founder scope: a great or super power founds the Independent Economic Forum (8) against the most prestigious
+# forum it boycotts. The breakaway takes 15% of that forum's prestige and half its sector prestige, and meets six
+# months after it.
+econ_forum_found_breakaway = {
+	set_temp_variable = { ef_from = -1 }
+	set_temp_variable = { ef_from_prestige = -1 }
+	for_loop_effect = {
+		end = econ_forum_boycott^num
+		value = ef_j
+
+		if = {
+			limit = {
+				check_variable = { econ_forum_boycott^ef_j = 1 }
+				check_variable = { global.econ_forum_host^ef_j > 0 }
+				check_variable = { global.econ_forum_prestige^ef_j > ef_from_prestige }
+			}
+			set_temp_variable = { ef_from = ef_j }
+			set_temp_variable = { ef_from_prestige = global.econ_forum_prestige^ef_j }
+		}
+	}
+	set_temp_variable = { ef_i = 8 }
+	set_variable = { global.econ_forum_prestige^ef_i = 15 }
+	set_temp_variable = { ef_new_month = { value = global.month add = 5 } }
+	if = {
+		limit = { check_variable = { ef_from > -1 } }
+		set_temp_variable = { ef_taken = { value = ef_from_prestige multiply = 0.15 } }
+		subtract_from_variable = { global.econ_forum_prestige^ef_from = ef_taken }
+		add_to_variable = { global.econ_forum_prestige^ef_i = ef_taken }
+		set_temp_variable = { ef_new_month = { value = global.econ_forum_month^ef_from add = 5 } }
+	}
+	modulo_temp_variable = { ef_new_month = 12 }
+	add_to_temp_variable = { ef_new_month = 1 }
+	set_variable = { global.econ_forum_month^ef_i = ef_new_month }
+	econ_forum_register_host = yes
+	if = {
+		limit = { check_variable = { ef_from > -1 } }
+		for_loop_effect = {
+			end = 6
+			value = ef_t
+
+			set_temp_variable = { ef_idx = { value = ef_i multiply = 6 add = ef_t } }
+			set_temp_variable = { ef_jdx = { value = ef_from multiply = 6 add = ef_t } }
+			set_variable = { global.econ_forum_track_prestige^ef_idx = { value = global.econ_forum_track_prestige^ef_jdx multiply = 0.5 } }
+		}
+	}
+	set_variable = { econ_forum_news_rival = ef_from }
+	news_event = { id = econ_forum_news.10 days = 1 }
 	econ_forum_open_if_due = yes
 	econ_forum_refresh_open_screens = yes
 }

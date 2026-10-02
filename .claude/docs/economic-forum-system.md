@@ -5,7 +5,8 @@ headline speakers (Issue #4802). The World Economic Forum is the incumbent. The
 St. Petersburg International Economic Forum runs from the start. Six more forums
 wait for a founder: the Visegrád Economic Conference, the Boao Forum for Asia, the
 Global South Economic Forum, the African Development Conference, the Arctic
-Economic Forum and the Transatlantic Technology Forum.
+Economic Forum and the Transatlantic Technology Forum. A great power boycotting a
+forum can found a seventh, the Independent Economic Forum, as a breakaway.
 A forum is a registry slot, not an event chain, so a new forum is data plus
 localisation.
 
@@ -16,7 +17,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-7`, `econ_forum_news.1-9`.
+- `events/EconomicForums.txt`: `econ_forum.1-7`, `econ_forum_news.1-10`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -58,6 +59,7 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | 5   | African Development Conference      | 5     | Sub-Saharan power  | Sub-Saharan         |
 | 6   | Arctic Economic Forum               | 10    | Arctic nation      | Arctic nations      |
 | 7   | Transatlantic Technology Forum      | 4     | NATO power         | NATO members        |
+| 8   | Independent Economic Forum          | Set   | Boycotting GP      | Host's faction      |
 
 Only the World Economic Forum is private; the rest are state-led. Founded forums
 start at 15 prestige. A developing power is a regional power with GDP per capita
@@ -243,6 +245,22 @@ follower gets `econ_forum_walkout_host` and a standing invitation to the leader'
 The news is `econ_forum_news.9` when anyone followed, naming the leader's forum when there is one (via
 `econ_forum_news_rival` on the host), and `econ_forum_news.8` otherwise.
 
+### Breakaway Forum
+
+`econ_forum_found_breakaway` (150 PP, stability above 40%, peace) is open to a great or super power that boycotts a
+forum and hosts none, while slot 8 is unfounded. It founds the Independent Economic Forum against the most
+prestigious founded forum the country boycotts:
+
+- Prestige starts at 15 plus 15% of that forum's prestige, which the old forum loses.
+- Each sector starts at half the old forum's sector prestige, so the AI host runs what the old forum was known for.
+- The summit meets six months after the old forum's, so the two never clash.
+- The host's faction are core members (`econ_forum_is_core_member`, through `var:ef_host`), so they are always
+  invited and attend more often.
+- `econ_forum_news.10` names both forums (the old one through `econ_forum_news_rival` on the founder).
+
+The AI takes it with 200 PP or more. Slot 8 has no identity tracks and is founded once per campaign; after that it
+follows its seat like any other forum.
+
 ### AI Guests
 
 AI regional and greater powers use Sponsor, Speak and Boycott on the same terms as a player. Request stays
@@ -295,10 +313,10 @@ player-only, since AI attendance comes from invitations.
 
 ## Adding a Forum
 
-1. Append one entry to every registry array in `econ_forum_setup`, raise the
-   `size = 8` values there, the `^num < 8` checks in
-   `econ_forum_ensure_country_arrays` and `econ_forum_can_be_invited`, and the
-   `size = 48` track arrays by six.
+1. Append one entry to every registry array in `econ_forum_setup`, raise every
+   `size = 9` and `^num < 9` in the effects and triggers (registry, country arrays,
+   `econ_forum_open_preparation`, `econ_forum_can_be_invited`), and the `size = 54`
+   track arrays by six.
 2. Add its core members to `econ_forum_is_core_member` and its identity to
    `econ_forum_track_in_identity`.
 3. Add the name key and a branch to each `econ_forum_name_*` scripted loc, a
