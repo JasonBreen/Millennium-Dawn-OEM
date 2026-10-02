@@ -83,8 +83,9 @@ Per-country arrays use the same forum index:
 - `econ_forum_sponsor_cycle`, `econ_forum_bid_cycle`, `econ_forum_request_cycle`: the forum cycle a guest last
   sponsored, bid or requested an invitation in.
 - `econ_forum_boycott`: 1 while the country boycotts that forum.
-- `econ_forum_walkout_host` (plain variable): the leader of a walkout this country followed, while that leader
-  hosts a forum; cleared when the country rejoins.
+- `econ_forum_walkout_host`, `econ_forum_walkout_forum` (plain variables): the leader of the latest walkout this
+  country followed while that leader hosts a forum, and the forum it walked out of; cleared when the country
+  rejoins that forum.
 
 A host carries `econ_forum_hosted` (its forum id), the flag `econ_forum_preparing`
 while preparing, and `econ_forum_view_selected` / `econ_forum_view_prestige`, a
@@ -266,8 +267,8 @@ follows its seat like any other forum.
 AI regional and greater powers use Sponsor, Speak and Boycott on the same terms as a player. Request stays
 player-only, since AI attendance comes from invitations.
 
-- **Rejoin** (`econ_forum_ai_guests_rejoin`, before invitations go out): a boycotter whose opinion of the host is
-  above -10 rejoins, so it is invited to that summit.
+- **Rejoin** (`econ_forum_ai_guests_rejoin`, before invitations go out): any AI boycotter, minor walkout followers
+  included, whose opinion of the host is above -10 rejoins, so it is invited to that summit.
 - **Preparation** (`econ_forum_ai_guest_preparation`, after the host prepares): one with opinion below -50, outside
   the host's faction and with over 74 PP boycotts 20% of the time. Otherwise, an invitee with opinion above 25, over 49 PP and treasury over 20 sponsors
   30% of the time, only while the forum has under 15 sponsor points. The WEF's partners already fund 15, so AI
