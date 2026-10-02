@@ -411,19 +411,30 @@ playable on its own.
 
 - the 12 forum files (about 4,700 lines);
 - the Forums tab icon `ledger_icon_small_forums.dds`;
-- four hooks into shared files:
+- five hooks into shared files:
   - `econ_forum_setup` in the `on_startup` block of `00_on_actions.txt`;
   - `econ_forum_monthly_update` in the global monthly block of `MD_on_actions.txt`;
   - the `econ_forum_deal@PREV` bonus in `AI_country_selection_calculation`
     (`99_AI_investment_scripted_effects.txt`);
-  - `econ_forum_build_screen` in `00_missiles_scripted_guis.txt`.
+  - `clear_array = econ_forum_deal_inserted` and `econ_forum_add_deal_targets` at the end of
+    `yearly_investment_targets_routine` (`00_investment_targets_effects.txt`), so the yearly
+    target rebuild keeps live agreement hosts;
+  - `econ_forum_build_screen` in `00_missiles_scripted_guis.txt`;
+- the Forums tab wiring. Run the #5007 scaffolder (`tools/generators/add_international_system.py`)
+  instead of copying it: it edits `MD_countrymissilesview.gui` and `.gfx`,
+  `00_missiles_scripted_guis.txt` and the title in `01_international_scripted_localisation.txt`,
+  and builds `missiles_gui_ledger_btn_narrow.dds` once the tab row overflows. Then drop the forum
+  window, scripted GUI and loc into the stubs it writes.
+
+OEM-only and skipped: `clear_variable = var_open_MD_forums_gui` in `01_targeted_operations_view.txt`
+belongs to the fork's targeted operations screen, which upstream does not have.
 
 | PR  | Slice                                                                                                          | OEM source                       |
 | --- | -------------------------------------------------------------------------------------------------------------- | -------------------------------- |
 | 1   | Registry, yearly cycle, invitations, AI attendance, score and prestige, host decisions, the startup and monthly hooks | #429                             |
-| 2   | Program tracks, scheduling, investment agreements and the AI investment hook, speaker poaching, rivalry news, SPIEF and Boao | #430                             |
+| 2   | Program tracks, scheduling, investment agreements with the AI investment and yearly target hooks, speaker poaching, rivalry news, SPIEF and Boao | #430                             |
 | 3   | The four foundable forums, seat succession, AI rescheduling, Russia and BRICS                                  | #431, #443, #449                 |
-| 4   | The Forums tab, delegation agendas, guest actions, invitation requests, AI guests                              | #440, #442, #458-#461            |
+| 4   | The Forums tab through the scaffolder, delegation agendas, guest actions, invitation requests, AI guests      | #440, #442, #458-#461            |
 | 5   | Walkouts and the breakaway forum                                                                               | #463, #464                       |
 | 6   | Signing ceremonies, councils, summit messages, the tab tooltip                                                 | #466-#468, #470, #471            |
 
