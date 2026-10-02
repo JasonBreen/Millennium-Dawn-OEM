@@ -779,12 +779,18 @@ econ_forum_hold_private_room = {
 # Host scope, temps ef_i and ef_t (the star's track). Books a star headline speaker: a speaker slot, +3 now to the
 # star's sector, and at the summit governments that care about that sector are 10 more likely to attend.
 econ_forum_book_star = {
-	add_to_variable = { global.econ_forum_speakers^ef_i = 1 }
-	set_variable = { global.econ_forum_star^ef_i = { value = ef_t add = 1 } }
-	set_temp_variable = { ef_idx = { value = ef_i multiply = 6 add = ef_t } }
-	add_to_variable = { global.econ_forum_track_prestige^ef_idx = 3 }
-	clamp_variable = { var = global.econ_forum_track_prestige^ef_idx min = 0 max = 100 }
-	econ_forum_refresh_open_screens = yes
+	if = {
+		limit = { check_variable = { global.econ_forum_speakers^ef_i < 3 } }
+		add_to_variable = { global.econ_forum_speakers^ef_i = 1 }
+		# A star cannot be poached, like a guest's booked keynote.
+		add_to_variable = { global.econ_forum_guest_speakers^ef_i = 1 }
+		set_variable = { global.econ_forum_star^ef_i = { value = ef_t add = 1 } }
+		set_temp_variable = { ef_idx = { value = ef_i multiply = 6 add = ef_t } }
+		add_to_variable = { global.econ_forum_track_prestige^ef_idx = 3 }
+		clamp_variable = { var = global.econ_forum_track_prestige^ef_idx min = 0 max = 100 }
+		econ_forum_refresh_open_screens = yes
+	}
+	else = { add_political_power = 75 }
 }
 
 # Host scope, temps ef_i and ef_speaker (1 Land, 2 Negarestani, 3 Parvini, 4 Dugin, 5 Zizek, 6 Dimon, 7 Lutnick).
@@ -901,6 +907,7 @@ econ_forum_bid_to_speak = {
 			add_to_variable = { global.econ_forum_guest_speakers^v = 1 }
 			set_variable = { econ_forum_keynote_booked^v = { value = global.econ_forum_cycle^v add = 1 } }
 			set_variable = { econ_forum_keynote_hard^v = 0 }
+			set_variable = { econ_forum_bid_tag = econ_forum_keynote_booked^v }
 		}
 		if = {
 			limit = { is_ai = no }
