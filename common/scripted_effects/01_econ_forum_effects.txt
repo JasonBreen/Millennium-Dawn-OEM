@@ -697,12 +697,16 @@ econ_forum_close_ceremonies = {
 # Host scope, temps ef_i and ef_t (the star's track). Books a star headline speaker: a speaker slot, +3 now to the
 # star's sector, and at the summit governments that care about that sector are 10 more likely to attend.
 econ_forum_book_star = {
-	add_to_variable = { global.econ_forum_speakers^ef_i = 1 }
-	set_variable = { global.econ_forum_star^ef_i = { value = ef_t add = 1 } }
-	set_temp_variable = { ef_idx = { value = ef_i multiply = 6 add = ef_t } }
-	add_to_variable = { global.econ_forum_track_prestige^ef_idx = 3 }
-	clamp_variable = { var = global.econ_forum_track_prestige^ef_idx min = 0 max = 100 }
-	econ_forum_refresh_open_screens = yes
+	if = {
+		limit = { check_variable = { global.econ_forum_speakers^ef_i < 3 } }
+		add_to_variable = { global.econ_forum_speakers^ef_i = 1 }
+		set_variable = { global.econ_forum_star^ef_i = { value = ef_t add = 1 } }
+		set_temp_variable = { ef_idx = { value = ef_i multiply = 6 add = ef_t } }
+		add_to_variable = { global.econ_forum_track_prestige^ef_idx = 3 }
+		clamp_variable = { var = global.econ_forum_track_prestige^ef_idx min = 0 max = 100 }
+		econ_forum_refresh_open_screens = yes
+	}
+	else = { add_political_power = 75 }
 }
 
 # Host scope, temps ef_i and ef_speaker (1 Land, 2 Negarestani, 3 Parvini, 4 Dugin, 5 Zizek, 6 Dimon, 7 Lutnick).
