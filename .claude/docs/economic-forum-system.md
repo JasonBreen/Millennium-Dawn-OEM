@@ -52,7 +52,7 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_last_ceremonies`| Ceremonies signed at the last summit            |
 | `econ_forum_council`        | Council track + 1; 0 until launched             |
 | `econ_forum_message`        | This cycle's summit message (0 none, 1-3)       |
-| `econ_forum_controversial`  | This cycle's controversial speaker (0 none, 1-4) |
+| `econ_forum_controversial`  | This cycle's controversial speaker (0 none, 1-7) |
 
 | Id  | Forum                               | Month | Founder            | Core members        |
 | --- | ----------------------------------- | ----- | ------------------ | ------------------- |
@@ -268,7 +268,9 @@ tooltip shows each forum's message, council and last ceremonies.
 ### Controversial Speakers
 
 A player host takes `econ_forum_book_controversial_speaker` (25 PP, a free speaker slot, once a summit), and
-`econ_forum.9` picks the speaker; cancelling refunds the 25 PP. `econ_forum_book_controversial` fills a speaker
+`econ_forum.9` picks the speaker; cancelling refunds the 25 PP. The decision snapshots the forum and cycle
+(`econ_forum_speaker_forum`, `econ_forum_speaker_cycle`), and a speaker can only be picked while that booking is
+still open (`econ_forum_speaker_choice_open`); otherwise only the refund remains. `econ_forum_book_controversial` fills a speaker
 slot and adds 5 to the speaker's sector at once. At the summit the speaker adds 4 to the score, AI governments that
 object (`econ_forum_objects_to_speaker`) are 15 less likely to attend, and objecting regional powers take
 `econ_forum_controversial_speaker` (-10) toward the host.
@@ -285,7 +287,8 @@ object (`econ_forum_objects_to_speaker`) are 15 less likely to attend, and objec
 
 An AI host from the Soviet tag books Dugin 30% of the time when it has over 100 PP and a free slot.
 
-A player guest whose bid wins can take a hard line in `econ_forum.6` (`econ_forum_keynote_hard`): at delivery its
+A player guest whose bid wins can take a hard line in `econ_forum.6` (`econ_forum_keynote_hard`), while that keynote
+is still booked (`econ_forum_bid_tag`): at delivery its
 keynote bonus is 50% larger, and the host takes `econ_forum_hard_line` (-15) toward it.
 
 ### Councils
