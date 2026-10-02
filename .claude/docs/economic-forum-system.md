@@ -391,5 +391,61 @@ player-only, since AI attendance comes from invitations.
 - A seat owner that already hosts a forum cannot inherit a second one, so that
   forum stands vacant until the seat changes hands or its owner stops hosting.
 
-Next, from #4802: a company roster once #4357 lands, and forums splitting after
-political disputes.
+Next, from #4802: a company roster once #4357 lands, a native runtime test of the
+full cycle, and the upstream port below.
+
+## Upstream Port
+
+Not started. The #4802 roadmap gates it on an OEM runtime test of the full cycle.
+OEM keeps the whole system; upstream gets it as draft PRs in the order below, each
+playable on its own.
+
+**Upstream already has** everything the forums call outside their own files:
+
+- the International Systems screen and its tab scaffolder (#5007);
+- `global.PR_regional_or_greater_powers`, `global.nato_members` and `global.EU_member`;
+- `SOV_western_sanctions`, `RAJ_BRICS` and `RAJ_BRICS_associate`;
+- `change_influence_percentage`, `modify_treasury_effect`, `energy_gain_multiplier`;
+- the event picture `GFX_economic_forum_aze`.
+
+**Upstream lacks:**
+
+- the 12 forum files (about 4,700 lines);
+- the Forums tab icon `ledger_icon_small_forums.dds`;
+- five hooks into shared files:
+  - `econ_forum_setup` in the `on_startup` block of `00_on_actions.txt`;
+  - `econ_forum_monthly_update` in the global monthly block of `MD_on_actions.txt`;
+  - the `econ_forum_deal@PREV` bonus in `AI_country_selection_calculation`
+    (`99_AI_investment_scripted_effects.txt`);
+  - `clear_array = econ_forum_deal_inserted` and `econ_forum_add_deal_targets` at the end of
+    `yearly_investment_targets_routine` (`00_investment_targets_effects.txt`), so the yearly
+    target rebuild keeps live agreement hosts;
+  - `econ_forum_build_screen` in `00_missiles_scripted_guis.txt`;
+- the Forums tab wiring. Run the #5007 scaffolder (`tools/generators/add_international_system.py`)
+  instead of copying it: it edits `MD_countrymissilesview.gui` and `.gfx`,
+  `00_missiles_scripted_guis.txt` and the title in `01_international_scripted_localisation.txt`,
+  and builds `missiles_gui_ledger_btn_narrow.dds` once the tab row overflows. Then drop the forum
+  window, scripted GUI and loc into the stubs it writes.
+
+OEM-only and skipped: `clear_variable = var_open_MD_forums_gui` in `01_targeted_operations_view.txt`
+belongs to the fork's targeted operations screen, which upstream does not have.
+
+| PR  | Slice                                                                                                          | OEM source                       |
+| --- | -------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| 1   | Registry, yearly cycle, invitations, AI attendance, score and prestige, host decisions, the startup and monthly hooks | #429                             |
+| 2   | Program tracks, scheduling, investment agreements with the AI investment and yearly target hooks, speaker poaching, rivalry news, SPIEF and Boao | #430                             |
+| 3   | The four foundable forums, seat succession, AI rescheduling, Russia and BRICS                                  | #431, #443, #449                 |
+| 4   | The Forums tab through the scaffolder, delegation agendas, guest actions, invitation requests, AI guests      | #440, #442, #458-#461            |
+| 5   | Walkouts and the breakaway forum                                                                               | #463, #464                       |
+| 6   | Signing ceremonies, councils, summit messages, the tab tooltip                                                 | #466-#468, #470, #471            |
+
+Port notes:
+
+- Port the final code, not the history: every review fix since #429 is already in it.
+- Size the registry to 9 slots from PR 1, so PR 5 adds the breakaway without
+  resizing every array.
+- Re-check `econ_forum.*` and `econ_forum_news.*` against every open upstream
+  branch at port time, and leave a gap.
+- Cut explanatory script comments and put the reasons in the PR body; upstream
+  review strips them.
+- Each PR adds one `Changelog.txt` line under upstream's current version.
