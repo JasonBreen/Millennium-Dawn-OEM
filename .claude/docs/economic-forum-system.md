@@ -269,7 +269,8 @@ tooltip shows each forum's message, council and last ceremonies.
 ### Star Speakers
 
 A player host takes `econ_forum_book_star_speaker` (75 PP, a free speaker slot, once a summit) and picks the star in
-`econ_forum.10`; cancelling refunds the 75 PP. Unlike `econ_forum_book_speaker` there is no roll and no poaching.
+`econ_forum.10`; cancelling refunds the 75 PP. Like the controversial speaker, the choice is snapshotted and
+only open while `econ_forum_speaker_choice_open` holds. Unlike `econ_forum_book_speaker` there is no roll and no poaching.
 `econ_forum_book_star` fills a speaker slot, adds 3 to the star's sector at once and stores the track in
 `econ_forum_star`. At the summit, AI governments interested in that track (`econ_forum_interested_in_track`) are
 10 more likely to attend. The AI does not book stars.
