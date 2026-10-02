@@ -648,22 +648,19 @@ econ_forum_request_invitation = {
 	}
 }
 
-# Forum ef_i, before its invitations go out. An AI boycotter whose anger has cooled rejoins.
+# Forum ef_i, before its invitations go out. An AI boycotter whose anger has cooled rejoins, minor walkout
+# followers included.
 econ_forum_ai_guests_rejoin = {
 	set_temp_variable = { v = ef_i }
 	var:ef_host = { save_event_target_as = econ_forum_guest_host }
-	for_each_scope_loop = {
-		array = global.PR_regional_or_greater_powers
-
-		if = {
-			limit = {
-				is_ai = yes
-				check_variable = { econ_forum_boycott^num > ef_i }
-				check_variable = { econ_forum_boycott^v = 1 }
-				has_opinion = { target = event_target:econ_forum_guest_host value > -10 }
-			}
-			econ_forum_toggle_boycott = yes
+	every_country = {
+		limit = {
+			is_ai = yes
+			check_variable = { econ_forum_boycott^num > ef_i }
+			check_variable = { econ_forum_boycott^v = 1 }
+			has_opinion = { target = event_target:econ_forum_guest_host value > -10 }
 		}
+		econ_forum_toggle_boycott = yes
 	}
 }
 
@@ -717,7 +714,11 @@ econ_forum_toggle_boycott = {
 	if = {
 		limit = { check_variable = { econ_forum_boycott^v = 1 } }
 		set_variable = { econ_forum_boycott^v = 0 }
-		clear_variable = econ_forum_walkout_host
+		if = {
+			limit = { check_variable = { econ_forum_walkout_forum = v } }
+			clear_variable = econ_forum_walkout_host
+			clear_variable = econ_forum_walkout_forum
+		}
 	}
 	else_if = {
 		limit = { econ_forum_can_boycott = yes }
@@ -811,6 +812,7 @@ econ_forum_lead_walkout = {
 					if = {
 						limit = { check_variable = { ef_leader_forum > -1 } }
 						set_variable = { econ_forum_walkout_host = PREV.id }
+						set_variable = { econ_forum_walkout_forum = v }
 					}
 				}
 			}
