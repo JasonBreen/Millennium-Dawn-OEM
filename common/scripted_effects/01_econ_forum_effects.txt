@@ -56,6 +56,8 @@ econ_forum_setup = {
 	resize_array = { array = global.econ_forum_last_score value = 0 size = 9 }
 	resize_array = { array = global.econ_forum_ceremonies value = 0 size = 9 }
 	resize_array = { array = global.econ_forum_last_ceremonies value = 0 size = 9 }
+	# Council track + 1; 0 until the forum launches one.
+	resize_array = { array = global.econ_forum_council value = 0 size = 9 }
 	# Six program tracks per forum, indexed forum * 6 + track.
 	resize_array = { array = global.econ_forum_tracks value = 0 size = 54 }
 	resize_array = { array = global.econ_forum_track_prestige value = 0 size = 54 }
@@ -540,6 +542,72 @@ econ_forum_apply_agendas = {
 	}
 }
 
+# Forum ef_i. Launches its standing council on its strongest track. Members are governments that attended its last
+# two summits (econ_forum_streak 2 or more).
+econ_forum_launch_council = {
+	set_temp_variable = { ef_best = 0 }
+	set_temp_variable = { ef_best_prestige = -1 }
+	for_loop_effect = {
+		end = 6
+		value = ef_t
+
+		set_temp_variable = { ef_idx = { value = ef_i multiply = 6 add = ef_t } }
+		if = {
+			limit = { check_variable = { global.econ_forum_track_prestige^ef_idx > ef_best_prestige } }
+			set_temp_variable = { ef_best = ef_t }
+			set_temp_variable = { ef_best_prestige = global.econ_forum_track_prestige^ef_idx }
+		}
+	}
+	set_variable = { global.econ_forum_council^ef_i = { value = ef_best add = 1 } }
+	var:global.econ_forum_host^ef_i = {
+		set_variable = { econ_forum_news_council = ef_best }
+		news_event = { id = econ_forum_news.11 days = 1 }
+	}
+	econ_forum_refresh_open_screens = yes
+}
+
+# Summit scope, after attendance. Each council member present renews the council's sector bonus for a year and adds a
+# point to the score, up to 10, in ef_council_points.
+econ_forum_council_session = {
+	set_temp_variable = { ef_council_points = 0 }
+	if = {
+		limit = { check_variable = { global.econ_forum_council^ef_i > 0 } }
+		for_each_scope_loop = {
+			array = ef_attendees
+
+			if = {
+				limit = { check_variable = { econ_forum_streak^ef_i > 1 } }
+				add_to_temp_variable = { ef_council_points = 1 }
+				if = {
+					limit = { check_variable = { global.econ_forum_council^ef_i = 1 } }
+					add_dynamic_modifier = { modifier = econ_forum_council_0 days = 365 }
+				}
+				if = {
+					limit = { check_variable = { global.econ_forum_council^ef_i = 2 } }
+					add_dynamic_modifier = { modifier = econ_forum_council_1 days = 365 }
+				}
+				if = {
+					limit = { check_variable = { global.econ_forum_council^ef_i = 3 } }
+					add_dynamic_modifier = { modifier = econ_forum_council_2 days = 365 }
+				}
+				if = {
+					limit = { check_variable = { global.econ_forum_council^ef_i = 4 } }
+					add_dynamic_modifier = { modifier = econ_forum_council_3 days = 365 }
+				}
+				if = {
+					limit = { check_variable = { global.econ_forum_council^ef_i = 5 } }
+					add_dynamic_modifier = { modifier = econ_forum_council_4 days = 365 }
+				}
+				if = {
+					limit = { check_variable = { global.econ_forum_council^ef_i = 6 } }
+					add_dynamic_modifier = { modifier = econ_forum_council_5 days = 365 }
+				}
+			}
+		}
+		clamp_temp_variable = { var = ef_council_points min = 0 max = 10 }
+	}
+}
+
 # Guest scope, temp ef_i: the host of state-led forum ef_i books a signing ceremony with us at its next summit.
 # It closes if our delegation attends (econ_forum_close_ceremonies).
 econ_forum_plan_ceremony = {
@@ -968,6 +1036,13 @@ econ_forum_ai_prepare = {
 		add_to_variable = { global.econ_forum_sponsors^ef_i = 15 }
 		econ_forum_try_book_speaker = yes
 		econ_forum_try_book_speaker = yes
+		if = {
+			limit = {
+				check_variable = { global.econ_forum_council^ef_i = 0 }
+				check_variable = { global.econ_forum_prestige^ef_i > 49 }
+			}
+			econ_forum_launch_council = yes
+		}
 	}
 	else = {
 		if = {
@@ -980,6 +1055,15 @@ econ_forum_ai_prepare = {
 			limit = { has_political_power > 150 }
 			add_political_power = -50
 			econ_forum_try_book_speaker = yes
+		}
+		if = {
+			limit = {
+				check_variable = { global.econ_forum_council^ef_i = 0 }
+				check_variable = { global.econ_forum_prestige^ef_i > 49 }
+				has_political_power > 150
+			}
+			add_political_power = -100
+			econ_forum_launch_council = yes
 		}
 	}
 	for_loop_effect = {
@@ -1191,6 +1275,7 @@ econ_forum_convene_summit = {
 		}
 		econ_forum_record_attendance = yes
 	}
+	econ_forum_council_session = yes
 	var:ef_host = {
 		econ_forum_close_ceremonies = yes
 		# The first summit a sanctioned host holds without the West makes the news.
@@ -1255,7 +1340,7 @@ econ_forum_convene_summit = {
 	set_temp_variable = { ef_corporate = { value = ef_prestige multiply = 0.15 add = global.econ_forum_sponsors^ef_i add = ef_sector_points min = 30 } }
 	set_temp_variable = { ef_speaker_points = { value = global.econ_forum_speakers^ef_i multiply = 5 add = { value = ef_prestige multiply = 0.1 } } }
 	# Each signing ceremony is an agreement concluded at the summit.
-	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } } }
+	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points } }
 	if = {
 		limit = { check_variable = { ef_clash_forum > -1 } }
 		add_to_temp_variable = { ef_score = 5 }
@@ -1387,6 +1472,14 @@ econ_forum_ai_decide_attendance = {
 	add_to_temp_variable = { ef_chance = { value = econ_forum_streak^ef_i multiply = 3 min = 15 } }
 	if = {
 		limit = { check_variable = { econ_forum_ceremony^ef_i = 1 } }
+		add_to_temp_variable = { ef_chance = 10 }
+	}
+	# Council members keep coming back.
+	if = {
+		limit = {
+			check_variable = { global.econ_forum_council^ef_i > 0 }
+			check_variable = { econ_forum_streak^ef_i > 1 }
+		}
 		add_to_temp_variable = { ef_chance = 10 }
 	}
 	if = {

@@ -17,7 +17,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-8`, `econ_forum_news.1-10`.
+- `events/EconomicForums.txt`: `econ_forum.1-8`, `econ_forum_news.1-11`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -50,6 +50,7 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_cycle`          | Preparations opened; a guest action's cycle id  |
 | `econ_forum_ceremonies`     | Signing ceremonies booked this cycle (max 3)    |
 | `econ_forum_last_ceremonies`| Ceremonies signed at the last summit            |
+| `econ_forum_council`        | Council track + 1; 0 until launched             |
 
 | Id  | Forum                               | Month | Founder            | Core members        |
 | --- | ----------------------------------- | ----- | ------------------ | ------------------- |
@@ -247,6 +248,27 @@ follower gets `econ_forum_walkout_host` and a standing invitation to the leader'
 
 The news is `econ_forum_news.9` when anyone followed, naming the leader's forum when there is one (via
 `econ_forum_news_rival` on the host), and `econ_forum_news.8` otherwise.
+
+### Councils
+
+A forum with 50 or more prestige can launch one standing council, for good, on its strongest track at that moment
+(`econ_forum_launch_council`): the player host's decision costs 100 PP, an AI host of a state-led forum pays 100 PP
+when it has over 150, and the WEF's partners launch it free. `econ_forum_news.11` announces it.
+
+Members are governments that attended the forum's last two summits (`econ_forum_streak` 2 or more):
+
+- AI attendance +10.
+- `econ_forum_council_session`, after attendance: each member present gets its track's modifier for 365 days and
+  adds 1 to the summit score, up to 10.
+
+| Track          | Modifier                           | Bonus |
+| -------------- | ---------------------------------- | ----- |
+| AI             | `research_speed_factor`            | +2%   |
+| Energy         | `energy_gain_multiplier`           | +3%   |
+| Finance        | `receiving_investment_cost_modifier` | -5% |
+| Defense        | `production_factory_efficiency_gain_factor` | +3% |
+| Infrastructure | `production_speed_infrastructure_factor` | +5% |
+| Development    | `stability_factor`                 | +2%   |
 
 ### Signing Ceremonies
 
