@@ -211,6 +211,42 @@ econ_forum_category = {
 		}
 	}
 
+	econ_forum_found_breakaway = {
+		icon = GFX_decision_attract_foreign_investor
+		cost = 150
+		fire_only_once = yes
+
+		visible = {
+			OR = {
+				has_idea = great_power
+				has_idea = super_power
+			}
+			is_in_array = { array = econ_forum_boycott value = 1 }
+			NOT = { has_variable = econ_forum_hosted }
+			check_variable = { global.econ_forum_host^8 = 0 }
+			check_variable = { global.econ_forum_seat^8 = 0 }
+		}
+
+		available = {
+			has_stability > 0.4
+			has_war = no
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision econ_forum_found_breakaway"
+			custom_effect_tooltip = econ_forum_found_breakaway_tt
+			hidden_effect = { econ_forum_found_breakaway = yes }
+		}
+
+		ai_will_do = {
+			base = 1
+			modifier = {
+				factor = 0
+				has_political_power < 200
+			}
+		}
+	}
+
 	econ_forum_invite_government = {
 		icon = GFX_decision_invite_to_federation_button
 		cost = 15

@@ -5,7 +5,8 @@ headline speakers (Issue #4802). The World Economic Forum is the incumbent. The
 St. Petersburg International Economic Forum runs from the start. Six more forums
 wait for a founder: the Visegrád Economic Conference, the Boao Forum for Asia, the
 Global South Economic Forum, the African Development Conference, the Arctic
-Economic Forum and the Transatlantic Technology Forum.
+Economic Forum and the Transatlantic Technology Forum. A great power boycotting a
+forum can found a seventh, the Independent Economic Forum, as a breakaway.
 A forum is a registry slot, not an event chain, so a new forum is data plus
 localisation.
 
@@ -16,7 +17,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-7`, `econ_forum_news.1-8`.
+- `events/EconomicForums.txt`: `econ_forum.1-7`, `econ_forum_news.1-10`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -58,6 +59,7 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | 5   | African Development Conference      | 5     | Sub-Saharan power  | Sub-Saharan         |
 | 6   | Arctic Economic Forum               | 10    | Arctic nation      | Arctic nations      |
 | 7   | Transatlantic Technology Forum      | 4     | NATO power         | NATO members        |
+| 8   | Independent Economic Forum          | Set   | Boycotting GP      | Host's faction      |
 
 Only the World Economic Forum is private; the rest are state-led. Founded forums
 start at 15 prestige. A developing power is a regional power with GDP per capita
@@ -81,6 +83,9 @@ Per-country arrays use the same forum index:
 - `econ_forum_sponsor_cycle`, `econ_forum_bid_cycle`, `econ_forum_request_cycle`: the forum cycle a guest last
   sponsored, bid or requested an invitation in.
 - `econ_forum_boycott`: 1 while the country boycotts that forum.
+- `econ_forum_walkout_host`, `econ_forum_walkout_forum` (plain variables): the leader of the latest walkout this
+  country followed while that leader hosts a forum, and the forum it walked out of; cleared when the country
+  rejoins that forum.
 
 A host carries `econ_forum_hosted` (its forum id), the flag `econ_forum_preparing`
 while preparing, and `econ_forum_view_selected` / `econ_forum_view_prestige`, a
@@ -225,13 +230,45 @@ Each forum row in the International Systems Forums tab has four buttons for any 
 | Request | Preparing with invitations open (the first month, not the last), an AI host at peace with us, no invitation or refusal yet, not boycotting, once a cycle; 15 PP | Chance `30 + (100 - prestige) × 0.3`, +20 as a great or super power, +15 if the host's opinion of us is above 25, -20 below -25, clamped 5-95. A yes sends a standing invitation (`econ_forum.2`); a no fires `econ_forum.7` |
 | Boycott | 25 PP to start; ending is free                                         | Cancels our delegation and its agenda, and releases a keynote booked for the summit in preparation; the forum loses 2 prestige (5 for a great or super power); the host gains `econ_forum_boycotted` (-30) toward us; no invitations reach us until we rejoin; a great or super power fires `econ_forum_news.8`. The prestige loss and news land once a cycle (`econ_forum_boycott_cycle`); boycotters cannot be invited (`econ_forum_can_be_invited`) |
 
+### Walkouts
+
+A great or super power's first boycott of a forum in a cycle (`econ_forum_start_boycott` sets `ef_boycott_news`)
+runs `econ_forum_lead_walkout`. Every AI government in the boycotter's faction follows it out half the time if it:
+
+- does not host the forum and is not in the host's faction,
+- does not like the host (opinion 25 or less),
+- can afford a boycott (`econ_forum_can_boycott`).
+
+Each follower pays and counts as its own boycott: 25 PP, prestige loss, the host's opinion modifier, a booked
+keynote released. If the leader hosts a forum of its own, that forum gains 1 prestige per follower, and each
+follower gets `econ_forum_walkout_host` and a standing invitation to the leader's summits until it rejoins.
+
+The news is `econ_forum_news.9` when anyone followed, naming the leader's forum when there is one (via
+`econ_forum_news_rival` on the host), and `econ_forum_news.8` otherwise.
+
+### Breakaway Forum
+
+`econ_forum_found_breakaway` (150 PP, stability above 40%, peace) is open to a great or super power that boycotts a
+forum and hosts none, while slot 8 is unfounded. It founds the Independent Economic Forum against the most
+prestigious founded forum the country boycotts, hosted or vacant:
+
+- Prestige starts at 15 plus 15% of that forum's prestige, which the old forum loses.
+- Each sector starts at half the old forum's sector prestige, so the AI host runs what the old forum was known for.
+- The summit meets six months after the old forum's, so the two never clash.
+- The host's faction are core members (`econ_forum_is_core_member`, through `var:ef_host`), so they are always
+  invited and attend more often.
+- `econ_forum_news.10` names both forums (the old one through `econ_forum_news_rival` on the founder).
+
+The AI takes it with 200 PP or more. Slot 8 has no identity tracks and is founded once per campaign; after that it
+follows its seat like any other forum.
+
 ### AI Guests
 
 AI regional and greater powers use Sponsor, Speak and Boycott on the same terms as a player. Request stays
 player-only, since AI attendance comes from invitations.
 
-- **Rejoin** (`econ_forum_ai_guests_rejoin`, before invitations go out): a boycotter whose opinion of the host is
-  above -10 rejoins, so it is invited to that summit.
+- **Rejoin** (`econ_forum_ai_guests_rejoin`, before invitations go out): any AI boycotter, minor walkout followers
+  included, whose opinion of the host is above -10 rejoins, so it is invited to that summit.
 - **Preparation** (`econ_forum_ai_guest_preparation`, after the host prepares): one with opinion below -50, outside
   the host's faction and with over 74 PP boycotts 20% of the time. Otherwise, an invitee with opinion above 25, over 49 PP and treasury over 20 sponsors
   30% of the time, only while the forum has under 15 sponsor points. The WEF's partners already fund 15, so AI
@@ -277,10 +314,10 @@ player-only, since AI attendance comes from invitations.
 
 ## Adding a Forum
 
-1. Append one entry to every registry array in `econ_forum_setup`, raise the
-   `size = 8` values there, the `^num < 8` checks in
-   `econ_forum_ensure_country_arrays` and `econ_forum_can_be_invited`, and the
-   `size = 48` track arrays by six.
+1. Append one entry to every registry array in `econ_forum_setup`, raise every
+   `size = 9` and `^num < 9` in the effects and triggers (registry, country arrays,
+   `econ_forum_open_preparation`, `econ_forum_can_be_invited`), and the `size = 54`
+   track arrays by six.
 2. Add its core members to `econ_forum_is_core_member` and its identity to
    `econ_forum_track_in_identity`.
 3. Add the name key and a branch to each `econ_forum_name_*` scripted loc, a
