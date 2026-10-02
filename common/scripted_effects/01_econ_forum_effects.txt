@@ -60,6 +60,8 @@ econ_forum_setup = {
 	resize_array = { array = global.econ_forum_council value = 0 size = 9 }
 	# This cycle's summit message: 0 none, 1 open for business, 2 strategic autonomy, 3 media blitz.
 	resize_array = { array = global.econ_forum_message value = 0 size = 9 }
+	# This cycle's controversial speaker: 0 none, 1 Land, 2 Negarestani, 3 Parvini, 4 Dugin, 5 Zizek, 6 Dimon, 7 Lutnick.
+	resize_array = { array = global.econ_forum_controversial value = 0 size = 9 }
 	# Six program tracks per forum, indexed forum * 6 + track.
 	resize_array = { array = global.econ_forum_tracks value = 0 size = 54 }
 	resize_array = { array = global.econ_forum_track_prestige value = 0 size = 54 }
@@ -270,6 +272,7 @@ econ_forum_ensure_country_arrays = {
 		resize_array = { array = econ_forum_keynote_booked value = 0 size = 9 }
 		resize_array = { array = econ_forum_request_cycle value = 0 size = 9 }
 		resize_array = { array = econ_forum_ceremony value = 0 size = 9 }
+		resize_array = { array = econ_forum_keynote_hard value = 0 size = 9 }
 	}
 }
 
@@ -289,6 +292,7 @@ econ_forum_open_preparation = {
 	set_variable = { global.econ_forum_sponsors^ef_i = 0 }
 	set_variable = { global.econ_forum_ceremonies^ef_i = 0 }
 	set_variable = { global.econ_forum_message^ef_i = 0 }
+	set_variable = { global.econ_forum_controversial^ef_i = 0 }
 	set_variable = { global.econ_forum_speakers^ef_i = 0 }
 	set_variable = { global.econ_forum_track_count^ef_i = 0 }
 	set_variable = { global.econ_forum_invites_left^ef_i = { value = global.econ_forum_prestige^ef_i divide = 25 round = yes add = 3 } }
@@ -687,6 +691,44 @@ econ_forum_close_ceremonies = {
 	}
 }
 
+# Host scope, temps ef_i and ef_speaker (1 Land, 2 Negarestani, 3 Parvini, 4 Dugin, 5 Zizek, 6 Dimon, 7 Lutnick).
+# Books a controversial headline speaker: a speaker slot, +5 now to the speaker's sector, and attention and backlash
+# at the summit.
+econ_forum_book_controversial = {
+	add_to_variable = { global.econ_forum_speakers^ef_i = 1 }
+	set_variable = { global.econ_forum_controversial^ef_i = ef_speaker }
+	set_temp_variable = { ef_t = 0 }
+	if = {
+		limit = { check_variable = { ef_speaker = 2 } }
+		set_temp_variable = { ef_t = 1 }
+	}
+	else_if = {
+		limit = {
+			OR = {
+				check_variable = { ef_speaker = 3 }
+				check_variable = { ef_speaker = 6 }
+			}
+		}
+		set_temp_variable = { ef_t = 2 }
+	}
+	else_if = {
+		limit = { check_variable = { ef_speaker = 4 } }
+		set_temp_variable = { ef_t = 3 }
+	}
+	else_if = {
+		limit = { check_variable = { ef_speaker = 7 } }
+		set_temp_variable = { ef_t = 4 }
+	}
+	else_if = {
+		limit = { check_variable = { ef_speaker = 5 } }
+		set_temp_variable = { ef_t = 5 }
+	}
+	set_temp_variable = { ef_idx = { value = ef_i multiply = 6 add = ef_t } }
+	add_to_variable = { global.econ_forum_track_prestige^ef_idx = 5 }
+	clamp_variable = { var = global.econ_forum_track_prestige^ef_idx min = 0 max = 100 }
+	econ_forum_refresh_open_screens = yes
+}
+
 # Summit scope. Every attending guest that booked a keynote this cycle delivers it: a year of foreign
 # influence, the stronger running keynote keeping its value. Bookings from cancelled cycles never match.
 econ_forum_deliver_keynotes = {
@@ -698,14 +740,21 @@ econ_forum_deliver_keynotes = {
 		if = {
 			limit = { check_variable = { econ_forum_keynote_booked^ef_i = ef_cycle_tag } }
 			set_variable = { econ_forum_keynote_booked^ef_i = 0 }
+			set_temp_variable = { ef_this_keynote = ef_keynote }
+			if = {
+				limit = { check_variable = { econ_forum_keynote_hard^ef_i = 1 } }
+				set_variable = { econ_forum_keynote_hard^ef_i = 0 }
+				multiply_temp_variable = { ef_this_keynote = 1.5 }
+				var:ef_host = { add_opinion_modifier = { target = PREV modifier = econ_forum_hard_line } }
+			}
 			if = {
 				limit = {
 					OR = {
 						NOT = { has_dynamic_modifier = { modifier = econ_forum_keynote_modifier } }
-						check_variable = { econ_forum_keynote_bonus < ef_keynote }
+						check_variable = { econ_forum_keynote_bonus < ef_this_keynote }
 					}
 				}
-				set_variable = { econ_forum_keynote_bonus = ef_keynote }
+				set_variable = { econ_forum_keynote_bonus = ef_this_keynote }
 			}
 			add_dynamic_modifier = { modifier = econ_forum_keynote_modifier days = 365 }
 		}
@@ -755,6 +804,7 @@ econ_forum_bid_to_speak = {
 			add_to_variable = { global.econ_forum_speakers^v = 1 }
 			add_to_variable = { global.econ_forum_guest_speakers^v = 1 }
 			set_variable = { econ_forum_keynote_booked^v = { value = global.econ_forum_cycle^v add = 1 } }
+			set_variable = { econ_forum_keynote_hard^v = 0 }
 		}
 		if = {
 			limit = { is_ai = no }
@@ -1090,6 +1140,20 @@ econ_forum_ai_prepare = {
 			add_political_power = -50
 			econ_forum_try_book_speaker = yes
 		}
+		if = {
+			limit = {
+				original_tag = SOV
+				check_variable = { global.econ_forum_controversial^ef_i = 0 }
+				check_variable = { global.econ_forum_speakers^ef_i < 3 }
+				has_political_power > 100
+			}
+			random = {
+				chance = 30
+				add_political_power = -25
+				set_temp_variable = { ef_speaker = 4 }
+				econ_forum_book_controversial = yes
+			}
+		}
 	}
 	# Summit message: a sanctioned or East-pivoting host rallies its friends, a forum under 50 prestige opens its doors,
 	# and a state-led forum whose last summit beat its prestige pays for a media blitz.
@@ -1418,6 +1482,10 @@ econ_forum_convene_summit = {
 		limit = { check_variable = { global.econ_forum_message^ef_i = 3 } }
 		add_to_temp_variable = { ef_score = 5 }
 	}
+	if = {
+		limit = { check_variable = { global.econ_forum_controversial^ef_i > 0 } }
+		add_to_temp_variable = { ef_score = 4 }
+	}
 	clamp_temp_variable = { var = ef_score min = 0 max = 100 }
 
 	# A media blitz raises the stakes both ways.
@@ -1472,6 +1540,20 @@ econ_forum_convene_summit = {
 
 	var:ef_host = {
 		clr_country_flag = econ_forum_preparing
+		if = {
+			limit = { check_variable = { global.econ_forum_controversial^ef_i > 0 } }
+			for_each_scope_loop = {
+				array = global.PR_regional_or_greater_powers
+
+				if = {
+					limit = {
+						NOT = { tag = PREV }
+						econ_forum_objects_to_speaker = yes
+					}
+					add_opinion_modifier = { target = PREV modifier = econ_forum_controversial_speaker }
+				}
+			}
+		}
 		set_temp_variable = { ef_deals = 0 }
 		if = {
 			limit = { check_variable = { global.econ_forum_state_led^ef_i = 1 } }
@@ -1595,6 +1677,10 @@ econ_forum_ai_decide_attendance = {
 	if = {
 		limit = { econ_forum_is_core_member = yes }
 		add_to_temp_variable = { ef_chance = 15 }
+	}
+	if = {
+		limit = { econ_forum_objects_to_speaker = yes }
+		add_to_temp_variable = { ef_chance = -15 }
 	}
 	if = {
 		limit = { has_war_with = event_target:econ_forum_host_target }
