@@ -17,7 +17,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-9`, `econ_forum_news.1-11`.
+- `events/EconomicForums.txt`: `econ_forum.1-10`, `econ_forum_news.1-11`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -52,7 +52,8 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_last_ceremonies`| Ceremonies signed at the last summit            |
 | `econ_forum_council`        | Council track + 1; 0 until launched             |
 | `econ_forum_message`        | This cycle's summit message (0 none, 1-3)       |
-| `econ_forum_controversial`  | This cycle's controversial speaker (0 none, 1-4) |
+| `econ_forum_controversial`  | This cycle's controversial speaker (0 none, 1-7) |
+| `econ_forum_star`           | This cycle's star speaker: track + 1 (0 none)   |
 
 | Id  | Forum                               | Month | Founder            | Core members        |
 | --- | ----------------------------------- | ----- | ------------------ | ------------------- |
@@ -264,6 +265,27 @@ tooltip shows each forum's message, council and last ceremonies.
 | Open for Business  | `econ_forum_message_open`     | Every invited AI government +10 attendance; score +3                                   |
 | Strategic Autonomy | `econ_forum_message_autonomy` | Core members and the host's faction +15 attendance, every other AI invitee -10          |
 | Media Blitz        | `econ_forum_message_media`    | $2B more; score +5, and prestige moves 50% toward the score instead of 30%, both ways |
+
+### Star Speakers
+
+A player host takes `econ_forum_book_star_speaker` (75 PP, a free speaker slot, once a summit) and picks the star in
+`econ_forum.10`; cancelling refunds the 75 PP. Unlike `econ_forum_book_speaker` there is no roll and no poaching.
+`econ_forum_book_star` fills a speaker slot, adds 3 to the star's sector at once and stores the track in
+`econ_forum_star`. At the summit, AI governments interested in that track (`econ_forum_interested_in_track`) are
+10 more likely to attend. The AI does not book stars.
+
+| Star | Available | Sector |
+| --- | --- | --- |
+| Jensen Huang | Always | AI and Technology |
+| Demis Hassabis | 2010 | AI and Technology |
+| Dario Amodei | 2021 | AI and Technology |
+| Fatih Birol | 2015 | Energy |
+| Warren Buffett | Always | Finance |
+| Christine Lagarde | 2011 | Finance |
+| Jens Stoltenberg | 2014 | Defense Industry |
+| Ngozi Okonjo-Iweala | 2021 | Infrastructure and Trade |
+| Muhammad Yunus | Always | Development |
+| Bill Gates | Always | Development |
 
 ### Controversial Speakers
 
