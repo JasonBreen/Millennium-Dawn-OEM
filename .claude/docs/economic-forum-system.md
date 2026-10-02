@@ -297,6 +297,7 @@ recorded on the guest as `econ_forum_ceremony^forum = 1` and cleared when the ne
 - **AI host:** after its invitations, with over 100 PP, up to two invitees it likes (opinion above 25), 15 PP each.
 - **Human guest:** `econ_forum.8` announces it, claiming its forum from `econ_forum_ceremony_queue` and saving the
   host as `econ_forum_ceremony_host`; declining (`econ_forum_decline_ceremony`) frees that slot.
+- **Boycott:** a guest that boycotts the forum (`econ_forum_start_boycott`) loses its ceremony, and the slot frees.
 - **AI guest:** +10 attendance chance while a ceremony is booked.
 
 At the summit, after attendance, `econ_forum_close_ceremonies` signs one for each attending guest with a booking:
