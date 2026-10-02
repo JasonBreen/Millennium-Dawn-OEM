@@ -17,7 +17,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-10`, `econ_forum_news.1-11`.
+- `events/EconomicForums.txt`: `econ_forum.1-11`, `econ_forum_news.1-12`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -54,6 +54,7 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_message`        | This cycle's summit message (0 none, 1-3)       |
 | `econ_forum_controversial`  | This cycle's controversial speaker (0 none, 1-7) |
 | `econ_forum_star`           | This cycle's star speaker: track + 1 (0 none)   |
+| `econ_forum_room_seats`     | Private room seats given this cycle (max 4)     |
 
 | Id  | Forum                               | Month | Founder            | Core members        |
 | --- | ----------------------------------- | ----- | ------------------ | ------------------- |
@@ -266,6 +267,27 @@ tooltip shows each forum's message, council and last ceremonies.
 | Strategic Autonomy | `econ_forum_message_autonomy` | Core members and the host's faction +15 attendance, every other AI invitee -10          |
 | Media Blitz        | `econ_forum_message_media`    | $2B more; score +5, and prestige moves 50% toward the score instead of 30%, both ways |
 
+### Private Room
+
+Each summit can hold an invitation-only private room: a closed session where a few heads of state meet chief
+executives and investors, as Davos does. Seats are recorded on the guest as `econ_forum_room^forum = 1` and reset
+when preparation opens; a boycott or a declined invitation gives the seat back.
+
+- **AI organizers**, the WEF's included, seat `1 + prestige / 30` invited governments (max 4) in
+  `econ_forum_ai_prepare`: great or super powers, or governments the host likes (opinion above 50), never one at
+  war with the host.
+- **Player host:** `econ_forum_invite_to_private_room`, 10 PP, an invited regional or greater power, up to 4 seats.
+- **Human guest:** `econ_forum.11` offers the seat (queued like invitations, host saved as `econ_forum_room_host`);
+  declining (`econ_forum_decline_room`) frees it, only at the forum whose seat the event saved
+  (`econ_forum_room_seat`) and while it is preparing.
+- **AI guest:** +10 attendance while seated.
+
+At the summit, after attendance, `econ_forum_hold_private_room` gathers every seated government that attended plus
+the host. Each gets `econ_forum_private_room_modifier` (5% cheaper investment) for 365 days and
+`econ_forum_private_room` (+15, decay 1) toward everyone else in the room, and each seated attendee adds 2 to the
+score. 15% of sessions leak (`econ_forum_news.12`): the forum gains 2 prestige and everyone in the room loses 2%
+stability.
+
 ### Star Speakers
 
 A player host takes `econ_forum_book_star_speaker` (75 PP, a free speaker slot, once a summit) and picks the star in
@@ -347,7 +369,8 @@ recorded on the guest as `econ_forum_ceremony^forum = 1` and cleared when the ne
 - **AI host:** after its invitations, with over 100 PP, up to two invitees it likes (opinion above 25), 15 PP each.
 - **Human guest:** `econ_forum.8` announces it, claiming its forum from `econ_forum_ceremony_queue` and saving the
   host as `econ_forum_ceremony_host`; declining (`econ_forum_decline_ceremony`) frees that slot.
-- **Boycott:** a guest that boycotts the forum (`econ_forum_start_boycott`) loses its ceremony, and the slot frees.
+- **Boycott or decline:** a guest that boycotts the forum (`econ_forum_start_boycott`) or declines its invitation
+  (`econ_forum_answer_invitation`) loses its ceremony, and the slot frees.
 - **AI guest:** +10 attendance chance while a ceremony is booked.
 
 At the summit, after attendance, `econ_forum_close_ceremonies` signs one for each attending guest with a booking:

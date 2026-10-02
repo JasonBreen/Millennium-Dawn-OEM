@@ -502,6 +502,37 @@ econ_forum_category = {
 		ai_will_do = { base = 0 }
 	}
 
+	econ_forum_invite_to_private_room = {
+		icon = GFX_decision_invite_to_federation_button
+		cost = 10
+
+		target_array = global.PR_regional_or_greater_powers
+		target_root_trigger = {
+			has_country_flag = econ_forum_preparing
+			check_variable = { global.econ_forum_room_seats^econ_forum_hosted < 4 }
+		}
+		target_trigger = {
+			FROM = {
+				NOT = { tag = ROOT }
+				check_variable = { econ_forum_status^num > 8 }
+				check_variable = { econ_forum_status^PREV.econ_forum_hosted > 0 }
+				check_variable = { econ_forum_room^PREV.econ_forum_hosted = 0 }
+				NOT = { has_war_with = ROOT }
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision econ_forum_invite_to_private_room"
+			custom_effect_tooltip = econ_forum_invite_to_private_room_tt
+			hidden_effect = {
+				set_temp_variable = { ef_i = econ_forum_hosted }
+				FROM = { econ_forum_invite_to_room = yes }
+			}
+		}
+
+		ai_will_do = { base = 0 }
+	}
+
 	econ_forum_secure_sponsors = {
 		icon = GFX_decision_money_dec
 

@@ -64,6 +64,8 @@ econ_forum_setup = {
 	resize_array = { array = global.econ_forum_controversial value = 0 size = 9 }
 	# This cycle's star speaker: their track + 1, 0 for none.
 	resize_array = { array = global.econ_forum_star value = 0 size = 9 }
+	# Seats given out in the invitation-only private room this cycle (max 4, the host aside).
+	resize_array = { array = global.econ_forum_room_seats value = 0 size = 9 }
 	# Six program tracks per forum, indexed forum * 6 + track.
 	resize_array = { array = global.econ_forum_tracks value = 0 size = 54 }
 	resize_array = { array = global.econ_forum_track_prestige value = 0 size = 54 }
@@ -275,6 +277,7 @@ econ_forum_ensure_country_arrays = {
 		resize_array = { array = econ_forum_request_cycle value = 0 size = 9 }
 		resize_array = { array = econ_forum_ceremony value = 0 size = 9 }
 		resize_array = { array = econ_forum_keynote_hard value = 0 size = 9 }
+		resize_array = { array = econ_forum_room value = 0 size = 9 }
 	}
 }
 
@@ -296,6 +299,7 @@ econ_forum_open_preparation = {
 	set_variable = { global.econ_forum_message^ef_i = 0 }
 	set_variable = { global.econ_forum_controversial^ef_i = 0 }
 	set_variable = { global.econ_forum_star^ef_i = 0 }
+	set_variable = { global.econ_forum_room_seats^ef_i = 0 }
 	set_variable = { global.econ_forum_speakers^ef_i = 0 }
 	set_variable = { global.econ_forum_track_count^ef_i = 0 }
 	set_variable = { global.econ_forum_invites_left^ef_i = { value = global.econ_forum_prestige^ef_i divide = 25 round = yes add = 3 } }
@@ -332,6 +336,7 @@ econ_forum_open_preparation = {
 		econ_forum_ensure_country_arrays = yes
 		set_variable = { econ_forum_status^ef_i = 0 }
 		set_variable = { econ_forum_ceremony^ef_i = 0 }
+		set_variable = { econ_forum_room^ef_i = 0 }
 		if = {
 			limit = { check_variable = { ef_host = THIS.id } }
 			set_variable = { econ_forum_status^ef_i = 4 }
@@ -438,6 +443,25 @@ econ_forum_answer_invitation = {
 				is_ai = no
 			}
 			country_event = econ_forum.5
+		}
+		# Staying home gives back what the host booked for us.
+		if = {
+			limit = {
+				check_variable = { ef_answer = -1 }
+				check_variable = { econ_forum_ceremony^ef_i = 1 }
+			}
+			set_variable = { econ_forum_ceremony^ef_i = 0 }
+			subtract_from_variable = { global.econ_forum_ceremonies^ef_i = 1 }
+			clamp_variable = { var = global.econ_forum_ceremonies^ef_i min = 0 max = 3 }
+		}
+		if = {
+			limit = {
+				check_variable = { ef_answer = -1 }
+				check_variable = { econ_forum_room^ef_i = 1 }
+			}
+			set_variable = { econ_forum_room^ef_i = 0 }
+			subtract_from_variable = { global.econ_forum_room_seats^ef_i = 1 }
+			clamp_variable = { var = global.econ_forum_room_seats^ef_i min = 0 max = 4 }
 		}
 	}
 	else = {
@@ -690,6 +714,95 @@ econ_forum_close_ceremonies = {
 					add_to_array = { econ_forum_deal_inserted = PREV }
 				}
 			}
+		}
+	}
+}
+
+# Guest scope, temp ef_i: the organizers of forum ef_i give us a seat in its invitation-only private room, a closed
+# session of heads of state, chief executives and investors at the summit.
+econ_forum_invite_to_room = {
+	econ_forum_ensure_country_arrays = yes
+	add_to_variable = { global.econ_forum_room_seats^ef_i = 1 }
+	set_variable = { econ_forum_room^ef_i = 1 }
+	if = {
+		limit = { is_ai = no }
+		add_to_array = { econ_forum_room_queue = ef_i }
+		country_event = econ_forum.11
+	}
+}
+
+# Guest scope, from econ_forum.11: we give back the seat offered by the host the event saved, only at the forum whose
+# seat the event also saved.
+econ_forum_decline_room = {
+	if = {
+		limit = {
+			has_event_target = econ_forum_room_host
+			event_target:econ_forum_room_host = { has_variable = econ_forum_hosted }
+		}
+		event_target:econ_forum_room_host = { set_temp_variable = { ef_i = econ_forum_hosted } }
+		set_temp_variable = { ef_room_seat = 0 }
+		if = {
+			limit = { has_event_target = econ_forum_room_seat }
+			event_target:econ_forum_room_seat = { set_temp_variable = { ef_room_seat = THIS } }
+		}
+		if = {
+			limit = {
+				check_variable = { global.econ_forum_seat^ef_i = ef_room_seat }
+				check_variable = { global.econ_forum_preparing^ef_i = 1 }
+				check_variable = { econ_forum_room^ef_i = 1 }
+			}
+			set_variable = { econ_forum_room^ef_i = 0 }
+			subtract_from_variable = { global.econ_forum_room_seats^ef_i = 1 }
+			clamp_variable = { var = global.econ_forum_room_seats^ef_i min = 0 max = 4 }
+		}
+	}
+}
+
+# Summit scope, after attendance. Seated governments that came meet the investors with the host: a year of cheaper
+# investment, opinion between everyone in the room, and 2 score each in ef_room_points. A leaked session sets
+# ef_room_leak, the prestige the summit adds once it sets the forum's new prestige.
+econ_forum_hold_private_room = {
+	set_temp_variable = { ef_room_points = 0 }
+	set_temp_variable = { ef_room_leak = 0 }
+	clear_temp_array = ef_room
+	every_country = {
+		limit = {
+			check_variable = { econ_forum_room^num > ef_i }
+			check_variable = { econ_forum_room^ef_i = 1 }
+		}
+		set_variable = { econ_forum_room^ef_i = 0 }
+		if = {
+			limit = { check_variable = { econ_forum_last^ef_i > 2 } }
+			add_to_temp_array = { ef_room = THIS }
+			add_to_temp_variable = { ef_room_points = 2 }
+		}
+	}
+	if = {
+		limit = { check_variable = { ef_room_points > 0 } }
+		var:ef_host = { add_to_temp_array = { ef_room = THIS } }
+		for_each_scope_loop = {
+			array = ef_room
+
+			add_dynamic_modifier = { modifier = econ_forum_private_room_modifier days = 365 }
+			for_each_scope_loop = {
+				array = ef_room
+
+				if = {
+					limit = { NOT = { tag = PREV } }
+					add_opinion_modifier = { target = PREV modifier = econ_forum_private_room }
+				}
+			}
+		}
+		random = {
+			chance = 15
+			# Paid after the summit sets the new prestige, which would overwrite it here.
+			set_temp_variable = { ef_room_leak = 2 }
+			for_each_scope_loop = {
+				array = ef_room
+
+				add_stability = -0.02
+			}
+			var:ef_host = { news_event = econ_forum_news.12 }
 		}
 	}
 }
@@ -977,6 +1090,12 @@ econ_forum_start_boycott = {
 		subtract_from_variable = { global.econ_forum_ceremonies^v = 1 }
 		clamp_variable = { var = global.econ_forum_ceremonies^v min = 0 max = 3 }
 	}
+	if = {
+		limit = { check_variable = { econ_forum_room^v = 1 } }
+		set_variable = { econ_forum_room^v = 0 }
+		subtract_from_variable = { global.econ_forum_room_seats^v = 1 }
+		clamp_variable = { var = global.econ_forum_room_seats^v min = 0 max = 4 }
+	}
 	var:global.econ_forum_host^v = { add_opinion_modifier = { target = PREV modifier = econ_forum_boycotted } }
 	# The prestige hit and the news land once a cycle, so rejoining and boycotting again repeats neither.
 	set_temp_variable = { ef_cycle_tag = { value = global.econ_forum_cycle^v add = 1 } }
@@ -1232,6 +1351,28 @@ econ_forum_ai_prepare = {
 		}
 	}
 	set_variable = { global.econ_forum_invites_left^ef_i = 0 }
+	# The organizers seat their most important guests in the private room: more seats at a more prestigious forum.
+	set_temp_variable = { ef_seats = { value = global.econ_forum_prestige^ef_i divide = 30 round = yes add = 1 min = 4 } }
+	for_loop_effect = {
+		end = ef_seats
+		value = ef_n
+
+		random_country = {
+			limit = {
+				NOT = { tag = PREV }
+				check_variable = { econ_forum_status^num > ef_i }
+				check_variable = { econ_forum_status^ef_i > 0 }
+				check_variable = { econ_forum_room^ef_i = 0 }
+				NOT = { has_war_with = PREV }
+				OR = {
+					has_idea = great_power
+					has_idea = super_power
+					PREV = { has_opinion = { target = PREV value > 50 } }
+				}
+			}
+			econ_forum_invite_to_room = yes
+		}
+	}
 	if = {
 		limit = {
 			check_variable = { global.econ_forum_state_led^ef_i = 1 }
@@ -1426,6 +1567,7 @@ econ_forum_convene_summit = {
 		econ_forum_record_attendance = yes
 	}
 	econ_forum_council_session = yes
+	econ_forum_hold_private_room = yes
 	var:ef_host = {
 		econ_forum_close_ceremonies = yes
 		# The first summit a sanctioned host holds without the West makes the news.
@@ -1490,7 +1632,7 @@ econ_forum_convene_summit = {
 	set_temp_variable = { ef_corporate = { value = ef_prestige multiply = 0.15 add = global.econ_forum_sponsors^ef_i add = ef_sector_points min = 30 } }
 	set_temp_variable = { ef_speaker_points = { value = global.econ_forum_speakers^ef_i multiply = 5 add = { value = ef_prestige multiply = 0.1 } } }
 	# Each signing ceremony is an agreement concluded at the summit.
-	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points } }
+	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points add = ef_room_points } }
 	if = {
 		limit = { check_variable = { ef_clash_forum > -1 } }
 		add_to_temp_variable = { ef_score = 5 }
@@ -1515,7 +1657,7 @@ econ_forum_convene_summit = {
 		limit = { check_variable = { global.econ_forum_message^ef_i = 3 } }
 		set_temp_variable = { ef_pull = 0.5 }
 	}
-	set_variable = { global.econ_forum_prestige^ef_i = { value = ef_score subtract = ef_prestige multiply = ef_pull add = ef_prestige clamp = { min = 0 max = 100 } } }
+	set_variable = { global.econ_forum_prestige^ef_i = { value = ef_score subtract = ef_prestige multiply = ef_pull add = ef_prestige add = ef_room_leak clamp = { min = 0 max = 100 } } }
 	set_variable = { global.econ_forum_last_heads^ef_i = ef_heads }
 	set_variable = { global.econ_forum_last_ministers^ef_i = ef_ministers }
 	set_variable = { global.econ_forum_last_score^ef_i = ef_score }
@@ -1654,6 +1796,11 @@ econ_forum_ai_decide_attendance = {
 	add_to_temp_variable = { ef_chance = { value = econ_forum_streak^ef_i multiply = 3 min = 15 } }
 	if = {
 		limit = { check_variable = { econ_forum_ceremony^ef_i = 1 } }
+		add_to_temp_variable = { ef_chance = 10 }
+	}
+	# A seat in the private room is worth the trip.
+	if = {
+		limit = { check_variable = { econ_forum_room^ef_i = 1 } }
 		add_to_temp_variable = { ef_chance = 10 }
 	}
 	# Council members keep coming back.

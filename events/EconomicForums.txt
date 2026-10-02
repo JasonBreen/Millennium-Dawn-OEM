@@ -560,6 +560,43 @@ country_event = {
 	}
 }
 
+# A forum's organizers offer a human guest a seat in the summit's private room.
+country_event = {
+	id = econ_forum.11
+	title = econ_forum.11.t
+	desc = econ_forum.11.d
+	picture = GFX_economic_forum_aze
+	is_triggered_only = yes
+
+	trigger = { check_variable = { econ_forum_room_queue^num > 0 } }
+
+	immediate = {
+		hidden_effect = {
+			set_temp_variable = { ef_i = econ_forum_room_queue^0 }
+			remove_from_array = { array = econ_forum_room_queue index = 0 }
+			var:global.econ_forum_host^ef_i = { save_event_target_as = econ_forum_room_host }
+			if = {
+				limit = { NOT = { check_variable = { global.econ_forum_seat^ef_i = 0 } } }
+				var:global.econ_forum_seat^ef_i = { save_event_target_as = econ_forum_room_seat }
+			}
+		}
+	}
+
+	option = {
+		name = econ_forum.11.a
+		log = "[GetDateText]: [This.GetName]: econ_forum.11.a executed"
+		custom_effect_tooltip = econ_forum.11.a_tt
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = econ_forum.11.b
+		log = "[GetDateText]: [This.GetName]: econ_forum.11.b executed"
+		econ_forum_decline_room = yes
+		ai_chance = { base = 0 }
+	}
+}
+
 # A new forum is founded.
 news_event = {
 	id = econ_forum_news.1
@@ -739,5 +776,19 @@ news_event = {
 
 	option = {
 		name = econ_forum_news.11.a
+	}
+}
+
+# Notes from a forum's private room reach the press.
+news_event = {
+	id = econ_forum_news.12
+	title = econ_forum_news.12.t
+	desc = econ_forum_news.12.d
+	picture = GFX_news_press_conference
+	major = yes
+	is_triggered_only = yes
+
+	option = {
+		name = econ_forum_news.12.a
 	}
 }
