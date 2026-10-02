@@ -256,7 +256,8 @@ A forum with 50 or more prestige can launch one standing council, for good, on i
 when it has over 150 (before its speaker purchase), and the WEF's partners launch it free when preparation opens,
 whoever hosts it. `econ_forum_news.11` announces it.
 
-Members are governments that attended the forum's last two summits (`econ_forum_streak` 2 or more):
+Members are governments that attended the forum's last two summits (`econ_forum_streak` 2 or more; a boycott resets
+the streak):
 
 - AI attendance +10.
 - `econ_forum_council_session`, after attendance: each member present, the host included, gets its track's
