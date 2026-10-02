@@ -730,9 +730,11 @@ econ_forum_decline_room = {
 }
 
 # Summit scope, after attendance. Seated governments that came meet the investors with the host: a year of cheaper
-# investment, opinion between everyone in the room, and 2 score each in ef_room_points. A session can leak.
+# investment, opinion between everyone in the room, and 2 score each in ef_room_points. A leaked session sets
+# ef_room_leak, the prestige the summit adds once it sets the forum's new prestige.
 econ_forum_hold_private_room = {
 	set_temp_variable = { ef_room_points = 0 }
+	set_temp_variable = { ef_room_leak = 0 }
 	clear_temp_array = ef_room
 	every_country = {
 		limit = {
@@ -764,8 +766,8 @@ econ_forum_hold_private_room = {
 		}
 		random = {
 			chance = 15
-			add_to_variable = { global.econ_forum_prestige^ef_i = 2 }
-			clamp_variable = { var = global.econ_forum_prestige^ef_i min = 0 max = 100 }
+			# Paid after the summit sets the new prestige, which would overwrite it here.
+			set_temp_variable = { ef_room_leak = 2 }
 			for_each_scope_loop = {
 				array = ef_room
 
@@ -1625,7 +1627,7 @@ econ_forum_convene_summit = {
 		limit = { check_variable = { global.econ_forum_message^ef_i = 3 } }
 		set_temp_variable = { ef_pull = 0.5 }
 	}
-	set_variable = { global.econ_forum_prestige^ef_i = { value = ef_score subtract = ef_prestige multiply = ef_pull add = ef_prestige clamp = { min = 0 max = 100 } } }
+	set_variable = { global.econ_forum_prestige^ef_i = { value = ef_score subtract = ef_prestige multiply = ef_pull add = ef_prestige add = ef_room_leak clamp = { min = 0 max = 100 } } }
 	set_variable = { global.econ_forum_last_heads^ef_i = ef_heads }
 	set_variable = { global.econ_forum_last_ministers^ef_i = ef_ministers }
 	set_variable = { global.econ_forum_last_score^ef_i = ef_score }
