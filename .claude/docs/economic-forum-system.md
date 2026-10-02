@@ -249,7 +249,7 @@ The news is `econ_forum_news.9` when anyone followed, naming the leader's forum 
 
 `econ_forum_found_breakaway` (150 PP, stability above 40%, peace) is open to a great or super power that boycotts a
 forum and hosts none, while slot 8 is unfounded. It founds the Independent Economic Forum against the most
-prestigious founded forum the country boycotts:
+prestigious founded forum the country boycotts, hosted or vacant:
 
 - Prestige starts at 15 plus 15% of that forum's prestige, which the old forum loses.
 - Each sector starts at half the old forum's sector prestige, so the AI host runs what the old forum was known for.
