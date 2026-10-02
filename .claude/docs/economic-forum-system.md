@@ -17,7 +17,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-11`, `econ_forum_news.1-12`.
+- `events/EconomicForums.txt`: `econ_forum.1-11`, `econ_forum_news.1-15`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -443,6 +443,14 @@ player-only, since AI attendance comes from invitations.
   `econ_forum_news.2` when one passes the WEF, and `econ_forum_news.4` when the
   WEF retakes first place, checked after every summit. Before 21 April 2025 the
   WEF news names Klaus Schwab.
+- Also once per campaign, checked after every summit:
+  - `econ_forum_news.13` when a challenger's summit draws more heads of government
+    than the WEF's last one (`econ_forum_davos_outdrawn`);
+  - `econ_forum_news.14` when a challenger reaches 70 prestige (`econ_forum_equal_of_davos`);
+  - `econ_forum_news.15` when the WEF's own summit leaves it below 60, the level at which it
+    stops inviting every regional power. Its partners then fund a reform for 1825 days
+    (`econ_forum_davos_reform`): 10 more sponsor points, up to 25, and a third speaker attempt
+    each preparation, in `econ_forum_ai_prepare`.
 
 ## Adding a Forum
 

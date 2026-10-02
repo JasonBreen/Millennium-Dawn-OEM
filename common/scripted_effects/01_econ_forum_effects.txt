@@ -1295,6 +1295,15 @@ econ_forum_ai_prepare = {
 			}
 		}
 	}
+	# A reforming Davos gets more from its partners.
+	if = {
+		limit = {
+			check_variable = { global.econ_forum_state_led^ef_i = 0 }
+			has_global_flag = econ_forum_davos_reform
+		}
+		set_variable = { global.econ_forum_sponsors^ef_i = { value = global.econ_forum_sponsors^ef_i add = 10 min = 25 } }
+		econ_forum_try_book_speaker = yes
+	}
 	# Summit message: a sanctioned or East-pivoting host rallies its friends, a forum under 50 prestige opens its doors,
 	# and a state-led forum whose last summit beat its prestige pays for a media blitz.
 	if = {
@@ -1783,6 +1792,41 @@ econ_forum_check_milestones = {
 			set_global_flag = econ_forum_davos_reasserted
 			news_event = econ_forum_news.4
 		}
+	}
+	# A challenger's summit draws more heads of government than Davos's last one.
+	if = {
+		limit = {
+			NOT = { check_variable = { ef_i = 0 } }
+			NOT = { has_global_flag = econ_forum_davos_outdrawn }
+			check_variable = { global.econ_forum_host^0 > 0 }
+			check_variable = { global.econ_forum_last_heads^ef_i > global.econ_forum_last_heads^0 }
+		}
+		set_global_flag = econ_forum_davos_outdrawn
+		var:ef_host = {
+			set_variable = { econ_forum_news_heads = global.econ_forum_last_heads^ef_i }
+			news_event = econ_forum_news.13
+		}
+	}
+	# A challenger at 70 prestige is spoken of as Davos's equal.
+	if = {
+		limit = {
+			NOT = { check_variable = { ef_i = 0 } }
+			NOT = { has_global_flag = econ_forum_equal_of_davos }
+			check_variable = { global.econ_forum_prestige^ef_i > 69 }
+		}
+		set_global_flag = econ_forum_equal_of_davos
+		var:ef_host = { news_event = econ_forum_news.14 }
+	}
+	# The WEF below 60 no longer invites every regional power; its partners fund five years of reform.
+	if = {
+		limit = {
+			check_variable = { ef_i = 0 }
+			NOT = { has_global_flag = econ_forum_davos_reform_launched }
+			check_variable = { global.econ_forum_prestige^0 < 60 }
+		}
+		set_global_flag = econ_forum_davos_reform_launched
+		set_global_flag = { flag = econ_forum_davos_reform days = 1825 }
+		var:ef_host = { news_event = econ_forum_news.15 }
 	}
 }
 
