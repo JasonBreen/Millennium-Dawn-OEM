@@ -290,3 +290,53 @@ econ_forum_can_boycott = {
 	check_variable = { econ_forum_boycott^v = 0 }
 	has_political_power > 24
 }
+
+# Country scope, temp ef_i set. Governments that object to forum ef_i's controversial speaker this cycle.
+econ_forum_objects_to_speaker = {
+	OR = {
+		AND = {
+			check_variable = { global.econ_forum_controversial^ef_i = 1 }
+			has_government = democratic
+		}
+		AND = {
+			check_variable = { global.econ_forum_controversial^ef_i = 2 }
+			check_variable = { oil_exports > 1 }
+		}
+		AND = {
+			check_variable = { global.econ_forum_controversial^ef_i = 3 }
+			has_idea = EU_member
+		}
+		AND = {
+			check_variable = { global.econ_forum_controversial^ef_i = 4 }
+			has_idea = NATO_member
+		}
+		AND = {
+			check_variable = { global.econ_forum_controversial^ef_i = 5 }
+			OR = {
+				has_government = nationalist
+				has_government = fascism
+			}
+		}
+		AND = {
+			check_variable = { global.econ_forum_controversial^ef_i = 6 }
+			has_government = communism
+		}
+		AND = {
+			check_variable = { global.econ_forum_controversial^ef_i = 7 }
+			OR = {
+				has_idea = RAJ_BRICS
+				has_idea = RAJ_BRICS_associate
+			}
+		}
+	}
+}
+
+# Country scope. The speaker booking the speaker decisions snapshotted is still open: we still host that forum, the
+# same cycle is preparing, and a speaker slot is free.
+econ_forum_speaker_choice_open = {
+	has_variable = econ_forum_hosted
+	check_variable = { econ_forum_hosted = econ_forum_speaker_forum }
+	check_variable = { global.econ_forum_cycle^econ_forum_speaker_forum = econ_forum_speaker_cycle }
+	check_variable = { global.econ_forum_preparing^econ_forum_speaker_forum = 1 }
+	check_variable = { global.econ_forum_speakers^econ_forum_speaker_forum < 3 }
+}
