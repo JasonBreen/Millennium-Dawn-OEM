@@ -371,6 +371,36 @@ econ_forum_category = {
 		ai_will_do = { base = 0 }
 	}
 
+	econ_forum_tilt_report = {
+		icon = GFX_decision_money_dec
+		cost = 25
+
+		target_array = global.PR_regional_or_greater_powers
+		target_root_trigger = {
+			has_country_flag = econ_forum_preparing
+			check_variable = { global.econ_forum_prestige^econ_forum_hosted > 49 }
+			check_variable = { global.econ_forum_report_favored^econ_forum_hosted = 0 }
+		}
+		target_trigger = {
+			FROM = {
+				NOT = { tag = ROOT }
+				check_variable = { econ_forum_status^num > 8 }
+				check_variable = { econ_forum_status^PREV.econ_forum_hosted > 0 }
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision econ_forum_tilt_report"
+			custom_effect_tooltip = econ_forum_tilt_report_tt
+			hidden_effect = {
+				set_temp_variable = { ef_i = econ_forum_hosted }
+				FROM = { set_variable = { global.econ_forum_report_favored^ef_i = THIS.id } }
+			}
+		}
+
+		ai_will_do = { base = 0 }
+	}
+
 	econ_forum_launch_council = {
 		icon = GFX_decision_attract_foreign_investor
 		cost = 100
