@@ -81,6 +81,7 @@ All files below live in `.claude/docs/`.
 | `linux-national-adapters.md`       | Linux historical route, read-only adapters, source register  |
 | `linux-system-reference.md`        | Linux ecosystem game rule: state, milestones, USA bridge     |
 | `loading-screen-system.md`         | Loading rotation vs menu picker, `GFX_<x>_small`, generator  |
+| `loc-smoke-checklist.md`           | In-game checks for dynamic loc that tests cannot prove       |
 | `localisation-rules.md`            | English `.yml` rules: BOM, file naming, key formatting       |
 | `md-custom-modifiers.md`           | Non-vanilla modifier keys, grouped by category               |
 | `md-oem-corporate-roadmap.md`      | OEM roadmap: semiconductors, AI race, minerals, defense, SWF |
