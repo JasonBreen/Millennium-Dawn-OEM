@@ -74,6 +74,8 @@ econ_forum_setup = {
 	resize_array = { array = global.econ_forum_report_favored value = 0 size = 9 }
 	resize_array = { array = global.econ_forum_report_top value = 0 size = 9 }
 	resize_array = { array = global.econ_forum_report_bottom value = 0 size = 9 }
+	# 1 when the summit is secured this cycle: the host paid, or for the WEF its partners did.
+	resize_array = { array = global.econ_forum_security value = 0 size = 9 }
 	# Six program tracks per forum, indexed forum * 6 + track.
 	resize_array = { array = global.econ_forum_tracks value = 0 size = 54 }
 	resize_array = { array = global.econ_forum_track_prestige value = 0 size = 54 }
@@ -160,7 +162,13 @@ econ_forum_monthly_update = {
 					check_variable = { ef_gap = 0 }
 					check_variable = { global.econ_forum_preparing^ef_i = 1 }
 				}
-				econ_forum_convene_summit = yes
+				if = {
+					limit = { econ_forum_pandemic_disrupts = yes }
+					econ_forum_disrupt_summit = yes
+				}
+				else = {
+					econ_forum_convene_summit = yes
+				}
 			}
 			# Personal invitations close a month out so every reply resolves before the summit.
 			else_if = {
@@ -311,6 +319,7 @@ econ_forum_open_preparation = {
 	set_variable = { global.econ_forum_talks_a^ef_i = 0 }
 	set_variable = { global.econ_forum_talks_b^ef_i = 0 }
 	set_variable = { global.econ_forum_report_favored^ef_i = 0 }
+	set_variable = { global.econ_forum_security^ef_i = 0 }
 	set_variable = { global.econ_forum_speakers^ef_i = 0 }
 	set_variable = { global.econ_forum_track_count^ef_i = 0 }
 	set_variable = { global.econ_forum_invites_left^ef_i = { value = global.econ_forum_prestige^ef_i divide = 25 round = yes add = 3 } }
@@ -1085,6 +1094,70 @@ econ_forum_publish_report = {
 	}
 }
 
+# Summit scope, after attendance. A summit in a country that holds elections draws protesters: more at a more prestigious forum, and
+# more in the anti-globalisation years and the Occupy years. Security keeps them at bay; without it they disrupt the
+# summit. ef_protest_points is what they take off the score.
+econ_forum_hold_protests = {
+	set_temp_variable = { ef_protest_points = 0 }
+	if = {
+		limit = { var:ef_host = { has_elections = yes } }
+		set_temp_variable = { ef_protest_chance = { value = ef_prestige multiply = 0.25 } }
+		if = {
+			limit = { date < 2004.1.1 }
+			add_to_temp_variable = { ef_protest_chance = 20 }
+		}
+		else_if = {
+			limit = {
+				date > 2011.9.15
+				date < 2014.1.1
+			}
+			add_to_temp_variable = { ef_protest_chance = 15 }
+		}
+		set_temp_variable_to_random = { var = ef_protest_roll min = 0 max = 100 }
+		if = {
+			limit = { check_variable = { ef_protest_roll < ef_protest_chance } }
+			if = {
+				limit = { check_variable = { global.econ_forum_security^ef_i = 1 } }
+				set_temp_variable = { ef_protest_points = -1 }
+			}
+			else = {
+				set_temp_variable = { ef_protest_points = -6 }
+				var:ef_host = {
+					add_stability = -0.01
+					news_event = econ_forum_news.19
+				}
+			}
+		}
+	}
+}
+
+# Temp ef_i = 0, the World Economic Forum's summit month while it is preparing. The pandemic sends the first meeting it
+# reaches online and pushes the next one back four months, as the 2021 and 2022 Davos meetings were.
+econ_forum_disrupt_summit = {
+	var:ef_host = { clr_country_flag = econ_forum_preparing }
+	every_country = {
+		limit = { check_variable = { econ_forum_status^num > ef_i } }
+		set_variable = { econ_forum_status^ef_i = 0 }
+		econ_forum_ensure_country_arrays = yes
+		set_variable = { econ_forum_agenda^ef_i = 0 }
+	}
+	set_variable = { global.econ_forum_preparing^ef_i = 0 }
+	if = {
+		limit = { NOT = { has_global_flag = econ_forum_davos_online } }
+		set_global_flag = econ_forum_davos_online
+		# The online meeting counts as the year's summit; prestige holds.
+		set_variable = { global.econ_forum_months_since^ef_i = 0 }
+		var:ef_host = { news_event = econ_forum_news.20 }
+	}
+	else = {
+		set_global_flag = econ_forum_davos_postponed
+		set_temp_variable = { ef_month = { value = global.econ_forum_month^ef_i add = 3 } }
+		modulo_temp_variable = { ef_month = 12 }
+		set_variable = { global.econ_forum_month^ef_i = { value = ef_month add = 1 } }
+		var:ef_host = { news_event = econ_forum_news.21 }
+	}
+}
+
 # Host scope, AI only, after the program is set. Books a star on the forum's strongest program track.
 econ_forum_ai_book_star = {
 	set_temp_variable = { ef_best = -1 }
@@ -1777,6 +1850,25 @@ econ_forum_ai_prepare = {
 			}
 		}
 	}
+	# A host that holds elections secures its summit; the WEF's partners pay for Davos's.
+	if = {
+		limit = { has_elections = yes }
+		if = {
+			limit = { check_variable = { global.econ_forum_state_led^ef_i = 0 } }
+			set_variable = { global.econ_forum_security^ef_i = 1 }
+		}
+		else_if = {
+			limit = {
+				has_political_power > 75
+				OR = {
+					check_variable = { global.econ_forum_prestige^ef_i > 39 }
+					date < 2004.1.1
+				}
+			}
+			add_political_power = -25
+			set_variable = { global.econ_forum_security^ef_i = 1 }
+		}
+	}
 }
 
 # Host scope. A headline speaker is harder to land the further the strongest rival forum is ahead.
@@ -1878,6 +1970,14 @@ econ_forum_convene_summit = {
 	set_temp_variable = { ef_skip_leader = 0 }
 	clear_temp_array = ef_attendees
 
+	# The first World Economic Forum after a real attack on the United States meets in New York, as it did in 2002.
+	set_temp_variable = { ef_new_york = 0 }
+	if = {
+		limit = { econ_forum_new_york_summit = yes }
+		set_temp_variable = { ef_new_york = 1 }
+		set_global_flag = econ_forum_davos_new_york
+	}
+
 	# A more prestigious forum meeting within a month of ours draws attention away. If it met just before us,
 	# we are counter-programming it and draw headlines and heads of government from it.
 	set_temp_variable = { ef_clash = 0 }
@@ -1952,6 +2052,7 @@ econ_forum_convene_summit = {
 	econ_forum_hold_private_room = yes
 	econ_forum_hold_talks = yes
 	econ_forum_publish_report = yes
+	econ_forum_hold_protests = yes
 	var:ef_host = {
 		econ_forum_close_ceremonies = yes
 		# The first summit a sanctioned host holds without the West makes the news.
@@ -2016,7 +2117,7 @@ econ_forum_convene_summit = {
 	set_temp_variable = { ef_corporate = { value = ef_prestige multiply = 0.15 add = global.econ_forum_sponsors^ef_i add = ef_sector_points min = 30 } }
 	set_temp_variable = { ef_speaker_points = { value = global.econ_forum_speakers^ef_i multiply = 5 add = { value = ef_prestige multiply = 0.1 } } }
 	# Each signing ceremony is an agreement concluded at the summit.
-	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points add = ef_room_points add = ef_talks_points } }
+	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points add = ef_room_points add = ef_talks_points add = ef_protest_points add = { value = ef_new_york multiply = 5 } } }
 	if = {
 		limit = { check_variable = { ef_clash_forum > -1 } }
 		add_to_temp_variable = { ef_score = 5 }
@@ -2118,6 +2219,24 @@ econ_forum_convene_summit = {
 			econ_forum_refresh_view = yes
 			country_event = econ_forum.3
 		}
+	}
+
+	if = {
+		limit = { check_variable = { ef_new_york = 1 } }
+		var:ef_host = { news_event = econ_forum_news.22 }
+	}
+	# The meeting the pandemic pushed back is that year's; the next one returns to its usual month on schedule.
+	if = {
+		limit = {
+			check_variable = { ef_i = 0 }
+			has_global_flag = econ_forum_davos_postponed
+			NOT = { has_global_flag = econ_forum_davos_back_on_schedule }
+		}
+		set_global_flag = econ_forum_davos_back_on_schedule
+		set_temp_variable = { ef_month = { value = global.econ_forum_month^ef_i add = 7 } }
+		modulo_temp_variable = { ef_month = 12 }
+		set_variable = { global.econ_forum_month^ef_i = { value = ef_month add = 1 } }
+		set_variable = { global.econ_forum_months_since^ef_i = 4 }
 	}
 
 	econ_forum_check_milestones = yes
@@ -2222,6 +2341,14 @@ econ_forum_ai_decide_attendance = {
 	if = {
 		limit = { check_variable = { econ_forum_room^ef_i = 1 } }
 		add_to_temp_variable = { ef_chance = 10 }
+	}
+	# Washington comes to Davos when Davos comes to New York.
+	if = {
+		limit = {
+			check_variable = { ef_new_york = 1 }
+			original_tag = USA
+		}
+		add_to_temp_variable = { ef_chance = 40 }
 	}
 	# So are talks the organizers arranged with our rival.
 	if = {
