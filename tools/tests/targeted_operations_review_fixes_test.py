@@ -1,9 +1,168 @@
 import re
 
-from great_ai_race_state_model_test import _extract_block
+import pytest
+from great_ai_race_state_model_test import (
+    _extract_block,
+    _named_block,
+    _parse_race_script,
+)
 from targeted_operations_authorization_test import ReviewScript
 from targeted_operations_core_test import TargetScript
 from targeted_operations_redesign_test import block, read
+
+
+def test_top_raid_and_political_category_use_dynamic_rule_gates():
+    category = read("common/decisions/categories/targeted_operations_political.txt")
+    assert "allowed = { TOP_enabled = yes }" not in category
+    assert "allowed = { always = yes }" in category
+    assert "visible = { TOP_enabled = yes }" in category
+
+
+def test_ct_registration_reads_the_unscoped_host_region():
+    # Temp variables are unscoped, so the caller reads region_idx directly, as 00_ct_effects.txt does.
+    effect = block(
+        "common/scripted_effects/01_targeted_operations_world.txt",
+        "TOP_append_ct_organization",
+    )
+    assert "PREV.region_idx" not in effect
+    assert "global.active_terror_org_region = region_idx" in effect
+
+
+def test_iraqi_hunt_imports_selected_state_and_stops_resolved_saddam_loop():
+    events = read("events/Middle East Peace Plan.txt")
+    assert "PREV.TOP_import_state" not in events
+    assert events.count("set_temp_variable = { TOP_import_state = THIS }") == 5
+    relocation = events[
+        events.index("country_event = { # Saddam Relocation (bi-monthly)") :
+    ]
+    assert (
+        "TOP_enabled = yes check_variable = { global.TOP_status^56 > 1 }" in relocation
+    )
+
+
+def test_prosecuted_iraqi_fugitives_count_toward_resolution():
+    effect = block(
+        "common/scripted_effects/01_targeted_operations_legacy_effects.txt",
+        "TOP_update_iraq_progress",
+    )
+    assert "global.TOP_status^top_iraq_target < 5" in effect
+
+
+def test_both_al_shabaab_founding_options_install_the_current_successor():
+    events = read("events/Somalia.txt")
+    options = [
+        events[events.index(f"name = somalia.10.{letter}") :][:4000]
+        for letter in ("a", "b")
+    ]
+    for option in options:
+        assert (
+            "set_temp_variable = { TOP_target = global.TOP_group_leader^6 }" in option
+        )
+        assert "TOP_apply_office_successor = yes" in option
+
+
+def test_false_location_keeps_the_lead_when_no_other_state_is_found():
+    for name, field in (
+        ("TOP_maybe_false_person_location", "TOP_lead_state^TOP_target"),
+        (
+            "TOP_maybe_false_organization_location",
+            "TOP_org_lead_state^TOP_group_target",
+        ),
+    ):
+        effect = block(
+            "common/scripted_effects/06_targeted_operations_redesign.txt", name
+        )
+        assert (
+            "if = { limit = { NOT = { check_variable = { TOP_false_state = 0 } } } "
+            f"set_variable = {{ {field} = TOP_false_state }} }}"
+        ) in effect
+
+
+def test_isi_formation_and_replacements_install_the_selected_successor():
+    events = read("events/Iran.txt")
+    assert events.count("TOP_target = global.TOP_group_leader^3") == 4
+    assert events.count("TOP_apply_office_successor = yes") == 4
+    assert events.count("global.TOP_status^29 < 2") == 1
+
+
+def test_prosecuted_iraqi_cards_keep_a_resolution_indicator():
+    for target in range(56, 64):
+        trigger = block(
+            "common/scripted_guis/99_IRQ_scripted_guis.txt",
+            f"TOP_card_{target}_captured_visible",
+        )
+        assert f"global.TOP_status^{target} = 2" in trigger
+        assert f"global.TOP_status^{target} = 4" in trigger
+
+
+@pytest.mark.parametrize(
+    "path,group,predecessor,successor,count",
+    (
+        ("events/Iran.txt", 3, 29, 35, 4),
+        ("events/Somalia.txt", 6, 45, 46, 2),
+    ),
+)
+@pytest.mark.parametrize("status", (2, 3), ids=("captured", "killed"))
+@pytest.mark.parametrize("enabled", (False, True), ids=("off", "enabled"))
+def test_legacy_office_paths_dispatch_selected_successor_after_predecessor_removal(
+    path, group, predecessor, successor, count, status, enabled
+):
+    events = read(path)
+    pattern = re.compile(
+        r"if\s*=\s*\{\s*limit\s*=\s*\{\s*TOP_enabled\s*=\s*yes\s*\}"
+        rf"\s*set_temp_variable\s*=\s*\{{\s*TOP_target\s*=\s*global.TOP_group_leader\^{group}\s*\}}"
+    )
+    branches = [
+        _extract_block(events, match.start()) for match in pattern.finditer(events)
+    ]
+    assert len(branches) == count
+    for branch in branches:
+        script = TargetScript()
+        script.globals["TOP_rule_mode"] = int(enabled)
+        script.globals["TOP_status"][predecessor] = status
+        script.globals["TOP_group_leader"][group] = successor
+
+        statements = _parse_race_script(f"office_path = {{ {branch} }}")["office_path"]
+        script.execute(statements, 1)
+
+        assert script.external["TOP_apply_office_successor", 1] == int(enabled)
+        if enabled:
+            assert script.temps["TOP_target"] == successor
+        assert script.globals["TOP_status"][predecessor] == status
+
+
+@pytest.mark.parametrize("target", range(56, 64))
+@pytest.mark.parametrize("status", (1, 2, 3, 4, 5))
+def test_iraqi_card_custody_indicator_tracks_capture_and_prosecution(target, status):
+    name = f"TOP_card_{target}_captured_visible"
+    trigger = block("common/scripted_guis/99_IRQ_scripted_guis.txt", name)
+    script = TargetScript()
+    script.globals["TOP_status"][target] = status
+
+    assert script.condition(_parse_race_script(trigger)[name], 1) == (status in (2, 4))
+
+
+@pytest.mark.parametrize("event_id", ("iraq_md.74", "iraq_md.316"))
+def test_qusay_succession_keeps_upstream_focus_gate_and_top_lifecycle_guard(event_id):
+    text = read("events/Iraq.txt")
+    marker = re.search(rf"(?m)^\s*name = {re.escape(event_id)}\.a\s*$", text)
+    assert marker
+    start = text.rfind("\n\toption = {", 0, marker.start()) + 1
+    option = _extract_block(text, start)
+    branch = _named_block(option, "if")
+    limit = _parse_race_script(_named_block(branch, "limit"))["limit"]
+    assert limit == [("has_completed_focus", "=", "IRQ_designate_qussay")]
+    guarded_creation = _named_block(branch[branch.index("{") + 1 :], "if")
+    assert 'name = "Qusay Hussein"' in _named_block(
+        guarded_creation, "create_country_leader"
+    )
+    guard = _parse_race_script(_named_block(guarded_creation, "limit"))["limit"]
+    script = TargetScript()
+    for status in (1, 2, 3, 4):
+        script.globals["TOP_status"][57] = status
+        assert script.condition(guard, 1) == (status == 1)
+    script.globals["TOP_rule_mode"] = 0
+    assert script.condition(guard, 1)
 
 
 def test_collection_rebuild_prunes_inactive_typed_assignments_and_pauses_packages():
