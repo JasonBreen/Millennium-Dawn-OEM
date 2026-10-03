@@ -53,7 +53,7 @@ The four organization classes are:
 
 A group may also set `activation_condition`, a scripted trigger added to its monthly
 activation check, and the `fixed_state` location policy with a `state` ID, which places it
-in that state instead of a random state of its host. The STALKER organizations and the Federal Bureau of Control organizations use both.
+in that state instead of a random state of its host. The STALKER organizations use both; the Federal Bureau of Control organizations use activation conditions with the `country_capital` policy.
 
 `ct_id` is an optional intelligence source. It is not an activation, discovery,
 display, collection, or authority prerequisite. IRGC/Quds Force, IRGC high command,
