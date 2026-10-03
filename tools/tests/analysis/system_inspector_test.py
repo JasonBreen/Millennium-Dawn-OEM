@@ -290,6 +290,9 @@ def test_quoted_identifiers_and_scripted_loc_remain_references(mod_root):
         ("global", "country"),
         ("state", "character"),
         ("character", "state"),
+        ("project", "country"),
+        ("unit_leader", "country"),
+        ("mio", "country"),
     ],
 )
 @pytest.mark.parametrize("block_value", [False, True])
@@ -320,3 +323,181 @@ def test_flag_resolution_requires_matching_scope(
         f"{read_kind}:ZZZ_same_name"
         not in inspect_mod(mod_root)["unresolved"]["flags_never_set"]
     )
+
+
+def test_modifier_definitions_have_hooks_and_dependencies(mod_root):
+    write_under_str(
+        mod_root,
+        "common/modifier_definitions/ZZZ_modifiers.txt",
+        "ZZZ_applied_power = { color_type = bad }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/modifier_definitions/outside.txt",
+        "outside_power = { color_type = bad }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/synchronized_dynamic_tokens/MD_tokens.txt",
+        "ZZZ_applied_power\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/dynamic_modifiers/ZZZ_dynamic.txt",
+        "ZZZ_dynamic = { enable = { always = yes } outside_power = ZZZ_power }\n",
+    )
+    report = inspect_mod(mod_root)
+    assert report["hooks"]["common/synchronized_dynamic_tokens/MD_tokens.txt"] == [
+        "ZZZ_applied_power"
+    ]
+    assert report["dependencies"]["modifier_definition"] == [
+        {
+            "name": "outside_power",
+            "defined_in": "common/modifier_definitions/outside.txt",
+        }
+    ]
+
+
+@pytest.mark.parametrize("indent", ["", " "])
+@pytest.mark.parametrize("version", ["", "0"])
+def test_english_keys_resolve_with_zero_or_one_space_indent(mod_root, indent, version):
+    write_under_str(
+        mod_root,
+        "localisation/english/ZZZ_label_l_english.yml",
+        f'l_english:\n{indent}ZZZ_label:{version} "Known label"\n',
+    )
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/ZZZ_label.txt",
+        "ZZZ_show_label = { custom_effect_tooltip = ZZZ_label }\n",
+    )
+    assert inspect_mod(mod_root)["unresolved"]["localisation"] == ["zzz.1.d"]
+
+
+def test_gui_only_localisation_is_checked(mod_root):
+    write_under_str(
+        mod_root,
+        "interface/ZZZ_dashboard.gui",
+        'guiTypes = { instantTextBoxType = { text = "ZZZ_dashboard_title" } }\n',
+    )
+    assert "ZZZ_dashboard_title" in inspect_mod(mod_root)["unresolved"]["localisation"]
+    write_under_str(
+        mod_root,
+        "localisation/english/ZZZ_dashboard_l_english.yml",
+        'l_english:\n ZZZ_dashboard_title: "Dashboard"\n',
+    )
+    assert (
+        "ZZZ_dashboard_title" not in inspect_mod(mod_root)["unresolved"]["localisation"]
+    )
+
+
+def test_bare_definitions_remain_linkable_without_linking_language_helpers(mod_root):
+    write_under_str(
+        mod_root,
+        "common/ideas/ZZZ_ideas.txt",
+        "ideas = { country = { asio = { } ausfta = { } } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/ideas/outside.txt",
+        "ideas = { country = { thirdparty = { } } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/ZZZ_bare.txt",
+        "ZZZ_use_bare = { add_ideas = thirdparty }\n"
+        + "\n".join(f"{name} = {{ }}" for name in ("yes", "no", "from", "for")),
+    )
+    write_under_str(
+        mod_root,
+        "common/national_focus/outside.txt",
+        "focus = { available = { always = yes } completion_reward = { "
+        "add_ideas = asio remove_ideas = ausfta } }\n",
+    )
+    report = inspect_mod(mod_root)
+    assert report["hooks"]["common/national_focus/outside.txt"] == ["asio", "ausfta"]
+    assert report["dependencies"]["idea"] == [
+        {"name": "thirdparty", "defined_in": "common/ideas/outside.txt"}
+    ]
+
+
+@pytest.mark.parametrize("loc_file", ["ZZZ_labels", "outside_labels"])
+def test_localisation_cannot_hide_unused_code(mod_root, loc_file):
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/ZZZ_bare_orphan.txt",
+        "bare_orphan = { }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/scripted_triggers/ZZZ_lonely_trigger.txt",
+        "ZZZ_lonely_trigger = { always = yes }\n",
+    )
+    write_under_str(
+        mod_root,
+        f"localisation/english/{loc_file}_l_english.yml",
+        'l_english:\n ZZZ_orphan: "Label"\n bare_orphan: "Label"\n'
+        ' ZZZ_lonely_trigger: "Label"\n zzz.2: "Label"\n',
+    )
+    assert inspect_mod(mod_root)["unused"] == {
+        "scripted_effects_and_triggers": [
+            "ZZZ_lonely_trigger",
+            "ZZZ_orphan",
+            "bare_orphan",
+        ],
+        "triggered_only_events": ["zzz.2"],
+    }
+
+
+@pytest.mark.parametrize(
+    "text,line_count",
+    [
+        ("", 0),
+        ("foo", 1),
+        ("foo\n", 1),
+        ("\n", 1),
+        ("foo\nbar", 2),
+        ("foo\nbar\n", 2),
+        ("foo\r\n", 1),
+    ],
+)
+def test_line_counts_do_not_include_an_empty_eof_line(tmp_path, text, line_count):
+    write_under_str(tmp_path, "common/scripted_effects/ZZZ_lines.txt", text)
+    report = inspect_mod(tmp_path)
+    assert report["files"]["scripted_effect"] == [
+        {"path": "common/scripted_effects/ZZZ_lines.txt", "lines": line_count}
+    ]
+    assert f"{line_count} lines" in system_inspector.render(report, ("files",), 10)
+
+
+def test_weighted_event_pools_report_missing_dispatches(mod_root):
+    write_under_str(
+        mod_root,
+        "common/on_actions/ZZZ_on_actions.txt",
+        "on_actions = { on_weekly = { random_events = { "
+        '100 = 0 100 = zzz.1 200 = "zzz.99" } '
+        "other_block = { 100 = zzz.98 } } }\n",
+    )
+    assert inspect_mod(mod_root)["unresolved"]["events"] == ["zzz.9", "zzz.99"]
+
+
+def test_localisation_global_substitutions_are_reads_but_prose_is_not_code(mod_root):
+    write_under_str(
+        mod_root,
+        "localisation/english/ZZZ_status_l_english.yml",
+        'l_english:\n ZZZ_status: "[?global.ZZZ_loc_only|0] [?global.ZZZ_counter|0]"\n'
+        ' ZZZ_prose: "global.ZZZ_plaintext set_variable = { global.ZZZ_loc_only = 1 }"\n'
+        ' # ZZZ_comment: "[?global.ZZZ_comment|0]"\n',
+    )
+    assert inspect_mod(mod_root)["unresolved"]["globals_never_written"] == [
+        "ZZZ_loc_only",
+        "ZZZ_never_written",
+    ]
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/outside_global.txt",
+        "outside_global = { set_variable = { global.ZZZ_loc_only = 1 } }\n",
+    )
+    assert inspect_mod(mod_root)["unresolved"]["globals_never_written"] == [
+        "ZZZ_never_written"
+    ]

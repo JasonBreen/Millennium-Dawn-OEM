@@ -87,6 +87,7 @@ LINKED_KINDS = (
     "opinion_modifier",
     "scripted_gui",
     "game_rule",
+    "modifier_definition",
     "mio",
     "character",
     "scripted_loc",
@@ -114,7 +115,7 @@ TOKEN_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_.]*[A-Za-z0-9_]")
 EVENT_ID_RE = re.compile(r"[A-Za-z0-9_]+\.[A-Za-z0-9_.]+")
 SCRIPTED_LOC_RE = re.compile(r"^\s*name\s*=\s*([A-Za-z0-9_]+)", re.M)
 SPRITE_RE = re.compile(r'name\s*=\s*"?(GFX_[A-Za-z0-9_]+)"?')
-LOC_KEY_RE = re.compile(r"^ ([A-Za-z0-9_.\-]+):\d* ", re.M)
+LOC_KEY_RE = re.compile(r"^ ?([A-Za-z0-9_.\-]+):\d* ", re.M)
 CALL_RE = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:yes|no)\b")
 FIRED_EVENT_RE = re.compile(
     r"\b(?:country|news|state|unit_leader|operative_leader)_event\s*=\s*"
@@ -125,12 +126,15 @@ LOC_REF_RE = re.compile(
     r"\s*=\s*\"?([A-Za-z_][A-Za-z0-9_.]*)\"?"
 )
 FLAG_SET_RE = re.compile(
-    r"\bset_(country|global|state|character)_flag\s*=\s*(?:\{\s*flag\s*=\s*)?([A-Za-z0-9_]+)"
+    r"\bset_(country|global|state|character|project|unit_leader|mio)_flag\s*=\s*"
+    r"(?:\{\s*flag\s*=\s*)?([A-Za-z0-9_]+)"
 )
 FLAG_READ_RE = re.compile(
-    r"\bhas_(country|global|state|character)_flag\s*=\s*(?:\{\s*flag\s*=\s*)?([A-Za-z0-9_]+)"
+    r"\bhas_(country|global|state|character|project|unit_leader|mio)_flag\s*=\s*"
+    r"(?:\{\s*flag\s*=\s*)?([A-Za-z0-9_]+)"
 )
 GLOBAL_READ_RE = re.compile(r"\bglobal\.([A-Za-z_][A-Za-z0-9_]*)")
+LOC_GLOBAL_READ_RE = re.compile(r"\[\?global\.([A-Za-z_][A-Za-z0-9_]*)")
 GLOBAL_WRITE_RE = re.compile(
     r"\b(?:set|add_to|subtract_from|multiply|divide|clamp|round|modulo)_variable"
     r"(?:_to_random)?\s*=\s*\{\s*"
@@ -190,9 +194,8 @@ def read_tree(root: Path) -> Tree:
 
 
 def is_identifier(name: str) -> bool:
-    """Mod definitions are snake_case or dotted; bare words like the script-language
-    helpers `yes`, `from` and `for` would match every file."""
-    return "_" in name or "." in name
+    """Exclude reserved script words without discarding valid bare definitions."""
+    return name.lower() not in {"yes", "no", "from", "for"}
 
 
 def keys_at_depth(code: str, depth: int) -> list[str]:
@@ -292,10 +295,13 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
     tokens_by_file = {
         rel: TOKEN_RE.findall(code)
         for rel, code in tree.code.items()
-        if rel in inside
-        or not stems
-        or any(stem in code for stem in stems)
-        or any(name in code for name in other_names)
+        if not rel.endswith(".yml")
+        and (
+            rel in inside
+            or not stems
+            or any(stem in code for stem in stems)
+            or any(name in code for name in other_names)
+        )
     }
     token_sets = {rel: set(tokens) for rel, tokens in tokens_by_file.items()}
 
@@ -303,7 +309,7 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
     for rel in system:
         kind = next((k for k, p, _ in DEFINITION_RULES if rel.startswith(p)), None)
         kind = kind or rel.split("/")[0]
-        files[kind].append({"path": rel, "lines": tree.raw[rel].count("\n") + 1})
+        files[kind].append({"path": rel, "lines": len(tree.raw[rel].splitlines())})
 
     linked_system = {
         name: kind
@@ -344,7 +350,9 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
     scripted_locs = set(defined_by["scripted_loc"])
     flags_set = set()
     globals_written = set()
-    for code in tree.code.values():
+    for rel, code in tree.code.items():
+        if rel.endswith(".yml"):
+            continue
         if "_flag" in code:
             flags_set.update(FLAG_SET_RE.findall(code))
         if "global." in code:
@@ -354,12 +362,25 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
     calls, fired, loc_refs, flags_read, globals_read = (set() for _ in range(5))
     for rel in system:
         if rel.endswith(".yml"):
+            for match in STRING_OR_COMMENT_RE.finditer(tree.raw[rel]):
+                if match.group(0).startswith('"'):
+                    globals_read.update(LOC_GLOBAL_READ_RE.findall(match.group(0)))
             continue
         code = tree.code[rel]
         calls.update(CALL_RE.findall(code))
         for by_id, bare in FIRED_EVENT_RE.findall(code):
             fired.add(by_id or bare)
-        if rel.startswith(("common/", "events/")):
+        fired.update(
+            value
+            for parents, key, value in script_fields(code)
+            if parents
+            and parents[-1][0] == "random_events"
+            and key.isdecimal()
+            and EVENT_ID_RE.fullmatch(value)
+        )
+        if rel.startswith(("common/", "events/")) or (
+            rel.startswith("interface/") and rel.endswith(".gui")
+        ):
             loc_refs.update(LOC_REF_RE.findall(code))
         if rel.startswith("events/"):
             loc_refs.update(event_option_labels(code))
@@ -412,7 +433,11 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
             if rel != candidates[name] or tokens_by_file[rel].count(name) > 1:
                 referenced.add(name)
     if stems:
-        skipped = [code for rel, code in tree.code.items() if rel not in token_sets]
+        skipped = [
+            code
+            for rel, code in tree.code.items()
+            if rel not in token_sets and not rel.endswith(".yml")
+        ]
         for name in candidates.keys() - referenced:
             if not any(stem in name for stem in stems) and any(
                 name in code for code in skipped
