@@ -337,16 +337,14 @@ news_event = {
 	option = { name = STALKER.177.a }
 }
 
-# Waits out the delay, then gives Fairway to whoever holds the Zone.
+# Waits out the delay, then gives the dated choice to whoever holds the Zone.
+# global.STALKER_legend_deliver is 172 for the 2011 assault, 174 for Fairway, and 176 for SIRCAA.
 country_event = {
 	id = STALKER.178
 	hidden = yes
 	is_triggered_only = yes
 
-	trigger = {
-		STALKER_scenario_enabled = yes
-		NOT = { has_global_flag = STALKER_fairway_resolved }
-	}
+	trigger = { STALKER_scenario_enabled = yes }
 
 	immediate = {
 		log = "[GetDateText]: [This.GetName]: STALKER.178 immediate executed"
@@ -357,9 +355,20 @@ country_event = {
 					check_variable = { STALKER_zone_id = 1 }
 					controller = { exists = yes }
 				}
-				controller = { country_event = STALKER.174 }
+				controller = {
+					if = {
+						limit = { check_variable = { global.STALKER_legend_deliver = 172 } }
+						country_event = STALKER.172
+					}
+					else_if = {
+						limit = { check_variable = { global.STALKER_legend_deliver = 176 } }
+						country_event = STALKER.176
+					}
+					else = { country_event = STALKER.174 }
+				}
 			}
 		}
+		set_variable = { global.STALKER_legend_deliver = 0 }
 	}
 }
 
