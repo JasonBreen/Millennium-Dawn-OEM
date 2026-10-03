@@ -487,12 +487,16 @@ def load_manifest(root: Path) -> dict:
             raise ValueError(f"Duplicate or self successor for {target['id']}")
         if any(affiliations[i] != target["group"] for i in target["successors"]):
             raise ValueError("Person successor belongs to another organization")
+        group_pool = groups[target["group"]].get("succession", [])
+        if (
+            target["role_eligibility"].get("kind") == "authored_successor_pool"
+            and target["id"] not in group_pool
+        ):
+            raise ValueError(
+                f"Authored successor missing from group pool: {target['id']}"
+            )
         if target["successors"]:
-            expected = [
-                ident
-                for ident in groups[target["group"]].get("succession", [])
-                if ident != target["id"]
-            ]
+            expected = [ident for ident in group_pool if ident != target["id"]]
             if target["successors"] != expected:
                 raise ValueError(f"Incomplete successor binding for {target['id']}")
 
@@ -721,8 +725,7 @@ def raid(ident: int, method: int) -> str:
         "days_re_enable = 30",
         "command_power = 20",
         "arrow = { type = line }",
-        "allowed = { TOP_enabled = yes }",
-        f"visible = {{ check_variable = {{ TOP_case_phase^{ident} = 3 }} check_variable = {{ TOP_case_method^{ident} = {method} }} }}",
+        f"visible = {{ TOP_enabled = yes check_variable = {{ TOP_case_phase^{ident} = 3 }} check_variable = {{ TOP_case_method^{ident} = {method} }} }}",
         f"show_target = {{ TOP_native_gate_{ident}_{method} = yes }}",
         "available = {",
         f"\tTOP_native_gate_{ident}_{method} = yes",
@@ -1097,9 +1100,20 @@ def successors(data: dict) -> str:
     installations, retirements = [], []
     people = names(data)
     movement_tags = {2: "AQY", 3: "ISI", 4: "TTP", 6: "SHB"}
-    for ident in range(data["generated_start"], data["generated_end"]):
-        group = (ident - data["generated_start"]) % 10 + 1
-        tag = movement_tags.get(group)
+    offices = [
+        (ident, movement_tags.get((ident - data["generated_start"]) % 10 + 1))
+        for ident in range(data["generated_start"], data["generated_end"])
+    ]
+    # Authored successors past the generated block reach these adapters through
+    # TOP_apply_office_successor too, so their movement office needs a branch.
+    offices += [
+        (ident, movement_tags[group["id"]])
+        for group in data["groups"]
+        if group["id"] in movement_tags
+        for ident in group.get("succession", [])
+        if ident >= data["generated_end"]
+    ]
+    for ident, tag in offices:
         if tag:
             name = people[str(ident)]
             installations += [

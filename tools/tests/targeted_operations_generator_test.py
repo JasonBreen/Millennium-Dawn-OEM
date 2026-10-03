@@ -53,6 +53,7 @@ def manifest():
         "incomplete_successor",
         "fixed_state_without_state",
         "empty_activation_condition",
+        "missing_authored_pool",
     ],
 )
 def test_manifest_rejects_ambiguous_or_cross_group_identities(
@@ -128,13 +129,20 @@ def test_manifest_rejects_ambiguous_or_cross_group_identities(
         data["groups"][0]["activation_condition"] = " "
     elif defect == "duplicate_successor":
         data["targets"][0]["successors"].append(data["targets"][0]["successors"][0])
+    elif defect == "missing_authored_pool":
+        next(group for group in data["groups"] if group["id"] == 22)["succession"] = []
     else:
         data["targets"][0]["successors"].pop()
     path = tmp_path / "tools/data/targeted_operations.json"
     path.parent.mkdir(parents=True)
     with path.open("w", encoding="utf-8", newline="") as stream:
         json.dump(data, stream)
-    with pytest.raises(ValueError):
+    expected = (
+        "Authored successor missing from group pool: 145"
+        if defect == "missing_authored_pool"
+        else None
+    )
+    with pytest.raises(ValueError, match=expected):
         GENERATOR.load_manifest(tmp_path)
 
 
@@ -538,18 +546,20 @@ def test_manifest_declares_classes_location_policy_and_2027_2032_roster(manifest
     }
     assert set(range(56, 65)) | set(range(129, 142)) <= public_people
     assert set(range(135, 141)) <= public_people
-    unbound_future_pool = {142, 143, 145, 148, 157}
+    future_successor_pool = {142: 2, 143: 7, 145: 22, 148: 23, 157: 24}
     assert all(
         next(target for target in manifest["targets"] if target["id"] == ident)[
             "leader_role"
         ]
         == "none"
-        for ident in unbound_future_pool
+        for ident in future_successor_pool
     )
     assert all(
-        ident not in group.get("succession", [])
-        for ident in unbound_future_pool
-        for group in manifest["groups"]
+        ident
+        in next(group for group in manifest["groups"] if group["id"] == group_id)[
+            "succession"
+        ]
+        for ident, group_id in future_successor_pool.items()
     )
 
 
@@ -627,3 +637,16 @@ def test_every_later_window_year_is_opened_by_the_yearly_dispatch(manifest):
         if year > 2000 and f"TOP_open_windows_{year} = yes" not in yearly
     ]
     assert missing == []
+
+
+def test_authored_movement_successors_get_office_adapters(manifest):
+    output = GENERATOR.render(manifest)
+    successors = output["common/scripted_effects/01_targeted_operations_successors.txt"]
+    install = _named_block(successors, "TOP_install_generated_office")
+    retire = _named_block(successors, "TOP_retire_generated_office")
+    branch = install[install.index("check_variable = { TOP_target = 142 }") :]
+    assert branch.index("AQY = {") < branch.index("if = {", 1)
+    assert "Sa'ad bin Atef al-Awlaki" in branch[: branch.index("set_variable")]
+    assert "check_variable = { TOP_target = 142 }" in retire
+    for ident in (143, 145, 148, 157):
+        assert f"check_variable = {{ TOP_target = {ident} }}" not in install
