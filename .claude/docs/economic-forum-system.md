@@ -50,6 +50,8 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_cycle`          | Preparations opened; a guest action's cycle id  |
 | `econ_forum_ceremonies`     | Signing ceremonies booked this cycle (max 3)    |
 | `econ_forum_last_ceremonies`| Ceremonies signed at the last summit            |
+| `econ_forum_last_firms`     | Company delegations at the last summit          |
+| `econ_forum_last_tech_firms`| Technology firms among them                     |
 | `econ_forum_council`        | Council track + 1; 0 until launched             |
 | `econ_forum_message`        | This cycle's summit message (0 none, 1-3)       |
 | `econ_forum_controversial`  | This cycle's controversial speaker (0 none, 1-7) |
@@ -453,6 +455,24 @@ A summit whose host holds elections (`has_elections`) can draw protesters. `econ
 - **Protests against an unsecured summit:** -6 score, -1% stability for the host and `econ_forum_news.19`. The news has
   anti-globalisation, Occupy and generic texts by date.
 
+### Corporate Delegations
+
+Companies come from the military industrial organizations the mod already has, not a separate roster. At each summit,
+after the protests, `econ_forum_corporate_delegations` sends a delegation from every available organization of size 3
+or more in an attending government, the host's included (`econ_forum_send_firms`). Without Arms Against Tyranny there
+are none.
+
+- **Funds:** each firm gains 100 MIO funds, 200 at a forum with 30 prestige and 300 at 60.
+- **Sector:** +200 more when the program carries the firm's sector. Every firm counts as defense industry. A firm that
+  researches `CAT_information_technology` or `CAT_artificial_intelligence` is a technology firm, so the AI and
+  technology track also counts for it. The bonus is paid once either way.
+- **Score:** 0.2 per delegation, up to 10 (`ef_company_points`).
+- **Visibility:** `econ_forum_last_firms` and `econ_forum_last_tech_firms` feed the Forums tab row tooltip, and the
+  host's summit report (`econ_forum.3`) gives the count.
+
+Corporate-history firms join through their compute organizations (Intel, Nvidia, Huawei, Arm, Mistral and the rest).
+The chains themselves have no shared registry, so they are not read directly.
+
 ### History
 
 Two dated moments of the World Economic Forum, each keyed to the game's own events rather than the calendar:
@@ -514,6 +534,7 @@ player-only, since AI attendance comes from invitations.
   30. A forum leads a track when its sector prestige beats every other active
   forum's.
 - Speakers: `5 per speaker + prestige × 0.1`.
+- Company delegations: 0.2 each, up to 10.
 - Counter-programming: +5 when a more prestigious forum met the month before, or
   earlier in the same month's tick.
 - Score = the sum, capped at 100. New prestige = `old + (score - old) × 0.3`.
@@ -589,8 +610,8 @@ one country hosts at most one forum and China may already host Boao. `econ_forum
 - A seat owner that already hosts a forum cannot inherit a second one, so that
   forum stands vacant until the seat changes hands or its owner stops hosting.
 
-Next, from #4802: a company roster once #4357 lands, a native runtime test of the
-full cycle, and the upstream port below.
+Next, from #4802: a native runtime test of the full cycle and the upstream port
+below. If #4357 adds a company system, its companies can join the delegations.
 
 ## Upstream Port
 
@@ -636,7 +657,7 @@ belongs to the fork's targeted operations screen, which upstream does not have.
 | 4   | The Forums tab through the scaffolder, delegation agendas, guest actions, invitation requests, AI guests      | #440, #442, #458-#461            |
 | 5   | Walkouts and the breakaway forum                                                                               | #463, #464                       |
 | 6   | Signing ceremonies, councils, summit messages, the tab tooltip                                                 | #466-#468, #470, #471            |
-| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, reports, protests, history, Summer Davos | #473, #474, #476-#478, #481-#483, #485 |
+| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, reports, protests, history, Summer Davos, corporate delegations | #473, #474, #476-#478, #481-#483, #485, this PR |
 
 Port notes:
 

@@ -56,6 +56,9 @@ econ_forum_setup = {
 	resize_array = { array = global.econ_forum_last_score value = 0 size = 9 }
 	resize_array = { array = global.econ_forum_ceremonies value = 0 size = 9 }
 	resize_array = { array = global.econ_forum_last_ceremonies value = 0 size = 9 }
+	# Company delegations at the last summit, and how many were technology firms.
+	resize_array = { array = global.econ_forum_last_firms value = 0 size = 9 }
+	resize_array = { array = global.econ_forum_last_tech_firms value = 0 size = 9 }
 	# Council track + 1; 0 until the forum launches one.
 	resize_array = { array = global.econ_forum_council value = 0 size = 9 }
 	# This cycle's summit message: 0 none, 1 open for business, 2 strategic autonomy, 3 media blitz.
@@ -1132,6 +1135,62 @@ econ_forum_hold_protests = {
 	}
 }
 
+# Summit scope, after attendance. Every available industrial organization of size 3 or more in an attending government,
+# the host's included, sends a company delegation. ef_company_points is what they add to the score.
+econ_forum_corporate_delegations = {
+	set_temp_variable = { ef_firms = 0 }
+	set_temp_variable = { ef_tech_firms = 0 }
+	set_temp_variable = { ef_idx = { value = ef_i multiply = 6 } }
+	set_temp_variable = { ef_ai_on_program = global.econ_forum_tracks^ef_idx }
+	add_to_temp_variable = { ef_idx = 3 }
+	set_temp_variable = { ef_defense_on_program = global.econ_forum_tracks^ef_idx }
+	var:ef_host = { econ_forum_send_firms = yes }
+	for_each_scope_loop = {
+		array = ef_attendees
+
+		econ_forum_send_firms = yes
+	}
+	set_temp_variable = { ef_company_points = { value = ef_firms multiply = 0.2 min = 10 } }
+	set_variable = { global.econ_forum_last_firms^ef_i = ef_firms }
+	set_variable = { global.econ_forum_last_tech_firms^ef_i = ef_tech_firms }
+}
+
+# Country scope. Firms gain funds from the deals they strike, more at a prestigious forum and more when the program
+# carries their sector: defense industry for every firm, AI and technology for those researching it.
+econ_forum_send_firms = {
+	every_military_industrial_organization = {
+		limit = {
+			is_mio_available = yes
+			has_mio_size > 2
+		}
+		add_to_temp_variable = { ef_firms = 1 }
+		add_mio_funds = 100
+		if = {
+			limit = { check_variable = { ef_prestige > 29 } }
+			add_mio_funds = 100
+		}
+		if = {
+			limit = { check_variable = { ef_prestige > 59 } }
+			add_mio_funds = 100
+		}
+		set_temp_variable = { ef_firm_sector = ef_defense_on_program }
+		if = {
+			limit = {
+				OR = {
+					has_mio_research_category = CAT_information_technology
+					has_mio_research_category = CAT_artificial_intelligence
+				}
+			}
+			add_to_temp_variable = { ef_tech_firms = 1 }
+			add_to_temp_variable = { ef_firm_sector = ef_ai_on_program }
+		}
+		if = {
+			limit = { check_variable = { ef_firm_sector > 0 } }
+			add_mio_funds = 200
+		}
+	}
+}
+
 # Temp ef_i = 0, the World Economic Forum's summit month while it is preparing. The pandemic sends the first meeting it
 # reaches online and pushes the next one back four months, as the 2021 and 2022 Davos meetings were.
 econ_forum_disrupt_summit = {
@@ -2167,6 +2226,7 @@ econ_forum_convene_summit = {
 	econ_forum_hold_talks = yes
 	econ_forum_publish_report = yes
 	econ_forum_hold_protests = yes
+	econ_forum_corporate_delegations = yes
 	var:ef_host = {
 		econ_forum_close_ceremonies = yes
 		# The first summit a sanctioned host holds without the West makes the news.
@@ -2231,7 +2291,7 @@ econ_forum_convene_summit = {
 	set_temp_variable = { ef_corporate = { value = ef_prestige multiply = 0.15 add = global.econ_forum_sponsors^ef_i add = ef_sector_points min = 30 } }
 	set_temp_variable = { ef_speaker_points = { value = global.econ_forum_speakers^ef_i multiply = 5 add = { value = ef_prestige multiply = 0.1 } } }
 	# Each signing ceremony is an agreement concluded at the summit.
-	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points add = ef_room_points add = ef_talks_points add = ef_protest_points add = { value = ef_new_york multiply = 5 } add = ef_nc_bonus } }
+	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points add = ef_room_points add = ef_talks_points add = ef_protest_points add = ef_company_points add = { value = ef_new_york multiply = 5 } add = ef_nc_bonus } }
 	if = {
 		limit = { check_variable = { ef_clash_forum > -1 } }
 		add_to_temp_variable = { ef_score = 5 }
@@ -2330,6 +2390,7 @@ econ_forum_convene_summit = {
 			set_variable = { econ_forum_report_score = ef_score }
 			set_variable = { econ_forum_report_deals = ef_deals }
 			set_variable = { econ_forum_report_ceremonies = ef_signed }
+			set_variable = { econ_forum_report_firms = ef_firms }
 			econ_forum_refresh_view = yes
 			country_event = econ_forum.3
 		}
