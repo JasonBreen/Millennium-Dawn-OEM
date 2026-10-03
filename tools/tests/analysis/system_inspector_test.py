@@ -501,3 +501,100 @@ def test_localisation_global_substitutions_are_reads_but_prose_is_not_code(mod_r
     assert inspect_mod(mod_root)["unresolved"]["globals_never_written"] == [
         "ZZZ_never_written"
     ]
+
+
+def test_focus_ids_are_direct_definitions_with_external_hooks(mod_root):
+    write_under_str(
+        mod_root,
+        "common/national_focus/ZZZ_focus.txt",
+        "focus_tree = { id = ZZZ_tree focus = { id = ZZZ_root } }\n"
+        "shared_focus = { completion_reward = { country_event = { id = zzz.9 } } "
+        'id = "ZZZ_shared" }\n'
+        "joint_focus = { id = ZZZ_joint }\n",
+    )
+    write_under_str(
+        mod_root,
+        "events/outside_focus.txt",
+        "country_event = { id = outside.1 trigger = { has_completed_focus = ZZZ_root } "
+        "immediate = { complete_national_focus = ZZZ_shared } }\n",
+    )
+    report = inspect_mod(mod_root)
+    assert report["definitions"]["focus"] == ["ZZZ_joint", "ZZZ_root", "ZZZ_shared"]
+    assert report["hooks"]["events/outside_focus.txt"] == ["ZZZ_root", "ZZZ_shared"]
+    assert "ZZZ_tree" not in report["definitions"]["focus"]
+
+
+def test_parameterized_calls_are_checked_without_counting_definitions(mod_root):
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/ZZZ_parameterized.txt",
+        "ZZZ_parameterized = { ZZZ_missing_block = { TARGET = USA } "
+        "shared_helper = { AMOUNT = 2 } ZZZ_start = { TARGET = USA } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/scripted_guis/ZZZ_windows.txt",
+        "scripted_gui = { ZZZ_window = { window_name = ZZZ_window } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/ideas/ZZZ_ideas.txt",
+        "ideas = { country = { ZZZ_idea = { } } }\n",
+    )
+    report = inspect_mod(mod_root)
+    assert report["unresolved"]["calls"] == ["ZZZ_missing_block", "ZZZ_missing_effect"]
+    assert report["dependencies"]["scripted_effect"] == [
+        {
+            "name": "shared_helper",
+            "defined_in": "common/scripted_effects/shared_effects.txt",
+        }
+    ]
+
+
+@pytest.mark.parametrize("field", ["pdx_tooltip", "pdx_tooltip_delayed", "buttonText"])
+@pytest.mark.parametrize("quoted", [False, True])
+def test_gui_tooltips_and_button_labels_resolve_localisation(mod_root, field, quoted):
+    value = '"ZZZ_gui_label"' if quoted else "ZZZ_gui_label"
+    write_under_str(
+        mod_root,
+        "interface/ZZZ_dashboard.gui",
+        f"guiTypes = {{ buttonType = {{ {field} = {value} }} }}\n",
+    )
+    assert "ZZZ_gui_label" in inspect_mod(mod_root)["unresolved"]["localisation"]
+    write_under_str(
+        mod_root,
+        "localisation/english/ZZZ_gui_l_english.yml",
+        'l_english:\n ZZZ_gui_label:0 "Label"\n',
+    )
+    assert "ZZZ_gui_label" not in inspect_mod(mod_root)["unresolved"]["localisation"]
+
+
+@pytest.mark.parametrize("scripted_kind", ["scripted_effects", "scripted_triggers"])
+@pytest.mark.parametrize("call_value", ["yes", "no", "{ AMOUNT = 1 }"])
+def test_shared_idea_name_is_not_a_scripted_dependency_until_called(
+    mod_root, scripted_kind, call_value
+):
+    write_under_str(
+        mod_root,
+        f"common/{scripted_kind}/outside_economy.txt",
+        "recession = { }\n",
+    )
+    idea_file = "common/ideas/ZZZ_economy.txt"
+    idea = "ideas = { country = { recession = { available = { has_idea = recession }"
+    write_under_str(mod_root, idea_file, idea + " } } }\n")
+    kind = scripted_kind.removesuffix("s")
+    assert not any(
+        entry["name"] == "recession"
+        for entry in inspect_mod(mod_root)["dependencies"].get(kind, ())
+    )
+    write_under_str(
+        mod_root,
+        idea_file,
+        idea
+        + f" {'on_remove' if scripted_kind == 'scripted_effects' else 'allowed'}"
+        + f" = {{ recession = {call_value} }} }} }} }}\n",
+    )
+    assert {
+        "name": "recession",
+        "defined_in": f"common/{scripted_kind}/outside_economy.txt",
+    } in inspect_mod(mod_root)["dependencies"][kind]

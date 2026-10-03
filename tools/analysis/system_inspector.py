@@ -74,6 +74,7 @@ DEFINITION_RULES = (
     ("modifier_definition", "common/modifier_definitions/", 0),
     ("mio", "common/military_industrial_organization/organizations/", 0),
     ("character", "common/characters/", 1),
+    ("focus", "common/national_focus/", 1),
 )
 # Kinds whose names other files reference by bare token, so hooks and dependencies are meaningful.
 LINKED_KINDS = (
@@ -90,6 +91,7 @@ LINKED_KINDS = (
     "modifier_definition",
     "mio",
     "character",
+    "focus",
     "scripted_loc",
     "sprite",
 )
@@ -116,13 +118,13 @@ EVENT_ID_RE = re.compile(r"[A-Za-z0-9_]+\.[A-Za-z0-9_.]+")
 SCRIPTED_LOC_RE = re.compile(r"^\s*name\s*=\s*([A-Za-z0-9_]+)", re.M)
 SPRITE_RE = re.compile(r'name\s*=\s*"?(GFX_[A-Za-z0-9_]+)"?')
 LOC_KEY_RE = re.compile(r"^ ?([A-Za-z0-9_.\-]+):\d* ", re.M)
-CALL_RE = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:yes|no)\b")
 FIRED_EVENT_RE = re.compile(
     r"\b(?:country|news|state|unit_leader|operative_leader)_event\s*=\s*"
     r"(?:\{[^{}]*?\bid\s*=\s*([A-Za-z0-9_.]+)|([A-Za-z0-9_]+\.[A-Za-z0-9_.]+))"
 )
 LOC_REF_RE = re.compile(
-    r"\b(?:title|desc|tooltip|custom_effect_tooltip|localization_key|localisation_key|text)"
+    r"\b(?:title|desc|tooltip|custom_effect_tooltip|localization_key|localisation_key|text"
+    r"|pdx_tooltip(?:_delayed)?|buttonText)"
     r"\s*=\s*\"?([A-Za-z_][A-Za-z0-9_.]*)\"?"
 )
 FLAG_SET_RE = re.compile(
@@ -218,7 +220,16 @@ def definitions_in(rel: str, code: str) -> dict[str, list[str]]:
     found: dict[str, list[str]] = defaultdict(list)
     for kind, prefix, depth in DEFINITION_RULES:
         if rel.startswith(prefix):
-            found[kind] += keys_at_depth(code, depth)
+            if kind == "focus":
+                found[kind] += [
+                    value
+                    for parents, key, value in script_fields(code)
+                    if key == "id"
+                    and parents
+                    and parents[-1][0] in {"focus", "shared_focus", "joint_focus"}
+                ]
+            else:
+                found[kind] += keys_at_depth(code, depth)
             break
     if rel.startswith("events/"):
         found["event"] += [ident for ident, _ in event_blocks(code)]
@@ -266,6 +277,18 @@ def event_option_labels(code: str) -> set[str]:
         and len(parents) == 2
         and parents[0][0] in EVENT_TYPES
         and parents[1][0] == "option"
+    }
+
+
+def scripted_calls(rel: str, code: str) -> set[str]:
+    definition_depth = next(
+        (depth for _, prefix, depth in DEFINITION_RULES if rel.startswith(prefix)),
+        None,
+    )
+    return {
+        key
+        for parents, key, value in script_fields(code)
+        if value in {"yes", "no", "{"} and len(parents) != definition_depth
     }
 
 
@@ -327,6 +350,8 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
 
     script_files = [rel for rel in system if not rel.endswith(".yml")]
     system_tokens = set().union(*(token_sets[rel] for rel in script_files))
+    calls_by_file = {rel: scripted_calls(rel, tree.code[rel]) for rel in script_files}
+    system_calls = set().union(*calls_by_file.values())
     dependencies: dict[str, list[dict[str, str]]] = {}
     for kind in LINKED_KINDS:
         outside_names = {
@@ -334,9 +359,12 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
             for name, rel in defined_by[kind].items()
             if rel not in inside and is_identifier(name)
         }
-        used = sorted(
-            system_tokens & outside_names.keys() - system_defs.get(kind, set())
+        references = (
+            system_calls
+            if kind in {"scripted_effect", "scripted_trigger"}
+            else system_tokens
         )
+        used = sorted(references & outside_names.keys() - system_defs.get(kind, set()))
         if used:
             dependencies[kind] = [
                 {"name": n, "defined_in": outside_names[n]} for n in used
@@ -367,7 +395,7 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
                     globals_read.update(LOC_GLOBAL_READ_RE.findall(match.group(0)))
             continue
         code = tree.code[rel]
-        calls.update(CALL_RE.findall(code))
+        calls.update(calls_by_file[rel])
         for by_id, bare in FIRED_EVENT_RE.findall(code):
             fired.add(by_id or bare)
         fired.update(
