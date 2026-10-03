@@ -524,3 +524,16 @@ def test_non_ct_organizations_activate_on_their_authored_windows(manifest):
         assert f"global.TOP_group_window^{group['id']} = 1" in window
         if "ct_id" not in group:
             assert f"global.TOP_group_created^{group['id']} = 1" in window
+
+
+def test_authored_movement_successors_get_office_adapters(manifest):
+    output = GENERATOR.render(manifest)
+    successors = output["common/scripted_effects/01_targeted_operations_successors.txt"]
+    install = _named_block(successors, "TOP_install_generated_office")
+    retire = _named_block(successors, "TOP_retire_generated_office")
+    branch = install[install.index("check_variable = { TOP_target = 142 }") :]
+    assert branch.index("AQY = {") < branch.index("if = {", 1)
+    assert "Sa'ad bin Atef al-Awlaki" in branch[: branch.index("set_variable")]
+    assert "check_variable = { TOP_target = 142 }" in retire
+    for ident in (143, 145, 148, 157):
+        assert f"check_variable = {{ TOP_target = {ident} }}" not in install
