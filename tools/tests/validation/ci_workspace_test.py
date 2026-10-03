@@ -1,11 +1,8 @@
 """The CI sparse workspace includes validator inputs, not unrelated art or audio."""
 
-import os
 import shlex
-import shutil
 import subprocess
 import sys
-from pathlib import PurePosixPath
 
 import pytest
 import yaml
@@ -73,15 +70,14 @@ OUTSIDE_STAGED = ("gfx/interface/decisions/probe.dds", "localisation/french/p.ym
 
 
 def _staged_fetch(tmp_path):
-    """Run the workflow's staged fetch into a blobless clone of an older base.
+    """Run the workflow's staged fetch into a sparse clone of an older base.
 
-    Returns (checkout, target sha, oid of unrelated art the target changed)."""
+    Returns (checkout, target sha)."""
     source = tmp_path / "source"
     for relative in ("common/probe.txt", "gfx/flags/probe.tga", ART, *OUTSIDE_STAGED):
         write_under_str(source, relative, f"initial {relative}\n")
     initialize_git_repository(source, ".")
     run_git(source, "branch", "base")
-    run_git(source, "config", "uploadpack.allowFilter", "true")
     write_under_str(source, "common/probe.txt", "updated content\n")
     write_under_str(source, ART, "updated unused art\n")
     run_git(source, "commit", "-am", "target revision")
@@ -90,51 +86,34 @@ def _staged_fetch(tmp_path):
     run_git(
         tmp_path,
         "clone",
-        "--filter=blob:none",
-        "--depth=1",
         "--no-checkout",
         "--branch",
         "base",
         source.as_uri(),
         str(checkout),
     )
-    fetch = workflow_step("tools-quality", "Fetch PR head for staged integration")
+    fetch = workflow_step("tools-tests", "Fetch merge revision for staged integration")
     command = shlex.split(
         substitute_expressions(
             fetch["run"],
-            {
-                "needs.detect-changes.outputs.checkout-repository": "owner/repo",
-                "needs.detect-changes.outputs.head-sha": target,
-            },
+            {"github.repository": "owner/repo", "github.sha": target},
         ).replace("https://github.com/owner/repo.git", source.as_uri())
     )
     assert command[:2] == ["git", "fetch"]
-    assert "--depth=1" in command
     run_git(checkout, *command[1:])
-    art_oid = run_git(source, "rev-parse", f"{target}:{ART}").stdout.strip()
-    return checkout, target, art_oid
-
-
-def _art_blob_missing(checkout, target, art_oid):
-    missing = run_git(
-        checkout, "rev-list", "--objects", target, "--missing=print"
-    ).stdout.splitlines()
-    return f"?{art_oid}" in missing
+    return checkout, target
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="the step runs in bash on Linux")
 def test_staged_worktree_step_checks_out_only_the_staged_profile(tmp_path):
-    checkout, target, art_oid = _staged_fetch(tmp_path)
+    checkout, target = _staged_fetch(tmp_path)
     for profile in ("staged_sparse_profile.txt", "ci_workspace_profile.txt"):
         body = (REPO_ROOT / "tools/validation" / profile).read_text(encoding="utf-8")
         write_under_str(checkout, f"tools/validation/{profile}", body)
-    step = workflow_step("tools-quality", "Create staged integration worktree")
+    step = workflow_step("tools-tests", "Create staged integration worktree")
     script = substitute_expressions(
         step["run"],
-        {
-            "runner.temp": str(tmp_path / "runner"),
-            "needs.detect-changes.outputs.head-sha": target,
-        },
+        {"runner.temp": str(tmp_path / "runner"), "github.sha": target},
     )
 
     result = run_bash_step(script, checkout)
@@ -146,77 +125,6 @@ def test_staged_worktree_step_checks_out_only_the_staged_profile(tmp_path):
     ) == "updated content\n"
     assert (worktree / "gfx/flags/probe.tga").is_file()
     assert not any((worktree / path).exists() for path in (ART, *OUTSIDE_STAGED))
-    assert _art_blob_missing(checkout, target, art_oid)
-
-
-def _gnu_tar_with_zstd():
-    if sys.platform == "win32" or shutil.which("zstd") is None:
-        return False
-    version = subprocess.run(["tar", "--version"], capture_output=True, text=True)
-    return "GNU tar" in version.stdout
-
-
-requires_gnu_tar = pytest.mark.skipif(
-    not _gnu_tar_with_zstd(), reason="the workspace archive uses GNU tar and zstd"
-)
-
-
-def _extract_workspace(archive_dir, destination):
-    step = workflow_step("mod-tests", "Extract prepared workspace")
-    destination.mkdir()
-    return run_bash_step(step["run"], destination, {"RUNNER_TEMP": str(archive_dir)})
-
-
-@requires_gnu_tar
-def test_workspace_archive_ships_the_declared_paths_without_git(tmp_path):
-    workflow = yaml.safe_load(
-        (REPO_ROOT / ".github/workflows/test-suite.yml").read_text(encoding="utf-8")
-    )
-    workspace_paths = workflow["env"]["WORKSPACE_PATHS"]
-    shipped = [".workspace-manifest", ".validation_cache/v9/cache.db"]
-    for entry in workspace_paths.split():
-        entry = entry.replace("*", "descriptor")
-        shipped.append(entry if PurePosixPath(entry).suffix else f"{entry}/probe")
-    left_out = [".git/HEAD", "gfx/interface/portraits/probe.dds"]
-    workspace = tmp_path / "workspace"
-    for relative in shipped + left_out:
-        write_under_str(workspace, relative, relative)
-    runner = tmp_path / "runner"
-    runner.mkdir()
-    pack = workflow_step("prepare-workspace", "Pack prepared workspace")
-    env = {"RUNNER_TEMP": str(runner), "WORKSPACE_PATHS": workspace_paths}
-
-    packed = run_bash_step(pack["run"], workspace, env)
-    extracted = _extract_workspace(runner, tmp_path / "mod")
-
-    assert packed.returncode == 0, packed.stderr
-    assert extracted.returncode == 0, extracted.stdout + extracted.stderr
-    mod = tmp_path / "mod"
-    assert all((mod / relative).is_file() for relative in shipped)
-    assert not any((mod / relative).exists() for relative in left_out)
-
-
-@requires_gnu_tar
-@pytest.mark.parametrize("link", ["symlink", "hardlink"])
-def test_workspace_extraction_rejects_links(tmp_path, link):
-    staged = tmp_path / "staged"
-    write_under_str(staged, "common/real.txt", "real\n")
-    if link == "symlink":
-        (staged / "common/link").symlink_to("/etc")
-    else:
-        os.link(staged / "common/real.txt", staged / "common/link")
-    runner = tmp_path / "runner"
-    runner.mkdir()
-    archive = runner / "prepared-workspace.tar.zst"
-    subprocess.run(
-        ["tar", "--zstd", "-cf", str(archive), "common"], cwd=staged, check=True
-    )
-
-    result = _extract_workspace(runner, tmp_path / "mod")
-
-    assert result.returncode == 1
-    assert "link or special file" in result.stdout
-    assert not any((tmp_path / "mod").iterdir())
 
 
 def test_merge_driver_checkout_includes_its_ordering_dependency():

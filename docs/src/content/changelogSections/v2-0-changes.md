@@ -200,7 +200,7 @@ Bugfix:
 - [NKO/KOR] Added a one-time paid Pyongyang radar offer to the Construction Battalion, allowed repeat SPA mineral discoveries while keeping the economy follow-up chain capped, fixed SPA military equipment rewards and added a domestic starting IFV design, made Tooling Innovation show only its selected 35-equipment reward, and adjusted North and South Korean starting stockpiles to their intended reserves and shortages with No Step Back.
 - [PAL] Palestine is now warned that failing Israel's counter-terrorism operation lets Hamas take over, and both sides see the takeover in the Operation Failed event (Issue #4097)
 - [PER] AI Turkey now only backs the South Azerbaijan uprising during the Iranian Civil War when it holds more than 20% influence in Iran, instead of every time (Issue #5121)
-- [PER][BRA] Guarded five divisions that could divide by zero, which produced garbage party popularity percentages for Persia and acreage ratios for Brazil's rainforest mechanic
+- [PER/BRA] Guarded five divisions that could divide by zero, which produced garbage party popularity percentages for Persia and acreage ratios for Brazil's rainforest mechanic
 - [POL] Fixed the Regain Army Trust decision never appearing after a failed coup (Issue #4134)
 - [POL] The State Run Economy now stops when Poland leaves communism instead of leaving a frozen panel and restarts with fresh quotas when communists return, PPS no longer offers to cancel its own State Run Economy spirits, and a failed year at the lowest tier now costs stability and political power as intended (Issue #4546)
 - [POR] Portugal's EID now shows its own name instead of the Brazilian company Mectron

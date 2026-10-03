@@ -294,6 +294,9 @@ def test_unit_checkouts_include_required_content_sources(
     for required in (
         ".github/workflows/docs-quality.yml",
         ".github/workflows/tools-validation.yml",
+        ".github/workflows/changelog-conflict-fixer.yml",
+        "history/countries/KOR - Korea.txt",
+        "resources/documentation/loc_objects_documentation.md",
         "common/technology_tags",
         "common/scripted_guis/00_missiles_scripted_guis.txt",
         "common/scripted_guis/01_targeted_operations_gui.txt",
