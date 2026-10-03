@@ -556,8 +556,8 @@ one country hosts at most one forum and China may already host Boao. `econ_forum
   `econ_forum_found_new_champions`: `econ_forum_new_champions_founded`, standing
   `global.econ_forum_new_champions_prestige` 30, and `econ_forum_news.23`.
 - **Meeting:** every September while `econ_forum_new_champions_can_meet` holds. China and the WEF's host must be at
-  peace, China must not boycott the WEF, and the pandemic must not be under 1300 days old, matching the real meeting's
-  2020-2022 gap.
+  peace, China must not boycott the WEF, and the year must not be 2020-2022, the real meeting's pandemic gap. MD's
+  outbreak arrives only in late 2020, so the gap follows the calendar, not the COVID flag.
 - **Guests:** regional or greater powers with GDP per capita under 20, other than China, at peace with China and not
   boycotting the WEF. The chance is `30 + WEF prestige × 0.3`, +20 if they hold China above 25 opinion, -30 below -25.
   - Each guest gets `econ_forum_new_champions_modifier` (3% cheaper investment, +1% research) for 365 days.
