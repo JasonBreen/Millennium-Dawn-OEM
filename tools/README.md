@@ -318,6 +318,7 @@ Metrics, reference analysis, and review tools.
 | **pre_place_power_plants.py**       | Bakes fossil_powerplant + composite_plant counts into `history/states/` to skip startup loops. Re-run after edits to the energy formula or country/state setup. |
 | **review_branch.py**                | Generates a diff summary of the current branch vs main                                                                                                          |
 | **search_add_ideas.py**             | Searches for `add_ideas` / `add_timed_idea` usage across the codebase                                                                                           |
+| **system_inspector.py**             | Maps one system (`stalker`, `top`, `ai_race`, `econ_forum`, or a path regex): files, definitions, hooks, dependencies, loose ends                               |
 
 ### Generators (`generators/`)
 
