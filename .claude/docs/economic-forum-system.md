@@ -445,12 +445,12 @@ player-only, since AI attendance comes from invitations.
   WEF news names Klaus Schwab.
 - Also once per campaign, checked after every summit:
   - `econ_forum_news.13` when a challenger's summit draws more heads of government
-    than the WEF's last one (`econ_forum_davos_outdrawn`);
+    than the WEF's last one, once the WEF has met (`econ_forum_davos_outdrawn`);
   - `econ_forum_news.14` when a challenger reaches 70 prestige (`econ_forum_equal_of_davos`);
   - `econ_forum_news.15` when the WEF's own summit leaves it below 60, the level at which it
     stops inviting every regional power. Its partners then fund a reform for 1825 days
     (`econ_forum_davos_reform`): 10 more sponsor points, up to 25, and a third speaker attempt
-    each preparation, in `econ_forum_ai_prepare`.
+    while a slot is free, each WEF preparation, in `econ_forum_ai_prepare`.
 
 ## Adding a Forum
 

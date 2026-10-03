@@ -1298,11 +1298,14 @@ econ_forum_ai_prepare = {
 	# A reforming Davos gets more from its partners.
 	if = {
 		limit = {
-			check_variable = { global.econ_forum_state_led^ef_i = 0 }
+			check_variable = { ef_i = 0 }
 			has_global_flag = econ_forum_davos_reform
 		}
 		set_variable = { global.econ_forum_sponsors^ef_i = { value = global.econ_forum_sponsors^ef_i add = 10 min = 25 } }
-		econ_forum_try_book_speaker = yes
+		if = {
+			limit = { check_variable = { global.econ_forum_speakers^ef_i < 3 } }
+			econ_forum_try_book_speaker = yes
+		}
 	}
 	# Summit message: a sanctioned or East-pivoting host rallies its friends, a forum under 50 prestige opens its doors,
 	# and a state-led forum whose last summit beat its prestige pays for a media blitz.
@@ -1798,7 +1801,8 @@ econ_forum_check_milestones = {
 		limit = {
 			NOT = { check_variable = { ef_i = 0 } }
 			NOT = { has_global_flag = econ_forum_davos_outdrawn }
-			check_variable = { global.econ_forum_host^0 > 0 }
+			# Davos has met at least once, so its attendance is on record.
+			check_variable = { global.econ_forum_last_score^0 > 0 }
 			check_variable = { global.econ_forum_last_heads^ef_i > global.econ_forum_last_heads^0 }
 		}
 		set_global_flag = econ_forum_davos_outdrawn
@@ -1825,7 +1829,7 @@ econ_forum_check_milestones = {
 			check_variable = { global.econ_forum_prestige^0 < 60 }
 		}
 		set_global_flag = econ_forum_davos_reform_launched
-		set_global_flag = { flag = econ_forum_davos_reform days = 1825 }
+		set_global_flag = { flag = econ_forum_davos_reform value = 1 days = 1825 }
 		var:ef_host = { news_event = econ_forum_news.15 }
 	}
 }
