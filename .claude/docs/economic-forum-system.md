@@ -58,7 +58,7 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_talks_a`, `_b`  | This cycle's sideline talks parties (0 none)    |
 | `econ_forum_report_favored` | Guest the host moves to the report's top        |
 | `econ_forum_report_top`, `_bottom` | First and last in the last report    |
-| `econ_forum_security`       | 1 when the host paid for summit security        |
+| `econ_forum_security`       | 1 when the summit is secured this cycle         |
 
 | Id  | Forum                               | Month | Founder            | Core members        |
 | --- | ----------------------------------- | ----- | ------------------ | ------------------- |
@@ -441,13 +441,13 @@ A host can move a favorite to the top (`econ_forum_report_favored`, reset when p
 
 ### Protests
 
-A democratic host's summit can draw protesters. `econ_forum_hold_protests` runs after the report. The chance is
-`prestige × 0.25`, +20 before 2004 (the anti-globalisation years after Seattle) and +15 from September 2011 to 2013
-(Occupy). Non-democratic hosts face none.
+A summit whose host holds elections (`has_elections`) can draw protesters. `econ_forum_hold_protests` runs after the report. The chance is
+`prestige × 0.25`, +20 before 2004 (the anti-globalisation years after Seattle) and +15 from mid-September 2011 to 2013
+(Occupy, which began on 17 September). Hosts without elections face none.
 
 - **Security** (`econ_forum_security`, reset when preparation opens):
   - **Player host:** `econ_forum_secure_summit`, 25 PP, while preparing.
-  - **AI host:** the WEF's partners always secure Davos. A state-led democratic host pays 25 PP when it has over 75 PP
+  - **AI host:** the WEF's partners always secure Davos. A state-led host that holds elections pays 25 PP when it has over 75 PP
     and the forum has 40 prestige or it is before 2004.
 - **Protests against a secured summit:** -1 score.
 - **Protests against an unsecured summit:** -6 score, -1% stability for the host and `econ_forum_news.19`. The news has

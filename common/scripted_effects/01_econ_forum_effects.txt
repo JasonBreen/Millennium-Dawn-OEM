@@ -74,7 +74,7 @@ econ_forum_setup = {
 	resize_array = { array = global.econ_forum_report_favored value = 0 size = 9 }
 	resize_array = { array = global.econ_forum_report_top value = 0 size = 9 }
 	resize_array = { array = global.econ_forum_report_bottom value = 0 size = 9 }
-	# 1 when the host has paid for summit security this cycle.
+	# 1 when the summit is secured this cycle: the host paid, or for the WEF its partners did.
 	resize_array = { array = global.econ_forum_security value = 0 size = 9 }
 	# Six program tracks per forum, indexed forum * 6 + track.
 	resize_array = { array = global.econ_forum_tracks value = 0 size = 54 }
@@ -1094,13 +1094,13 @@ econ_forum_publish_report = {
 	}
 }
 
-# Summit scope, after attendance. A democratic host's summit draws protesters: more at a more prestigious forum, and
+# Summit scope, after attendance. A summit in a country that holds elections draws protesters: more at a more prestigious forum, and
 # more in the anti-globalisation years and the Occupy years. Security keeps them at bay; without it they disrupt the
 # summit. ef_protest_points is what they take off the score.
 econ_forum_hold_protests = {
 	set_temp_variable = { ef_protest_points = 0 }
 	if = {
-		limit = { var:ef_host = { has_government = democratic } }
+		limit = { var:ef_host = { has_elections = yes } }
 		set_temp_variable = { ef_protest_chance = { value = ef_prestige multiply = 0.25 } }
 		if = {
 			limit = { date < 2004.1.1 }
@@ -1108,7 +1108,7 @@ econ_forum_hold_protests = {
 		}
 		else_if = {
 			limit = {
-				date > 2011.9.1
+				date > 2011.9.15
 				date < 2014.1.1
 			}
 			add_to_temp_variable = { ef_protest_chance = 15 }
@@ -1850,9 +1850,9 @@ econ_forum_ai_prepare = {
 			}
 		}
 	}
-	# A democratic host secures its summit; the WEF's partners pay for Davos's.
+	# A host that holds elections secures its summit; the WEF's partners pay for Davos's.
 	if = {
-		limit = { has_government = democratic }
+		limit = { has_elections = yes }
 		if = {
 			limit = { check_variable = { global.econ_forum_state_led^ef_i = 0 } }
 			set_variable = { global.econ_forum_security^ef_i = 1 }
