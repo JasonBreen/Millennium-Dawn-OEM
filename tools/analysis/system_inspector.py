@@ -237,10 +237,19 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
     # An outside file that never mentions a prefix stem cannot reference the system's
     # prefixed names, so it is not tokenized. With no prefix, every file is.
     stems = tuple(sorted({p.strip("_") for p in prefixes if p.strip("_")}))
+    other_names = {
+        name
+        for kind in LINKED_KINDS
+        for name in system_defs.get(kind, ())
+        if is_identifier(name) and not any(stem in name for stem in stems)
+    }
     tokens_by_file = {
         rel: TOKEN_RE.findall(code)
         for rel, code in tree.code.items()
-        if rel in inside or not stems or any(stem in code for stem in stems)
+        if rel in inside
+        or not stems
+        or any(stem in code for stem in stems)
+        or any(name in code for name in other_names)
     }
     token_sets = {rel: set(tokens) for rel, tokens in tokens_by_file.items()}
 
