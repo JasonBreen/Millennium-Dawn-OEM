@@ -162,6 +162,7 @@ class TargetScript(TargetedScript):
             "TOP_seed_public_subjects",
             "international_systems_force_update",
             "STALKER_refresh_zone_administration",
+            "FBC_apply_top_organization_sabotage",
         }
         manifest = json.loads(
             (ROOT / "tools/data/targeted_operations.json").read_text(encoding="utf-8")
@@ -551,6 +552,7 @@ class TargetScript(TargetedScript):
             "monolith",
             "scientists",
             "military",
+            "mercenaries",
             "exploitation",
         ):
             self.countries[state]["vars"].setdefault(f"STALKER_zone_{faction}", 0)
