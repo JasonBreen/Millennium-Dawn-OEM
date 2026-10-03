@@ -177,6 +177,7 @@ econ_forum_monthly_update = {
 			}
 		}
 	}
+	econ_forum_new_champions_month = yes
 	econ_forum_ai_reschedule = yes
 	econ_forum_refresh_open_screens = yes
 }
@@ -1158,6 +1159,109 @@ econ_forum_disrupt_summit = {
 	}
 }
 
+# Global monthly, after the forums' own pass. The World Economic Forum offers China a summer meeting for the emerging
+# economies in June 2007, and that Annual Meeting of the New Champions ("Summer Davos") meets every September after.
+econ_forum_new_champions_month = {
+	if = {
+		limit = {
+			check_variable = { global.month = 6 }
+			date > 2007.1.1
+			NOT = { has_global_flag = econ_forum_new_champions_offered }
+			country_exists = CHI
+			check_variable = { global.econ_forum_host^0 > 0 }
+		}
+		set_global_flag = econ_forum_new_champions_offered
+		CHI = {
+			if = {
+				limit = { is_ai = no }
+				country_event = econ_forum.14
+			}
+			else = {
+				econ_forum_found_new_champions = yes
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			check_variable = { global.month = 9 }
+			has_global_flag = econ_forum_new_champions_founded
+			econ_forum_new_champions_can_meet = yes
+		}
+		econ_forum_hold_new_champions = yes
+	}
+}
+
+# China scope: China agrees to co-host the WEF's summer meeting.
+econ_forum_found_new_champions = {
+	set_global_flag = econ_forum_new_champions_founded
+	set_variable = { global.econ_forum_new_champions_prestige = 30 }
+	set_variable = { global.econ_forum_new_champions_last = 0 }
+	news_event = econ_forum_news.23
+}
+
+# Global scope, a September with Summer Davos able to meet. Regional and greater powers with GDP per capita under 20
+# come more often the more prestigious the WEF and the better they think of China. Each guest gets a year of cheaper
+# investment and a little research, and gives China influence and opinion. The meeting's own prestige moves 30% toward
+# its score, which counts 6 per guest up to 60, plus 20 for the WEF's name.
+econ_forum_hold_new_champions = {
+	set_temp_variable = { ef_nc_guests = 0 }
+	set_temp_variable = { ef_nc_chance = { value = global.econ_forum_prestige^0 multiply = 0.3 add = 30 } }
+	set_temp_variable = { ef_nc_influence = { value = global.econ_forum_new_champions_prestige multiply = 0.01 } }
+	CHI = {
+		set_temp_variable = { ef_nc_china = THIS.id }
+		for_each_scope_loop = {
+			array = global.PR_regional_or_greater_powers
+
+			if = {
+				limit = {
+					NOT = { tag = CHI }
+					check_variable = { gdp_per_capita < 20 }
+					NOT = { has_war_with = CHI }
+					NOT = {
+						AND = {
+							check_variable = { econ_forum_boycott^num > 0 }
+							check_variable = { econ_forum_boycott^0 = 1 }
+						}
+					}
+				}
+				set_temp_variable = { ef_nc_roll_chance = ef_nc_chance }
+				if = {
+					limit = { has_opinion = { target = CHI value > 25 } }
+					add_to_temp_variable = { ef_nc_roll_chance = 20 }
+				}
+				else_if = {
+					limit = { has_opinion = { target = CHI value < -25 } }
+					subtract_from_temp_variable = { ef_nc_roll_chance = 30 }
+				}
+				set_temp_variable_to_random = { var = ef_nc_roll min = 0 max = 100 }
+				if = {
+					limit = { check_variable = { ef_nc_roll < ef_nc_roll_chance } }
+					add_to_temp_variable = { ef_nc_guests = 1 }
+					add_dynamic_modifier = { modifier = econ_forum_new_champions_modifier days = 365 }
+					add_opinion_modifier = { target = CHI modifier = econ_forum_attended_summit }
+					set_temp_variable = { percent_change = ef_nc_influence }
+					set_temp_variable = { tag_index = ef_nc_china }
+					set_temp_variable = { influence_target = THIS.id }
+					change_influence_percentage = yes
+					if = {
+						limit = { is_ai = no }
+						country_event = econ_forum.15
+					}
+				}
+			}
+		}
+		set_temp_variable = { ef_nc_score = { value = ef_nc_guests multiply = 6 min = 60 add = 20 } }
+		set_variable = { global.econ_forum_new_champions_prestige = { value = ef_nc_score subtract = global.econ_forum_new_champions_prestige multiply = 0.3 add = global.econ_forum_new_champions_prestige clamp = { min = 0 max = 100 } } }
+		set_variable = { global.econ_forum_new_champions_last = ef_nc_guests }
+		set_variable = { econ_forum_nc_influence = { value = global.econ_forum_new_champions_prestige multiply = 0.002 } }
+		add_dynamic_modifier = { modifier = econ_forum_new_champions_host_modifier days = 365 }
+		if = {
+			limit = { is_ai = no }
+			country_event = econ_forum.15
+		}
+	}
+}
+
 # Host scope, AI only, after the program is set. Books a star on the forum's strongest program track.
 econ_forum_ai_book_star = {
 	set_temp_variable = { ef_best = -1 }
@@ -1970,6 +2074,16 @@ econ_forum_convene_summit = {
 	set_temp_variable = { ef_skip_leader = 0 }
 	clear_temp_array = ef_attendees
 
+	# Summer Davos carries the WEF's name into emerging markets, and its standing lifts the January meeting.
+	set_temp_variable = { ef_nc_bonus = 0 }
+	if = {
+		limit = {
+			check_variable = { ef_i = 0 }
+			has_global_flag = econ_forum_new_champions_founded
+		}
+		set_temp_variable = { ef_nc_bonus = { value = global.econ_forum_new_champions_prestige multiply = 0.05 } }
+	}
+
 	# The first World Economic Forum after a real attack on the United States meets in New York, as it did in 2002.
 	set_temp_variable = { ef_new_york = 0 }
 	if = {
@@ -2117,7 +2231,7 @@ econ_forum_convene_summit = {
 	set_temp_variable = { ef_corporate = { value = ef_prestige multiply = 0.15 add = global.econ_forum_sponsors^ef_i add = ef_sector_points min = 30 } }
 	set_temp_variable = { ef_speaker_points = { value = global.econ_forum_speakers^ef_i multiply = 5 add = { value = ef_prestige multiply = 0.1 } } }
 	# Each signing ceremony is an agreement concluded at the summit.
-	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points add = ef_room_points add = ef_talks_points add = ef_protest_points add = { value = ef_new_york multiply = 5 } } }
+	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points add = ef_room_points add = ef_talks_points add = ef_protest_points add = { value = ef_new_york multiply = 5 } add = ef_nc_bonus } }
 	if = {
 		limit = { check_variable = { ef_clash_forum > -1 } }
 		add_to_temp_variable = { ef_score = 5 }

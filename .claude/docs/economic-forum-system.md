@@ -17,7 +17,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-13`, `econ_forum_news.1-22`.
+- `events/EconomicForums.txt`: `econ_forum.1-15`, `econ_forum_news.1-23`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -545,6 +545,29 @@ player-only, since AI attendance comes from invitations.
     (`econ_forum_davos_reform`): 10 more sponsor points, up to 25, and a third speaker attempt
     while a slot is free, each WEF preparation, in `econ_forum_ai_prepare`.
 
+## Summer Davos
+
+The WEF's Annual Meeting of the New Champions is a second, lighter WEF meeting in China, not a registry slot, because
+one country hosts at most one forum and China may already host Boao. `econ_forum_new_champions_month` runs at the end of
+`econ_forum_monthly_update`.
+
+- **Founding:** in June 2007 or later, while the WEF has a host and China exists, China is offered it once
+  (`econ_forum_new_champions_offered`). An AI China accepts. A human China answers `econ_forum.14`. Accepting runs
+  `econ_forum_found_new_champions`: `econ_forum_new_champions_founded`, standing
+  `global.econ_forum_new_champions_prestige` 30, and `econ_forum_news.23`.
+- **Meeting:** every September while `econ_forum_new_champions_can_meet` holds. China and the WEF's host must be at
+  peace, China must not boycott the WEF, and the pandemic must not be under 1300 days old, matching the real meeting's
+  2020-2022 gap.
+- **Guests:** regional or greater powers with GDP per capita under 20, other than China, at peace with China and not
+  boycotting the WEF. The chance is `30 + WEF prestige × 0.3`, +20 if they hold China above 25 opinion, -30 below -25.
+  - Each guest gets `econ_forum_new_champions_modifier` (3% cheaper investment, +1% research) for 365 days.
+  - It also gives China `econ_forum_attended_summit` opinion and `standing × 0.01`% influence.
+- **Standing:** the meeting's score is `6 per guest, up to 60, + 20`, and its standing moves 30% toward it.
+  - China gets `econ_forum_new_champions_host_modifier`: `standing × 0.002` foreign influence for 365 days.
+  - The WEF's next January summit adds `standing × 0.05` to its score (`ef_nc_bonus`).
+- **Notice:** China and every human guest get `econ_forum.15`. The WEF's Forums tab row shows the standing and last
+  guest count.
+
 ## Adding a Forum
 
 1. Append one entry to every registry array in `econ_forum_setup`, raise every
@@ -612,7 +635,7 @@ belongs to the fork's targeted operations screen, which upstream does not have.
 | 4   | The Forums tab through the scaffolder, delegation agendas, guest actions, invitation requests, AI guests      | #440, #442, #458-#461            |
 | 5   | Walkouts and the breakaway forum                                                                               | #463, #464                       |
 | 6   | Signing ceremonies, councils, summit messages, the tab tooltip                                                 | #466-#468, #470, #471            |
-| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, reports, protests and history        | #473, #474, #476-#478, #481-#483 |
+| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, reports, protests, history, Summer Davos | #473, #474, #476-#478, #481-#483, #485 |
 
 Port notes:
 

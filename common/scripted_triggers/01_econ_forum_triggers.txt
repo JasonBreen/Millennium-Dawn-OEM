@@ -382,3 +382,23 @@ econ_forum_pandemic_disrupts = {
 	has_global_flag = { flag = COVID_start_of_pandemic days > 120 }
 	NOT = { has_global_flag = econ_forum_davos_postponed }
 }
+
+# Summer Davos meets while China and the WEF are on speaking terms. It stayed dark through the pandemic, as the real
+# meeting did from 2020 to 2022.
+econ_forum_new_champions_can_meet = {
+	country_exists = CHI
+	check_variable = { global.econ_forum_host^0 > 0 }
+	var:global.econ_forum_host^0 = {
+		exists = yes
+		NOT = { has_war_with = CHI }
+	}
+	CHI = {
+		NOT = {
+			AND = {
+				check_variable = { econ_forum_boycott^num > 0 }
+				check_variable = { econ_forum_boycott^0 = 1 }
+			}
+		}
+	}
+	NOT = { has_global_flag = { flag = COVID_start_of_pandemic days < 1300 } }
+}
