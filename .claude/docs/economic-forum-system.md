@@ -17,7 +17,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-13`, `econ_forum_news.1-18`.
+- `events/EconomicForums.txt`: `econ_forum.1-13`, `econ_forum_news.1-22`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -58,6 +58,7 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_talks_a`, `_b`  | This cycle's sideline talks parties (0 none)    |
 | `econ_forum_report_favored` | Guest the host moves to the report's top        |
 | `econ_forum_report_top`, `_bottom` | First and last in the last report    |
+| `econ_forum_security`       | 1 when the host paid for summit security        |
 
 | Id  | Forum                               | Month | Founder            | Core members        |
 | --- | ----------------------------------- | ----- | ------------------ | ------------------- |
@@ -438,6 +439,38 @@ A host can move a favorite to the top (`econ_forum_report_favored`, reset when p
 - If the favorite attends, it ranks first and the forum loses 2 prestige once the summit sets its new prestige
   (`ef_report_shift`). A quarter of tilted reports leak (`econ_forum_news.18`) and cost 4 more.
 
+### Protests
+
+A democratic host's summit can draw protesters. `econ_forum_hold_protests` runs after the report. The chance is
+`prestige × 0.25`, +20 before 2004 (the anti-globalisation years after Seattle) and +15 from September 2011 to 2013
+(Occupy). Non-democratic hosts face none.
+
+- **Security** (`econ_forum_security`, reset when preparation opens):
+  - **Player host:** `econ_forum_secure_summit`, 25 PP, while preparing.
+  - **AI host:** the WEF's partners always secure Davos. A state-led democratic host pays 25 PP when it has over 75 PP
+    and the forum has 40 prestige or it is before 2004.
+- **Protests against a secured summit:** -1 score.
+- **Protests against an unsecured summit:** -6 score, -1% stability for the host and `econ_forum_news.19`. The news has
+  anti-globalisation, Occupy and generic texts by date.
+
+### History
+
+Two dated moments of the World Economic Forum, each keyed to the game's own events rather than the calendar:
+
+- **New York** (`econ_forum_new_york_summit`): the first WEF summit within 15 months of a real attack on the United
+  States (`USA_wot_attack_occurred` without `USA_wot_plot_disrupted`) meets in New York in solidarity, as in 2002.
+  It sets `econ_forum_davos_new_york` and gives the United States +40 attendance chance and the summit +5 score, and
+  `econ_forum_news.22` follows the summit.
+- **Pandemic** (`econ_forum_pandemic_disrupts`): once `COVID_start_of_pandemic` is 120 days old, the WEF's summit month
+  calls `econ_forum_disrupt_summit` instead of the summit. The cycle is dropped, as when a forum changes hands.
+  - The first meeting it reaches goes online (`econ_forum_davos_online`, `econ_forum_news.20`). It counts as the
+    year's summit, and prestige holds.
+  - The next one moves four months later (`econ_forum_davos_postponed`, `econ_forum_news.21`), as 2022's moved to
+    May.
+  - After that summit, the forum's month moves back and `econ_forum_months_since` is set to 4, so the next meeting
+    keeps its usual month despite the 11-month spacing rule (`econ_forum_davos_back_on_schedule`).
+  - Other forums meet as usual.
+
 ### Breakaway Forum
 
 `econ_forum_found_breakaway` (150 PP, stability above 40%, peace) is open to a great or super power that boycotts a
@@ -579,7 +612,7 @@ belongs to the fork's targeted operations screen, which upstream does not have.
 | 4   | The Forums tab through the scaffolder, delegation agendas, guest actions, invitation requests, AI guests      | #440, #442, #458-#461            |
 | 5   | Walkouts and the breakaway forum                                                                               | #463, #464                       |
 | 6   | Signing ceremonies, councils, summit messages, the tab tooltip                                                 | #466-#468, #470, #471            |
-| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, competitiveness reports              | #473, #474, #476-#478, #481, #482 |
+| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, reports, protests and history        | #473, #474, #476-#478, #481-#483 |
 
 Port notes:
 

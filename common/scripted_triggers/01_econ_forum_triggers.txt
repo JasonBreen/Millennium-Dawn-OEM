@@ -363,3 +363,22 @@ econ_forum_has_talks_rival = {
 		econ_forum_talks_partner = yes
 	}
 }
+
+# Temp ef_i: the World Economic Forum's first summit within 15 months of a real attack on the United States, which
+# meets in New York in solidarity, as it did in 2002.
+econ_forum_new_york_summit = {
+	check_variable = { ef_i = 0 }
+	NOT = { has_global_flag = econ_forum_davos_new_york }
+	country_exists = USA
+	USA = {
+		has_country_flag = { flag = USA_wot_attack_occurred days < 450 }
+		NOT = { has_country_flag = USA_wot_plot_disrupted }
+	}
+}
+
+# Temp ef_i: the pandemic has run for four months or more and has not yet pushed back a World Economic Forum meeting.
+econ_forum_pandemic_disrupts = {
+	check_variable = { ef_i = 0 }
+	has_global_flag = { flag = COVID_start_of_pandemic days > 120 }
+	NOT = { has_global_flag = econ_forum_davos_postponed }
+}
