@@ -46,6 +46,9 @@ GLOBAL_STATE = (
 UPSTREAM_PREFIXES = (
     "USA_ai_core_",
     "USA_anthropic_",
+    "USA_xai_",
+    "USA_openai_",
+    "USA_spacex_",
     "CHI_huawei_",
     "CHI_ic_inf_nsc",
     "energy_",
@@ -1832,3 +1835,145 @@ def test_dashboard_bottleneck_source_order_resolves_ties(ratios, expected):
     )
     assert selected == expected
     assert f"AI_RACE_bottleneck_{selected}" in block
+
+
+XAI_MAPPING = (
+    ("ai_race_capability_external", "USA_xai_frontier_capability"),
+    ("ai_race_compute_external", "USA_xai_compute_scale"),
+    ("ai_race_talent_external", "USA_xai_talent"),
+    ("ai_race_deployment_external", "USA_xai_deployment"),
+    ("ai_race_public_confidence_external", "USA_xai_public_standing"),
+)
+XAI_CAPSTONE_DELTAS = {
+    "USA_xai_colossus_scale": (
+        ("ai_race_compute_external", 4),
+        ("ai_race_capability_external", 2),
+    ),
+    "USA_xai_grok_deployment": (
+        ("ai_race_deployment_external", 4),
+        ("ai_race_capability_external", 2),
+    ),
+    "USA_xai_talent_concentration": (
+        ("ai_race_talent_external", 4),
+        ("ai_race_capability_external", 1),
+    ),
+    "USA_xai_truth_seeking_charter": (
+        ("ai_race_public_confidence_external", 3),
+        ("ai_race_capability_external", 1),
+    ),
+}
+STARLINK_ADD = (
+    "add_to_variable = { ai_race_deployment_external = USA_spacex_leo_satcom_presence }"
+)
+
+
+def test_xai_contribution_writes_only_race_state_and_reads_starlink_once():
+    effects = EFFECTS_PATH.read_text(encoding="utf-8")
+    metrics = _named_block(effects, "ai_race_rebuild_country_metrics")
+    block = _named_block(effects, "ai_race_usa_xai_contribution")
+    europe = _named_block(effects, "ai_race_eu_anthropic_contribution")
+
+    assert metrics.count("ai_race_usa_xai_contribution = yes") == 2
+    assert metrics.index("ai_race_usa_anthropic_contribution = yes") < metrics.index(
+        "ai_race_usa_xai_contribution = yes"
+    )
+    assert "USA_spacex_" not in europe
+    assert "ai_race_usa_xai_contribution" not in europe
+    assert "USA_xai_reconstruct_complete" not in block
+    assert "corporate_history_enabled = yes" in block
+    assert "has_country_flag = USA_xai_state_initialized" in block
+
+    for external, axis in XAI_MAPPING:
+        expected = (
+            f"add_to_variable = {{ {external} = "
+            f"{{ value = {axis} multiply = 2 }} }}"
+        )
+        assert block.count(expected) == 1, expected
+
+    writes = _variable_write_targets(block)
+    assert writes
+    assert all(target.startswith("ai_race_") for target in writes), writes
+    assert not any(target.startswith(UPSTREAM_PREFIXES) for target in writes)
+
+    branches = re.split(r"(?=has_idea = USA_xai_)", block)[1:]
+    assert len(branches) == len(XAI_CAPSTONE_DELTAS)
+    assert block.count("else_if") == len(XAI_CAPSTONE_DELTAS) - 1
+
+    assert effects.count(STARLINK_ADD) == 1
+    guard = block.index("has_country_flag = USA_spacex_state_initialized")
+    starlink_if = _extract_block(block, block.rindex("if = {", 0, guard))
+    assert STARLINK_ADD in starlink_if
+    assert (
+        "check_variable = { var = USA_spacex_leo_satcom_presence value = 1 compare = greater_than_or_equals }"
+        in starlink_if
+    )
+    assert "multiply" not in starlink_if
+    assert block.count(STARLINK_ADD) == 1
+
+
+def test_xai_talent_raid_dents_openai_under_one_flag():
+    openai = (
+        ROOT / "common" / "scripted_effects" / "USA_openai_effects.txt"
+    ).read_text(encoding="utf-8")
+    xai = (ROOT / "common" / "scripted_effects" / "USA_xai_effects.txt").read_text(
+        encoding="utf-8"
+    )
+    dent = _named_block(openai, "USA_openai_apply_xai_talent_dent")
+    route = _named_block(xai, "USA_xai_apply_talent_route")
+
+    assert "has_country_flag = USA_openai_state_initialized" in dent
+    assert "NOT = { has_country_flag = USA_xai_openai_talent_taken }" in dent
+    assert "add_to_variable = { USA_openai_frontier_capability = -1 }" in dent
+    assert "add_to_variable = { USA_openai_deployment_reach = -1 }" in dent
+    assert "USA_openai_clamp_state = yes" in dent
+    assert "set_country_flag" not in dent
+    assert route.count("USA_openai_apply_xai_talent_dent = yes") == 1
+    assert route.count("set_country_flag = USA_xai_openai_talent_taken") == 1
+    assert xai.count("set_country_flag = USA_xai_openai_talent_taken") == 1
+
+
+def test_xai_followup_tooltips_name_treasury_duration_and_corporate_history():
+    loc = (
+        ROOT / "localisation" / "english" / "MD_focus_USA_l_english.yml"
+    ).read_text(encoding="utf-8-sig")
+    decisions = (ROOT / "common" / "decisions" / "USA.txt").read_text(encoding="utf-8")
+
+    def _desc(key):
+        return next(line for line in loc.splitlines() if line.startswith(f" {key}:"))
+
+    for key, treasury in (
+        ("USA_xai_colossus_scale_decision_desc", "25 billion"),
+        ("USA_xai_grok_deployment_decision_desc", "15 billion"),
+        ("USA_xai_colossus_expansion_decision_desc", "25 billion"),
+        ("USA_xai_grok_platform_decision_desc", "15 billion"),
+    ):
+        line = _desc(key)
+        assert "Corporate History" in line
+        assert "365 days" in line
+        assert treasury in line
+    for key in (
+        "USA_xai_talent_concentration_decision_desc",
+        "USA_xai_truth_seeking_charter_decision_desc",
+        "USA_xai_open_weights_decision_desc",
+    ):
+        line = _desc(key)
+        assert "Corporate History" in line
+        assert "365 days" in line
+    assert "does not draw on the treasury" in _desc("USA_xai_open_weights_decision_desc")
+
+    expansion = _named_block(decisions, "USA_xai_colossus_expansion_decision")
+    assert "has_country_flag = USA_xai_colossus_chosen" in expansion
+    assert "set_country_flag = USA_xai_followup_set" in expansion
+    assert "factor = 5" in expansion.split("ai_will_do", 1)[1]
+    platform = _named_block(decisions, "USA_xai_grok_platform_decision")
+    weights = _named_block(decisions, "USA_xai_open_weights_decision")
+    assert "has_country_flag = USA_xai_grok_chosen" in platform
+    assert "USA_xai_deployment" in platform
+    assert "factor = 5" not in platform
+    assert "factor = 5" not in weights
+    assert "is_historical_focus_on = yes" in platform
+    assert "is_historical_focus_on = yes" in weights
+    for block in (expansion, platform, weights):
+        assert "NOT = { has_country_flag = USA_xai_followup_set }" in block
+        assert "has_country_flag = USA_xai_state_initialized" in block
+        assert "365" in block

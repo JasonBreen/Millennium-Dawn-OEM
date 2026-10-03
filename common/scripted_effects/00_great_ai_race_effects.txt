@@ -155,6 +155,50 @@ ai_race_usa_anthropic_contribution = {
 	}
 }
 
+# xAI axes are 0-10 and weighted x2, same as Anthropic. The lab is American, so it does not spill into Europe.
+ai_race_usa_xai_contribution = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			has_country_flag = USA_xai_state_initialized
+		}
+		add_to_variable = { ai_race_capability_external = { value = USA_xai_frontier_capability multiply = 2 } }
+		add_to_variable = { ai_race_compute_external = { value = USA_xai_compute_scale multiply = 2 } }
+		add_to_variable = { ai_race_talent_external = { value = USA_xai_talent multiply = 2 } }
+		add_to_variable = { ai_race_deployment_external = { value = USA_xai_deployment multiply = 2 } }
+		add_to_variable = { ai_race_public_confidence_external = { value = USA_xai_public_standing multiply = 2 } }
+		# The first-year spirits are mutually exclusive, so at most one overlay applies.
+		if = {
+			limit = { has_idea = USA_xai_colossus_scale }
+			add_to_variable = { ai_race_compute_external = 4 }
+			add_to_variable = { ai_race_capability_external = 2 }
+		}
+		else_if = {
+			limit = { has_idea = USA_xai_grok_deployment }
+			add_to_variable = { ai_race_deployment_external = 4 }
+			add_to_variable = { ai_race_capability_external = 2 }
+		}
+		else_if = {
+			limit = { has_idea = USA_xai_talent_concentration }
+			add_to_variable = { ai_race_talent_external = 4 }
+			add_to_variable = { ai_race_capability_external = 1 }
+		}
+		else_if = {
+			limit = { has_idea = USA_xai_truth_seeking_charter }
+			add_to_variable = { ai_race_public_confidence_external = 3 }
+			add_to_variable = { ai_race_capability_external = 1 }
+		}
+		# Starlink is an American distribution channel. A full constellation is +10, added once.
+		if = {
+			limit = {
+				has_country_flag = USA_spacex_state_initialized
+				check_variable = { var = USA_spacex_leo_satcom_presence value = 1 compare = greater_than_or_equals }
+			}
+			add_to_variable = { ai_race_deployment_external = USA_spacex_leo_satcom_presence }
+		}
+	}
+}
+
 ai_race_rebuild_country_metrics = {
 	if = {
 		limit = { ai_race_active = yes }
@@ -221,6 +265,7 @@ ai_race_rebuild_country_metrics = {
 				}
 				set_variable = { ai_race_capability_national_input = ai_race_capability_external }
 				ai_race_usa_anthropic_contribution = yes
+				ai_race_usa_xai_contribution = yes
 				set_variable = { ai_race_capability_lab_overlay = ai_race_capability_external }
 				subtract_from_variable = { ai_race_capability_lab_overlay = ai_race_capability_national_input }
 				ai_race_repair_country_state = yes
@@ -252,6 +297,7 @@ ai_race_rebuild_country_metrics = {
 				# Other externals left to 0 in fallback
 				set_variable = { ai_race_capability_national_input = ai_race_capability_external }
 				ai_race_usa_anthropic_contribution = yes
+				ai_race_usa_xai_contribution = yes
 				set_variable = { ai_race_capability_lab_overlay = ai_race_capability_external }
 				subtract_from_variable = { ai_race_capability_lab_overlay = ai_race_capability_national_input }
 				ai_race_repair_country_state = yes
