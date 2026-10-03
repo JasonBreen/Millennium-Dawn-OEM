@@ -851,14 +851,16 @@ econ_forum_broker_talks = {
 }
 
 # Party scope, from econ_forum.12: we refuse to sit down, which calls the talks off, only at the forum whose seat the
-# event saved and while it is preparing.
+# event saved, while it is preparing, and while the pair is still us and the rival the event named.
 econ_forum_refuse_talks = {
 	if = {
 		limit = {
 			has_event_target = econ_forum_talks_host
+			has_event_target = econ_forum_talks_other
 			event_target:econ_forum_talks_host = { has_variable = econ_forum_hosted }
 		}
 		event_target:econ_forum_talks_host = { set_temp_variable = { ef_i = econ_forum_hosted } }
+		event_target:econ_forum_talks_other = { set_temp_variable = { ef_talks_other = THIS.id } }
 		set_temp_variable = { ef_talks_seat = 0 }
 		if = {
 			limit = { has_event_target = econ_forum_talks_seat }
@@ -869,8 +871,14 @@ econ_forum_refuse_talks = {
 				check_variable = { global.econ_forum_seat^ef_i = ef_talks_seat }
 				check_variable = { global.econ_forum_preparing^ef_i = 1 }
 				OR = {
-					check_variable = { global.econ_forum_talks_a^ef_i = THIS.id }
-					check_variable = { global.econ_forum_talks_b^ef_i = THIS.id }
+					AND = {
+						check_variable = { global.econ_forum_talks_a^ef_i = THIS.id }
+						check_variable = { global.econ_forum_talks_b^ef_i = ef_talks_other }
+					}
+					AND = {
+						check_variable = { global.econ_forum_talks_b^ef_i = THIS.id }
+						check_variable = { global.econ_forum_talks_a^ef_i = ef_talks_other }
+					}
 				}
 			}
 			set_variable = { global.econ_forum_talks_a^ef_i = 0 }

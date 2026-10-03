@@ -398,8 +398,9 @@ preparation opens and cleared at the summit.
 - **AI host:** a forum at 40 prestige or more with no talks booked, after its ceremonies, with a 30% chance. A
   state-led host needs over 100 PP and pays 25; the WEF's partners pay for it.
 - **Human party:** `econ_forum.12` names the other side (queued in `econ_forum_talks_queue`, host saved as
-  `econ_forum_talks_host`). Refusing (`econ_forum_refuse_talks`) calls the talks off, only at the forum whose seat
-  the event saved and while it is preparing.
+  `econ_forum_talks_host`, other side as `econ_forum_talks_other`). Refusing (`econ_forum_refuse_talks`) calls the
+  talks off, only at the forum whose seat the event saved, while it is preparing, and while the booked pair is still
+  the one the event named, so a stale popup cannot cancel replacement talks.
 - **AI party:** +10 attendance chance while booked.
 
 At the summit, after the private room, `econ_forum_hold_talks` holds them if both parties attended and are not at
