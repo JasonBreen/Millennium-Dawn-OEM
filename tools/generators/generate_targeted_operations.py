@@ -1100,9 +1100,20 @@ def successors(data: dict) -> str:
     installations, retirements = [], []
     people = names(data)
     movement_tags = {2: "AQY", 3: "ISI", 4: "TTP", 6: "SHB"}
-    for ident in range(data["generated_start"], data["generated_end"]):
-        group = (ident - data["generated_start"]) % 10 + 1
-        tag = movement_tags.get(group)
+    offices = [
+        (ident, movement_tags.get((ident - data["generated_start"]) % 10 + 1))
+        for ident in range(data["generated_start"], data["generated_end"])
+    ]
+    # Authored successors past the generated block reach these adapters through
+    # TOP_apply_office_successor too, so their movement office needs a branch.
+    offices += [
+        (ident, movement_tags[group["id"]])
+        for group in data["groups"]
+        if group["id"] in movement_tags
+        for ident in group.get("succession", [])
+        if ident >= data["generated_end"]
+    ]
+    for ident, tag in offices:
         if tag:
             name = people[str(ident)]
             installations += [

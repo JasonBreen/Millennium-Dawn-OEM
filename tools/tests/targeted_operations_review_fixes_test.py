@@ -82,7 +82,41 @@ def test_isi_formation_and_replacements_install_the_selected_successor():
     events = read("events/Iran.txt")
     assert events.count("TOP_target = global.TOP_group_leader^3") == 4
     assert events.count("TOP_apply_office_successor = yes") == 4
-    assert events.count("global.TOP_status^29 < 2") == 1
+    assert events.count(ISI_FALLBACK) == 4
+
+
+ISI_FALLBACK = (
+    "limit = { OR = { TOP_enabled = no AND = { check_variable = { "
+    "global.TOP_group_leader^3 = 0 } check_variable = { global.TOP_status^29 < 2 } } } }"
+)
+SHABAAB_FALLBACK = "limit = { OR = { TOP_enabled = no check_variable = { global.TOP_status^45 < 2 } } }"
+
+
+@pytest.mark.parametrize(
+    "fallback,group,predecessor",
+    ((ISI_FALLBACK, 3, 29), (SHABAAB_FALLBACK, 6, 45)),
+    ids=("isi", "al_shabaab"),
+)
+@pytest.mark.parametrize(
+    "leader,status,expected",
+    ((0, 1, True), (0, 3, False)),
+    ids=("predecessor_active", "predecessor_removed"),
+)
+def test_formation_falls_back_to_the_legacy_leader_until_top_selects_one(
+    fallback, group, predecessor, leader, status, expected
+):
+    # Formation can run before the monthly pulse activates the group, so TOP has no leader to install yet.
+    script = TargetScript()
+    script.globals["TOP_rule_mode"] = 1
+    script.globals["TOP_group_leader"][group] = leader
+    script.globals["TOP_status"][predecessor] = status
+    limit = _parse_race_script(fallback)["limit"]
+    assert script.condition(limit, 1) == expected
+
+
+def test_somalia_fallbacks_guard_a_removed_godane():
+    events = read("events/Somalia.txt")
+    assert events.count(SHABAAB_FALLBACK) == 2
 
 
 def test_prosecuted_iraqi_cards_keep_a_resolution_indicator():
@@ -109,7 +143,8 @@ def test_legacy_office_paths_dispatch_selected_successor_after_predecessor_remov
 ):
     events = read(path)
     pattern = re.compile(
-        r"if\s*=\s*\{\s*limit\s*=\s*\{\s*TOP_enabled\s*=\s*yes\s*\}"
+        r"if\s*=\s*\{\s*limit\s*=\s*\{\s*TOP_enabled\s*=\s*yes\s*"
+        rf"check_variable\s*=\s*\{{\s*global.TOP_group_leader\^{group}\s*>\s*0\s*\}}\s*\}}"
         rf"\s*set_temp_variable\s*=\s*\{{\s*TOP_target\s*=\s*global.TOP_group_leader\^{group}\s*\}}"
     )
     branches = [
