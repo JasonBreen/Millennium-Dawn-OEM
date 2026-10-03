@@ -1933,9 +1933,9 @@ def test_xai_talent_raid_dents_openai_under_one_flag():
 
 
 def test_xai_followup_tooltips_name_treasury_duration_and_corporate_history():
-    loc = (
-        ROOT / "localisation" / "english" / "MD_focus_USA_l_english.yml"
-    ).read_text(encoding="utf-8-sig")
+    loc = (ROOT / "localisation" / "english" / "MD_focus_USA_l_english.yml").read_text(
+        encoding="utf-8-sig"
+    )
     decisions = (ROOT / "common" / "decisions" / "USA.txt").read_text(encoding="utf-8")
 
     def _desc(key):
@@ -1959,7 +1959,9 @@ def test_xai_followup_tooltips_name_treasury_duration_and_corporate_history():
         line = _desc(key)
         assert "Corporate History" in line
         assert "365 days" in line
-    assert "does not draw on the treasury" in _desc("USA_xai_open_weights_decision_desc")
+    assert "does not draw on the treasury" in _desc(
+        "USA_xai_open_weights_decision_desc"
+    )
 
     expansion = _named_block(decisions, "USA_xai_colossus_expansion_decision")
     assert "has_country_flag = USA_xai_colossus_chosen" in expansion
