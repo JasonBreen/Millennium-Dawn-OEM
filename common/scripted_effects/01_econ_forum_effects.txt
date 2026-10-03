@@ -66,6 +66,9 @@ econ_forum_setup = {
 	resize_array = { array = global.econ_forum_star value = 0 size = 9 }
 	# Seats given out in the invitation-only private room this cycle (max 4, the host aside).
 	resize_array = { array = global.econ_forum_room_seats value = 0 size = 9 }
+	# The two rival governments the host brings together on the sidelines this cycle (country ids, 0 for none).
+	resize_array = { array = global.econ_forum_talks_a value = 0 size = 9 }
+	resize_array = { array = global.econ_forum_talks_b value = 0 size = 9 }
 	# Six program tracks per forum, indexed forum * 6 + track.
 	resize_array = { array = global.econ_forum_tracks value = 0 size = 54 }
 	resize_array = { array = global.econ_forum_track_prestige value = 0 size = 54 }
@@ -300,6 +303,8 @@ econ_forum_open_preparation = {
 	set_variable = { global.econ_forum_controversial^ef_i = 0 }
 	set_variable = { global.econ_forum_star^ef_i = 0 }
 	set_variable = { global.econ_forum_room_seats^ef_i = 0 }
+	set_variable = { global.econ_forum_talks_a^ef_i = 0 }
+	set_variable = { global.econ_forum_talks_b^ef_i = 0 }
 	set_variable = { global.econ_forum_speakers^ef_i = 0 }
 	set_variable = { global.econ_forum_track_count^ef_i = 0 }
 	set_variable = { global.econ_forum_invites_left^ef_i = { value = global.econ_forum_prestige^ef_i divide = 25 round = yes add = 3 } }
@@ -803,6 +808,158 @@ econ_forum_hold_private_room = {
 				add_stability = -0.02
 			}
 			var:ef_host = { news_event = econ_forum_news.12 }
+		}
+	}
+}
+
+# Party scope, temp ef_i: the host of forum ef_i brings us together with our fiercest rival among its invited regional
+# or greater powers, the one either side likes least, for talks on the summit's sidelines.
+econ_forum_broker_talks = {
+	set_temp_variable = { ef_talks_partner = 0 }
+	set_temp_variable = { ef_talks_low = -24 }
+	for_each_scope_loop = {
+		array = global.PR_regional_or_greater_powers
+
+		if = {
+			limit = { econ_forum_talks_partner = yes }
+			PREV = { set_temp_variable = { ef_talks_their = opinion@PREV } }
+			set_temp_variable = { ef_talks_opinion = { value = opinion@PREV min = ef_talks_their } }
+			if = {
+				limit = { check_variable = { ef_talks_opinion < ef_talks_low } }
+				set_temp_variable = { ef_talks_low = ef_talks_opinion }
+				set_temp_variable = { ef_talks_partner = THIS.id }
+			}
+		}
+	}
+	if = {
+		limit = { check_variable = { ef_talks_partner > 0 } }
+		set_variable = { global.econ_forum_talks_a^ef_i = THIS.id }
+		set_variable = { global.econ_forum_talks_b^ef_i = ef_talks_partner }
+		if = {
+			limit = { is_ai = no }
+			add_to_array = { econ_forum_talks_queue = ef_i }
+			country_event = econ_forum.12
+		}
+		var:ef_talks_partner = {
+			if = {
+				limit = { is_ai = no }
+				add_to_array = { econ_forum_talks_queue = ef_i }
+				country_event = econ_forum.12
+			}
+		}
+	}
+}
+
+# Party scope, from econ_forum.12: we refuse to sit down, which calls the talks off, only at the forum whose seat the
+# event saved and while it is preparing.
+econ_forum_refuse_talks = {
+	if = {
+		limit = {
+			has_event_target = econ_forum_talks_host
+			event_target:econ_forum_talks_host = { has_variable = econ_forum_hosted }
+		}
+		event_target:econ_forum_talks_host = { set_temp_variable = { ef_i = econ_forum_hosted } }
+		set_temp_variable = { ef_talks_seat = 0 }
+		if = {
+			limit = { has_event_target = econ_forum_talks_seat }
+			event_target:econ_forum_talks_seat = { set_temp_variable = { ef_talks_seat = THIS } }
+		}
+		if = {
+			limit = {
+				check_variable = { global.econ_forum_seat^ef_i = ef_talks_seat }
+				check_variable = { global.econ_forum_preparing^ef_i = 1 }
+				OR = {
+					check_variable = { global.econ_forum_talks_a^ef_i = THIS.id }
+					check_variable = { global.econ_forum_talks_b^ef_i = THIS.id }
+				}
+			}
+			set_variable = { global.econ_forum_talks_a^ef_i = 0 }
+			set_variable = { global.econ_forum_talks_b^ef_i = 0 }
+		}
+	}
+}
+
+# Summit scope, after attendance. When both parties came and are still at peace with each other, the talks reach an
+# accord or collapse. The chance rises with the forum's prestige and with each head of government at the table, and
+# falls with the bad blood between them. ef_talks_points is what the outcome adds to the score.
+econ_forum_hold_talks = {
+	set_temp_variable = { ef_talks_points = 0 }
+	set_temp_variable = { ef_talks_a = global.econ_forum_talks_a^ef_i }
+	set_temp_variable = { ef_talks_b = global.econ_forum_talks_b^ef_i }
+	set_variable = { global.econ_forum_talks_a^ef_i = 0 }
+	set_variable = { global.econ_forum_talks_b^ef_i = 0 }
+	if = {
+		limit = {
+			check_variable = { ef_talks_a > 0 }
+			check_variable = { ef_talks_b > 0 }
+			var:ef_talks_a = {
+				exists = yes
+				check_variable = { econ_forum_last^ef_i > 2 }
+			}
+			var:ef_talks_b = {
+				exists = yes
+				check_variable = { econ_forum_last^ef_i > 2 }
+			}
+		}
+		set_temp_variable = { ef_talks_chance = { value = ef_prestige multiply = 0.4 add = 25 } }
+		var:ef_talks_a = {
+			if = {
+				limit = { check_variable = { econ_forum_last^ef_i = 4 } }
+				add_to_temp_variable = { ef_talks_chance = 10 }
+			}
+			var:ef_talks_b = {
+				if = {
+					limit = { check_variable = { econ_forum_last^ef_i = 4 } }
+					add_to_temp_variable = { ef_talks_chance = 10 }
+				}
+				PREV = { set_temp_variable = { ef_talks_their = opinion@PREV } }
+				set_temp_variable = { ef_talks_opinion = { value = opinion@PREV min = ef_talks_their } }
+				set_temp_variable = { ef_talks_war = 0 }
+				if = {
+					limit = { has_war_with = PREV }
+					set_temp_variable = { ef_talks_war = 1 }
+				}
+			}
+		}
+		if = {
+			limit = { check_variable = { ef_talks_war = 0 } }
+			set_temp_variable = { ef_talks_chance = { value = ef_talks_opinion multiply = 0.2 add = ef_talks_chance clamp = { min = 10 max = 90 } } }
+			set_temp_variable_to_random = { var = ef_talks_roll min = 0 max = 100 }
+			var:ef_talks_a = {
+				var:ef_talks_b = { set_country_flag = { flag = econ_forum_talks_held@PREV value = 1 days = 1825 } }
+			}
+			var:ef_talks_b = {
+				var:ef_talks_a = { set_country_flag = { flag = econ_forum_talks_held@PREV value = 1 days = 1825 } }
+			}
+			var:ef_host = {
+				set_variable = { econ_forum_news_talks_a = ef_talks_a }
+				set_variable = { econ_forum_news_talks_b = ef_talks_b }
+			}
+			if = {
+				limit = { check_variable = { ef_talks_roll < ef_talks_chance } }
+				set_temp_variable = { ef_talks_points = 8 }
+				var:ef_talks_a = {
+					var:ef_talks_b = {
+						add_opinion_modifier = { target = PREV modifier = econ_forum_talks_accord }
+						reverse_add_opinion_modifier = { target = PREV modifier = econ_forum_talks_accord }
+					}
+				}
+				var:ef_host = {
+					var:ef_talks_a = { add_opinion_modifier = { target = PREV modifier = econ_forum_brokered_talks } }
+					var:ef_talks_b = { add_opinion_modifier = { target = PREV modifier = econ_forum_brokered_talks } }
+					news_event = econ_forum_news.16
+				}
+			}
+			else = {
+				set_temp_variable = { ef_talks_points = -3 }
+				var:ef_talks_a = {
+					var:ef_talks_b = {
+						add_opinion_modifier = { target = PREV modifier = econ_forum_talks_collapsed }
+						reverse_add_opinion_modifier = { target = PREV modifier = econ_forum_talks_collapsed }
+					}
+				}
+				var:ef_host = { news_event = econ_forum_news.17 }
+			}
 		}
 	}
 }
@@ -1441,6 +1598,38 @@ econ_forum_ai_prepare = {
 			}
 		}
 	}
+	# Organizers with standing broker talks between two rival guests on the sidelines; the WEF's partners pay for it.
+	if = {
+		limit = {
+			check_variable = { global.econ_forum_prestige^ef_i > 39 }
+			check_variable = { global.econ_forum_talks_a^ef_i = 0 }
+			OR = {
+				check_variable = { global.econ_forum_state_led^ef_i = 0 }
+				has_political_power > 100
+			}
+		}
+		random = {
+			chance = 30
+			random_scope_in_array = {
+				array = global.PR_regional_or_greater_powers
+				limit = {
+					NOT = { tag = PREV }
+					check_variable = { econ_forum_status^num > ef_i }
+					check_variable = { econ_forum_status^ef_i > 0 }
+					NOT = { has_war_with = PREV }
+					econ_forum_has_talks_rival = yes
+				}
+				econ_forum_broker_talks = yes
+			}
+			if = {
+				limit = {
+					check_variable = { global.econ_forum_state_led^ef_i = 1 }
+					check_variable = { global.econ_forum_talks_a^ef_i > 0 }
+				}
+				add_political_power = -25
+			}
+		}
+	}
 }
 
 # Host scope. A headline speaker is harder to land the further the strongest rival forum is ahead.
@@ -1614,6 +1803,7 @@ econ_forum_convene_summit = {
 	}
 	econ_forum_council_session = yes
 	econ_forum_hold_private_room = yes
+	econ_forum_hold_talks = yes
 	var:ef_host = {
 		econ_forum_close_ceremonies = yes
 		# The first summit a sanctioned host holds without the West makes the news.
@@ -1678,7 +1868,7 @@ econ_forum_convene_summit = {
 	set_temp_variable = { ef_corporate = { value = ef_prestige multiply = 0.15 add = global.econ_forum_sponsors^ef_i add = ef_sector_points min = 30 } }
 	set_temp_variable = { ef_speaker_points = { value = global.econ_forum_speakers^ef_i multiply = 5 add = { value = ef_prestige multiply = 0.1 } } }
 	# Each signing ceremony is an agreement concluded at the summit.
-	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points add = ef_room_points } }
+	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points add = ef_room_points add = ef_talks_points } }
 	if = {
 		limit = { check_variable = { ef_clash_forum > -1 } }
 		add_to_temp_variable = { ef_score = 5 }
@@ -1883,6 +2073,16 @@ econ_forum_ai_decide_attendance = {
 	# A seat in the private room is worth the trip.
 	if = {
 		limit = { check_variable = { econ_forum_room^ef_i = 1 } }
+		add_to_temp_variable = { ef_chance = 10 }
+	}
+	# So are talks the organizers arranged with our rival.
+	if = {
+		limit = {
+			OR = {
+				check_variable = { global.econ_forum_talks_a^ef_i = THIS.id }
+				check_variable = { global.econ_forum_talks_b^ef_i = THIS.id }
+			}
+		}
 		add_to_temp_variable = { ef_chance = 10 }
 	}
 	# Council members keep coming back.
