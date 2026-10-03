@@ -382,7 +382,9 @@ def test_registry_emits_legacy_and_three_axis_person_and_organization_state(mani
     assert "global.TOP_registry_capacity = 161" in registry
     org_slots = len(manifest["groups"]) + 1
     for field in GENERATOR.GROUP_FIELDS:
-        assert f"resize_array = {{ global.TOP_group_{field} = {org_slots} }}" in registry
+        assert (
+            f"resize_array = {{ global.TOP_group_{field} = {org_slots} }}" in registry
+        )
     for field in GENERATOR.ORG_COUNTRY_FIELDS:
         assert f"resize_array = {{ TOP_org_{field} = {org_slots} }}" in registry
     generated = range(manifest["generated_start"], manifest["generated_end"])

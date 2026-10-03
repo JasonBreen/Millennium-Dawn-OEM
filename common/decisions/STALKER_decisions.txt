@@ -523,10 +523,7 @@ STALKER_zone_management_category = {
 				NOT = { has_state_flag = STALKER_faction_mandate_cooldown }
 				is_controlled_by = ROOT
 				check_variable = { STALKER_zone_military > 39 }
-				check_variable = { STALKER_zone_military > STALKER_zone_scientists }
-				check_variable = { STALKER_zone_military > STALKER_zone_bandits }
-				check_variable = { STALKER_zone_military > STALKER_zone_duty }
-				check_variable = { STALKER_zone_military > STALKER_zone_freedom }
+				check_variable = { STALKER_zone_leader = 6 }
 			}
 		}
 
@@ -576,10 +573,7 @@ STALKER_zone_management_category = {
 				NOT = { has_state_flag = STALKER_faction_mandate_cooldown }
 				is_controlled_by = ROOT
 				check_variable = { STALKER_zone_scientists > 39 }
-				check_variable = { STALKER_zone_scientists > STALKER_zone_military }
-				check_variable = { STALKER_zone_scientists > STALKER_zone_bandits }
-				check_variable = { STALKER_zone_scientists > STALKER_zone_duty }
-				check_variable = { STALKER_zone_scientists > STALKER_zone_freedom }
+				check_variable = { STALKER_zone_leader = 5 }
 			}
 		}
 
@@ -678,12 +672,17 @@ STALKER_zone_management_category = {
 			custom_effect_tooltip = STALKER_field_medical_artifacts_tt
 			hidden_effect = {
 				add_to_variable = { STALKER_artifact_stockpile = -5 }
+				set_temp_variable = { STALKER_medical_failed = 0 }
 				random = {
 					chance = 15
+					set_temp_variable = { STALKER_medical_failed = 1 }
 					add_stability = -0.03
 				}
 				if = {
-					limit = { NOT = { has_dynamic_modifier = { modifier = STALKER_medical_artifacts } } }
+					limit = {
+						check_variable = { STALKER_medical_failed = 0 }
+						NOT = { has_dynamic_modifier = { modifier = STALKER_medical_artifacts } }
+					}
 					add_dynamic_modifier = { modifier = STALKER_medical_artifacts days = 180 }
 				}
 			}
