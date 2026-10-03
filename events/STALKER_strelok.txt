@@ -13,14 +13,30 @@ country_event = {
 
 	immediate = {
 		log = "[GetDateText]: [This.GetName]: STALKER.160 immediate executed"
-		STALKER_begin_strelok_raid = yes
+		if = {
+			limit = { has_global_flag = STALKER_strelok_turned_back }
+			set_global_flag = STALKER_2012_resolved
+			news_event = STALKER.162
+			STALKER_schedule_fairway = yes
+		}
+		else = {
+			STALKER_begin_strelok_raid = yes
+		}
 	}
 }
 
 country_event = {
 	id = STALKER.161
 	title = STALKER.161.t
-	desc = STALKER.161.d
+	desc = {
+		trigger = { has_global_flag = STALKER_strelok_marked }
+		text = STALKER.161.d_marked
+	}
+	desc = {
+		trigger = { has_global_flag = STALKER_strelok_remembers }
+		text = STALKER.161.d_remembers
+	}
+	desc = { text = STALKER.161.d }
 	picture = GFX_nuclear_power_plant
 	is_triggered_only = yes
 
@@ -98,6 +114,24 @@ country_event = {
 news_event = {
 	id = STALKER.162
 	title = STALKER.162.t
+	desc = {
+		trigger = { has_global_flag = STALKER_strelok_turned_back }
+		text = STALKER.162.d_turned_back
+	}
+	desc = {
+		trigger = {
+			check_variable = { global.STALKER_2012_route = 1 }
+			has_global_flag = STALKER_strelok_marked
+		}
+		text = STALKER.162.d_shutdown_marked
+	}
+	desc = {
+		trigger = {
+			check_variable = { global.STALKER_2012_route = 1 }
+			has_global_flag = STALKER_strelok_remembers
+		}
+		text = STALKER.162.d_shutdown_remembers
+	}
 	desc = {
 		trigger = { check_variable = { global.STALKER_2012_route = 1 } }
 		text = STALKER.162.d_shutdown

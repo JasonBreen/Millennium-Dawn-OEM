@@ -7,8 +7,24 @@ STALKER_begin_battle_for_the_zone = {
 				check_variable = { STALKER_zone_id = 1 }
 			}
 			log = "[GetDateText]: The Battle for the Zone begins in [THIS.GetName]"
-			set_variable = { STALKER_zone_ward = 25 }
-			set_variable = { STALKER_zone_spark = 15 }
+			if = {
+				limit = {
+					OR = {
+						NOT = { has_variable = STALKER_zone_ward }
+						check_variable = { STALKER_zone_ward < 25 }
+					}
+				}
+				set_variable = { STALKER_zone_ward = 25 }
+			}
+			if = {
+				limit = {
+					OR = {
+						NOT = { has_variable = STALKER_zone_spark }
+						check_variable = { STALKER_zone_spark < 15 }
+					}
+				}
+				set_variable = { STALKER_zone_spark = 15 }
+			}
 			if = {
 				limit = { has_global_flag = STALKER_scar_survived }
 				add_to_variable = { STALKER_zone_spark = 10 }

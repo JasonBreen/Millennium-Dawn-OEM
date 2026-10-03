@@ -21,7 +21,7 @@ STALKER_update_zone_factions = {
 	}
 	add_to_variable = { STALKER_zone_military = { value = STALKER_military_target subtract = STALKER_zone_military multiply = 0.1 } }
 	STALKER_clamp_zone_society = yes
-	# Only the original Zone has the Ward and the Spark, from the 2022 battle onward.
+	# The Ward and the Spark exist once their variables are set. The 2018 charter can set them before 2022.
 	if = {
 		limit = { has_variable = STALKER_zone_ward }
 		set_temp_variable = {
@@ -51,7 +51,7 @@ STALKER_update_zone_factions = {
 		clamp_variable = { var = STALKER_zone_activity min = 0 max = 100 }
 		STALKER_clamp_zone_society = yes
 	}
-	# Clear Sky studies the emissions and damps anomalous activity until it falls, as in canon, a few years in.
+	# Clear Sky studies the emissions and damps activity. From 2011 the dated assault owns its fall.
 	if = {
 		limit = {
 			has_variable = STALKER_zone_clear_sky
@@ -70,18 +70,23 @@ STALKER_update_zone_factions = {
 		clamp_variable = { var = STALKER_zone_clear_sky min = 0 max = 100 }
 		add_to_variable = { STALKER_zone_activity = { value = STALKER_zone_clear_sky multiply = -0.02 } }
 		clamp_variable = { var = STALKER_zone_activity min = 0 max = 100 }
-		add_to_variable = { STALKER_zone_clear_sky_months = 1 }
 		if = {
-			limit = {
-				check_variable = { STALKER_zone_clear_sky_months > 35 }
-				controller = { exists = yes }
-			}
-			random = {
-				chance = 10
-				set_variable = { STALKER_zone_clear_sky = 0 }
-				set_global_flag = STALKER_scar_survived
-				STALKER_target_zone = yes
-				controller = { country_event = STALKER.122 }
+			limit = { NOT = { has_global_flag = STALKER_clear_sky_spared } }
+			add_to_variable = { STALKER_zone_clear_sky_months = 1 }
+			if = {
+				limit = {
+					check_variable = { STALKER_zone_clear_sky_months > 35 }
+					NOT = { has_global_flag = STALKER_2011_dispatched }
+					date < 2010.12.1
+					controller = { exists = yes }
+				}
+				random = {
+					chance = 10
+					set_variable = { STALKER_zone_clear_sky = 0 }
+					set_global_flag = STALKER_scar_survived
+					STALKER_target_zone = yes
+					controller = { country_event = STALKER.122 }
+				}
 			}
 		}
 	}
