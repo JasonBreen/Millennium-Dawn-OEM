@@ -17,7 +17,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-12`, `econ_forum_news.1-17`.
+- `events/EconomicForums.txt`: `econ_forum.1-13`, `econ_forum_news.1-18`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -56,6 +56,8 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_star`           | This cycle's star speaker: track + 1 (0 none)   |
 | `econ_forum_room_seats`     | Private room seats given this cycle (max 4)     |
 | `econ_forum_talks_a`, `_b`  | This cycle's sideline talks parties (0 none)    |
+| `econ_forum_report_favored` | Guest the host moves to the report's top        |
+| `econ_forum_report_top`, `_bottom` | First and last in the last report    |
 
 | Id  | Forum                               | Month | Founder            | Core members        |
 | --- | ----------------------------------- | ----- | ------------------ | ------------------- |
@@ -413,6 +415,29 @@ war with each other. The chance is `25 + prestige × 0.4`, +10 per party that se
 
 A party that stayed home lets the talks lapse with no effect.
 
+### Competitiveness Report
+
+A forum whose prestige was 50 or more going into its summit, with six or more guests (the host aside), publishes a
+competitiveness report at the summit, like the WEF's Global Competitiveness Report. `econ_forum_publish_report` runs
+after the sideline talks and ranks the attending guests by `econ_forum_report_score`:
+
+`min(GDP per capita, 60) × 0.5 + stability × 30 + (20 - interest rate, clamped 0-20) - min(debt ratio × 10, 20) - 2 × corruption level`
+
+- **Top three:** `econ_forum_report_leader_modifier` (5% cheaper investment) for 365 days.
+- **Bottom three:** `econ_forum_report_laggard_modifier` (5% dearer investment) for 365 days and
+  `econ_forum_report_ranked_low` (-10, decay 1) toward the host.
+- `econ_forum_report_top` and `econ_forum_report_bottom` keep the first and last place for the Forums tab tooltip. A
+  human host gets `econ_forum.13`.
+
+A host can move a favorite to the top (`econ_forum_report_favored`, reset when preparation opens):
+
+- **Player host:** `econ_forum_tilt_report`, 25 PP, targeting an invited regional or greater power while the forum has
+  50 prestige, one favorite a summit.
+- **AI host:** a state-led host at 50 prestige with over 100 PP, 25% of preparations, picks an invited government it
+  holds above 50 opinion and pays 25 PP.
+- If the favorite attends, it ranks first and the forum loses 2 prestige once the summit sets its new prestige
+  (`ef_report_shift`). A quarter of tilted reports leak (`econ_forum_news.18`) and cost 4 more.
+
 ### Breakaway Forum
 
 `econ_forum_found_breakaway` (150 PP, stability above 40%, peace) is open to a great or super power that boycotts a
@@ -554,7 +579,7 @@ belongs to the fork's targeted operations screen, which upstream does not have.
 | 4   | The Forums tab through the scaffolder, delegation agendas, guest actions, invitation requests, AI guests      | #440, #442, #458-#461            |
 | 5   | Walkouts and the breakaway forum                                                                               | #463, #464                       |
 | 6   | Signing ceremonies, councils, summit messages, the tab tooltip                                                 | #466-#468, #470, #471            |
-| 7   | Controversial and star speakers, private rooms, rivalry milestones and the Davos reform, sideline talks         | #473, #474, #476-#478, #481      |
+| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, competitiveness reports              | #473, #474, #476-#478, #481, #482 |
 
 Port notes:
 

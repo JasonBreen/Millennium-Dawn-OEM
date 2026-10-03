@@ -69,6 +69,11 @@ econ_forum_setup = {
 	# The two rival governments the host brings together on the sidelines this cycle (country ids, 0 for none).
 	resize_array = { array = global.econ_forum_talks_a value = 0 size = 9 }
 	resize_array = { array = global.econ_forum_talks_b value = 0 size = 9 }
+	# Competitiveness report: the guest the host moves to the top this cycle, and the last report's first and last
+	# places (country ids, 0 for none).
+	resize_array = { array = global.econ_forum_report_favored value = 0 size = 9 }
+	resize_array = { array = global.econ_forum_report_top value = 0 size = 9 }
+	resize_array = { array = global.econ_forum_report_bottom value = 0 size = 9 }
 	# Six program tracks per forum, indexed forum * 6 + track.
 	resize_array = { array = global.econ_forum_tracks value = 0 size = 54 }
 	resize_array = { array = global.econ_forum_track_prestige value = 0 size = 54 }
@@ -305,6 +310,7 @@ econ_forum_open_preparation = {
 	set_variable = { global.econ_forum_room_seats^ef_i = 0 }
 	set_variable = { global.econ_forum_talks_a^ef_i = 0 }
 	set_variable = { global.econ_forum_talks_b^ef_i = 0 }
+	set_variable = { global.econ_forum_report_favored^ef_i = 0 }
 	set_variable = { global.econ_forum_speakers^ef_i = 0 }
 	set_variable = { global.econ_forum_track_count^ef_i = 0 }
 	set_variable = { global.econ_forum_invites_left^ef_i = { value = global.econ_forum_prestige^ef_i divide = 25 round = yes add = 3 } }
@@ -967,6 +973,113 @@ econ_forum_hold_talks = {
 					}
 				}
 				var:ef_host = { news_event = econ_forum_news.17 }
+			}
+		}
+	}
+}
+
+# Country scope: our standing in a forum's competitiveness report, about 0-80, in ef_rep_score. Wealth, stability and
+# cheap credit raise it; debt and corruption lower it.
+econ_forum_report_score = {
+	set_temp_variable = { ef_rep_score = { value = gdp_per_capita min = 60 multiply = 0.5 } }
+	add_to_temp_variable = { ef_rep_score = { value = stability multiply = 30 } }
+	add_to_temp_variable = { ef_rep_score = { value = 20 subtract = interest_rate clamp = { min = 0 max = 20 } } }
+	subtract_from_temp_variable = { ef_rep_score = { value = debt_ratio multiply = 10 min = 20 } }
+	if = { limit = { has_idea = corruption_level_10 } subtract_from_temp_variable = { ef_rep_score = 20 } }
+	else_if = { limit = { has_idea = corruption_level_09 } subtract_from_temp_variable = { ef_rep_score = 18 } }
+	else_if = { limit = { has_idea = corruption_level_08 } subtract_from_temp_variable = { ef_rep_score = 16 } }
+	else_if = { limit = { has_idea = corruption_level_07 } subtract_from_temp_variable = { ef_rep_score = 14 } }
+	else_if = { limit = { has_idea = corruption_level_06 } subtract_from_temp_variable = { ef_rep_score = 12 } }
+	else_if = { limit = { has_idea = corruption_level_05 } subtract_from_temp_variable = { ef_rep_score = 10 } }
+	else_if = { limit = { has_idea = corruption_level_04 } subtract_from_temp_variable = { ef_rep_score = 8 } }
+	else_if = { limit = { has_idea = corruption_level_03 } subtract_from_temp_variable = { ef_rep_score = 6 } }
+	else_if = { limit = { has_idea = corruption_level_02 } subtract_from_temp_variable = { ef_rep_score = 4 } }
+	else_if = { limit = { has_idea = corruption_level_01 } subtract_from_temp_variable = { ef_rep_score = 2 } }
+}
+
+# Summit scope, after attendance. A forum at 50 prestige or more with six or more guests publishes its competitiveness
+# report: the top three guests get a year of cheaper investment, the bottom three pay more and resent the host. A
+# favorite the host moved to the top costs the forum 2 prestige, and 6 if the favoritism leaks; ef_report_shift
+# carries that into the forum's new prestige.
+econ_forum_publish_report = {
+	set_temp_variable = { ef_report_shift = 0 }
+	set_temp_variable = { ef_favored = global.econ_forum_report_favored^ef_i }
+	set_variable = { global.econ_forum_report_favored^ef_i = 0 }
+	if = {
+		limit = {
+			check_variable = { ef_prestige > 49 }
+			check_variable = { ef_attendees^num > 5 }
+		}
+		clear_temp_array = ef_rep_ids
+		clear_temp_array = ef_rep_scores
+		for_each_scope_loop = {
+			array = ef_attendees
+
+			econ_forum_report_score = yes
+			if = {
+				limit = { check_variable = { ef_favored = THIS.id } }
+				add_to_temp_variable = { ef_rep_score = 1000 }
+				set_temp_variable = { ef_report_shift = -2 }
+			}
+			add_to_temp_array = { ef_rep_ids = THIS.id }
+			add_to_temp_array = { ef_rep_scores = ef_rep_score }
+		}
+		for_loop_effect = {
+			end = 3
+			value = ef_n
+
+			find_highest_in_array = {
+				array = ef_rep_scores
+				value = ef_rep_value
+				index = ef_rep_index
+			}
+			set_temp_variable = { ef_rep_id = ef_rep_ids^ef_rep_index }
+			if = {
+				limit = { check_variable = { ef_n = 0 } }
+				set_variable = { global.econ_forum_report_top^ef_i = ef_rep_id }
+			}
+			var:ef_rep_id = { add_dynamic_modifier = { modifier = econ_forum_report_leader_modifier days = 365 } }
+			remove_from_temp_array = { array = ef_rep_ids index = ef_rep_index }
+			remove_from_temp_array = { array = ef_rep_scores index = ef_rep_index }
+		}
+		for_loop_effect = {
+			end = 3
+			value = ef_n
+
+			find_lowest_in_array = {
+				array = ef_rep_scores
+				value = ef_rep_value
+				index = ef_rep_index
+			}
+			set_temp_variable = { ef_rep_id = ef_rep_ids^ef_rep_index }
+			if = {
+				limit = { check_variable = { ef_n = 0 } }
+				set_variable = { global.econ_forum_report_bottom^ef_i = ef_rep_id }
+			}
+			var:ef_rep_id = {
+				add_dynamic_modifier = { modifier = econ_forum_report_laggard_modifier days = 365 }
+				var:ef_host = { reverse_add_opinion_modifier = { target = PREV modifier = econ_forum_report_ranked_low } }
+			}
+			remove_from_temp_array = { array = ef_rep_ids index = ef_rep_index }
+			remove_from_temp_array = { array = ef_rep_scores index = ef_rep_index }
+		}
+		if = {
+			limit = { check_variable = { ef_report_shift < 0 } }
+			random = {
+				chance = 25
+				subtract_from_temp_variable = { ef_report_shift = 4 }
+				var:ef_host = {
+					set_variable = { econ_forum_news_favored = ef_favored }
+					news_event = econ_forum_news.18
+				}
+			}
+		}
+		var:ef_host = {
+			if = {
+				limit = { is_ai = no }
+				set_variable = { econ_forum_report_news_top = global.econ_forum_report_top^ef_i }
+				set_variable = { econ_forum_report_news_bottom = global.econ_forum_report_bottom^ef_i }
+				country_event = econ_forum.13
 			}
 		}
 	}
@@ -1638,6 +1751,32 @@ econ_forum_ai_prepare = {
 			}
 		}
 	}
+	# A state-led host with a report to publish may move a friendly government to the top of it.
+	if = {
+		limit = {
+			check_variable = { global.econ_forum_state_led^ef_i = 1 }
+			check_variable = { global.econ_forum_prestige^ef_i > 49 }
+			check_variable = { global.econ_forum_report_favored^ef_i = 0 }
+			has_political_power > 100
+		}
+		random = {
+			chance = 25
+			random_scope_in_array = {
+				array = global.PR_regional_or_greater_powers
+				limit = {
+					NOT = { tag = PREV }
+					check_variable = { econ_forum_status^num > ef_i }
+					check_variable = { econ_forum_status^ef_i > 0 }
+					PREV = { has_opinion = { target = PREV value > 50 } }
+				}
+				set_variable = { global.econ_forum_report_favored^ef_i = THIS.id }
+			}
+			if = {
+				limit = { check_variable = { global.econ_forum_report_favored^ef_i > 0 } }
+				add_political_power = -25
+			}
+		}
+	}
 }
 
 # Host scope. A headline speaker is harder to land the further the strongest rival forum is ahead.
@@ -1812,6 +1951,7 @@ econ_forum_convene_summit = {
 	econ_forum_council_session = yes
 	econ_forum_hold_private_room = yes
 	econ_forum_hold_talks = yes
+	econ_forum_publish_report = yes
 	var:ef_host = {
 		econ_forum_close_ceremonies = yes
 		# The first summit a sanctioned host holds without the West makes the news.
@@ -1901,7 +2041,7 @@ econ_forum_convene_summit = {
 		limit = { check_variable = { global.econ_forum_message^ef_i = 3 } }
 		set_temp_variable = { ef_pull = 0.5 }
 	}
-	set_variable = { global.econ_forum_prestige^ef_i = { value = ef_score subtract = ef_prestige multiply = ef_pull add = ef_prestige add = ef_room_leak clamp = { min = 0 max = 100 } } }
+	set_variable = { global.econ_forum_prestige^ef_i = { value = ef_score subtract = ef_prestige multiply = ef_pull add = ef_prestige add = ef_room_leak add = ef_report_shift clamp = { min = 0 max = 100 } } }
 	set_variable = { global.econ_forum_last_heads^ef_i = ef_heads }
 	set_variable = { global.econ_forum_last_ministers^ef_i = ef_ministers }
 	set_variable = { global.econ_forum_last_score^ef_i = ef_score }
