@@ -7,10 +7,16 @@ FBC_schedule_eu_customs = {
 			NOT = { has_global_flag = FBC_eu_dispatched }
 		}
 		if = {
-			limit = { has_global_flag = EU_commission_taken_flag }
-			var:global.EU_commission_president = {
+			limit = {
+				has_global_flag = EU_commission_taken_flag
+				NOT = { check_variable = { global.eu_commission = EUU.id } }
+			}
+			var:global.eu_commission = {
 				if = {
-					limit = { has_idea = EU_member }
+					limit = {
+						exists = yes
+						has_idea = EU_member
+					}
 					country_event = { id = FBC.10 days = 90 }
 					set_global_flag = FBC_eu_dispatched
 				}
@@ -85,6 +91,22 @@ FBC_monthly_europe_pulse = {
 			has_variable = global.FBC_eu_phase
 			check_variable = { global.FBC_eu_phase = 0 }
 		}
+		FBC_schedule_eu_customs = yes
+	}
+	if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			OR = {
+				check_variable = { global.FBC_eu_phase = 2 }
+				check_variable = { global.FBC_eu_phase = 3 }
+			}
+			has_variable = global.FBC_eu_recipient
+			NOT = { var:global.FBC_eu_recipient = { exists = yes } }
+		}
+		FBC_release_eu_team = yes
+		set_variable = { global.FBC_eu_phase = 0 }
+		clear_variable = global.FBC_eu_recipient
+		clr_global_flag = FBC_eu_dispatched
 		FBC_schedule_eu_customs = yes
 	}
 	if = {

@@ -110,7 +110,15 @@ def test_reconciliation_visits_real_groups_without_overwriting_saved_registry_st
 
     assert script.globals["TOP_group_created"][:4] == [1, 1, 1, 0]
     assert script.globals["TOP_status"] == statuses
-    assert len(script.globals["TOP_group_created"]) == 38
+    registry = (
+        ROOT / "common/scripted_effects/01_targeted_operations_registry.txt"
+    ).read_text(encoding="utf-8")
+    org_slots = int(
+        re.search(
+            r"resize_array = \{ global\.TOP_group_created = (\d+) \}", registry
+        ).group(1)
+    )
+    assert len(script.globals["TOP_group_created"]) == org_slots
 
 
 def test_resuming_collection_preserves_the_package_and_review_snapshot():

@@ -92,10 +92,12 @@ names and events against the in-game text as documented by the S.T.A.L.K.E.R. Wi
   `99_STALKER_intel_effects.txt`.
 - **Faction Wars (150–159):** `STALKER_faction_wars.txt`; loc `_faction_wars_`;
   `99_STALKER_faction_wars_effects.txt`.
+- **Strelok (160–169):** `STALKER_strelok.txt`; loc `_strelok_`;
+  `99_STALKER_strelok_effects.txt`. The 2012 raid uses events 160–162.
 
 Localisation file names are `MD_STALKER_<subsystem>_l_english.yml`.
 
-The next free block is 160–169. Decision categories are one file each in
+The next free block is 170–179. Decision categories are one file each in
 `common/decisions/categories/00_STALKER_*_category.txt`. Dynamic modifiers are one file per
 subsystem in `common/dynamic_modifiers/00_STALKER_*dynamic_modifiers.txt`.
 

@@ -1,5 +1,7 @@
 # How the rest of the world reacts to the Zones: diplomacy before Kaimanov, casualties among foreign teams.
 STALKER_monthly_world_pulse = {
+	STALKER_refresh_unsc_expected = yes
+	STALKER_finish_security_council = yes
 	if = {
 		limit = {
 			NOT = { has_global_flag = STALKER_kaimanov_outcome }
@@ -89,6 +91,7 @@ STALKER_schedule_security_council = {
 			limit = { country_exists = USA }
 			USA = {
 				set_country_flag = STALKER_unsc_seat
+				set_global_flag = STALKER_unsc_pending_USA
 				country_event = { id = STALKER.137 days = 50 }
 			}
 			add_to_variable = { global.STALKER_unsc_expected = 1 }
@@ -97,6 +100,7 @@ STALKER_schedule_security_council = {
 			limit = { country_exists = ENG }
 			ENG = {
 				set_country_flag = STALKER_unsc_seat
+				set_global_flag = STALKER_unsc_pending_ENG
 				country_event = { id = STALKER.137 days = 50 }
 			}
 			add_to_variable = { global.STALKER_unsc_expected = 1 }
@@ -105,6 +109,7 @@ STALKER_schedule_security_council = {
 			limit = { country_exists = FRA }
 			FRA = {
 				set_country_flag = STALKER_unsc_seat
+				set_global_flag = STALKER_unsc_pending_FRA
 				country_event = { id = STALKER.137 days = 50 }
 			}
 			add_to_variable = { global.STALKER_unsc_expected = 1 }
@@ -113,6 +118,7 @@ STALKER_schedule_security_council = {
 			limit = { country_exists = SOV }
 			SOV = {
 				set_country_flag = STALKER_unsc_seat
+				set_global_flag = STALKER_unsc_pending_SOV
 				country_event = { id = STALKER.137 days = 50 }
 			}
 			add_to_variable = { global.STALKER_unsc_expected = 1 }
@@ -121,6 +127,7 @@ STALKER_schedule_security_council = {
 			limit = { country_exists = CHI }
 			CHI = {
 				set_country_flag = STALKER_unsc_seat
+				set_global_flag = STALKER_unsc_pending_CHI
 				country_event = { id = STALKER.137 days = 50 }
 			}
 			add_to_variable = { global.STALKER_unsc_expected = 1 }
@@ -135,6 +142,7 @@ STALKER_schedule_security_council = {
 				}
 				controller = {
 					set_country_flag = STALKER_unsc_seat
+					set_global_flag = STALKER_unsc_pending_zone
 					country_event = { id = STALKER.137 days = 50 }
 				}
 				add_to_variable = { global.STALKER_unsc_expected = 1 }
@@ -143,11 +151,128 @@ STALKER_schedule_security_council = {
 	}
 }
 
-STALKER_finish_security_council = {
+STALKER_mark_unsc_ballot = {
+	if = {
+		limit = { original_tag = USA }
+		clr_global_flag = STALKER_unsc_pending_USA
+		set_global_flag = STALKER_unsc_ballot_USA
+	}
+	if = {
+		limit = { original_tag = ENG }
+		clr_global_flag = STALKER_unsc_pending_ENG
+		set_global_flag = STALKER_unsc_ballot_ENG
+	}
+	if = {
+		limit = { original_tag = FRA }
+		clr_global_flag = STALKER_unsc_pending_FRA
+		set_global_flag = STALKER_unsc_ballot_FRA
+	}
+	if = {
+		limit = { original_tag = SOV }
+		clr_global_flag = STALKER_unsc_pending_SOV
+		set_global_flag = STALKER_unsc_ballot_SOV
+	}
+	if = {
+		limit = { original_tag = CHI }
+		clr_global_flag = STALKER_unsc_pending_CHI
+		set_global_flag = STALKER_unsc_ballot_CHI
+	}
 	if = {
 		limit = {
+			NOT = { original_tag = USA }
+			NOT = { original_tag = ENG }
+			NOT = { original_tag = FRA }
+			NOT = { original_tag = SOV }
+			NOT = { original_tag = CHI }
+		}
+		clr_global_flag = STALKER_unsc_pending_zone
+		set_global_flag = STALKER_unsc_ballot_zone
+	}
+}
+
+STALKER_refresh_unsc_expected = {
+	if = {
+		limit = {
+			has_global_flag = STALKER_unsc_scheduled
 			NOT = { has_global_flag = STALKER_unsc_resolved }
-			check_variable = { global.STALKER_unsc_expected > 0 }
+		}
+		set_temp_variable = { STALKER_unsc_alive = 0 }
+		if = {
+			limit = { country_exists = USA USA = { has_country_flag = STALKER_unsc_seat } }
+			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+		}
+		else_if = {
+			limit = { has_global_flag = STALKER_unsc_ballot_USA }
+			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+		}
+		else = { clr_global_flag = STALKER_unsc_pending_USA }
+		if = {
+			limit = { country_exists = ENG ENG = { has_country_flag = STALKER_unsc_seat } }
+			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+		}
+		else_if = {
+			limit = { has_global_flag = STALKER_unsc_ballot_ENG }
+			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+		}
+		else = { clr_global_flag = STALKER_unsc_pending_ENG }
+		if = {
+			limit = { country_exists = FRA FRA = { has_country_flag = STALKER_unsc_seat } }
+			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+		}
+		else_if = {
+			limit = { has_global_flag = STALKER_unsc_ballot_FRA }
+			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+		}
+		else = { clr_global_flag = STALKER_unsc_pending_FRA }
+		if = {
+			limit = { country_exists = SOV SOV = { has_country_flag = STALKER_unsc_seat } }
+			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+		}
+		else_if = {
+			limit = { has_global_flag = STALKER_unsc_ballot_SOV }
+			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+		}
+		else = { clr_global_flag = STALKER_unsc_pending_SOV }
+		if = {
+			limit = { country_exists = CHI CHI = { has_country_flag = STALKER_unsc_seat } }
+			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+		}
+		else_if = {
+			limit = { has_global_flag = STALKER_unsc_ballot_CHI }
+			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+		}
+		else = { clr_global_flag = STALKER_unsc_pending_CHI }
+		if = {
+			limit = {
+				698 = {
+					controller = {
+						exists = yes
+						has_country_flag = STALKER_unsc_seat
+						NOT = { original_tag = USA }
+						NOT = { original_tag = ENG }
+						NOT = { original_tag = FRA }
+						NOT = { original_tag = SOV }
+						NOT = { original_tag = CHI }
+					}
+				}
+			}
+			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+		}
+		else_if = {
+			limit = { has_global_flag = STALKER_unsc_ballot_zone }
+			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+		}
+		else = { clr_global_flag = STALKER_unsc_pending_zone }
+		set_variable = { global.STALKER_unsc_expected = STALKER_unsc_alive }
+	}
+}
+
+STALKER_finish_security_council = {
+	STALKER_refresh_unsc_expected = yes
+	if = {
+		limit = {
+			has_global_flag = STALKER_unsc_scheduled
+			NOT = { has_global_flag = STALKER_unsc_resolved }
 			check_variable = { global.STALKER_unsc_ballots = global.STALKER_unsc_expected }
 		}
 		set_global_flag = STALKER_unsc_resolved
