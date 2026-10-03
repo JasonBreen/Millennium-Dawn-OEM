@@ -105,7 +105,7 @@ A wrong-location or no-contact outcome:
 - never retargets or changes method.
 
 False-state reports remain in the believed host. If no alternate controlled state
-exists, location becomes unresolved.
+exists, there is nothing false to plant and the real lead stands.
 
 ## Native callback constraint
 
