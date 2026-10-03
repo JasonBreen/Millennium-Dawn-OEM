@@ -93,16 +93,18 @@ FBC_monthly_europe_pulse = {
 			TOP_enabled = yes
 			NOT = { check_variable = { global.TOP_group_state^40 = 0 } }
 		}
-		every_country = {
-			limit = {
-				is_ai = no
-				has_idea = EU_member
-				NOT = { has_country_flag = FBC_top_eu_lead }
+		for_each_scope_loop = {
+			array = global.EU_member
+			if = {
+				limit = {
+					is_ai = no
+					NOT = { has_country_flag = FBC_top_eu_lead }
+				}
+				set_country_flag = FBC_top_eu_lead
+				set_temp_variable = { TOP_arg_amount = 15 }
+				set_temp_variable = { TOP_arg_group = 40 }
+				TOP_add_organization_lead = yes
 			}
-			set_country_flag = FBC_top_eu_lead
-			set_temp_variable = { TOP_arg_amount = 15 }
-			set_temp_variable = { TOP_arg_group = 40 }
-			TOP_add_organization_lead = yes
 		}
 	}
 }
