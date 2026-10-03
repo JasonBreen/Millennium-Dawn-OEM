@@ -21,7 +21,7 @@ STALKER_update_zone_factions = {
 	}
 	add_to_variable = { STALKER_zone_military = { value = STALKER_military_target subtract = STALKER_zone_military multiply = 0.1 } }
 	STALKER_clamp_zone_society = yes
-	# The Ward and the Spark exist once their variables are set. The 2018 charter can set them before 2022.
+	# The Ward and the Spark exist once their own variables are set. A Ward charter must not create the Spark.
 	if = {
 		limit = { has_variable = STALKER_zone_ward }
 		set_temp_variable = {
@@ -34,6 +34,12 @@ STALKER_update_zone_factions = {
 			}
 		}
 		add_to_variable = { STALKER_zone_ward = { value = STALKER_ward_target subtract = STALKER_zone_ward multiply = 0.1 } }
+		clamp_variable = { var = STALKER_zone_ward min = 0 max = 100 }
+		add_to_variable = { STALKER_zone_bandits = { value = STALKER_zone_ward multiply = -0.02 } }
+		STALKER_clamp_zone_society = yes
+	}
+	if = {
+		limit = { has_variable = STALKER_zone_spark }
 		set_temp_variable = {
 			STALKER_spark_target = {
 				value = STALKER_zone_activity
@@ -44,9 +50,7 @@ STALKER_update_zone_factions = {
 			}
 		}
 		add_to_variable = { STALKER_zone_spark = { value = STALKER_spark_target subtract = STALKER_zone_spark multiply = 0.1 } }
-		clamp_variable = { var = STALKER_zone_ward min = 0 max = 100 }
 		clamp_variable = { var = STALKER_zone_spark min = 0 max = 100 }
-		add_to_variable = { STALKER_zone_bandits = { value = STALKER_zone_ward multiply = -0.02 } }
 		add_to_variable = { STALKER_zone_activity = { value = STALKER_zone_spark multiply = 0.02 } }
 		clamp_variable = { var = STALKER_zone_activity min = 0 max = 100 }
 		STALKER_clamp_zone_society = yes
