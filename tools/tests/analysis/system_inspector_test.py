@@ -612,3 +612,26 @@ def test_shared_idea_name_is_not_a_scripted_dependency_until_called(
         "name": "recession",
         "defined_in": f"common/{scripted_kind}/outside_economy.txt",
     } in inspect_mod(mod_root)["dependencies"][kind]
+
+
+def test_variable_keys_gui_handlers_and_categories_are_not_calls(mod_root):
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/ZZZ_math.txt",
+        "ZZZ_math = { set_variable = { ZZZ_rate = { value = 2 multiply = 3 } } "
+        "add_to_temp_variable = { ZZZ_total = { value = 1 } } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/scripted_guis/ZZZ_windows.txt",
+        "scripted_gui = { ZZZ_window = { "
+        "triggers = { ZZZ_button_click_enabled = { always = yes } } "
+        "effects = { ZZZ_button_click = { ZZZ_start = yes ZZZ_gui_missing = yes } } } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/decisions/ZZZ_decisions.txt",
+        "ZZZ_category = { ZZZ_decision = { complete_effect = { ZZZ_start = yes } } }\n",
+    )
+    report = inspect_mod(mod_root)
+    assert report["unresolved"]["calls"] == ["ZZZ_gui_missing", "ZZZ_missing_effect"]

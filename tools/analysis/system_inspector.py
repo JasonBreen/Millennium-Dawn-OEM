@@ -111,6 +111,11 @@ EVENT_TYPES = {
     "unit_leader_event",
     "operative_leader_event",
 }
+# Keys under these parents name a variable or a GUI handler, not a scripted call.
+VARIABLE_EFFECT_RE = re.compile(
+    r"(?:set|add_to|subtract_from|multiply|divide|modulo|clamp|round)_(?:temp_)?variable"
+)
+GUI_HANDLER_BLOCKS = {"effects", "triggers", "properties"}
 KEY_BLOCK_RE = re.compile(r"([A-Za-z0-9_.@:\-^]+)\s*=\s*\{|\{|\}")
 TOKEN_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_.]*[A-Za-z0-9_]")
 # Event ids are always namespace.number, which keeps `id = TAG` in other blocks out.
@@ -285,10 +290,21 @@ def scripted_calls(rel: str, code: str) -> set[str]:
         (depth for _, prefix, depth in DEFINITION_RULES if rel.startswith(prefix)),
         None,
     )
+    gui = rel.startswith("common/scripted_guis/")
+
+    def is_call(parents: list[tuple[str, int]]) -> bool:
+        if definition_depth is not None and len(parents) <= definition_depth:
+            return False
+        parent = parents[-1][0] if parents else ""
+        return not (
+            VARIABLE_EFFECT_RE.fullmatch(parent)
+            or (gui and parent in GUI_HANDLER_BLOCKS)
+        )
+
     return {
         key
         for parents, key, value in script_fields(code)
-        if value in {"yes", "no", "{"} and len(parents) != definition_depth
+        if value in {"yes", "no", "{"} and is_call(parents)
     }
 
 
