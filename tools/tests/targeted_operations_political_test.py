@@ -397,8 +397,9 @@ def test_added_advisors_start_in_history_and_require_top_window(target, token):
         in advisor
     )
     assert (
-        f"available = {{ TOP_enabled = yes TOP_iran_has_authored_service = yes check_variable = {{ global.TOP_window^{target} = 1 }} }}"
-        in advisor
+        "available = { TOP_enabled = yes TOP_iran_has_authored_service = yes "
+        "custom_trigger_tooltip = { tooltip = TOP_iran_advisor_window_tt "
+        f"check_variable = {{ global.TOP_window^{target} = 1 }} }} }}" in advisor
     )
 
     game = PoliticalScript()
