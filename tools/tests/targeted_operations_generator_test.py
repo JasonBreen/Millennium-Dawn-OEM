@@ -380,10 +380,11 @@ def test_registry_emits_legacy_and_three_axis_person_and_organization_state(mani
     output = GENERATOR.render(manifest)
     registry = output["common/scripted_effects/01_targeted_operations_registry.txt"]
     assert "global.TOP_registry_capacity = 161" in registry
+    org_slots = len(manifest["groups"]) + 1
     for field in GENERATOR.GROUP_FIELDS:
-        assert f"resize_array = {{ global.TOP_group_{field} = 38 }}" in registry
+        assert f"resize_array = {{ global.TOP_group_{field} = {org_slots} }}" in registry
     for field in GENERATOR.ORG_COUNTRY_FIELDS:
-        assert f"resize_array = {{ TOP_org_{field} = 38 }}" in registry
+        assert f"resize_array = {{ TOP_org_{field} = {org_slots} }}" in registry
     generated = range(manifest["generated_start"], manifest["generated_end"])
     assert set(generated) == set(range(65, 129))
     for ident in generated:
@@ -442,7 +443,7 @@ def test_registry_emits_legacy_and_three_axis_person_and_organization_state(mani
     resize = _named_block(registry, "TOP_resize_country_arrays")
     assert "set_variable" not in resize
     assert "resize_array = { TOP_lead_report_clock = 161 }" in resize
-    assert "resize_array = { TOP_org_lead_report_clock = 38 }" in resize
+    assert f"resize_array = {{ TOP_org_lead_report_clock = {org_slots} }}" in resize
     successors = output["common/scripted_effects/01_targeted_operations_successors.txt"]
     assert "TOP_person_129" not in successors
 
@@ -606,6 +607,7 @@ def test_stalker_organizations_sit_in_the_zone_and_wait_for_their_gate(manifest)
             "STALKER_top_zone_organization_active = yes",
         ),
         "stalker_sircaa": (37, "STALKER_top_sircaa_active = yes"),
+        "stalker_mercenaries": (38, "STALKER_top_mercenaries_active = yes"),
     }
     for key, (ident, condition) in expected.items():
         group = groups[key]
@@ -622,6 +624,29 @@ def test_stalker_organizations_sit_in_the_zone_and_wait_for_their_gate(manifest)
         assert "random_controlled_state" not in location
         assert f"global.TOP_group_fixed_state^{ident} = 1" in registry
     assert "STALKER_" not in _named_block(registry, "TOP_activate_group_1")
+    assert "FBC_" not in _named_block(registry, "TOP_activate_group_1")
+
+
+def test_fbc_organizations_wait_for_their_gates(manifest):
+    groups = {group["key"]: group for group in manifest["groups"]}
+    registry = GENERATOR.render(manifest)[
+        "common/scripted_effects/01_targeted_operations_registry.txt"
+    ]
+    expected = {
+        "federal_bureau_of_control": (39, "USA", "FBC_top_active = yes"),
+        "european_anomaly_desk": (40, "BEL", "FBC_top_eu_active = yes"),
+    }
+    for key, (ident, host, condition) in expected.items():
+        group = groups[key]
+        assert group["id"] == ident
+        assert group["host"] == host
+        assert group["group_class"] == "state_security"
+        assert group["public_identity"] is True
+        assert group["location_policy"] == "country_capital"
+        activation = _named_block(registry, f"TOP_activate_group_{ident}")
+        assert condition in activation
+        location = _named_block(registry, f"TOP_choose_location_{ident}")
+        assert f"{host} = {{ capital_scope =" in location
 
 
 def test_every_later_window_year_is_opened_by_the_yearly_dispatch(manifest):

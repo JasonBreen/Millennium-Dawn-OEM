@@ -1,0 +1,246 @@
+FBC_bureau_category = {
+	FBC_reinforce_containment = {
+		icon = GFX_decision_generic_police_action
+
+		visible = { FBC_scenario_enabled = yes }
+
+		available = {
+			check_variable = { FBC_containment_integrity < 90 }
+		}
+
+		cost = 50
+		days_re_enable = 120
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision FBC_reinforce_containment"
+			custom_effect_tooltip = FBC_reinforce_containment_tt
+			hidden_effect = {
+				add_to_variable = { FBC_containment_integrity = 10 }
+				add_to_variable = { FBC_exposure = -3 }
+				FBC_clamp_bureau = yes
+				FBC_refresh_bureau_factors = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 4
+			modifier = {
+				add = 10
+				check_variable = { FBC_containment_integrity < 40 }
+			}
+		}
+	}
+
+	FBC_fund_floor_research = {
+		icon = GFX_decision_generic_research
+
+		visible = { FBC_scenario_enabled = yes }
+
+		available = {
+			check_variable = { FBC_floor_phase > 1 }
+			NOT = { check_variable = { FBC_floor_phase > 3 } }
+		}
+
+		cost = 25
+		days_re_enable = 90
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision FBC_fund_floor_research"
+			custom_effect_tooltip = FBC_fund_floor_research_tt
+			hidden_effect = {
+				add_to_variable = { FBC_floor_knowledge = 6 }
+				add_to_variable = { FBC_exposure = 3 }
+				FBC_clamp_bureau = yes
+				FBC_refresh_bureau_factors = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				add = 6
+				check_variable = { FBC_floor_knowledge < 10 }
+			}
+		}
+	}
+
+	FBC_fund_wing_research = {
+		icon = GFX_decision_generic_research
+
+		visible = { FBC_scenario_enabled = yes }
+
+		available = {
+			check_variable = { FBC_wing_phase > 1 }
+			NOT = { check_variable = { FBC_wing_phase > 3 } }
+		}
+
+		cost = 25
+		days_re_enable = 90
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision FBC_fund_wing_research"
+			custom_effect_tooltip = FBC_fund_wing_research_tt
+			hidden_effect = {
+				add_to_variable = { FBC_wing_knowledge = 6 }
+				add_to_variable = { FBC_exposure = 3 }
+				FBC_clamp_bureau = yes
+				FBC_refresh_bureau_factors = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = {
+				add = 6
+				check_variable = { FBC_wing_knowledge < 10 }
+			}
+		}
+	}
+
+	FBC_stand_down_floor = {
+		icon = GFX_decision_generic_civil_support
+
+		visible = { FBC_scenario_enabled = yes }
+
+		available = {
+			check_variable = { FBC_floor_committed > 0 }
+		}
+
+		cost = 10
+		days_re_enable = 30
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision FBC_stand_down_floor"
+			custom_effect_tooltip = FBC_stand_down_floor_tt
+			hidden_effect = {
+				if = {
+					limit = {
+						check_variable = { FBC_floor_phase > 0 }
+						NOT = { check_variable = { FBC_floor_phase > 3 } }
+					}
+					set_variable = { FBC_floor_phase = 5 }
+					add_to_variable = { FBC_exposure = 6 }
+					add_to_variable = { FBC_containment_integrity = -5 }
+					FBC_clamp_bureau = yes
+				}
+				FBC_release_floor_team = yes
+				FBC_refresh_bureau_factors = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 1
+			modifier = {
+				add = 12
+				check_variable = { FBC_response_capacity < 1 }
+				check_variable = { FBC_wing_phase > 0 }
+				NOT = { check_variable = { FBC_wing_phase > 3 } }
+			}
+		}
+	}
+
+	FBC_stand_down_wing = {
+		icon = GFX_decision_generic_civil_support
+
+		visible = { FBC_scenario_enabled = yes }
+
+		available = {
+			check_variable = { FBC_wing_committed > 0 }
+		}
+
+		cost = 10
+		days_re_enable = 30
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision FBC_stand_down_wing"
+			custom_effect_tooltip = FBC_stand_down_wing_tt
+			hidden_effect = {
+				if = {
+					limit = {
+						check_variable = { FBC_wing_phase > 0 }
+						NOT = { check_variable = { FBC_wing_phase > 3 } }
+					}
+					set_variable = { FBC_wing_phase = 5 }
+					add_to_variable = { FBC_exposure = 6 }
+					add_to_variable = { FBC_containment_integrity = -5 }
+					FBC_clamp_bureau = yes
+				}
+				FBC_release_wing_team = yes
+				FBC_refresh_bureau_factors = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 1
+			modifier = {
+				add = 12
+				check_variable = { FBC_response_capacity < 1 }
+				check_variable = { FBC_floor_phase > 0 }
+				NOT = { check_variable = { FBC_floor_phase > 3 } }
+			}
+		}
+	}
+}
+
+FBC_europe_category = {
+	FBC_request_eu_assistance = {
+		icon = GFX_decision_generic_political_discourse
+
+		visible = {
+			FBC_scenario_enabled = yes
+			OR = {
+				AND = {
+					original_tag = BEL
+					check_variable = { global.FBC_eu_phase = 5 }
+				}
+				AND = {
+					original_tag = GER
+					check_variable = { global.FBC_eu_phase = 6 }
+				}
+			}
+		}
+
+		available = {
+			check_variable = { global.FBC_eu_capacity > 0 }
+		}
+
+		cost = 25
+		fire_only_once = yes
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision FBC_request_eu_assistance"
+			custom_effect_tooltip = FBC_request_eu_assistance_tt
+			hidden_effect = {
+				FBC_commit_eu_team = yes
+				set_variable = { global.FBC_eu_phase = 2 }
+				country_event = { id = FBC.11 days = 30 }
+			}
+		}
+
+		ai_will_do = { base = 6 }
+	}
+
+	FBC_pool_eu_findings = {
+		icon = GFX_decision_generic_research
+
+		visible = {
+			FBC_scenario_enabled = yes
+			check_variable = { global.FBC_eu_phase = 4 }
+		}
+
+		available = {
+			NOT = { has_dynamic_modifier = { modifier = FBC_shared_findings } }
+		}
+
+		cost = 15
+		fire_only_once = yes
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision FBC_pool_eu_findings"
+			custom_effect_tooltip = FBC_pool_eu_findings_tt
+			hidden_effect = { FBC_grant_shared_findings = yes }
+		}
+
+		ai_will_do = { base = 4 }
+	}
+}

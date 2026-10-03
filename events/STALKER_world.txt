@@ -300,3 +300,116 @@ country_event = {
 		ai_chance = { base = 40 }
 	}
 }
+
+country_event = {
+	id = STALKER.137
+	title = STALKER.137.t
+	desc = STALKER.137.d
+	picture = GFX_UN_emergency_meeting
+	is_triggered_only = yes
+
+	trigger = {
+		STALKER_scenario_enabled = yes
+		has_country_flag = STALKER_unsc_seat
+		NOT = { has_country_flag = STALKER_unsc_voted }
+		NOT = { has_global_flag = STALKER_unsc_resolved }
+	}
+
+	option = {
+		name = STALKER.137.a
+		log = "[GetDateText]: [This.GetName]: STALKER.137.a executed"
+		custom_effect_tooltip = STALKER.137.a_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = { has_country_flag = STALKER_unsc_voted }
+					NOT = { has_global_flag = STALKER_unsc_resolved }
+				}
+				set_country_flag = STALKER_unsc_voted
+				set_country_flag = STALKER_unsc_voted_containment
+				add_to_variable = { global.STALKER_unsc_containment = 1 }
+				add_to_variable = { global.STALKER_unsc_ballots = 1 }
+				STALKER_finish_security_council = yes
+			}
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				STALKER_controls_active_zone = yes
+			}
+		}
+	}
+
+	option = {
+		name = STALKER.137.b
+		log = "[GetDateText]: [This.GetName]: STALKER.137.b executed"
+		custom_effect_tooltip = STALKER.137.b_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = { has_country_flag = STALKER_unsc_voted }
+					NOT = { has_global_flag = STALKER_unsc_resolved }
+				}
+				set_country_flag = STALKER_unsc_voted
+				set_country_flag = STALKER_unsc_voted_access
+				add_to_variable = { global.STALKER_unsc_access = 1 }
+				add_to_variable = { global.STALKER_unsc_ballots = 1 }
+				STALKER_finish_security_council = yes
+			}
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				NOT = { STALKER_controls_active_zone = yes }
+			}
+		}
+	}
+
+	option = {
+		name = STALKER.137.c
+		log = "[GetDateText]: [This.GetName]: STALKER.137.c executed"
+		custom_effect_tooltip = STALKER.137.c_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = { has_country_flag = STALKER_unsc_voted }
+					NOT = { has_global_flag = STALKER_unsc_resolved }
+				}
+				set_country_flag = STALKER_unsc_voted
+				add_to_variable = { global.STALKER_unsc_adjourn = 1 }
+				add_to_variable = { global.STALKER_unsc_ballots = 1 }
+				STALKER_finish_security_council = yes
+			}
+		}
+		ai_chance = { base = 20 }
+	}
+}
+
+news_event = {
+	id = STALKER.138
+	title = STALKER.138.t
+	desc = {
+		trigger = { check_variable = { global.STALKER_unsc_result = 1 } }
+		text = STALKER.138.d_containment
+	}
+	desc = {
+		trigger = { check_variable = { global.STALKER_unsc_result = 2 } }
+		text = STALKER.138.d_access
+	}
+	desc = {
+		trigger = { check_variable = { global.STALKER_unsc_result = 3 } }
+		text = STALKER.138.d_adjourn
+	}
+	picture = GFX_UN_emergency_meeting
+	major = yes
+	is_triggered_only = yes
+
+	trigger = {
+		STALKER_scenario_enabled = yes
+		has_global_flag = STALKER_unsc_resolved
+	}
+
+	option = { name = STALKER.138.a }
+}

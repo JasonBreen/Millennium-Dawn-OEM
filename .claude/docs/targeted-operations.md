@@ -41,7 +41,7 @@ python tools/generators/generate_targeted_operations.py --check
 
 Person and organization IDs are permanent and must never be recycled. The current
 manifest has person capacity 161, permanent IDs through 160, generated successor
-IDs 65 through 128, and 37 organization records. Zero is reserved. Organizations
+IDs 65 through 128, and 40 organization records. Zero is reserved. Organizations
 remain in their own registry and never consume a person ID.
 
 The four organization classes are:
@@ -53,7 +53,7 @@ The four organization classes are:
 
 A group may also set `activation_condition`, a scripted trigger added to its monthly
 activation check, and the `fixed_state` location policy with a `state` ID, which places it
-in that state instead of a random state of its host. The STALKER organizations use both.
+in that state instead of a random state of its host. The STALKER organizations and the Federal Bureau of Control organizations use both.
 
 `ct_id` is an optional intelligence source. It is not an activation, discovery,
 display, collection, or authority prerequisite. IRGC/Quds Force, IRGC high command,

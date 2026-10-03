@@ -1,0 +1,347 @@
+add_namespace = FBC
+
+# The Customs Discrepancy. Brussels is state 51. The Ruhr is state 39.
+# The event is sent to one coordinator. It does not read a shared current site.
+country_event = {
+	id = FBC.10
+	title = FBC.10.t
+	desc = FBC.10.d
+	picture = GFX_european_union_flag
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		check_variable = { global.FBC_eu_phase = 0 }
+	}
+
+	option = {
+		name = FBC.10.a
+		log = "[GetDateText]: [This.GetName]: FBC.10.a executed"
+		custom_effect_tooltip = FBC.10.a_tt
+		trigger = {
+			has_idea = EU_member
+			check_variable = { global.FBC_eu_capacity > 0 }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { global.FBC_eu_phase = 0 }
+					check_variable = { global.FBC_eu_capacity > 0 }
+				}
+				FBC_commit_eu_team = yes
+				set_variable = { global.FBC_eu_phase = 2 }
+				country_event = { id = FBC.11 days = 40 }
+			}
+		}
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = FBC.10.b
+		log = "[GetDateText]: [This.GetName]: FBC.10.b executed"
+		custom_effect_tooltip = FBC.10.b_tt
+		trigger = {
+			has_idea = EU_member
+			country_exists = BEL
+			BEL = { has_idea = EU_member }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { global.FBC_eu_phase = 0 }
+					country_exists = BEL
+					BEL = { has_idea = EU_member }
+				}
+				set_variable = { global.FBC_eu_phase = 5 }
+				BEL = { country_event = { id = FBC.12 days = 5 } }
+			}
+		}
+		ai_chance = { base = 25 }
+	}
+
+	option = {
+		name = FBC.10.c
+		log = "[GetDateText]: [This.GetName]: FBC.10.c executed"
+		custom_effect_tooltip = FBC.10.c_tt
+		trigger = {
+			has_idea = EU_member
+			country_exists = GER
+			GER = { has_idea = EU_member }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { global.FBC_eu_phase = 0 }
+					country_exists = GER
+					GER = { has_idea = EU_member }
+				}
+				set_variable = { global.FBC_eu_phase = 6 }
+				GER = { country_event = { id = FBC.13 days = 5 } }
+			}
+		}
+		ai_chance = { base = 25 }
+	}
+
+	option = {
+		name = FBC.10.d
+		log = "[GetDateText]: [This.GetName]: FBC.10.d executed"
+		custom_effect_tooltip = FBC.10.d_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { global.FBC_eu_phase = 0 } }
+				add_political_power = -25
+				add_to_variable = { global.FBC_eu_exposure = -5 }
+				set_variable = { global.FBC_eu_phase = 3 }
+				FBC_clamp_eu_desk = yes
+				51 = { set_state_flag = { flag = FBC_customs_restriction value = 1 days = 90 } }
+				39 = { set_state_flag = { flag = FBC_customs_restriction value = 1 days = 90 } }
+				country_event = { id = FBC.11 days = 25 }
+			}
+		}
+		trigger = { has_idea = EU_member }
+		ai_chance = {
+			base = 20
+			modifier = {
+				factor = 0
+				has_political_power < 25
+			}
+		}
+	}
+
+	option = {
+		name = FBC.10.e
+		log = "[GetDateText]: [This.GetName]: FBC.10.e executed"
+		custom_effect_tooltip = FBC.10.e_tt
+		trigger = { NOT = { has_idea = EU_member } }
+		hidden_effect = {
+			clr_global_flag = FBC_eu_dispatched
+			FBC_schedule_eu_customs = yes
+		}
+		ai_chance = { base = 100 }
+	}
+}
+
+country_event = {
+	id = FBC.11
+	title = FBC.11.t
+	desc = FBC.11.d
+	picture = GFX_european_union_flag
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		has_idea = EU_member
+		OR = {
+			check_variable = { global.FBC_eu_phase = 2 }
+			check_variable = { global.FBC_eu_phase = 3 }
+		}
+	}
+
+	immediate = {
+		clr_global_flag = FBC_eu_inquiry_failed
+		if = {
+			limit = { check_variable = { global.FBC_eu_phase = 2 } }
+			add_to_variable = { global.FBC_eu_knowledge = 8 }
+			random = {
+				chance = 25
+				set_global_flag = FBC_eu_inquiry_failed
+			}
+		}
+		else_if = {
+			limit = { check_variable = { global.FBC_eu_phase = 3 } }
+			add_to_variable = { global.FBC_eu_knowledge = 12 }
+		}
+		FBC_clamp_eu_desk = yes
+	}
+
+	option = {
+		name = FBC.11.a
+		log = "[GetDateText]: [This.GetName]: FBC.11.a executed"
+		custom_effect_tooltip = FBC.11.a_tt
+		trigger = { NOT = { has_global_flag = FBC_eu_inquiry_failed } }
+		hidden_effect = {
+			if = {
+				limit = { NOT = { has_global_flag = FBC_eu_inquiry_failed } }
+				set_variable = { global.FBC_eu_phase = 4 }
+				add_to_variable = { global.FBC_eu_knowledge = 7 }
+				add_to_variable = { global.FBC_eu_exposure = -5 }
+				FBC_clamp_eu_desk = yes
+				FBC_release_eu_team = yes
+				if = {
+					limit = { country_exists = BEL BEL = { has_idea = EU_member } }
+					BEL = { FBC_grant_shared_findings = yes }
+				}
+				if = {
+					limit = { country_exists = GER GER = { has_idea = EU_member } }
+					GER = { FBC_grant_shared_findings = yes }
+				}
+				clr_global_flag = FBC_eu_inquiry_failed
+			}
+		}
+		ai_chance = { base = 70 }
+	}
+
+	option = {
+		name = FBC.11.b
+		log = "[GetDateText]: [This.GetName]: FBC.11.b executed"
+		custom_effect_tooltip = FBC.11.b_tt
+		hidden_effect = {
+			set_variable = { global.FBC_eu_phase = 7 }
+			add_to_variable = { global.FBC_eu_exposure = 12 }
+			FBC_clamp_eu_desk = yes
+			FBC_release_eu_team = yes
+			clr_global_flag = FBC_eu_inquiry_failed
+		}
+		ai_chance = {
+			base = 30
+			modifier = {
+				factor = 0
+				NOT = { has_global_flag = FBC_eu_inquiry_failed }
+			}
+		}
+	}
+}
+
+country_event = {
+	id = FBC.12
+	title = FBC.12.t
+	desc = FBC.12.d
+	picture = GFX_european_union_flag
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = BEL
+		check_variable = { global.FBC_eu_phase = 5 }
+	}
+
+	option = {
+		name = FBC.12.a
+		log = "[GetDateText]: [This.GetName]: FBC.12.a executed"
+		custom_effect_tooltip = FBC.12.a_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { global.FBC_eu_phase = 5 } }
+				add_political_power = -25
+				set_variable = { global.FBC_eu_phase = 4 }
+				add_to_variable = { global.FBC_eu_exposure = 2 }
+				add_to_variable = { global.FBC_eu_knowledge = 8 }
+				FBC_clamp_eu_desk = yes
+				FBC_grant_shared_findings = yes
+			}
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				factor = 0
+				has_political_power < 25
+			}
+		}
+	}
+
+	option = {
+		name = FBC.12.b
+		log = "[GetDateText]: [This.GetName]: FBC.12.b executed"
+		custom_effect_tooltip = FBC.12.b_tt
+		trigger = { check_variable = { global.FBC_eu_capacity > 0 } }
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { global.FBC_eu_phase = 5 }
+					check_variable = { global.FBC_eu_capacity > 0 }
+				}
+				FBC_commit_eu_team = yes
+				set_variable = { global.FBC_eu_phase = 2 }
+				country_event = { id = FBC.11 days = 30 }
+			}
+		}
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = FBC.12.c
+		log = "[GetDateText]: [This.GetName]: FBC.12.c executed"
+		custom_effect_tooltip = FBC.12.c_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { global.FBC_eu_phase = 5 } }
+				set_variable = { global.FBC_eu_phase = 7 }
+				add_to_variable = { global.FBC_eu_exposure = 8 }
+				FBC_clamp_eu_desk = yes
+			}
+		}
+		ai_chance = { base = 10 }
+	}
+}
+
+country_event = {
+	id = FBC.13
+	title = FBC.13.t
+	desc = FBC.13.d
+	picture = GFX_european_union_flag
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = GER
+		check_variable = { global.FBC_eu_phase = 6 }
+	}
+
+	option = {
+		name = FBC.13.a
+		log = "[GetDateText]: [This.GetName]: FBC.13.a executed"
+		custom_effect_tooltip = FBC.13.a_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { global.FBC_eu_phase = 6 } }
+				add_political_power = -25
+				set_variable = { global.FBC_eu_phase = 4 }
+				add_to_variable = { global.FBC_eu_exposure = 2 }
+				add_to_variable = { global.FBC_eu_knowledge = 8 }
+				FBC_clamp_eu_desk = yes
+				FBC_grant_shared_findings = yes
+			}
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				factor = 0
+				has_political_power < 25
+			}
+		}
+	}
+
+	option = {
+		name = FBC.13.b
+		log = "[GetDateText]: [This.GetName]: FBC.13.b executed"
+		custom_effect_tooltip = FBC.13.b_tt
+		trigger = { check_variable = { global.FBC_eu_capacity > 0 } }
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { global.FBC_eu_phase = 6 }
+					check_variable = { global.FBC_eu_capacity > 0 }
+				}
+				FBC_commit_eu_team = yes
+				set_variable = { global.FBC_eu_phase = 2 }
+				country_event = { id = FBC.11 days = 30 }
+			}
+		}
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = FBC.13.c
+		log = "[GetDateText]: [This.GetName]: FBC.13.c executed"
+		custom_effect_tooltip = FBC.13.c_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { global.FBC_eu_phase = 6 } }
+				set_variable = { global.FBC_eu_phase = 7 }
+				add_to_variable = { global.FBC_eu_exposure = 8 }
+				FBC_clamp_eu_desk = yes
+			}
+		}
+		ai_chance = { base = 10 }
+	}
+}

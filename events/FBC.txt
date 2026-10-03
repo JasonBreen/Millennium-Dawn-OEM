@@ -1,0 +1,563 @@
+add_namespace = FBC
+
+# The Unscheduled Floor. Site is New York, state 769, for the whole chain.
+country_event = {
+	id = FBC.1
+	title = FBC.1.t
+	desc = FBC.1.d
+	picture = GFX_UN_emergency_meeting
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		check_variable = { FBC_floor_phase = 0 }
+	}
+
+	option = {
+		name = FBC.1.a
+		log = "[GetDateText]: [This.GetName]: FBC.1.a executed"
+		custom_effect_tooltip = FBC.1.a_tt
+		trigger = {
+			check_variable = { FBC_response_capacity > 0 }
+			769 = { is_controlled_by = ROOT }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { FBC_floor_phase = 0 }
+					check_variable = { FBC_response_capacity > 0 }
+					769 = { is_controlled_by = ROOT }
+				}
+				FBC_commit_floor_team = yes
+				set_variable = { FBC_floor_phase = 2 }
+				country_event = { id = FBC.2 days = 40 }
+			}
+		}
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = FBC.1.b
+		log = "[GetDateText]: [This.GetName]: FBC.1.b executed"
+		custom_effect_tooltip = FBC.1.b_tt
+		trigger = {
+			check_variable = { FBC_response_capacity > 0 }
+			769 = { is_controlled_by = ROOT }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { FBC_floor_phase = 0 }
+					check_variable = { FBC_response_capacity > 0 }
+					769 = { is_controlled_by = ROOT }
+				}
+				FBC_commit_floor_team = yes
+				set_variable = { FBC_floor_phase = 3 }
+				add_to_variable = { FBC_exposure = -3 }
+				FBC_clamp_bureau = yes
+				FBC_refresh_bureau_factors = yes
+				add_stability = -0.01
+				769 = { set_state_flag = { flag = FBC_floor_lockdown value = 1 days = 120 } }
+				country_event = { id = FBC.3 days = 50 }
+			}
+		}
+		ai_chance = { base = 30 }
+	}
+
+	option = {
+		name = FBC.1.c
+		log = "[GetDateText]: [This.GetName]: FBC.1.c executed"
+		custom_effect_tooltip = FBC.1.c_tt
+		trigger = { 769 = { is_controlled_by = ROOT } }
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { FBC_floor_phase = 0 }
+					769 = { is_controlled_by = ROOT }
+				}
+				set_variable = { FBC_floor_phase = 1 }
+				add_to_variable = { FBC_exposure = 8 }
+				FBC_clamp_bureau = yes
+				FBC_refresh_bureau_factors = yes
+				country_event = { id = FBC.2 days = 70 }
+			}
+		}
+		ai_chance = {
+			base = 20
+			modifier = {
+				factor = 0
+				check_variable = { FBC_exposure > 30 }
+			}
+		}
+	}
+
+	option = {
+		name = FBC.1.d
+		log = "[GetDateText]: [This.GetName]: FBC.1.d executed"
+		custom_effect_tooltip = FBC.1.d_tt
+		trigger = { 769 = { NOT = { is_controlled_by = ROOT } } }
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { FBC_floor_phase = 0 }
+					769 = { NOT = { is_controlled_by = ROOT } }
+				}
+				set_variable = { FBC_floor_phase = 6 }
+			}
+		}
+		ai_chance = { base = 100 }
+	}
+}
+
+country_event = {
+	id = FBC.2
+	title = FBC.2.t
+	desc = FBC.2.d
+	picture = GFX_nuclear_power_plant
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		OR = {
+			check_variable = { FBC_floor_phase = 1 }
+			check_variable = { FBC_floor_phase = 2 }
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = { check_variable = { FBC_floor_phase = 1 } }
+			set_variable = { FBC_floor_knowledge = 5 }
+			add_to_variable = { FBC_exposure = 5 }
+		}
+		else_if = {
+			limit = { check_variable = { FBC_floor_phase = 2 } }
+			set_variable = { FBC_floor_knowledge = 15 }
+		}
+		FBC_clamp_bureau = yes
+		FBC_refresh_bureau_factors = yes
+	}
+
+	option = {
+		name = FBC.2.a
+		log = "[GetDateText]: [This.GetName]: FBC.2.a executed"
+		custom_effect_tooltip = FBC.2.a_tt
+		trigger = {
+			769 = { is_controlled_by = ROOT }
+			OR = {
+				check_variable = { FBC_floor_committed > 0 }
+				check_variable = { FBC_response_capacity > 0 }
+			}
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					769 = { is_controlled_by = ROOT }
+					OR = {
+						check_variable = { FBC_floor_phase = 1 }
+						check_variable = { FBC_floor_phase = 2 }
+					}
+				}
+				if = {
+					limit = { check_variable = { FBC_floor_committed < 1 } }
+					FBC_commit_floor_team = yes
+				}
+				if = {
+					limit = { check_variable = { FBC_floor_committed > 0 } }
+					set_variable = { FBC_floor_phase = 3 }
+					769 = { set_state_flag = { flag = FBC_floor_lockdown value = 1 days = 120 } }
+					country_event = { id = FBC.3 days = 40 }
+				}
+			}
+		}
+		ai_chance = { base = 45 }
+	}
+
+	option = {
+		name = FBC.2.b
+		log = "[GetDateText]: [This.GetName]: FBC.2.b executed"
+		custom_effect_tooltip = FBC.2.b_tt
+		trigger = {
+			check_variable = { FBC_floor_phase = 2 }
+			769 = { is_controlled_by = ROOT }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { FBC_floor_phase = 2 }
+					769 = { is_controlled_by = ROOT }
+				}
+				set_temp_variable = { FBC_research_backfire = 0 }
+				random = {
+					chance = 20
+					set_temp_variable = { FBC_research_backfire = 1 }
+				}
+				if = {
+					limit = { check_variable = { FBC_research_backfire = 1 } }
+					add_to_variable = { FBC_exposure = 10 }
+					add_to_variable = { FBC_containment_integrity = -10 }
+				}
+				else = {
+					add_to_variable = { FBC_floor_knowledge = 10 }
+					add_to_variable = { FBC_exposure = 3 }
+				}
+				FBC_clamp_bureau = yes
+				FBC_refresh_bureau_factors = yes
+				country_event = { id = FBC.3 days = 30 }
+			}
+		}
+		ai_chance = { base = 35 }
+	}
+
+	option = {
+		name = FBC.2.c
+		log = "[GetDateText]: [This.GetName]: FBC.2.c executed"
+		custom_effect_tooltip = FBC.2.c_tt
+		trigger = { check_variable = { FBC_floor_knowledge > 14 } }
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { FBC_floor_knowledge > 14 } }
+				set_variable = { FBC_floor_phase = 4 }
+				add_to_variable = { FBC_containment_integrity = 5 }
+				add_to_variable = { FBC_exposure = -4 }
+				FBC_clamp_bureau = yes
+				FBC_release_floor_team = yes
+				FBC_refresh_bureau_factors = yes
+			}
+		}
+		ai_chance = { base = 40 }
+	}
+
+	option = {
+		name = FBC.2.d
+		log = "[GetDateText]: [This.GetName]: FBC.2.d executed"
+		custom_effect_tooltip = FBC.2.d_tt
+		trigger = { 769 = { NOT = { is_controlled_by = ROOT } } }
+		hidden_effect = {
+			set_variable = { FBC_floor_phase = 6 }
+			FBC_release_floor_team = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = { base = 100 }
+	}
+
+	option = {
+		name = FBC.2.e
+		log = "[GetDateText]: [This.GetName]: FBC.2.e executed"
+		custom_effect_tooltip = FBC.2.e_tt
+		trigger = { 769 = { is_controlled_by = ROOT } }
+		hidden_effect = {
+			if = {
+				limit = { NOT = { check_variable = { FBC_floor_phase > 3 } } }
+				set_variable = { FBC_floor_phase = 5 }
+				add_to_variable = { FBC_exposure = 4 }
+				FBC_clamp_bureau = yes
+				FBC_release_floor_team = yes
+				FBC_refresh_bureau_factors = yes
+			}
+		}
+		ai_chance = { base = 8 }
+	}
+}
+
+country_event = {
+	id = FBC.3
+	title = FBC.3.t
+	desc = FBC.3.d
+	picture = GFX_UN_joint_command
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		OR = {
+			check_variable = { FBC_floor_phase = 2 }
+			check_variable = { FBC_floor_phase = 3 }
+		}
+	}
+
+	option = {
+		name = FBC.3.a
+		log = "[GetDateText]: [This.GetName]: FBC.3.a executed"
+		custom_effect_tooltip = FBC.3.a_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					OR = {
+						check_variable = { FBC_floor_phase = 3 }
+						check_variable = { FBC_floor_knowledge > 14 }
+					}
+				}
+				set_variable = { FBC_floor_phase = 4 }
+				add_to_variable = { FBC_containment_integrity = 5 }
+				add_to_variable = { FBC_exposure = -4 }
+			}
+			else = {
+				set_variable = { FBC_floor_phase = 5 }
+				add_to_variable = { FBC_containment_integrity = -8 }
+				add_to_variable = { FBC_exposure = 6 }
+			}
+			FBC_clamp_bureau = yes
+			FBC_release_floor_team = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = { base = 100 }
+	}
+}
+
+# The Sealed Wing. Site is Washington, state 1182. It does not read the New York case.
+country_event = {
+	id = FBC.4
+	title = FBC.4.t
+	desc = FBC.4.d
+	picture = GFX_crime_fighting
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		check_variable = { FBC_wing_phase = 0 }
+	}
+
+	option = {
+		name = FBC.4.a
+		log = "[GetDateText]: [This.GetName]: FBC.4.a executed"
+		custom_effect_tooltip = FBC.4.a_tt
+		trigger = {
+			check_variable = { FBC_response_capacity > 0 }
+			1182 = { is_controlled_by = ROOT }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { FBC_wing_phase = 0 }
+					check_variable = { FBC_response_capacity > 0 }
+					1182 = { is_controlled_by = ROOT }
+				}
+				FBC_commit_wing_team = yes
+				set_variable = { FBC_wing_phase = 2 }
+				country_event = { id = FBC.5 days = 35 }
+			}
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				factor = 0
+				check_variable = { FBC_floor_committed > 0 }
+				check_variable = { FBC_response_capacity < 1 }
+			}
+		}
+	}
+
+	option = {
+		name = FBC.4.b
+		log = "[GetDateText]: [This.GetName]: FBC.4.b executed"
+		custom_effect_tooltip = FBC.4.b_tt
+		trigger = { 1182 = { is_controlled_by = ROOT } }
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { FBC_wing_phase = 0 }
+					1182 = { is_controlled_by = ROOT }
+				}
+				set_variable = { FBC_wing_phase = 5 }
+				add_to_variable = { FBC_exposure = 6 }
+				FBC_clamp_bureau = yes
+				FBC_refresh_bureau_factors = yes
+			}
+		}
+		ai_chance = {
+			base = 25
+			modifier = {
+				add = 40
+				check_variable = { FBC_response_capacity < 1 }
+			}
+		}
+	}
+
+	option = {
+		name = FBC.4.c
+		log = "[GetDateText]: [This.GetName]: FBC.4.c executed"
+		custom_effect_tooltip = FBC.4.c_tt
+		trigger = {
+			check_variable = { FBC_response_capacity > 0 }
+			1182 = { is_controlled_by = ROOT }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { FBC_wing_phase = 0 }
+					check_variable = { FBC_response_capacity > 0 }
+					1182 = { is_controlled_by = ROOT }
+				}
+				FBC_commit_wing_team = yes
+				set_variable = { FBC_wing_phase = 3 }
+				add_stability = -0.01
+				country_event = { id = FBC.5 days = 35 }
+			}
+		}
+		ai_chance = { base = 35 }
+	}
+
+	option = {
+		name = FBC.4.d
+		log = "[GetDateText]: [This.GetName]: FBC.4.d executed"
+		custom_effect_tooltip = FBC.4.d_tt
+		trigger = { 1182 = { NOT = { is_controlled_by = ROOT } } }
+		hidden_effect = {
+			if = { limit = { check_variable = { FBC_wing_phase = 0 } } set_variable = { FBC_wing_phase = 6 } }
+		}
+		ai_chance = { base = 100 }
+	}
+}
+
+country_event = {
+	id = FBC.5
+	title = FBC.5.t
+	desc = FBC.5.d
+	picture = GFX_crime_fighting
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		OR = {
+			check_variable = { FBC_wing_phase = 2 }
+			check_variable = { FBC_wing_phase = 3 }
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = { check_variable = { FBC_wing_phase = 2 } }
+			add_to_variable = { FBC_wing_knowledge = 12 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+	}
+
+	option = {
+		name = FBC.5.a
+		log = "[GetDateText]: [This.GetName]: FBC.5.a executed"
+		custom_effect_tooltip = FBC.5.a_tt
+		hidden_effect = {
+			set_variable = { FBC_wing_phase = 4 }
+			add_to_variable = { FBC_containment_integrity = 4 }
+			add_to_variable = { FBC_exposure = -2 }
+			FBC_clamp_bureau = yes
+			FBC_release_wing_team = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				add = 30
+				check_variable = { FBC_floor_phase > 0 }
+				NOT = { check_variable = { FBC_floor_phase > 3 } }
+			}
+		}
+	}
+
+	option = {
+		name = FBC.5.b
+		log = "[GetDateText]: [This.GetName]: FBC.5.b executed"
+		custom_effect_tooltip = FBC.5.b_tt
+		trigger = {
+			check_variable = { FBC_wing_committed > 0 }
+			1182 = { is_controlled_by = ROOT }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { FBC_wing_committed > 0 }
+					1182 = { is_controlled_by = ROOT }
+				}
+				set_variable = { FBC_wing_phase = 3 }
+				add_to_variable = { FBC_containment_integrity = 8 }
+				add_to_variable = { FBC_exposure = -3 }
+				FBC_clamp_bureau = yes
+				FBC_refresh_bureau_factors = yes
+			}
+		}
+		ai_chance = {
+			base = 35
+			modifier = {
+				add = 20
+				check_variable = { FBC_containment_integrity < 35 }
+			}
+		}
+	}
+}
+
+country_event = {
+	id = FBC.6
+	title = FBC.6.t
+	desc = FBC.6.d
+	picture = GFX_fukushima_nuclear_disaster_news
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+	}
+
+	option = {
+		name = FBC.6.a
+		log = "[GetDateText]: [This.GetName]: FBC.6.a executed"
+		custom_effect_tooltip = FBC.6.a_tt
+		hidden_effect = {
+			add_political_power = -50
+			add_stability = -0.02
+			add_to_variable = { FBC_containment_integrity = 15 }
+			add_to_variable = { FBC_exposure = -5 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				factor = 0
+				has_political_power < 50
+			}
+		}
+	}
+
+	option = {
+		name = FBC.6.b
+		log = "[GetDateText]: [This.GetName]: FBC.6.b executed"
+		custom_effect_tooltip = FBC.6.b_tt
+		hidden_effect = {
+			add_to_variable = { FBC_exposure = 8 }
+			add_to_variable = { FBC_containment_integrity = -5 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = { base = 25 }
+	}
+
+	option = {
+		name = FBC.6.c
+		log = "[GetDateText]: [This.GetName]: FBC.6.c executed"
+		custom_effect_tooltip = FBC.6.c_tt
+		trigger = { check_variable = { FBC_wing_committed > 0 } }
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { FBC_wing_committed > 0 } }
+				set_variable = { FBC_wing_phase = 5 }
+				FBC_release_wing_team = yes
+				add_to_variable = { FBC_containment_integrity = 10 }
+				FBC_clamp_bureau = yes
+				FBC_refresh_bureau_factors = yes
+			}
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 30
+				check_variable = { FBC_containment_integrity < 20 }
+			}
+		}
+	}
+}

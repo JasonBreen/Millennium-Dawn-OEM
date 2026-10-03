@@ -74,6 +74,32 @@ STALKER_trigger_military_sealing_outcome = {
 	news_event = STALKER.36
 }
 
+# Strelok ends the crisis himself. The eighth pod is never entered, and the Zone does not spread.
+STALKER_trigger_strelok_outcome = {
+	set_global_flag = STALKER_2022_outcome_resolved
+	log = "[GetDateText]: STALKER Strelok outcome reached"
+	for_each_scope_loop = {
+		array = global.STALKER_active_zone_anchors
+		if = {
+			limit = {
+				STALKER_is_active_zone_anchor = yes
+				check_variable = { STALKER_zone_id = 1 }
+			}
+			add_to_variable = { STALKER_zone_activity = -30 }
+			add_to_variable = { STALKER_zone_containment = 10 }
+			add_to_variable = { STALKER_zone_stalkers = -15 }
+			add_to_variable = { STALKER_zone_monolith = -20 }
+			clamp_variable = { var = STALKER_zone_activity min = 0 max = 100 }
+			STALKER_clamp_zone_society = yes
+			if = {
+				limit = { controller = { exists = yes } }
+				controller = { STALKER_refresh_zone_administration = yes }
+			}
+		}
+	}
+	news_event = STALKER.39
+}
+
 # Skif spares the Doctor and enters the eighth pod: geographic containment of the original Zone fails.
 STALKER_trigger_kaimanov_outcome = {
 	set_global_flag = STALKER_2022_outcome_resolved
@@ -103,5 +129,6 @@ STALKER_trigger_kaimanov_outcome = {
 		set_global_flag = STALKER_global_proliferation
 		set_variable = { global.STALKER_artifact_price = 0.2 }
 		news_event = { id = STALKER.32 days = 30 }
+		STALKER_schedule_security_council = yes
 	}
 }

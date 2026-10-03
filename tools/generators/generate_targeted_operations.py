@@ -177,6 +177,9 @@ STABLE_GROUP_KEYS = (
     "stalker_monolith",
     "stalker_artifact_smugglers",
     "stalker_sircaa",
+    "stalker_mercenaries",
+    "federal_bureau_of_control",
+    "european_anomaly_desk",
 )
 STABLE_TARGET_KEYS = (
     "osama_bin_laden",

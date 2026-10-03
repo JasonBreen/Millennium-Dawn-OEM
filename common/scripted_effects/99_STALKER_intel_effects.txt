@@ -19,6 +19,31 @@ STALKER_monthly_intel_pulse = {
 			add_to_variable = { STALKER_zone_foreign_intel = { value = STALKER_intel_target subtract = STALKER_zone_foreign_intel multiply = 0.1 } }
 			clamp_variable = { var = STALKER_zone_foreign_intel min = 0 max = 100 }
 			if = {
+				limit = { check_variable = { STALKER_zone_id = 1 } }
+				set_temp_variable = {
+					STALKER_merc_target = {
+						value = STALKER_zone_foreign_intel
+						multiply = 0.7
+						add = { value = STALKER_zone_exploitation multiply = 0.15 }
+						clamp = { min = 0 max = 100 }
+					}
+				}
+				add_to_variable = { STALKER_zone_mercenaries = { value = STALKER_merc_target subtract = STALKER_zone_mercenaries multiply = 0.1 } }
+				clamp_variable = { var = STALKER_zone_mercenaries min = 0 max = 100 }
+				if = {
+					limit = {
+						check_variable = { STALKER_zone_mercenaries > 39 }
+						NOT = { has_state_flag = STALKER_mercenary_cooldown }
+					}
+					random = {
+						chance = 10
+						set_state_flag = { flag = STALKER_mercenary_cooldown value = 1 days = 365 }
+						STALKER_target_zone = yes
+						controller = { country_event = STALKER.141 }
+					}
+				}
+			}
+			if = {
 				limit = { check_variable = { STALKER_zone_foreign_intel > 49 } }
 				controller = {
 					if = {

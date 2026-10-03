@@ -1,15 +1,20 @@
 STALKER_initialize_zone_society = {
 	set_variable = { STALKER_zone_stalkers = 20 }
-	set_variable = { STALKER_zone_duty = 20 }
-	set_variable = { STALKER_zone_freedom = 20 }
+	set_variable = { STALKER_zone_duty = 0 }
+	set_variable = { STALKER_zone_freedom = 0 }
 	set_variable = { STALKER_zone_bandits = 30 }
 	set_variable = { STALKER_zone_monolith = 0 }
 	set_variable = { STALKER_zone_scientists = 15 }
 	set_variable = { STALKER_zone_military = 20 }
+	set_variable = { STALKER_zone_mercenaries = 0 }
+	set_variable = { STALKER_zone_foreign_intel = 0 }
 	if = {
 		limit = { check_variable = { STALKER_zone_id = 1 } }
+		set_variable = { STALKER_zone_duty = 20 }
+		set_variable = { STALKER_zone_freedom = 20 }
 		set_variable = { STALKER_zone_monolith = 15 }
 		set_variable = { STALKER_zone_clear_sky = 20 }
+		set_variable = { STALKER_zone_mercenaries = 10 }
 	}
 }
 
@@ -21,6 +26,7 @@ STALKER_clamp_zone_society = {
 	clamp_variable = { var = STALKER_zone_monolith min = 0 max = 100 }
 	clamp_variable = { var = STALKER_zone_scientists min = 0 max = 100 }
 	clamp_variable = { var = STALKER_zone_military min = 0 max = 100 }
+	clamp_variable = { var = STALKER_zone_mercenaries min = 0 max = 100 }
 	clamp_variable = { var = STALKER_zone_containment min = 0 max = 100 }
 	clamp_variable = { var = STALKER_zone_exploitation min = 0 max = 100 }
 	STALKER_update_zone_leader = yes
@@ -170,6 +176,7 @@ STALKER_roll_zone_society_events = {
 		}
 		if = {
 			limit = {
+				check_variable = { STALKER_zone_id = 1 }
 				NOT = { has_state_flag = STALKER_faction_clash_cooldown }
 				check_variable = { STALKER_zone_duty > 19 }
 				check_variable = { STALKER_zone_freedom > 19 }
@@ -195,6 +202,7 @@ STALKER_roll_zone_society_events = {
 		}
 		if = {
 			limit = {
+				check_variable = { STALKER_zone_id = 1 }
 				NOT = { has_state_flag = STALKER_monolith_event_cooldown }
 				check_variable = { STALKER_zone_monolith > 19 }
 			}
@@ -320,6 +328,16 @@ STALKER_update_zone_leader = {
 	}
 	else_if = {
 		limit = { has_variable = STALKER_zone_noon check_variable = { STALKER_zone_noon = STALKER_lead } }
+		set_temp_variable = { STALKER_lead_tied = 1 }
+	}
+	if = {
+		limit = { check_variable = { STALKER_zone_mercenaries > STALKER_lead } }
+		set_temp_variable = { STALKER_leader = 11 }
+		set_temp_variable = { STALKER_lead = STALKER_zone_mercenaries }
+		set_temp_variable = { STALKER_lead_tied = 0 }
+	}
+	else_if = {
+		limit = { check_variable = { STALKER_zone_mercenaries = STALKER_lead } }
 		set_temp_variable = { STALKER_lead_tied = 1 }
 	}
 	if = {

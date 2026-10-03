@@ -1,0 +1,175 @@
+# Startup runs this from a random country. The Bureau's numbers live on USA.
+# The European desk's numbers are global because the coordinator can change.
+# Case sites stay fixed: New York 769, Washington 1182, Brussels 51, the Ruhr 39.
+FBC_initialize_scenario = {
+	if = {
+		limit = {
+			has_game_rule = { rule = rule_fbc_scenario option = ENABLED }
+			NOT = { has_global_flag = GLOBAL_FBC_scenario_enabled }
+		}
+		set_global_flag = GLOBAL_FBC_scenario_enabled
+		set_variable = { global.FBC_eu_phase = 0 }
+		set_variable = { global.FBC_eu_knowledge = 0 }
+		set_variable = { global.FBC_eu_exposure = 5 }
+		set_variable = { global.FBC_eu_committed = 0 }
+		set_variable = { global.FBC_eu_capacity = 1 }
+		FBC_schedule_eu_customs = yes
+		if = {
+			limit = { country_exists = USA }
+			USA = {
+				set_variable = { FBC_response_capacity = 2 }
+				set_variable = { FBC_containment_integrity = 50 }
+				set_variable = { FBC_exposure = 10 }
+				set_variable = { FBC_floor_phase = 0 }
+				set_variable = { FBC_floor_knowledge = 0 }
+				set_variable = { FBC_floor_committed = 0 }
+				set_variable = { FBC_wing_phase = 0 }
+				set_variable = { FBC_wing_knowledge = 0 }
+				set_variable = { FBC_wing_committed = 0 }
+				FBC_refresh_bureau_factors = yes
+				add_dynamic_modifier = { modifier = FBC_bureau }
+				country_event = { id = FBC.1 days = 60 }
+				country_event = { id = FBC.4 days = 130 }
+			}
+		}
+	}
+}
+
+FBC_refresh_bureau_factors = {
+	set_variable = {
+		FBC_research_factor = {
+			value = FBC_floor_knowledge
+			add = FBC_wing_knowledge
+			multiply = 0.0004
+		}
+	}
+	set_variable = {
+		FBC_stability_factor = {
+			value = FBC_containment_integrity
+			subtract = FBC_exposure
+			multiply = 0.0002
+		}
+	}
+}
+
+FBC_commit_floor_team = {
+	if = {
+		limit = {
+			check_variable = { FBC_response_capacity > 0 }
+			check_variable = { FBC_floor_committed < 1 }
+		}
+		add_to_variable = { FBC_response_capacity = -1 }
+		set_variable = { FBC_floor_committed = 1 }
+	}
+}
+
+FBC_release_floor_team = {
+	if = {
+		limit = { check_variable = { FBC_floor_committed > 0 } }
+		set_variable = { FBC_floor_committed = 0 }
+		add_to_variable = { FBC_response_capacity = 1 }
+		clamp_variable = { var = FBC_response_capacity min = 0 max = 2 }
+	}
+}
+
+FBC_commit_wing_team = {
+	if = {
+		limit = {
+			check_variable = { FBC_response_capacity > 0 }
+			check_variable = { FBC_wing_committed < 1 }
+		}
+		add_to_variable = { FBC_response_capacity = -1 }
+		set_variable = { FBC_wing_committed = 1 }
+	}
+}
+
+FBC_release_wing_team = {
+	if = {
+		limit = { check_variable = { FBC_wing_committed > 0 } }
+		set_variable = { FBC_wing_committed = 0 }
+		add_to_variable = { FBC_response_capacity = 1 }
+		clamp_variable = { var = FBC_response_capacity min = 0 max = 2 }
+	}
+}
+
+FBC_clamp_bureau = {
+	clamp_variable = { var = FBC_containment_integrity min = 0 max = 100 }
+	clamp_variable = { var = FBC_exposure min = 0 max = 100 }
+	clamp_variable = { var = FBC_floor_knowledge min = 0 max = 100 }
+	clamp_variable = { var = FBC_wing_knowledge min = 0 max = 100 }
+	clamp_variable = { var = FBC_response_capacity min = 0 max = 2 }
+}
+
+FBC_monthly_bureau_pulse = {
+	if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			country_exists = USA
+			USA = { has_variable = FBC_containment_integrity }
+		}
+		USA = {
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+			if = {
+				limit = {
+					check_variable = { FBC_containment_integrity < 25 }
+					check_variable = { FBC_exposure > 40 }
+					NOT = { has_country_flag = FBC_breach_cooldown }
+				}
+				set_country_flag = { flag = FBC_breach_cooldown value = 1 days = 180 }
+				country_event = FBC.6
+			}
+		}
+		if = {
+			limit = {
+				TOP_enabled = yes
+				NOT = { check_variable = { global.TOP_group_state^39 = 0 } }
+				USA = {
+					is_ai = no
+					NOT = { has_country_flag = FBC_top_lead }
+				}
+			}
+			USA = {
+				set_country_flag = FBC_top_lead
+				set_temp_variable = { TOP_arg_amount = 20 }
+				set_temp_variable = { TOP_arg_group = 39 }
+				TOP_add_organization_lead = yes
+			}
+		}
+	}
+}
+
+# Facility sabotage against organization 39. Organization 40 is the European desk.
+FBC_apply_top_organization_sabotage = {
+	if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			check_variable = { TOP_group_target = 39 }
+			country_exists = USA
+			USA = { has_variable = FBC_containment_integrity }
+		}
+		USA = {
+			add_to_variable = { FBC_containment_integrity = -15 }
+			add_to_variable = { FBC_exposure = 10 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+			if = {
+				limit = {
+					check_variable = { FBC_containment_integrity < 40 }
+					NOT = { has_country_flag = FBC_breach_cooldown }
+				}
+				set_country_flag = { flag = FBC_breach_cooldown value = 1 days = 180 }
+				country_event = FBC.6
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			check_variable = { TOP_group_target = 40 }
+			has_variable = global.FBC_eu_exposure
+		}
+		add_to_variable = { global.FBC_eu_exposure = 10 }
+		clamp_variable = { var = global.FBC_eu_exposure min = 0 max = 100 }
+	}
+}
