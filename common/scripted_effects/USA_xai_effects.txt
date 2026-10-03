@@ -1,0 +1,86 @@
+USA_xai_initialize_state = {
+	if = {
+		limit = { NOT = { has_country_flag = USA_xai_state_initialized } }
+		set_variable = { USA_xai_frontier_capability = 1 }
+		set_variable = { USA_xai_compute_scale = 3 }
+		set_variable = { USA_xai_talent = 4 }
+		set_variable = { USA_xai_deployment = 1 }
+		set_variable = { USA_xai_public_standing = 5 }
+		set_country_flag = USA_xai_state_initialized
+	}
+	USA_xai_clamp_state = yes
+}
+
+USA_xai_clamp_state = {
+	clamp_variable = { var = USA_xai_frontier_capability min = 0 max = 10 }
+	clamp_variable = { var = USA_xai_compute_scale min = 0 max = 10 }
+	clamp_variable = { var = USA_xai_talent min = 0 max = 10 }
+	clamp_variable = { var = USA_xai_deployment min = 0 max = 10 }
+	clamp_variable = { var = USA_xai_public_standing min = 0 max = 10 }
+}
+
+USA_xai_apply_colossus_route = {
+	USA_xai_initialize_state = yes
+	add_to_variable = { USA_xai_compute_scale = 3 }
+	add_to_variable = { USA_xai_frontier_capability = 2 }
+	add_to_variable = { USA_xai_deployment = 1 }
+	add_to_variable = { USA_xai_public_standing = -1 }
+	USA_xai_clamp_state = yes
+}
+
+USA_xai_apply_grok_route = {
+	USA_xai_initialize_state = yes
+	add_to_variable = { USA_xai_deployment = 3 }
+	add_to_variable = { USA_xai_frontier_capability = 1 }
+	add_to_variable = { USA_xai_compute_scale = 1 }
+	add_to_variable = { USA_xai_public_standing = -1 }
+	USA_xai_clamp_state = yes
+}
+
+USA_xai_apply_talent_route = {
+	USA_xai_initialize_state = yes
+	add_to_variable = { USA_xai_talent = 3 }
+	add_to_variable = { USA_xai_frontier_capability = 1 }
+	add_to_variable = { USA_xai_compute_scale = -1 }
+	USA_xai_clamp_state = yes
+	if = {
+		limit = {
+			has_country_flag = USA_openai_state_initialized
+			NOT = { has_country_flag = USA_xai_openai_talent_taken }
+		}
+		USA_openai_apply_xai_talent_dent = yes
+		set_country_flag = USA_xai_openai_talent_taken
+	}
+}
+
+USA_xai_apply_colossus_expansion_route = {
+	USA_xai_initialize_state = yes
+	add_to_variable = { USA_xai_compute_scale = 3 }
+	add_to_variable = { USA_xai_frontier_capability = 1 }
+	add_to_variable = { USA_xai_public_standing = -1 }
+	USA_xai_clamp_state = yes
+}
+
+USA_xai_apply_grok_platform_route = {
+	USA_xai_initialize_state = yes
+	add_to_variable = { USA_xai_deployment = 3 }
+	add_to_variable = { USA_xai_frontier_capability = 1 }
+	add_to_variable = { USA_xai_public_standing = -1 }
+	USA_xai_clamp_state = yes
+}
+
+USA_xai_apply_open_weights_route = {
+	USA_xai_initialize_state = yes
+	add_to_variable = { USA_xai_deployment = 2 }
+	add_to_variable = { USA_xai_public_standing = 2 }
+	add_to_variable = { USA_xai_frontier_capability = 1 }
+	USA_xai_clamp_state = yes
+}
+
+USA_xai_apply_charter_route = {
+	USA_xai_initialize_state = yes
+	add_to_variable = { USA_xai_public_standing = 2 }
+	add_to_variable = { USA_xai_talent = 1 }
+	add_to_variable = { USA_xai_deployment = -1 }
+	USA_xai_clamp_state = yes
+}
