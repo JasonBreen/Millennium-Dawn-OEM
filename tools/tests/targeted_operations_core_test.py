@@ -122,6 +122,8 @@ class TargetScript(TargetedScript):
         for name in (
             "STALKER_top_zone_organization_active",
             "STALKER_top_sircaa_active",
+            "FBC_top_active",
+            "FBC_top_eu_active",
         ):
             self.triggers[name] = [("always", "=", "no")]
         self.countries, self.globals, self.temps = {}, {}, {}
