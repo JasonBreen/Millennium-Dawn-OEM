@@ -47,7 +47,7 @@ class Preset:
 PRESETS = {
     "stalker": Preset(r"STALKER|/STK_", ("STALKER_", "STK_"), "STALKER Zone scenario"),
     "top": Preset(
-        r"targeted_operations|military_raids|^common/raids/",
+        r"targeted_operations|Targeted Operations|military_raids|^common/raids/",
         ("TOP_",),
         "Targeted Operations and its native raids",
     ),
