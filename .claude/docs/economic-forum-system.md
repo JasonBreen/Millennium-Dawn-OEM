@@ -17,7 +17,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-11`, `econ_forum_news.1-15`.
+- `events/EconomicForums.txt`: `econ_forum.1-12`, `econ_forum_news.1-17`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -55,6 +55,7 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_controversial`  | This cycle's controversial speaker (0 none, 1-7) |
 | `econ_forum_star`           | This cycle's star speaker: track + 1 (0 none)   |
 | `econ_forum_room_seats`     | Private room seats given this cycle (max 4)     |
+| `econ_forum_talks_a`, `_b`  | This cycle's sideline talks parties (0 none)    |
 
 | Id  | Forum                               | Month | Founder            | Core members        |
 | --- | ----------------------------------- | ----- | ------------------ | ------------------- |
@@ -383,6 +384,35 @@ At the summit, after attendance, `econ_forum_close_ceremonies` signs one for eac
 investors favour it for 365 days, the reverse of the agreement every attendee signs. Each ceremony adds 3 to the
 summit score. `econ_forum_last_ceremonies` feeds the standing lines and the host's summit report.
 
+### Sideline Talks
+
+A host can bring two rival governments together on the summit's sidelines, as Davos did for Greece and Turkey in
+1988: one set of talks a summit, recorded as country ids in `econ_forum_talks_a` and `econ_forum_talks_b`, reset when
+preparation opens and cleared at the summit.
+
+- **Rivals** (`econ_forum_talks_partner`): two invited regional or greater powers, neither the host, at peace with
+  each other, where either side holds the other below -24 opinion. A pair that sat down in the last five years
+  (`econ_forum_talks_held@<other>`, both ways) is not paired again.
+- **Player host:** `econ_forum_broker_talks`, 25 PP, targeting an invited regional or greater power that has a rival
+  among the invitees. `econ_forum_broker_talks` pairs it with the rival either side likes least.
+- **AI host:** a forum at 40 prestige or more with no talks booked, after its ceremonies, with a 30% chance. A
+  state-led host needs over 100 PP and pays 25; the WEF's partners pay for it.
+- **Human party:** `econ_forum.12` names the other side (queued in `econ_forum_talks_queue`, host saved as
+  `econ_forum_talks_host`, other side as `econ_forum_talks_other`). Refusing (`econ_forum_refuse_talks`) calls the
+  talks off, only at the forum whose seat the event saved, while it is preparing, and while the booked pair is still
+  the one the event named, so a stale popup cannot cancel replacement talks.
+- **AI party:** +10 attendance chance while booked.
+
+At the summit, after the private room, `econ_forum_hold_talks` holds them if both parties attended and are not at
+war with each other. The chance is `25 + prestige × 0.4`, +10 per party that sent its head of government, plus
+`0.2 ×` the lower of the two parties' opinions of each other, clamped to 10-90.
+
+- **Accord** (`econ_forum_news.16`): +8 to the score, `econ_forum_talks_accord` (+25, decay 1) between the parties
+  and `econ_forum_brokered_talks` (+15, decay 1) from each toward the host.
+- **Collapse** (`econ_forum_news.17`): -3 to the score and `econ_forum_talks_collapsed` (-10, decay 1) between them.
+
+A party that stayed home lets the talks lapse with no effect.
+
 ### Breakaway Forum
 
 `econ_forum_found_breakaway` (150 PP, stability above 40%, peace) is open to a great or super power that boycotts a
@@ -524,6 +554,7 @@ belongs to the fork's targeted operations screen, which upstream does not have.
 | 4   | The Forums tab through the scaffolder, delegation agendas, guest actions, invitation requests, AI guests      | #440, #442, #458-#461            |
 | 5   | Walkouts and the breakaway forum                                                                               | #463, #464                       |
 | 6   | Signing ceremonies, councils, summit messages, the tab tooltip                                                 | #466-#468, #470, #471            |
+| 7   | Controversial and star speakers, private rooms, rivalry milestones and the Davos reform, sideline talks         | #473, #474, #476-#478, #481      |
 
 Port notes:
 

@@ -340,3 +340,26 @@ econ_forum_speaker_choice_open = {
 	check_variable = { global.econ_forum_preparing^econ_forum_speaker_forum = 1 }
 	check_variable = { global.econ_forum_speakers^econ_forum_speaker_forum < 3 }
 }
+
+# Candidate scope, PREV the first party, temp ef_i: an invited regional or greater power other than the host that
+# either side holds below -24 opinion, at peace with the first party and not at the table with it in the last five years.
+econ_forum_talks_partner = {
+	NOT = { tag = PREV }
+	NOT = { check_variable = { global.econ_forum_host^ef_i = THIS.id } }
+	check_variable = { econ_forum_status^num > ef_i }
+	check_variable = { econ_forum_status^ef_i > 0 }
+	NOT = { has_war_with = PREV }
+	NOT = { has_country_flag = econ_forum_talks_held@PREV }
+	OR = {
+		has_opinion = { target = PREV value < -24 }
+		PREV = { has_opinion = { target = PREV value < -24 } }
+	}
+}
+
+# Country scope, temp ef_i: a rival of ours is among forum ef_i's invited regional or greater powers.
+econ_forum_has_talks_rival = {
+	any_of_scopes = {
+		array = global.PR_regional_or_greater_powers
+		econ_forum_talks_partner = yes
+	}
+}
