@@ -76,11 +76,19 @@ uses_the_system = {
 
 
 @pytest.fixture
-def report(tmp_path: Path) -> dict:
+def mod_root(tmp_path: Path) -> Path:
     for relative, text in FILES.items():
         write_under_str(tmp_path, relative, text)
-    tree = system_inspector.read_tree(tmp_path)
-    return system_inspector.inspect(tree, r"ZZZ", ("ZZZ_",))
+    return tmp_path
+
+
+def inspect_mod(root: Path) -> dict:
+    return system_inspector.inspect(system_inspector.read_tree(root), r"ZZZ", ("ZZZ_",))
+
+
+@pytest.fixture
+def report(mod_root: Path) -> dict:
+    return inspect_mod(mod_root)
 
 
 def test_files_and_definitions_belong_to_the_system(report):
@@ -117,7 +125,7 @@ def test_unresolved_references_point_at_nothing(report):
     assert unresolved["calls"] == ["ZZZ_missing_effect"]
     assert unresolved["events"] == ["zzz.9"]
     assert unresolved["localisation"] == ["zzz.1.d"]
-    assert unresolved["flags_never_set"] == ["ZZZ_never_set"]
+    assert unresolved["flags_never_set"] == ["country:ZZZ_never_set"]
     assert unresolved["globals_never_written"] == ["ZZZ_never_written"]
 
 
@@ -182,3 +190,133 @@ def test_text_report_honours_sections(tmp_path, capsys):
 
 def test_presets_cover_the_documented_systems():
     assert {"stalker", "top", "ai_race", "econ_forum"} <= set(system_inspector.PRESETS)
+
+
+@pytest.mark.parametrize("id_first", [True, False])
+def test_nested_dispatch_is_not_an_event_definition(mod_root, id_first):
+    ident = "id = zzz.1"
+    nested = "immediate = { country_event = { id = zzz.9 days = 1 } }"
+    fields = [ident, nested] if id_first else [nested, ident]
+    write_under_str(
+        mod_root,
+        "events/ZZZ.txt",
+        "country_event = {\n"
+        + "\n".join(fields)
+        + '\nis_triggered_only = yes\nlog = "escaped \\"quote\\" and { braces }"\n}\n',
+    )
+    report = inspect_mod(mod_root)
+    assert report["definitions"]["event"] == ["zzz.1"]
+    assert report["unresolved"]["events"] == ["zzz.9"]
+    assert system_inspector.event_blocks(
+        system_inspector.read_tree(mod_root).code["events/ZZZ.txt"]
+    ) == [("zzz.1", True)]
+
+
+def test_missing_option_label_is_reported_without_treating_other_names_as_loc(mod_root):
+    write_under_str(
+        mod_root,
+        "localisation/english/ZZZ_l_english.yml",
+        FILES["localisation/english/ZZZ_l_english.yml"].replace(
+            ' zzz.1.a: "Option"\n', ""
+        ),
+    )
+    write_under_str(
+        mod_root,
+        "common/characters/ZZZ_characters.txt",
+        'characters = { ZZZ_character = { name = "ZZZ_person_name" } }\n',
+    )
+    assert inspect_mod(mod_root)["unresolved"]["localisation"] == ["zzz.1.a", "zzz.1.d"]
+
+
+@pytest.mark.parametrize("message", ["ZZZ_orphan", "A report mentions ZZZ_orphan"])
+def test_prose_cannot_create_hooks_dependencies_or_hide_unused_symbols(
+    mod_root, message
+):
+    write_under_str(
+        mod_root,
+        "common/on_actions/00_on_actions.txt",
+        f'on_actions = {{ on_startup = {{ effect = {{ log = "{message}" }} }} }}\n',
+    )
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/outside.txt",
+        'outside_helper = { log = "unused" }\n',
+    )
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/ZZZ_prose.txt",
+        'ZZZ_prose = { log = "outside_helper" }\n',
+    )
+    report = inspect_mod(mod_root)
+    assert "common/on_actions/00_on_actions.txt" not in report["hooks"]
+    assert "ZZZ_orphan" in report["unused"]["scripted_effects_and_triggers"]
+    assert "outside_helper" not in [
+        entry["name"] for entry in report["dependencies"]["scripted_effect"]
+    ]
+
+
+def test_quoted_identifiers_and_scripted_loc_remain_references(mod_root):
+    write_under_str(
+        mod_root,
+        "common/ideas/outside.txt",
+        "ideas = { country = { outside_idea = { } } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/ZZZ_quoted.txt",
+        'ZZZ_quoted = { add_ideas = "outside_idea" }\n',
+    )
+    write_under_str(
+        mod_root,
+        "common/scripted_localisation/ZZZ_text.txt",
+        "defined_text = {\n name = ZZZ_display\n}\n",
+    )
+    write_under_str(
+        mod_root,
+        "interface/outside.gui",
+        'instantTextBoxType = { text = "Report: [ZZZ_display]" }\n',
+    )
+    report = inspect_mod(mod_root)
+    assert report["dependencies"]["idea"] == [
+        {"name": "outside_idea", "defined_in": "common/ideas/outside.txt"}
+    ]
+    assert report["hooks"]["interface/outside.gui"] == ["ZZZ_display"]
+
+
+@pytest.mark.parametrize(
+    "read_kind,write_kind",
+    [
+        ("country", "global"),
+        ("global", "country"),
+        ("state", "character"),
+        ("character", "state"),
+    ],
+)
+@pytest.mark.parametrize("block_value", [False, True])
+def test_flag_resolution_requires_matching_scope(
+    mod_root, read_kind, write_kind, block_value
+):
+    value = "{ flag = ZZZ_same_name }" if block_value else "ZZZ_same_name"
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/outside_flags.txt",
+        f"outside_flags = {{ set_{write_kind}_flag = {value} }}\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/scripted_triggers/ZZZ_flags.txt",
+        f"ZZZ_flags = {{ has_{read_kind}_flag = {value} }}\n",
+    )
+    assert (
+        f"{read_kind}:ZZZ_same_name"
+        in inspect_mod(mod_root)["unresolved"]["flags_never_set"]
+    )
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/outside_flags.txt",
+        f"outside_flags = {{ set_{read_kind}_flag = {value} }}\n",
+    )
+    assert (
+        f"{read_kind}:ZZZ_same_name"
+        not in inspect_mod(mod_root)["unresolved"]["flags_never_set"]
+    )

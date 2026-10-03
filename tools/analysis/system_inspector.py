@@ -28,6 +28,7 @@ import json
 import re
 import sys
 from collections import defaultdict
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -92,11 +93,25 @@ LINKED_KINDS = (
     "sprite",
 )
 
-STRING_OR_COMMENT_RE = re.compile(r'"[^"\n]*"|#[^\n]*')
+STRING_OR_COMMENT_RE = re.compile(r'"(?:\\.|[^"\\])*"|#[^\n]*')
+LOG_RE = re.compile(r'\blog\s*=\s*"(?:\\.|[^"\\])*"')
+LOC_SUBSTITUTION_RE = re.compile(r"\[([A-Za-z_][A-Za-z0-9_]*)\]")
+FIELD_RE = re.compile(
+    r"(?P<key>[A-Za-z0-9_.@:\-^]+)\s*=\s*"
+    r'(?P<value>"(?:\\.|[^"\\])*"|[^\s{}=]+|\{)'
+    r'|"(?:\\.|[^"\\])*"|(?P<brace>[{}])'
+)
+EVENT_TYPES = {
+    "country_event",
+    "news_event",
+    "state_event",
+    "unit_leader_event",
+    "operative_leader_event",
+}
 KEY_BLOCK_RE = re.compile(r"([A-Za-z0-9_.@:\-^]+)\s*=\s*\{|\{|\}")
 TOKEN_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_.]*[A-Za-z0-9_]")
 # Event ids are always namespace.number, which keeps `id = TAG` in other blocks out.
-EVENT_ID_RE = re.compile(r"^\s*id\s*=\s*([A-Za-z0-9_]+\.[A-Za-z0-9_.]+)", re.M)
+EVENT_ID_RE = re.compile(r"[A-Za-z0-9_]+\.[A-Za-z0-9_.]+")
 SCRIPTED_LOC_RE = re.compile(r"^\s*name\s*=\s*([A-Za-z0-9_]+)", re.M)
 SPRITE_RE = re.compile(r'name\s*=\s*"?(GFX_[A-Za-z0-9_]+)"?')
 LOC_KEY_RE = re.compile(r"^ ([A-Za-z0-9_.\-]+):\d* ", re.M)
@@ -110,10 +125,10 @@ LOC_REF_RE = re.compile(
     r"\s*=\s*\"?([A-Za-z_][A-Za-z0-9_.]*)\"?"
 )
 FLAG_SET_RE = re.compile(
-    r"\bset_(?:country|global|state|character)_flag\s*=\s*(?:\{\s*flag\s*=\s*)?([A-Za-z0-9_]+)"
+    r"\bset_(country|global|state|character)_flag\s*=\s*(?:\{\s*flag\s*=\s*)?([A-Za-z0-9_]+)"
 )
 FLAG_READ_RE = re.compile(
-    r"\bhas_(?:country|global|state|character)_flag\s*=\s*(?:\{\s*flag\s*=\s*)?([A-Za-z0-9_]+)"
+    r"\bhas_(country|global|state|character)_flag\s*=\s*(?:\{\s*flag\s*=\s*)?([A-Za-z0-9_]+)"
 )
 GLOBAL_READ_RE = re.compile(r"\bglobal\.([A-Za-z_][A-Za-z0-9_]*)")
 GLOBAL_WRITE_RE = re.compile(
@@ -127,7 +142,7 @@ GLOBAL_WRITE_RE = re.compile(
 
 @dataclass
 class Tree:
-    """Every scanned file's text, with comments removed and string contents kept."""
+    """Every scanned file's text, with comments and literal prose removed from code."""
 
     root: Path
     raw: dict[str, str] = field(default_factory=dict)
@@ -139,6 +154,18 @@ def strip_comments(text: str) -> str:
     return STRING_OR_COMMENT_RE.sub(
         lambda m: m.group(0) if m.group(0).startswith('"') else "", text
     )
+
+
+def reference_code(text: str) -> str:
+    code = LOG_RE.sub('log = ""', strip_comments(text))
+
+    def keep_identifier(match: re.Match) -> str:
+        value = match.group(0)[1:-1]
+        if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", value):
+            return match.group(0)
+        return '"' + " ".join(LOC_SUBSTITUTION_RE.findall(value)) + '"'
+
+    return STRING_OR_COMMENT_RE.sub(keep_identifier, code)
 
 
 def read_tree(root: Path) -> Tree:
@@ -158,7 +185,7 @@ def read_tree(root: Path) -> Tree:
                 text = data.decode("utf-8-sig", errors="replace")
                 tree.warnings.append(f"{rel}: not valid UTF-8, read with replacement")
             tree.raw[rel] = text
-            tree.code[rel] = text if rel.endswith(".yml") else strip_comments(text)
+            tree.code[rel] = text if rel.endswith(".yml") else reference_code(text)
     return tree
 
 
@@ -191,7 +218,7 @@ def definitions_in(rel: str, code: str) -> dict[str, list[str]]:
             found[kind] += keys_at_depth(code, depth)
             break
     if rel.startswith("events/"):
-        found["event"] += EVENT_ID_RE.findall(code)
+        found["event"] += [ident for ident, _ in event_blocks(code)]
     if rel.startswith("common/scripted_localisation/"):
         found["scripted_loc"] += SCRIPTED_LOC_RE.findall(code)
     if rel.endswith(".gfx"):
@@ -201,23 +228,42 @@ def definitions_in(rel: str, code: str) -> dict[str, list[str]]:
     return found
 
 
+def script_fields(code: str) -> Iterator[tuple[list[tuple[str, int]], str, str]]:
+    parents: list[tuple[str, int]] = []
+    for match in FIELD_RE.finditer(code):
+        key, value = match.group("key", "value")
+        if key is not None:
+            yield parents, key, value.strip('"')
+            if value == "{":
+                parents.append((key, match.start()))
+        elif match.group("brace") == "{":
+            parents.append(("", match.start()))
+        elif match.group("brace") == "}" and parents:
+            parents.pop()
+
+
 def event_blocks(code: str) -> list[tuple[str, bool]]:
-    """(event id, triggered only) for each top-level event in an events file."""
-    events, depth, start = [], 0, None
-    for index, char in enumerate(code):
-        if char == "{":
-            if depth == 0:
-                start = index
-            depth += 1
-        elif char == "}":
-            depth -= 1
-            if depth == 0 and start is not None:
-                body = code[start:index]
-                ident = EVENT_ID_RE.search(body)
-                if ident:
-                    events.append((ident.group(1), "is_triggered_only = yes" in body))
-                start = None
-    return events
+    """Read direct fields of top-level events, excluding nested dispatches."""
+    events: dict[int, dict[str, str]] = defaultdict(dict)
+    for parents, key, value in script_fields(code):
+        if len(parents) == 1 and parents[0][0] in EVENT_TYPES:
+            events[parents[0][1]][key] = value
+    return [
+        (fields["id"], fields.get("is_triggered_only") == "yes")
+        for fields in events.values()
+        if EVENT_ID_RE.fullmatch(fields.get("id", ""))
+    ]
+
+
+def event_option_labels(code: str) -> set[str]:
+    return {
+        value
+        for parents, key, value in script_fields(code)
+        if key == "name"
+        and len(parents) == 2
+        and parents[0][0] in EVENT_TYPES
+        and parents[1][0] == "option"
+    }
 
 
 def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
@@ -315,6 +361,8 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
             fired.add(by_id or bare)
         if rel.startswith(("common/", "events/")):
             loc_refs.update(LOC_REF_RE.findall(code))
+        if rel.startswith("events/"):
+            loc_refs.update(event_option_labels(code))
         flags_read.update(FLAG_READ_RE.findall(code))
         globals_read.update(GLOBAL_READ_RE.findall(code))
 
@@ -330,7 +378,9 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
             if key not in loc_keys and key not in scripted_locs
         ),
         "flags_never_set": sorted(
-            f for f in flags_read if f.startswith(prefixes) and f not in flags_set
+            f"{kind}:{name}"
+            for kind, name in flags_read
+            if name.startswith(prefixes) and (kind, name) not in flags_set
         ),
         "globals_never_written": sorted(
             g
