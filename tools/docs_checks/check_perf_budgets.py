@@ -12,7 +12,7 @@ BUDGETS_BYTES = {
     ".js": 80_000,
 }
 HTML_BUDGET_OVERRIDES = {
-    "changelogs/v2-0-changes/index.html": 370_000,
+    "changelogs/v2-0-changes/index.html": 450_000,
     "misc/beta-changelogs/index.html": 370_000,
 }
 

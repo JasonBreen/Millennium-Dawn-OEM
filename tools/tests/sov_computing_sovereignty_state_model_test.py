@@ -1467,6 +1467,14 @@ def test_english_localisation_inventory_and_encoding():
             "SOV_computing_sovereignty_category_desc",
             "SOV_computing_sovereignty_folder",
             "SOV_computing_sovereignty_folder_desc",
+            "SOV_computing_sovereignty_state_initialized",
+            "SOV_computing_sovereignty_industrial_project_active",
+            "SOV_computing_sovereignty_foreign_foundry_route",
+            "SOV_computing_sovereignty_frontier_output_suspended",
+            "SOV_computing_sovereignty_chinese_foundry_route",
+            "SOV_computing_sovereignty_chinese_foundry_agreement",
+            "SOV_computing_sovereignty_elbrus_8c_deployable",
+            "SOV_computing_sovereignty_elbrus_16c_deployable",
         }
     )
     for technology in TECHNOLOGIES:
