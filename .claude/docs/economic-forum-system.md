@@ -461,9 +461,10 @@ Two dated moments of the World Economic Forum, each keyed to the game's own even
   States (`USA_wot_attack_occurred` without `USA_wot_plot_disrupted`) meets in New York in solidarity, as in 2002.
   It sets `econ_forum_davos_new_york` and gives the United States +40 attendance chance and the summit +5 score, and
   `econ_forum_news.22` follows the summit.
-- **Pandemic** (`econ_forum_pandemic_disrupts`): once `COVID_start_of_pandemic` is 120 days old, the WEF's summit month
+- **Pandemic** (`econ_forum_pandemic_disrupts`): once `COVID_start_of_pandemic` is set, the WEF's summit month
   calls `econ_forum_disrupt_summit` instead of the summit. The cycle is dropped, as when a forum changes hands.
-  - The first meeting it reaches goes online (`econ_forum_davos_online`, `econ_forum_news.20`). It counts as the
+  - MD's outbreak arrives in late 2020 (`trigger_year_2020_events`), so the January 2020 meeting runs as normal.
+  - The first meeting it reaches, January 2021, goes online (`econ_forum_davos_online`, `econ_forum_news.20`). It counts as the
     year's summit, and prestige holds.
   - The next one moves four months later (`econ_forum_davos_postponed`, `econ_forum_news.21`), as 2022's moved to
     May.
