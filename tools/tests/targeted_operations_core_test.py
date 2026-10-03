@@ -39,6 +39,7 @@ class TargetScript(TargetedScript):
             "07_targeted_operations_organization_cases.txt",
             "08_targeted_operations_resolution.txt",
             "09_targeted_operations_depth.txt",
+            "99_FBC_scripted_effects.txt",
             "99_STALKER_society_effects.txt",
             "99_STALKER_top_effects.txt",
         ):
@@ -118,12 +119,17 @@ class TargetScript(TargetedScript):
                 ).read_text(encoding="utf-8")
             )
         )
+        self.triggers.update(
+            _parse_race_script(
+                (
+                    ROOT / "common/scripted_triggers/99_FBC_scripted_triggers.txt"
+                ).read_text(encoding="utf-8")
+            )
+        )
         # The STALKER organization gates scope into state 698; the harness keeps those groups inactive.
         for name in (
             "STALKER_top_zone_organization_active",
             "STALKER_top_sircaa_active",
-            "FBC_top_active",
-            "FBC_top_eu_active",
         ):
             self.triggers[name] = [("always", "=", "no")]
         self.countries, self.globals, self.temps = {}, {}, {}
@@ -164,7 +170,6 @@ class TargetScript(TargetedScript):
             "TOP_seed_public_subjects",
             "international_systems_force_update",
             "STALKER_refresh_zone_administration",
-            "FBC_apply_top_organization_sabotage",
         }
         manifest = json.loads(
             (ROOT / "tools/data/targeted_operations.json").read_text(encoding="utf-8")
@@ -188,6 +193,7 @@ class TargetScript(TargetedScript):
         self.state(100, 1)
         self.state(101, 2)
         self.state(102, 3)
+        self.state(698, 0)
         self.run("TOP_setup_registry", 1)
         self.run("TOP_initialize_redesign_global", 1)
         self.globals.update(
@@ -802,6 +808,47 @@ def test_facility_sabotage_damages_the_map_without_removing_a_person(objective):
     assert script.globals["TOP_group_disruption_type"][2] == objective
     assert script.globals["TOP_group_disruption_until"][2] == 90
     assert script.globals["TOP_status"] == original_person_status
+
+
+@pytest.mark.parametrize(
+    ("group", "enabled", "integrity", "exposure", "eu_exposure"),
+    (
+        (2, False, 50, 20, 95),
+        (2, True, 50, 20, 95),
+        (39, False, 50, 20, 95),
+        (39, True, 35, 30, 95),
+        (40, False, 50, 20, 95),
+        (40, True, 50, 20, 100),
+    ),
+)
+def test_facility_sabotage_affects_only_its_active_fbc_organization(
+    group, enabled, integrity, exposure, eu_exposure
+):
+    script = TargetScript()
+    script.goto(2000, 1, 1)
+    bureau = script.countries[1]["vars"]
+    bureau.update(
+        FBC_containment_integrity=50,
+        FBC_exposure=20,
+        FBC_floor_knowledge=10,
+        FBC_wing_knowledge=20,
+        FBC_response_capacity=2,
+    )
+    script.globals["FBC_eu_exposure"] = 95
+    if enabled:
+        script.global_flags["GLOBAL_FBC_scenario_enabled"] = None
+    variables = script.authorize_organization(group=group, host=2, state=101)
+
+    script.run("TOP_resolve_organization_operation", 1)
+
+    assert variables["TOP_archive_result"][0] == 11
+    assert bureau["FBC_containment_integrity"] == integrity
+    assert bureau["FBC_exposure"] == exposure
+    assert script.globals["FBC_eu_exposure"] == eu_exposure
+    assert ((1, "FBC.6") in script.events) == (enabled and group == 39)
+    if enabled and group == 39:
+        assert bureau["FBC_research_factor"] == pytest.approx(0.012)
+        assert bureau["FBC_stability_factor"] == pytest.approx(0.001)
 
 
 def test_successful_person_operation_disturbs_an_active_stalker_zone():
