@@ -807,6 +807,31 @@ econ_forum_hold_private_room = {
 	}
 }
 
+# Host scope, AI only, after the program is set. Books a star on the forum's strongest program track.
+econ_forum_ai_book_star = {
+	set_temp_variable = { ef_best = -1 }
+	set_temp_variable = { ef_best_prestige = -1 }
+	for_loop_effect = {
+		end = 6
+		value = ef_t
+
+		set_temp_variable = { ef_idx = { value = ef_i multiply = 6 add = ef_t } }
+		if = {
+			limit = {
+				check_variable = { global.econ_forum_tracks^ef_idx = 1 }
+				check_variable = { global.econ_forum_track_prestige^ef_idx > ef_best_prestige }
+			}
+			set_temp_variable = { ef_best = ef_t }
+			set_temp_variable = { ef_best_prestige = global.econ_forum_track_prestige^ef_idx }
+		}
+	}
+	if = {
+		limit = { check_variable = { ef_best > -1 } }
+		set_temp_variable = { ef_t = ef_best }
+		econ_forum_book_star = yes
+	}
+}
+
 # Host scope, temps ef_i and ef_t (the star's track). Books a star headline speaker: a speaker slot, +3 now to the
 # star's sector, and at the summit governments that care about that sector are 10 more likely to attend.
 econ_forum_book_star = {
@@ -1256,6 +1281,7 @@ econ_forum_ai_prepare = {
 	if = {
 		limit = { check_variable = { global.econ_forum_state_led^ef_i = 0 } }
 		add_to_variable = { global.econ_forum_sponsors^ef_i = 15 }
+		econ_forum_ai_book_star = yes
 		econ_forum_try_book_speaker = yes
 		econ_forum_try_book_speaker = yes
 	}
@@ -1274,6 +1300,14 @@ econ_forum_ai_prepare = {
 			}
 			add_political_power = -100
 			econ_forum_launch_council = yes
+		}
+		if = {
+			limit = { has_political_power > 175 }
+			random = {
+				chance = 50
+				add_political_power = -75
+				econ_forum_ai_book_star = yes
+			}
 		}
 		if = {
 			limit = { has_political_power > 150 }

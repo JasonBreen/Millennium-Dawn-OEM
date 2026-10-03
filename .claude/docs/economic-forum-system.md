@@ -295,7 +295,12 @@ A player host takes `econ_forum_book_star_speaker` (75 PP, a free speaker slot, 
 only open while `econ_forum_speaker_choice_open` holds. Unlike `econ_forum_book_speaker` there is no roll and no poaching.
 `econ_forum_book_star` fills a speaker slot, adds 3 to the star's sector at once and stores the track in
 `econ_forum_star`. At the summit, AI governments interested in that track (`econ_forum_interested_in_track`) are
-10 more likely to attend. The AI does not book stars.
+10 more likely to attend.
+
+AI hosts book stars through `econ_forum_ai_book_star`, on the forum's strongest program track: the WEF's partners
+land one every cycle before its two speaker attempts, and a state-led AI host with over 175 PP pays 75 PP for one
+half the time. The Forums tab row tooltip shows each forum's star sector, controversial speaker and private room
+seats this cycle.
 
 | Star | Available | Sector |
 | --- | --- | --- |
