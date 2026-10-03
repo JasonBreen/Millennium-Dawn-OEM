@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -190,6 +191,19 @@ def test_text_report_honours_sections(tmp_path, capsys):
 
 def test_presets_cover_the_documented_systems():
     assert {"stalker", "top", "ai_race", "econ_forum"} <= set(system_inspector.PRESETS)
+
+
+@pytest.mark.parametrize(
+    "rel",
+    [
+        "events/Targeted Operations.txt",
+        "events/Targeted Operations Runtime.txt",
+        "events/Targeted Operations Redesign.txt",
+        "common/scripted_effects/01_targeted_operations_registry.txt",
+    ],
+)
+def test_top_preset_matches_its_event_files(rel):
+    assert re.search(system_inspector.PRESETS["top"].path_pattern, rel)
 
 
 @pytest.mark.parametrize("id_first", [True, False])
