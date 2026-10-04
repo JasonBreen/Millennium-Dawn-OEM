@@ -701,7 +701,7 @@ belongs to the fork's targeted operations screen, which upstream does not have.
 | 4   | The Forums tab through the scaffolder, delegation agendas, guest actions, invitation requests, AI guests      | #440, #442, #458-#461            |
 | 5   | Walkouts and the breakaway forum                                                                               | #463, #464                       |
 | 6   | Signing ceremonies, councils, summit messages, the tab tooltip                                                 | #466-#468, #470, #471            |
-| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, reports, protests, history, Summer Davos, corporate delegations, Young Global Leaders, audience focus | #473, #474, #476-#478, #481-#483, #485, #493, #494, this PR |
+| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, reports, protests, history, Summer Davos, corporate delegations, Young Global Leaders, audience focus | #473, #474, #476-#478, #481-#483, #485, #493, #494, #496 |
 
 Port notes:
 
