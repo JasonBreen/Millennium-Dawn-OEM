@@ -288,6 +288,32 @@ def test_every_option_has_ai_weight_and_every_key_has_english_text():
                 assert tooltip in keys, tooltip
 
 
+def test_paid_options_weigh_bankruptcy_not_the_balance():
+    paid = 0
+    for event in _events().values():
+        options = _options(event)
+        for option in options:
+            if not re.search(
+                r"add_political_power = -|treasury_change = -|modify_treasury_effect",
+                option,
+            ):
+                continue
+            paid += 1
+            weights = _named_block(option, "ai_chance")
+            assert "has_active_mission = bankruptcy_incoming_collapse" in weights
+            assert "has_political_power" not in weights
+            assert "check_variable = { treasury" not in weights
+        # Every event keeps an option the AI still takes when broke.
+        free = [
+            option
+            for option in options
+            if "bankruptcy_incoming_collapse" not in option
+            and "trigger = {" not in option
+        ]
+        assert free
+    assert paid == 2
+
+
 def test_event_options_write_only_lab_state_and_clamp_every_write():
     for event_id, event in _events().items():
         for option in _options(event):
