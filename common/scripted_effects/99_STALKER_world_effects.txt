@@ -87,45 +87,17 @@ STALKER_schedule_security_council = {
 		set_variable = { global.STALKER_unsc_adjourn = 0 }
 		set_variable = { global.STALKER_unsc_expected = 0 }
 		set_variable = { global.STALKER_unsc_result = 0 }
-		if = {
-			limit = { country_exists = USA }
-			USA = {
+		for_each_scope_loop = {
+			array = global.p5_sc_members
+			if = {
+				limit = {
+					exists = yes
+					NOT = { has_country_flag = STALKER_unsc_seat }
+				}
 				set_country_flag = STALKER_unsc_seat
 				country_event = { id = STALKER.137 days = 50 }
+				add_to_variable = { global.STALKER_unsc_expected = 1 }
 			}
-			add_to_variable = { global.STALKER_unsc_expected = 1 }
-		}
-		if = {
-			limit = { country_exists = ENG }
-			ENG = {
-				set_country_flag = STALKER_unsc_seat
-				country_event = { id = STALKER.137 days = 50 }
-			}
-			add_to_variable = { global.STALKER_unsc_expected = 1 }
-		}
-		if = {
-			limit = { country_exists = FRA }
-			FRA = {
-				set_country_flag = STALKER_unsc_seat
-				country_event = { id = STALKER.137 days = 50 }
-			}
-			add_to_variable = { global.STALKER_unsc_expected = 1 }
-		}
-		if = {
-			limit = { country_exists = SOV }
-			SOV = {
-				set_country_flag = STALKER_unsc_seat
-				country_event = { id = STALKER.137 days = 50 }
-			}
-			add_to_variable = { global.STALKER_unsc_expected = 1 }
-		}
-		if = {
-			limit = { country_exists = CHI }
-			CHI = {
-				set_country_flag = STALKER_unsc_seat
-				country_event = { id = STALKER.137 days = 50 }
-			}
-			add_to_variable = { global.STALKER_unsc_expected = 1 }
 		}
 		698 = {
 			if = {
@@ -145,113 +117,20 @@ STALKER_schedule_security_council = {
 	}
 }
 
-STALKER_mark_unsc_ballot = {
-	if = {
-		limit = { original_tag = USA }
-		set_global_flag = STALKER_unsc_ballot_USA
-	}
-	if = {
-		limit = { original_tag = ENG }
-		set_global_flag = STALKER_unsc_ballot_ENG
-	}
-	if = {
-		limit = { original_tag = FRA }
-		set_global_flag = STALKER_unsc_ballot_FRA
-	}
-	if = {
-		limit = { original_tag = SOV }
-		set_global_flag = STALKER_unsc_ballot_SOV
-	}
-	if = {
-		limit = { original_tag = CHI }
-		set_global_flag = STALKER_unsc_ballot_CHI
-	}
-	if = {
-		limit = {
-			NOT = { original_tag = USA }
-			NOT = { original_tag = ENG }
-			NOT = { original_tag = FRA }
-			NOT = { original_tag = SOV }
-			NOT = { original_tag = CHI }
-		}
-		set_global_flag = STALKER_unsc_ballot_zone
-	}
-}
-
 STALKER_refresh_unsc_expected = {
 	if = {
 		limit = {
 			has_global_flag = STALKER_unsc_scheduled
 			NOT = { has_global_flag = STALKER_unsc_resolved }
 		}
-		set_temp_variable = { STALKER_unsc_alive = 0 }
-		if = {
-			limit = { country_exists = USA USA = { has_country_flag = STALKER_unsc_seat } }
-			add_to_temp_variable = { STALKER_unsc_alive = 1 }
-		}
-		else_if = {
-			limit = { has_global_flag = STALKER_unsc_ballot_USA }
-			add_to_temp_variable = { STALKER_unsc_alive = 1 }
-		}
-
-		if = {
-			limit = { country_exists = ENG ENG = { has_country_flag = STALKER_unsc_seat } }
-			add_to_temp_variable = { STALKER_unsc_alive = 1 }
-		}
-		else_if = {
-			limit = { has_global_flag = STALKER_unsc_ballot_ENG }
-			add_to_temp_variable = { STALKER_unsc_alive = 1 }
-		}
-
-		if = {
-			limit = { country_exists = FRA FRA = { has_country_flag = STALKER_unsc_seat } }
-			add_to_temp_variable = { STALKER_unsc_alive = 1 }
-		}
-		else_if = {
-			limit = { has_global_flag = STALKER_unsc_ballot_FRA }
-			add_to_temp_variable = { STALKER_unsc_alive = 1 }
-		}
-
-		if = {
-			limit = { country_exists = SOV SOV = { has_country_flag = STALKER_unsc_seat } }
-			add_to_temp_variable = { STALKER_unsc_alive = 1 }
-		}
-		else_if = {
-			limit = { has_global_flag = STALKER_unsc_ballot_SOV }
-			add_to_temp_variable = { STALKER_unsc_alive = 1 }
-		}
-
-		if = {
-			limit = { country_exists = CHI CHI = { has_country_flag = STALKER_unsc_seat } }
-			add_to_temp_variable = { STALKER_unsc_alive = 1 }
-		}
-		else_if = {
-			limit = { has_global_flag = STALKER_unsc_ballot_CHI }
-			add_to_temp_variable = { STALKER_unsc_alive = 1 }
-		}
-
-		if = {
+		set_variable = { global.STALKER_unsc_expected = global.STALKER_unsc_ballots }
+		every_country = {
 			limit = {
-				698 = {
-					controller = {
-						exists = yes
-						has_country_flag = STALKER_unsc_seat
-						NOT = { original_tag = USA }
-						NOT = { original_tag = ENG }
-						NOT = { original_tag = FRA }
-						NOT = { original_tag = SOV }
-						NOT = { original_tag = CHI }
-					}
-				}
+				has_country_flag = STALKER_unsc_seat
+				NOT = { has_country_flag = STALKER_unsc_voted }
 			}
-			add_to_temp_variable = { STALKER_unsc_alive = 1 }
+			add_to_variable = { global.STALKER_unsc_expected = 1 }
 		}
-		else_if = {
-			limit = { has_global_flag = STALKER_unsc_ballot_zone }
-			add_to_temp_variable = { STALKER_unsc_alive = 1 }
-		}
-
-		set_variable = { global.STALKER_unsc_expected = STALKER_unsc_alive }
 	}
 }
 

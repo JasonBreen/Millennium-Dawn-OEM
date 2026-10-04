@@ -50,10 +50,13 @@ STALKER_start_tearling_drive = {
 STALKER_gather_tearlings = {
 	set_temp_variable_to_random = { var = STALKER_tearling_roll min = 0 max = 6 integer = yes }
 	add_to_variable = { STALKER_zone_tearlings_stalkers = { value = STALKER_zone_stalkers multiply = 0.2 add = STALKER_tearling_roll } }
-	set_temp_variable_to_random = { var = STALKER_tearling_roll min = 0 max = 6 integer = yes }
-	add_to_variable = { STALKER_zone_tearlings_duty = { value = STALKER_zone_duty multiply = 0.2 add = STALKER_tearling_roll } }
-	set_temp_variable_to_random = { var = STALKER_tearling_roll min = 0 max = 6 integer = yes }
-	add_to_variable = { STALKER_zone_tearlings_freedom = { value = STALKER_zone_freedom multiply = 0.2 add = STALKER_tearling_roll } }
+	if = {
+		limit = { check_variable = { STALKER_zone_id = 1 } }
+		set_temp_variable_to_random = { var = STALKER_tearling_roll min = 0 max = 6 integer = yes }
+		add_to_variable = { STALKER_zone_tearlings_duty = { value = STALKER_zone_duty multiply = 0.2 add = STALKER_tearling_roll } }
+		set_temp_variable_to_random = { var = STALKER_tearling_roll min = 0 max = 6 integer = yes }
+		add_to_variable = { STALKER_zone_tearlings_freedom = { value = STALKER_zone_freedom multiply = 0.2 add = STALKER_tearling_roll } }
+	}
 	set_temp_variable_to_random = { var = STALKER_tearling_roll min = 0 max = 6 integer = yes }
 	add_to_variable = { STALKER_zone_tearlings_scientists = { value = STALKER_zone_scientists multiply = 0.2 add = STALKER_tearling_roll } }
 	set_temp_variable_to_random = { var = STALKER_tearling_roll min = 0 max = 6 integer = yes }
@@ -63,11 +66,17 @@ STALKER_gather_tearlings = {
 		add_to_variable = { STALKER_zone_tearlings_stalkers = 5 }
 	}
 	else_if = {
-		limit = { check_variable = { STALKER_zone_tearling_backed = 2 } }
+		limit = {
+			check_variable = { STALKER_zone_id = 1 }
+			check_variable = { STALKER_zone_tearling_backed = 2 }
+		}
 		add_to_variable = { STALKER_zone_tearlings_duty = 5 }
 	}
 	else_if = {
-		limit = { check_variable = { STALKER_zone_tearling_backed = 3 } }
+		limit = {
+			check_variable = { STALKER_zone_id = 1 }
+			check_variable = { STALKER_zone_tearling_backed = 3 }
+		}
 		add_to_variable = { STALKER_zone_tearlings_freedom = 5 }
 	}
 	else_if = {
@@ -111,8 +120,11 @@ STALKER_resolve_tearling_drive = {
 		set_variable = { STALKER_zone_tearling_best = STALKER_zone_tearlings_bandits }
 	}
 	add_to_variable = { STALKER_zone_stalkers = 3 }
-	add_to_variable = { STALKER_zone_duty = 3 }
-	add_to_variable = { STALKER_zone_freedom = 3 }
+	if = {
+		limit = { check_variable = { STALKER_zone_id = 1 } }
+		add_to_variable = { STALKER_zone_duty = 3 }
+		add_to_variable = { STALKER_zone_freedom = 3 }
+	}
 	add_to_variable = { STALKER_zone_scientists = 3 }
 	add_to_variable = { STALKER_zone_bandits = 3 }
 	if = {
@@ -121,11 +133,17 @@ STALKER_resolve_tearling_drive = {
 	}
 	else_if = {
 		limit = { check_variable = { STALKER_zone_tearling_leader = 2 } }
-		add_to_variable = { STALKER_zone_duty = 10 }
+		if = {
+			limit = { check_variable = { STALKER_zone_id = 1 } }
+			add_to_variable = { STALKER_zone_duty = 10 }
+		}
 	}
 	else_if = {
 		limit = { check_variable = { STALKER_zone_tearling_leader = 3 } }
-		add_to_variable = { STALKER_zone_freedom = 10 }
+		if = {
+			limit = { check_variable = { STALKER_zone_id = 1 } }
+			add_to_variable = { STALKER_zone_freedom = 10 }
+		}
 	}
 	else_if = {
 		limit = { check_variable = { STALKER_zone_tearling_leader = 4 } }
