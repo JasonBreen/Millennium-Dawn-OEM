@@ -17,7 +17,7 @@ Files:
   identity and interest, invitations.
 - `common/decisions/econ_forum_decisions.txt`: founding, preparation, program
   tracks and scheduling.
-- `events/EconomicForums.txt`: `econ_forum.1-15`, `econ_forum_news.1-23`.
+- `events/EconomicForums.txt`: `econ_forum.1-17`, `econ_forum_news.1-23`.
 - `common/scripted_localisation/01_econ_forum_scripted_localisation.txt`: names,
   standings and the program view.
 - Hooks: `econ_forum_setup` in `on_startup` (`00_on_actions.txt`),
@@ -197,6 +197,7 @@ instead of holding a second summit that year.
 | BRICS or Asian guest of a host pivoting East    | +10                    |
 | Each track on the program that interests them   | + track prestige × 0.1 |
 | Led a delegation to each other forum last cycle | -10 each               |
+| Young Global Leaders member, WEF only           | +10                    |
 | More prestigious forum within one month         | -20                    |
 
 A roll under the chance attends. A roll under 40% of the chance sends the head of
@@ -590,6 +591,21 @@ one country hosts at most one forum and China may already host Boao. `econ_forum
 - **Notice:** China and every human guest get `econ_forum.15`. The WEF's Forums tab row shows the standing and last
   guest count.
 
+## Young Global Leaders
+
+The WEF's Forum of Young Global Leaders, founded in 2004, is a five-year network of rising politicians. From 2004,
+after each WEF summit's keynotes, `econ_forum_name_young_leaders` names `1 + prestige / 40` (rounded) attending
+guests that are not members yet.
+
+- **Membership:** `econ_forum_young_leaders_modifier` for 1825 days: +3% political power and 2% cheaper investment.
+  An AI member is 10 more likely to attend the WEF.
+- **Notice:** a human member gets `econ_forum.16`. `global.econ_forum_last_young_leaders` feeds the WEF's Forums tab row.
+- **Great Reset:** the online meeting the pandemic forces (`econ_forum_disrupt_summit`) sets `econ_forum_great_reset`,
+  as the 2021 Davos Agenda carried the Great Reset. From then, before each WEF summit names its new class,
+  `econ_forum_great_reset_suspicion` gives every member that holds elections a 25% chance of `econ_forum.17`:
+  - **Stand by the record:** -2% stability and +2% nationalist popularity.
+  - **Leave the network:** the membership ends.
+
 ## Adding a Forum
 
 1. Append one entry to every registry array in `econ_forum_setup`, raise every
@@ -657,7 +673,7 @@ belongs to the fork's targeted operations screen, which upstream does not have.
 | 4   | The Forums tab through the scaffolder, delegation agendas, guest actions, invitation requests, AI guests      | #440, #442, #458-#461            |
 | 5   | Walkouts and the breakaway forum                                                                               | #463, #464                       |
 | 6   | Signing ceremonies, councils, summit messages, the tab tooltip                                                 | #466-#468, #470, #471            |
-| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, reports, protests, history, Summer Davos, corporate delegations | #473, #474, #476-#478, #481-#483, #485, #493 |
+| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, reports, protests, history, Summer Davos, corporate delegations, Young Global Leaders | #473, #474, #476-#478, #481-#483, #485, #493, #494 |
 
 Port notes:
 
