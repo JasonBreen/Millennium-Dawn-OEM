@@ -63,6 +63,8 @@ econ_forum_setup = {
 	resize_array = { array = global.econ_forum_council value = 0 size = 9 }
 	# This cycle's summit message: 0 none, 1 open for business, 2 strategic autonomy, 3 media blitz.
 	resize_array = { array = global.econ_forum_message value = 0 size = 9 }
+	# This cycle's audience: 0 the global market, 1 the EU, 2 the United States, 3 China, 4 Russia.
+	resize_array = { array = global.econ_forum_audience value = 0 size = 9 }
 	# This cycle's controversial speaker: 0 none, 1 Land, 2 Negarestani, 3 Parvini, 4 Dugin, 5 Zizek, 6 Dimon, 7 Lutnick.
 	resize_array = { array = global.econ_forum_controversial value = 0 size = 9 }
 	# This cycle's star speaker: their track + 1, 0 for none.
@@ -317,6 +319,7 @@ econ_forum_open_preparation = {
 	set_variable = { global.econ_forum_sponsors^ef_i = 0 }
 	set_variable = { global.econ_forum_ceremonies^ef_i = 0 }
 	set_variable = { global.econ_forum_message^ef_i = 0 }
+	set_variable = { global.econ_forum_audience^ef_i = 0 }
 	set_variable = { global.econ_forum_controversial^ef_i = 0 }
 	set_variable = { global.econ_forum_star^ef_i = 0 }
 	set_variable = { global.econ_forum_room_seats^ef_i = 0 }
@@ -1135,6 +1138,44 @@ econ_forum_hold_protests = {
 	}
 }
 
+# Host scope, temp ef_i, audience just set. The courted power and the audience's regional and greater powers get a
+# standing invitation.
+econ_forum_invite_audience = {
+	every_country = {
+		limit = {
+			NOT = { tag = PREV }
+			econ_forum_in_audience = yes
+			OR = {
+				econ_forum_is_audience_power = yes
+				is_in_array = { global.PR_regional_or_greater_powers = THIS.id }
+			}
+			NOT = { has_war_with = PREV }
+			econ_forum_can_be_invited = yes
+		}
+		econ_forum_send_invitation = yes
+	}
+}
+
+# Summit scope, after attendance. Each attending government from the audience the host courted adds 2 to the score,
+# up to 6, and both sides warm to each other.
+econ_forum_meet_audience = {
+	set_temp_variable = { ef_audience_points = 0 }
+	if = {
+		limit = { check_variable = { global.econ_forum_audience^ef_i > 0 } }
+		for_each_scope_loop = {
+			array = ef_attendees
+
+			if = {
+				limit = { econ_forum_in_audience = yes }
+				add_to_temp_variable = { ef_audience_points = 2 }
+				add_opinion_modifier = { target = event_target:econ_forum_host_target modifier = econ_forum_courted }
+				event_target:econ_forum_host_target = { add_opinion_modifier = { target = PREV modifier = econ_forum_courted } }
+			}
+		}
+		set_temp_variable = { ef_audience_points = { value = ef_audience_points min = 6 } }
+	}
+}
+
 # Summit scope, after attendance. Every available industrial organization of size 3 or more in an attending government,
 # the host's included, sends a company delegation. ef_company_points is what they add to the score.
 econ_forum_corporate_delegations = {
@@ -1942,6 +1983,49 @@ econ_forum_ai_prepare = {
 			add_political_power = -25
 		}
 	}
+	# Audience: a state-led host courts the bloc it leans toward. The WEF courts the whole global market.
+	if = {
+		limit = {
+			check_variable = { global.econ_forum_state_led^ef_i = 1 }
+			has_political_power > 75
+		}
+		if = {
+			limit = {
+				OR = {
+					has_country_flag = SOV_western_sanctions
+					has_idea = RAJ_BRICS
+				}
+				NOT = { original_tag = CHI }
+				country_exists = CHI
+			}
+			set_variable = { global.econ_forum_audience^ef_i = 3 }
+		}
+		else_if = {
+			limit = { has_idea = EU_member }
+			set_variable = { global.econ_forum_audience^ef_i = 1 }
+		}
+		else_if = {
+			limit = {
+				has_idea = NATO_member
+				NOT = { original_tag = USA }
+				country_exists = USA
+			}
+			set_variable = { global.econ_forum_audience^ef_i = 2 }
+		}
+		else_if = {
+			limit = {
+				NOT = { original_tag = SOV }
+				country_exists = SOV
+				has_opinion = { target = SOV value > 50 }
+			}
+			set_variable = { global.econ_forum_audience^ef_i = 4 }
+		}
+		if = {
+			limit = { check_variable = { global.econ_forum_audience^ef_i > 0 } }
+			add_political_power = -25
+			econ_forum_invite_audience = yes
+		}
+	}
 	for_loop_effect = {
 		end = global.econ_forum_invites_left^ef_i
 		value = ef_n
@@ -2273,6 +2357,7 @@ econ_forum_convene_summit = {
 	econ_forum_hold_talks = yes
 	econ_forum_publish_report = yes
 	econ_forum_hold_protests = yes
+	econ_forum_meet_audience = yes
 	econ_forum_corporate_delegations = yes
 	var:ef_host = {
 		econ_forum_close_ceremonies = yes
@@ -2338,7 +2423,7 @@ econ_forum_convene_summit = {
 	set_temp_variable = { ef_corporate = { value = ef_prestige multiply = 0.15 add = global.econ_forum_sponsors^ef_i add = ef_sector_points min = 30 } }
 	set_temp_variable = { ef_speaker_points = { value = global.econ_forum_speakers^ef_i multiply = 5 add = { value = ef_prestige multiply = 0.1 } } }
 	# Each signing ceremony is an agreement concluded at the summit.
-	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points add = ef_room_points add = ef_talks_points add = ef_protest_points add = ef_company_points add = { value = ef_new_york multiply = 5 } add = ef_nc_bonus } }
+	set_temp_variable = { ef_score = { value = ef_government add = ef_corporate add = ef_speaker_points add = { value = ef_signed multiply = 3 } add = ef_council_points add = ef_room_points add = ef_talks_points add = ef_protest_points add = ef_company_points add = ef_audience_points add = { value = ef_new_york multiply = 5 } add = ef_nc_bonus } }
 	if = {
 		limit = { check_variable = { ef_clash_forum > -1 } }
 		add_to_temp_variable = { ef_score = 5 }
@@ -2594,6 +2679,21 @@ econ_forum_ai_decide_attendance = {
 			has_dynamic_modifier = { modifier = econ_forum_young_leaders_modifier }
 		}
 		add_to_temp_variable = { ef_chance = 10 }
+	}
+	# The audience the host courts comes in strength; everyone else notices they are not the priority.
+	if = {
+		limit = { check_variable = { global.econ_forum_audience^ef_i > 0 } }
+		if = {
+			limit = { econ_forum_is_audience_power = yes }
+			add_to_temp_variable = { ef_chance = 25 }
+		}
+		else_if = {
+			limit = { econ_forum_in_audience = yes }
+			add_to_temp_variable = { ef_chance = 15 }
+		}
+		else = {
+			add_to_temp_variable = { ef_chance = -5 }
+		}
 	}
 	# Council members keep coming back.
 	if = {
