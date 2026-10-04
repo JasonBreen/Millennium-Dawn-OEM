@@ -4,7 +4,6 @@ run-name: Validate live PR #${{ github.event.pull_request.number || 'current' }}
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [main]
 
 concurrency:
   group: >-
@@ -101,7 +100,6 @@ jobs:
           head_repository=$(printf '%s' "$pr" | jq -r '.head.repo.full_name')
           head_sha=$(printf '%s' "$pr" | jq -r '.head.sha')
           base_repository=$(printf '%s' "$pr" | jq -r '.base.repo.full_name')
-          base_ref=$(printf '%s' "$pr" | jq -r '.base.ref')
           base_sha=$(printf '%s' "$pr" | jq -r '.base.sha')
           if [[ ! "$head_repository" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] ||
               [[ ! "$head_sha" =~ ^[0-9a-f]{40}$ ]] ||
@@ -114,10 +112,6 @@ jobs:
             exit 1
           fi
           default_branch=$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)
-          if [ "$base_ref" != "$default_branch" ]; then
-            echo "::error::The pull request must target the default branch"
-            exit 1
-          fi
           protected_sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$default_branch" --jq .sha)
           if [[ ! "$protected_sha" =~ ^[0-9a-f]{40}$ ]]; then
             echo "::error::Unable to resolve the default branch SHA"

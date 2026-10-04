@@ -10,7 +10,7 @@ CI and pre-push run the collection-layout guard by explicit path with config `ad
 
 ## When the Test Suite runs
 
-`test-suite.yml` triggers on `pull_request` (`opened`, `synchronize`, `reopened`) with `branches: [main]`. That filter is the trigger boundary, because a check inside the merge commit's script can be deleted by the same file. Marking a draft ready does not re-run it. `detect-changes` scopes the jobs after the event, so fork, conflicted, and content-clean PRs still receive a report. Validation reads game data from the live PR head repository and SHA, which avoids stale synthetic merge refs and keeps conflicted PRs in the pipeline. Executable validator, dependency, setup-action, and report files come from the default branch SHA. The PR base SHA is used only for the diff. The ordinary `pull_request` tools job is the only path that executes PR-authored tooling; its token and caches remain in the low-trust PR scope.
+`test-suite.yml` triggers on `pull_request` (`opened`, `synchronize`, `reopened`) for every base branch, including stacked feature PRs. Marking a draft ready does not re-run it. `detect-changes` scopes the jobs after the event, so fork, conflicted, and content-clean PRs still receive a report. Validation reads game data from the live PR head repository and SHA, which avoids stale synthetic merge refs and keeps conflicted PRs in the pipeline. Read-only change detection, mod validation, and tools tests use matching PR-head tooling. The file-path validator and writable report job use the protected default-branch SHA. The PR base SHA is used only for the diff. PR-authored tooling stays in read-only pull-request jobs and their PR-scoped caches.
 
 Extra entry points cover open PRs that get no pushes of their own:
 

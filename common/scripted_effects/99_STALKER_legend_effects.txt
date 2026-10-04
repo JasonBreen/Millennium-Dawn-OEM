@@ -7,27 +7,47 @@ STALKER_schedule_fairway = {
 	if = {
 		limit = { NOT = { has_global_flag = STALKER_fairway_scheduled } }
 		set_global_flag = STALKER_fairway_scheduled
+		set_global_flag = { flag = STALKER_fairway_delay value = 1 days = 120 }
 		set_variable = { global.STALKER_legend_deliver = 174 }
 		if = {
 			limit = { country_exists = USA }
 			USA = { country_event = { id = STALKER.178 days = 120 } }
 		}
-		else_if = {
+	}
+}
+
+STALKER_monthly_legend_pulse = {
+	if = {
+		limit = {
+			STALKER_scenario_enabled = yes
+			has_global_flag = STALKER_fairway_scheduled
+			NOT = { has_global_flag = STALKER_fairway_delay }
+			NOT = { has_variable = global.STALKER_fairway_result }
+		}
+		STALKER_deliver_fairway = yes
+	}
+}
+
+STALKER_deliver_fairway = {
+	698 = {
+		if = {
 			limit = {
-				any_country = {
-					is_major = yes
-					exists = yes
+				STALKER_is_active_zone_anchor = yes
+				check_variable = { STALKER_zone_id = 1 }
+				controller = { exists = yes }
+				has_global_flag = STALKER_fairway_scheduled
+				NOT = { has_global_flag = STALKER_fairway_delay }
+				NOT = { has_variable = global.STALKER_fairway_result }
+				OR = {
+					NOT = { has_variable = global.STALKER_fairway_recipient }
+					NOT = { is_controlled_by = var:global.STALKER_fairway_recipient }
 				}
 			}
-			random_country = {
-				limit = {
-					is_major = yes
-					exists = yes
-				}
-				country_event = { id = STALKER.178 days = 120 }
+			controller = {
+				set_variable = { global.STALKER_fairway_recipient = THIS.id }
+				country_event = STALKER.174
 			}
 		}
-		else = { country_event = { id = STALKER.178 days = 120 } }
 	}
 }
 

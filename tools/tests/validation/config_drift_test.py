@@ -435,9 +435,11 @@ def test_pull_request_grouping_reads_changed_files_only():
     assert "< changed-files.txt" in script
 
 
-def test_pull_request_validation_keeps_writable_reporting_on_the_base_ref():
+def test_stacked_pull_requests_keep_writable_reporting_on_the_default_branch():
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
-    assert _workflow_trigger(CI_WORKFLOW)["pull_request"]["branches"] == ["main"]
+    trigger = _workflow_trigger(CI_WORKFLOW)["pull_request"]
+    assert "branches" not in trigger
+    assert "branches-ignore" not in trigger
     assert "workflow_dispatch" not in CI_WORKFLOW.read_text(encoding="utf-8")
     detect = workflow["jobs"]["detect-changes"]
     resolver = next(
@@ -451,8 +453,8 @@ def test_pull_request_validation_keeps_writable_reporting_on_the_base_ref():
     assert '[ "$base_repository" != "$GITHUB_REPOSITORY" ]' in resolver
     assert "base_sha=$(printf" in resolver
     assert "jq -r '.base.sha'" in resolver
-    assert "base_ref=$(printf" in resolver
-    assert '[ "$base_ref" != "$default_branch" ]' in resolver
+    assert "base_ref" not in resolver
+    assert "must target the default branch" not in resolver
     assert "INPUT_HEAD_SHA" not in resolver
     assert "INPUT_BASE_SHA" not in resolver
     assert (
