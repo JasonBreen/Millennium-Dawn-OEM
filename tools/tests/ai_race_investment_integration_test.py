@@ -747,8 +747,7 @@ def test_tracked_description_and_building_name_use_frozen_sender_only():
         ("text", "=", "ai_race_investment_offer_desc") in desc for desc in descriptions
     )
     helper = (
-        ROOT
-        / "common/scripted_localisation/02_ai_race_investment_localisation.txt"
+        ROOT / "common/scripted_localisation/02_ai_race_investment_localisation.txt"
     ).read_text(encoding="utf-8")
     assert "pending_offer_" not in helper
     for index, building in enumerate(BUILDING_NAMES, 1):

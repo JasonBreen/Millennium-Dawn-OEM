@@ -12,9 +12,7 @@ from ai_race_state_model_test import (
 AI_EFFECTS = ROOT / "common/scripted_effects/04_ai_race_ai_effects.txt"
 AI_TRIGGERS = ROOT / "common/scripted_triggers/MD_ai_race_ai_triggers.txt"
 AI_STRATEGIES = ROOT / "common/ai_strategy/MD_ai_race_ai.txt"
-CAPACITY_EFFECTS = (
-    ROOT / "common/scripted_effects/01_ai_race_capacity_effects.txt"
-)
+CAPACITY_EFFECTS = ROOT / "common/scripted_effects/01_ai_race_capacity_effects.txt"
 ECONOMIC_EFFECTS = ROOT / "common/scripted_effects/00_economic_system_utilities.txt"
 ECONOMIC_TRIGGERS = ROOT / "common/scripted_triggers/00_economic_triggers.txt"
 
@@ -867,9 +865,9 @@ def test_owner_order_revalues_savings_after_billing_and_before_discretionary_deb
         < on_actions.index("automated_debt_taker = yes")
     )
     effects = _parse_race_script(
-        (
-            ROOT / "common/scripted_effects/03_ai_race_progression_effects.txt"
-        ).read_text(encoding="utf-8")
+        (ROOT / "common/scripted_effects/03_ai_race_progression_effects.txt").read_text(
+            encoding="utf-8"
+        )
     )
     monthly = effects["ai_race_run_monthly_work"]
     keys = [key for key, _, _ in monthly]
