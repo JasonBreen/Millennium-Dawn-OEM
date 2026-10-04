@@ -3,15 +3,24 @@ ai_race_refresh_gui = {
 		limit = { is_ai = no }
 		if = {
 			limit = { ai_race_full_mode = yes }
-			set_variable = { ai_race_gui_rivals_y = 616 }
+			set_variable = { ai_race_gui_hint_y = 616 }
 		}
-		else = { set_variable = { ai_race_gui_rivals_y = 155 } }
+		else = { set_variable = { ai_race_gui_hint_y = 155 } }
 		if = {
 			limit = { check_variable = { ai_race_gui_dirty < 10000 } }
 			add_to_variable = { ai_race_gui_dirty = 1 }
 		}
 		else = { set_variable = { ai_race_gui_dirty = 1 } }
 	}
+}
+
+# Redraws the International Systems race tab for every viewer, including non-participants.
+ai_race_bump_view = {
+	if = {
+		limit = { check_variable = { global.ai_race_view_dirty < 10000 } }
+		add_to_variable = { global.ai_race_view_dirty = 1 }
+	}
+	else = { set_variable = { global.ai_race_view_dirty = 1 } }
 }
 
 ai_race_get_month_token = {
@@ -200,6 +209,7 @@ ai_race_commit_review = {
 			if = {
 				limit = { NOT = { has_variable = global.ai_race_first_finisher_id } }
 				set_variable = { global.ai_race_first_finisher_id = THIS.id }
+				ai_race_bump_view = yes
 				news_event = ai_race_news.1
 			}
 			if = {
