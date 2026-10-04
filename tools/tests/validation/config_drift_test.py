@@ -455,8 +455,7 @@ def test_pull_request_validation_keeps_writable_reporting_on_the_base_ref():
     assert "INPUT_HEAD_SHA" not in resolver
     assert "INPUT_BASE_SHA" not in resolver
     assert (
-        'default_branch=$(gh api "repos/$GITHUB_REPOSITORY" '
-        "--jq .default_branch)"
+        'default_branch=$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)'
     ) in resolver
     assert "protected_sha=$(gh api" in resolver
     assert (
