@@ -4,9 +4,84 @@ page_id: changelog-v2-0-changes
 order: 14
 ---
 
+## v2.0.2
+
+v2.0.2
+
+### AI
+
+- Reduced AI support and repair ship production with fleet-size and combined auxiliary limits. (Issue #5171)
+- [KUR] Made Iraq weigh war, stability, strength, opinion and influence before refusing Kurdish independence or autonomy (Issue #5143)
+
+### Balance
+
+- Reduced the starting inflation of BLR, EGY, CUB LAO, DRC, AGL, IND, SER so it's more stable for the nations to recover long term
+- Fixed inflation and currency strength feeding each other into runaway hyperinflation, and made each policy rate point cut a fixed share of inflation so the rate still works when inflation is above 20%
+- Reduced policy rate points' debt-interest contribution from 0.5 to 0.33 points (Issue #5190)
+- Raised the policy rate cap to 30% (Issue #5190)
+- A higher policy rate now always helps: an excess deficit can halve its inflation cut but no longer cancels it, each rate point softens the currency's monthly fall when inflation is far above the rate, and the AI cuts 3 points a quarter when more than 5 above neutral and no longer raises its rate above 20% (Issue #5207, #5208, #5209)
+- Reduced the income from Venezuela's Budding Petrostate making them an infinite money printer
+- 32 cell launchers can now be used with cruisers and smaller naval vessels
+- [CHI] Now starts with 14 shipyards
+- [JAP] Now starts with 14 shipyards
+- [KOR] Now starts with 15 shipyards
+- [SOV] Now starts with 24 shipyards
+- [UKR] Fix events, lowering Policy Rate leading to inflation
+
+### Bugfix
+
+- Fixed policy rate adjustments, and updated reserve-debt tracking (Issue #5190)
+- Standardized USA and Singapore influence call layout without changing effects. (Issue #5226)
+- Fixed faction opinion changes that did nothing or skipped the opinion limits in Myanmar, Cuba, India and UK focuses, restored the battery park from two Singapore reclamation focuses, and fixed broken influence changes in a Syrian focus and two Israeli events (Issue #5124)
+- Restored the DEV marker on the English in-game version banner so local builds show the dev version string
+- Fixed faction goals that track member forces, industry, and territory not showing or completing
+- Recon Rangers are now correctly enabled
+- Removed the duplicate clause from 30 OR blocks; the repeats that hid copy-paste errors now check ENG in the G7 AI lists, fascists in power for the Western Autocracy invite, state 715 for Russia's Nazbol focus, communist cadres opinion in Spain, ASEAN_Member for same-organization checks, and dead as well as exiled for two Libyan leaders (Issue #5268)
+- [CZE] Fixed omission that made Czech gasoline engines not usable for any variants
+- [GRE] Fixed austerity tensions spirit being given twice in some circumstances.
+- [ISR] Favor the Republican Party now gives Israel its political power and Likud popularity instead of the USA (Issue #5175)
+- [ISR] Likud visit events now name the current Israeli and Brazilian leaders
+- [ISR] World Populism events now boost the right-wing populists instead of the fascists, and the Hungarian event boosts Fidesz
+- [ISR] World Populism no longer sends Brazil the Washington visit event
+- [ISR] IAI Hunter drone now starts in its correct year 2000 configuration.
+- [JAP] Mitsubishi Aerospace now covers medium aircraft, so Japan's F-4EJ and F-15J fighters have a domestic MIO (Issue #5233)
+- [LBA] Prevent the African Union Meeting event at minimum corruption to avoid a pointless political power loss (Issue #4870)
+- [SIA] Ghosts of the Jungle now grants its Communist and Emerging Outlook support drive and the Ghosts of the CPT spirit; the path reset it runs was wiping both
+- [SOV] Incorrect setup production for utility vehicle fixed, as well as BMD-1P parent version.
+- [UKR] Ukraine now starts at the 30% policy rate cap, and National Bank of Ukraine rate cuts stop at 0% (Issue #5190)
+
+### Graphics
+
+- Fixed the double farm conversion option appearing without two convertible farms in owned and controlled states below the civilian factory cap
+- [UKR] Renamed 116 bare equipment icons to quoted GFX\_ form (same frame as GFX_MT_LBU) across tank/SPART profiles and designer pools so they resolve as GFX entries; also fixed an Australia date check, the invalid collection_size trigger in internal faction event 31, and v2.0 changelog markdown formatting
+
+### Localization
+
+- Fixed English prose typos, missing punctuation, and three Serbian disaster descriptions (Issue #5127)
+- Replaced two placeholder descriptions, renamed Panama's Calor-Calor cartel party, and fixed a garbled Dixie & Delta Party sentence (Issue #5127)
+- Updated the nuclear bomb logistics tooltip to properly explain how the MD nuclear system works, to remove UI confusion on the system.
+
+### Database
+
+- AK-74 Family - tweaked which models are used across the mod, less AK-74N in pre-existing OOB's, more AK-74M's in focus trees.
+- RPG-7 Family - changed all mod mentions to pull the RPG-7V model instead of base RPG-7, which uses upgrades.
+- [HEZ] Tweaked starting small arms to better represent weapons used in 2000.
+- [KAZ] Tweaked starting small arms to better represent stockpiles in 2000.
+- [SOV] Ongoing work to predefine equipment for all starting SOV units.
+- [SOV] Added small numbers of MRAP's to SOV starting OOB.
+- [UKR, GEO, BLR] Added small stockpiles of AS VAL's to each.
+
+### Performance
+
+- Reduced the number of checks per hour when evaluating whether the AI should be intervention laws for Neo-Imperialism
+- Reduced the number of any_neighbor_country in the French decisions reducing demand when the communist decisions are active for an AI
+- Inverted any_neighbor_country that is at war with ROOT calls to any enemy country is neighbor of to reduce the number of checks per hour on machines
+
 ## v2.0.1
 
-Content:
+v2.0.1
+
+### Content
 
 - NEW MIO TREE: Ethiopia
 - Standardized and historical party names for the countries: ALG, BAN, BAR, BEL, BOL, BOT, BRA, BRM, BUL, CAN, CHI, COM, CUB, CZE, DEN, EGY, FIJ, GEO, GER
@@ -70,7 +145,7 @@ Content:
 - [USA] Added a January 2002 historical event for the Tampa Bank of America Plaza plane crash (Issue #4823)
 - [USA] Operation Iraqi Freedom now puts the USA at war with Iraq when the decision completes, so the invasion and its phased war events can run (Issue #4663)
 
-Bugfix:
+### Bugfix
 
 - Small economies and microstates no longer start the game with wrong income and expense figures that made the AI seek bailouts or default on day one
 - Fixed events adding the ruling party again as a coalition partner and double-counting its support (Issue #5072)
@@ -237,7 +312,7 @@ Bugfix:
 - [VEN] Restricted Gran Colombia Alliance membership to intended nations.
 - [WAA] Wa State no longer adds world tension every time Shan raids its drug trade; "This means war!" is only offered while it has no war goal or war against the Shan (Issue #4647)
 
-Balance:
+### Balance
 
 - Inflation now distinguishes nation-specific healthy GDP-per-capita growth from bounded overheating, with normalized economic cycles, neutral-rate monetary policy, and pressure from money printing, currency depreciation, unsustainable deficits, and unanchored expectations; currency effects now refresh immediately after monetary actions and reserve changes, while weaker depreciation feedback prevents extreme inflation spikes.
 - Weighted the seven productivity and industry events by unemployment and required enough workers and inputs for new plants.
@@ -320,7 +395,7 @@ Balance:
 - [UKR] Rework starting OOBs to incorporate recent units composition changes, added 2 starting SAM brigades with newly-introduced S-300V SAM systems
 - [USA] Reweighted the AI away from the treason trunk and election fraud on ahistorical No Path so the United States no longer collapses into rebellion nearly every game, while keeping those paths reachable, and added congressional decisions to ban or re-allow election fraud (Issue #4616)
 
-AI:
+### AI
 
 - The navies of the 14 major powers now also hold the sea crossings their invasions need instead of training through the war
 - The AI at peace in deficit no longer cuts and re-buys its defence spending law every month
@@ -341,7 +416,7 @@ AI:
 - [SPR] The Spanish AI now weighs choices by path, finances, stability and regional opinion, restores party policies and no longer strands the Carlist path; fixed regional event targets, immigration option restrictions, Catalonia's revolt timer, Regulares recruitment, technology inheritance and copied option IDs (Issue #5115)
 - [UKR] Ukraine no longer garrisons its borders with Poland, Slovakia, Hungary, Romania and Moldova unless that neighbor is at war with it or pursuing a wargoal against it, so its army faces Russia instead of Transcarpathia (Issue #4783)
 
-Database:
+### Database
 
 - Updated designs for various designs that were using heavier suspensions then they should be
 - Added ace and general name lists for the 32 countries that had none, enforced by a new validator (Issue #4144)
@@ -373,7 +448,7 @@ Database:
 - [UKR] Moved MT-LB and BTR-60 equipments to 1st generatation tank hull
 - [USA] Added missing Constellation Class Frigate Names
 
-Graphics:
+### Graphics
 
 - Replaced wrong-size or missing decision icons in Algeria, Bosnia, Botswana, Brazil, Chechnya, Cyprus, the Czech Republic, India and Japan with correctly sized ones
 - Added the missing small tooltip icons for twelve unit categories, which previously drew a blank glyph and logged an error on every redraw
@@ -397,7 +472,7 @@ Graphics:
 - [UKR] Added a first part of aviation icons
 - [UNI] Added Isaías Samakuva's missing portrait
 
-Localization:
+### Localization
 
 - Fixed the Print Money tooltip claiming a productivity decrease; it now describes the inflation effect that printing money actually causes (Issue #4508)
 - Fixed typos, grammar and wrong references in shared event localization
@@ -439,7 +514,7 @@ Localization:
 - [UKR] Changed localisation of Tank composite armor modules
 - [USA] Fixed the typoes in the Elian Gonzalez affair
 
-Map:
+### Map
 
 - [MOR] Removed the cores from Ceuta & Melilla for Morocco and swapped them to claims
 - [UKR] Removed DPR cores on both Donetsk states at game start (re-added once fighting begins)
@@ -447,7 +522,9 @@ Map:
 
 ## v2.0.0 - "The Millennium Renaissance"
 
-Content:
+v2.0.0
+
+### Content
 
 - NEW TREES: United Kingdom, Algeria, Benelux, Greenland, Japan, Hong Kong, China, France, Saudi Arabia, Australia, Thailand
 - IMPROVED TREE: Afghanistan, Greece, North Korea, South Korea, Netherlands, Unified Korea, Bulgaria, Serbia, Romania, Montenegro, Kosovo, Denmark, Sweden, Norway, Switzerland, Bosnia, Poland, India, Nigeria, Ukraine, Generic
@@ -594,12 +671,12 @@ Content:
 - [ENG] United Kingdom now has a focus to perform the Wonga Coup
 - Added or reworked air and ground OOBs across many countries, including GEO, SOO, ABK, CZE, SOV, FRA, NKO, SYR, IRQ, and CHI
 
-Achievements:
+### Achievements
 
 - Add around 70 different achievements for various nations for additional goals/plans for the players
 - [SIN] Increased the year count from 2004 to 2006 for the "Head of the Tigers" achievement
 
-AI:
+### AI
 
 - [CAN] Fixed the "North American Status Quo" strategy plan never activating, plus a duplicate AI strategy entry
 - [SPR] Added AI focus-path steering, threat-based military focus priority, obsolete-branch hiding, and expanded diplomatic strategies to the Spanish tree
@@ -730,7 +807,7 @@ AI:
 - [GER] The AI can now win the Death of the Republic civil war: the democratic breakaway takes 30% of Germany against an AI instead of 55%, so the interim government survives to reach the monarchist, nationalist or socialist path its game rule selected (Issue #3774)
 - [GER] The AI now buys back East German opinion as the divide deepens instead of sliding through all four East German debuff tiers unopposed, and no longer repeatedly consults its East German advisor (Issue #3774)
 
-Balance:
+### Balance
 
 - MIO funds gain increased by 15%: the per-manufacturer daily funds cap is raised from 100 to 115 and research completions now award 575 funds per research cost instead of 500, so organizations level up faster without changing the early-game per-IC rate (Issue #2892)
 - Space and missile production is now paid off weekly across the build instead of as an upfront lump sum, for manual orders as well as automated ones
@@ -884,7 +961,7 @@ Balance:
 - Removed political power costs from focus completion rewards across 39 national focus trees, so completing a focus no longer charges political power on top of its other costs
 - Raised the building slot ramp across every populated state category: state_01 to state_18 now scale from 4 to 62 base slots instead of 3 to 50, and MAX_SHARED_SLOTS is raised from 56 to 72 so railway and infrastructure modifiers still have headroom above the base. Only state_00, inhospitable and military base categories are unchanged, so this affects 1059 of 1250 states
 
-Bugfix:
+### Bugfix
 
 - [HOL] Fixed the New Age of Social Democracy focus handing out a PvdA leader that contradicted the party's balance of power: every green and modernising focus and decision pushed the bar toward the Traditional Labor Base while every welfare and union one pushed it toward the Progressive Reformists, and a balance resting in the Progressive Leaning band completed no leader at all, dead-ending the branch. Asscher is now the traditional-labour outcome and Bos the centre one (Issue #3500)
 - Fixed the Renewable Energy Hotspot readout overlapping the bottom row of the state view building-slot grid whenever a state's grid is full
@@ -1480,7 +1557,7 @@ Bugfix:
 - Fixed nineteen missing leader portraits: wrong paths and misspelled filenames now point at the real art, and leaders with no art use generic portraits instead of grey boxes
 - [JAP/IRN/CUB/IND/KOR/EGY] Fixed assorted focus errors: Japan's research facility now picks a state with a free slot, Iran's Damavand corvette names its design, Cuba's interventionist trait applies to the leader, India's inert collaboration call is removed, Korea's rebellion focus requires no ongoing civil war, and Hezbollah, NATO access, guarantee and non-aggression pact effects no longer fire twice
 
-Database:
+### Database
 
 - Add more modifiers for country leader traits
 - [FRA] Added Tripartite, Flamant, Lapérouse and P400 class ships to start date, given to their operating countries FRA, BEL, HOL with historical vessel names.
@@ -1524,7 +1601,7 @@ Database:
 - Added olv_production_cost_modifier, gnss_production_cost_modifier, comsat_production_cost_modifier, spysat_production_cost_modifier and killsat_production_cost_modifier so content can cut the price of launch vehicles and satellites, matching the build-time modifiers that already existed (Issue #2755)
 - Generic intelligence advisors are now generated per country, taking their names from each nation's own namelist and their portraits from its own pool instead of five hardcoded characters shared by every country
 
-Factions:
+### Factions
 
 - Added a new faction goal "Establish an Airborne Corps"
 - Added a new faction goal "Secure the Middle East"
@@ -1547,7 +1624,7 @@ Factions:
 - The East Asian Pact now pursues the "Establish Asian Dominance" manifest instead of the generic "Strength in Unity" (Issue #1861)
 - The generic Intelligence Director now respects the one-intel-advisor-per-country limit
 
-Graphics:
+### Graphics
 
 - Fixed the missing MIO equipment category icons for Multi-Role Fighters, AWACS, Aircraft Carriers, CAS, Naval Aircraft, Support Ships and Suicide Drones (Issue #3766)
 - Fixed the Suicide Drone and UAV MIO icons never drawing because their texture was a PNG saved with a .dds extension (Issue #3766)
@@ -1608,7 +1685,7 @@ Graphics:
 - Recentred the state view building-slot grid and its contents at the smaller cell size: the grid sits centred in its panel, the building icon and status overlay are centred in the cell, the damage bar sits inside the slot row instead of overlapping the icon above it, and the Renewable Energy Hotspot icon and label clear the grid
 - Fixed 56 news events drawing country-sized art that under-filled the news frame across China, Japan, North Korea, the United Kingdom, Israel, Thailand, Sweden, France, the Balkans, the War on Terror and others by repointing them at news-format sprites (Issue #3993)
 
-Game Rules:
+### Game Rules
 
 - [SIA] Added the Thailand AI behaviour game rule with Default, Pan-Thai, SEATO Leader, Alt-History and Random options, deciding which of the tree's optional roads an AI Bangkok takes. Every branch stays open to a human player
 - Added "Allow AI Conditional Peace Offers" game rule (default: off) to toggle whether AI nations can initiate monthly Conditional Peace Deals; requires the parent "Allow Conditional Peace Deals" rule to be enabled
@@ -1626,7 +1703,7 @@ Game Rules:
 - Added a gamerule for the EU to prioritise enlargements
 - European Union default cooldown changed to 120 days
 
-Localization:
+### Localization
 
 - Added readable requirement text for over 160 decision and focus requirements that displayed a raw flag name
 - Added tooltips for over 150 decision and focus requirements that previously rendered a blank line
@@ -1699,7 +1776,7 @@ Localization:
 - [ISR] Every fixable starting national spirit now explains how it is removed or improved
 - [ISR] Fixed the Alice Miller spirit title and added the missing infrastructure and Jordanian Waqf spirit descriptions
 
-Map:
+### Map
 
 - HMNB Clyde is now properly represented with a Level 8 Naval Base + Naval Headquarters for the UK's Nuclear Submarines deployment
 - Updated the tech metals available on game start for Armenia from 7 to 20
@@ -1710,13 +1787,13 @@ Map:
 - Fixed VP position of Brazilian VPs where they were not close to the in-real life positions
 - Fixed the Cuban provinces being labeled or incorrect terrains such as desert with more accurate hills or plains
 
-Map Modes:
+### Map Modes
 
 - Reworked the coloring of the SCO map modes to have distinct colors for each type (observers purple, possible non-member or observers are yellow) for easier view
 - Removed junk map modes that were lingering in the files and not adding anything
 - Fixed Austria, Norway, Finland, Slovakia, Georgia, and Maoist Nepal sharing near-identical political map colors with their neighbours, making them distinguishable on political map screenshots (Issue #2099)
 
-Performance:
+### Performance
 
 - Tracked terrorist menace opinion modifier holders so government changes no longer scan every country when clearing the penalties (Issue #1838)
 - The international systems GUI dirty counter is now only bumped from player-initiated paths, preventing AI voters and recognition grants from waking every open GUI
@@ -1786,7 +1863,7 @@ Performance:
 - Removed the 18 EU ship name lists, the only namelists in the mod attached to a large country list: each repeated the same 94 tags and carried a can_use trigger without a ship_types filter, so all 18 were evaluated for every hull type of every candidate country (Issue #3297)
 - Removed the per-upgrade name substitution the intelligence agency queue ran for every entry on the weekly tick and on every refresh of the upgrade list, replacing it with a cached completion count (Issue #3401)
 
-Quality of Life:
+### Quality of Life
 
 - [LIC] The Path of Conquest and Claim the HRE focuses now list the nations they will lead to war with
 - [GER] BFV GUI now updates immediately on button clicks instead of waiting for the next daily tick
@@ -1804,12 +1881,12 @@ Quality of Life:
 - [HOL] Military Emergency idea now shows its cancel requirements (military industry count, dependent industry idea, equipment stockpile ratios) in the tooltip
 - [HEZ] The button for the Hezbollah International mechanic was moved to avoid overlapping with the factions button.
 
-Sound:
+### Sound
 
 - Ensured that voicelines for various nations are saved in the proper format as to prevent nonsense errors in the logs
 - Paid DLC music playlists now load only for owners while retaining the vanilla identifiers their playback conditions require
 
-Technology:
+### Technology
 
 - Gated infrastructure building levels 1-5 behind the civilian rail research path so level 5 is no longer available at game start (Issue #1400)
 - Consolidated naval technology categories: merged CAT_n_cv and CAT_cv into CAT_carrier; merged CAT_lha and CAT_lpd into CAT_helicopter_operators
@@ -1823,7 +1900,7 @@ Technology:
 - Removed duplicate point defense module slot entry from stealth destroyer hull definitions
 - Added an Autonomous Surface Combatant Control module for frigates and destroyers that cuts crew requirements in exchange for higher microchip cost, unlocked via the new Autonomous Surface Combatants naval special project (Issue #1833)
 
-User Interface:
+### User Interface
 
 - Fixed the Ideological Powers tooltips showing inaccurate values and omitting several party modifiers; they now list every modifier each party receives, with party-specific ones qualified
 - Added UN Security Council and General Assembly auto-vote toggle buttons (accept all, reject all, abstain all) to the international systems view

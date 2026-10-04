@@ -236,11 +236,13 @@ def strip_inline_comment(line: str) -> str:
     if "#" not in line:
         return line
     in_str = False
+    escaped = False
     for i, c in enumerate(line):
-        if c == '"' and (i == 0 or line[i - 1] != "\\"):
+        if c == '"' and not escaped:
             in_str = not in_str
         elif c == "#" and not in_str:
             return line[:i]
+        escaped = not escaped if c == "\\" else False
     return line
 
 
@@ -1160,19 +1162,12 @@ def strip_comments(text: str) -> str:
         if line.lstrip().startswith("#"):
             result.append("")
             continue
-        in_quote = False
-        for i, ch in enumerate(line):
-            if ch == '"':
-                in_quote = not in_quote
-            elif ch == "#" and not in_quote:
-                line = line[:i]
-                break
-        result.append(line)
+        result.append(strip_inline_comment(line))
     return "\n".join(result)
 
 
 # A `"` opens or closes a string unless a backslash escapes it.
-_STRING_QUOTE_RE = re.compile(r'(?<!\\)"')
+_STRING_QUOTE_RE = re.compile(r'(?<!\\)(?:\\\\)*(")')
 
 
 def blank_quoted_strings(text: str, keep_start: Optional[Set[int]] = None) -> str:
@@ -1192,7 +1187,7 @@ def blank_quoted_strings(text: str, keep_start: Optional[Set[int]] = None) -> st
     if '"' not in text:
         return text
     keep = keep_start or ()
-    quotes = [m.start() for m in _STRING_QUOTE_RE.finditer(text)]
+    quotes = [m.start(1) for m in _STRING_QUOTE_RE.finditer(text)]
     # An unterminated last string runs to the end of the text.
     quotes.append(len(text))
     pieces = []
@@ -1288,9 +1283,10 @@ def iter_statement_ops(
             index = close + 1
             continue
         if cursor < length and body[cursor] == '"':
-            stop = body.find('"', cursor + 1)
-            if stop == -1:
+            closing_quote = _STRING_QUOTE_RE.search(body, cursor + 1)
+            if closing_quote is None:
                 return
+            stop = closing_quote.start(1)
             yield key, operator, body[cursor + 1 : stop], None
             index = stop + 1
             continue

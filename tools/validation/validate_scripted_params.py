@@ -7,13 +7,14 @@ before calling. Warns on scope-boundary violations (temp var set inside a
 scope-changing block, but the effect call is outside).
 """
 
-import functools
 import glob
 import os
 import re
 from typing import Dict, List, Set, Tuple
 
 import disk_cache
+from shared_utils import blank_quoted_strings, get_staged_files
+from validate_unused_scripted import extract_definitions
 from validator_common import (
     HOI4_BUILTIN_BLOCKS,
     BaseValidator,
@@ -33,6 +34,13 @@ _CALLER_PATTERNS = [
     "events/**/*.txt",
     "history/**/*.txt",
 ]
+
+# A staged change here can break a caller that did not change.
+_DEPENDENCY_DIRS = (
+    "common/scripted_effects",
+    "common/country_tags",
+    "common/country_tag_aliases",
+)
 
 # Hardcoded contracts for well-documented effects. Auto-discovery fills in
 # additional contracts from "# Parameters:" comment blocks.
@@ -110,32 +118,40 @@ SCOPE_CHANGING_KEYWORDS: Set[str] = {
     }
 }
 
+# Each of these runs as its own effect, so its temp variables are gone before
+# the next one runs.
+EFFECT_BLOCK_KEYWORDS: Set[str] = {
+    "completion_reward",
+    "select_effect",
+    "immediate",
+    "option",
+    "complete_effect",
+    "remove_effect",
+    "timeout_effect",
+    "cancel_effect",
+    "effect",
+    "on_add",
+    "on_remove",
+}
+
 _SET_TEMP_RE = re.compile(
     r"\bset_temp_variable\s*=\s*\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([^}]+?)\s*\}",
 )
 _CALL_RE = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*=\s*yes\b")
-_KW_OPEN_RE = re.compile(r"\b([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*\{")
-_CLOSE_BRACE_RE = re.compile(r"\}")
+_SINGLE_CALL_LINE_RE = re.compile(
+    r"(?:[A-Za-z0-9_:.@^+-]+\s*=\s*\{\s*)*"
+    r"[A-Za-z][A-Za-z0-9_]*\s*=\s*yes\s*(?:\}\s*)*"
+)
+# Numeric scopes (741 = {) must open a block, or their close pops the wrong one.
+_KW_OPEN_RE = re.compile(r"\b([A-Za-z0-9_]+)\s*=\s*\{")
+
+_READ_ERRORS = (OSError, UnicodeDecodeError)
 
 
 _PARAM_TOKEN_RE = re.compile(r"\$[A-Za-z_]\w*\$")
-# A top-level definition may be indented: 00_peace_deal_triggers.txt indents
-# its own by two tabs. Depth decides what is a definition, not column.
+
+
 _DEF_OR_BRACE_RE = re.compile(r"([{}])|([A-Za-z_]\w*)\s*=\s*\{")
-
-_NORMALIZE_SET_TEMP_RE = re.compile(r"\bset_temp_variable\s*=\s*\{")
-_NORMALIZE_NAME_RE = re.compile(r"\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=")
-
-_CONTRACT_HEADER_RE = re.compile(r"^#\s*[Pp]arameters?\s*:")
-_CONTRACT_SEP_RE = re.compile(r"^[-=*]+$")
-_CONTRACT_STV_RE = re.compile(
-    r"set_temp_variable\s*=\s*\{\s*([A-Za-z][A-Za-z0-9_]*)\s*="
-)
-_CONTRACT_PLAIN_RE = re.compile(r"^[-\*]?\s*([A-Za-z][A-Za-z0-9_]*)\s*[-:]")
-_CONTRACT_DEF_RE = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)\s*=\s*\{")
-
-_TAG_FILE_RE = re.compile(r'^\s*([A-Z0-9_]{3})\s*=\s*"')
-_ALIAS_FILE_RE = re.compile(r"^\s*([A-Za-z0-9_]{3})\s*=\s*\{")
 
 
 def _block_end(text: str, open_brace_index: int) -> int:
@@ -198,6 +214,12 @@ def _parameterised_trigger_defs(mod_path: str) -> Dict[str, Tuple[str, int]]:
     return found
 
 
+def _unreadable(filepath: str, mod_path: str, exc: Exception) -> str:
+    """Describe an input that could not be read, in the `file:line - text` form."""
+    rel = os.path.relpath(filepath, mod_path)
+    return f"{rel}:0 - cannot read file ({type(exc).__name__})"
+
+
 def _normalize_influence_value(value: str) -> str:
     """Normalize a tag_index / influence_target value for identity comparison.
 
@@ -250,45 +272,40 @@ _MISCASED_TAG_RE = re.compile(r"[A-Za-z]{3}")
 _NUMERIC_RE = re.compile(r"-?\d+(\.\d+)?")
 
 
-@functools.lru_cache(maxsize=None)
-def _load_valid_country_tags(mod_path: str) -> "frozenset[str]":
+def _load_valid_country_tags(mod_path: str) -> Tuple["frozenset[str]", List[str]]:
     """Load valid country tags and tag aliases as one accept-set.
 
     Tags come from common/country_tags/*.txt (`TAG = "path"`); aliases from
     common/country_tag_aliases/*.txt (`ALIAS = { ... }`).  Aliases are real
     references at runtime — e.g. STC / NTR are aliases, not typos — so the
-    tag-validity check accepts both.
+    tag-validity check accepts both.  Also returns the files that could not
+    be read.
     """
-    tag_files = glob.glob(os.path.join(mod_path, "common", "country_tags", "*.txt"))
-    alias_files = glob.glob(
+    valid: Set[str] = set()
+    unreadable: List[str] = []
+    tag_re = re.compile(r'^\s*([A-Z0-9_]{3})\s*=\s*"')
+    for fp in glob.glob(os.path.join(mod_path, "common", "country_tags", "*.txt")):
+        try:
+            with open(fp, "r", encoding="utf-8-sig") as fh:
+                for line in fh:
+                    m = tag_re.match(line)
+                    if m:
+                        valid.add(m.group(1))
+        except _READ_ERRORS as exc:
+            unreadable.append(_unreadable(fp, mod_path, exc))
+    alias_re = re.compile(r"^\s*([A-Za-z0-9_]{3})\s*=\s*\{")
+    for fp in glob.glob(
         os.path.join(mod_path, "common", "country_tag_aliases", "*.txt")
-    )
-
-    def _build() -> "frozenset[str]":
-        valid: Set[str] = set()
-        for fp in tag_files:
-            try:
-                with open(fp, "r", encoding="utf-8-sig") as fh:
-                    for line in fh:
-                        m = _TAG_FILE_RE.match(line)
-                        if m:
-                            valid.add(m.group(1))
-            except Exception:
-                continue
-        for fp in alias_files:
-            try:
-                with open(fp, "r", encoding="utf-8-sig") as fh:
-                    for line in fh:
-                        m = _ALIAS_FILE_RE.match(line)
-                        if m:
-                            valid.add(m.group(1))
-            except Exception:
-                continue
-        return frozenset(valid)
-
-    return disk_cache.aggregate_cached(
-        mod_path, "valid_country_tags", tag_files + alias_files, _build
-    )
+    ):
+        try:
+            with open(fp, "r", encoding="utf-8-sig") as fh:
+                for line in fh:
+                    m = alias_re.match(line)
+                    if m:
+                        valid.add(m.group(1))
+        except _READ_ERRORS as exc:
+            unreadable.append(_unreadable(fp, mod_path, exc))
+    return frozenset(valid), unreadable
 
 
 def _is_invalid_influence_tag(value: str, valid_tags: "frozenset[str]") -> bool:
@@ -327,12 +344,11 @@ def _parse_effect_contracts_from_file(
         # Parameters:
         # - param_name: description
         effect_name = {
+
+    A read or decode error propagates so the caller can report the file.
     """
-    try:
-        with open(filepath, "r", encoding="utf-8-sig") as fh:
-            content = fh.read()
-    except Exception:
-        return {}
+    with open(filepath, "r", encoding="utf-8-sig") as fh:
+        content = fh.read()
 
     contracts: Dict[str, Dict[str, List[str]]] = {}
     lines = content.splitlines()
@@ -341,7 +357,7 @@ def _parse_effect_contracts_from_file(
         stripped = lines[i].strip()
 
         # Look for "# Parameters:" or "# Parameter:" comment block
-        if _CONTRACT_HEADER_RE.match(stripped):
+        if re.match(r"^#\s*[Pp]arameters?\s*:", stripped):
             params_required: List[str] = []
             params_optional: List[str] = []
             j = i + 1
@@ -351,12 +367,14 @@ def _parse_effect_contracts_from_file(
                 if not pline.startswith("#"):
                     break
                 inner = pline.lstrip("#").strip()
-                if not inner or _CONTRACT_SEP_RE.match(inner):
+                if not inner or re.match(r"^[-=*]+$", inner):
                     j += 1
                     continue
 
                 # "# set_temp_variable = { param_name = ... }"
-                stv_m = _CONTRACT_STV_RE.search(inner)
+                stv_m = re.search(
+                    r"set_temp_variable\s*=\s*\{\s*([A-Za-z][A-Za-z0-9_]*)\s*=", inner
+                )
                 if stv_m:
                     pname = stv_m.group(1)
                     if "optional" in inner.lower():
@@ -367,7 +385,7 @@ def _parse_effect_contracts_from_file(
                     continue
 
                 # "# - param_name: ..." or "# - param_name - ..."
-                plain_m = _CONTRACT_PLAIN_RE.match(inner)
+                plain_m = re.match(r"^[-\*]?\s*([A-Za-z][A-Za-z0-9_]*)\s*[-:]", inner)
                 if plain_m:
                     pname = plain_m.group(1)
                     skip_words = {
@@ -399,7 +417,7 @@ def _parse_effect_contracts_from_file(
             while k < len(lines) and not lines[k].strip():
                 k += 1
             if k < len(lines):
-                def_m = _CONTRACT_DEF_RE.match(lines[k].strip())
+                def_m = re.match(r"^([A-Za-z][A-Za-z0-9_]*)\s*=\s*\{", lines[k].strip())
                 if def_m and (params_required or params_optional):
                     eff_name = def_m.group(1)
                     if eff_name not in HARDCODED_CONTRACTS:
@@ -418,10 +436,13 @@ def _normalize_multiline_set_temp(text: str) -> str:
     """Collapse multi-line set_temp_variable blocks without changing line numbers."""
     normalized = []
     cursor = 0
+    pattern = re.compile(r"\bset_temp_variable\s*=\s*\{")
 
-    while match := _NORMALIZE_SET_TEMP_RE.search(text, cursor):
+    while match := pattern.search(text, cursor):
         block_start = match.end() - 1
-        name_match = _NORMALIZE_NAME_RE.match(text, block_start + 1)
+        name_match = re.match(
+            r"\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=", text[block_start + 1 :]
+        )
         if not name_match:
             normalized.append(text[cursor : match.end()])
             cursor = match.end()
@@ -450,13 +471,13 @@ def _normalize_multiline_set_temp(text: str) -> str:
 
 
 def _tokenize(text: str) -> List[Tuple[str, int, str, str]]:
-    """Tokenize comment-stripped script text into a flat token list.
+    """Tokenize script text, comments stripped and quotes blanked, into tokens.
 
     Each token is (kind, line_number, value, rhs):
       "set_temp"   — set_temp_variable = { NAME = RHS }  (value=NAME, rhs=RHS)
       "call"       — NAME = yes                           (value=NAME, rhs="")
-      "scope_open" — NAME = { (scope-changing)            (value=NAME, rhs="")
-      "plain_open" — NAME = { (non-scope-changing)        (value=NAME, rhs="")
+      "scope_open" — NAME = { (scope-changing or effect)  (value=NAME, rhs="")
+      "plain_open" — NAME = { (any other block)           (value=NAME, rhs="")
       "close"      — }                                    (value="",    rhs="")
     The rhs on a set_temp is the literal RHS string (whitespace stripped).
     It powers the identical-params check for change_influence_percentage; any
@@ -470,11 +491,6 @@ def _tokenize(text: str) -> List[Tuple[str, int, str, str]]:
     lines = text.splitlines()
 
     for lineno, raw in enumerate(lines, start=1):
-        # Inline comment stripping
-        ci = raw.find("#")
-        if ci >= 0:
-            raw = raw[:ci]
-
         line_tokens = []
         for m in _SET_TEMP_RE.finditer(raw):
             line_tokens.append(
@@ -490,6 +506,7 @@ def _tokenize(text: str) -> List[Tuple[str, int, str, str]]:
                         (
                             "scope_open"
                             if kw.lower() in SCOPE_CHANGING_KEYWORDS
+                            or kw in EFFECT_BLOCK_KEYWORDS
                             else "plain_open"
                         ),
                         lineno,
@@ -498,7 +515,7 @@ def _tokenize(text: str) -> List[Tuple[str, int, str, str]]:
                     ),
                 )
             )
-        for m in _CLOSE_BRACE_RE.finditer(raw):
+        for m in re.finditer(r"\}", raw):
             line_tokens.append((m.start(), 0, ("close", lineno, "", "")))
         for m in _CALL_RE.finditer(raw):
             line_tokens.append((m.start(), 0, ("call", lineno, m.group(1), "")))
@@ -514,34 +531,47 @@ def _tokenize(text: str) -> List[Tuple[str, int, str, str]]:
 
 
 def _validate_call_sites_in_file(
-    args: Tuple[str, Dict[str, Dict[str, List[str]]], str, "frozenset[str]"],
+    args: Tuple[
+        str, Dict[str, Dict[str, List[str]]], str, "frozenset[str]", "frozenset[str]"
+    ],
 ) -> List[Tuple[str, str, int]]:
     """Validate one file for missing required params and orphaned sets.
 
+    A call may share its line with enclosing wrappers and closing braces,
+    but not other statements. ``audit_names`` checks uncontracted effects too.
+
     Returns a list of (category, message, line_number) tuples.
     """
-    filepath, contracts, mod_path, valid_tags = args
+    filepath, contracts, mod_path, valid_tags, audit_names = args
 
     try:
         with open(filepath, "r", encoding="utf-8-sig") as fh:
             raw = fh.read()
-    except Exception:
-        return []
+    except _READ_ERRORS as exc:
+        return [("unreadable-input", _unreadable(filepath, mod_path, exc), 0)]
 
-    text = strip_comments(raw)
+    # A quoted log can hold a `#`, a brace, or text shaped like a call.
+    text = blank_quoted_strings(strip_comments(raw))
     rel = os.path.relpath(filepath, mod_path)
 
     # Quick pre-check: does this file reference any contracted effect?
     contracted_names = set(contracts.keys())
-    if not any(name in text for name in contracted_names):
+    if not audit_names and not any(name in text for name in contracted_names):
         return []
 
+    lines = text.splitlines()
+    shared_lines: Set[int] = set()
     results: List[Tuple[str, str, int]] = []
     # Cache the tokenisation (the expensive, contract-independent step); the
     # contract validation below runs per call against the cached tokens.
     tokens = disk_cache.per_file_cached_by_content(
         mod_path, "scripted_params.tokens", filepath, text, lambda: _tokenize(text)
     )
+    contracted_lines = {
+        line
+        for kind, line, name, _rhs in tokens
+        if kind == "call" and name in contracts
+    }
 
     # Scope stack.  Each frame:
     #   "scope_changing": bool — True if opened by a scope-changing keyword
@@ -604,7 +634,25 @@ def _validate_call_sites_in_file(
                 )
 
         elif kind == "call":
-            if value not in contracts:
+            contracted = value in contracts
+            if (
+                (
+                    contracted
+                    or (value in audit_names and lineno not in contracted_lines)
+                )
+                and lineno not in shared_lines
+                and not _SINGLE_CALL_LINE_RE.fullmatch(lines[lineno - 1].strip())
+            ):
+                shared_lines.add(lineno)
+                results.append(
+                    (
+                        "call-shares-line" if contracted else "audit-call-shares-line",
+                        f"{rel}:{lineno} - '{value}' shares its line with other "
+                        f"statements; put the call on its own line",
+                        lineno,
+                    )
+                )
+            if not contracted:
                 continue
 
             contract = contracts[value]
@@ -641,9 +689,10 @@ def _validate_call_sites_in_file(
             # ROOT, influence_target -> THIS) are reliable and left alone.
             #
             # "Same block" is approximated by line proximity (<= 20 lines): the
-            # scope tracker can keep a temp var from a previous focus's
-            # completion_reward visible when it wouldn't be in scope at runtime,
-            # so the window suppresses those false positives while still catching
+            # scope tracker can keep a temp var from an earlier block it does not
+            # reset, such as a previous scripted effect, visible when it wouldn't
+            # be in scope at runtime, so the window suppresses those false
+            # positives while still catching
             # the leak-between-calls pattern (tag_index from call N-1 reused by
             # call N).  Values are normalized so "USA"/"USA.id" and the other
             # .id variants compare equal.
@@ -687,14 +736,28 @@ class Validator(BaseValidator):
     TITLE = "SCRIPTED EFFECT PARAMETER VALIDATION"
     STAGED_EXTENSIONS = [".txt"]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, audit_shared_lines: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
+        self.audit_shared_lines = audit_shared_lines
+        self._audit_names: Set[str] = set()
         self._contracts: Dict[str, Dict[str, List[str]]] = {}
         self._valid_tags: "frozenset[str]" = frozenset()
+        self._unreadable: List[str] = []
+        if self.staged_only:
+            # A deleted or renamed contract or tag file is a dependency change too.
+            self.staged_files = (
+                get_staged_files(
+                    self.mod_path,
+                    extensions=self.STAGED_EXTENSIONS,
+                    include_missing=True,
+                )
+                or []
+            )
 
     def _build_tag_set(self):
         """Load valid country tags + aliases for the tag-validity check."""
-        self._valid_tags = _load_valid_country_tags(self.mod_path)
+        self._valid_tags, unreadable = _load_valid_country_tags(self.mod_path)
+        self._unreadable.extend(unreadable)
         self.log(f"  Valid country tags + aliases:     {len(self._valid_tags)}")
 
     def _build_contracts(self):
@@ -710,7 +773,18 @@ class Validator(BaseValidator):
         )
         discovered = 0
         for filepath in sorted(effect_files):
-            parsed = _parse_effect_contracts_from_file(filepath)
+            try:
+                parsed = _parse_effect_contracts_from_file(filepath)
+            except _READ_ERRORS as exc:
+                self._unreadable.append(_unreadable(filepath, self.mod_path, exc))
+                continue
+            if self.audit_shared_lines:
+                self._audit_names.update(
+                    name
+                    for name, _file, _line in extract_definitions(
+                        (filepath, self.mod_path)
+                    )
+                )
             for eff_name, contract in parsed.items():
                 if eff_name not in self._contracts and contract["required"]:
                     self._contracts[eff_name] = contract
@@ -732,11 +806,21 @@ class Validator(BaseValidator):
             self.log("  No contracts found — nothing to validate")
             return
 
-        files = self._collect_files(_CALLER_PATTERNS)
+        rescan = self.staged_touches(_DEPENDENCY_DIRS)
+        if rescan:
+            self.log("  Contract or tag source staged: rescanning every caller")
+        # Staged deletions are listed too and have nothing to scan.
+        files = self._collect_files(
+            _CALLER_PATTERNS,
+            extra_skip=lambda path: not os.path.isfile(path),
+            ignore_staged=rescan,
+        )
         self.log(f"  Scanning {len(files)} files for effect calls")
 
+        audit_names = frozenset(self._audit_names)
         args_list = [
-            (f, self._contracts, self.mod_path, self._valid_tags) for f in files
+            (f, self._contracts, self.mod_path, self._valid_tags, audit_names)
+            for f in files
         ]
         all_results = self._pool_map(
             _validate_call_sites_in_file, args_list, chunksize=20
@@ -746,6 +830,8 @@ class Validator(BaseValidator):
         scope_violation_results = []
         identical_param_results = []
         invalid_tag_results = []
+        shared_line_results = []
+        audit_shared_line_results = []
 
         for file_results in all_results:
             for category, message, _line in file_results:
@@ -757,6 +843,12 @@ class Validator(BaseValidator):
                     identical_param_results.append(message)
                 elif category == "invalid-influence-tag":
                     invalid_tag_results.append(message)
+                elif category == "call-shares-line":
+                    shared_line_results.append(message)
+                elif category == "audit-call-shares-line":
+                    audit_shared_line_results.append(message)
+                elif category == "unreadable-input":
+                    self._unreadable.append(message)
 
         self._report(
             missing_param_results,
@@ -789,6 +881,22 @@ class Validator(BaseValidator):
             severity=Severity.ERROR,
             category="invalid-influence-tag",
         )
+
+        self._report(
+            shared_line_results,
+            "No contracted effect calls share a line with other statements",
+            "Contracted effect calls sharing a line with other statements:",
+            severity=Severity.ERROR,
+            category="call-shares-line",
+        )
+        if self.audit_shared_lines:
+            self._report(
+                audit_shared_line_results,
+                "No uncontracted effect calls share a line with other statements",
+                "Uncontracted effect calls sharing a line with other statements:",
+                severity=Severity.WARNING,
+                category="audit-call-shares-line",
+            )
 
     def _validate_parameterised_triggers(self):
         """A scripted trigger or effect must not take $PARAM$ arguments."""
@@ -852,10 +960,29 @@ class Validator(BaseValidator):
         self._build_tag_set()
         self._validate_callers()
         self._validate_parameterised_triggers()
+        # A scripted effect file is read as a contract source and as a caller.
+        self._report(
+            sorted(set(self._unreadable)),
+            "All scripted effect inputs were readable",
+            "Inputs that could not be read, so nothing in them was validated:",
+            severity=Severity.ERROR,
+            category="unreadable-input",
+        )
+
+
+def _add_extra_args(parser):
+    parser.add_argument(
+        "--audit-shared-lines",
+        action="store_true",
+        dest="audit_shared_lines",
+        help="Also warn on uncontracted scripted effect calls that share a line "
+        "with other statements; contracted calls remain errors",
+    )
 
 
 if __name__ == "__main__":
     run_validator_main(
         Validator,
         "Validate scripted effect parameters in Millennium Dawn mod",
+        extra_args_fn=_add_extra_args,
     )
