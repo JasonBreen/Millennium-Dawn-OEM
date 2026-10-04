@@ -437,7 +437,7 @@ def test_pull_request_grouping_reads_changed_files_only():
 
 def test_pull_request_validation_keeps_writable_reporting_on_the_base_ref():
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
-    assert "branches" not in _workflow_trigger(CI_WORKFLOW)["pull_request"]
+    assert _workflow_trigger(CI_WORKFLOW)["pull_request"]["branches"] == ["main"]
     assert "workflow_dispatch" not in CI_WORKFLOW.read_text(encoding="utf-8")
     detect = workflow["jobs"]["detect-changes"]
     resolver = next(
