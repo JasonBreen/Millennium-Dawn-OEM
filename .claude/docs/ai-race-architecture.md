@@ -17,8 +17,26 @@ Corporate History and AI Race modes are independent. National corporate state is
 granted, or cleared by the race. Existing AI technologies, including the later AGI technology,
 retain their dates and effects.
 
-Competing laboratories, model releases, crises, and broader policy systems are outside this
-implementation.
+Model releases, crises, and broader policy systems are outside this implementation. The only
+laboratory content is the USA lab layer below.
+
+## USA laboratory contributions and events
+
+While Corporate History is on, `ai_race_rebuild_country_metrics` adds four USA laboratories to the
+USA externals on both USA paths. Each lab's axes are 0 to 10. The race only reads them.
+
+| Lab       | Weight | Capability | Compute | Talent | Deployment              | Control               | Confidence |
+| --------- | ------ | ---------- | ------- | ------ | ----------------------- | --------------------- | ---------- |
+| Anthropic | x2     | frontier   | cloud   |        | commercial              | governance            | safety     |
+| OpenAI    | x2     | frontier   | compute |        | deployment              | mission               | safety     |
+| xAI       | x2     | frontier   | compute | talent | deployment              |                       | standing   |
+| Palantir  | x1     |            |         |        | government + commercial | deployment governance |            |
+
+`USA_ai_race_lab_pulse` runs from the monthly participant loop for the USA under Corporate History
+Full. It fires at most one of nine dated events a month (`events/USA_ai_race_lab_events.txt`), each
+once, and only while that lab's chain is initialized. The events belong to the USA corporate layer:
+their options change lab axes through each lab's clamp, never race state, so the race stays the
+sole writer of `ai_race_*`.
 
 ## Stages and centralized values
 
