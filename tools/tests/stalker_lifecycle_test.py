@@ -33,6 +33,7 @@ class StalkerScript(TargetScript):
     def __init__(self):
         super().__init__()
         for filename in (
+            "99_STALKER_scripted_effects.txt",
             "99_STALKER_world_effects.txt",
             "99_STALKER_strelok_effects.txt",
             "99_STALKER_intel_effects.txt",
@@ -85,10 +86,17 @@ class StalkerScript(TargetScript):
             return self.actor
         if name == "event_target:STALKER_zone_event_target":
             return 698
+        if isinstance(name, str) and name.startswith("PREV."):
+            scope, key = self._scope(name, identifier)
+            return scope.get(key, 0)
         return super().value(name, identifier)
 
     def condition_statement(self, statement, identifier):
         key, _, operand = statement
+        if key == "PREV":
+            return self.scoped(
+                operand, identifier, self.value(key, identifier), condition=True
+            )
         if key.isdigit():
             return self.scoped(operand, identifier, int(key), condition=True)
         if key == "event_target:STALKER_zone_event_target":
@@ -97,14 +105,18 @@ class StalkerScript(TargetScript):
 
     def execute_statement(self, statement, identifier):
         key, _, operand = statement
-        if key == "every_country":
+        if key in {"set_state_flag", "clr_state_flag"}:
+            super().execute_statement(
+                (key.replace("state", "country"), "=", operand), identifier
+            )
+        elif key == "every_country":
             limits = next(body for name, _, body in operand if name == "limit")
             body = [entry for entry in operand if entry[0] != "limit"]
             for country, data in self.countries.items():
                 if "controller" not in data and data["exists"]:
                     if self.scoped(limits, identifier, country, condition=True):
                         self.scoped(body, identifier, country)
-        elif key in {"ROOT", "event_target:STALKER_zone_event_target"}:
+        elif key in {"ROOT", "PREV", "event_target:STALKER_zone_event_target"}:
             self.scoped(operand, identifier, self.value(key, identifier))
         elif key == "FROM":
             self.scoped(operand, identifier, 698)
@@ -358,6 +370,84 @@ def test_floor_after_action_report_revalidates_phase_and_control(
     before = variables.copy()
     script.hidden_option("FBC.3", f"FBC.3.{option}", "events/FBC.txt")
     assert variables == before
+
+
+@pytest.mark.parametrize("containment", [50, 25, 15])
+@pytest.mark.parametrize("shelter", [False, True])
+@pytest.mark.parametrize("shielding", [False, True])
+def test_emission_stability_uses_the_unscoped_temp_across_controller_scope(
+    containment, shelter, shielding
+):
+    script = StalkerScript()
+    state = script.countries[698]
+    state["vars"].update(
+        STALKER_zone_containment=containment,
+        STALKER_zone_activity=40,
+        STALKER_zone_mutants=10,
+        STALKER_emission_stability=0.4,
+    )
+    if shelter:
+        state["flags"]["STALKER_emission_shelter"] = None
+    if shielding:
+        script.countries[2]["flags"]["STALKER_psi_shielding"] = None
+    script.run("STALKER_trigger_emission", 698)
+    expected = 0 if shielding else (-0.005 if shelter else -0.02)
+    if not shielding and containment - (0 if shelter else 5) < 20:
+        expected -= 0.01
+    assert script.countries[2]["vars"].get("stability", 0) == pytest.approx(expected)
+    assert "STALKER_emission_shelter" not in state["flags"]
+    assert state["vars"]["STALKER_emission_stability"] == 0.4
+
+
+@pytest.mark.parametrize("phase", range(7))
+@pytest.mark.parametrize("controlled", [False, True])
+def test_kept_wing_team_gets_a_followup_report_and_can_be_archived(phase, controlled):
+    script = StalkerScript()
+    script.country(1182, tag="---")
+    script.countries[1182]["controller"] = script.actor if controlled else 2
+    variables = script.countries[script.actor]["vars"]
+    variables.update(
+        FBC_wing_phase=phase,
+        FBC_wing_committed=1,
+        FBC_response_capacity=1,
+        FBC_floor_knowledge=0,
+        FBC_wing_knowledge=12,
+        FBC_containment_integrity=50,
+        FBC_exposure=10,
+    )
+    option = _option("FBC.5", "FBC.5.b", "events/FBC.txt")
+    trigger = next(body for key, _, body in option if key == "trigger")
+    allowed = phase in {2, 3} and controlled
+    assert script.condition(trigger, script.actor) == allowed
+    before = variables.copy()
+    script.hidden_option("FBC.5", "FBC.5.b", "events/FBC.txt")
+    if not allowed:
+        assert variables == before
+        assert not script.events
+        return
+    assert script.events == [(script.actor, "FBC.5")]
+    dispatch = next(
+        body
+        for key, _, body in next(
+            body for key, _, body in option if key == "hidden_effect"
+        )[0][2]
+        if key == "country_event"
+    )
+    assert ("days", "=", "35") in dispatch
+    assert variables["FBC_wing_phase"] == 3
+    assert variables["FBC_wing_committed"] == 1
+    assert variables["FBC_response_capacity"] == 1
+    report = _event("FBC.5", "events/FBC.txt")
+    report_trigger = next(body for key, _, body in report if key == "trigger")
+    assert script.condition(report_trigger, script.actor)
+    script.hidden_option("FBC.5", "FBC.5.a", "events/FBC.txt")
+    assert variables["FBC_wing_phase"] == 4
+    assert variables["FBC_wing_committed"] == 0
+    assert variables["FBC_response_capacity"] == 2
+    before = variables.copy()
+    script.hidden_option("FBC.5", "FBC.5.b", "events/FBC.txt")
+    assert variables == before
+    assert len(script.events) == 1
 
 
 def test_lost_2012_carrier_reaches_the_new_controller_once_after_the_due_date():
