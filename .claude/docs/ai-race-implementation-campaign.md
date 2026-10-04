@@ -1,10 +1,10 @@
-# Great AI Race Claude Implementation Campaign
+# AI Race Claude Implementation Campaign
 
 Status: phased implementation prompts. Run one prompt at a time. Stop after its acceptance report and obtain approval before beginning the next phase.
 
-Architecture contract: `.claude/docs/great-ai-race-architecture.md`
+Architecture contract: `.claude/docs/ai-race-architecture.md`
 
-Reference study: `.claude/docs/great-ai-race-reference-study.md`
+Reference study: `.claude/docs/ai-race-reference-study.md`
 
 ## How to use this campaign
 
@@ -16,7 +16,7 @@ Do not concatenate the prompts into one large implementation request. The campai
 
 Prepend this block to every implementation prompt:
 
-> You are working in the Millennium Dawn OEM repository. Read `AGENTS.md`, `.claude/docs/great-ai-race-architecture.md`, `.claude/docs/great-ai-race-reference-study.md`, and every repository reference named by this phase before editing. Preserve the architecture's ownership ledger: existing national, corporate, technology, economic, and AI Core systems remain authoritative; the Great AI Race reads them through adapters. TNO and TFR are mechanical references only. Do not copy their script, localisation, art, fonts, layouts, or assets. Use tabs, repository naming, English-only localisation, scoped validation, and the established monthly singleton. Never use a daily global poll, `every_country`, GUI-owned AI logic, event targets in scripted GUI, `pre-commit run --all-files`, or an unseeded/random fixed-sum balancer. Do not edit non-English localisation, `resources/`, or `Changelog.txt`. Do not commit, push, open a PR, or mutate GitHub unless separately authorized. Preserve unrelated worktree changes.
+> You are working in the Millennium Dawn OEM repository. Read `AGENTS.md`, `.claude/docs/ai-race-architecture.md`, `.claude/docs/ai-race-reference-study.md`, and every repository reference named by this phase before editing. Preserve the architecture's ownership ledger: existing national, corporate, technology, economic, and AI Core systems remain authoritative; the AI Race reads them through adapters. TNO and TFR are mechanical references only. Do not copy their script, localisation, art, fonts, layouts, or assets. Use tabs, repository naming, English-only localisation, scoped validation, and the established monthly singleton. Never use a daily global poll, `every_country`, GUI-owned AI logic, event targets in scripted GUI, `pre-commit run --all-files`, or an unseeded/random fixed-sum balancer. Do not edit non-English localisation, `resources/`, or `Changelog.txt`. Do not commit, push, open a PR, or mutate GitHub unless separately authorized. Preserve unrelated worktree changes.
 
 ### Required handoff after every phase
 
@@ -82,7 +82,7 @@ Confirm that the architecture remains implementable against the current checkout
 ### Acceptance
 
 - No unresolved question changes the implementation of Prompt 1.
-- Corporate History and Great AI Race mode combinations are explicitly orthogonal.
+- Corporate History and AI Race mode combinations are explicitly orthogonal.
 - No TNO/TFR source is named as a dependency at runtime.
 - No gameplay file is changed.
 
@@ -96,22 +96,22 @@ The current checkout resolves Prompt 1's previously open implementation choices 
 - Phase 1 external slots remain unset and therefore read as zero. Prompt 2 replaces that cleared scaffolding with read-only canonical adapters.
 - The replay guard is encoded as `year * 4 + quarter index`.
 - `ai_race_rebuild_derived_state` is pure and repeatable. Only the scheduled quarterly wrapper advances the epoch, dirty counter, and future interval state.
-- The enabled-mode gate is at the singleton caller, so Off performs no Great AI Race callback and exposes no debug category.
+- The enabled-mode gate is at the singleton caller, so Off performs no AI Race callback and exposes no debug category.
 - Phase 1 contains no event namespace or event file.
 
 ### Prompt 1-3 file allowlist
 
 | Prompt | Files allowed to change                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1      | `common/game_rules/00_game_rules.txt`; `common/on_actions/MD_on_actions.txt`; `common/scripted_triggers/MD_great_ai_race_triggers.txt`; `common/scripted_effects/00_great_ai_race_effects.txt`; `common/decisions/categories/MD_great_ai_race_categories.txt`; `common/decisions/MD_great_ai_race_decisions.txt`; `localisation/english/MD_game_rules_l_english.yml`; `localisation/english/MD_great_ai_race_l_english.yml`; these three planning documents |
-| 2      | Great AI Race trigger/effect/debug/localisation files above; explicitly approved read-only owner files may be inspected but not edited                                                                                                                                                                                                                                                                                                                      |
-| 3      | Great AI Race category/decision/trigger/effect/localisation files plus new `common/scripted_guis/01_great_ai_race_scripted_gui.txt`, `interface/MD_great_ai_race.gui`, and `interface/MD_great_ai_race.gfx`                                                                                                                                                                                                                                                 |
+| 1      | `common/game_rules/00_game_rules.txt`; `common/on_actions/MD_on_actions.txt`; `common/scripted_triggers/MD_ai_race_triggers.txt`; `common/scripted_effects/00_ai_race_effects.txt`; `common/decisions/categories/MD_ai_race_categories.txt`; `common/decisions/MD_ai_race_decisions.txt`; `localisation/english/MD_game_rules_l_english.yml`; `localisation/english/MD_ai_race_l_english.yml`; these three planning documents |
+| 2      | AI Race trigger/effect/debug/localisation files above; explicitly approved read-only owner files may be inspected but not edited                                                                                                                                                                                                                                                                                                                      |
+| 3      | AI Race category/decision/trigger/effect/localisation files plus new `common/scripted_guis/01_ai_race_scripted_gui.txt`, `interface/MD_ai_race.gui`, and `interface/MD_ai_race.gfx`                                                                                                                                                                                                                                                 |
 
 ## Prompt 1 - Headless Kernel and Runtime Modes
 
 ### Objective
 
-Implement the smallest headless Great AI Race kernel for USA and China. There is no normal player dashboard in this phase.
+Implement the smallest headless AI Race kernel for USA and China. There is no normal player dashboard in this phase.
 
 ### Required scope
 
@@ -142,13 +142,13 @@ Implement the smallest headless Great AI Race kernel for USA and China. There is
 Expected primary files:
 
 - `common/game_rules/00_game_rules.txt`
-- `common/scripted_triggers/MD_great_ai_race_triggers.txt`
-- `common/scripted_effects/00_great_ai_race_effects.txt`
+- `common/scripted_triggers/MD_ai_race_triggers.txt`
+- `common/scripted_effects/00_ai_race_effects.txt`
 - `common/on_actions/MD_on_actions.txt`
-- `common/decisions/categories/MD_great_ai_race_categories.txt`
-- `common/decisions/MD_great_ai_race_decisions.txt`
+- `common/decisions/categories/MD_ai_race_categories.txt`
+- `common/decisions/MD_ai_race_decisions.txt`
 - `localisation/english/MD_game_rules_l_english.yml`
-- `localisation/english/MD_great_ai_race_l_english.yml`
+- `localisation/english/MD_ai_race_l_english.yml`
 
 If a `tools/tests` regression test is added, run the full `python -m pytest` gate required by repository policy.
 

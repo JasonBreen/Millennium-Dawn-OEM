@@ -1,6 +1,6 @@
 # France — Mistral AI Corporate History (2023–2025)
 
-Scope: OEM Corporate History module modelling Mistral AI from founding through the Mixtral open-weight release, the Microsoft partnership, its largest funding rounds, Le Chat and government adoption, and the ASML-led round, ending in a 2025 capstone. Not a new focus tree, not Great AI Race. English localisation only. Namespace `FRA_mistral_events`. Root prefix `FRA_mistral`. Owner tag `FRA` (`original_tag = FRA` in every trigger).
+Scope: OEM Corporate History module modelling Mistral AI from founding through the Mixtral open-weight release, the Microsoft partnership, its largest funding rounds, Le Chat and government adoption, and the ASML-led round, ending in a 2025 capstone. Not a new focus tree, not AI Race. English localisation only. Namespace `FRA_mistral_events`. Root prefix `FRA_mistral`. Owner tag `FRA` (`original_tag = FRA` in every trigger).
 
 Mistral is founded in April 2023, so like Anduril this is a short chain: six visible beats and a capstone, all inside three calendar years. No content is scheduled in 2026 or later.
 
@@ -10,7 +10,7 @@ Game-rule semantics:
 - Outcomes Only: silent reconstruction picks the historical route at each beat, then applies exactly one capstone idea after 2025-12-31
 - Off: creates no `FRA_mistral_*` state, schedules nothing, changes nothing outside this chain
 
-Do not write any other chain's identifiers (FRA Corporate Systems/Nokia, AI Core, OpenAI, Anthropic, Palantir, Anduril, Great AI Race). This chain declares no `allowed_reads` and no `allowed_writes` — it is self-contained, distinct from `FRA_corporate_systems`, which already owns France's Alcatel/Nokia 5G sovereignty arc.
+Do not write any other chain's identifiers (FRA Corporate Systems/Nokia, AI Core, OpenAI, Anthropic, Palantir, Anduril, AI Race). This chain declares no `allowed_reads` and no `allowed_writes` — it is self-contained, distinct from `FRA_corporate_systems`, which already owns France's Alcatel/Nokia 5G sovereignty arc.
 
 ## State model (persistent axes, 0..10)
 

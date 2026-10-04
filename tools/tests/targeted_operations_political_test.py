@@ -4,7 +4,7 @@ from datetime import date
 from pathlib import Path
 
 import pytest
-from great_ai_race_state_model_test import _named_block, _parse_race_script
+from ai_race_state_model_test import _named_block, _parse_race_script
 from targeted_operations_helpers_test import TargetedScript
 
 ROOT = Path(__file__).resolve().parents[2]

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from great_ai_race_state_model_test import _parse_race_script
+from ai_race_state_model_test import _parse_race_script
 from targeted_operations_core_test import TargetScript
 
 ROOT = Path(__file__).resolve().parents[2]

@@ -1,6 +1,6 @@
-# Great AI Race Architecture
+# AI Race Architecture
 
-"Great AI Race" is a working title. The final player-facing name has not been selected.
+The player-facing name is the AI Race.
 
 Status: four-stage race and strategic computer planning in the OEM fork. Natural campaign balance
 and UI acceptance remain separate from source and regression-test evidence.
@@ -22,7 +22,7 @@ implementation.
 
 ## Stages and centralized values
 
-`common/scripted_effects/01_great_ai_race_capacity_effects.txt` owns the stage requirement table.
+`common/scripted_effects/01_ai_race_capacity_effects.txt` owns the stage requirement table.
 Costs are billions of dollars. Work is completed monthly work after entry, not calendar catch-up.
 
 | Stage          | Entry from | AI tech | Work months | Upfront |
@@ -132,7 +132,7 @@ its term after the corresponding zero charge enters weekly accounting.
 The first package cannot bill before seven days after approval. Later packages use the country's
 existing weekly cadence. A next-bill day prevents repeated weekly callbacks from collecting twice.
 
-Accounting entrypoints in `02_great_ai_race_finance_effects.txt`:
+Accounting entrypoints in `02_ai_race_finance_effects.txt`:
 
 - `ai_race_refresh_finance_totals`: pure outstanding and installment projections.
 - `ai_race_refresh_finance_expense`: adds the fixed obligation after MD's inflation adjustment.
@@ -163,7 +163,7 @@ treasury remaining after upfront investment sufficient for a year of expenses.
 
 ## Strategic computer planning
 
-`04_great_ai_race_ai_effects.txt` owns the controller and `MD_great_ai_race_ai.txt` owns declarative
+`04_ai_race_ai_effects.txt` owns the controller and `MD_ai_race_ai.txt` owns declarative
 AI strategies. Policy state uses `ai_race_ai_*`. Preparation has its own
 `global.ai_race_ai_countries` registry and never initializes a public stage or grants technology.
 
@@ -265,7 +265,7 @@ commitments.
 
 One Decisions dashboard shows national progress, current physical requirements, benefits, rank,
 next investment, and financing. The public leaderboard lives in its own International Systems
-tab, The Great AI Race (`01_international_ai_race_gui.txt`, `MD_international_ai_race.gui`): every
+tab, The AI Race (`01_international_ai_race_gui.txt`, `MD_international_ai_race.gui`): every
 ranked participant's stage and capability, the first Frontier AI finisher, and a status line for
 Off, before 2016, no participants, and Outcomes Only. It refreshes on `ai_race_gui_dirty`, and
 opening it calls `ai_race_refresh_gui` only while the race is enabled, so Off creates no state.
@@ -283,7 +283,7 @@ delegates all gameplay to the authoritative transaction.
 The first terminal transaction sends one global announcement. Human terminal finishers receive a
 national completion report. Notification options have no gameplay payload.
 
-All shared English strings remain in `MD_great_ai_race_l_english.yml`. The UI uses Emergency AI
+All shared English strings remain in `MD_ai_race_l_english.yml`. The UI uses Emergency AI
 Financing, Outstanding AI Financing, and Capacity Shortfall. Explicit Ready/Shortfall labels
 prevent rounded percentage displays from promising eligibility.
 

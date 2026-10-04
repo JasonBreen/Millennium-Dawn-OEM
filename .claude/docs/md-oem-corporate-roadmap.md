@@ -12,7 +12,7 @@ Existing implementations have proven this architecture:
 - **Tier 1 U.S. Corporate Systems & AI Industry Core** (`USA_ai_core`, `USA_oem` real-options economic layer).
 - **National Corporate History Chains** (USA, CAN, CHI, FIN, FRA, GER, GBR, JAP, POL, RUS, SWE, TAI, UKR).
 - **The Linux Ecosystem & Open Source Adapters** (`MD_linux_system`).
-- **The Great AI Race Subsystem** (Phase 1 Architecture).
+- **The AI Race Subsystem** (Phase 1 Architecture).
 
 This roadmap outlines the next major horizons for the OEM corporate layer, expanding into critical supply-chain chokepoints, multilateral frontier tech competition, sovereign state capitalism, defense tech, clean energy, and bio-industrial power.
 
@@ -47,7 +47,7 @@ All new modules must strictly adhere to the established MD-OEM architectural sta
 |                       MD-OEM CORPORATE & INDUSTRIAL ROADMAP                   |
 +-------------------------------------------------------------------------------+
 | 1. Semiconductor Chokepoints (ASML, Samsung, SK Hynix, Rapidus)               |
-| 2. The Great AI Race: Multilateral Expansion (China, Europe, Gulf States)    |
+| 2. The AI Race: Multilateral Expansion (China, Europe, Gulf States)    |
 | 3. Critical Minerals, Gigafactories & EV Transition (Lithium, CATL, BYD)      |
 | 4. Defense-Tech Revolution & Space Commercialization (Anduril, SpaceX)        |
 | 5. Sovereign Wealth Funds & Geoeconomic Statecraft (PIF, Temasek, CFIUS)      |
@@ -92,7 +92,7 @@ While Taiwan (`TAI`) and the US (`USA`) are currently represented, the physical 
 
 ---
 
-### Pillar 2: The Great AI Race — Multilateral Expansion (Phases 2 & 3)
+### Pillar 2: The AI Race — Multilateral Expansion (Phases 2 & 3)
 
 Extending the global frontier race beyond the United States into major international hubs:
 
@@ -206,7 +206,7 @@ Industrial-scale biotechnology driving macroeconomic growth and national crisis 
 | :--- | :--- | :--- | :--- |
 | **Phase 1** | **Netherlands: ASML Lithography** | `HOL` chain: DUV/EUV progression, Zeiss/Cymer supply links, export controls | **Immediate (Tier 1)** |
 | **Phase 1** | **South Korea: Samsung & SK Hynix** | `KOR` chain: Memory dominance, HBM packaging, 3nm foundry, Chaebol dashboard | **Immediate (Tier 1)** |
-| **Phase 2** | **Great AI Race: China & Europe** | `CHI` & `FRA`/`GBR`/`GER` adapters for AI Race: Huawei, Baidu, Mistral, EuroHPC | **High (Tier 1/2)** |
+| **Phase 2** | **AI Race: China & Europe** | `CHI` & `FRA`/`GBR`/`GER` adapters for AI Race: Huawei, Baidu, Mistral, EuroHPC | **High (Tier 1/2)** |
 | **Phase 2** | **Japan: Rapidus & Materials** | `JAP` chain update: Tokyo Electron, photoresist controls, Rapidus 2nm project | **High (Tier 2)** |
 | **Phase 3** | **Critical Minerals & Battery Gigafactories** | Global resource layer: Lithium/Cobalt/Rare Earths, CATL, BYD, Tesla, Northvolt | **Medium (Tier 2)** |
 | **Phase 3** | **Defense-Tech & Space Expansion** | `USA`/`TUR`/`KOR` chains: Anduril, SpaceX/Starlink, Baykar, Hanwha Aerospace | **Medium (Tier 2)** |

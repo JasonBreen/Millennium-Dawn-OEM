@@ -7,19 +7,19 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-EFFECTS_PATH = ROOT / "common" / "scripted_effects" / "00_great_ai_race_effects.txt"
+EFFECTS_PATH = ROOT / "common" / "scripted_effects" / "00_ai_race_effects.txt"
 PROGRESSION_PATH = (
-    ROOT / "common" / "scripted_effects" / "03_great_ai_race_progression_effects.txt"
+    ROOT / "common" / "scripted_effects" / "03_ai_race_progression_effects.txt"
 )
-TRIGGERS_PATH = ROOT / "common" / "scripted_triggers" / "MD_great_ai_race_triggers.txt"
+TRIGGERS_PATH = ROOT / "common" / "scripted_triggers" / "MD_ai_race_triggers.txt"
 ON_ACTIONS_PATH = ROOT / "common" / "on_actions" / "MD_on_actions.txt"
 GAME_RULES_PATH = ROOT / "common" / "game_rules" / "00_game_rules.txt"
-DECISIONS_PATH = ROOT / "common" / "decisions" / "MD_great_ai_race_decisions.txt"
+DECISIONS_PATH = ROOT / "common" / "decisions" / "MD_ai_race_decisions.txt"
 GAME_RULES_LOC_PATH = ROOT / "localisation" / "english" / "MD_game_rules_l_english.yml"
-RACE_LOC_PATH = ROOT / "localisation" / "english" / "MD_great_ai_race_l_english.yml"
-RACE_GUI_PATH = ROOT / "interface" / "MD_great_ai_race.gui"
+RACE_LOC_PATH = ROOT / "localisation" / "english" / "MD_ai_race_l_english.yml"
+RACE_GUI_PATH = ROOT / "interface" / "MD_ai_race.gui"
 SCRIPTED_LOC_PATH = (
-    ROOT / "common" / "scripted_localisation" / "01_great_ai_race_localisation.txt"
+    ROOT / "common" / "scripted_localisation" / "01_ai_race_localisation.txt"
 )
 
 COUNTRY_CAPABILITIES = (
@@ -426,7 +426,7 @@ class RaceScript:
         self.triggers.update(
             _parse_race_script(
                 (
-                    ROOT / "common/scripted_triggers/MD_great_ai_race_ai_triggers.txt"
+                    ROOT / "common/scripted_triggers/MD_ai_race_ai_triggers.txt"
                 ).read_text(encoding="utf-8")
             )
         )
