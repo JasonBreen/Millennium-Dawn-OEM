@@ -626,7 +626,19 @@ def test_variable_keys_gui_handlers_and_categories_are_not_calls(mod_root):
         "common/scripted_guis/ZZZ_windows.txt",
         "scripted_gui = { ZZZ_window = { "
         "triggers = { ZZZ_button_click_enabled = { always = yes } } "
-        "effects = { ZZZ_button_click = { ZZZ_start = yes ZZZ_gui_missing = yes } } } }\n",
+        "effects = { ZZZ_button_click = { ZZZ_start = yes ZZZ_gui_missing = yes } } "
+        "dynamic_lists = { ZZZ_grid = { array = ZZZ_rows } } } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/raids/ZZZ_raids.txt",
+        "types = { ZZZ_raid = { visible = { ZZZ_ready = yes } success_factors = { "
+        "success = { ZZZ_factor = { scope = country weight = 1 } } } } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/ai_strategy/ZZZ_ai.txt",
+        "ZZZ_ai_plan = { enable = { ZZZ_ready = yes } }\n",
     )
     write_under_str(
         mod_root,

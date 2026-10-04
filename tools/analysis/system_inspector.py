@@ -75,6 +75,10 @@ DEFINITION_RULES = (
     ("mio", "common/military_industrial_organization/organizations/", 0),
     ("character", "common/characters/", 1),
     ("focus", "common/national_focus/", 1),
+    ("raid_category", "common/raids/categories/", 1),
+    ("raid", "common/raids/", 1),
+    ("ai_strategy", "common/ai_strategy/", 0),
+    ("ai_strategy_plan", "common/ai_strategy_plans/", 0),
 )
 # Kinds whose names other files reference by bare token, so hooks and dependencies are meaningful.
 LINKED_KINDS = (
@@ -115,7 +119,7 @@ EVENT_TYPES = {
 VARIABLE_EFFECT_RE = re.compile(
     r"(?:set|add_to|subtract_from|multiply|divide|modulo|clamp|round)_(?:temp_)?variable"
 )
-GUI_HANDLER_BLOCKS = {"effects", "triggers", "properties"}
+GUI_HANDLER_BLOCKS = {"effects", "triggers", "properties", "dynamic_lists"}
 KEY_BLOCK_RE = re.compile(r"([A-Za-z0-9_.@:\-^]+)\s*=\s*\{|\{|\}")
 TOKEN_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_.]*[A-Za-z0-9_]")
 # Event ids are always namespace.number, which keeps `id = TAG` in other blocks out.
@@ -296,8 +300,11 @@ def scripted_calls(rel: str, code: str) -> set[str]:
         if definition_depth is not None and len(parents) <= definition_depth:
             return False
         parent = parents[-1][0] if parents else ""
+        # Raids name their custom success factors under success_factors = { success = { ... } }.
+        factor = len(parents) > 1 and parents[-2][0] == "success_factors"
         return not (
-            VARIABLE_EFFECT_RE.fullmatch(parent)
+            factor
+            or VARIABLE_EFFECT_RE.fullmatch(parent)
             or (gui and parent in GUI_HANDLER_BLOCKS)
         )
 
