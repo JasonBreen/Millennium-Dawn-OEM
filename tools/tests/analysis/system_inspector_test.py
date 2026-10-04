@@ -801,3 +801,93 @@ def test_stalker_preset_leaves_saint_kitts_out():
     assert re.search(
         preset.path_pattern, "common/scripted_effects/00_STALKER_zone_effects.txt"
     )
+
+
+def test_leader_traits_are_definitions_not_calls(mod_root):
+    write_under_str(
+        mod_root,
+        "common/country_leader/ZZZ_traits.txt",
+        "leader_traits = { ZZZ_trait = { random = no } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/unit_leader/ZZZ_traits.txt",
+        "leader_traits = { ZZZ_general = { type = land } }\n",
+    )
+    report = inspect_mod(mod_root)
+    assert report["unresolved"]["calls"] == ["ZZZ_missing_effect"]
+    assert report["definitions"]["country_leader_trait"] == ["ZZZ_trait"]
+    assert report["definitions"]["unit_leader_trait"] == ["ZZZ_general"]
+
+
+def test_hyphenated_loc_keys_and_tokens_are_whole(mod_root):
+    write_under_str(
+        mod_root,
+        "common/characters/ZZZ.txt",
+        "characters = { ZZZ_hans-peter = { name = ZZZ_hans-peter } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "history/countries/YYY - Why.txt",
+        "recruit_character = ZZZ_hans-peter\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/ZZZ_tooltips.txt",
+        "ZZZ_tooltips = { custom_effect_tooltip = ZZZ_less_-10_tt }\n",
+    )
+    report = inspect_mod(mod_root)
+    assert "ZZZ_hans-peter" in report["hooks"]["history/countries/YYY - Why.txt"]
+    assert "ZZZ_less_-10_tt" in report["unresolved"]["localisation"]
+    assert "ZZZ_less_" not in report["unresolved"]["localisation"]
+
+
+def test_a_same_named_outside_definition_is_not_a_hook(mod_root):
+    write_under_str(
+        mod_root,
+        "common/national_focus/ZZZ_focus.txt",
+        "focus_tree = { focus = { id = shared_focus_name } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/ideas/outside_ideas.txt",
+        "ideas = { country = { shared_focus_name = { } } }\n",
+    )
+    assert "common/ideas/outside_ideas.txt" not in inspect_mod(mod_root)["hooks"]
+    write_under_str(
+        mod_root,
+        "common/ideas/outside_ideas.txt",
+        "ideas = { country = { shared_focus_name = { "
+        "allowed = { has_completed_focus = shared_focus_name } } } }\n",
+    )
+    assert inspect_mod(mod_root)["hooks"]["common/ideas/outside_ideas.txt"] == [
+        "shared_focus_name"
+    ]
+
+
+def test_scoped_loc_calls_count_and_commented_ones_do_not(mod_root):
+    write_under_str(
+        mod_root,
+        "common/scripted_localisation/ZZZ_loc.txt",
+        "defined_text = { name = ZZZ_flavor text = { localization_key = zzz.2.t } }\n"
+        "defined_text = { name = ZZZ_display text = { localization_key = zzz.2.t } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "localisation/english/outside_l_english.yml",
+        '﻿l_english:\n live: "Shows [ROOT.ZZZ_flavor]"\n' ' # old: "[ZZZ_display]"\n',
+    )
+    hooks = inspect_mod(mod_root)["hooks"]
+    assert hooks["localisation/english/outside_l_english.yml"] == ["ZZZ_flavor"]
+
+
+def test_randomize_variable_writes_a_global(mod_root):
+    write_under_str(
+        mod_root,
+        "common/scripted_effects/ZZZ_roll.txt",
+        "ZZZ_roll = { randomize_variable = { var = global.ZZZ_roll min = 0 max = 10 } "
+        "if = { limit = { check_variable = { global.ZZZ_roll > 5 } } } }\n",
+    )
+    assert (
+        "ZZZ_roll" not in inspect_mod(mod_root)["unresolved"]["globals_never_written"]
+    )

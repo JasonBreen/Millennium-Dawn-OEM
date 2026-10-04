@@ -82,6 +82,8 @@ DEFINITION_RULES = (
     ("ai_equipment", "common/ai_equipment/", 1),
     ("balance_of_power", "common/bop/", 0),
     ("technology", "common/technologies/", 1),
+    ("country_leader_trait", "common/country_leader/", 1),
+    ("unit_leader_trait", "common/unit_leader/", 1),
 )
 # Kinds whose names other files reference by bare token, so hooks and dependencies are meaningful.
 LINKED_KINDS = (
@@ -104,11 +106,16 @@ LINKED_KINDS = (
     "raid_category",
     "technology",
     "balance_of_power",
+    "country_leader_trait",
+    "unit_leader_trait",
 )
 
 STRING_OR_COMMENT_RE = re.compile(r'"(?:\\.|[^"\\])*"|#[^\n]*')
 LOG_RE = re.compile(r'\blog\s*=\s*"(?:\\.|[^"\\])*"')
-LOC_SUBSTITUTION_RE = re.compile(r"\[([A-Za-z_][A-Za-z0-9_]*)\]")
+# [name] or a scoped [ROOT.name]; the last link is the defined text.
+LOC_SUBSTITUTION_RE = re.compile(
+    r"\[(?:[A-Za-z_][A-Za-z0-9_:^]*\.)*([A-Za-z_][A-Za-z0-9_]*)\]"
+)
 FIELD_RE = re.compile(
     r"(?P<key>[A-Za-z0-9_.@:\-^]+)\s*=\s*"
     r'(?P<value>"(?:\\.|[^"\\])*"|[^\s{}=]+|\{)'
@@ -130,7 +137,7 @@ VARIABLE_EFFECT_RE = re.compile(
 GUI_HANDLER_BLOCKS = {"effects", "triggers", "properties", "dynamic_lists"}
 KEY_BLOCK_RE = re.compile(r"([A-Za-z0-9_.@:\-^]+)\s*=\s*\{|\{|\}")
 # Names may start with a digit (10_percent_government_popularity) but need a letter, so numbers are not tokens.
-TOKEN_RE = re.compile(r"(?=[0-9_.]*[A-Za-z])[A-Za-z0-9_][A-Za-z0-9_.]*[A-Za-z0-9_]")
+TOKEN_RE = re.compile(r"(?=[0-9_.\-]*[A-Za-z])[A-Za-z0-9_][A-Za-z0-9_.\-]*[A-Za-z0-9_]")
 # Event ids are always namespace.number, which keeps `id = TAG` in other blocks out.
 EVENT_ID_RE = re.compile(r"[A-Za-z0-9_]+\.[A-Za-z0-9_.]+")
 SPRITE_RE = re.compile(r'name\s*=\s*"?(GFX_[A-Za-z0-9_]+)"?')
@@ -142,7 +149,7 @@ FIRED_EVENT_RE = re.compile(
 LOC_REF_RE = re.compile(
     r"\b(?:title|desc|tooltip|custom_effect_tooltip|custom_modifier_tooltip|localization_key|localisation_key|text"
     r"|pdx_tooltip(?:_delayed)?|buttonText)"
-    r"\s*=\s*\"?([A-Za-z_][A-Za-z0-9_.]*)\"?"
+    r"\s*=\s*\"?([A-Za-z_][A-Za-z0-9_.\-]*)\"?"
 )
 FLAG_SET_RE = re.compile(
     r"\bset_(country|global|state|character|project|unit_leader|mio)_flag\s*=\s*"
@@ -155,7 +162,7 @@ FLAG_READ_RE = re.compile(
 GLOBAL_READ_RE = re.compile(r"\bglobal\.([A-Za-z_][A-Za-z0-9_]*)")
 LOC_GLOBAL_READ_RE = re.compile(r"\[\?global\.([A-Za-z_][A-Za-z0-9_]*)")
 GLOBAL_WRITE_RE = re.compile(
-    r"\b(?:set|add_to|subtract_from|multiply|divide|clamp|round|modulo)_variable"
+    r"\b(?:set|add_to|subtract_from|multiply|divide|clamp|round|modulo|randomize)_variable"
     r"(?:_to_random)?\s*=\s*\{\s*"
     r"(?:var\s*=\s*)?global\.([A-Za-z_][A-Za-z0-9_]*)"
     r"|\b(?:add_to|remove_from|resize|clear)_array\s*=\s*\{?\s*(?:array\s*=\s*)?"
@@ -210,6 +217,17 @@ def read_tree(root: Path) -> Tree:
             tree.raw[rel] = text
             tree.code[rel] = text if rel.endswith(".yml") else reference_code(text)
     return tree
+
+
+def loc_substitutions(text: str) -> set[str]:
+    """Bracketed calls in active localisation values; comments are skipped."""
+    names: set[str] = set()
+    for line in text.splitlines():
+        if "[" in line:
+            for match in STRING_OR_COMMENT_RE.finditer(line):
+                if match.group(0).startswith('"'):
+                    names.update(LOC_SUBSTITUTION_RE.findall(match.group(0)))
+    return names
 
 
 def is_identifier(name: str) -> bool:
@@ -348,18 +366,18 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
 
     defined_by: dict[str, dict[str, str]] = defaultdict(dict)
     system_defs: dict[str, set[str]] = defaultdict(set)
-    # Each system definition uses up one occurrence of its own name, of whatever kind.
-    system_refs: Counter[str] = Counter()
+    # Each definition uses up one occurrence of its own name in its file, of whatever kind.
+    file_defs: dict[str, Counter[str]] = defaultdict(Counter)
     for rel, code in tree.code.items():
         for kind, names in definitions_in(rel, code).items():
             for name in names:
                 defined_by[kind].setdefault(name, rel)
                 if rel in inside:
                     system_defs[kind].add(name)
-                    if kind != "loc":
-                        system_refs[name] -= 1
+                if kind != "loc":
+                    file_defs[rel][name] += 1
     loc_calls = {
-        rel: set(LOC_SUBSTITUTION_RE.findall(text))
+        rel: loc_substitutions(text)
         for rel, text in tree.raw.items()
         if rel.endswith(".yml")
     }
@@ -386,6 +404,10 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
     }
     token_sets = {rel: set(tokens) for rel, tokens in tokens_by_file.items()}
 
+    def names_it(rel: str, name: str) -> bool:
+        defined = file_defs[rel][name]
+        return not defined or tokens_by_file[rel].count(name) > defined
+
     files = defaultdict(list)
     for rel in system:
         kind = next((k for k, p, _ in DEFINITION_RULES if rel.startswith(p)), None)
@@ -405,13 +427,19 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
         if rel.endswith(".yml"):
             used = sorted(loc_calls[rel] & system_defs.get("scripted_loc", set()))
         else:
-            used = sorted(token_sets[rel] & linked_system.keys())
+            used = sorted(
+                name
+                for name in token_sets[rel] & linked_system.keys()
+                if names_it(rel, name)
+            )
         if used:
             hooks[rel] = used
 
     script_files = [rel for rel in system if not rel.endswith(".yml")]
+    system_refs: Counter[str] = Counter()
     for rel in script_files:
         system_refs.update(tokens_by_file[rel])
+        system_refs.subtract(file_defs[rel])
     system_tokens = {name for name, count in system_refs.items() if count > 0}
     system_loc_calls = set().union(
         *(loc_calls[rel] for rel in system if rel.endswith(".yml"))
@@ -511,7 +539,7 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
             "No prefix given: calls, flags and globals are only checked against a prefix."
         )
 
-    # A definition is used when another file names it, or its own file names it twice.
+    # A definition is used when a file names it more often than that file defines it.
     candidates = {
         name: defined_by[kind][name]
         for kind in ("scripted_effect", "scripted_trigger")
@@ -527,7 +555,7 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
     referenced = set()
     for rel, names in token_sets.items():
         for name in names & candidates.keys():
-            if rel != candidates[name] or tokens_by_file[rel].count(name) > 1:
+            if names_it(rel, name):
                 referenced.add(name)
     if stems:
         skipped = [
