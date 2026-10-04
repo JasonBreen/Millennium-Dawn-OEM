@@ -54,6 +54,7 @@ temp variable `ef_i`, and a program track id in `ef_t`.
 | `econ_forum_last_tech_firms`| Technology firms among them                     |
 | `econ_forum_council`        | Council track + 1; 0 until launched             |
 | `econ_forum_message`        | This cycle's summit message (0 none, 1-3)       |
+| `econ_forum_audience`       | This cycle's audience (0 global market, 1-4)    |
 | `econ_forum_controversial`  | This cycle's controversial speaker (0 none, 1-7) |
 | `econ_forum_star`           | This cycle's star speaker: track + 1 (0 none)   |
 | `econ_forum_room_seats`     | Private room seats given this cycle (max 4)     |
@@ -198,6 +199,8 @@ instead of holding a second summit that year.
 | Each track on the program that interests them   | + track prestige × 0.1 |
 | Led a delegation to each other forum last cycle | -10 each               |
 | Young Global Leaders member, WEF only           | +10                    |
+| The power the host courts / rest of its audience | +25 / +15             |
+| Not in the courted audience                     | -5                     |
 | More prestigious forum within one month         | -20                    |
 
 A roll under the chance attends. A roll under 40% of the chance sends the head of
@@ -273,6 +276,30 @@ tooltip shows each forum's message, council and last ceremonies.
 | Open for Business  | `econ_forum_message_open`     | Every invited AI government +10 attendance; score +3                                   |
 | Strategic Autonomy | `econ_forum_message_autonomy` | Core members and the host's faction +15 attendance, every other AI invitee -10          |
 | Media Blitz        | `econ_forum_message_media`    | $2B more; score +5, and prestige moves 50% toward the score instead of 30%, both ways |
+
+### Audience
+
+From #4802's Visegrád design, a host can court one audience a summit (`econ_forum_audience`, reset when preparation
+opens). The default is the global market: no one courted.
+
+| Id  | Audience           | Courted power | Rest of the audience        |
+| --- | ------------------ | ------------- | --------------------------- |
+| 1   | The European Union | None          | EU members (`EU_member`)    |
+| 2   | The United States  | USA           | NATO members (`NATO_member`) |
+| 3   | China              | CHI           | China's faction             |
+| 4   | Russia             | SOV           | Russia's faction            |
+
+- **Player host:** `econ_forum_audience_eu`, `_usa`, `_china` or `_russia`, 25 PP each while preparing. A host cannot
+  court itself.
+- **AI host:** a state-led host with over 75 PP pays 25 PP in `econ_forum_ai_prepare`: China when it is under Western
+  sanctions or a full BRICS member, else the EU when it is an EU member, else the United States when it is in NATO,
+  else Russia when it holds Russia above 50 opinion. The WEF courts no one.
+- **Invitations:** `econ_forum_invite_audience` sends standing invitations to the courted power and the audience's
+  regional and greater powers, unless at war with the host or boycotting.
+- **Attendance:** the courted power +25, the rest of the audience +15, every other AI invitee -5.
+- **Summit:** `econ_forum_meet_audience`, after the protests, adds 2 per attending audience government, up to 6
+  (`ef_audience_points`). Each gives the host and takes from it `econ_forum_courted` (+10, decay 1).
+- The Forums tab row tooltip shows who each forum courts.
 
 ### Private Room
 
@@ -536,6 +563,7 @@ player-only, since AI attendance comes from invitations.
   forum's.
 - Speakers: `5 per speaker + prestige × 0.1`.
 - Company delegations: 0.2 each, up to 10.
+- Audience: 2 per attending audience government, up to 6.
 - Counter-programming: +5 when a more prestigious forum met the month before, or
   earlier in the same month's tick.
 - Score = the sum, capped at 100. New prestige = `old + (score - old) × 0.3`.
@@ -673,7 +701,7 @@ belongs to the fork's targeted operations screen, which upstream does not have.
 | 4   | The Forums tab through the scaffolder, delegation agendas, guest actions, invitation requests, AI guests      | #440, #442, #458-#461            |
 | 5   | Walkouts and the breakaway forum                                                                               | #463, #464                       |
 | 6   | Signing ceremonies, councils, summit messages, the tab tooltip                                                 | #466-#468, #470, #471            |
-| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, reports, protests, history, Summer Davos, corporate delegations, Young Global Leaders | #473, #474, #476-#478, #481-#483, #485, #493, #494 |
+| 7   | Speakers, private rooms, milestones and the Davos reform, sideline talks, reports, protests, history, Summer Davos, corporate delegations, Young Global Leaders, audience focus | #473, #474, #476-#478, #481-#483, #485, #493, #494, this PR |
 
 Port notes:
 

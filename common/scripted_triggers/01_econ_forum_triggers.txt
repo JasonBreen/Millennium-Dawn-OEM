@@ -408,3 +408,45 @@ econ_forum_new_champions_can_meet = {
 		}
 	}
 }
+
+# Country scope, temp ef_i. The government is the power the host courts this cycle: the United States, China or Russia.
+econ_forum_is_audience_power = {
+	OR = {
+		AND = {
+			check_variable = { global.econ_forum_audience^ef_i = 2 }
+			original_tag = USA
+		}
+		AND = {
+			check_variable = { global.econ_forum_audience^ef_i = 3 }
+			original_tag = CHI
+		}
+		AND = {
+			check_variable = { global.econ_forum_audience^ef_i = 4 }
+			original_tag = SOV
+		}
+	}
+}
+
+# Country scope, temp ef_i. The government belongs to the audience the host courts this cycle: the EU, or the courted
+# power and its partners (NATO for the United States, the faction for China and Russia).
+econ_forum_in_audience = {
+	OR = {
+		econ_forum_is_audience_power = yes
+		AND = {
+			check_variable = { global.econ_forum_audience^ef_i = 1 }
+			has_idea = EU_member
+		}
+		AND = {
+			check_variable = { global.econ_forum_audience^ef_i = 2 }
+			has_idea = NATO_member
+		}
+		AND = {
+			check_variable = { global.econ_forum_audience^ef_i = 3 }
+			is_in_faction_with = CHI
+		}
+		AND = {
+			check_variable = { global.econ_forum_audience^ef_i = 4 }
+			is_in_faction_with = SOV
+		}
+	}
+}
