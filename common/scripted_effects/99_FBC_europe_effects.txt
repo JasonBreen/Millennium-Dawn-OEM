@@ -1,0 +1,145 @@
+# Provisional coordinator: the Commission president when that office is filled,
+# otherwise France, Germany, or Belgium. The customs sites stay Brussels and the Ruhr.
+FBC_schedule_eu_customs = {
+	if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			NOT = { has_global_flag = FBC_eu_dispatched }
+		}
+		if = {
+			limit = {
+				has_global_flag = EU_commission_taken_flag
+				NOT = { check_variable = { global.eu_commission = EUU.id } }
+			}
+			var:global.eu_commission = {
+				if = {
+					limit = {
+						exists = yes
+						has_idea = EU_member
+					}
+					country_event = { id = FBC.10 days = 90 }
+					set_variable = { global.FBC_eu_recipient = THIS.id }
+					set_global_flag = FBC_eu_dispatched
+				}
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_global_flag = FBC_eu_dispatched }
+				country_exists = FRA
+				FRA = { has_idea = EU_member }
+			}
+			FRA = {
+				set_variable = { global.FBC_eu_recipient = THIS.id }
+				country_event = { id = FBC.10 days = 90 }
+			}
+			set_global_flag = FBC_eu_dispatched
+		}
+		if = {
+			limit = {
+				NOT = { has_global_flag = FBC_eu_dispatched }
+				country_exists = GER
+				GER = { has_idea = EU_member }
+			}
+			GER = {
+				set_variable = { global.FBC_eu_recipient = THIS.id }
+				country_event = { id = FBC.10 days = 90 }
+			}
+			set_global_flag = FBC_eu_dispatched
+		}
+		if = {
+			limit = {
+				NOT = { has_global_flag = FBC_eu_dispatched }
+				country_exists = BEL
+				BEL = { has_idea = EU_member }
+			}
+			BEL = {
+				set_variable = { global.FBC_eu_recipient = THIS.id }
+				country_event = { id = FBC.10 days = 90 }
+			}
+			set_global_flag = FBC_eu_dispatched
+		}
+	}
+}
+
+FBC_release_eu_team = {
+	if = {
+		limit = { check_variable = { global.FBC_eu_committed > 0 } }
+		set_variable = { global.FBC_eu_committed = 0 }
+		set_variable = { global.FBC_eu_capacity = 1 }
+	}
+}
+
+FBC_commit_eu_team = {
+	if = {
+		limit = {
+			check_variable = { global.FBC_eu_capacity > 0 }
+			check_variable = { global.FBC_eu_committed < 1 }
+		}
+		set_variable = { global.FBC_eu_capacity = 0 }
+		set_variable = { global.FBC_eu_committed = 1 }
+	}
+}
+
+FBC_clamp_eu_desk = {
+	clamp_variable = { var = global.FBC_eu_knowledge min = 0 max = 100 }
+	clamp_variable = { var = global.FBC_eu_exposure min = 0 max = 100 }
+	clamp_variable = { var = global.FBC_eu_capacity min = 0 max = 1 }
+}
+
+FBC_grant_shared_findings = {
+	if = {
+		limit = { NOT = { has_dynamic_modifier = { modifier = FBC_shared_findings } } }
+		add_dynamic_modifier = { modifier = FBC_shared_findings days = 180 }
+	}
+}
+
+FBC_monthly_europe_pulse = {
+	if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			has_variable = global.FBC_eu_phase
+			check_variable = { global.FBC_eu_phase = 0 }
+		}
+		FBC_schedule_eu_customs = yes
+	}
+	if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			OR = {
+				check_variable = { global.FBC_eu_phase = 0 }
+				check_variable = { global.FBC_eu_phase = 2 }
+				check_variable = { global.FBC_eu_phase = 3 }
+				check_variable = { global.FBC_eu_phase = 5 }
+				check_variable = { global.FBC_eu_phase = 6 }
+			}
+			has_variable = global.FBC_eu_recipient
+			NOT = { var:global.FBC_eu_recipient = { exists = yes } }
+		}
+		FBC_release_eu_team = yes
+		set_variable = { global.FBC_eu_phase = 0 }
+		clear_variable = global.FBC_eu_recipient
+		clr_global_flag = FBC_eu_dispatched
+		FBC_schedule_eu_customs = yes
+	}
+	if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			TOP_enabled = yes
+			NOT = { check_variable = { global.TOP_group_state^40 = 0 } }
+		}
+		for_each_scope_loop = {
+			array = global.EU_member
+			if = {
+				limit = {
+					is_ai = no
+					NOT = { has_country_flag = FBC_top_eu_lead }
+				}
+				set_country_flag = FBC_top_eu_lead
+				set_temp_variable = { TOP_arg_amount = 15 }
+				set_temp_variable = { TOP_arg_group = 40 }
+				TOP_add_organization_lead = yes
+			}
+		}
+	}
+}

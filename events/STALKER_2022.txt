@@ -45,7 +45,11 @@ country_event = {
 					}
 					ROOT = {
 						set_variable = { global.STALKER_2022_battle_route = 1 }
-						add_political_power = -50
+						if = {
+							limit = { PREV = { check_variable = { STALKER_zone_military > 39 } } }
+							add_political_power = -25
+						}
+						else = { add_political_power = -50 }
 					}
 					add_to_variable = { STALKER_zone_containment = 20 }
 					add_to_variable = { STALKER_zone_stalkers = -10 }
@@ -61,7 +65,12 @@ country_event = {
 			}
 			modifier = {
 				factor = 0
+				has_political_power < 25
+			}
+			modifier = {
+				factor = 0
 				has_political_power < 50
+				event_target:STALKER_zone_event_target = { NOT = { check_variable = { STALKER_zone_military > 39 } } }
 			}
 			modifier = {
 				factor = 0
@@ -152,6 +161,39 @@ country_event = {
 			modifier = {
 				add = -15
 				event_target:STALKER_zone_event_target = { check_variable = { STALKER_zone_bandits > 49 } }
+			}
+		}
+	}
+
+	option = {
+		name = STALKER.30.e
+		trigger = {
+			has_global_flag = STALKER_strelok_opposed
+			NOT = { has_global_flag = STALKER_2022_outcome_resolved }
+			NOT = { check_variable = { global.STALKER_2022_battle_route > 0 } }
+		}
+		log = "[GetDateText]: [This.GetName]: STALKER.30.e executed"
+		custom_effect_tooltip = STALKER.30.e_tt
+		hidden_effect = {
+			event_target:STALKER_zone_event_target = {
+				if = {
+					limit = {
+						NOT = { has_global_flag = STALKER_2022_outcome_resolved }
+						NOT = { check_variable = { global.STALKER_2022_battle_route > 0 } }
+						STALKER_is_active_zone_anchor = yes
+						is_controlled_by = ROOT
+					}
+					ROOT = { set_variable = { global.STALKER_2022_battle_route = 4 } }
+					add_to_variable = { STALKER_zone_military = 5 }
+					STALKER_clamp_zone_society = yes
+				}
+			}
+		}
+		ai_chance = {
+			base = 25
+			modifier = {
+				add = 25
+				event_target:STALKER_zone_event_target = { check_variable = { STALKER_zone_containment > 49 } }
 			}
 		}
 	}
@@ -349,6 +391,10 @@ country_event = {
 			limit = { check_variable = { global.STALKER_2022_battle_route = 1 } }
 			STALKER_trigger_military_sealing_outcome = yes
 		}
+		else_if = {
+			limit = { check_variable = { global.STALKER_2022_battle_route = 4 } }
+			STALKER_trigger_strelok_outcome = yes
+		}
 		else = { STALKER_trigger_kaimanov_outcome = yes }
 		STALKER_schedule_2022_aftermath = yes
 	}
@@ -363,4 +409,15 @@ news_event = {
 	is_triggered_only = yes
 
 	option = { name = STALKER.36.a }
+}
+
+news_event = {
+	id = STALKER.39
+	title = STALKER.39.t
+	desc = STALKER.39.d
+	picture = GFX_nuclear_power_plant
+	major = yes
+	is_triggered_only = yes
+
+	option = { name = STALKER.39.a }
 }

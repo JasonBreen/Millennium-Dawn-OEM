@@ -30,6 +30,7 @@ names and events against the in-game text as documented by the S.T.A.L.K.E.R. Wi
 - The Spark follows Scar and seeks the Shining Zone. Noon is former Monolith under Strider.
 - The IPSF is the International Perimeter Security Force.
 - The in-game scientists are the Ecologists.
+- Dated history on Zone 1 lives in the Zone Legend subsystem. 2006 is the second disaster and does not start management. Management still begins in 2008. In 2011 Clear Sky assaults the plant. Stopping Strelok sets `STALKER_strelok_turned_back` and the 2012 raid does not happen. The canon assault sets `STALKER_strelok_marked`. Helping him through sets `STALKER_strelok_remembers`. Scar survives all three. Operation Fairway follows the 2012 result by about four months, and a route of 1 can hold Pripyat. SIRCAA, under Dalin, and Colonel Korshunov's Ward can be chartered in 2018. From December 2010 the random Clear Sky collapse does not fire. The X-Lab option that disables the Brain Scorcher sets none of these flags. Names used here, checked against the S.T.A.L.K.E.R. Wiki: Lebedev, Scar, Major Alexander Degtyarev, Colonel Kovalsky, Operation Fairway, Dalin.
 - Faction Wars and Tearlings come from GSC's pre-launch Discord event in the official
   S.T.A.L.K.E.R. server (announcements of 9, 11 and 17 November 2024). SIRCAA asked every
   faction to bring in Tearlings, common crystals long logged as worthless. The Free Stalkers
@@ -92,10 +93,14 @@ names and events against the in-game text as documented by the S.T.A.L.K.E.R. Wi
   `99_STALKER_intel_effects.txt`.
 - **Faction Wars (150–159):** `STALKER_faction_wars.txt`; loc `_faction_wars_`;
   `99_STALKER_faction_wars_effects.txt`.
+- **Strelok (160–169):** `STALKER_strelok.txt`; loc `_strelok_`;
+  `99_STALKER_strelok_effects.txt`. The 2012 raid uses events 160–162. The rest of the block stays with that raid.
+- **Zone Legend (170–181):** `STALKER_legend.txt`; loc `_legend_`;
+  `99_STALKER_legend_effects.txt`. 2006, 2011 and 2018 come from the yearly file. Fairway and Strider are scheduled from the 2012 result. Fairway, Clear Sky and SIRCAA use distinct delayed relays (178, 180 and 181). The monthly legend pulse recovers Fairway after its 120-day delay, Strider after his 60-day delay, Clear Sky after its 70-day delay and SIRCAA after its 80-day delay if their event carriers disappear. It also redelivers unresolved choices when Zone control changes.
 
 Localisation file names are `MD_STALKER_<subsystem>_l_english.yml`.
 
-The next free block is 160–169. Decision categories are one file each in
+Events 182–189 remain available in the Legend block. The next free block is 190–199. Decision categories are one file each in
 `common/decisions/categories/00_STALKER_*_category.txt`. Dynamic modifiers are one file per
 subsystem in `common/dynamic_modifiers/00_STALKER_*dynamic_modifiers.txt`.
 
@@ -105,11 +110,12 @@ These are the only places the scenario touches files other MD content owns. Keep
 where possible; they are what an upstream port has to carry.
 
 - `common/on_actions/MD_on_actions.txt`: `STALKER_monthly_pulse = yes` in the monthly block.
-- `common/scripted_effects/00_yearly_effects.txt`: the 2008 Zone activation and the 2022 dispatch
-  of STALKER.34 and STALKER.35.
+- `common/scripted_effects/00_yearly_effects.txt`: the 2006 dispatch of STALKER.170, the 2008
+  Zone activation, the 2011 dispatch of STALKER.171 and STALKER.172, the 2012 dispatch of
+  STALKER.160, the 2018 dispatch of STALKER.176, and the 2022 dispatch of STALKER.34 and STALKER.35.
 - `common/scripted_effects/00_startup_effects.txt`: the artifact MIO in MD's starting MIO sizing.
 - Targeted Operations: `STALKER_check_top_zone_crisis` calls in the TOP proposal and resolution
-  effects, `STALKER_apply_top_organization_sabotage` in the organization resolution, the three
+  effects, `STALKER_apply_top_organization_sabotage` in the organization resolution, the four
   STALKER organizations in `tools/data/targeted_operations.json`, and
   `[STALKER_top_package_zone_crisis]` in the package-page localisation. See
   [Targeted Operations](targeted-operations.md).
