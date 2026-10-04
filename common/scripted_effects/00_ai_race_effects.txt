@@ -199,6 +199,34 @@ ai_race_usa_xai_contribution = {
 	}
 }
 
+# OpenAI axes are 0-10 and weighted x2, same as Anthropic.
+ai_race_usa_openai_contribution = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			has_country_flag = USA_openai_state_initialized
+		}
+		add_to_variable = { ai_race_capability_external = { value = USA_openai_frontier_capability multiply = 2 } }
+		add_to_variable = { ai_race_compute_external = { value = USA_openai_compute_independence multiply = 2 } }
+		add_to_variable = { ai_race_deployment_external = { value = USA_openai_deployment_reach multiply = 2 } }
+		add_to_variable = { ai_race_control_capacity_external = { value = USA_openai_mission_control multiply = 2 } }
+		add_to_variable = { ai_race_public_confidence_external = { value = USA_openai_safety_governance multiply = 2 } }
+	}
+}
+
+# Palantir builds operational software, not frontier models, so it adds deployment and control at half the lab weight.
+ai_race_usa_palantir_contribution = {
+	if = {
+		limit = {
+			corporate_history_enabled = yes
+			has_country_flag = USA_palantir_corporate_state_initialized
+		}
+		add_to_variable = { ai_race_deployment_external = USA_palantir_corporate_government_reach }
+		add_to_variable = { ai_race_deployment_external = USA_palantir_corporate_commercial_reach }
+		add_to_variable = { ai_race_control_capacity_external = USA_palantir_corporate_deployment_governance }
+	}
+}
+
 ai_race_rebuild_country_metrics = {
 	if = {
 		limit = { ai_race_active = yes }
@@ -265,6 +293,8 @@ ai_race_rebuild_country_metrics = {
 				}
 				set_variable = { ai_race_capability_national_input = ai_race_capability_external }
 				ai_race_usa_anthropic_contribution = yes
+				ai_race_usa_openai_contribution = yes
+				ai_race_usa_palantir_contribution = yes
 				ai_race_usa_xai_contribution = yes
 				set_variable = { ai_race_capability_lab_overlay = ai_race_capability_external }
 				subtract_from_variable = { ai_race_capability_lab_overlay = ai_race_capability_national_input }
@@ -297,6 +327,8 @@ ai_race_rebuild_country_metrics = {
 				# Other externals left to 0 in fallback
 				set_variable = { ai_race_capability_national_input = ai_race_capability_external }
 				ai_race_usa_anthropic_contribution = yes
+				ai_race_usa_openai_contribution = yes
+				ai_race_usa_palantir_contribution = yes
 				ai_race_usa_xai_contribution = yes
 				set_variable = { ai_race_capability_lab_overlay = ai_race_capability_external }
 				subtract_from_variable = { ai_race_capability_lab_overlay = ai_race_capability_national_input }
