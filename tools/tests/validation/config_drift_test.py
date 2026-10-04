@@ -435,7 +435,7 @@ def test_pull_request_grouping_reads_changed_files_only():
     assert "< changed-files.txt" in script
 
 
-def test_stacked_pull_requests_keep_writable_reporting_on_the_default_branch():
+def test_stacked_pull_requests_keep_validation_read_only():
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
     trigger = _workflow_trigger(CI_WORKFLOW)["pull_request"]
     assert "branches" not in trigger
@@ -471,6 +471,8 @@ def test_stacked_pull_requests_keep_writable_reporting_on_the_default_branch():
 
     tools = workflow["jobs"]["tools-tests"]
     assert "workflow_dispatch" not in tools["if"]
+    for job in workflow["jobs"].values():
+        assert "write" not in job.get("permissions", {}).values()
 
     prepare = workflow["jobs"]["prepare-workspace"]
     save = next(
@@ -578,7 +580,7 @@ def test_mod_core_runs_extra_checks_after_batch():
     assert "MD_STAGED_FILES" in style["run"]
 
 
-def test_report_job_posts_comment_and_checks():
+def test_pull_request_report_only_publishes_an_artifact():
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
     report = workflow["jobs"]["report"]
     assert report["if"] == (
@@ -586,11 +588,11 @@ def test_report_job_posts_comment_and_checks():
         "needs.detect-changes.result == 'success' && "
         "needs.detect-changes.outputs.trusted-ref != '' }}"
     )
-    assert report["permissions"]["pull-requests"] == "write"
-    assert report["permissions"]["checks"] == "write"
+    assert report["permissions"] == {"contents": "read"}
     text = CI_WORKFLOW.read_text(encoding="utf-8")
-    assert "--post-comment" in text
-    assert "--checks-api" in text
+    assert "--post-comment" not in text
+    assert "--checks-api" not in text
+    assert "GITHUB_TOKEN:" not in text
     assert 'pattern: "*results"' in text
     assert any(step.get("name") == "Download changed files" for step in report["steps"])
     assert "full_suite == 'true'" in text
@@ -605,6 +607,12 @@ def test_report_job_posts_comment_and_checks():
         step for step in report["steps"] if step.get("name") == "Set up Python"
     )
     assert setup["uses"].startswith("actions/setup-python@")
+    coding_workflow = CI_WORKFLOW.parent / "coding-pipeline.yml"
+    trusted = yaml.safe_load(coding_workflow.read_text(encoding="utf-8"))
+    assert "pull_request_target" in _workflow_trigger(coding_workflow)
+    publisher = trusted["jobs"]["validation-report"]
+    assert publisher["permissions"]["checks"] == "write"
+    assert publisher["permissions"]["pull-requests"] == "write"
 
 
 def test_suite_gate_requires_every_validation_job():
@@ -631,7 +639,7 @@ def test_report_restores_baseline_and_supports_old_base_generators():
     script = next(
         step["run"]
         for step in report["steps"]
-        if step.get("name") == "Generate and post validation report"
+        if step.get("name") == "Generate validation report"
     )
     assert "--baseline-dir .validation_baseline" in script
     assert '--baseline-toolshash "$TOOLSHASH"' in script

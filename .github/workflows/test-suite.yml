@@ -982,8 +982,6 @@ jobs:
       needs.detect-changes.outputs.trusted-ref != '' }}
     permissions:
       contents: read
-      pull-requests: write
-      checks: write
     env:
       PR_NUMBER: ${{ needs.detect-changes.outputs.pr-number }}
       HEAD_SHA: >-
@@ -1046,9 +1044,8 @@ jobs:
           name: changed-files
           path: changed-files
 
-      - name: Generate and post validation report
+      - name: Generate validation report
         env:
-          GITHUB_TOKEN: ${{ github.token }}
           TOOLSHASH: ${{ steps.toolshash.outputs.hash }}
         run: |
           workflow_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
@@ -1061,7 +1058,6 @@ jobs:
             --workflow-run-url "$workflow_url"
             --github-repository "${{ github.repository }}"
             --validation-scope "$VALIDATION_SCOPE"
-            --checks-api
             --print
           )
           args+=(
@@ -1072,9 +1068,6 @@ jobs:
               python3 tools/generate_validation_report.py --help \
                 | grep -q -- '--changed-files'; then
             args+=(--changed-files changed-files/changed-files.txt)
-          fi
-          if [ -n "$PR_NUMBER" ]; then
-            args+=(--post-comment)
           fi
           python3 tools/generate_validation_report.py "${args[@]}"
 
