@@ -1,5 +1,5 @@
 import pytest
-from great_ai_race_state_model_test import _parse_race_script
+from ai_race_state_model_test import _parse_race_script
 from stalker_lifecycle_test import ROOT, StalkerScript, _event
 
 ROUTES = {
