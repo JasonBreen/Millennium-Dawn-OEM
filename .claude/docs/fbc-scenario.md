@@ -70,7 +70,8 @@ protocol, 5 Belgian national handling, 6 German national handling, 7 unresolved 
 
 - **Membership changes (T10):** pooled work (phases 2 and 3) needs the handling country to stay an EU member. If it
   leaves, `FBC_monthly_europe_pulse` releases the shared team, keeps the desk's knowledge and exposure, and returns the
-  case to intake under the current coordinator. A queued `FBC.11` for the old handler then fails its phase trigger.
+  case to intake under the current coordinator. `FBC.11` also requires its recipient to be an EU member when it fires, so a
+  handler that leaves between the pulse and the queued result gets nothing, and the next pulse resets the case.
   National handling (5 and 6) stays with the national service, which keeps the case and its costs. A handler that stops
   existing resets the case in every active phase, as before.
 - **Host changes:** each queued event stays bound to the country that received it, so a new Commission president does
