@@ -35,6 +35,7 @@ class StalkerScript(TargetScript):
         for filename in (
             "99_STALKER_world_effects.txt",
             "99_STALKER_strelok_effects.txt",
+            "99_STALKER_intel_effects.txt",
             "99_STALKER_faction_wars_effects.txt",
             "99_FBC_europe_effects.txt",
         ):
@@ -88,6 +89,8 @@ class StalkerScript(TargetScript):
 
     def condition_statement(self, statement, identifier):
         key, _, operand = statement
+        if key.isdigit():
+            return self.scoped(operand, identifier, int(key), condition=True)
         if key == "event_target:STALKER_zone_event_target":
             return self.scoped(operand, identifier, 698, condition=True)
         return super().condition_statement(statement, identifier)
@@ -184,9 +187,132 @@ def test_delegated_customs_records_and_recovers_an_annexed_handler(phase, tag, o
     script.countries[handler]["exists"] = False
     script.run("FBC_monthly_europe_pulse", 1)
     assert script.globals["FBC_eu_phase"] == 0
-    assert "FBC_eu_recipient" not in script.globals
+    assert script.globals["FBC_eu_recipient"] == script.tag("FRA")
     assert script.globals["FBC_eu_capacity"] == 1
     assert (script.tag("FRA"), "FBC.10") in script.events
+
+
+@pytest.mark.parametrize("coordinator", ["commission", "FRA", "GER", "BEL"])
+def test_initial_customs_dispatch_retries_only_after_the_recipient_disappears(
+    coordinator,
+):
+    script = StalkerScript()
+    script.globals["FBC_eu_phase"] = 0
+    if coordinator == "commission":
+        recipient = script.actor
+        script.countries[recipient]["ideas"] = {"EU_member"}
+        script.global_flags["EU_commission_taken_flag"] = None
+        script.globals["eu_commission"] = recipient
+    else:
+        recipient = script.tag(coordinator)
+        for tag in ("FRA", "GER", "BEL"):
+            if tag == coordinator:
+                break
+            script.countries[script.tag(tag)]["exists"] = False
+    script.run("FBC_schedule_eu_customs", script.actor)
+    assert script.events == [(recipient, "FBC.10")]
+    assert script.globals["FBC_eu_recipient"] == recipient
+    script.run("FBC_monthly_europe_pulse", script.actor)
+    assert len(script.events) == 1
+    script.countries[recipient]["exists"] = False
+    fallback = script.tag("IND")
+    script.global_flags["EU_commission_taken_flag"] = None
+    script.globals["eu_commission"] = fallback
+    script.run("FBC_monthly_europe_pulse", script.actor)
+    assert script.events[-1] == (fallback, "FBC.10")
+    assert script.globals["FBC_eu_recipient"] == fallback
+    assert len(script.events) == 2
+
+
+@pytest.mark.parametrize("option", ["a", "b", "c"])
+@pytest.mark.parametrize("invalid", ["controller", "zone_id", "inactive", "resolved"])
+def test_stale_raid_options_cannot_choose_a_route_or_charge_the_former_controller(
+    option, invalid
+):
+    script = StalkerScript()
+    script.actor = 2
+    script.countries[2]["vars"]["political_power"] = 100
+    body = _option("STALKER.161", f"STALKER.161.{option}", "events/STALKER_strelok.txt")
+    trigger = next(value for key, _, value in body if key == "trigger")
+    assert script.condition(trigger, script.actor)
+    if invalid == "controller":
+        script.countries[698]["controller"] = 3
+    elif invalid == "zone_id":
+        script.countries[698]["vars"]["STALKER_zone_id"] = 2
+    elif invalid == "inactive":
+        script.triggers["STALKER_is_active_zone_anchor"] = [("always", "=", "no")]
+    else:
+        script.global_flags["STALKER_2012_resolved"] = None
+    assert not script.condition(trigger, script.actor)
+    before = script.countries[698]["vars"].copy()
+    script.hidden_option(
+        "STALKER.161", f"STALKER.161.{option}", "events/STALKER_strelok.txt"
+    )
+    assert "STALKER_2012_route" not in script.globals
+    assert script.countries[2]["vars"]["political_power"] == 100
+    assert script.countries[698]["vars"] == before
+
+
+@pytest.mark.parametrize("mercenaries,intel,leader", [(39, 100, 11), (41, 0, 6)])
+def test_intel_drift_refreshes_the_leader_when_mercenaries_gain_or_lose_the_lead(
+    mercenaries, intel, leader
+):
+    script = StalkerScript()
+    script.globals["STALKER_active_zone_anchors"] = [698]
+    variables = script.countries[698]["vars"]
+    script.run("STALKER_initialize_zone_society", 698)
+    variables.update(
+        STALKER_zone_military=40,
+        STALKER_zone_mercenaries=mercenaries,
+        STALKER_zone_foreign_intel=intel,
+        STALKER_zone_exploitation=0,
+    )
+    script.countries[698]["flags"].update(
+        STALKER_mercenary_cooldown=None, STALKER_foreign_agents_cooldown=None
+    )
+    script.run("STALKER_update_zone_leader", 698)
+    assert variables["STALKER_zone_leader"] != leader
+    script.run("STALKER_monthly_intel_pulse", 1)
+    assert variables["STALKER_zone_leader"] == leader
+
+
+@pytest.mark.parametrize(
+    "case,event_id,option,active_phases,integrity_gain",
+    [
+        ("floor", "FBC.2", "c", {1, 2}, 5),
+        ("wing", "FBC.5", "a", {2, 3}, 4),
+    ],
+)
+@pytest.mark.parametrize("phase", range(7))
+def test_archive_reports_require_an_active_phase_and_reward_only_once(
+    case, event_id, option, active_phases, integrity_gain, phase
+):
+    script = StalkerScript()
+    script.country(1182, tag="---")
+    script.countries[1182]["controller"] = script.actor
+    variables = script.countries[script.actor]["vars"]
+    variables.update(FBC_floor_knowledge=0, FBC_wing_knowledge=0)
+    variables.update(
+        {
+            f"FBC_{case}_phase": phase,
+            f"FBC_{case}_knowledge": 20,
+            f"FBC_{case}_committed": 1,
+            "FBC_response_capacity": 1,
+            "FBC_containment_integrity": 50,
+            "FBC_exposure": 10,
+        }
+    )
+    body = _option(event_id, f"{event_id}.{option}", "events/FBC.txt")
+    trigger = next(value for key, _, value in body if key == "trigger")
+    assert script.condition(trigger, script.actor) == (phase in active_phases)
+    script.hidden_option(event_id, f"{event_id}.{option}", "events/FBC.txt")
+    assert variables[f"FBC_{case}_phase"] == (4 if phase in active_phases else phase)
+    assert variables["FBC_containment_integrity"] == 50 + (
+        integrity_gain if phase in active_phases else 0
+    )
+    before = variables.copy()
+    script.hidden_option(event_id, f"{event_id}.{option}", "events/FBC.txt")
+    assert variables == before
 
 
 def test_lost_2012_carrier_reaches_the_new_controller_once_after_the_due_date():

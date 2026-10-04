@@ -215,10 +215,22 @@ country_event = {
 		name = FBC.2.c
 		log = "[GetDateText]: [This.GetName]: FBC.2.c executed"
 		custom_effect_tooltip = FBC.2.c_tt
-		trigger = { check_variable = { FBC_floor_knowledge > 14 } }
+		trigger = {
+			check_variable = { FBC_floor_knowledge > 14 }
+			OR = {
+				check_variable = { FBC_floor_phase = 1 }
+				check_variable = { FBC_floor_phase = 2 }
+			}
+		}
 		hidden_effect = {
 			if = {
-				limit = { check_variable = { FBC_floor_knowledge > 14 } }
+				limit = {
+					check_variable = { FBC_floor_knowledge > 14 }
+					OR = {
+						check_variable = { FBC_floor_phase = 1 }
+						check_variable = { FBC_floor_phase = 2 }
+					}
+				}
 				set_variable = { FBC_floor_phase = 4 }
 				add_to_variable = { FBC_containment_integrity = 5 }
 				add_to_variable = { FBC_exposure = -4 }
@@ -456,14 +468,29 @@ country_event = {
 		name = FBC.5.a
 		log = "[GetDateText]: [This.GetName]: FBC.5.a executed"
 		custom_effect_tooltip = FBC.5.a_tt
-		trigger = { 1182 = { is_controlled_by = ROOT } }
+		trigger = {
+			1182 = { is_controlled_by = ROOT }
+			OR = {
+				check_variable = { FBC_wing_phase = 2 }
+				check_variable = { FBC_wing_phase = 3 }
+			}
+		}
 		hidden_effect = {
-			set_variable = { FBC_wing_phase = 4 }
-			add_to_variable = { FBC_containment_integrity = 4 }
-			add_to_variable = { FBC_exposure = -2 }
-			FBC_clamp_bureau = yes
-			FBC_release_wing_team = yes
-			FBC_refresh_bureau_factors = yes
+			if = {
+				limit = {
+					1182 = { is_controlled_by = ROOT }
+					OR = {
+						check_variable = { FBC_wing_phase = 2 }
+						check_variable = { FBC_wing_phase = 3 }
+					}
+				}
+				set_variable = { FBC_wing_phase = 4 }
+				add_to_variable = { FBC_containment_integrity = 4 }
+				add_to_variable = { FBC_exposure = -2 }
+				FBC_clamp_bureau = yes
+				FBC_release_wing_team = yes
+				FBC_refresh_bureau_factors = yes
+			}
 		}
 		ai_chance = {
 			base = 50
