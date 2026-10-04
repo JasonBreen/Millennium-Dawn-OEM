@@ -8,7 +8,6 @@ STALKER_schedule_fairway = {
 		limit = { NOT = { has_global_flag = STALKER_fairway_scheduled } }
 		set_global_flag = STALKER_fairway_scheduled
 		set_global_flag = { flag = STALKER_fairway_delay value = 1 days = 120 }
-		set_variable = { global.STALKER_legend_deliver = 174 }
 		if = {
 			limit = { country_exists = USA }
 			USA = { country_event = { id = STALKER.178 days = 120 } }
@@ -27,9 +26,13 @@ STALKER_monthly_legend_pulse = {
 			}
 			if = {
 				limit = {
-					has_variable = global.STALKER_2011_recipient
+					has_global_flag = STALKER_2011_dispatched
+					NOT = { has_global_flag = STALKER_2011_delay }
 					STALKER_2011_unresolved = yes
-					NOT = { is_controlled_by = var:global.STALKER_2011_recipient }
+					OR = {
+						NOT = { has_variable = global.STALKER_2011_recipient }
+						NOT = { is_controlled_by = var:global.STALKER_2011_recipient }
+					}
 				}
 				controller = {
 					set_variable = { global.STALKER_2011_recipient = THIS.id }
@@ -38,9 +41,13 @@ STALKER_monthly_legend_pulse = {
 			}
 			if = {
 				limit = {
-					has_variable = global.STALKER_sircaa_recipient
+					has_global_flag = STALKER_sircaa_dispatched
+					NOT = { has_global_flag = STALKER_sircaa_delay }
 					NOT = { has_variable = global.STALKER_sircaa_result }
-					NOT = { is_controlled_by = var:global.STALKER_sircaa_recipient }
+					OR = {
+						NOT = { has_variable = global.STALKER_sircaa_recipient }
+						NOT = { is_controlled_by = var:global.STALKER_sircaa_recipient }
+					}
 				}
 				controller = {
 					set_variable = { global.STALKER_sircaa_recipient = THIS.id }
@@ -57,6 +64,36 @@ STALKER_monthly_legend_pulse = {
 			NOT = { has_variable = global.STALKER_fairway_result }
 		}
 		STALKER_deliver_fairway = yes
+	}
+	STALKER_deliver_strider = yes
+}
+
+STALKER_deliver_strider = {
+	if = {
+		limit = {
+			STALKER_scenario_enabled = yes
+			has_global_flag = STALKER_strelok_opposed
+			NOT = { has_global_flag = STALKER_strider_delay }
+			NOT = { has_global_flag = STALKER_strider_told }
+		}
+		698 = {
+			if = {
+				limit = {
+					STALKER_is_active_zone_anchor = yes
+					check_variable = { STALKER_zone_id = 1 }
+					controller = { exists = yes }
+				}
+				set_global_flag = STALKER_strider_told
+				if = {
+					limit = { NOT = { has_variable = STALKER_zone_noon } }
+					add_to_variable = { STALKER_zone_noon = 10 }
+					clamp_variable = { var = STALKER_zone_noon min = 0 max = 100 }
+					STALKER_clamp_zone_society = yes
+					STALKER_target_zone = yes
+					controller = { country_event = STALKER.123 }
+				}
+			}
+		}
 	}
 }
 

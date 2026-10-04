@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from ai_race_state_model_test import _parse_race_script
 from stalker_lifecycle_test import ROOT, StalkerScript, _event
@@ -75,14 +77,20 @@ def test_surviving_relay_and_monthly_recovery_share_one_pending_choice():
 def test_dated_choices_follow_control_changes_until_resolved(event_id, blocked):
     script = _script()
     script.global_flags["STALKER_scar_survived"] = None
+    script.global_flags[
+        "STALKER_2011_dispatched" if event_id == 172 else "STALKER_sircaa_dispatched"
+    ] = None
     relay = next(
         body
-        for key, _, body in _event("STALKER.178", "events/STALKER_legend.txt")
+        for key, _, body in _event(
+            f"STALKER.{180 if event_id == 172 else 181}", "events/STALKER_legend.txt"
+        )
         if key == "immediate"
     )
-    script.globals["STALKER_legend_deliver"] = event_id
     script.execute(relay, 1)
     expected = [(2, f"STALKER.{event_id}")]
+    assert script.events == expected
+    script.execute(relay, 1)
     assert script.events == expected
     script.run("STALKER_monthly_legend_pulse", 2)
     assert script.events == expected
@@ -108,6 +116,8 @@ def test_dated_choices_follow_control_changes_until_resolved(event_id, blocked):
         script.run("STALKER_monthly_legend_pulse", 3)
     expected.append((3, f"STALKER.{event_id}"))
     assert script.events == expected
+    script.execute(relay, 1)
+    assert script.events == expected
     script.run("STALKER_monthly_legend_pulse", 3)
     assert script.events == expected
     script.actor = 3
@@ -121,13 +131,85 @@ def test_dated_choices_follow_control_changes_until_resolved(event_id, blocked):
     assert script.events == resolved_events
 
 
-def test_monthly_recovery_does_not_bypass_the_initial_dated_choice_delay():
+@pytest.mark.parametrize("year,day,event_id", [(2011, 11, 172), (2018, 21, 176)])
+def test_dated_choices_recover_lost_carriers_without_bypassing_delay(
+    year, day, event_id
+):
     script = _script()
-    script.global_flags["STALKER_2011_dispatched"] = None
-    script.global_flags["STALKER_sircaa_dispatched"] = None
+    script.goto(year, 1, 1)
+    scheduler = _parse_race_script(
+        (ROOT / "common/scripted_effects/00_yearly_effects.txt").read_text(
+            encoding="utf-8"
+        )
+    )[f"trigger_year_{year}_events"][0]
+    script.execute([scheduler], 1)
+    script.countries[1]["exists"] = False
+    script.countries[2]["exists"] = False
     script.countries[698]["controller"] = 3
+    script.goto(year, 3, day)
     script.run("STALKER_monthly_legend_pulse", 3)
-    assert not script.events
+    assert (3, f"STALKER.{event_id}") not in script.events
+    script.goto(year, 3, day + 1)
+    script.run("STALKER_monthly_legend_pulse", 3)
+    assert script.events.count((3, f"STALKER.{event_id}")) == 1
+    script.run("STALKER_monthly_legend_pulse", 3)
+    assert script.events.count((3, f"STALKER.{event_id}")) == 1
+
+
+@pytest.mark.parametrize("usa_exists", [False, True])
+@pytest.mark.parametrize("inactive", [False, True])
+def test_strider_recovers_after_the_carrier_is_lost(usa_exists, inactive):
+    script = _script()
+    script.countries[1]["exists"] = usa_exists
+    script.run("STALKER_apply_strelok_shutdown", 2)
+    script.countries[1]["exists"] = False
+    script.countries[2]["exists"] = False
+    script.countries[698]["controller"] = 3
+    script.goto(2012, 2, 29)
+    script.run("STALKER_monthly_legend_pulse", 3)
+    assert "STALKER_strider_told" not in script.global_flags
+    script.goto(2012, 3, 1)
+    script.triggers["STALKER_is_active_zone_anchor"] = [
+        ("always", "=", "no" if inactive else "yes")
+    ]
+    script.run("STALKER_monthly_legend_pulse", 3)
+    if inactive:
+        assert "STALKER_strider_told" not in script.global_flags
+        script.triggers["STALKER_is_active_zone_anchor"] = [("always", "=", "yes")]
+        script.run("STALKER_monthly_legend_pulse", 3)
+    assert "STALKER_strider_told" in script.global_flags
+    assert script.countries[698]["vars"]["STALKER_zone_noon"] == 10
+    assert script.events.count((3, "STALKER.123")) == 1
+    relay = next(
+        body
+        for key, _, body in _event("STALKER.179", "events/STALKER_legend.txt")
+        if key == "immediate"
+    )
+    before = script.events.copy()
+    script.execute(relay, 3)
+    script.run("STALKER_monthly_legend_pulse", 3)
+    assert script.events == before
+    assert script.countries[698]["vars"]["STALKER_zone_noon"] == 10
+
+
+@pytest.mark.parametrize("days,event_id", [(70, 172), (80, 176)])
+def test_dated_relays_keep_their_route_when_fairway_is_scheduled(days, event_id):
+    yearly = (ROOT / "common/scripted_effects/00_yearly_effects.txt").read_text(
+        encoding="utf-8"
+    )
+    relays = set(re.findall(rf"id = (STALKER\.\d+) days = {days} \}}", yearly))
+    assert len(relays) == 1
+    relay = next(
+        body
+        for key, _, body in _event(relays.pop(), "events/STALKER_legend.txt")
+        if key == "immediate"
+    )
+    script = _script()
+    script.run("STALKER_schedule_fairway", 2)
+    script.execute(relay, 1)
+    assert (2, f"STALKER.{event_id}") in script.events
+    assert (2, "STALKER.174") not in script.events
+    assert "STALKER_legend_deliver" not in script.globals
 
 
 @pytest.mark.parametrize("effect,flag", ROUTES.items())

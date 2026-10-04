@@ -448,8 +448,7 @@ news_event = {
 	option = { name = STALKER.177.a }
 }
 
-# Waits out the delay, then gives the dated choice to whoever holds the Zone.
-# global.STALKER_legend_deliver is 172 for the 2011 assault, 174 for Fairway, and 176 for SIRCAA.
+# Waits out the Fairway delay, then gives the choice to whoever holds the Zone.
 country_event = {
 	id = STALKER.178
 	hidden = yes
@@ -459,29 +458,7 @@ country_event = {
 
 	immediate = {
 		log = "[GetDateText]: [This.GetName]: STALKER.178 immediate executed"
-		698 = {
-			if = {
-				limit = {
-					STALKER_is_active_zone_anchor = yes
-					check_variable = { STALKER_zone_id = 1 }
-					controller = { exists = yes }
-				}
-				controller = {
-					if = {
-						limit = { check_variable = { global.STALKER_legend_deliver = 172 } }
-						set_variable = { global.STALKER_2011_recipient = THIS.id }
-						country_event = STALKER.172
-					}
-					else_if = {
-						limit = { check_variable = { global.STALKER_legend_deliver = 176 } }
-						set_variable = { global.STALKER_sircaa_recipient = THIS.id }
-						country_event = STALKER.176
-					}
-					else = { STALKER_deliver_fairway = yes }
-				}
-			}
-		}
-		set_variable = { global.STALKER_legend_deliver = 0 }
+		STALKER_deliver_fairway = yes
 	}
 }
 
@@ -498,19 +475,71 @@ country_event = {
 
 	immediate = {
 		log = "[GetDateText]: [This.GetName]: STALKER.179 immediate executed"
-		set_global_flag = STALKER_strider_told
+		STALKER_deliver_strider = yes
+	}
+}
+
+country_event = {
+	id = STALKER.180
+	hidden = yes
+	is_triggered_only = yes
+
+	trigger = {
+		STALKER_scenario_enabled = yes
+		STALKER_2011_unresolved = yes
+	}
+
+	immediate = {
+		log = "[GetDateText]: [This.GetName]: STALKER.180 immediate executed"
 		698 = {
 			if = {
 				limit = {
 					STALKER_is_active_zone_anchor = yes
-					NOT = { has_variable = STALKER_zone_noon }
+					check_variable = { STALKER_zone_id = 1 }
 					controller = { exists = yes }
+					NOT = { has_global_flag = STALKER_2011_delay }
+					OR = {
+						NOT = { has_variable = global.STALKER_2011_recipient }
+						NOT = { is_controlled_by = var:global.STALKER_2011_recipient }
+					}
 				}
-				add_to_variable = { STALKER_zone_noon = 10 }
-				clamp_variable = { var = STALKER_zone_noon min = 0 max = 100 }
-				STALKER_clamp_zone_society = yes
-				STALKER_target_zone = yes
-				controller = { country_event = STALKER.123 }
+				controller = {
+					set_variable = { global.STALKER_2011_recipient = THIS.id }
+					country_event = STALKER.172
+				}
+			}
+		}
+	}
+}
+
+country_event = {
+	id = STALKER.181
+	hidden = yes
+	is_triggered_only = yes
+
+	trigger = {
+		STALKER_scenario_enabled = yes
+		NOT = { has_variable = global.STALKER_sircaa_result }
+	}
+
+	immediate = {
+		log = "[GetDateText]: [This.GetName]: STALKER.181 immediate executed"
+		698 = {
+			if = {
+				limit = {
+					STALKER_is_active_zone_anchor = yes
+					check_variable = { STALKER_zone_id = 1 }
+					controller = { exists = yes }
+					NOT = { has_global_flag = STALKER_sircaa_delay }
+					OR = {
+						NOT = { has_variable = global.STALKER_sircaa_recipient }
+						NOT = { is_controlled_by = var:global.STALKER_sircaa_recipient }
+					}
+				}
+				controller = {
+					set_variable = { global.STALKER_sircaa_recipient = THIS.id }
+					country_event = STALKER.176
+				}
 			}
 		}
 	}

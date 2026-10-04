@@ -95,12 +95,12 @@ names and events against the in-game text as documented by the S.T.A.L.K.E.R. Wi
   `99_STALKER_faction_wars_effects.txt`.
 - **Strelok (160–169):** `STALKER_strelok.txt`; loc `_strelok_`;
   `99_STALKER_strelok_effects.txt`. The 2012 raid uses events 160–162. The rest of the block stays with that raid.
-- **Zone Legend (170–179):** `STALKER_legend.txt`; loc `_legend_`;
-  `99_STALKER_legend_effects.txt`. 2006, 2011 and 2018 come from the yearly file. Fairway and Strider are scheduled from the 2012 result. The monthly legend pulse recovers Fairway delivery after its 120-day delay if the event carrier disappears. It also redelivers unresolved Clear Sky and SIRCAA choices when Zone control changes after their initial delivery.
+- **Zone Legend (170–181):** `STALKER_legend.txt`; loc `_legend_`;
+  `99_STALKER_legend_effects.txt`. 2006, 2011 and 2018 come from the yearly file. Fairway and Strider are scheduled from the 2012 result. Fairway, Clear Sky and SIRCAA use distinct delayed relays (178, 180 and 181). The monthly legend pulse recovers Fairway after its 120-day delay, Strider after his 60-day delay, Clear Sky after its 70-day delay and SIRCAA after its 80-day delay if their event carriers disappear. It also redelivers unresolved choices when Zone control changes.
 
 Localisation file names are `MD_STALKER_<subsystem>_l_english.yml`.
 
-The next free block is 180–189. Decision categories are one file each in
+Events 182–189 remain available in the Legend block. The next free block is 190–199. Decision categories are one file each in
 `common/decisions/categories/00_STALKER_*_category.txt`. Dynamic modifiers are one file per
 subsystem in `common/dynamic_modifiers/00_STALKER_*dynamic_modifiers.txt`.
 
