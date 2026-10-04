@@ -451,7 +451,8 @@ def test_pull_request_validation_keeps_writable_reporting_on_the_base_ref():
     assert '[ "$base_repository" != "$GITHUB_REPOSITORY" ]' in resolver
     assert "base_sha=$(printf" in resolver
     assert "jq -r '.base.sha'" in resolver
-    assert "$base_ref" not in resolver
+    assert "base_ref=$(printf" in resolver
+    assert '[ "$base_ref" != "$default_branch" ]' in resolver
     assert "INPUT_HEAD_SHA" not in resolver
     assert "INPUT_BASE_SHA" not in resolver
     assert (
