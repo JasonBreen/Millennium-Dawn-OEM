@@ -647,3 +647,117 @@ def test_variable_keys_gui_handlers_and_categories_are_not_calls(mod_root):
     )
     report = inspect_mod(mod_root)
     assert report["unresolved"]["calls"] == ["ZZZ_gui_missing", "ZZZ_missing_effect"]
+
+
+def test_digit_leading_names_are_tokens(mod_root):
+    write_under_str(
+        mod_root,
+        "common/scripted_triggers/ZZZ_popularity.txt",
+        "10_percent_ZZZ_popularity = { always = yes }\n",
+    )
+    write_under_str(
+        mod_root,
+        "events/caller.txt",
+        "country_event = { id = caller.1 trigger = { 10_percent_ZZZ_popularity = yes } }\n",
+    )
+    report = inspect_mod(mod_root)
+    assert "10_percent_ZZZ_popularity" in report["hooks"]["events/caller.txt"]
+    assert (
+        "10_percent_ZZZ_popularity"
+        not in report["unused"]["scripted_effects_and_triggers"]
+    )
+
+
+def test_a_system_definition_is_not_a_dependency_of_another_kind(mod_root):
+    write_under_str(
+        mod_root,
+        "common/decisions/ZZZ_decisions.txt",
+        "ZZZ_category = { shared_name = { complete_effect = { ZZZ_start = yes } } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/ideas/outside_ideas.txt",
+        "ideas = { country = { shared_name = { } used_idea = { } } }\n",
+    )
+    assert "idea" not in inspect_mod(mod_root)["dependencies"]
+    write_under_str(
+        mod_root,
+        "common/decisions/ZZZ_decisions.txt",
+        "ZZZ_category = { shared_name = { visible = { has_idea = shared_name } } }\n",
+    )
+    assert inspect_mod(mod_root)["dependencies"]["idea"] == [
+        {"name": "shared_name", "defined_in": "common/ideas/outside_ideas.txt"}
+    ]
+
+
+def test_raid_categories_and_technologies_are_dependencies(mod_root):
+    write_under_str(
+        mod_root,
+        "common/raids/categories/raid_categories.txt",
+        "categories = { strike_raids = { intel_source = civilian } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/technologies/outside.txt",
+        "technologies = { robotics_1 = { research_cost = 1 } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/raids/ZZZ_raids.txt",
+        "types = { ZZZ_raid = { category = strike_raids "
+        "allowed = { has_tech = robotics_1 } } }\n",
+    )
+    dependencies = inspect_mod(mod_root)["dependencies"]
+    assert dependencies["raid_category"][0]["name"] == "strike_raids"
+    assert dependencies["technology"][0]["name"] == "robotics_1"
+
+
+def test_inline_scripted_loc_and_loc_calls_are_linked(mod_root):
+    write_under_str(
+        mod_root,
+        "common/scripted_localisation/ZZZ_loc.txt",
+        "defined_text = { name = ZZZ_inline text = { localization_key = zzz.2.t } }\n"
+        "defined_text = {\n\tname = ZZZ_block\n\ttext = { localization_key = zzz.2.t }\n}\n",
+    )
+    write_under_str(
+        mod_root,
+        "localisation/english/outside_l_english.yml",
+        '﻿l_english:\n outside_key: "Shows [ZZZ_inline] and [Root.GetName]"\n',
+    )
+    report = inspect_mod(mod_root)
+    assert report["definitions"]["scripted_loc"] == ["ZZZ_block", "ZZZ_inline"]
+    assert report["hooks"]["localisation/english/outside_l_english.yml"] == [
+        "ZZZ_inline"
+    ]
+
+
+def test_non_script_common_files_have_no_calls(mod_root):
+    write_under_str(
+        mod_root,
+        "common/units/names_divisions/ZZZ_names.txt",
+        "ZZZ_INF_01 = { name = Infantry for_countries = { ZZZ } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/ai_equipment/ZZZ_naval.txt",
+        "ZZZ_roles = { category = naval ZZZ_Escort = { priority = { base = 1 } } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/bop/ZZZ.txt",
+        "ZZZ_bop_category = { range = { id = ZZZ_centre on_activate = { ZZZ_start = yes } } }\n",
+    )
+    assert inspect_mod(mod_root)["unresolved"]["calls"] == ["ZZZ_missing_effect"]
+
+
+def test_game_rule_names_and_groups_are_localisation(mod_root):
+    write_under_str(
+        mod_root,
+        "common/game_rules/ZZZ_rules.txt",
+        "ZZZ_rule = { name = ZZZ_rule_name group = ZZZ_rules_group "
+        "default = { name = ZZZ_on text = ZZZ_on_text } }\n",
+    )
+    assert {"ZZZ_rule_name", "ZZZ_rules_group", "ZZZ_on_text"} <= set(
+        inspect_mod(mod_root)["unresolved"]["localisation"]
+    )
+    assert "ZZZ_on" not in inspect_mod(mod_root)["unresolved"]["localisation"]

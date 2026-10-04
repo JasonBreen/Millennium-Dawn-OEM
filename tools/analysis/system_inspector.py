@@ -27,7 +27,7 @@ import argparse
 import json
 import re
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -79,6 +79,9 @@ DEFINITION_RULES = (
     ("raid", "common/raids/", 1),
     ("ai_strategy", "common/ai_strategy/", 0),
     ("ai_strategy_plan", "common/ai_strategy_plans/", 0),
+    ("ai_equipment", "common/ai_equipment/", 1),
+    ("balance_of_power", "common/bop/", 0),
+    ("technology", "common/technologies/", 1),
 )
 # Kinds whose names other files reference by bare token, so hooks and dependencies are meaningful.
 LINKED_KINDS = (
@@ -98,6 +101,8 @@ LINKED_KINDS = (
     "focus",
     "scripted_loc",
     "sprite",
+    "raid_category",
+    "technology",
 )
 
 STRING_OR_COMMENT_RE = re.compile(r'"(?:\\.|[^"\\])*"|#[^\n]*')
@@ -121,10 +126,10 @@ VARIABLE_EFFECT_RE = re.compile(
 )
 GUI_HANDLER_BLOCKS = {"effects", "triggers", "properties", "dynamic_lists"}
 KEY_BLOCK_RE = re.compile(r"([A-Za-z0-9_.@:\-^]+)\s*=\s*\{|\{|\}")
-TOKEN_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_.]*[A-Za-z0-9_]")
+# Names may start with a digit (10_percent_government_popularity) but need a letter, so numbers are not tokens.
+TOKEN_RE = re.compile(r"(?=[0-9_.]*[A-Za-z])[A-Za-z0-9_][A-Za-z0-9_.]*[A-Za-z0-9_]")
 # Event ids are always namespace.number, which keeps `id = TAG` in other blocks out.
 EVENT_ID_RE = re.compile(r"[A-Za-z0-9_]+\.[A-Za-z0-9_.]+")
-SCRIPTED_LOC_RE = re.compile(r"^\s*name\s*=\s*([A-Za-z0-9_]+)", re.M)
 SPRITE_RE = re.compile(r'name\s*=\s*"?(GFX_[A-Za-z0-9_]+)"?')
 LOC_KEY_RE = re.compile(r"^ ?([A-Za-z0-9_.\-]+):\d* ", re.M)
 FIRED_EVENT_RE = re.compile(
@@ -243,7 +248,11 @@ def definitions_in(rel: str, code: str) -> dict[str, list[str]]:
     if rel.startswith("events/"):
         found["event"] += [ident for ident, _ in event_blocks(code)]
     if rel.startswith("common/scripted_localisation/"):
-        found["scripted_loc"] += SCRIPTED_LOC_RE.findall(code)
+        found["scripted_loc"] += [
+            value
+            for parents, key, value in script_fields(code)
+            if key == "name" and parents and parents[-1][0] == "defined_text"
+        ]
     if rel.endswith(".gfx"):
         found["sprite"] += SPRITE_RE.findall(code)
     if rel.endswith(".yml"):
@@ -289,10 +298,20 @@ def event_option_labels(code: str) -> set[str]:
     }
 
 
+def game_rule_labels(code: str) -> set[str]:
+    """A rule's name and group are localisation keys; an option's name is a token."""
+    return {
+        value
+        for parents, key, value in script_fields(code)
+        if key in {"name", "group"} and len(parents) == 1
+    }
+
+
 def scripted_calls(rel: str, code: str) -> set[str]:
+    # Top-level keys in any other common/ file define something (name lists, templates).
     definition_depth = next(
         (depth for _, prefix, depth in DEFINITION_RULES if rel.startswith(prefix)),
-        None,
+        0 if rel.startswith("common/") else None,
     )
     gui = rel.startswith("common/scripted_guis/")
 
@@ -322,12 +341,21 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
 
     defined_by: dict[str, dict[str, str]] = defaultdict(dict)
     system_defs: dict[str, set[str]] = defaultdict(set)
+    # Each system definition uses up one occurrence of its own name, of whatever kind.
+    system_refs: Counter[str] = Counter()
     for rel, code in tree.code.items():
         for kind, names in definitions_in(rel, code).items():
             for name in names:
                 defined_by[kind].setdefault(name, rel)
                 if rel in inside:
                     system_defs[kind].add(name)
+                    if kind != "loc":
+                        system_refs[name] -= 1
+    loc_calls = {
+        rel: set(LOC_SUBSTITUTION_RE.findall(text))
+        for rel, text in tree.raw.items()
+        if rel.endswith(".yml")
+    }
 
     # An outside file that never mentions a prefix stem cannot reference the system's
     # prefixed names, so it is not tokenized. With no prefix, every file is.
@@ -364,15 +392,23 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
         if is_identifier(name)
     }
     hooks = {}
-    for rel in sorted(token_sets):
-        if rel in inside or rel.endswith(".yml"):
+    for rel in sorted(token_sets.keys() | loc_calls.keys()):
+        if rel in inside:
             continue
-        used = sorted(token_sets[rel] & linked_system.keys())
+        if rel.endswith(".yml"):
+            used = sorted(loc_calls[rel] & system_defs.get("scripted_loc", set()))
+        else:
+            used = sorted(token_sets[rel] & linked_system.keys())
         if used:
             hooks[rel] = used
 
     script_files = [rel for rel in system if not rel.endswith(".yml")]
-    system_tokens = set().union(*(token_sets[rel] for rel in script_files))
+    for rel in script_files:
+        system_refs.update(tokens_by_file[rel])
+    system_tokens = {name for name, count in system_refs.items() if count > 0}
+    system_loc_calls = set().union(
+        *(loc_calls[rel] for rel in system if rel.endswith(".yml"))
+    )
     calls_by_file = {rel: scripted_calls(rel, tree.code[rel]) for rel in script_files}
     system_calls = set().union(*calls_by_file.values())
     dependencies: dict[str, list[dict[str, str]]] = {}
@@ -382,11 +418,12 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
             for name, rel in defined_by[kind].items()
             if rel not in inside and is_identifier(name)
         }
-        references = (
-            system_calls
-            if kind in {"scripted_effect", "scripted_trigger"}
-            else system_tokens
-        )
+        if kind in {"scripted_effect", "scripted_trigger"}:
+            references = system_calls
+        elif kind == "scripted_loc":
+            references = system_tokens | system_loc_calls
+        else:
+            references = system_tokens
         used = sorted(references & outside_names.keys() - system_defs.get(kind, set()))
         if used:
             dependencies[kind] = [
@@ -435,6 +472,8 @@ def inspect(tree: Tree, path_pattern: str, prefixes: tuple[str, ...]) -> dict:
             loc_refs.update(LOC_REF_RE.findall(code))
         if rel.startswith("events/"):
             loc_refs.update(event_option_labels(code))
+        if rel.startswith("common/game_rules/"):
+            loc_refs.update(game_rule_labels(code))
         flags_read.update(FLAG_READ_RE.findall(code))
         globals_read.update(GLOBAL_READ_RE.findall(code))
 
