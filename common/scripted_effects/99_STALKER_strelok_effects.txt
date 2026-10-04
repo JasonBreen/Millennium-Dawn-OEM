@@ -15,21 +15,32 @@ STALKER_monthly_strelok_pulse = {
 # Route 1 leaves him alive and opposed to the Zone, which opens his 2022 ending.
 
 STALKER_begin_strelok_raid = {
-	698 = {
+	if = {
+		limit = { NOT = { has_global_flag = STALKER_2012_resolved } }
 		if = {
-			limit = {
-				STALKER_is_active_zone_anchor = yes
-				check_variable = { STALKER_zone_id = 1 }
-				controller = { exists = yes }
-				OR = {
-					NOT = { has_variable = global.STALKER_2012_recipient }
-					NOT = { is_controlled_by = var:global.STALKER_2012_recipient }
+			limit = { has_global_flag = STALKER_strelok_turned_back }
+			set_global_flag = STALKER_2012_resolved
+			news_event = STALKER.162
+			STALKER_schedule_fairway = yes
+		}
+		else = {
+			698 = {
+				if = {
+					limit = {
+						STALKER_is_active_zone_anchor = yes
+						check_variable = { STALKER_zone_id = 1 }
+						controller = { exists = yes }
+						OR = {
+							NOT = { has_variable = global.STALKER_2012_recipient }
+							NOT = { is_controlled_by = var:global.STALKER_2012_recipient }
+						}
+					}
+					STALKER_target_zone = yes
+					controller = {
+						set_variable = { global.STALKER_2012_recipient = THIS.id }
+						country_event = STALKER.161
+					}
 				}
-			}
-			STALKER_target_zone = yes
-			controller = {
-				set_variable = { global.STALKER_2012_recipient = THIS.id }
-				country_event = STALKER.161
 			}
 		}
 	}

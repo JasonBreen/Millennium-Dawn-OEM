@@ -96,6 +96,40 @@ def test_existing_route_state_blocks_every_later_resolution(flag, effect):
     assert not script.events
 
 
+@pytest.mark.parametrize("entry", ["relay", "monthly"])
+def test_turned_back_route_skips_the_raid_after_a_lost_carrier(entry):
+    script = _script()
+    script.global_flags["STALKER_strelok_turned_back"] = None
+    script.global_flags["STALKER_2012_dispatched"] = None
+    script.countries[2]["exists"] = False
+    script.countries[698]["controller"] = 3
+    script.actor = 3
+    script.goto(2012, 4)
+    if entry == "relay":
+        relay = next(
+            body
+            for key, _, body in _event("STALKER.160", "events/STALKER_strelok.txt")
+            if key == "immediate"
+        )
+        script.execute(relay, 3)
+    else:
+        script.run("STALKER_monthly_strelok_pulse", 3)
+    assert "STALKER_2012_resolved" in script.global_flags
+    assert "STALKER_fairway_scheduled" in script.global_flags
+    assert script.events.count((3, "STALKER.162")) == 1
+    assert not any(event == "STALKER.161" for _, event in script.events)
+    before = script.events.copy()
+    script.run("STALKER_begin_strelok_raid", 3)
+    script.run("STALKER_monthly_strelok_pulse", 3)
+    assert script.events == before
+    script.goto(2012, 7, 29)
+    script.run("STALKER_monthly_legend_pulse", 3)
+    assert (3, "STALKER.174") not in script.events
+    script.goto(2012, 7, 30)
+    script.run("STALKER_monthly_legend_pulse", 3)
+    assert script.events.count((3, "STALKER.174")) == 1
+
+
 def test_monthly_entry_point_wires_both_durable_story_recoveries_once():
     pulse = _parse_race_script(
         (ROOT / "common/scripted_effects/99_STALKER_pulse_effects.txt").read_text(
