@@ -61,20 +61,11 @@ class TestStatements:
         assert list(iter_statements("a = { b = 1 c = 2")) == []
 
 
-@pytest.mark.parametrize("backslashes", [0, 2, 4])
-def test_even_backslash_runs_close_strings_before_comments_and_statements(backslashes):
-    value = "directory" + "\\" * backslashes
-    code = f'name = "{value}" x = 2 '
-    text = code + "# trailing comment"
-    assert strip_inline_comment(text) == code
-    assert strip_comments(text) == code
-    assert list(iter_statements(code)) == [("name", value, None), ("x", "2", None)]
-    assert blank_quoted_strings(code) == f'name = "{" " * len(value)}" x = 2 '
-
-
-@pytest.mark.parametrize("backslashes", [1, 3, 5])
-def test_odd_backslash_runs_keep_escaped_quotes_and_hashes_in_strings(backslashes):
-    value = "text" + "\\" * backslashes + '" # inside'
+@pytest.mark.parametrize("backslashes", range(6))
+def test_backslash_parity_controls_quotes_comments_and_statements(backslashes):
+    value = "text" + "\\" * backslashes
+    if backslashes % 2:
+        value += '" # inside'
     code = f'name = "{value}" x = 2 '
     text = code + "# trailing comment"
     assert strip_inline_comment(text) == code
