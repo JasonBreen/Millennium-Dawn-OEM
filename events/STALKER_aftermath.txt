@@ -54,10 +54,15 @@ country_event = {
 		text = STALKER.38.d_stalkers_contained
 	}
 	desc = {
+		trigger = { check_variable = { global.STALKER_2022_battle_route = 4 } }
+		text = STALKER.38.d_strelok
+	}
+	desc = {
 		trigger = {
 			NOT = { check_variable = { global.STALKER_2022_battle_route = 1 } }
 			NOT = { check_variable = { global.STALKER_2022_battle_route = 2 } }
 			NOT = { check_variable = { global.STALKER_2022_battle_route = 3 } }
+			NOT = { check_variable = { global.STALKER_2022_battle_route = 4 } }
 		}
 		text = STALKER.38.d_default
 	}
@@ -256,11 +261,40 @@ country_event = {
 	}
 
 	option = {
+		name = STALKER.38.h
+		trigger = { check_variable = { global.STALKER_2022_battle_route = 4 } }
+		log = "[GetDateText]: [This.GetName]: STALKER.38.h executed"
+		custom_effect_tooltip = STALKER.38.h_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = { has_global_flag = STALKER_2022_aftermath_resolved }
+					event_target:STALKER_zone_event_target = {
+						STALKER_is_active_zone_anchor = yes
+						check_variable = { STALKER_zone_id = 1 }
+						is_controlled_by = ROOT
+						has_state_flag = STALKER_2022_aftermath_due
+					}
+				}
+				event_target:STALKER_zone_event_target = {
+					add_to_variable = { STALKER_zone_containment = 10 }
+					add_to_variable = { STALKER_zone_activity = -5 }
+					clamp_variable = { var = STALKER_zone_activity min = 0 max = 100 }
+					STALKER_clamp_zone_society = yes
+				}
+				STALKER_resolve_2022_aftermath = yes
+			}
+		}
+		ai_chance = { base = 100 }
+	}
+
+	option = {
 		name = STALKER.38.g
 		trigger = {
 			NOT = { check_variable = { global.STALKER_2022_battle_route = 1 } }
 			NOT = { check_variable = { global.STALKER_2022_battle_route = 2 } }
 			NOT = { check_variable = { global.STALKER_2022_battle_route = 3 } }
+			NOT = { check_variable = { global.STALKER_2022_battle_route = 4 } }
 		}
 		log = "[GetDateText]: [This.GetName]: STALKER.38.g executed"
 		custom_effect_tooltip = STALKER.38.g_tt

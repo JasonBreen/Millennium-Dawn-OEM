@@ -1,5 +1,7 @@
 # How the rest of the world reacts to the Zones: diplomacy before Kaimanov, casualties among foreign teams.
 STALKER_monthly_world_pulse = {
+	STALKER_refresh_unsc_expected = yes
+	STALKER_finish_security_council = yes
 	if = {
 		limit = {
 			NOT = { has_global_flag = STALKER_kaimanov_outcome }
@@ -67,5 +69,99 @@ STALKER_report_major_emission = {
 		set_global_flag = { flag = STALKER_major_emission_news_cooldown value = 1 days = 365 }
 		STALKER_target_zone = yes
 		controller = { news_event = STALKER.130 }
+	}
+}
+
+# One scripted Council session after the worldwide Kaymanov news. Not a UN resolution type.
+# Ballots are sent to each permanent member, and to the original Zone's controller when that country is not already seated.
+STALKER_schedule_security_council = {
+	if = {
+		limit = {
+			STALKER_scenario_enabled = yes
+			NOT = { has_global_flag = STALKER_unsc_scheduled }
+		}
+		set_global_flag = STALKER_unsc_scheduled
+		set_variable = { global.STALKER_unsc_ballots = 0 }
+		set_variable = { global.STALKER_unsc_containment = 0 }
+		set_variable = { global.STALKER_unsc_access = 0 }
+		set_variable = { global.STALKER_unsc_adjourn = 0 }
+		set_variable = { global.STALKER_unsc_expected = 0 }
+		set_variable = { global.STALKER_unsc_result = 0 }
+		for_each_scope_loop = {
+			array = global.p5_sc_members
+			if = {
+				limit = {
+					exists = yes
+					NOT = { has_country_flag = STALKER_unsc_seat }
+				}
+				set_country_flag = STALKER_unsc_seat
+				country_event = { id = STALKER.137 days = 50 }
+				add_to_variable = { global.STALKER_unsc_expected = 1 }
+			}
+		}
+		698 = {
+			if = {
+				limit = {
+					controller = {
+						exists = yes
+						NOT = { has_country_flag = STALKER_unsc_seat }
+					}
+				}
+				controller = {
+					set_country_flag = STALKER_unsc_seat
+					country_event = { id = STALKER.137 days = 50 }
+				}
+				add_to_variable = { global.STALKER_unsc_expected = 1 }
+			}
+		}
+	}
+}
+
+STALKER_refresh_unsc_expected = {
+	if = {
+		limit = {
+			has_global_flag = STALKER_unsc_scheduled
+			NOT = { has_global_flag = STALKER_unsc_resolved }
+		}
+		set_variable = { global.STALKER_unsc_expected = global.STALKER_unsc_ballots }
+		every_country = {
+			limit = {
+				has_country_flag = STALKER_unsc_seat
+				NOT = { has_country_flag = STALKER_unsc_voted }
+			}
+			add_to_variable = { global.STALKER_unsc_expected = 1 }
+		}
+	}
+}
+
+STALKER_finish_security_council = {
+	STALKER_refresh_unsc_expected = yes
+	if = {
+		limit = {
+			has_global_flag = STALKER_unsc_scheduled
+			NOT = { has_global_flag = STALKER_unsc_resolved }
+			check_variable = { global.STALKER_unsc_ballots = global.STALKER_unsc_expected }
+		}
+		set_global_flag = STALKER_unsc_resolved
+		set_variable = { global.STALKER_unsc_result = 3 }
+		if = {
+			limit = {
+				check_variable = { global.STALKER_unsc_containment > global.STALKER_unsc_access }
+				check_variable = { global.STALKER_unsc_containment > global.STALKER_unsc_adjourn }
+			}
+			set_variable = { global.STALKER_unsc_result = 1 }
+		}
+		else_if = {
+			limit = {
+				check_variable = { global.STALKER_unsc_access > global.STALKER_unsc_containment }
+				check_variable = { global.STALKER_unsc_access > global.STALKER_unsc_adjourn }
+			}
+			set_variable = { global.STALKER_unsc_result = 2 }
+			every_country = {
+				limit = { has_country_flag = STALKER_unsc_voted_access }
+				STALKER_grant_zone_research_access = yes
+			}
+		}
+		news_event = STALKER.138
 	}
 }

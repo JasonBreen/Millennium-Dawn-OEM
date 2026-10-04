@@ -177,6 +177,9 @@ STABLE_GROUP_KEYS = (
     "stalker_monolith",
     "stalker_artifact_smugglers",
     "stalker_sircaa",
+    "stalker_mercenaries",
+    "federal_bureau_of_control",
+    "european_anomaly_desk",
 )
 STABLE_TARGET_KEYS = (
     "osama_bin_laden",
@@ -632,7 +635,7 @@ def registry(data: dict) -> str:
         ]
         if gid == 3:
             conditions.append(
-                "OR = { ISI = { exists = yes } has_global_flag = GLOBAL_operation_iraqi_freedom_succeeded IRQ = { has_war = yes } }"
+                "OR = { country_exists = ISI has_global_flag = GLOBAL_operation_iraqi_freedom_succeeded IRQ = { has_war = yes } }"
             )
         if "activation_condition" in group:
             conditions.append(group["activation_condition"])

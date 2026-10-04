@@ -4,7 +4,6 @@ run-name: Validate live PR #${{ github.event.pull_request.number || 'current' }}
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [main]
 
 concurrency:
   group: >-
@@ -81,7 +80,7 @@ jobs:
       head-sha: ${{ steps.resolve-ref.outputs.head-sha }}
       base-sha: ${{ steps.resolve-ref.outputs.base-sha }}
       trusted-ref: >-
-        ${{ steps.resolve-ref.outputs.base-sha }}
+        ${{ steps.resolve-ref.outputs.protected-sha }}
       checkout-repository: ${{ steps.resolve-ref.outputs.repository }}
       checkout-ref: ${{ steps.resolve-ref.outputs.ref }}
     steps:
@@ -101,7 +100,6 @@ jobs:
           head_repository=$(printf '%s' "$pr" | jq -r '.head.repo.full_name')
           head_sha=$(printf '%s' "$pr" | jq -r '.head.sha')
           base_repository=$(printf '%s' "$pr" | jq -r '.base.repo.full_name')
-          base_ref=$(printf '%s' "$pr" | jq -r '.base.ref')
           base_sha=$(printf '%s' "$pr" | jq -r '.base.sha')
           if [[ ! "$head_repository" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] ||
               [[ ! "$head_sha" =~ ^[0-9a-f]{40}$ ]] ||
@@ -109,9 +107,14 @@ jobs:
             echo "::error::Unable to resolve the PR head repository and SHA"
             exit 1
           fi
-          if [ "$base_repository" != "$GITHUB_REPOSITORY" ] ||
-              [ "$base_ref" != "main" ]; then
-            echo "::error::The pull request must target this repository's main branch"
+          if [ "$base_repository" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::The pull request must target this repository"
+            exit 1
+          fi
+          default_branch=$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)
+          protected_sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$default_branch" --jq .sha)
+          if [[ ! "$protected_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::Unable to resolve the default branch SHA"
             exit 1
           fi
           {
@@ -120,6 +123,7 @@ jobs:
             echo "ref=$head_sha"
             echo "head-sha=$head_sha"
             echo "base-sha=$base_sha"
+            echo "protected-sha=$protected_sha"
           } >> "$GITHUB_OUTPUT"
 
       # The job is pull_request-only with read permissions. Use the PR's own
@@ -972,11 +976,12 @@ jobs:
       - tools-tests
       - mod-tests
       - docs-quality
-    if: ${{ always() && !cancelled() }}
+    if: >-
+      ${{ always() && !cancelled() &&
+      needs.detect-changes.result == 'success' &&
+      needs.detect-changes.outputs.trusted-ref != '' }}
     permissions:
       contents: read
-      pull-requests: write
-      checks: write
     env:
       PR_NUMBER: ${{ needs.detect-changes.outputs.pr-number }}
       HEAD_SHA: >-
@@ -990,7 +995,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ github.repository }}
-          ref: ${{ needs.detect-changes.outputs.trusted-ref || github.sha }}
+          ref: ${{ needs.detect-changes.outputs.trusted-ref }}
           fetch-depth: 1
           persist-credentials: false
           sparse-checkout: |
@@ -1039,9 +1044,8 @@ jobs:
           name: changed-files
           path: changed-files
 
-      - name: Generate and post validation report
+      - name: Generate validation report
         env:
-          GITHUB_TOKEN: ${{ github.token }}
           TOOLSHASH: ${{ steps.toolshash.outputs.hash }}
         run: |
           workflow_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
@@ -1054,7 +1058,6 @@ jobs:
             --workflow-run-url "$workflow_url"
             --github-repository "${{ github.repository }}"
             --validation-scope "$VALIDATION_SCOPE"
-            --checks-api
             --print
           )
           args+=(
@@ -1065,9 +1068,6 @@ jobs:
               python3 tools/generate_validation_report.py --help \
                 | grep -q -- '--changed-files'; then
             args+=(--changed-files changed-files/changed-files.txt)
-          fi
-          if [ -n "$PR_NUMBER" ]; then
-            args+=(--post-comment)
           fi
           python3 tools/generate_validation_report.py "${args[@]}"
 
@@ -1089,7 +1089,7 @@ jobs:
       - mod-tests
       - docs-quality
       - report
-    if: ${{ always() }}
+    if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - name: Fail when required validation jobs do not pass

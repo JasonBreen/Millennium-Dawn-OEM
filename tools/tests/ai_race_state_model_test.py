@@ -566,6 +566,15 @@ class RaceScript:
                     entry for entry in operand if entry[0] != "limit"
                 ]
 
+    def _country_ident(self, token):
+        finder = getattr(self, "tag", None)
+        if finder is not None:
+            return finder(token)
+        for ident, data in self.countries.items():
+            if data.get("tag") == token:
+                return ident
+        return None
+
     def condition(self, statements, identifier):
         country = self.countries[identifier]
         outcomes = []
@@ -624,6 +633,23 @@ class RaceScript:
                 result = operand in country["missions"]
             elif key == "exists":
                 result = country["exists"] == (operand == "yes")
+            elif key == "country_exists":
+                ident = self._country_ident(operand)
+                result = ident is not None and self.countries[ident].get("exists", True)
+            elif key == "controller" and isinstance(operand, list):
+                controller_id = country.get("controller")
+                result = controller_id is not None and self.condition(
+                    operand, controller_id
+                )
+            elif str(key).isdigit():
+                state_id = int(key)
+                state = self.countries.get(state_id)
+                result = (
+                    state is not None
+                    and state.get("exists", True)
+                    and isinstance(operand, list)
+                    and self.condition(operand, state_id)
+                )
             elif key == "is_ai":
                 result = country["ai"] == (operand == "yes")
             elif key == "has_war":

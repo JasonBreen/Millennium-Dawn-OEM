@@ -435,8 +435,11 @@ def test_pull_request_grouping_reads_changed_files_only():
     assert "< changed-files.txt" in script
 
 
-def test_pull_request_validation_keeps_writable_reporting_on_the_base_ref():
+def test_stacked_pull_requests_keep_validation_read_only():
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
+    trigger = _workflow_trigger(CI_WORKFLOW)["pull_request"]
+    assert "branches" not in trigger
+    assert "branches-ignore" not in trigger
     assert "workflow_dispatch" not in CI_WORKFLOW.read_text(encoding="utf-8")
     detect = workflow["jobs"]["detect-changes"]
     resolver = next(
@@ -446,19 +449,30 @@ def test_pull_request_validation_keeps_writable_reporting_on_the_base_ref():
     )
     assert "^[1-9][0-9]*$" in resolver
     assert 'gh api "repos/$GITHUB_REPOSITORY/pulls/$pr_number"' in resolver
-    assert "base_ref=$(printf" in resolver
-    assert '[ "$base_ref" != "main" ]' in resolver
+    assert "base_repository=$(printf" in resolver
+    assert '[ "$base_repository" != "$GITHUB_REPOSITORY" ]' in resolver
+    assert "base_sha=$(printf" in resolver
+    assert "jq -r '.base.sha'" in resolver
+    assert "base_ref" not in resolver
+    assert "must target the default branch" not in resolver
     assert "INPUT_HEAD_SHA" not in resolver
     assert "INPUT_BASE_SHA" not in resolver
     assert (
+        'default_branch=$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)'
+    ) in resolver
+    assert "protected_sha=$(gh api" in resolver
+    assert (
         detect["outputs"]["pr-number"] == "${{ steps.resolve-ref.outputs.pr-number }}"
     )
+    assert detect["outputs"]["base-sha"] == "${{ steps.resolve-ref.outputs.base-sha }}"
     assert detect["outputs"]["trusted-ref"] == (
-        "${{ steps.resolve-ref.outputs.base-sha }}"
+        "${{ steps.resolve-ref.outputs.protected-sha }}"
     )
 
     tools = workflow["jobs"]["tools-tests"]
     assert "workflow_dispatch" not in tools["if"]
+    for job in workflow["jobs"].values():
+        assert "write" not in job.get("permissions", {}).values()
 
     prepare = workflow["jobs"]["prepare-workspace"]
     save = next(
@@ -566,15 +580,19 @@ def test_mod_core_runs_extra_checks_after_batch():
     assert "MD_STAGED_FILES" in style["run"]
 
 
-def test_report_job_posts_comment_and_checks():
+def test_pull_request_report_only_publishes_an_artifact():
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
     report = workflow["jobs"]["report"]
-    assert report["if"] == "${{ always() && !cancelled() }}"
-    assert report["permissions"]["pull-requests"] == "write"
-    assert report["permissions"]["checks"] == "write"
+    assert report["if"] == (
+        "${{ always() && !cancelled() && "
+        "needs.detect-changes.result == 'success' && "
+        "needs.detect-changes.outputs.trusted-ref != '' }}"
+    )
+    assert report["permissions"] == {"contents": "read"}
     text = CI_WORKFLOW.read_text(encoding="utf-8")
-    assert "--post-comment" in text
-    assert "--checks-api" in text
+    assert "--post-comment" not in text
+    assert "--checks-api" not in text
+    assert "GITHUB_TOKEN:" not in text
     assert 'pattern: "*results"' in text
     assert any(step.get("name") == "Download changed files" for step in report["steps"])
     assert "full_suite == 'true'" in text
@@ -583,19 +601,25 @@ def test_report_job_posts_comment_and_checks():
     )
     assert checkout["with"]["repository"] == "${{ github.repository }}"
     assert checkout["with"]["ref"] == (
-        "${{ needs.detect-changes.outputs.trusted-ref || github.sha }}"
+        "${{ needs.detect-changes.outputs.trusted-ref }}"
     )
     setup = next(
         step for step in report["steps"] if step.get("name") == "Set up Python"
     )
     assert setup["uses"].startswith("actions/setup-python@")
+    coding_workflow = CI_WORKFLOW.parent / "coding-pipeline.yml"
+    trusted = yaml.safe_load(coding_workflow.read_text(encoding="utf-8"))
+    assert "pull_request_target" in _workflow_trigger(coding_workflow)
+    publisher = trusted["jobs"]["validation-report"]
+    assert publisher["permissions"]["checks"] == "write"
+    assert publisher["permissions"]["pull-requests"] == "write"
 
 
 def test_suite_gate_requires_every_validation_job():
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
     gate = workflow["jobs"]["gate"]
     assert gate["name"] == "Test suite gate"
-    assert gate["if"] == "${{ always() }}"
+    assert gate["if"] == "${{ always() && !cancelled() }}"
     assert set(gate["needs"]) == set(workflow["jobs"]) - {"gate"}
     failure_step = gate["steps"][0]
     for job in gate["needs"]:
@@ -615,7 +639,7 @@ def test_report_restores_baseline_and_supports_old_base_generators():
     script = next(
         step["run"]
         for step in report["steps"]
-        if step.get("name") == "Generate and post validation report"
+        if step.get("name") == "Generate validation report"
     )
     assert "--baseline-dir .validation_baseline" in script
     assert '--baseline-toolshash "$TOOLSHASH"' in script
