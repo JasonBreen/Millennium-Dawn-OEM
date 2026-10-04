@@ -1,0 +1,196 @@
+add_namespace = METALGEAR
+
+# The opening dossier. The player oversees the institution's response, not the operative on the ground.
+country_event = {
+	id = METALGEAR.10
+	title = METALGEAR.10.t
+	desc = METALGEAR.10.d
+	picture = GFX_alaska_attack_event
+	is_triggered_only = yes
+
+	trigger = {
+		METALGEAR_is_controller = yes
+		NOT = { has_global_flag = METALGEAR_shadow_moses_resolved }
+	}
+
+	option = {
+		name = METALGEAR.10.a
+		log = "[GetDateText]: [This.GetName]: METALGEAR.10.a executed"
+		custom_effect_tooltip = METALGEAR.10.a_tt
+		hidden_effect = {
+			set_variable = { global.METALGEAR_sm_priority = 1 }
+			METALGEAR_sm_commit = yes
+			country_event = { id = METALGEAR.11 days = 10 }
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				factor = 0.5
+				check_variable = { global.METALGEAR_exposure > 40 }
+			}
+		}
+	}
+
+	option = {
+		name = METALGEAR.10.b
+		log = "[GetDateText]: [This.GetName]: METALGEAR.10.b executed"
+		custom_effect_tooltip = METALGEAR.10.b_tt
+		hidden_effect = {
+			set_variable = { global.METALGEAR_sm_priority = 2 }
+			METALGEAR_sm_commit = yes
+			country_event = { id = METALGEAR.11 days = 10 }
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				factor = 2
+				check_variable = { global.METALGEAR_exposure > 40 }
+			}
+		}
+	}
+
+	option = {
+		name = METALGEAR.10.c
+		log = "[GetDateText]: [This.GetName]: METALGEAR.10.c executed"
+		set_temp_variable = { treasury_change = -2 }
+		modify_treasury_effect = yes
+		custom_effect_tooltip = METALGEAR.10.c_tt
+		hidden_effect = {
+			set_variable = { global.METALGEAR_sm_priority = 3 }
+			METALGEAR_sm_commit = yes
+			country_event = { id = METALGEAR.11 days = 10 }
+		}
+		ai_chance = {
+			base = 20
+			modifier = {
+				factor = 0
+				check_variable = { treasury < 5 }
+			}
+		}
+	}
+}
+
+# The delayed update: an intermediary is not behaving as expected.
+country_event = {
+	id = METALGEAR.11
+	title = METALGEAR.11.t
+	desc = METALGEAR.11.d
+	picture = GFX_alaska_attack_event
+	is_triggered_only = yes
+
+	trigger = {
+		METALGEAR_is_controller = yes
+		NOT = { has_global_flag = METALGEAR_shadow_moses_resolved }
+	}
+
+	option = {
+		name = METALGEAR.11.a
+		log = "[GetDateText]: [This.GetName]: METALGEAR.11.a executed"
+		custom_effect_tooltip = METALGEAR.11.a_tt
+		hidden_effect = {
+			set_variable = { global.METALGEAR_sm_second = 1 }
+			METALGEAR_sm_commit = yes
+			country_event = { id = METALGEAR.12 days = 14 }
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				factor = 0.25
+				check_variable = { global.METALGEAR_capacity < 1 }
+			}
+		}
+	}
+
+	option = {
+		name = METALGEAR.11.b
+		log = "[GetDateText]: [This.GetName]: METALGEAR.11.b executed"
+		custom_effect_tooltip = METALGEAR.11.b_tt
+		hidden_effect = {
+			set_variable = { global.METALGEAR_sm_second = 2 }
+			METALGEAR_sm_release = yes
+			country_event = { id = METALGEAR.12 days = 14 }
+		}
+		ai_chance = {
+			base = 20
+			modifier = {
+				factor = 3
+				check_variable = { global.METALGEAR_coherence < 40 }
+			}
+		}
+	}
+
+	option = {
+		name = METALGEAR.11.c
+		log = "[GetDateText]: [This.GetName]: METALGEAR.11.c executed"
+		custom_effect_tooltip = METALGEAR.11.c_tt
+		hidden_effect = {
+			set_variable = { global.METALGEAR_sm_second = 3 }
+			country_event = { id = METALGEAR.12 days = 14 }
+		}
+		ai_chance = { base = 30 }
+	}
+}
+
+# The resolution and after-action report.
+country_event = {
+	id = METALGEAR.12
+	title = METALGEAR.12.t
+	desc = {
+		trigger = { check_variable = { global.METALGEAR_sm_covered > 1 } }
+		text = METALGEAR.12.d_held
+	}
+	desc = {
+		trigger = { check_variable = { global.METALGEAR_sm_covered = 1 } }
+		text = METALGEAR.12.d_mixed
+	}
+	desc = {
+		trigger = { check_variable = { global.METALGEAR_sm_covered < 1 } }
+		text = METALGEAR.12.d_lost
+	}
+	picture = GFX_generic_nuclear_smuggling
+	is_triggered_only = yes
+
+	trigger = { METALGEAR_is_controller = yes }
+
+	immediate = {
+		hidden_effect = { METALGEAR_resolve_shadow_moses = yes }
+	}
+
+	option = {
+		name = METALGEAR.12.a
+		log = "[GetDateText]: [This.GetName]: METALGEAR.12.a executed"
+		custom_effect_tooltip = METALGEAR.12.a_tt
+		ai_chance = { base = 1 }
+	}
+}
+
+# What the world hears, which depends on whether the story held.
+news_event = {
+	id = METALGEAR.13
+	title = METALGEAR.13.t
+	desc = {
+		trigger = { has_global_flag = METALGEAR_sm_story_held }
+		text = METALGEAR.13.d_held
+	}
+	desc = {
+		trigger = { NOT = { has_global_flag = METALGEAR_sm_story_held } }
+		text = METALGEAR.13.d_broke
+	}
+	picture = GFX_alaska_attack_event
+	major = yes
+	is_triggered_only = yes
+
+	trigger = { METALGEAR_scenario_enabled = yes }
+
+	option = {
+		name = METALGEAR.13.a
+		trigger = { NOT = { original_tag = USA } }
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = METALGEAR.13.b
+		trigger = { original_tag = USA }
+		ai_chance = { base = 1 }
+	}
+}
