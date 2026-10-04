@@ -46,3 +46,19 @@ Original cases, not a recreation of another game's plot. The United States holds
 The European Anomaly Desk is an original body attached to the EU. Its name is provisional. The customs case uses Brussels (state 51) and the Ruhr (state 39). The coordinator is the Commission president when that office is filled, otherwise France, then Germany, then Belgium. Shared capacity is global because the coordinator can change. A queued customs event is bound to the country that received it.
 
 Patriots content is not part of this scenario.
+
+## Owner decisions and FBC-01
+
+- **Event Horizon (O07, 2026-10-04):** the scenario stays off while Event Horizon is on, because Event Horizon replaces
+  the United States host. `FBC_initialize_scenario` checks `EH_scenario_enabled`, which reads its rule directly and so
+  works at startup. The rule text says so.
+- **Case phases**, both American cases: 0 reported, 1 on file with no team (New York only), 2 investigating, 3 active
+  containment, 4 archived, 5 continuing burden, 6 suspended because the site is out of reach.
+- **Lost sites keep their case.** Phase 6 releases the team, and the case keeps its knowledge. `FBC_reopen_floor` and
+  `FBC_reopen_wing` (25 PP, AI weight 50) appear once the United States controls the site again. They return the case
+  to phase 0 and send its intake event (`FBC.1` or `FBC.4`) in 7 days.
+- **Dashboard:** `FBC_bureau_category_desc` shows free teams, containment integrity, exposure and each case's phase,
+  team and site, through `99_FBC_scripted_localisation.txt`.
+- **EU coordinator (O05):** the coordinator chain above (the Commission president, else France, Germany and Belgium)
+  came with the first version. The handoff lists the EU host, its name and the vacancy rule as the owner's decision, so
+  treat this as provisional until the owner confirms it.
