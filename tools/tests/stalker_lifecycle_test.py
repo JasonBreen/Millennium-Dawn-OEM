@@ -315,6 +315,51 @@ def test_archive_reports_require_an_active_phase_and_reward_only_once(
     assert variables == before
 
 
+@pytest.mark.parametrize("phase", range(7))
+@pytest.mark.parametrize("knowledge", [0, 20])
+@pytest.mark.parametrize("controlled", [False, True])
+def test_floor_after_action_report_revalidates_phase_and_control(
+    phase, knowledge, controlled
+):
+    script = StalkerScript()
+    script.country(769, tag="---")
+    script.countries[769]["controller"] = script.actor if controlled else 2
+    variables = script.countries[script.actor]["vars"]
+    variables.update(
+        FBC_floor_phase=phase,
+        FBC_floor_knowledge=knowledge,
+        FBC_wing_knowledge=0,
+        FBC_floor_committed=1,
+        FBC_response_capacity=1,
+        FBC_containment_integrity=50,
+        FBC_exposure=10,
+    )
+    option = "a" if controlled else "b"
+    body = _option("FBC.3", f"FBC.3.{option}", "events/FBC.txt")
+    trigger = next(value for key, _, value in body if key == "trigger")
+    active = phase in {2, 3}
+    assert script.condition(trigger, script.actor) == active
+    before = variables.copy()
+    script.hidden_option("FBC.3", f"FBC.3.{option}", "events/FBC.txt")
+    if active:
+        success = phase == 3 or knowledge > 14
+        assert variables["FBC_floor_phase"] == (
+            (4 if success else 5) if controlled else 6
+        )
+        assert variables["FBC_containment_integrity"] == 50 + (
+            (5 if success else -8) if controlled else 0
+        )
+        assert variables["FBC_exposure"] == 10 + (
+            (-4 if success else 6) if controlled else 0
+        )
+        assert variables["FBC_floor_committed"] == 0
+    else:
+        assert variables == before
+    before = variables.copy()
+    script.hidden_option("FBC.3", f"FBC.3.{option}", "events/FBC.txt")
+    assert variables == before
+
+
 def test_lost_2012_carrier_reaches_the_new_controller_once_after_the_due_date():
     script = StalkerScript()
     script.global_flags["STALKER_2012_dispatched"] = None

@@ -294,27 +294,42 @@ country_event = {
 		name = FBC.3.a
 		log = "[GetDateText]: [This.GetName]: FBC.3.a executed"
 		custom_effect_tooltip = FBC.3.a_tt
-		trigger = { 769 = { is_controlled_by = ROOT } }
+		trigger = {
+			OR = {
+				check_variable = { FBC_floor_phase = 2 }
+				check_variable = { FBC_floor_phase = 3 }
+			}
+			769 = { is_controlled_by = ROOT }
+		}
 		hidden_effect = {
 			if = {
 				limit = {
 					OR = {
+						check_variable = { FBC_floor_phase = 2 }
 						check_variable = { FBC_floor_phase = 3 }
-						check_variable = { FBC_floor_knowledge > 14 }
 					}
+					769 = { is_controlled_by = ROOT }
 				}
-				set_variable = { FBC_floor_phase = 4 }
-				add_to_variable = { FBC_containment_integrity = 5 }
-				add_to_variable = { FBC_exposure = -4 }
+				if = {
+					limit = {
+						OR = {
+							check_variable = { FBC_floor_phase = 3 }
+							check_variable = { FBC_floor_knowledge > 14 }
+						}
+					}
+					set_variable = { FBC_floor_phase = 4 }
+					add_to_variable = { FBC_containment_integrity = 5 }
+					add_to_variable = { FBC_exposure = -4 }
+				}
+				else = {
+					set_variable = { FBC_floor_phase = 5 }
+					add_to_variable = { FBC_containment_integrity = -8 }
+					add_to_variable = { FBC_exposure = 6 }
+				}
+				FBC_clamp_bureau = yes
+				FBC_release_floor_team = yes
+				FBC_refresh_bureau_factors = yes
 			}
-			else = {
-				set_variable = { FBC_floor_phase = 5 }
-				add_to_variable = { FBC_containment_integrity = -8 }
-				add_to_variable = { FBC_exposure = 6 }
-			}
-			FBC_clamp_bureau = yes
-			FBC_release_floor_team = yes
-			FBC_refresh_bureau_factors = yes
 		}
 		ai_chance = { base = 100 }
 	}
@@ -323,11 +338,26 @@ country_event = {
 		name = FBC.3.b
 		log = "[GetDateText]: [This.GetName]: FBC.3.b executed"
 		custom_effect_tooltip = FBC.3.b_tt
-		trigger = { 769 = { NOT = { is_controlled_by = ROOT } } }
+		trigger = {
+			OR = {
+				check_variable = { FBC_floor_phase = 2 }
+				check_variable = { FBC_floor_phase = 3 }
+			}
+			769 = { NOT = { is_controlled_by = ROOT } }
+		}
 		hidden_effect = {
-			set_variable = { FBC_floor_phase = 6 }
-			FBC_release_floor_team = yes
-			FBC_refresh_bureau_factors = yes
+			if = {
+				limit = {
+					OR = {
+						check_variable = { FBC_floor_phase = 2 }
+						check_variable = { FBC_floor_phase = 3 }
+					}
+					769 = { NOT = { is_controlled_by = ROOT } }
+				}
+				set_variable = { FBC_floor_phase = 6 }
+				FBC_release_floor_team = yes
+				FBC_refresh_bureau_factors = yes
+			}
 		}
 		ai_chance = { base = 100 }
 	}
