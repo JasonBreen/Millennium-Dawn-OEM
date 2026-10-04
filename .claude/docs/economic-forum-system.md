@@ -289,8 +289,8 @@ opens). The default is the global market: no one courted.
 | 3   | China              | CHI           | China's faction             |
 | 4   | Russia             | SOV           | Russia's faction            |
 
-- **Player host:** `econ_forum_audience_eu`, `_usa`, `_china` or `_russia`, 25 PP each while preparing. A host cannot
-  court itself.
+- **Player host** of a state-led forum: `econ_forum_audience_eu`, `_usa`, `_china` or `_russia`, 25 PP each while
+  preparing. A host cannot court itself, and the private WEF courts no one.
 - **AI host:** a state-led host with over 75 PP pays 25 PP in `econ_forum_ai_prepare`: China when it is under Western
   sanctions or a full BRICS member, else the EU when it is an EU member, else the United States when it is in NATO,
   else Russia when it holds Russia above 50 opinion. The WEF courts no one.
