@@ -80,7 +80,7 @@ jobs:
       head-sha: ${{ steps.resolve-ref.outputs.head-sha }}
       base-sha: ${{ steps.resolve-ref.outputs.base-sha }}
       trusted-ref: >-
-        ${{ steps.resolve-ref.outputs.base-sha }}
+        ${{ steps.resolve-ref.outputs.protected-sha }}
       checkout-repository: ${{ steps.resolve-ref.outputs.repository }}
       checkout-ref: ${{ steps.resolve-ref.outputs.ref }}
     steps:
@@ -111,12 +111,19 @@ jobs:
             echo "::error::The pull request must target this repository"
             exit 1
           fi
+          default_branch=$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)
+          protected_sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$default_branch" --jq .sha)
+          if [[ ! "$protected_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::Unable to resolve the default branch SHA"
+            exit 1
+          fi
           {
             echo "pr-number=$pr_number"
             echo "repository=$head_repository"
             echo "ref=$head_sha"
             echo "head-sha=$head_sha"
             echo "base-sha=$base_sha"
+            echo "protected-sha=$protected_sha"
           } >> "$GITHUB_OUTPUT"
 
       # The job is pull_request-only with read permissions. Use the PR's own
