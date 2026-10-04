@@ -1,0 +1,203 @@
+# Event Horizon replaces the United States host, so the scenario stays off alongside it.
+METALGEAR_initialize_scenario = {
+	if = {
+		limit = {
+			has_game_rule = { rule = rule_metalgear_scenario option = ENABLED }
+			NOT = { has_global_flag = GLOBAL_METALGEAR_scenario_enabled }
+			NOT = { EH_scenario_enabled = yes }
+		}
+		set_global_flag = GLOBAL_METALGEAR_scenario_enabled
+	}
+	if = {
+		limit = {
+			METALGEAR_scenario_enabled = yes
+			NOT = { has_global_flag = GLOBAL_METALGEAR_network_ready }
+		}
+		METALGEAR_setup_network = yes
+	}
+}
+
+# Once per campaign. Nodes are fixed records 0-2: defense procurement, special operations oversight and information
+# control. METALGEAR_node_true is the real condition (0 secure, 1 strained, 2 compromised); METALGEAR_node_known is what
+# the network believes, confirmed for METALGEAR_node_confirmed months after an audit.
+METALGEAR_setup_network = {
+	set_global_flag = GLOBAL_METALGEAR_network_ready
+	set_variable = { global.METALGEAR_coherence = 70 }
+	set_variable = { global.METALGEAR_reach = 50 }
+	set_variable = { global.METALGEAR_exposure = 10 }
+	set_variable = { global.METALGEAR_capacity = 2 }
+	clear_array = global.METALGEAR_node_true
+	clear_array = global.METALGEAR_node_known
+	clear_array = global.METALGEAR_node_confirmed
+	clear_array = global.METALGEAR_node_audit
+	clear_array = global.METALGEAR_node_repair
+	clear_array = global.METALGEAR_node_audited
+	resize_array = { array = global.METALGEAR_node_true value = 0 size = 3 }
+	resize_array = { array = global.METALGEAR_node_known value = 0 size = 3 }
+	resize_array = { array = global.METALGEAR_node_confirmed value = 0 size = 3 }
+	resize_array = { array = global.METALGEAR_node_audit value = 0 size = 3 }
+	resize_array = { array = global.METALGEAR_node_repair value = 0 size = 3 }
+	resize_array = { array = global.METALGEAR_node_audited value = 0 size = 3 }
+	# Special operations oversight is already strained, and nobody has noticed.
+	set_variable = { global.METALGEAR_node_true^1 = 1 }
+	if = {
+		limit = { country_exists = USA }
+		USA = { country_event = { id = METALGEAR.1 days = 1 } }
+	}
+}
+
+# Global monthly pulse. The network belongs to the United States' controller; while there is no United States,
+# the network waits.
+METALGEAR_monthly_network_pulse = {
+	if = {
+		limit = {
+			has_global_flag = GLOBAL_METALGEAR_network_ready
+			country_exists = USA
+		}
+		USA = { METALGEAR_network_month = yes }
+	}
+}
+
+# USA scope.
+METALGEAR_network_month = {
+	set_temp_variable = { mg_audits_done = 0 }
+	for_loop_effect = {
+		end = 3
+		value = mg_i
+
+		if = {
+			limit = { check_variable = { global.METALGEAR_node_confirmed^mg_i > 0 } }
+			subtract_from_variable = { global.METALGEAR_node_confirmed^mg_i = 1 }
+		}
+		if = {
+			limit = { check_variable = { global.METALGEAR_node_audit^mg_i > 0 } }
+			subtract_from_variable = { global.METALGEAR_node_audit^mg_i = 1 }
+			if = {
+				limit = { check_variable = { global.METALGEAR_node_audit^mg_i = 0 } }
+				set_variable = { global.METALGEAR_node_known^mg_i = global.METALGEAR_node_true^mg_i }
+				set_variable = { global.METALGEAR_node_confirmed^mg_i = 6 }
+				set_variable = { global.METALGEAR_node_audited^mg_i = 1 }
+				add_to_variable = { global.METALGEAR_capacity = 1 }
+				add_to_temp_variable = { mg_audits_done = 1 }
+			}
+		}
+		if = {
+			limit = { check_variable = { global.METALGEAR_node_repair^mg_i > 0 } }
+			subtract_from_variable = { global.METALGEAR_node_repair^mg_i = 1 }
+			if = {
+				limit = { check_variable = { global.METALGEAR_node_repair^mg_i = 0 } }
+				if = {
+					limit = { check_variable = { global.METALGEAR_node_true^mg_i > 0 } }
+					subtract_from_variable = { global.METALGEAR_node_true^mg_i = 1 }
+				}
+				set_variable = { global.METALGEAR_node_known^mg_i = global.METALGEAR_node_true^mg_i }
+				set_variable = { global.METALGEAR_node_confirmed^mg_i = 6 }
+				add_to_variable = { global.METALGEAR_capacity = 1 }
+			}
+		}
+		# A compromised node leaks evidence every month; compartmentalization halves it.
+		if = {
+			limit = { check_variable = { global.METALGEAR_node_true^mg_i = 2 } }
+			if = {
+				limit = { has_global_flag = METALGEAR_compartmentalized }
+				add_to_variable = { global.METALGEAR_exposure = 1 }
+			}
+			else = {
+				add_to_variable = { global.METALGEAR_exposure = 2 }
+			}
+		}
+	}
+	# Old evidence goes cold.
+	subtract_from_variable = { global.METALGEAR_exposure = 1 }
+
+	if = {
+		limit = {
+			OR = {
+				check_variable = { global.month = 1 }
+				check_variable = { global.month = 4 }
+				check_variable = { global.month = 7 }
+				check_variable = { global.month = 10 }
+			}
+		}
+		METALGEAR_network_quarter = yes
+	}
+	METALGEAR_clamp_network = yes
+
+	if = {
+		limit = { check_variable = { mg_audits_done > 0 } }
+		if = {
+			limit = { is_ai = no }
+			country_event = METALGEAR.3
+		}
+		# Only the report reads these markers, so an AI controller clears them at once.
+		else = {
+			for_loop_effect = {
+				end = 3
+				value = mg_i
+
+				set_variable = { global.METALGEAR_node_audited^mg_i = 0 }
+			}
+		}
+	}
+}
+
+# USA scope, every three months. Nodes not under repair can quietly degrade: more often while exposure is high or
+# coherence low, half as often while compartmentalized. Compartmentalization also costs coordination and reach.
+METALGEAR_network_quarter = {
+	set_temp_variable = { mg_decay_chance = { value = global.METALGEAR_exposure divide = 5 add = 20 subtract = { value = global.METALGEAR_coherence divide = 5 } } }
+	if = {
+		limit = { has_global_flag = METALGEAR_compartmentalized }
+		divide_temp_variable = { mg_decay_chance = 2 }
+	}
+	clamp_temp_variable = { var = mg_decay_chance min = 2 max = 40 }
+	for_loop_effect = {
+		end = 3
+		value = mg_i
+
+		if = {
+			limit = {
+				check_variable = { global.METALGEAR_node_repair^mg_i = 0 }
+				check_variable = { global.METALGEAR_node_true^mg_i < 2 }
+			}
+			set_temp_variable_to_random = { var = mg_roll min = 0 max = 100 }
+			if = {
+				limit = { check_variable = { mg_roll < mg_decay_chance } }
+				add_to_variable = { global.METALGEAR_node_true^mg_i = 1 }
+			}
+		}
+	}
+	if = {
+		limit = { has_global_flag = METALGEAR_compartmentalized }
+		subtract_from_variable = { global.METALGEAR_coherence = 1 }
+		subtract_from_variable = { global.METALGEAR_reach = 1 }
+	}
+	else_if = {
+		limit = {
+			check_variable = { global.METALGEAR_coherence > 60 }
+			check_variable = { global.METALGEAR_reach < 80 }
+		}
+		add_to_variable = { global.METALGEAR_reach = 1 }
+	}
+	if = {
+		limit = { is_ai = no }
+		country_event = METALGEAR.2
+	}
+}
+
+METALGEAR_clamp_network = {
+	clamp_variable = { var = global.METALGEAR_coherence min = 0 max = 100 }
+	clamp_variable = { var = global.METALGEAR_reach min = 0 max = 100 }
+	clamp_variable = { var = global.METALGEAR_exposure min = 0 max = 100 }
+}
+
+# USA scope, temp mg_i set. Starts a two-month audit of node mg_i.
+METALGEAR_start_audit = {
+	subtract_from_variable = { global.METALGEAR_capacity = 1 }
+	set_variable = { global.METALGEAR_node_audit^mg_i = 2 }
+}
+
+# USA scope, temp mg_i set. Starts a three-month repair of node mg_i, one step at a time.
+METALGEAR_start_repair = {
+	subtract_from_variable = { global.METALGEAR_capacity = 1 }
+	set_variable = { global.METALGEAR_node_repair^mg_i = 3 }
+}
