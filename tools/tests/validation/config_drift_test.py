@@ -619,7 +619,7 @@ def test_suite_gate_requires_every_validation_job():
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
     gate = workflow["jobs"]["gate"]
     assert gate["name"] == "Test suite gate"
-    assert gate["if"] == "${{ always() }}"
+    assert gate["if"] == "${{ always() && !cancelled() }}"
     assert set(gate["needs"]) == set(workflow["jobs"]) - {"gate"}
     failure_step = gate["steps"][0]
     for job in gate["needs"]:
