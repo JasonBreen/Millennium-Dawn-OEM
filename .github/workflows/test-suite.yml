@@ -981,7 +981,10 @@ jobs:
       - tools-tests
       - mod-tests
       - docs-quality
-    if: ${{ always() && !cancelled() }}
+    if: >-
+      ${{ always() && !cancelled() &&
+      needs.detect-changes.result == 'success' &&
+      needs.detect-changes.outputs.trusted-ref != '' }}
     permissions:
       contents: read
       pull-requests: write
@@ -999,7 +1002,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ github.repository }}
-          ref: ${{ needs.detect-changes.outputs.trusted-ref || github.sha }}
+          ref: ${{ needs.detect-changes.outputs.trusted-ref }}
           fetch-depth: 1
           persist-credentials: false
           sparse-checkout: |

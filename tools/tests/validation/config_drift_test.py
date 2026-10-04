@@ -579,7 +579,11 @@ def test_mod_core_runs_extra_checks_after_batch():
 def test_report_job_posts_comment_and_checks():
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
     report = workflow["jobs"]["report"]
-    assert report["if"] == "${{ always() && !cancelled() }}"
+    assert report["if"] == (
+        "${{ always() && !cancelled() && "
+        "needs.detect-changes.result == 'success' && "
+        "needs.detect-changes.outputs.trusted-ref != '' }}"
+    )
     assert report["permissions"]["pull-requests"] == "write"
     assert report["permissions"]["checks"] == "write"
     text = CI_WORKFLOW.read_text(encoding="utf-8")
@@ -593,7 +597,7 @@ def test_report_job_posts_comment_and_checks():
     )
     assert checkout["with"]["repository"] == "${{ github.repository }}"
     assert checkout["with"]["ref"] == (
-        "${{ needs.detect-changes.outputs.trusted-ref || github.sha }}"
+        "${{ needs.detect-changes.outputs.trusted-ref }}"
     )
     setup = next(
         step for step in report["steps"] if step.get("name") == "Set up Python"
