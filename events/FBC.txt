@@ -129,7 +129,11 @@ country_event = {
 	immediate = {
 		if = {
 			limit = { check_variable = { FBC_floor_phase = 1 } }
-			set_variable = { FBC_floor_knowledge = 5 }
+			# A reopened case keeps what it already learned.
+			if = {
+				limit = { check_variable = { FBC_floor_knowledge < 5 } }
+				set_variable = { FBC_floor_knowledge = 5 }
+			}
 			add_to_variable = { FBC_exposure = 5 }
 		}
 		else_if = {
