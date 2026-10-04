@@ -122,6 +122,26 @@ FBC_monthly_europe_pulse = {
 		clr_global_flag = FBC_eu_dispatched
 		FBC_schedule_eu_customs = yes
 	}
+	# Pooled work needs an EU member. National handling (phases 5 and 6) stays with the national service.
+	if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			OR = {
+				check_variable = { global.FBC_eu_phase = 2 }
+				check_variable = { global.FBC_eu_phase = 3 }
+			}
+			has_variable = global.FBC_eu_recipient
+			var:global.FBC_eu_recipient = {
+				exists = yes
+				NOT = { has_idea = EU_member }
+			}
+		}
+		FBC_release_eu_team = yes
+		set_variable = { global.FBC_eu_phase = 0 }
+		clear_variable = global.FBC_eu_recipient
+		clr_global_flag = FBC_eu_dispatched
+		FBC_schedule_eu_customs = yes
+	}
 	if = {
 		limit = {
 			FBC_scenario_enabled = yes

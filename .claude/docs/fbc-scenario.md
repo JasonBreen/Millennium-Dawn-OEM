@@ -59,6 +59,24 @@ Patriots content is not part of this scenario.
   to phase 0 and send its intake event (`FBC.1` or `FBC.4`) in 7 days.
 - **Dashboard:** `FBC_bureau_category_desc` shows free teams, containment integrity, exposure and each case's phase,
   team and site, through `99_FBC_scripted_localisation.txt`.
-- **EU coordinator (O05):** the coordinator chain above (the Commission president, else France, Germany and Belgium)
-  came with the first version. The handoff lists the EU host, its name and the vacancy rule as the owner's decision, so
-  treat this as provisional until the owner confirms it.
+- **EU coordinator (O05, confirmed 2026-10-04):** the Commission president when that office is filled, otherwise France,
+  then Germany, then Belgium, each only while an EU member. With none available, the case waits at intake and the
+  pulse tries again each month; nothing stands in for the EU.
+
+## FBC-EU-01
+
+Customs case phases: 0 waiting for the coordinator, 2 joint inquiry, 3 route restricted, 4 archived with a handling
+protocol, 5 Belgian national handling, 6 German national handling, 7 unresolved burden.
+
+- **Membership changes (T10):** pooled work (phases 2 and 3) needs the handling country to stay an EU member. If it
+  leaves, `FBC_monthly_europe_pulse` releases the shared team, keeps the desk's knowledge and exposure, and returns the
+  case to intake under the current coordinator. `FBC.11` also requires its recipient to be an EU member when it fires, so a
+  handler that leaves between the pulse and the queued result gets nothing, and the next pulse resets the case.
+  National handling (5 and 6) stays with the national service, which keeps the case and its costs. A handler that stops
+  existing resets the case in every active phase, as before.
+- **Host changes:** each queued event stays bound to the country that received it, so a new Commission president does
+  not take over a case in progress; it coordinates the next intake.
+- **Dashboard:** `FBC_europe_category_desc`, visible to every EU member, shows the phase, team, handler, knowledge and
+  exposure, and states the membership rule.
+- **Not verified in game:** membership loss mid-inquiry, a Commission handover during a case, and annexation of
+  Belgium or Germany during national handling.
