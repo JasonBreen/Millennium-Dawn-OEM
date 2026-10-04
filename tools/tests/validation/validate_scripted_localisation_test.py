@@ -667,6 +667,16 @@ def test_getter_refs_report_member_and_line(tmp_path):
     ]
 
 
+def test_variable_formatters_are_not_scripted_localisation_getters(tmp_path):
+    path = write_under(
+        tmp_path,
+        "interface/variable.gui",
+        'text = "[?topbar_menu_v.GetTokenLocalizedKey]"\n'
+        'text = "[?global.token.GetTokenLocalizedKey] [ROOT.Getname]"\n',
+    )
+    assert V.process_file_for_getter_refs(str(path)) == [("Getname", 2)]
+
+
 def _getter_mod(tmp_path):
     english = tmp_path / "localisation" / "english"
     english.mkdir(parents=True)

@@ -156,7 +156,8 @@ def _reference_blank_quoted_strings(text, keep_start=None):
     start = -1
     keep = keep_start or ()
     for i, c in enumerate(text):
-        if c == '"' and (i == 0 or text[i - 1] != "\\"):
+        backslashes = i - len(text[:i].rstrip("\\"))
+        if c == '"' and backslashes % 2 == 0:
             if not in_str:
                 start = i
             in_str = not in_str

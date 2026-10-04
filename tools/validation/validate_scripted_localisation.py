@@ -196,7 +196,8 @@ def process_file_for_getter_refs(filename: str) -> List[Tuple[str, int]]:
     for match in _BRACKET_LOC_RE.finditer(text):
         line += text.count("\n", pos, match.start())
         pos = match.start()
-        refs.append((match.group(2), line))
+        if not (match.group(1) or "").startswith("?"):
+            refs.append((match.group(2), line))
     return refs
 
 

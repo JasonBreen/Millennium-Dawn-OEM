@@ -1,11 +1,15 @@
 """Unit tests for the shared script walkers in shared_utils."""
 
+import pytest
 from shared_utils import (
+    blank_quoted_strings,
     iter_focus_blocks,
     iter_statement_ops,
     iter_statements,
     line_of,
     read_script,
+    strip_comments,
+    strip_inline_comment,
 )
 
 
@@ -26,6 +30,16 @@ class TestStatements:
         keys = [key for key, _, _ in iter_statements("a = { b = { c = 1 } } d = 2")]
         assert keys == ["a", "d"]
 
+    def test_escaped_quote_keeps_statement_text_inside_the_string(self):
+        body = 'desc = "text \\" x = 99" x = 2'
+        assert list(iter_statements(body)) == [
+            ("desc", 'text \\" x = 99', None),
+            ("x", "2", None),
+        ]
+
+    def test_unclosed_quoted_scalar_stops_the_walk(self):
+        assert list(iter_statements('desc = "text \\" x = 99')) == []
+
     def test_operators_are_reported_separately(self):
         body = "has_stability > 0.66 threat < 0.4 date >= 2005.1.1"
         assert list(iter_statement_ops(body)) == [
@@ -45,6 +59,28 @@ class TestStatements:
 
     def test_unbalanced_block_stops_the_walk(self):
         assert list(iter_statements("a = { b = 1 c = 2")) == []
+
+
+@pytest.mark.parametrize("backslashes", [0, 2, 4])
+def test_even_backslash_runs_close_strings_before_comments_and_statements(backslashes):
+    value = "directory" + "\\" * backslashes
+    code = f'name = "{value}" x = 2 '
+    text = code + "# trailing comment"
+    assert strip_inline_comment(text) == code
+    assert strip_comments(text) == code
+    assert list(iter_statements(code)) == [("name", value, None), ("x", "2", None)]
+    assert blank_quoted_strings(code) == f'name = "{" " * len(value)}" x = 2 '
+
+
+@pytest.mark.parametrize("backslashes", [1, 3, 5])
+def test_odd_backslash_runs_keep_escaped_quotes_and_hashes_in_strings(backslashes):
+    value = "text" + "\\" * backslashes + '" # inside'
+    code = f'name = "{value}" x = 2 '
+    text = code + "# trailing comment"
+    assert strip_inline_comment(text) == code
+    assert strip_comments(text) == code
+    assert list(iter_statements(code)) == [("name", value, None), ("x", "2", None)]
+    assert blank_quoted_strings(code) == f'name = "{" " * len(value)}" x = 2 '
 
 
 class TestFocusBlocks:
