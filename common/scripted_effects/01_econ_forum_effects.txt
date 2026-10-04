@@ -1191,6 +1191,51 @@ econ_forum_send_firms = {
 	}
 }
 
+# Summit scope, temp ef_i = 0, from 2004. The World Economic Forum names rising politicians from 1 + prestige / 40
+# attending governments, rounded, to its Forum of Young Global Leaders for five years.
+econ_forum_name_young_leaders = {
+	set_temp_variable = { ef_young_leaders = 0 }
+	if = {
+		limit = { date > 2004.1.1 }
+		set_temp_variable = { ef_class = { value = ef_prestige divide = 40 round = yes add = 1 } }
+		for_loop_effect = {
+			end = ef_class
+			value = ef_k
+
+			random_scope_in_array = {
+				array = ef_attendees
+				limit = { NOT = { has_dynamic_modifier = { modifier = econ_forum_young_leaders_modifier } } }
+
+				add_dynamic_modifier = { modifier = econ_forum_young_leaders_modifier days = 1825 }
+				add_to_temp_variable = { ef_young_leaders = 1 }
+				if = {
+					limit = { is_ai = no }
+					country_event = econ_forum.16
+				}
+			}
+		}
+	}
+	set_variable = { global.econ_forum_last_young_leaders = ef_young_leaders }
+}
+
+# Summit scope, temp ef_i = 0. Once the World Economic Forum has launched its Great Reset, a quarter of the member
+# governments that hold elections face claims that the forum runs them.
+econ_forum_great_reset_suspicion = {
+	if = {
+		limit = { has_global_flag = econ_forum_great_reset }
+		every_country = {
+			limit = {
+				has_dynamic_modifier = { modifier = econ_forum_young_leaders_modifier }
+				has_elections = yes
+			}
+			random = {
+				chance = 25
+				country_event = econ_forum.17
+			}
+		}
+	}
+}
+
 # Temp ef_i = 0, the World Economic Forum's summit month while it is preparing. The pandemic sends the first meeting it
 # reaches online and pushes the next one back four months, as the 2021 and 2022 Davos meetings were.
 econ_forum_disrupt_summit = {
@@ -1205,6 +1250,8 @@ econ_forum_disrupt_summit = {
 	if = {
 		limit = { NOT = { has_global_flag = econ_forum_davos_online } }
 		set_global_flag = econ_forum_davos_online
+		# The 2021 online meeting carried the Great Reset, the WEF's pandemic recovery plan.
+		set_global_flag = econ_forum_great_reset
 		# The online meeting counts as the year's summit; prestige holds.
 		set_variable = { global.econ_forum_months_since^ef_i = 0 }
 		var:ef_host = { news_event = econ_forum_news.20 }
@@ -2343,6 +2390,11 @@ econ_forum_convene_summit = {
 	# After the track update, so a showcase's sector boost is not averaged away.
 	econ_forum_apply_agendas = yes
 	econ_forum_deliver_keynotes = yes
+	if = {
+		limit = { check_variable = { ef_i = 0 } }
+		econ_forum_great_reset_suspicion = yes
+		econ_forum_name_young_leaders = yes
+	}
 
 	# Heads of government we drew away from a clashing rival cost it a point of prestige each, up to 5.
 	if = {
@@ -2532,6 +2584,14 @@ econ_forum_ai_decide_attendance = {
 				check_variable = { global.econ_forum_talks_a^ef_i = THIS.id }
 				check_variable = { global.econ_forum_talks_b^ef_i = THIS.id }
 			}
+		}
+		add_to_temp_variable = { ef_chance = 10 }
+	}
+	# Young Global Leaders return to Davos.
+	if = {
+		limit = {
+			check_variable = { ef_i = 0 }
+			has_dynamic_modifier = { modifier = econ_forum_young_leaders_modifier }
 		}
 		add_to_temp_variable = { ef_chance = 10 }
 	}
