@@ -70,6 +70,66 @@ def test_surviving_relay_and_monthly_recovery_share_one_pending_choice():
     assert script.events.count((2, "STALKER.174")) == 1
 
 
+@pytest.mark.parametrize("event_id", [172, 176])
+@pytest.mark.parametrize("blocked", [None, "inactive", "zone_id", "annexed"])
+def test_dated_choices_follow_control_changes_until_resolved(event_id, blocked):
+    script = _script()
+    script.global_flags["STALKER_scar_survived"] = None
+    relay = next(
+        body
+        for key, _, body in _event("STALKER.178", "events/STALKER_legend.txt")
+        if key == "immediate"
+    )
+    script.globals["STALKER_legend_deliver"] = event_id
+    script.execute(relay, 1)
+    expected = [(2, f"STALKER.{event_id}")]
+    assert script.events == expected
+    script.run("STALKER_monthly_legend_pulse", 2)
+    assert script.events == expected
+    script.countries[698]["controller"] = 3
+    script.triggers["STALKER_is_active_zone_anchor"] = [
+        ("always", "=", "no" if blocked == "inactive" else "yes")
+    ]
+    script.countries[698]["vars"]["STALKER_zone_id"] = 2 if blocked == "zone_id" else 1
+    script.countries[3]["exists"] = blocked != "annexed"
+    option = next(
+        body
+        for key, _, body in _event(f"STALKER.{event_id}", "events/STALKER_legend.txt")
+        if key == "option"
+    )
+    hidden = next(body for key, _, body in option if key == "hidden_effect")
+    script.execute(hidden, 2)
+    script.run("STALKER_monthly_legend_pulse", 3)
+    if blocked:
+        assert script.events == expected
+        script.triggers["STALKER_is_active_zone_anchor"] = [("always", "=", "yes")]
+        script.countries[698]["vars"]["STALKER_zone_id"] = 1
+        script.countries[3]["exists"] = True
+        script.run("STALKER_monthly_legend_pulse", 3)
+    expected.append((3, f"STALKER.{event_id}"))
+    assert script.events == expected
+    script.run("STALKER_monthly_legend_pulse", 3)
+    assert script.events == expected
+    script.actor = 3
+    assert script.condition(
+        next(body for key, _, body in option if key == "trigger"), script.actor
+    )
+    script.execute(hidden, 3)
+    resolved_events = script.events.copy()
+    script.countries[698]["controller"] = 4
+    script.run("STALKER_monthly_legend_pulse", 4)
+    assert script.events == resolved_events
+
+
+def test_monthly_recovery_does_not_bypass_the_initial_dated_choice_delay():
+    script = _script()
+    script.global_flags["STALKER_2011_dispatched"] = None
+    script.global_flags["STALKER_sircaa_dispatched"] = None
+    script.countries[698]["controller"] = 3
+    script.run("STALKER_monthly_legend_pulse", 3)
+    assert not script.events
+
+
 @pytest.mark.parametrize("effect,flag", ROUTES.items())
 def test_clear_sky_routes_are_exclusive_and_resolve_only_once(effect, flag):
     script = _script()

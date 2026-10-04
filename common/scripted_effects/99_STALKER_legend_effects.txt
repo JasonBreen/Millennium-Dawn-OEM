@@ -17,6 +17,38 @@ STALKER_schedule_fairway = {
 }
 
 STALKER_monthly_legend_pulse = {
+	698 = {
+		if = {
+			limit = {
+				STALKER_scenario_enabled = yes
+				STALKER_is_active_zone_anchor = yes
+				check_variable = { STALKER_zone_id = 1 }
+				controller = { exists = yes }
+			}
+			if = {
+				limit = {
+					has_variable = global.STALKER_2011_recipient
+					STALKER_2011_unresolved = yes
+					NOT = { is_controlled_by = var:global.STALKER_2011_recipient }
+				}
+				controller = {
+					set_variable = { global.STALKER_2011_recipient = THIS.id }
+					country_event = STALKER.172
+				}
+			}
+			if = {
+				limit = {
+					has_variable = global.STALKER_sircaa_recipient
+					NOT = { has_variable = global.STALKER_sircaa_result }
+					NOT = { is_controlled_by = var:global.STALKER_sircaa_recipient }
+				}
+				controller = {
+					set_variable = { global.STALKER_sircaa_recipient = THIS.id }
+					country_event = STALKER.176
+				}
+			}
+		}
+	}
 	if = {
 		limit = {
 			STALKER_scenario_enabled = yes

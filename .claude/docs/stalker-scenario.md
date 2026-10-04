@@ -96,7 +96,7 @@ names and events against the in-game text as documented by the S.T.A.L.K.E.R. Wi
 - **Strelok (160–169):** `STALKER_strelok.txt`; loc `_strelok_`;
   `99_STALKER_strelok_effects.txt`. The 2012 raid uses events 160–162. The rest of the block stays with that raid.
 - **Zone Legend (170–179):** `STALKER_legend.txt`; loc `_legend_`;
-  `99_STALKER_legend_effects.txt`. 2006, 2011 and 2018 come from the yearly file. Fairway and Strider are scheduled from the 2012 result. The monthly legend pulse recovers Fairway delivery after its 120-day delay if the event carrier disappears.
+  `99_STALKER_legend_effects.txt`. 2006, 2011 and 2018 come from the yearly file. Fairway and Strider are scheduled from the 2012 result. The monthly legend pulse recovers Fairway delivery after its 120-day delay if the event carrier disappears. It also redelivers unresolved Clear Sky and SIRCAA choices when Zone control changes after their initial delivery.
 
 Localisation file names are `MD_STALKER_<subsystem>_l_english.yml`.
 
