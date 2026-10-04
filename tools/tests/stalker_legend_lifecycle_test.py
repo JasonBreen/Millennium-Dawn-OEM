@@ -130,6 +130,52 @@ def test_turned_back_route_skips_the_raid_after_a_lost_carrier(entry):
     assert script.events.count((3, "STALKER.174")) == 1
 
 
+@pytest.mark.parametrize(
+    "event_id,index",
+    [
+        (event, index)
+        for event, count in [(172, 3), (174, 6), (176, 4)]
+        for index in range(count)
+    ],
+)
+@pytest.mark.parametrize("invalid", ["controller", "zone_id", "inactive", None])
+def test_legend_choices_revalidate_the_current_original_zone(event_id, index, invalid):
+    script = _script()
+    option = [
+        body
+        for key, _, body in _event(f"STALKER.{event_id}", "events/STALKER_legend.txt")
+        if key == "option"
+    ][index]
+    if invalid == "controller":
+        script.countries[698]["controller"] = 3
+    elif invalid == "zone_id":
+        script.countries[698]["vars"]["STALKER_zone_id"] = 2
+    elif invalid == "inactive":
+        script.triggers["STALKER_is_active_zone_anchor"] = [("always", "=", "no")]
+    before = script.countries[698]["vars"].copy()
+    flags = script.global_flags.copy()
+    globals_before = script.globals.copy()
+    trigger = next(body for key, _, body in option if key == "trigger")
+    hidden = next(body for key, _, body in option if key == "hidden_effect")
+    if invalid:
+        assert not script.condition(trigger, script.actor)
+    script.execute(hidden, script.actor)
+    if invalid:
+        assert script.countries[698]["vars"] == before
+        assert script.global_flags == flags
+        assert script.globals == globals_before
+        assert not script.events
+    else:
+        assert script.events
+        resolved = (
+            script.global_flags.copy(),
+            script.globals.copy(),
+            script.events.copy(),
+        )
+        script.execute(hidden, script.actor)
+        assert (script.global_flags, script.globals, script.events) == resolved
+
+
 def test_monthly_entry_point_wires_both_durable_story_recoveries_once():
     pulse = _parse_race_script(
         (ROOT / "common/scripted_effects/99_STALKER_pulse_effects.txt").read_text(
