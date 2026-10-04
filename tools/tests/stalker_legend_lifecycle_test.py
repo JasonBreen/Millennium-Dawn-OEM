@@ -146,12 +146,11 @@ def test_legend_choices_revalidate_the_current_original_zone(event_id, index, in
         for key, _, body in _event(f"STALKER.{event_id}", "events/STALKER_legend.txt")
         if key == "option"
     ][index]
-    if invalid == "controller":
-        script.countries[698]["controller"] = 3
-    elif invalid == "zone_id":
-        script.countries[698]["vars"]["STALKER_zone_id"] = 2
-    elif invalid == "inactive":
-        script.triggers["STALKER_is_active_zone_anchor"] = [("always", "=", "no")]
+    script.countries[698]["controller"] = 3 if invalid == "controller" else 2
+    script.countries[698]["vars"]["STALKER_zone_id"] = 2 if invalid == "zone_id" else 1
+    script.triggers["STALKER_is_active_zone_anchor"] = [
+        ("always", "=", "no" if invalid == "inactive" else "yes")
+    ]
     before = script.countries[698]["vars"].copy()
     flags = script.global_flags.copy()
     globals_before = script.globals.copy()
