@@ -7,7 +7,7 @@ from decimal import ROUND_DOWN, Decimal, InvalidOperation
 from pathlib import Path
 
 import pytest
-from great_ai_race_state_model_test import RaceScript, _parse_race_script
+from ai_race_state_model_test import RaceScript, _parse_race_script
 from shared_utils import extract_block_from_text, strip_comments
 
 D = Decimal
@@ -622,13 +622,13 @@ def test_purchase_resample_detects_lost_imports_instead_of_reusing_weekly_headro
 def scripts():
     root = Path(__file__).resolve().parents[2]
     paths = {
-        "finance": "common/scripted_effects/02_great_ai_race_finance_effects.txt",
-        "capacity": "common/scripted_effects/01_great_ai_race_capacity_effects.txt",
-        "progression": "common/scripted_effects/03_great_ai_race_progression_effects.txt",
+        "finance": "common/scripted_effects/02_ai_race_finance_effects.txt",
+        "capacity": "common/scripted_effects/01_ai_race_capacity_effects.txt",
+        "progression": "common/scripted_effects/03_ai_race_progression_effects.txt",
         "money": "common/scripted_effects/00_money_system.txt",
         "energy": "common/scripted_effects/!_energy_effects.txt",
         "actions": "common/on_actions/MD_on_actions.txt",
-        "modifier": "common/dynamic_modifiers/01_great_ai_race_modifiers.txt",
+        "modifier": "common/dynamic_modifiers/01_ai_race_modifiers.txt",
         "definitions": "common/modifier_definitions/ai_race_modifier_definitions.txt",
     }
     return {
@@ -718,7 +718,7 @@ def test_script_quote_snapshots_gdp_and_divides_principal_into_520_payments(scri
         scripts["progression"],
         scripts["actions"],
         strip_comments(
-            (root / "common/scripted_effects/00_great_ai_race_effects.txt").read_text(
+            (root / "common/scripted_effects/00_ai_race_effects.txt").read_text(
                 encoding="utf-8-sig"
             )
         ),

@@ -4,13 +4,13 @@ import re
 from pathlib import Path
 
 import pytest
-from great_ai_race_state_model_test import RaceScript, _parse_race_script
+from ai_race_state_model_test import RaceScript, _parse_race_script
 
 ROOT = Path(__file__).resolve().parents[2]
 EFFECTS = ROOT / "common/scripted_effects/99_investment_scripted_effects.txt"
 EVENTS = ROOT / "events/investments_events.txt"
 TRIGGERS = ROOT / "common/scripted_triggers/00_investment_scripted_triggers.txt"
-PROGRESSION = ROOT / "common/scripted_effects/03_great_ai_race_progression_effects.txt"
+PROGRESSION = ROOT / "common/scripted_effects/03_ai_race_progression_effects.txt"
 
 
 def _propose_source():
