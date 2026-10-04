@@ -761,3 +761,43 @@ def test_game_rule_names_and_groups_are_localisation(mod_root):
         inspect_mod(mod_root)["unresolved"]["localisation"]
     )
     assert "ZZZ_on" not in inspect_mod(mod_root)["unresolved"]["localisation"]
+
+
+def test_balance_of_power_ai_equipment_and_modifier_tooltips(mod_root):
+    write_under_str(
+        mod_root,
+        "common/bop/ZZZ.txt",
+        "ZZZ_bop_category = { initial_value = 0 }\n",
+    )
+    write_under_str(
+        mod_root,
+        "events/bop_reader.txt",
+        "country_event = { id = bop_reader.1 "
+        "trigger = { has_power_balance = { id = ZZZ_bop_category } } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/ai_equipment/ZZZ_ships.txt",
+        "ZZZ_battleships = { category = naval available_for = { ZZZ } roles = { naval } "
+        "priority = { base = 1 } blocked_for = { YYY } ZZZ_battleship = { } }\n",
+    )
+    write_under_str(
+        mod_root,
+        "common/dynamic_modifiers/ZZZ_modifiers.txt",
+        "ZZZ_modifier = { custom_modifier_tooltip = ZZZ_modifier_tt }\n",
+    )
+    report = inspect_mod(mod_root)
+    assert "ZZZ_bop_category" in report["hooks"]["events/bop_reader.txt"]
+    assert report["definitions"]["ai_equipment"] == ["ZZZ_battleship"]
+    assert "ZZZ_modifier_tt" in report["unresolved"]["localisation"]
+
+
+def test_stalker_preset_leaves_saint_kitts_out():
+    preset = system_inspector.PRESETS["stalker"]
+    assert preset.prefixes == ("STALKER_",)
+    assert not re.search(
+        preset.path_pattern, "common/scripted_effects/STK_political_leaders.txt"
+    )
+    assert re.search(
+        preset.path_pattern, "common/scripted_effects/00_STALKER_zone_effects.txt"
+    )

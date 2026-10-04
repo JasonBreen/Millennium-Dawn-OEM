@@ -46,7 +46,7 @@ class Preset:
 
 
 PRESETS = {
-    "stalker": Preset(r"STALKER|/STK_", ("STALKER_", "STK_"), "STALKER Zone scenario"),
+    "stalker": Preset(r"STALKER", ("STALKER_",), "STALKER Zone scenario"),
     "top": Preset(
         r"targeted_operations|Targeted Operations|military_raids|^common/raids/",
         ("TOP_",),
@@ -103,6 +103,7 @@ LINKED_KINDS = (
     "sprite",
     "raid_category",
     "technology",
+    "balance_of_power",
 )
 
 STRING_OR_COMMENT_RE = re.compile(r'"(?:\\.|[^"\\])*"|#[^\n]*')
@@ -120,6 +121,8 @@ EVENT_TYPES = {
     "unit_leader_event",
     "operative_leader_event",
 }
+# Role-group fields that sit beside the templates in an AI equipment file.
+AI_EQUIPMENT_FIELDS = {"roles", "priority", "available_for", "blocked_for"}
 # Keys under these parents name a variable or a GUI handler, not a scripted call.
 VARIABLE_EFFECT_RE = re.compile(
     r"(?:set|add_to|subtract_from|multiply|divide|modulo|clamp|round)_(?:temp_)?variable"
@@ -137,7 +140,7 @@ FIRED_EVENT_RE = re.compile(
     r"(?:\{[^{}]*?\bid\s*=\s*([A-Za-z0-9_.]+)|([A-Za-z0-9_]+\.[A-Za-z0-9_.]+))"
 )
 LOC_REF_RE = re.compile(
-    r"\b(?:title|desc|tooltip|custom_effect_tooltip|localization_key|localisation_key|text"
+    r"\b(?:title|desc|tooltip|custom_effect_tooltip|custom_modifier_tooltip|localization_key|localisation_key|text"
     r"|pdx_tooltip(?:_delayed)?|buttonText)"
     r"\s*=\s*\"?([A-Za-z_][A-Za-z0-9_.]*)\"?"
 )
@@ -243,7 +246,11 @@ def definitions_in(rel: str, code: str) -> dict[str, list[str]]:
                     and parents[-1][0] in {"focus", "shared_focus", "joint_focus"}
                 ]
             else:
-                found[kind] += keys_at_depth(code, depth)
+                found[kind] += [
+                    name
+                    for name in keys_at_depth(code, depth)
+                    if kind != "ai_equipment" or name not in AI_EQUIPMENT_FIELDS
+                ]
             break
     if rel.startswith("events/"):
         found["event"] += [ident for ident, _ in event_blocks(code)]
