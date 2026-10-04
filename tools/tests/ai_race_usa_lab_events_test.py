@@ -19,6 +19,9 @@ USA_LOC_PATH = ROOT / "localisation" / "english" / "MD_focus_USA_l_english.yml"
 OPINION_PATH = (
     ROOT / "common" / "opinion_modifiers" / "00_ai_race_opinion_modifiers.txt"
 )
+OPINION_LOC_PATH = (
+    ROOT / "localisation" / "english" / "MD_opinion_modifiers_l_english.yml"
+)
 
 OPENAI_MAPPING = (
     ("ai_race_capability_external", "USA_openai_frontier_capability"),
@@ -304,7 +307,7 @@ def test_event_options_write_only_lab_state_and_clamp_every_write():
                     )
 
 
-def test_opinion_modifiers_used_by_the_events_are_defined():
+def test_opinion_modifiers_used_by_the_events_are_defined_and_named():
     defined = set(
         re.findall(r"(?m)^\t(\w+) = \{", OPINION_PATH.read_text(encoding="utf-8"))
     )
@@ -313,3 +316,6 @@ def test_opinion_modifiers_used_by_the_events_are_defined():
         used.update(re.findall(r"modifier = (USA_ai_race_\w+)", event))
     assert used
     assert used <= defined, used - defined
+    loc = OPINION_LOC_PATH.read_text(encoding="utf-8-sig")
+    for modifier in defined:
+        assert re.search(rf'(?m)^ {modifier}: "[^"]+"$', loc), modifier
