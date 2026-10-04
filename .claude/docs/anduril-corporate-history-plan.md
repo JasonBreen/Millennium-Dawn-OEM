@@ -1,6 +1,6 @@
 # United States — Anduril Corporate History (2017–2025)
 
-Scope: OEM Corporate History module modelling Anduril Industries from founding through border sensor towers, allied counter-drone trials, the counter-UAS program of record, the Area-I acquisition, the SOCOM award, Roadrunner, Collaborative Combat Aircraft, and a 2025 capstone. Not a new focus tree, not Great AI Race. English localisation only. Namespace `USA_anduril_events`. Root prefix `USA_anduril`. Owner tag `USA` (`original_tag = USA` in every trigger).
+Scope: OEM Corporate History module modelling Anduril Industries from founding through border sensor towers, allied counter-drone trials, the counter-UAS program of record, the Area-I acquisition, the SOCOM award, Roadrunner, Collaborative Combat Aircraft, and a 2025 capstone. Not a new focus tree, not AI Race. English localisation only. Namespace `USA_anduril_events`. Root prefix `USA_anduril`. Owner tag `USA` (`original_tag = USA` in every trigger).
 
 Anduril is founded in 2017, so this is a short chain by the module's standards: eight visible beats and a capstone, against SpaceX's twelve. There is no pre-2017 history to reconstruct.
 
@@ -10,7 +10,7 @@ Game-rule semantics:
 - Outcomes Only: silent reconstruction picks the historical route at each beat, then applies exactly one capstone idea after 2025
 - Off: creates no `USA_anduril_*` state, schedules nothing, changes nothing outside this chain
 
-Do not write any other chain's identifiers (Palantir, AI Core, OpenAI, Anthropic, NVIDIA, Great AI Race). This chain declares no `allowed_reads` and no `allowed_writes` — it is deliberately self-contained, unlike Palantir, which syncs to AI Core.
+Do not write any other chain's identifiers (Palantir, AI Core, OpenAI, Anthropic, NVIDIA, AI Race). This chain declares no `allowed_reads` and no `allowed_writes` — it is deliberately self-contained, unlike Palantir, which syncs to AI Core.
 
 ## State model (persistent axes, 0..10)
 

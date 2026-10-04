@@ -1,4 +1,4 @@
-from great_ai_race_state_model_test import RaceScript
+from ai_race_state_model_test import RaceScript
 
 
 class TargetedScript(RaceScript):

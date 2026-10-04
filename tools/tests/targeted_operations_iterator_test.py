@@ -2,7 +2,7 @@ import re
 from copy import deepcopy
 
 import pytest
-from great_ai_race_state_model_test import _named_block, _parse_race_script
+from ai_race_state_model_test import _named_block, _parse_race_script
 from targeted_operations_core_test import ROOT, ScriptArray, TargetScript
 
 LOOP_PATTERN = re.compile(r"\b(for_each_loop|for_loop_effect|any_of|all_of)\s*=\s*\{")

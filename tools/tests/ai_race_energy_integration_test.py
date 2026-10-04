@@ -1,8 +1,8 @@
 import pytest
-from great_ai_race_state_model_test import ROOT, _named_block, _parse_race_script
-from great_ai_race_strategic_ai_test import StrategicRaceScript
+from ai_race_state_model_test import ROOT, _named_block, _parse_race_script
+from ai_race_strategic_ai_test import StrategicRaceScript
 
-ENERGY_TRIGGERS = ROOT / "common/scripted_triggers/MD_great_ai_race_energy_triggers.txt"
+ENERGY_TRIGGERS = ROOT / "common/scripted_triggers/MD_ai_race_energy_triggers.txt"
 DIPLOMACY = (
     ROOT / "common/scripted_diplomatic_actions/00_scripted_diplomatic_actions.txt"
 )

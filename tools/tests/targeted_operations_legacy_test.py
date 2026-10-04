@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 
 import pytest
-from great_ai_race_state_model_test import (
+from ai_race_state_model_test import (
     _extract_block,
     _named_block,
     _parse_race_script,

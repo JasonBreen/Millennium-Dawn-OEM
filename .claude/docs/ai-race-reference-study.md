@@ -1,4 +1,4 @@
-# Great AI Race Mechanical Reference Study
+# AI Race Mechanical Reference Study
 
 Status: design evidence for the architecture and Claude implementation campaign. This is not a runtime dependency and does not authorize copying third-party code or assets.
 
@@ -22,7 +22,7 @@ The strongest combination is:
 - **TNO Cold War and alert systems** for rival comparison and attention routing.
 - **OEM native systems** for authoritative state, scheduling, arrays, decisions, missions, alerts, modes, localisation, AI behavior, and performance.
 
-The Great AI Race should not imitate the surface style of either total conversion. It should translate their mechanical clarity into an OEM-native decision dashboard.
+The AI Race should not imitate the surface style of either total conversion. It should translate their mechanical clarity into an OEM-native decision dashboard.
 
 ## TFR Cognoscenti study
 
@@ -113,7 +113,7 @@ TFR reduces the nonselected pillars, clamps all three, and then assigns any exce
 
 - `common/scripted_effects/TFR_scripted_effects_USB.txt:5818-5886`
 
-That makes a conserved political pool partly stochastic and complicates save/debug reasoning. The Great AI Race must use integer shares and deterministic redistribution.
+That makes a conserved political pool partly stochastic and complicates save/debug reasoning. The AI Race must use integer shares and deterministic redistribution.
 
 Recommended behavior to freeze in Prompt 0:
 
@@ -133,7 +133,7 @@ The pillar balance affects qualitative choices, not only modifiers. A later succ
 
 This is the strongest Cognoscenti pattern to transfer.
 
-For the Great AI Race:
+For the AI Race:
 
 - a dominant lab may unlock its preferred high-risk project, release posture, procurement package, or crisis response;
 - a balanced ecosystem must unlock a distinct coalition option, shared evaluation regime, multi-lab consortium, or cross-checking benefit;
@@ -165,7 +165,7 @@ Two self-reactivating missions add five points on expiry:
 
 - `common/decisions/TFR_decisions_USB.txt:8907-8965`
 
-The Great AI Race should transfer the two-axis topology but not the 20/25-day cadence. Its participant-wide pressure pulses belong in the central quarterly reducer.
+The AI Race should transfer the two-axis topology but not the 20/25-day cadence. Its participant-wide pressure pulses belong in the central quarterly reducer.
 
 ### Intervention tradeoffs
 
@@ -238,7 +238,7 @@ A different collapse event and comprehensive transition effect form a separate c
 
 These chains must not be conflated. The mechanical lesson is that a terminal state is explicit, visible, authored, and exactly once.
 
-For the Great AI Race:
+For the AI Race:
 
 - recoverable failure is the default;
 - extreme public alarm/control debt alone is nonterminal;
@@ -251,7 +251,7 @@ For the Great AI Race:
 
 Cognoscenti uses many events to dramatize routine decisions. OEM should be more selective.
 
-The Great AI Race event layer should:
+The AI Race event layer should:
 
 - make every event `is_triggered_only = yes`;
 - use events for major release choices, breakthroughs, severe incidents, crisis transitions, and final outcomes;
@@ -302,7 +302,7 @@ Translation: use OEM's MD Alerts system for major race attention states or a bou
 
 `common/scripted_guis/TNO_GNG_Product_Decisions_GUI.txt:1-118` separates active work, progress, performance, release history, and inactive states.
 
-Translation: the Great AI Race Projects tab separates active project state, phase/progress, evaluation/release choice, and a derived completed-release history.
+Translation: the AI Race Projects tab separates active project state, phase/progress, evaluation/release choice, and a derived completed-release history.
 
 ### Guangdong research-team selection
 
@@ -325,7 +325,7 @@ Translation: the Global Race tab compares country scopes, frontier position, gap
 - Unbounded narrative density.
 - A second timer that duplicates a native mission/timed flag.
 
-## Combined Great AI Race blueprint
+## Combined AI Race blueprint
 
 ### Inner national loop
 

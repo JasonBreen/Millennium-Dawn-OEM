@@ -1,6 +1,6 @@
 # United States — SpaceX Corporate History (2002–2026)
 
-Scope: OEM Corporate History module modelling SpaceX from founding through Falcon 1, COTS/CRS, Falcon 9 + Dragon, reuse, Falcon Heavy, Starlink, Commercial Crew, NSSL, Starship HLS, iterative Starship licensing/tests, and a 2025–2026 capstone. Not a new focus tree, not Great AI Race. English localisation only. Namespace `USA_spacex_events`. Root prefix `USA_spacex`. Owner tag `USA` (`original_tag = USA` in every visible trigger).
+Scope: OEM Corporate History module modelling SpaceX from founding through Falcon 1, COTS/CRS, Falcon 9 + Dragon, reuse, Falcon Heavy, Starlink, Commercial Crew, NSSL, Starship HLS, iterative Starship licensing/tests, and a 2025–2026 capstone. Not a new focus tree, not AI Race. English localisation only. Namespace `USA_spacex_events`. Root prefix `USA_spacex`. Owner tag `USA` (`original_tag = USA` in every visible trigger).
 
 Game-rule semantics:
 
@@ -10,7 +10,7 @@ Game-rule semantics:
 
 Hidden reconstruct sink: `USA_spacex_events.90` is a callerless Outcomes Only debug sink, not a lifecycle owner. The registered `USA_spacex_reconstruct_history` root delegates silent history only in Outcomes Only; Full monthly dispatch resolves only prior-year history before generic recovery and never invokes silent reconstruction for a current-year choice.
 
-Do not write any other chain’s identifiers (NASA, ULA/Boeing, AI Core, NVIDIA, energy, microchip, Great AI Race). Reads of other satcom/5G state are deferred and not used in this first implementation.
+Do not write any other chain’s identifiers (NASA, ULA/Boeing, AI Core, NVIDIA, energy, microchip, AI Race). Reads of other satcom/5G state are deferred and not used in this first implementation.
 
 ## State model (persistent axes, 0..10)
 

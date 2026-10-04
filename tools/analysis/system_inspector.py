@@ -52,7 +52,7 @@ PRESETS = {
         ("TOP_",),
         "Targeted Operations and its native raids",
     ),
-    "ai_race": Preset(r"ai_race", ("ai_race_", "AI_RACE_"), "Great AI Race"),
+    "ai_race": Preset(r"ai_race", ("ai_race_", "AI_RACE_"), "AI Race"),
     "econ_forum": Preset(
         r"econ_forum|EconomicForums|international_forums",
         ("econ_forum_",),

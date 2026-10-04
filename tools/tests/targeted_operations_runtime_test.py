@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from great_ai_race_state_model_test import _named_block
+from ai_race_state_model_test import _named_block
 
 ROOT = Path(__file__).resolve().parents[2]
 EFFECTS = (
