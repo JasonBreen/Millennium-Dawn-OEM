@@ -1,6 +1,6 @@
 # AI Race Architecture
 
-"AI Race" is a working title. The final player-facing name has not been selected.
+The player-facing name is the AI Race.
 
 Status: upstream port candidate based on the OEM four-stage race and strategic
 computer planning. Natural campaign balance and UI acceptance remain separate
