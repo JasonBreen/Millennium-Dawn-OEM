@@ -83,6 +83,12 @@ finished, for `METALGEAR.3`).
 Opens in February 2004 (`METALGEAR_monthly_shadow_moses_pulse`), once (`METALGEAR_shadow_moses_started`). A debug-only
 decision starts it early. One incident, so its delayed events read globals safely.
 
+`global.METALGEAR_sm_stage` records the step it waits on (1 dossier, 2 complication, 3 after action), and
+`METALGEAR_sm_step_pending` (60 days) outlasts every delay. If the United States is annexed while a step is queued,
+the event is discarded; once it exists again and the flag has lapsed, the pulse resends that step. Each event fires only
+at its own stage, and its options act only while that stage is current, so a resent duplicate cannot apply twice or
+charge twice.
+
 1. **Dossier** (`METALGEAR.10`): the first priority is the weapons program (1), the story (2) or the response (3, $2B).
    Each holds one commitment, or costs 10 coherence when none is free.
 2. **Complication** (`METALGEAR.11`, 10 days later): commit a second line (also covers the next objective), cut the

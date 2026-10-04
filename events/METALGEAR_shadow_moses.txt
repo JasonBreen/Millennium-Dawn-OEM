@@ -11,6 +11,7 @@ country_event = {
 	trigger = {
 		METALGEAR_is_controller = yes
 		NOT = { has_global_flag = METALGEAR_shadow_moses_resolved }
+		check_variable = { global.METALGEAR_sm_stage = 1 }
 	}
 
 	option = {
@@ -18,9 +19,12 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: METALGEAR.10.a executed"
 		custom_effect_tooltip = METALGEAR.10.a_tt
 		hidden_effect = {
-			set_variable = { global.METALGEAR_sm_priority = 1 }
-			METALGEAR_sm_commit = yes
-			country_event = { id = METALGEAR.11 days = 10 }
+			if = {
+				limit = { check_variable = { global.METALGEAR_sm_stage = 1 } }
+				set_variable = { global.METALGEAR_sm_priority = 1 }
+				METALGEAR_sm_commit = yes
+				METALGEAR_sm_advance = yes
+			}
 		}
 		ai_chance = {
 			base = 40
@@ -36,9 +40,12 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: METALGEAR.10.b executed"
 		custom_effect_tooltip = METALGEAR.10.b_tt
 		hidden_effect = {
-			set_variable = { global.METALGEAR_sm_priority = 2 }
-			METALGEAR_sm_commit = yes
-			country_event = { id = METALGEAR.11 days = 10 }
+			if = {
+				limit = { check_variable = { global.METALGEAR_sm_stage = 1 } }
+				set_variable = { global.METALGEAR_sm_priority = 2 }
+				METALGEAR_sm_commit = yes
+				METALGEAR_sm_advance = yes
+			}
 		}
 		ai_chance = {
 			base = 40
@@ -52,13 +59,16 @@ country_event = {
 	option = {
 		name = METALGEAR.10.c
 		log = "[GetDateText]: [This.GetName]: METALGEAR.10.c executed"
-		set_temp_variable = { treasury_change = -2 }
-		modify_treasury_effect = yes
 		custom_effect_tooltip = METALGEAR.10.c_tt
 		hidden_effect = {
-			set_variable = { global.METALGEAR_sm_priority = 3 }
-			METALGEAR_sm_commit = yes
-			country_event = { id = METALGEAR.11 days = 10 }
+			if = {
+				limit = { check_variable = { global.METALGEAR_sm_stage = 1 } }
+				set_temp_variable = { treasury_change = -2 }
+				modify_treasury_effect = yes
+				set_variable = { global.METALGEAR_sm_priority = 3 }
+				METALGEAR_sm_commit = yes
+				METALGEAR_sm_advance = yes
+			}
 		}
 		ai_chance = {
 			base = 20
@@ -81,6 +91,7 @@ country_event = {
 	trigger = {
 		METALGEAR_is_controller = yes
 		NOT = { has_global_flag = METALGEAR_shadow_moses_resolved }
+		check_variable = { global.METALGEAR_sm_stage = 2 }
 	}
 
 	option = {
@@ -88,9 +99,12 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: METALGEAR.11.a executed"
 		custom_effect_tooltip = METALGEAR.11.a_tt
 		hidden_effect = {
-			set_variable = { global.METALGEAR_sm_second = 1 }
-			METALGEAR_sm_commit = yes
-			country_event = { id = METALGEAR.12 days = 14 }
+			if = {
+				limit = { check_variable = { global.METALGEAR_sm_stage = 2 } }
+				set_variable = { global.METALGEAR_sm_second = 1 }
+				METALGEAR_sm_commit = yes
+				METALGEAR_sm_advance = yes
+			}
 		}
 		ai_chance = {
 			base = 40
@@ -106,9 +120,12 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: METALGEAR.11.b executed"
 		custom_effect_tooltip = METALGEAR.11.b_tt
 		hidden_effect = {
-			set_variable = { global.METALGEAR_sm_second = 2 }
-			METALGEAR_sm_release = yes
-			country_event = { id = METALGEAR.12 days = 14 }
+			if = {
+				limit = { check_variable = { global.METALGEAR_sm_stage = 2 } }
+				set_variable = { global.METALGEAR_sm_second = 2 }
+				METALGEAR_sm_release = yes
+				METALGEAR_sm_advance = yes
+			}
 		}
 		ai_chance = {
 			base = 20
@@ -124,8 +141,11 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: METALGEAR.11.c executed"
 		custom_effect_tooltip = METALGEAR.11.c_tt
 		hidden_effect = {
-			set_variable = { global.METALGEAR_sm_second = 3 }
-			country_event = { id = METALGEAR.12 days = 14 }
+			if = {
+				limit = { check_variable = { global.METALGEAR_sm_stage = 2 } }
+				set_variable = { global.METALGEAR_sm_second = 3 }
+				METALGEAR_sm_advance = yes
+			}
 		}
 		ai_chance = { base = 30 }
 	}
@@ -150,7 +170,10 @@ country_event = {
 	picture = GFX_generic_nuclear_smuggling
 	is_triggered_only = yes
 
-	trigger = { METALGEAR_is_controller = yes }
+	trigger = {
+		METALGEAR_is_controller = yes
+		check_variable = { global.METALGEAR_sm_stage = 3 }
+	}
 
 	immediate = {
 		hidden_effect = { METALGEAR_resolve_shadow_moses = yes }

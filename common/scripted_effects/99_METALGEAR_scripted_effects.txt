@@ -124,11 +124,20 @@ METALGEAR_network_month = {
 	METALGEAR_clamp_network = yes
 
 	if = {
-		limit = {
-			is_ai = no
-			check_variable = { mg_audits_done > 0 }
+		limit = { check_variable = { mg_audits_done > 0 } }
+		if = {
+			limit = { is_ai = no }
+			country_event = METALGEAR.3
 		}
-		country_event = METALGEAR.3
+		# Only the report reads these markers, so an AI controller clears them at once.
+		else = {
+			for_loop_effect = {
+				end = 3
+				value = mg_i
+
+				set_variable = { global.METALGEAR_node_audited^mg_i = 0 }
+			}
+		}
 	}
 }
 

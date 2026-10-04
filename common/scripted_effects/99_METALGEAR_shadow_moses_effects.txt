@@ -9,6 +9,16 @@ METALGEAR_monthly_shadow_moses_pulse = {
 		}
 		USA = { METALGEAR_start_shadow_moses = yes }
 	}
+	# A step queued for a United States that was annexed meanwhile is discarded; resend it once it is back.
+	else_if = {
+		limit = {
+			has_global_flag = METALGEAR_shadow_moses_started
+			NOT = { has_global_flag = METALGEAR_shadow_moses_resolved }
+			NOT = { has_global_flag = METALGEAR_sm_step_pending }
+			country_exists = USA
+		}
+		USA = { METALGEAR_sm_send_step = yes }
+	}
 }
 
 # USA scope. The incident is a single fixed record, so its delayed events read these globals safely.
@@ -18,7 +28,38 @@ METALGEAR_start_shadow_moses = {
 	set_variable = { global.METALGEAR_sm_second = 0 }
 	set_variable = { global.METALGEAR_sm_committed = 0 }
 	set_variable = { global.METALGEAR_sm_covered = 0 }
-	country_event = METALGEAR.10
+	set_variable = { global.METALGEAR_sm_stage = 1 }
+	METALGEAR_sm_send_step = yes
+}
+
+# USA scope. Sends the step the incident waits on: 1 the dossier, 2 the complication, 3 the after action. The flag
+# outlasts any delay, so the pulse only resends a step that was really lost.
+METALGEAR_sm_send_step = {
+	set_global_flag = { flag = METALGEAR_sm_step_pending value = 1 days = 60 }
+	if = {
+		limit = { check_variable = { global.METALGEAR_sm_stage = 1 } }
+		country_event = METALGEAR.10
+	}
+	else_if = {
+		limit = { check_variable = { global.METALGEAR_sm_stage = 2 } }
+		country_event = METALGEAR.11
+	}
+	else = {
+		country_event = METALGEAR.12
+	}
+}
+
+# USA scope. Moves the incident to the next stage and queues its event after the delay.
+METALGEAR_sm_advance = {
+	add_to_variable = { global.METALGEAR_sm_stage = 1 }
+	set_global_flag = { flag = METALGEAR_sm_step_pending value = 1 days = 60 }
+	if = {
+		limit = { check_variable = { global.METALGEAR_sm_stage = 2 } }
+		country_event = { id = METALGEAR.11 days = 10 }
+	}
+	else = {
+		country_event = { id = METALGEAR.12 days = 14 }
+	}
 }
 
 # USA scope. Commits one unit of capacity to the incident, or costs coherence when none is free.
