@@ -259,6 +259,40 @@ STALKER_monthly_perimeter_breach_pulse = {
 	}
 }
 
+# An AI controller rarely holds the 50 political power containment costs, so a Zone in crisis is paid for from its treasury.
+STALKER_monthly_ai_zone_relief_pulse = {
+	if = {
+		limit = {
+			STALKER_scenario_enabled = yes
+			check_variable = { global.STALKER_active_zone_anchors^num > 0 }
+		}
+		for_each_scope_loop = {
+			array = global.STALKER_active_zone_anchors
+			if = {
+				limit = {
+					STALKER_is_active_zone_anchor = yes
+					NOT = { has_state_flag = STALKER_zone_policy_pending }
+					NOT = { has_state_flag = STALKER_ai_zone_relief_cooldown }
+					OR = {
+						check_variable = { STALKER_zone_containment < 30 }
+						has_state_flag = STALKER_perimeter_breach_active
+					}
+					controller = {
+						exists = yes
+						is_ai = yes
+						has_political_power < 50
+						NOT = { has_active_mission = bankruptcy_incoming_collapse }
+					}
+				}
+				log = "[GetDateText]: AI Zone relief in [THIS.GetName]"
+				set_state_flag = { flag = STALKER_ai_zone_relief_cooldown value = 1 days = 180 }
+				controller = { small_expenditure = yes }
+				STALKER_reinforce_containment = yes
+			}
+		}
+	}
+}
+
 STALKER_resolve_perimeter_breach = {
 	if = {
 		limit = { has_state_flag = STALKER_perimeter_breach_active }

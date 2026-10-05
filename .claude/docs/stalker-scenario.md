@@ -56,6 +56,9 @@ names and events against the in-game text as documented by the S.T.A.L.K.E.R. Wi
   `99_STALKER_scripted_effects.txt`, `_society_`, `_zone_placements`, `_pulse_`, `_top_`. The Zone overview panel is
   `01_STALKER_zone_overview_gui.txt` with `interface/STALKER_zone_overview.gui`, embedded in the Zone
   management category.
+  An AI holder in crisis (containment under 30, or a perimeter breach) with less than the 50 political
+  power containment costs gets `STALKER_reinforce_containment` from the treasury instead, at most every
+  180 days (`STALKER_monthly_ai_zone_relief_pulse`).
 - **X-Labs (10–19):** `STALKER_xlabs.txt`; loc `_xlabs_`; `STALKER_xlab_decisions.txt`;
   `99_STALKER_xlab_effects.txt`.
 - **International (20–29):** `STALKER_international.txt`; loc `_international_`;
