@@ -101,10 +101,16 @@ names and events against the in-game text as documented by the S.T.A.L.K.E.R. Wi
   `99_STALKER_strelok_effects.txt`. The 2012 raid uses events 160–162. The rest of the block stays with that raid.
 - **Zone Legend (170–181):** `STALKER_legend.txt`; loc `_legend_`;
   `99_STALKER_legend_effects.txt`. 2006, 2011 and 2018 come from the yearly file. Fairway and Strider are scheduled from the 2012 result. Fairway, Clear Sky and SIRCAA use distinct delayed relays (178, 180 and 181). The monthly legend pulse recovers Fairway after its 120-day delay, Strider after his 60-day delay, Clear Sky after its 70-day delay and SIRCAA after its 80-day delay if their event carriers disappear. It also redelivers unresolved choices when Zone control changes.
+- **Antarctic Research (190–199):** `STALKER_antarctic.txt`; loc `_antarctic_`;
+  `99_STALKER_antarctic_effects.txt`, `STALKER_antarctic_decisions.txt`.
+  `STALKER_polar_artifact_study` spends 5 artifacts at a station with a working Radiation
+  Laboratory (`antarctica_lab_cat_nuclear_reactors > 0`): 180 days of +3% research and +15%
+  station iteration progress, then `STALKER.190`. Observers who visit during the study seize the
+  samples (`STALKER.191` and Antarctica's `MD_antarctica.4` penalty).
 
 Localisation file names are `MD_STALKER_<subsystem>_l_english.yml`.
 
-Events 182–189 remain available in the Legend block. The next free block is 190–199. Decision categories are one file each in
+Events 182–189 remain available in the Legend block. The next free block is 200–209. Decision categories are one file each in
 `common/decisions/categories/00_STALKER_*_category.txt`. Dynamic modifiers are one file per
 subsystem in `common/dynamic_modifiers/00_STALKER_*dynamic_modifiers.txt`.
 
@@ -124,6 +130,8 @@ where possible; they are what an upstream port has to carry.
   `[STALKER_top_package_zone_crisis]` in the package-page localisation. See
   [Targeted Operations](targeted-operations.md).
 - `localisation/english/MD_game_rules_l_english.yml`: the three STALKER rules.
+- `events/MD_Antarctica.txt`: the observer report event's `else_if` that finds a polar artifact
+  study when the station shows no other violation.
 
 ## Scripting traps found at runtime
 
