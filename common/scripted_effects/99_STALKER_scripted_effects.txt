@@ -108,6 +108,7 @@ STALKER_reinforce_containment = {
 			NOT = { has_state_flag = STALKER_zone_policy_pending }
 		}
 		log = "[GetDateText]: Reinforced STALKER Zone containment in [THIS.GetName]"
+		set_state_flag = { flag = STALKER_zone_reinforced value = 1 days = 180 }
 		add_to_variable = { STALKER_zone_containment = 20 }
 		add_to_variable = { STALKER_zone_activity = -10 }
 		add_to_variable = { STALKER_zone_exploitation = -5 }
@@ -272,7 +273,7 @@ STALKER_monthly_ai_zone_relief_pulse = {
 				limit = {
 					STALKER_is_active_zone_anchor = yes
 					NOT = { has_state_flag = STALKER_zone_policy_pending }
-					NOT = { has_state_flag = STALKER_ai_zone_relief_cooldown }
+					NOT = { has_state_flag = STALKER_zone_reinforced }
 					OR = {
 						check_variable = { STALKER_zone_containment < 30 }
 						has_state_flag = STALKER_perimeter_breach_active
@@ -282,10 +283,10 @@ STALKER_monthly_ai_zone_relief_pulse = {
 						is_ai = yes
 						has_political_power < 50
 						NOT = { has_active_mission = bankruptcy_incoming_collapse }
+						NOT = { check_variable = { treasury < 10 } }
 					}
 				}
 				log = "[GetDateText]: AI Zone relief in [THIS.GetName]"
-				set_state_flag = { flag = STALKER_ai_zone_relief_cooldown value = 1 days = 180 }
 				controller = { small_expenditure = yes }
 				STALKER_reinforce_containment = yes
 			}

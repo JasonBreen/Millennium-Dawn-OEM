@@ -8,7 +8,15 @@ ZONE = 698
 RELIEF_DAYS = 180
 
 
-def _zone(*, ai=True, political_power=10, containment=20, breach=False, mission=None):
+def _zone(
+    *,
+    ai=True,
+    political_power=10,
+    treasury=100,
+    containment=20,
+    breach=False,
+    mission=None,
+):
     script = StalkerScript()
     script.globals["STALKER_active_zone_anchors"] = [ZONE]
     state = script.countries[ZONE]
@@ -22,7 +30,7 @@ def _zone(*, ai=True, political_power=10, containment=20, breach=False, mission=
     holder_id = state["controller"]
     holder = script.countries[holder_id]
     holder["ai"] = ai
-    holder["vars"]["political_power"] = political_power
+    holder["vars"].update(political_power=political_power, treasury=treasury)
     if mission:
         holder["missions"].add(mission)
     return script, state, holder_id
@@ -40,7 +48,7 @@ def test_a_broke_ai_zone_in_crisis_is_reinforced_and_paid_from_the_treasury():
     assert state["vars"]["STALKER_zone_activity"] == 80
     assert _relieved(script, holder_id) == 1
     assert (
-        state["flags"]["STALKER_ai_zone_relief_cooldown"]
+        state["flags"]["STALKER_zone_reinforced"]
         == script.globals["num_days"] + RELIEF_DAYS
     )
 
@@ -66,10 +74,17 @@ def test_relief_waits_out_its_cooldown():
     [
         {"ai": False},
         {"political_power": 50},
+        {"treasury": 9},
         {"containment": 30},
         {"mission": "bankruptcy_incoming_collapse"},
     ],
-    ids=["player", "can_afford_the_decision", "not_in_crisis", "near_bankruptcy"],
+    ids=[
+        "player",
+        "can_afford_the_decision",
+        "empty_treasury",
+        "not_in_crisis",
+        "near_bankruptcy",
+    ],
 )
 def test_no_relief_outside_a_broke_ai_crisis(case):
     script, state, holder_id = _zone(**case)
@@ -77,7 +92,16 @@ def test_no_relief_outside_a_broke_ai_crisis(case):
     script.run("STALKER_monthly_ai_zone_relief_pulse", 1)
     assert state["vars"]["STALKER_zone_containment"] == before
     assert _relieved(script, holder_id) == 0
-    assert "STALKER_ai_zone_relief_cooldown" not in state["flags"]
+    assert "STALKER_zone_reinforced" not in state["flags"]
+
+
+def test_a_decision_reinforcement_starts_the_relief_cooldown():
+    script, state, holder_id = _zone()
+    script.run("STALKER_reinforce_containment", ZONE)
+    state["vars"]["STALKER_zone_containment"] = 10
+    script.run("STALKER_monthly_ai_zone_relief_pulse", 1)
+    assert state["vars"]["STALKER_zone_containment"] == 10
+    assert _relieved(script, holder_id) == 0
 
 
 def test_no_relief_while_the_zone_policy_is_pending():
@@ -107,6 +131,14 @@ def test_relief_runs_from_the_monthly_pulse_and_matches_the_decision():
         ROOT / "common/scripted_effects/99_STALKER_scripted_effects.txt"
     ).read_text(encoding="utf-8")
     relief = _named_block(effects, "STALKER_monthly_ai_zone_relief_pulse")
+    reinforce = _named_block(effects, "STALKER_reinforce_containment")
     assert f"has_political_power < {cost}" in relief
-    assert f"days = {cooldown}" in relief
+    assert "check_variable = { treasury < 10 }" in decision
+    assert "check_variable = { treasury < 10 }" in relief
+    assert (
+        "set_state_flag = { flag = STALKER_zone_reinforced value = 1 "
+        f"days = {cooldown} }}" in reinforce
+    )
+    assert "NOT = { has_state_flag = STALKER_zone_reinforced }" in relief
+    assert "FROM = { has_state_flag = STALKER_zone_reinforced }" in decision
     assert "small_expenditure = yes" in decision and "small_expenditure = yes" in relief
