@@ -139,6 +139,9 @@ def test_the_restoration_act_serves_the_agenda():
 
 def test_the_masquerade_slips_once_a_year():
     pulse = _named_block(EFFECTS, "DEUSEX_monthly_illuminati_pulse")
+    assert pulse.index(
+        "check_variable = { global.DEUSEX_illum_exposure > 69 }"
+    ) < pulse.index("add_to_variable = { global.DEUSEX_illum_exposure = -1 }")
     assert "check_variable = { global.DEUSEX_illum_exposure > 69 }" in pulse
     assert "NOT = { has_global_flag = DEUSEX_masquerade_cooldown }" in pulse
     slips = _named_block(EFFECTS, "DEUSEX_masquerade_slips")
@@ -164,9 +167,10 @@ def test_every_change_refreshes_its_modifier():
             text,
         ):
             following = text[match.end() : match.end() + 400]
+            # A bare clamp would leave the member's modifier stale until the next pulse.
             assert (
                 "DEUSEX_update_inner_circle = yes" in following
-                or "DEUSEX_clamp_illuminati = yes" in following
+                or "DEUSEX_refresh_member = yes" in following
             )
 
 
@@ -198,3 +202,20 @@ def test_events_are_gated_in_the_block_and_every_key_has_english_text():
         assert re.search(rf"(?m)^ {re.escape(key)}: \"", LOC + other), key
     for line in LOC.splitlines()[1:]:
         assert re.match(r'^ [A-Za-z0-9_.]+: ".*"$', line), line
+
+
+def test_non_member_exposure_changes_and_stage_four_refresh_at_once():
+    for decision in ("DEUSEX_investigate_fronts", "DEUSEX_leak_the_files"):
+        body = _named_block(DECISIONS, decision)
+        assert "DEUSEX_refresh_member = yes" in body
+        assert "DEUSEX_clamp_illuminati = yes" not in body
+    refresh = _named_block(EFFECTS, "DEUSEX_refresh_member")
+    assert (
+        "var:global.DEUSEX_illum_member = { DEUSEX_update_inner_circle = yes }"
+        in refresh
+    )
+    agenda = _named_block(EFFECTS, "DEUSEX_advance_agenda")
+    final = agenda[
+        agenda.index("check_variable = { global.DEUSEX_illum_agenda = 4 }") :
+    ]
+    assert "DEUSEX_update_illuminati_grip = yes" in final
