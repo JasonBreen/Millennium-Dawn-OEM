@@ -21,11 +21,13 @@ FBC_monthly_polar_pulse = {
 			NOT = { has_global_flag = FBC_polar_case_open }
 			NOT = { has_global_flag = FBC_polar_cooldown }
 		}
+		# Every eligible member rolls its own 2%; one of the hits gets the case, so list order does not matter.
+		clear_temp_array = FBC_polar_hits
 		for_each_scope_loop = {
 			array = global.at_members
 			if = {
 				limit = {
-					NOT = { has_global_flag = FBC_polar_case_open }
+					exists = yes
 					check_variable = { antarctica_lab_ice_tech_boost > 0 }
 				}
 				FBC_polar_find_drilling_station = yes
@@ -33,10 +35,17 @@ FBC_monthly_polar_pulse = {
 					limit = { check_variable = { FBC_polar_candidate > 0 } }
 					random = {
 						chance = 2
-						set_global_flag = FBC_polar_case_open
-						country_event = FBC.20
+						add_to_temp_array = { FBC_polar_hits = THIS }
 					}
 				}
+			}
+		}
+		if = {
+			limit = { check_variable = { FBC_polar_hits^num > 0 } }
+			random_scope_in_array = {
+				array = FBC_polar_hits
+				set_global_flag = FBC_polar_case_open
+				country_event = FBC.20
 			}
 		}
 	}
@@ -94,8 +103,10 @@ FBC_polar_close_case = {
 }
 
 # Station controller scope. The event breaks out of the core and the rig stops for 30 days. The outage is FBC's own
-# flag, which Antarctica's laboratory effects read, so it never touches the station's blizzard damage or repairs.
+# flag, which Antarctica's laboratory effects and iteration rewards read, so it never touches blizzard damage or
+# repairs. FBC.25 ends it and restores the output at once.
 FBC_polar_breakout = {
-	set_country_flag = { flag = FBC_polar_rig_down value = 1 days = 30 }
+	set_country_flag = FBC_polar_rig_down
 	antarctica_recalculate_country_laboratory_effects = yes
+	country_event = { id = FBC.25 days = 30 }
 }

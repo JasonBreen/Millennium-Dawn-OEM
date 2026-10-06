@@ -26,6 +26,13 @@ def test_the_pulse_opens_one_case_at_a_working_tier_two_drilling_rig():
     assert "array = global.at_members" in pulse
     assert "check_variable = { antarctica_lab_ice_tech_boost > 0 }" in pulse
     assert "chance = 2" in pulse
+    member = pulse[pulse.index("array = global.at_members") :]
+    assert "exists = yes" in _named_block(member, "limit")
+    assert "add_to_temp_array = { FBC_polar_hits = THIS }" in member
+    loop_end = pulse.index("check_variable = { FBC_polar_hits^num > 0 }")
+    assert pulse.index("set_global_flag = FBC_polar_case_open") > loop_end
+    assert pulse.index("country_event = FBC.20") > loop_end
+    assert "array = FBC_polar_hits" in pulse[loop_end:]
     find = _named_block(EFFECTS, "FBC_polar_find_drilling_station")
     guard = find.index("check_variable = { FBC_polar_station > 0 }")
     assert guard < find.index("global.antarctica_station_tier^FBC_polar_station > 1")
@@ -63,10 +70,12 @@ def test_every_ending_closes_the_case_and_releases_the_team():
 
 def test_a_breakout_stops_only_the_rig_with_its_own_timer():
     breakout = _named_block(EFFECTS, "FBC_polar_breakout")
-    assert (
-        "set_country_flag = { flag = FBC_polar_rig_down value = 1 days = 30 }"
-        in breakout
-    )
+    assert "set_country_flag = FBC_polar_rig_down\n" in breakout
+    assert "country_event = { id = FBC.25 days = 30 }" in breakout
+    back = _event("FBC.25")
+    assert "hidden = yes" in back
+    assert "clr_country_flag = FBC_polar_rig_down" in back
+    assert "antarctica_recalculate_country_laboratory_effects = yes" in back
     assert "antarctica_recalculate_country_laboratory_effects = yes" in breakout
     for avoided in (
         "antarctica_mark_blizzard_slot_damaged",
@@ -84,6 +93,13 @@ def test_a_breakout_stops_only_the_rig_with_its_own_timer():
     assert gate < rig.index(
         "add_to_variable = { antarctica_lab_cat_excavation_tech = 0.025 }"
     )
+    reward = _named_block(
+        antarctica, "antarctica_apply_single_laboratory_iteration_reward"
+    )
+    rig_reward = reward[reward.index("check_variable = { station_lab_module = 12 }") :]
+    assert rig_reward.index(
+        "NOT = { has_country_flag = FBC_polar_rig_down }"
+    ) < rig_reward.index("category = CAT_excavation")
 
 
 def test_a_lost_bureau_result_closes_the_case_and_returns_the_team():
@@ -96,7 +112,7 @@ def test_a_lost_bureau_result_closes_the_case_and_returns_the_team():
 
 
 def test_every_event_is_gated_and_bureau_factors_refresh_after_changes():
-    for event_id in ("FBC.20", "FBC.21", "FBC.22", "FBC.23", "FBC.24"):
+    for event_id in ("FBC.20", "FBC.21", "FBC.22", "FBC.23", "FBC.24", "FBC.25"):
         assert (
             "trigger = { FBC_scenario_enabled = yes }"
             in _event(event_id).split("option", 1)[0]
@@ -116,7 +132,7 @@ def test_every_event_is_gated_and_bureau_factors_refresh_after_changes():
 
 def test_event_ids_stay_in_the_block_and_every_key_has_english_text():
     ids = [int(n) for n in re.findall(r"(?m)^\tid = FBC\.(\d+)$", EVENTS)]
-    assert sorted(ids) == [20, 21, 22, 23, 24]
+    assert sorted(ids) == [20, 21, 22, 23, 24, 25]
     keys = re.findall(
         r"(?:title|desc|name|custom_effect_tooltip) = (FBC[A-Za-z0-9_.]*)", EVENTS
     )

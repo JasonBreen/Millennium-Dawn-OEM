@@ -28,13 +28,14 @@ event IDs, so parallel work does not collide. It ships on OEM only. Built like S
 - **Polar Desk (20–29):** `FBC_polar.txt`; loc `_polar_`;
   `99_FBC_polar_effects.txt`. One case at a time.
   `FBC_monthly_polar_pulse` gives each Antarctic Treaty member with a working Ice Core Deep Drilling Rig
-  (`antarctica_lab_ice_tech_boost > 0`) at station tier 2 or higher a 2% monthly chance of an Altered World
-  Event in the core (`FBC.20`, to the station's controller). Sealing the
+  (`antarctica_lab_ice_tech_boost > 0`) at station tier 2 or higher its own 2% monthly roll; one of the hits gets an
+  Altered World Event in the core (`FBC.20`, to the station's controller). Sealing the
   borehole costs 25 PP and ends it. Reporting it sends `FBC.21` to the United States, which keeps
   `FBC_polar_country`. A response team contains it three times in four (`FBC.22`: +5 containment, a
   one-use excavation bonus for the controller), or fails (`FBC.24`). Declining or failing breaks it out
-  (`FBC.23`): `FBC_polar_rig_down` stops the rig's laboratory output for 30 days, read in Antarctica's
-  `antarctica_apply_single_laboratory_module_effect`, so blizzard damage and repairs are untouched. Every
+  (`FBC.23`): `FBC_polar_rig_down` stops the rig's laboratory output and iteration rewards, read in Antarctica's
+  `antarctica_apply_single_laboratory_module_effect` and `antarctica_apply_single_laboratory_iteration_reward`, so
+  blizzard damage and repairs are untouched. Hidden `FBC.25` ends it after 30 days and recalculates at once. Every
   close starts a 1,095-day cooldown. If the United States stops existing with a result queued, the pulse
   closes the case and returns the team.
 
@@ -51,7 +52,7 @@ The next free block is 30–39.
 
 The Bureau is its own scenario. It does not read STALKER state, and STALKER does not read Bureau state. The two Targeted Operations rows are the only shared runtime hook.
 
-The Polar Desk reads Antarctica's station state and never writes it. Its one hook in Antarctica is the `FBC_polar_rig_down` check on the rig's laboratory output in `00_antarctica_effects.txt`, plus a call to `antarctica_recalculate_country_laboratory_effects`.
+The Polar Desk reads Antarctica's station state and never writes it. Its hooks in Antarctica are the `FBC_polar_rig_down` checks on the rig's laboratory output and iteration reward in `00_antarctica_effects.txt`, plus a call to `antarctica_recalculate_country_laboratory_effects`.
 
 ## Playable slice
 
