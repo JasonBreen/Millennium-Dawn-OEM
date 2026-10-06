@@ -96,6 +96,7 @@ All files below live in `.claude/docs/`.
 | `scripted-gui-patterns.md`         | `dynamic_lists`, loc dispatchers, dirty-var standard         |
 | `fbc-scenario.md` | Federal Bureau of Control scenario files, event-ID blocks, hooks |
 | `metalgear-scenario.md` | Metal Gear scenario files, event-ID blocks, hooks |
+| `deusex-scenario.md` | Deus Ex scenario files, event-ID blocks, hooks |
 | `stalker-scenario.md`              | STALKER files, event-ID blocks, hooks, merge rules           |
 | `scripted-gui-rules.md`            | scripted_gui mechanics: structure, dirty-var perf, AI        |
 | `scripting-edge-cases.md`          | Niche pitfalls: temp-var defaults, `^index`, vacant office   |
