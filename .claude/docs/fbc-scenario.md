@@ -82,7 +82,9 @@ The town answers the intervention it was given:
 - The quarantine line breaks (`FBC.33`): 25 PP for -5 fog, or lift it for +5 exposure and +10 fog.
 - The cover-up surfaces (`FBC.34`): 50 PP to hold exposure to +5, or 2% stability and +15 exposure.
 
-Losing Maine pauses the case's timer and frees its team.
+Losing Maine pauses the case's timer and frees its team. Back in Maine, a team intervention recommits a free team
+before its timer resumes, and waits while none is free. `FBC.30` needs USA to hold Maine on arrival. It sets phase 1
+itself, so reports lost to a change of control go out again a week later.
 
 The Bureau dashboard (`FBC_bureau_category_desc`) gains a Toluca County line from
 `99_FBC_silenthill_scripted_localisation.txt`. The fog shows in bands (thin, heavy, thick, covering the town), read

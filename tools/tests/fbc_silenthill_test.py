@@ -119,3 +119,33 @@ def test_events_are_gated_in_the_block_and_every_key_has_english_text():
         assert re.search(rf"(?m)^ {re.escape(key)}: \"", LOC), key
     for line in LOC.splitlines()[1:]:
         assert re.match(r'^ [A-Za-z0-9_.]+: ".*"$', line), line
+
+
+def test_reports_lost_to_a_change_of_control_are_sent_again():
+    case = _named_block(EFFECTS, "FBC_silenthill_case_month")
+    report = case[: case.index("else_if")]
+    assert "NOT = { has_country_flag = FBC_sh_report_pending }" in report
+    assert "set_variable = { FBC_sh_phase = 1 }" not in report
+    head = _event("FBC.30").split("option = {", 1)[0]
+    gate = _named_block(head[head.index("\n\ttrigger = {") :], "trigger")
+    assert "check_variable = { FBC_sh_phase = 0 }" in gate
+    assert "764 = { is_controlled_by = ROOT }" in gate
+    assert "set_variable = { FBC_sh_phase = 1 }" in _named_block(head, "immediate")
+    quarantine = (
+        _event("FBC.30").split("name = FBC.30.b", 1)[1].split("option = {", 1)[0]
+    )
+    assert "trigger = { 764 = { is_controlled_by = ROOT } }" in quarantine
+
+
+def test_a_retaken_town_waits_for_a_team_before_the_timer_resumes():
+    case = _named_block(EFFECTS, "FBC_silenthill_case_month")
+    running = case[case.index("check_variable = { FBC_sh_phase = 2 }") :]
+    assert running.index("FBC_commit_silenthill_team = yes") < running.index(
+        "add_to_variable = { FBC_sh_answer_in = -1 }"
+    )
+    countdown = running[: running.index("add_to_variable = { FBC_sh_answer_in = -1 }")]
+    assert "check_variable = { FBC_sh_committed > 0 }" in countdown
+    sloc = _read(
+        "common/scripted_localisation/99_FBC_silenthill_scripted_localisation.txt"
+    )
+    assert sloc.index("FBC_sh_waiting_for_team") < sloc.index("FBC_sh_team_in_town")

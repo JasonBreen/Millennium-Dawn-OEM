@@ -52,7 +52,7 @@ FBC_update_silenthill_fog = {
 }
 
 # USA scope. Reports come at 25 fog; the town answers the intervention when its timer runs out. Both need the Bureau
-# to hold the town.
+# to hold the town. FBC.30 sets phase 1 when it arrives, so reports lost to a change of control are sent again.
 FBC_silenthill_case_month = {
 	if = {
 		limit = {
@@ -61,8 +61,9 @@ FBC_silenthill_case_month = {
 				check_variable = { FBC_sh_fog > 24 }
 				is_controlled_by = USA
 			}
+			NOT = { has_country_flag = FBC_sh_report_pending }
 		}
-		set_variable = { FBC_sh_phase = 1 }
+		set_country_flag = { flag = FBC_sh_report_pending value = 1 days = 7 }
 		country_event = { id = FBC.30 days = 1 }
 	}
 	else_if = {
@@ -70,7 +71,23 @@ FBC_silenthill_case_month = {
 			check_variable = { FBC_sh_phase = 2 }
 			764 = { is_controlled_by = USA }
 		}
-		add_to_variable = { FBC_sh_answer_in = -1 }
+		# A team intervention needs a team in town: recommit one after a lost town, or wait until one is free.
+		if = {
+			limit = {
+				check_variable = { FBC_sh_intervention = 1 }
+				check_variable = { FBC_sh_committed < 1 }
+			}
+			FBC_commit_silenthill_team = yes
+		}
+		if = {
+			limit = {
+				OR = {
+					NOT = { check_variable = { FBC_sh_intervention = 1 } }
+					check_variable = { FBC_sh_committed > 0 }
+				}
+			}
+			add_to_variable = { FBC_sh_answer_in = -1 }
+		}
 		if = {
 			limit = { check_variable = { FBC_sh_answer_in < 1 } }
 			set_variable = { FBC_sh_phase = 3 }
