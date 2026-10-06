@@ -1,0 +1,199 @@
+# The Illuminati. Eight major powers carry DEUSEX_illum_influence (0-100), which grows each month and drains their
+# political power and stability. Three wings (capital, media and security) share the conspiracy's strength. One
+# major can join the inner circle, steer the wings and advance the agenda. Exposure (0-100) is the Masquerade's risk.
+DEUSEX_monthly_illuminati_pulse = {
+	if = {
+		limit = { DEUSEX_scenario_enabled = yes }
+		if = {
+			limit = { NOT = { has_global_flag = DEUSEX_illuminati_ready } }
+			DEUSEX_setup_illuminati = yes
+		}
+		# A member that stops existing leaves the inner circle and keeps nothing, so a restored tag is not a second member.
+		if = {
+			limit = {
+				has_variable = global.DEUSEX_illum_member
+				var:global.DEUSEX_illum_member = { exists = no }
+			}
+			var:global.DEUSEX_illum_member = {
+				clr_country_flag = DEUSEX_inner_circle
+				if = {
+					limit = { has_dynamic_modifier = { modifier = DEUSEX_inner_circle } }
+					remove_dynamic_modifier = { modifier = DEUSEX_inner_circle }
+				}
+			}
+			clear_variable = global.DEUSEX_illum_member
+		}
+		every_country = {
+			limit = {
+				DEUSEX_is_illuminati_target = yes
+				NOT = { has_country_flag = DEUSEX_inner_circle }
+			}
+			DEUSEX_illuminati_month = yes
+		}
+		add_to_variable = { global.DEUSEX_illum_exposure = -1 }
+		DEUSEX_clamp_illuminati = yes
+		if = {
+			limit = {
+				check_variable = { global.DEUSEX_illum_exposure > 69 }
+				NOT = { has_global_flag = DEUSEX_masquerade_cooldown }
+			}
+			DEUSEX_masquerade_slips = yes
+		}
+		if = {
+			limit = { has_variable = global.DEUSEX_illum_member }
+			var:global.DEUSEX_illum_member = { DEUSEX_update_inner_circle = yes }
+		}
+	}
+}
+
+DEUSEX_setup_illuminati = {
+	set_global_flag = DEUSEX_illuminati_ready
+	set_variable = { global.DEUSEX_illum_capital = 40 }
+	set_variable = { global.DEUSEX_illum_media = 30 }
+	set_variable = { global.DEUSEX_illum_security = 30 }
+	set_variable = { global.DEUSEX_illum_exposure = 10 }
+	every_country = {
+		limit = { DEUSEX_is_illuminati_target = yes }
+		set_variable = { DEUSEX_illum_influence = 10 }
+		if = {
+			limit = { tag = USA }
+			set_variable = { DEUSEX_illum_influence = 20 }
+		}
+		else_if = {
+			limit = { OR = { tag = CHI tag = GER tag = ENG tag = FRA } }
+			set_variable = { DEUSEX_illum_influence = 15 }
+		}
+	}
+}
+
+# Target scope, not the member. Influence grows by 0.5 a month, 0.5 more with an open augmentation industry, and
+# 0.5 more once the agenda has started. A target at 40 or more rolls 5% a month for an offer, at most every two years.
+DEUSEX_illuminati_month = {
+	set_temp_variable = { DEUSEX_illum_gain = 0.5 }
+	if = {
+		limit = { DEUSEX_has_augmentation_industry = yes }
+		add_to_temp_variable = { DEUSEX_illum_gain = 0.5 }
+	}
+	if = {
+		limit = { check_variable = { global.DEUSEX_illum_agenda > 0 } }
+		add_to_temp_variable = { DEUSEX_illum_gain = 0.5 }
+	}
+	add_to_variable = { DEUSEX_illum_influence = DEUSEX_illum_gain }
+	DEUSEX_update_illuminati_grip = yes
+	if = {
+		limit = { NOT = { has_dynamic_modifier = { modifier = DEUSEX_illuminati_grip } } }
+		add_dynamic_modifier = { modifier = DEUSEX_illuminati_grip }
+	}
+	if = {
+		limit = {
+			check_variable = { var = DEUSEX_illum_influence value = 40 compare = greater_than_or_equals }
+			NOT = { has_country_flag = DEUSEX_illum_offer_cooldown }
+		}
+		random = {
+			chance = 5
+			set_country_flag = { flag = DEUSEX_illum_offer_cooldown value = 1 days = 730 }
+			country_event = { id = DEUSEX.40 days = 1 }
+		}
+	}
+}
+
+# Exposure passed 70: the world sees part of the network. Every target sheds 10 influence. With a member, the member
+# chooses who pays; without one, the conspiracy goes quiet and sheds 30 exposure.
+DEUSEX_masquerade_slips = {
+	set_global_flag = { flag = DEUSEX_masquerade_cooldown value = 1 days = 365 }
+	news_event = { id = DEUSEX.41 days = 1 }
+	every_country = {
+		limit = {
+			DEUSEX_is_illuminati_target = yes
+			NOT = { has_country_flag = DEUSEX_inner_circle }
+		}
+		add_to_variable = { DEUSEX_illum_influence = -10 }
+		DEUSEX_update_illuminati_grip = yes
+	}
+	if = {
+		limit = { has_variable = global.DEUSEX_illum_member }
+		var:global.DEUSEX_illum_member = { country_event = { id = DEUSEX.42 days = 1 } }
+	}
+	else = {
+		add_to_variable = { global.DEUSEX_illum_exposure = -30 }
+		DEUSEX_clamp_illuminati = yes
+	}
+}
+
+DEUSEX_clamp_illuminati = {
+	clamp_variable = { var = global.DEUSEX_illum_capital min = 0 max = 100 }
+	clamp_variable = { var = global.DEUSEX_illum_media min = 0 max = 100 }
+	clamp_variable = { var = global.DEUSEX_illum_security min = 0 max = 100 }
+	clamp_variable = { var = global.DEUSEX_illum_exposure min = 0 max = 100 }
+}
+
+# Target scope. Call after every change to the target's influence. The final agenda stage doubles the grip.
+DEUSEX_update_illuminati_grip = {
+	clamp_variable = { var = DEUSEX_illum_influence min = 0 max = 100 }
+	set_variable = { DEUSEX_illum_pp_factor = { value = DEUSEX_illum_influence multiply = -0.0015 } }
+	set_variable = { DEUSEX_illum_stability_factor = { value = DEUSEX_illum_influence multiply = -0.0005 } }
+	if = {
+		limit = { check_variable = { global.DEUSEX_illum_agenda = 4 } }
+		multiply_variable = { DEUSEX_illum_pp_factor = 2 }
+		multiply_variable = { DEUSEX_illum_stability_factor = 2 }
+	}
+}
+
+# Member scope. Call after every change to the wings or exposure.
+DEUSEX_update_inner_circle = {
+	DEUSEX_clamp_illuminati = yes
+	set_variable = { DEUSEX_circle_research_factor = { value = global.DEUSEX_illum_capital multiply = 0.001 } }
+	set_variable = { DEUSEX_circle_pp_gain = { value = global.DEUSEX_illum_media multiply = 0.004 } }
+	set_variable = { DEUSEX_circle_intel_factor = { value = global.DEUSEX_illum_security multiply = 0.003 } }
+	set_variable = { DEUSEX_circle_stability_factor = { value = global.DEUSEX_illum_exposure multiply = -0.001 } }
+}
+
+# Target scope. The country stops paying the grip and starts drawing on the wings.
+DEUSEX_join_inner_circle = {
+	set_country_flag = DEUSEX_inner_circle
+	set_variable = { global.DEUSEX_illum_member = THIS }
+	if = {
+		limit = { has_dynamic_modifier = { modifier = DEUSEX_illuminati_grip } }
+		remove_dynamic_modifier = { modifier = DEUSEX_illuminati_grip }
+	}
+	DEUSEX_update_inner_circle = yes
+	add_dynamic_modifier = { modifier = DEUSEX_inner_circle }
+}
+
+# Member scope, temp DEUSEX_wing 1 capital, 2 media or 3 security. The chosen wing gains 15 and the other two lose 3
+# each, a fifth of the gain: the inner circle's strength is shared.
+DEUSEX_empower_wing = {
+	add_to_variable = { global.DEUSEX_illum_capital = -3 }
+	add_to_variable = { global.DEUSEX_illum_media = -3 }
+	add_to_variable = { global.DEUSEX_illum_security = -3 }
+	if = {
+		limit = { check_variable = { DEUSEX_wing = 1 } }
+		add_to_variable = { global.DEUSEX_illum_capital = 18 }
+	}
+	else_if = {
+		limit = { check_variable = { DEUSEX_wing = 2 } }
+		add_to_variable = { global.DEUSEX_illum_media = 18 }
+	}
+	else = { add_to_variable = { global.DEUSEX_illum_security = 18 } }
+	DEUSEX_update_inner_circle = yes
+}
+
+# Member scope. Stage 2 fits the control biochip to new implants: every augmentation host gains a fifth of its
+# adoption as influence.
+DEUSEX_advance_agenda = {
+	add_to_variable = { global.DEUSEX_illum_agenda = 1 }
+	if = {
+		limit = { check_variable = { global.DEUSEX_illum_agenda = 2 } }
+		every_country = {
+			limit = {
+				DEUSEX_is_illuminati_target = yes
+				NOT = { has_country_flag = DEUSEX_inner_circle }
+				DEUSEX_has_augmentation_industry = yes
+			}
+			set_temp_variable = { DEUSEX_chip_gain = DEUSEX_aug_adoption }
+			multiply_temp_variable = { DEUSEX_chip_gain = 0.2 }
+			add_to_variable = { DEUSEX_illum_influence = DEUSEX_chip_gain }
+			DEUSEX_update_illuminati_grip = yes
+		}
+	}
+}

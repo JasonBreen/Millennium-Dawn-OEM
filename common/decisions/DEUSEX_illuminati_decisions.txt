@@ -1,0 +1,278 @@
+DEUSEX_illuminati_category = {
+	DEUSEX_seek_inner_circle = {
+		icon = GFX_decision_generic_political_discourse
+		visible = { NOT = { has_variable = global.DEUSEX_illum_member } }
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = DEUSEX_influence_30_tt
+				check_variable = { var = DEUSEX_illum_influence value = 30 compare = greater_than_or_equals }
+			}
+		}
+		cost = 100
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_seek_inner_circle"
+			custom_effect_tooltip = DEUSEX_seek_inner_circle_tt
+			hidden_effect = {
+				if = {
+					limit = { NOT = { has_variable = global.DEUSEX_illum_member } }
+					DEUSEX_join_inner_circle = yes
+				}
+			}
+			unlock_decision_category_tooltip = DEUSEX_inner_circle_category
+		}
+
+		ai_will_do = {
+			base = 2
+			modifier = { factor = 3 check_variable = { var = DEUSEX_illum_influence value = 50 compare = greater_than_or_equals } }
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	DEUSEX_investigate_fronts = {
+		icon = GFX_decision_generic_intelligence_operation
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = DEUSEX_influence_10_tt
+				check_variable = { var = DEUSEX_illum_influence value = 10 compare = greater_than_or_equals }
+			}
+		}
+		cost = 25
+		days_remove = 60
+		days_re_enable = 120
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_investigate_fronts"
+			custom_effect_tooltip = DEUSEX_investigate_fronts_tt
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_investigate_fronts"
+			custom_effect_tooltip = DEUSEX_investigate_fronts_result_tt
+			hidden_effect = {
+				add_to_variable = { DEUSEX_illum_influence = -10 }
+				DEUSEX_update_illuminati_grip = yes
+				add_to_variable = { global.DEUSEX_illum_exposure = 3 }
+				DEUSEX_clamp_illuminati = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 0
+			modifier = { add = 5 check_variable = { var = DEUSEX_illum_influence value = 20 compare = greater_than_or_equals } }
+			modifier = { add = 10 check_variable = { var = DEUSEX_illum_influence value = 40 compare = greater_than_or_equals } }
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	DEUSEX_leak_the_files = {
+		icon = GFX_decision_generic_political_discourse
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = DEUSEX_influence_30_tt
+				check_variable = { var = DEUSEX_illum_influence value = 30 compare = greater_than_or_equals }
+			}
+		}
+		cost = 50
+		days_re_enable = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_leak_the_files"
+			add_stability = -0.03
+			custom_effect_tooltip = DEUSEX_leak_the_files_tt
+			hidden_effect = {
+				add_to_variable = { DEUSEX_illum_influence = -30 }
+				DEUSEX_update_illuminati_grip = yes
+				add_to_variable = { global.DEUSEX_illum_exposure = 15 }
+				DEUSEX_clamp_illuminati = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 0
+			modifier = { add = 10 check_variable = { var = DEUSEX_illum_influence value = 50 compare = greater_than_or_equals } }
+			modifier = { factor = 0.25 has_stability < 0.4 }
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+}
+
+DEUSEX_inner_circle_category = {
+	DEUSEX_empower_capital = {
+		icon = GFX_decision_money_dec
+		cost = 25
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_empower_capital"
+			custom_effect_tooltip = DEUSEX_empower_capital_tt
+			hidden_effect = {
+				set_temp_variable = { DEUSEX_wing = 1 }
+				DEUSEX_empower_wing = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = { add = 10 check_variable = { global.DEUSEX_illum_capital < 50 } }
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	DEUSEX_empower_media = {
+		icon = GFX_decision_generic_political_discourse
+		cost = 25
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_empower_media"
+			custom_effect_tooltip = DEUSEX_empower_media_tt
+			hidden_effect = {
+				set_temp_variable = { DEUSEX_wing = 2 }
+				DEUSEX_empower_wing = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = { add = 10 check_variable = { global.DEUSEX_illum_media < 40 } }
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	DEUSEX_empower_security = {
+		icon = GFX_decision_generic_military
+		cost = 25
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_empower_security"
+			custom_effect_tooltip = DEUSEX_empower_security_tt
+			hidden_effect = {
+				set_temp_variable = { DEUSEX_wing = 3 }
+				DEUSEX_empower_wing = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = { add = 10 check_variable = { global.DEUSEX_illum_security < 50 } }
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	DEUSEX_direct_the_illuminati = {
+		icon = GFX_decision_generic_intelligence_operation
+		cost = 25
+		days_remove = 60
+		days_re_enable = 120
+
+		target_root_trigger = { has_country_flag = DEUSEX_inner_circle }
+		targets = { USA CHI GER ENG FRA SOV JAP RAJ }
+		target_trigger = {
+			FROM = {
+				exists = yes
+				NOT = { has_country_flag = DEUSEX_inner_circle }
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_direct_the_illuminati"
+			custom_effect_tooltip = DEUSEX_direct_the_illuminati_tt
+			hidden_effect = {
+				add_to_variable = { global.DEUSEX_illum_exposure = 5 }
+				DEUSEX_update_inner_circle = yes
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_direct_the_illuminati"
+			custom_effect_tooltip = DEUSEX_direct_the_illuminati_result_tt
+			hidden_effect = {
+				FROM = {
+					if = {
+						limit = {
+							exists = yes
+							NOT = { has_country_flag = DEUSEX_inner_circle }
+						}
+						add_to_variable = { DEUSEX_illum_influence = 10 }
+						DEUSEX_update_illuminati_grip = yes
+					}
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = { factor = 0 check_variable = { global.DEUSEX_illum_exposure > 49 } }
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	DEUSEX_advance_the_agenda = {
+		icon = GFX_decision_generic_political_discourse
+		visible = { check_variable = { global.DEUSEX_illum_agenda < 4 } }
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = DEUSEX_agenda_ready_tt
+				DEUSEX_agenda_ready = yes
+			}
+		}
+		cost = 100
+		days_remove = 60
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_advance_the_agenda"
+			custom_effect_tooltip = DEUSEX_advance_the_agenda_tt
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_advance_the_agenda"
+			custom_effect_tooltip = DEUSEX_advance_the_agenda_result_tt
+			hidden_effect = {
+				if = {
+					limit = { check_variable = { global.DEUSEX_illum_agenda < 4 } }
+					DEUSEX_advance_agenda = yes
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 30
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	DEUSEX_distribute_enhancements = {
+		icon = GFX_decision_generic_research
+		visible = { DEUSEX_has_augmentation_industry = yes }
+		available = {
+			NOT = { has_country_flag = DEUSEX_aug_restricted }
+			custom_trigger_tooltip = {
+				tooltip = DEUSEX_adoption_below_full_tt
+				check_variable = { DEUSEX_aug_adoption < 100 }
+			}
+		}
+		cost = 50
+		days_re_enable = 365
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_distribute_enhancements"
+			custom_effect_tooltip = DEUSEX_distribute_enhancements_tt
+			hidden_effect = {
+				add_to_variable = { DEUSEX_aug_adoption = 10 }
+				add_to_variable = { DEUSEX_aug_unrest = 10 }
+				DEUSEX_update_augmentation = yes
+				add_to_variable = { global.DEUSEX_illum_exposure = 5 }
+				DEUSEX_update_inner_circle = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = { factor = 0 check_variable = { global.DEUSEX_illum_exposure > 49 } }
+			modifier = { factor = 0 check_variable = { var = DEUSEX_aug_unrest value = 50 compare = greater_than_or_equals } }
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+}

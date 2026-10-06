@@ -29,10 +29,12 @@ event IDs, so parallel work does not collide. It ships on OEM only. Built like S
   `99_DEUSEX_germany_effects.txt`.
 - **Augmentation Boom (30–39):** `DEUSEX_augmentation.txt`; loc `_augmentation_`;
   `99_DEUSEX_augmentation_effects.txt`.
+- **The Illuminati (40–49):** `DEUSEX_illuminati.txt`; loc `_illuminati_`;
+  `99_DEUSEX_illuminati_effects.txt`.
 
 Localisation file names are `MD_DEUSEX_<subsystem>_l_english.yml`.
 
-The next free block is 40–49.
+The next free block is 50–59.
 
 ## Hooks into shared files
 
@@ -112,6 +114,62 @@ by 50, sets `DEUSEX_aug_restricted` and closes every decision except the suppres
 
 The AI receives every event and decision. Treasury costs check `bankruptcy_incoming_collapse` and
 `ai_has_high_deficit`; the AI never funds research at 50 unrest or more.
+
+## The Illuminati
+
+Eight major powers (USA, CHI, GER, ENG, FRA, SOV, JAP, RAJ) carry `DEUSEX_illum_influence`, 0-100. The first monthly
+pulse sets it to 20 in the USA, 15 in China, Germany, Britain and France, and 10 elsewhere. Global state:
+
+- three wings: `global.DEUSEX_illum_capital` (Page Industries), `global.DEUSEX_illum_media` (Picus Communications)
+  and `global.DEUSEX_illum_security` (Belltower Associates), starting at 40, 30 and 30;
+- `global.DEUSEX_illum_exposure`, the Masquerade's risk, starting at 10 and falling by 1 a month;
+- `global.DEUSEX_illum_agenda`, stages 0-4;
+- `global.DEUSEX_illum_member`, the one inner-circle government, if any.
+
+Each month every target that is not the member gains 0.5 influence. It gains 0.5 more with an open augmentation
+industry and 0.5 more once the agenda has started. The `DEUSEX_illuminati_grip` modifier costs it influence x 0.15%
+political power and influence x 0.05% stability, doubled at agenda stage 4. At 40 influence or more a target
+rolls 5% a month, at most every two years, for an offer (`DEUSEX.40`): 5 billion and +15 influence, or refuse for
+2% stability and -5 influence.
+
+Targets fight back in `DEUSEX_illuminati_category`:
+
+- investigate the fronts: 25 PP, 60 days, -10 influence, +3 exposure, every 120 days;
+- leak the files: 50 PP and 3% stability, -30 influence, +15 exposure, every 365 days.
+
+A target with 30 influence can instead join the inner circle for 100 PP while the seat is empty. The member drops its
+grip and gains `DEUSEX_inner_circle`:
+
+- research speed: capital x 0.1%;
+- political power per day: media x 0.004;
+- civilian intelligence: security x 0.3%;
+- stability: exposure x -0.1%.
+
+Its decisions (`DEUSEX_inner_circle_category`):
+
+- empower a wing: 25 PP; that wing +15 and the other two -3 each;
+- direct the Illuminati at another target: 25 PP, +5 exposure, +10 influence there after 60 days;
+- distribute enhancements, when it has an augmentation industry: 50 PP, +10 adoption, +10 unrest, +5 exposure;
+- advance the agenda: 100 PP and 60 days per stage.
+
+The agenda's stages, each with the requirement to reach it:
+
+1. Shape the Narrative: media 40. Influence grows 0.5 a month faster.
+2. The Control Biochip: capital 50, from 2025. Every augmentation host gains a fifth of its adoption as influence.
+3. Restore Humanity: security 50, after the Aug Incident. The AI favors the Human Restoration Act three to one, and a
+   target that adopts it gains 20 influence.
+4. A New Order: every wing 40. The grip doubles.
+
+At 70 exposure the Masquerade slips, at most once a year. A news event (`DEUSEX.41`) goes out and every target sheds
+10 influence. The member then chooses (`DEUSEX.42`) to cut loose its strongest wing (-30, -40 exposure) or deny
+everything (5% stability, -20 exposure). With no member, exposure falls by 30. A member that stops existing loses its
+flag and modifier and frees the seat.
+
+The wings' zero-sum balance, the Masquerade and the staged agenda take their shape from The Fire Rises: the
+Cognoscenti's three factions and its public awareness meter, and Schwab's Agenda 2040 and cybernetic enhancements.
+They are adapted to Deus Ex's canon, and no TFR text or script is reused. The Illuminati's inner circle, Page
+Industries, Picus and Eliza Cassan, Belltower, the control biochip and the Human Restoration Act are canon. Governments
+joining the inner circle is a scenario mechanic.
 
 ## Persistent state and event ownership
 
