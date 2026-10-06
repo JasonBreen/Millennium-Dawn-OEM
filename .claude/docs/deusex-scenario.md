@@ -31,10 +31,12 @@ event IDs, so parallel work does not collide. It ships on OEM only. Built like S
   `99_DEUSEX_augmentation_effects.txt`.
 - **The Illuminati (40–49):** `DEUSEX_illuminati.txt`; loc `_illuminati_`;
   `99_DEUSEX_illuminati_effects.txt`.
+- **A Traitor at the Table (50–59):** `DEUSEX_traitor.txt`; loc `_traitor_`;
+  `99_DEUSEX_traitor_effects.txt`.
 
 Localisation file names are `MD_DEUSEX_<subsystem>_l_english.yml`.
 
-The next free block is 50–59.
+The next free block is 60–69.
 
 ## Hooks into shared files
 
@@ -170,6 +172,44 @@ Cognoscenti's three factions and its public awareness meter, and Schwab's Agenda
 They are adapted to Deus Ex's canon, and no TFR text or script is reused. The Illuminati's inner circle, Page
 Industries, Picus and Eliza Cassan, Belltower, the control biochip and the Human Restoration Act are canon. Governments
 joining the inner circle is a scenario mechanic.
+
+## A Traitor at the Table
+
+Once per campaign, while the inner circle has a member and the agenda has started, the monthly pulse rolls 4% for a
+traitor. `DEUSEX_start_traitor_hunt` picks one of five suspects into `global.DEUSEX_traitor` and copies their dossier
+into `global.DEUSEX_traitor_wing`, `_stance` and `_face`. Hugh Darrow is excluded once the Aug Incident has happened,
+because he is missing after Panchaea. The member gets `DEUSEX.50` and the `DEUSEX_traitor_category`.
+
+The dossiers (wing; stance on augmentation; public face) are unique, so three clues always name one suspect:
+
+| Suspect | Wing | Stance | Face |
+| --- | --- | --- | --- |
+| Bob Page | capital | for | corporate |
+| Zhao Yun Ru | security | for | corporate |
+| William Taggart | media | against | public |
+| Elizabeth DuClare | media | for | public |
+| Hugh Darrow | capital | against (privately) | corporate |
+
+`global.DEUSEX_traitor_clock` starts at 18. Each month it falls by 1 and the traitor adds 3 exposure. Clue decisions
+take 60 days each and set `DEUSEX_clue_wing`, `_stance` or `_face`. The category's text shows the revealed clues next
+to the dossiers:
+
+- Trace the Money: 50 PP, reveals the wing.
+- Read the Leaks: 25 PP and +5 exposure, reveals the stance.
+- Watch the Table: 25 PP and 1 month off the clock, reveals the face.
+
+Accusing a suspect costs 50 PP, and each name can be accused again after 90 days. The right name ends the hunt: the
+traitor's wing -10, exposure -20, +50 PP and +3% stability (`DEUSEX.53`). A wrong name costs the accused's wing 10,
+adds 10 exposure and takes 3 months off the clock (`DEUSEX.54`). At 0 the traitor goes public: a news event names
+them (`DEUSEX.52`), and the member (`DEUSEX.51`) loses its seat and falls back under the grip at 50 influence. Every
+wing loses 10 and exposure rises 30. If the seat empties first, the hunt ends unsolved.
+
+The AI reads only revealed clues. Each accusation's weight comes from `DEUSEX_<suspect>_fits`, which holds while
+every revealed clue matches that dossier: 100 with all three clues, 20 with two, 5 when the clock is under 4.
+
+The clock, the clue-gathering decisions and the dossier cross-check take their shape from The Fire Rises' Cognoscenti
+traitor hunt. The suspects and their companies are canon. Their dossier traits other than Taggart's campaign and
+Darrow's turn against augmentation are scenario inventions.
 
 ## Persistent state and event ownership
 

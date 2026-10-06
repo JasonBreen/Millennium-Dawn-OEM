@@ -1,0 +1,171 @@
+# A Traitor at the Table. While the inner circle has a member, one of five members of the circle can start leaking its
+# files, once per campaign. Clues reveal the traitor's wing, stance on augmentation and public face; the member must
+# name them before the clock runs out. Runs after the Illuminati pulse, so a lost member is already cleared.
+DEUSEX_monthly_traitor_pulse = {
+	if = {
+		limit = { DEUSEX_scenario_enabled = yes }
+		if = {
+			limit = {
+				has_global_flag = DEUSEX_traitor_hunt
+				NOT = { has_variable = global.DEUSEX_illum_member }
+			}
+			DEUSEX_end_traitor_hunt = yes
+		}
+		else_if = {
+			limit = { has_global_flag = DEUSEX_traitor_hunt }
+			add_to_variable = { global.DEUSEX_traitor_clock = -1 }
+			add_to_variable = { global.DEUSEX_illum_exposure = 3 }
+			DEUSEX_clamp_illuminati = yes
+			if = {
+				limit = { check_variable = { global.DEUSEX_traitor_clock < 1 } }
+				DEUSEX_end_traitor_hunt = yes
+				news_event = { id = DEUSEX.52 days = 1 }
+				var:global.DEUSEX_illum_member = { country_event = { id = DEUSEX.51 days = 1 } }
+			}
+		}
+		else_if = {
+			limit = {
+				has_variable = global.DEUSEX_illum_member
+				NOT = { has_global_flag = DEUSEX_traitor_hunt_done }
+				check_variable = { global.DEUSEX_illum_agenda > 0 }
+			}
+			random = {
+				chance = 4
+				DEUSEX_start_traitor_hunt = yes
+			}
+		}
+	}
+}
+
+# Hugh Darrow is missing after Panchaea, so he cannot be the traitor once the Aug Incident has happened.
+DEUSEX_start_traitor_hunt = {
+	set_global_flag = DEUSEX_traitor_hunt
+	set_variable = { global.DEUSEX_traitor_clock = 18 }
+	random_list = {
+		20 = { set_variable = { global.DEUSEX_traitor = 1 } }
+		20 = { set_variable = { global.DEUSEX_traitor = 2 } }
+		20 = { set_variable = { global.DEUSEX_traitor = 3 } }
+		20 = { set_variable = { global.DEUSEX_traitor = 4 } }
+		20 = {
+			modifier = { factor = 0 has_global_flag = DEUSEX_aug_incident_done }
+			set_variable = { global.DEUSEX_traitor = 5 }
+		}
+	}
+	DEUSEX_set_traitor_traits = yes
+	var:global.DEUSEX_illum_member = { country_event = { id = DEUSEX.50 days = 1 } }
+}
+
+# Dossiers: wing 1 capital, 2 media, 3 security; stance 1 for augmentation, 2 against; face 1 corporate, 2 public.
+# Page 1-1-1, Zhao 3-1-1, Taggart 2-2-2, DuClare 2-1-2, Darrow 1-2-1. No two suspects share all three.
+DEUSEX_set_traitor_traits = {
+	if = {
+		limit = { check_variable = { global.DEUSEX_traitor = 1 } }
+		set_variable = { global.DEUSEX_traitor_wing = 1 }
+		set_variable = { global.DEUSEX_traitor_stance = 1 }
+		set_variable = { global.DEUSEX_traitor_face = 1 }
+	}
+	else_if = {
+		limit = { check_variable = { global.DEUSEX_traitor = 2 } }
+		set_variable = { global.DEUSEX_traitor_wing = 3 }
+		set_variable = { global.DEUSEX_traitor_stance = 1 }
+		set_variable = { global.DEUSEX_traitor_face = 1 }
+	}
+	else_if = {
+		limit = { check_variable = { global.DEUSEX_traitor = 3 } }
+		set_variable = { global.DEUSEX_traitor_wing = 2 }
+		set_variable = { global.DEUSEX_traitor_stance = 2 }
+		set_variable = { global.DEUSEX_traitor_face = 2 }
+	}
+	else_if = {
+		limit = { check_variable = { global.DEUSEX_traitor = 4 } }
+		set_variable = { global.DEUSEX_traitor_wing = 2 }
+		set_variable = { global.DEUSEX_traitor_stance = 1 }
+		set_variable = { global.DEUSEX_traitor_face = 2 }
+	}
+	else = {
+		set_variable = { global.DEUSEX_traitor_wing = 1 }
+		set_variable = { global.DEUSEX_traitor_stance = 2 }
+		set_variable = { global.DEUSEX_traitor_face = 1 }
+	}
+}
+
+DEUSEX_end_traitor_hunt = {
+	clr_global_flag = DEUSEX_traitor_hunt
+	set_global_flag = DEUSEX_traitor_hunt_done
+}
+
+# Temp DEUSEX_wing 1 capital, 2 media or 3 security loses 10.
+DEUSEX_cut_wing = {
+	if = {
+		limit = { check_variable = { DEUSEX_wing = 1 } }
+		add_to_variable = { global.DEUSEX_illum_capital = -10 }
+	}
+	else_if = {
+		limit = { check_variable = { DEUSEX_wing = 2 } }
+		add_to_variable = { global.DEUSEX_illum_media = -10 }
+	}
+	else = { add_to_variable = { global.DEUSEX_illum_security = -10 } }
+	DEUSEX_clamp_illuminati = yes
+}
+
+# Member scope, temp DEUSEX_suspect 1-5 set to the accused. The right name purges the traitor's wing and calms the
+# Masquerade; a wrong one humiliates a loyal wing and lets the traitor move faster.
+DEUSEX_accuse_suspect = {
+	if = {
+		limit = {
+			has_global_flag = DEUSEX_traitor_hunt
+			check_variable = { global.DEUSEX_traitor = DEUSEX_suspect }
+		}
+		DEUSEX_end_traitor_hunt = yes
+		set_temp_variable = { DEUSEX_wing = global.DEUSEX_traitor_wing }
+		DEUSEX_cut_wing = yes
+		add_to_variable = { global.DEUSEX_illum_exposure = -20 }
+		add_political_power = 50
+		add_stability = 0.03
+		DEUSEX_update_inner_circle = yes
+		country_event = { id = DEUSEX.53 days = 1 }
+	}
+	else_if = {
+		limit = { has_global_flag = DEUSEX_traitor_hunt }
+		DEUSEX_set_suspect_wing = yes
+		DEUSEX_cut_wing = yes
+		add_to_variable = { global.DEUSEX_illum_exposure = 10 }
+		add_to_variable = { global.DEUSEX_traitor_clock = -3 }
+		DEUSEX_update_inner_circle = yes
+		country_event = { id = DEUSEX.54 days = 1 }
+	}
+}
+
+# Temp DEUSEX_suspect 1-5. Sets temp DEUSEX_wing to that suspect's wing from the dossiers above.
+DEUSEX_set_suspect_wing = {
+	set_temp_variable = { DEUSEX_wing = 1 }
+	if = {
+		limit = { check_variable = { DEUSEX_suspect = 2 } }
+		set_temp_variable = { DEUSEX_wing = 3 }
+	}
+	else_if = {
+		limit = { check_variable = { DEUSEX_suspect > 2 } check_variable = { DEUSEX_suspect < 5 } }
+		set_temp_variable = { DEUSEX_wing = 2 }
+	}
+}
+
+# Member scope. The traitor went public: the member loses its seat and falls back under the grip at 50 influence.
+DEUSEX_betrayed_by_traitor = {
+	clr_country_flag = DEUSEX_inner_circle
+	clear_variable = global.DEUSEX_illum_member
+	if = {
+		limit = { has_dynamic_modifier = { modifier = DEUSEX_inner_circle } }
+		remove_dynamic_modifier = { modifier = DEUSEX_inner_circle }
+	}
+	set_variable = { DEUSEX_illum_influence = 50 }
+	DEUSEX_update_illuminati_grip = yes
+	if = {
+		limit = { NOT = { has_dynamic_modifier = { modifier = DEUSEX_illuminati_grip } } }
+		add_dynamic_modifier = { modifier = DEUSEX_illuminati_grip }
+	}
+	add_to_variable = { global.DEUSEX_illum_capital = -10 }
+	add_to_variable = { global.DEUSEX_illum_media = -10 }
+	add_to_variable = { global.DEUSEX_illum_security = -10 }
+	add_to_variable = { global.DEUSEX_illum_exposure = 30 }
+	DEUSEX_clamp_illuminati = yes
+}
