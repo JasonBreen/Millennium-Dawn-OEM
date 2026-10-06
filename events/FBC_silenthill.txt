@@ -1,0 +1,252 @@
+add_namespace = FBC
+
+# Contradictory reports from Maine. Site is state 764 for the whole case.
+country_event = {
+	id = FBC.30
+	title = FBC.30.t
+	desc = FBC.30.d
+	picture = GFX_CAN_ontario_goes_dark
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		check_variable = { FBC_sh_phase = 1 }
+	}
+
+	option = {
+		name = FBC.30.a
+		log = "[GetDateText]: [This.GetName]: FBC.30.a executed"
+		trigger = {
+			check_variable = { FBC_response_capacity > 0 }
+			764 = { is_controlled_by = ROOT }
+		}
+		custom_effect_tooltip = FBC.30.a_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { FBC_sh_phase = 1 }
+					check_variable = { FBC_response_capacity > 0 }
+				}
+				FBC_commit_silenthill_team = yes
+				set_temp_variable = { FBC_sh_choice = 1 }
+				set_temp_variable = { FBC_sh_delay = 6 }
+				FBC_silenthill_intervene = yes
+				set_temp_variable = { FBC_sh_fog_change = -10 }
+				FBC_change_silenthill_fog = yes
+			}
+		}
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = FBC.30.b
+		log = "[GetDateText]: [This.GetName]: FBC.30.b executed"
+		add_political_power = -50
+		add_stability = -0.02
+		custom_effect_tooltip = FBC.30.b_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { FBC_sh_phase = 1 } }
+				set_temp_variable = { FBC_sh_choice = 2 }
+				set_temp_variable = { FBC_sh_delay = 8 }
+				FBC_silenthill_intervene = yes
+			}
+		}
+		ai_chance = {
+			base = 30
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 0.25 has_stability < 0.3 }
+		}
+	}
+
+	option = {
+		name = FBC.30.c
+		log = "[GetDateText]: [This.GetName]: FBC.30.c executed"
+		custom_effect_tooltip = FBC.30.c_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { FBC_sh_phase = 1 } }
+				set_temp_variable = { FBC_sh_choice = 3 }
+				set_temp_variable = { FBC_sh_delay = 10 }
+				FBC_silenthill_intervene = yes
+				add_to_variable = { FBC_exposure = -5 }
+				FBC_clamp_bureau = yes
+				FBC_refresh_bureau_factors = yes
+			}
+		}
+		ai_chance = { base = 20 }
+	}
+}
+
+# The team comes back.
+country_event = {
+	id = FBC.31
+	title = FBC.31.t
+	desc = FBC.31.d
+	picture = GFX_crime_fighting
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		check_variable = { FBC_sh_intervention = 1 }
+	}
+
+	option = {
+		name = FBC.31.a
+		log = "[GetDateText]: [This.GetName]: FBC.31.a executed"
+		custom_effect_tooltip = FBC.31.a_tt
+		hidden_effect = {
+			FBC_release_silenthill_team = yes
+			add_to_variable = { FBC_containment_integrity = 5 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+			set_temp_variable = { FBC_sh_fog_change = -15 }
+			FBC_change_silenthill_fog = yes
+		}
+		ai_chance = { base = 1 }
+	}
+}
+
+# The team does not come back.
+country_event = {
+	id = FBC.32
+	title = FBC.32.t
+	desc = FBC.32.d
+	picture = GFX_emptychair_ast
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		check_variable = { FBC_sh_intervention = 1 }
+	}
+
+	option = {
+		name = FBC.32.a
+		log = "[GetDateText]: [This.GetName]: FBC.32.a executed"
+		custom_effect_tooltip = FBC.32.a_tt
+		hidden_effect = {
+			FBC_release_silenthill_team = yes
+			add_to_variable = { FBC_containment_integrity = -10 }
+			add_to_variable = { FBC_exposure = 5 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+			set_temp_variable = { FBC_sh_fog_change = 5 }
+			FBC_change_silenthill_fog = yes
+		}
+		ai_chance = { base = 60 }
+	}
+
+	option = {
+		name = FBC.32.b
+		log = "[GetDateText]: [This.GetName]: FBC.32.b executed"
+		add_stability = -0.02
+		custom_effect_tooltip = FBC.32.b_tt
+		hidden_effect = {
+			FBC_release_silenthill_team = yes
+			add_to_variable = { FBC_containment_integrity = -10 }
+			add_to_variable = { FBC_exposure = -5 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+			set_temp_variable = { FBC_sh_fog_change = 5 }
+			FBC_change_silenthill_fog = yes
+		}
+		ai_chance = {
+			base = 40
+			modifier = { factor = 0.25 has_stability < 0.3 }
+		}
+	}
+}
+
+# The quarantine line breaks.
+country_event = {
+	id = FBC.33
+	title = FBC.33.t
+	desc = FBC.33.d
+	picture = GFX_generic_abandoned_coastal_warehouse
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		check_variable = { FBC_sh_intervention = 2 }
+	}
+
+	option = {
+		name = FBC.33.a
+		log = "[GetDateText]: [This.GetName]: FBC.33.a executed"
+		add_political_power = -25
+		custom_effect_tooltip = FBC.33.a_tt
+		hidden_effect = {
+			set_temp_variable = { FBC_sh_fog_change = -5 }
+			FBC_change_silenthill_fog = yes
+		}
+		ai_chance = {
+			base = 60
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	option = {
+		name = FBC.33.b
+		log = "[GetDateText]: [This.GetName]: FBC.33.b executed"
+		custom_effect_tooltip = FBC.33.b_tt
+		hidden_effect = {
+			add_to_variable = { FBC_exposure = 5 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+			set_temp_variable = { FBC_sh_fog_change = 10 }
+			FBC_change_silenthill_fog = yes
+		}
+		ai_chance = { base = 40 }
+	}
+}
+
+# The cover-up surfaces.
+country_event = {
+	id = FBC.34
+	title = FBC.34.t
+	desc = FBC.34.d
+	picture = GFX_leaked_memo
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		check_variable = { FBC_sh_intervention = 3 }
+	}
+
+	option = {
+		name = FBC.34.a
+		log = "[GetDateText]: [This.GetName]: FBC.34.a executed"
+		add_political_power = -50
+		custom_effect_tooltip = FBC.34.a_tt
+		hidden_effect = {
+			add_to_variable = { FBC_exposure = 5 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	option = {
+		name = FBC.34.b
+		log = "[GetDateText]: [This.GetName]: FBC.34.b executed"
+		add_stability = -0.02
+		custom_effect_tooltip = FBC.34.b_tt
+		hidden_effect = {
+			add_to_variable = { FBC_exposure = 15 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = { factor = 0.25 has_stability < 0.3 }
+		}
+	}
+}

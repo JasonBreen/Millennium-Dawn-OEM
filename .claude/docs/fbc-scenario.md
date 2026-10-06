@@ -42,10 +42,54 @@ event IDs, so parallel work does not collide. It ships on OEM only. Built like S
   flag lapses after 31 days on its own if `FBC.25` is lost. Every close starts a 1,095-day cooldown. If the
   United States stops existing with a result queued, or the controller stops existing before a team is
   committed, the pulse closes the case and returns the team.
+- **Silent Hill (30–39):** `FBC_silenthill.txt`; loc `_silenthill_`;
+  `99_FBC_silenthill_effects.txt`.
 
 Localisation file names are `MD_FBC_<subsystem>_l_english.yml`.
 
-The next free block is 30–39.
+The next free block is 40–49.
+
+## Silent Hill
+
+A Bureau case in Maine (state 764), from 2000. It is part of this scenario, not one of its own (owner decision,
+2026-10-06; OEM issue #453). Konami IP: text is original, names appear only as references, and it never goes
+upstream.
+
+The fog lives on state 764 as `FBC_sh_fog`, 0-100. The first pulse sets it to 10 and adds the state-scoped
+`FBC_silent_hill_fog` modifier, which `FBC_update_silenthill_fog` drives from it:
+
+- local supplies: fog x -0.004, so -0.4 at 100;
+- construction speed: fog x -0.3%, so -30% at 100;
+- local resources: fog x -0.2%, so -20% at 100;
+- attrition for the controller: fog x +0.2%, so +20% at 100.
+
+Each month the fog rises by 1. While a response team is in town it falls by 1 instead, and while a cover-up runs it
+rises by 2.
+
+The case lives on USA beside the Bureau's other cases. `FBC_sh_phase` runs 0 quiet, 1 reported, 2 intervention running
+and 3 answered, and `FBC_sh_intervention` records 1 team, 2 quarantine or 3 cover-up for later slices. At 25 fog,
+with USA holding Maine, `FBC.30` brings three contradictory reports:
+
+- Send a response team: one of the two Bureau teams, -10 fog, answered after 6 months.
+- Quarantine Toluca County: 50 PP and 2% stability, answered after 8 months.
+- Lose the reports: -5 exposure, answered after 10 months.
+
+The town answers the intervention it was given:
+
+- The team comes back (`FBC.31`, 60%): +5 containment, -15 fog.
+- The team does not come back (`FBC.32`, 40%): -10 containment, +5 fog, and either +5 exposure or 2% stability for
+  -5 exposure.
+- The quarantine line breaks (`FBC.33`): 25 PP for -5 fog, or lift it for +5 exposure and +10 fog.
+- The cover-up surfaces (`FBC.34`): 50 PP to hold exposure to +5, or 2% stability and +15 exposure.
+
+Losing Maine pauses the case's timer and frees its team.
+
+The Bureau dashboard (`FBC_bureau_category_desc`) gains a Toluca County line from
+`99_FBC_silenthill_scripted_localisation.txt`. The fog shows in bands (thin, heavy, thick, covering the town), read
+straight from the state.
+
+Next slices (#453): the Siren, visitors and the Order; then the Leave, In Water and Rebirth endings, with the UFO and
+Dog jokes behind their own sub-rule.
 
 ## Hooks into shared files
 
