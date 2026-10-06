@@ -310,7 +310,9 @@ when preparation opens; a boycott or a declined invitation gives the seat back.
 - **AI organizers**, the WEF's included, seat `1 + prestige / 30` invited governments (max 4) in
   `econ_forum_ai_prepare`: great or super powers, or governments the host likes (opinion above 50), never one at
   war with the host.
-- **Player host:** `econ_forum_invite_to_private_room`, 10 PP, an invited regional or greater power, up to 4 seats.
+- **Player host:** `econ_forum_invite_to_private_room`, 10 PP, an invited regional or greater power, up to 4 seats,
+  only while the hosted forum is preparing: both the host's `econ_forum_preparing` flag and the forum's own
+  `global.econ_forum_preparing` slot.
 - **Human guest:** `econ_forum.11` offers the seat (queued like invitations, host saved as `econ_forum_room_host`);
   declining (`econ_forum_decline_room`) frees it, only at the forum whose seat the event saved
   (`econ_forum_room_seat`) and while it is preparing.
