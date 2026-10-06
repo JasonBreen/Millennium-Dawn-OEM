@@ -32,9 +32,13 @@ def test_the_pulse_offers_each_host_once_on_its_date():
                 f"{tag} = {{ country_event = {{ id = {event_id} days = 1 }} }}"
             )
         ]
-        assert f"country_exists = {tag}" in offer
         assert f"NOT = {{ has_global_flag = {flag} }}" in offer
-        assert f"set_global_flag = {flag}" in offer
+        # The offer is spent on its date even when the host is missing then.
+        assert offer.index(f"set_global_flag = {flag}") < offer.index(
+            f"limit = {{ country_exists = {tag} }}"
+        )
+        date_gate = offer[: offer.index(f"set_global_flag = {flag}")]
+        assert f"country_exists = {tag}" not in date_gate
     pulses = _read("common/scripted_effects/99_DEUSEX_pulse_effects.txt")
     assert "DEUSEX_monthly_augmentation_pulse = yes" in _named_block(
         pulses, "DEUSEX_monthly_pulse"
@@ -66,7 +70,10 @@ def test_unrest_and_neuropozyne_scale_with_adoption():
     )
     assert "chance = 4" in month
     assert "flag = DEUSEX_aug_shortage_cooldown value = 1 days = 365" in month
-    assert "check_variable = { DEUSEX_aug_unrest > 59 }" in month
+    assert (
+        "check_variable = { var = DEUSEX_aug_unrest value = 60 compare = greater_than_or_equals }"
+        in month
+    )
     assert "flag = DEUSEX_aug_riot_cooldown value = 1 days = 365" in month
 
 
@@ -102,22 +109,43 @@ def test_every_adoption_or_unrest_change_refreshes_the_modifier():
             assert "DEUSEX_update_augmentation = yes" in text[match.end() : block_end]
 
 
-def test_the_incident_and_the_restoration_act_reach_only_hosts_with_adoption():
+def test_the_incident_needs_adoption_but_the_restoration_act_only_an_open_industry():
     pulse = _named_block(EFFECTS, "DEUSEX_monthly_augmentation_pulse")
     incident = pulse[pulse.index("date > 2027.10.1") : pulse.index("date > 2029.1.1")]
     assert "news_event = { id = DEUSEX.35 days = 1 }" in incident
-    for tag in ("USA", "CHI"):
-        assert (
-            f"limit = {{ {tag} = {{ DEUSEX_has_augmentation_industry = yes }} }}\n"
-            f"\t\t\t\t{tag} = {{ country_event = {{ id = DEUSEX.34 days = 1 }} }}"
-        ) in incident
     act = pulse[pulse.index("date > 2029.1.1") :]
     assert "has_global_flag = DEUSEX_aug_incident_done" in act
-    assert "country_event = { id = DEUSEX.36 days = 1 }" in act
+    for tag in ("USA", "CHI"):
+        assert (
+            f"limit = {{ {tag} = {{ DEUSEX_has_augmented_population = yes }} }}\n"
+            f"\t\t\t\t{tag} = {{ country_event = {{ id = DEUSEX.34 days = 1 }} }}"
+        ) in incident
+        assert (
+            f"limit = {{ {tag} = {{ DEUSEX_has_augmentation_industry = yes }} }}\n"
+            f"\t\t\t\t{tag} = {{ country_event = {{ id = DEUSEX.36 days = 1 }} }}"
+        ) in act
     triggers = _read("common/scripted_triggers/99_DEUSEX_augmentation_triggers.txt")
     industry = _named_block(triggers, "DEUSEX_has_augmentation_industry")
     assert "exists = yes" in industry
-    assert "check_variable = { DEUSEX_aug_adoption > 0 }" in industry
+    assert "has_country_flag = DEUSEX_aug_open" in industry
+    assert "DEUSEX_aug_adoption" not in industry
+    population = _named_block(triggers, "DEUSEX_has_augmented_population")
+    assert "DEUSEX_has_augmentation_industry = yes" in population
+    assert "check_variable = { DEUSEX_aug_adoption > 0 }" in population
+    assert "DEUSEX_has_augmented_population = yes" in _event("DEUSEX.34")
+    assert "DEUSEX_has_augmentation_industry = yes" in _event("DEUSEX.36")
+
+
+def test_adoption_moves_in_steps_of_ten_so_grants_are_never_clamped():
+    steps = re.findall(r"DEUSEX_aug_adoption = (-?\d+) \}", EVENTS + DECISIONS)
+    assert steps and all(int(step) % 10 == 0 for step in steps), steps
+    research = _named_block(DECISIONS, "DEUSEX_fund_augmentation_research")
+    assert "check_variable = { DEUSEX_aug_adoption < 100 }" in research
+    weights = _named_block(research, "ai_will_do")
+    assert (
+        "modifier = { factor = 0 check_variable = { var = DEUSEX_aug_unrest value = 50 compare = greater_than_or_equals } }"
+        in weights
+    )
 
 
 def test_the_restoration_act_closes_the_growth_decisions():

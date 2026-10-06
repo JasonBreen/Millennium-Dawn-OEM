@@ -6,20 +6,24 @@ DEUSEX_monthly_augmentation_pulse = {
 		if = {
 			limit = {
 				date > 2007.1.1
-				country_exists = USA
 				NOT = { has_global_flag = DEUSEX_aug_usa_offered }
 			}
 			set_global_flag = DEUSEX_aug_usa_offered
-			USA = { country_event = { id = DEUSEX.30 days = 1 } }
+			if = {
+				limit = { country_exists = USA }
+				USA = { country_event = { id = DEUSEX.30 days = 1 } }
+			}
 		}
 		if = {
 			limit = {
 				date > 2009.1.1
-				country_exists = CHI
 				NOT = { has_global_flag = DEUSEX_aug_chi_offered }
 			}
 			set_global_flag = DEUSEX_aug_chi_offered
-			CHI = { country_event = { id = DEUSEX.31 days = 1 } }
+			if = {
+				limit = { country_exists = CHI }
+				CHI = { country_event = { id = DEUSEX.31 days = 1 } }
+			}
 		}
 		if = {
 			limit = { country_exists = USA USA = { has_country_flag = DEUSEX_aug_open } }
@@ -38,18 +42,18 @@ DEUSEX_monthly_augmentation_pulse = {
 			if = {
 				limit = {
 					OR = {
-						USA = { DEUSEX_has_augmentation_industry = yes }
-						CHI = { DEUSEX_has_augmentation_industry = yes }
+						USA = { DEUSEX_has_augmented_population = yes }
+						CHI = { DEUSEX_has_augmented_population = yes }
 					}
 				}
 				news_event = { id = DEUSEX.35 days = 1 }
 			}
 			if = {
-				limit = { USA = { DEUSEX_has_augmentation_industry = yes } }
+				limit = { USA = { DEUSEX_has_augmented_population = yes } }
 				USA = { country_event = { id = DEUSEX.34 days = 1 } }
 			}
 			if = {
-				limit = { CHI = { DEUSEX_has_augmentation_industry = yes } }
+				limit = { CHI = { DEUSEX_has_augmented_population = yes } }
 				CHI = { country_event = { id = DEUSEX.34 days = 1 } }
 			}
 		}
@@ -98,7 +102,7 @@ DEUSEX_augmentation_month = {
 	}
 	if = {
 		limit = {
-			check_variable = { DEUSEX_aug_unrest > 59 }
+			check_variable = { var = DEUSEX_aug_unrest value = 60 compare = greater_than_or_equals }
 			NOT = { has_country_flag = DEUSEX_aug_riot_cooldown }
 		}
 		set_country_flag = { flag = DEUSEX_aug_riot_cooldown value = 1 days = 365 }
@@ -106,7 +110,8 @@ DEUSEX_augmentation_month = {
 	}
 }
 
-# Host scope. Both opening options call this after setting the starting adoption.
+# Host scope. Both opening options call this after setting the starting adoption. Adoption only ever moves in
+# steps of 10, so a +10 grant below 100 is never clamped.
 DEUSEX_open_augmentation_industry = {
 	set_country_flag = DEUSEX_aug_open
 	DEUSEX_update_augmentation = yes
