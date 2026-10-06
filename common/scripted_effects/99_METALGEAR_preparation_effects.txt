@@ -1,0 +1,33 @@
+METALGEAR_initialize_preparation = {
+	if = {
+		limit = { country_exists = USA }
+		USA = { country_event = { id = METALGEAR.4 days = 15 } }
+	}
+	if = {
+		limit = { country_exists = JAP }
+		JAP = { country_event = { id = METALGEAR.20 days = 15 } }
+	}
+	if = {
+		limit = { country_exists = SOV }
+		SOV = { country_event = { id = METALGEAR.30 days = 15 } }
+	}
+}
+
+METALGEAR_monthly_usa_pulse = {
+	if = {
+		limit = {
+			country_exists = USA
+			USA = {
+				check_variable = { METALGEAR_request_phase = 1 }
+				OR = {
+					NOT = { country_exists = JAP }
+					has_war_with = JAP
+				}
+			}
+		}
+		USA = {
+			set_variable = { METALGEAR_request_phase = 4 }
+			country_event = { id = METALGEAR.7 days = 1 }
+		}
+	}
+}
