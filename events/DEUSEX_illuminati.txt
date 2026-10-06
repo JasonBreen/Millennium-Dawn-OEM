@@ -1,0 +1,120 @@
+add_namespace = DEUSEX
+
+# An offer from the Illuminati's friends, to a target with 40 influence or more.
+country_event = {
+	id = DEUSEX.40
+	title = DEUSEX.40.t
+	desc = DEUSEX.40.d
+	picture = GFX_treaty
+	is_triggered_only = yes
+
+	trigger = {
+		DEUSEX_scenario_enabled = yes
+		DEUSEX_is_illuminati_target = yes
+		NOT = { has_country_flag = DEUSEX_inner_circle }
+		check_variable = { var = DEUSEX_illum_influence value = 40 compare = greater_than_or_equals }
+	}
+
+	option = {
+		name = DEUSEX.40.a
+		log = "[GetDateText]: [This.GetName]: DEUSEX.40.a executed"
+		set_temp_variable = { treasury_change = 5 }
+		modify_treasury_effect = yes
+		custom_effect_tooltip = DEUSEX_influence_plus_15_tt
+		hidden_effect = {
+			add_to_variable = { DEUSEX_illum_influence = 15 }
+			DEUSEX_update_illuminati_grip = yes
+		}
+		ai_chance = {
+			base = 40
+			modifier = { factor = 3 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 2 ai_has_high_deficit = yes }
+		}
+	}
+
+	option = {
+		name = DEUSEX.40.b
+		log = "[GetDateText]: [This.GetName]: DEUSEX.40.b executed"
+		add_stability = -0.02
+		custom_effect_tooltip = DEUSEX_influence_minus_5_tt
+		hidden_effect = {
+			add_to_variable = { DEUSEX_illum_influence = -5 }
+			DEUSEX_update_illuminati_grip = yes
+		}
+		ai_chance = {
+			base = 60
+			modifier = { factor = 0.25 has_stability < 0.3 }
+		}
+	}
+}
+
+# The Masquerade slips, for everyone.
+news_event = {
+	id = DEUSEX.41
+	title = DEUSEX.41.t
+	desc = DEUSEX.41.d
+	picture = GFX_UN_emergency_meeting
+	major = yes
+	is_triggered_only = yes
+
+	trigger = { DEUSEX_scenario_enabled = yes }
+
+	option = {
+		name = DEUSEX.41.a
+		ai_chance = { base = 1 }
+	}
+}
+
+# The inner circle decides who pays for the slip.
+country_event = {
+	id = DEUSEX.42
+	title = DEUSEX.42.t
+	desc = DEUSEX.42.d
+	picture = GFX_leaked_memo
+	is_triggered_only = yes
+
+	trigger = {
+		DEUSEX_scenario_enabled = yes
+		has_country_flag = DEUSEX_inner_circle
+	}
+
+	option = {
+		name = DEUSEX.42.a
+		log = "[GetDateText]: [This.GetName]: DEUSEX.42.a executed"
+		custom_effect_tooltip = DEUSEX_sacrifice_wing_tt
+		hidden_effect = {
+			clr_global_flag = DEUSEX_masquerade_choice_pending
+			if = {
+				limit = {
+					check_variable = { global.DEUSEX_illum_capital > global.DEUSEX_illum_media }
+					check_variable = { global.DEUSEX_illum_capital > global.DEUSEX_illum_security }
+				}
+				add_to_variable = { global.DEUSEX_illum_capital = -30 }
+			}
+			else_if = {
+				limit = { check_variable = { global.DEUSEX_illum_media > global.DEUSEX_illum_security } }
+				add_to_variable = { global.DEUSEX_illum_media = -30 }
+			}
+			else = { add_to_variable = { global.DEUSEX_illum_security = -30 } }
+			add_to_variable = { global.DEUSEX_illum_exposure = -40 }
+			DEUSEX_update_inner_circle = yes
+		}
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = DEUSEX.42.b
+		log = "[GetDateText]: [This.GetName]: DEUSEX.42.b executed"
+		add_stability = -0.05
+		custom_effect_tooltip = DEUSEX_deny_everything_tt
+		hidden_effect = {
+			clr_global_flag = DEUSEX_masquerade_choice_pending
+			add_to_variable = { global.DEUSEX_illum_exposure = -20 }
+			DEUSEX_update_inner_circle = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = { factor = 0.25 has_stability < 0.4 }
+		}
+	}
+}
