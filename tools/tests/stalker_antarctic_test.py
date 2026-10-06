@@ -95,7 +95,7 @@ def test_seized_samples_end_the_study_and_use_the_treaty_penalty():
         in detected
     )
     assert (
-        "set_country_flag = { flag = STALKER_polar_study_cut_short days = 180 value = 1 }"
+        "set_country_flag = { flag = STALKER_polar_study_cut_short days = 181 value = 1 }"
         in detected
     )
     assert "news_event = STALKER.191" in detected
@@ -112,22 +112,24 @@ def test_seized_samples_end_the_study_and_use_the_treaty_penalty():
     )
 
 
-def test_the_study_ends_when_its_laboratory_stops():
-    pulse = _named_block(EFFECTS, "STALKER_monthly_antarctic_pulse")
-    limit = _named_block(pulse, "limit")
+def test_the_study_ends_the_first_day_its_laboratory_stops():
+    study = _named_block(DECISIONS, "STALKER_polar_artifact_study")
+    assert "country_event = { id = STALKER.192 days = 1 }" in study
+    check = EVENTS[EVENTS.index("id = STALKER.192") :]
+    assert "hidden = yes" in check
+    trigger = _named_block(check, "trigger")
     assert (
-        "has_dynamic_modifier = { modifier = STALKER_polar_artifact_samples }" in limit
+        "has_dynamic_modifier = { modifier = STALKER_polar_artifact_samples }"
+        in trigger
     )
-    assert "NOT = { STALKER_has_working_radiation_lab = yes }" in limit
-    assert (
-        "remove_dynamic_modifier = { modifier = STALKER_polar_artifact_samples }"
-        in pulse
-    )
-    assert "flag = STALKER_polar_study_cut_short" in pulse
+    assert "NOT = { STALKER_has_working_radiation_lab = yes }" in check
+    assert "STALKER_polar_study_lab_lost = yes" in check
+    assert "else = { country_event = { id = STALKER.192 days = 1 } }" in check
+    lost = _named_block(EFFECTS, "STALKER_polar_study_lab_lost")
+    assert "flag = STALKER_polar_study_cut_short days = 181" in lost
+    assert lost.index("has_dynamic_modifier") < lost.index("remove_dynamic_modifier")
     pulses = _read("common/scripted_effects/99_STALKER_pulse_effects.txt")
-    assert "STALKER_monthly_antarctic_pulse = yes" in _named_block(
-        pulses, "STALKER_monthly_pulse"
-    )
+    assert "STALKER_monthly_antarctic_pulse" not in pulses
 
 
 def test_event_ids_stay_in_the_block_and_every_key_has_english_text():

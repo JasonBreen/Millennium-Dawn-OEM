@@ -44,3 +44,24 @@ news_event = {
 
 	option = { name = STALKER.191.a }
 }
+
+# Daily while a polar study runs, only for the country running it: the study ends on the first day its
+# Radiation Laboratory is not working, so a short outage still counts.
+country_event = {
+	id = STALKER.192
+	hidden = yes
+	is_triggered_only = yes
+
+	trigger = {
+		STALKER_scenario_enabled = yes
+		has_dynamic_modifier = { modifier = STALKER_polar_artifact_samples }
+	}
+
+	immediate = {
+		if = {
+			limit = { NOT = { STALKER_has_working_radiation_lab = yes } }
+			STALKER_polar_study_lab_lost = yes
+		}
+		else = { country_event = { id = STALKER.192 days = 1 } }
+	}
+}
