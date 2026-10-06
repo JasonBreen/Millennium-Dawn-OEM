@@ -230,6 +230,7 @@ country_event = {
 		trigger = {
 			NOT = { has_war_with = USA }
 			country_exists = USA
+			814 = { is_controlled_by = USA }
 			USA = { check_variable = { METALGEAR_crisis_phase = 2 } }
 			check_variable = { global.METALGEAR_shadow_moses_result < 1 }
 		}
@@ -239,6 +240,7 @@ country_event = {
 					check_variable = { METALGEAR_crisis_records < 1 }
 					NOT = { has_war_with = USA }
 					country_exists = USA
+					814 = { is_controlled_by = USA }
 					USA = { check_variable = { METALGEAR_crisis_phase = 2 } }
 					check_variable = { global.METALGEAR_shadow_moses_result < 1 }
 				}
@@ -261,6 +263,7 @@ country_event = {
 		custom_effect_tooltip = METALGEAR_withhold_records_tt
 		trigger = {
 			country_exists = USA
+			814 = { is_controlled_by = USA }
 			USA = { check_variable = { METALGEAR_crisis_phase = 2 } }
 			check_variable = { global.METALGEAR_shadow_moses_result < 1 }
 		}
@@ -269,6 +272,7 @@ country_event = {
 				limit = {
 					check_variable = { METALGEAR_crisis_records < 1 }
 					country_exists = USA
+					814 = { is_controlled_by = USA }
 					USA = { check_variable = { METALGEAR_crisis_phase = 2 } }
 					check_variable = { global.METALGEAR_shadow_moses_result < 1 }
 				}
@@ -288,13 +292,22 @@ country_event = {
 		trigger = {
 			OR = {
 				NOT = { country_exists = USA }
+				814 = { NOT = { is_controlled_by = USA } }
 				USA = { NOT = { check_variable = { METALGEAR_crisis_phase = 2 } } }
 				check_variable = { global.METALGEAR_shadow_moses_result > 0 }
 			}
 		}
 		hidden_effect = {
 			if = {
-				limit = { check_variable = { METALGEAR_crisis_records < 1 } }
+				limit = {
+					check_variable = { METALGEAR_crisis_records < 1 }
+					OR = {
+						NOT = { country_exists = USA }
+						814 = { NOT = { is_controlled_by = USA } }
+						USA = { NOT = { check_variable = { METALGEAR_crisis_phase = 2 } } }
+						check_variable = { global.METALGEAR_shadow_moses_result > 0 }
+					}
+				}
 				set_variable = { METALGEAR_crisis_records = 3 }
 			}
 		}
