@@ -8,7 +8,8 @@ The opt-in OEM scenario combines the existing USA-controlled Patriots network wi
 - Shadow Moses IDs 10-19: briefing 10, aftermath 12 and news 13 in `METALGEAR_shadow_moses.txt`. ID 11 is retired and must not be reused. English strings use `MD_METALGEAR_shadow_moses_l_english.yml`.
 - Japan IDs 20-29: introduction 20, review 21, crisis response 22, outgoing return 23, incoming USA request 24 and crisis report 25. Files use `METALGEAR_japan` and `99_METALGEAR_japan_effects.txt`.
 - Russia IDs 30-39: introduction 30, review 31, crisis response 32, outgoing return 33, incoming Japan request 34 and crisis report 35. Files use `METALGEAR_russia` and `99_METALGEAR_russia_effects.txt`.
-- The next free block is 40-49. Every subsystem keeps its own events, effects, decisions and English localisation.
+- Operations IDs 40-49: scandal 40 in `METALGEAR_operations.txt`. Files use `METALGEAR_operations`, `99_METALGEAR_operations_effects.txt` and `METALGEAR_operations_decisions.txt`, whose decisions join the existing `METALGEAR_network_category`.
+- The next free block is 50-59. Every subsystem keeps its own events, effects, decisions and English localisation.
 - Shared hooks: `rule_metalgear_scenario` in the game rules and its English keys; `METALGEAR_dispatch_shadow_moses` in the 2005 yearly effect; the existing Konami milestone guards in `99_JAP_scripted_effects.txt`.
 
 The scenario reads its rule only in the startup initializer. Runtime gates read `GLOBAL_METALGEAR_scenario_enabled`. Event Horizon's existing host conflict remains. There are no authored crossovers or dependencies on Deus Ex.
@@ -30,6 +31,31 @@ Country-owned `METALGEAR_review_phase` is 1 available, 2 running, 3 report await
 The fixed exchange cycle is USA to Japan, Japan to Russia and Russia to USA. Each one-time request costs 15 Political Power. The recipient accepts for 10 Political Power and gives mutual `diplomatic_support` (+20 opinion), or refuses for free without a penalty. Benefits apply in the recipient's guarded option; the sender's return is only a notification.
 
 Country-owned `METALGEAR_request_phase` is 0 unused, 1 pending, 2 accepted, 3 refused or 4 interrupted. The once-monthly fixed-country checks quietly close a pending request if its partner disappears or war begins. They send a return notification when the sender exists. No request is resent or rewarded twice.
+
+## Network payoff and risk
+
+The network now pays the United States and can hurt it. The monthly operations pulse runs after the network pulse,
+adds the `METALGEAR_patriots` dynamic modifier to the USA and refreshes it from the three meters:
+
+- political power per day: (coherence - 50) x 0.005, so +0.10 at the starting 70 and -0.25 at 0;
+- stability: reach x 0.04% minus exposure x 0.1%, so +1% at the start;
+- civilian intelligence: reach x 0.2%, so +10% at the start.
+
+Three operations join the network category. Each costs 25 Political Power, holds one commitment for 60 days and can
+be repeated after 120. Each adds 3 exposure when it starts, or 6 if the node it runs through is really compromised,
+whatever the estimate says. The result arrives when it ends:
+
+- Steer Defense Procurement (defense procurement node): a one-use 50% research bonus for armor and military electronics.
+- Manage the News Cycle (information control node): +3% popularity for the ruling party.
+- Influence a Foreign Desk (special operations oversight node), targeted at 21 fixed countries at peace with the
+  USA: +3% American influence there.
+
+Operations compete with audits and repairs for the same two commitments. When exposure passes 60, the USA gets
+`METALGEAR.40` at most once a year. Burying the story costs 50 Political Power, 10 coherence and removes 20 exposure.
+Letting it break costs 5% stability, 25 coherence and 15 reach, and resets exposure to 10.
+
+The AI runs operations only while exposure is 45 or lower. These operations are original scenario mechanics, not
+dated canon incidents.
 
 ## Shadow Moses in 2005
 

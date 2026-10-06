@@ -1,0 +1,45 @@
+add_namespace = METALGEAR
+
+# Exposure above 60 forces the network's work into the open.
+country_event = {
+	id = METALGEAR.40
+	title = METALGEAR.40.t
+	desc = METALGEAR.40.d
+	picture = GFX_leaked_memo
+	is_triggered_only = yes
+
+	trigger = { METALGEAR_is_controller = yes }
+
+	option = {
+		name = METALGEAR.40.a
+		log = "[GetDateText]: [This.GetName]: METALGEAR.40.a executed"
+		add_political_power = -50
+		custom_effect_tooltip = METALGEAR_bury_story_tt
+		hidden_effect = {
+			add_to_variable = { global.METALGEAR_coherence = -10 }
+			add_to_variable = { global.METALGEAR_exposure = -20 }
+			METALGEAR_refresh_patriots_factors = yes
+		}
+		ai_chance = {
+			base = 60
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	option = {
+		name = METALGEAR.40.b
+		log = "[GetDateText]: [This.GetName]: METALGEAR.40.b executed"
+		add_stability = -0.05
+		custom_effect_tooltip = METALGEAR_let_story_break_tt
+		hidden_effect = {
+			add_to_variable = { global.METALGEAR_coherence = -25 }
+			add_to_variable = { global.METALGEAR_reach = -15 }
+			set_variable = { global.METALGEAR_exposure = 10 }
+			METALGEAR_refresh_patriots_factors = yes
+		}
+		ai_chance = {
+			base = 40
+			modifier = { factor = 0.25 has_stability < 0.4 }
+		}
+	}
+}

@@ -1,0 +1,49 @@
+# Patriot Operations. The network's coherence, reach and exposure drive the United States' METALGEAR_patriots
+# modifier, and exposure above 60 forces a scandal at most once a year.
+METALGEAR_monthly_operations_pulse = {
+	if = {
+		limit = {
+			has_global_flag = GLOBAL_METALGEAR_network_ready
+			country_exists = USA
+		}
+		USA = {
+			METALGEAR_refresh_patriots_factors = yes
+			if = {
+				limit = { NOT = { has_dynamic_modifier = { modifier = METALGEAR_patriots } } }
+				add_dynamic_modifier = { modifier = METALGEAR_patriots }
+			}
+			if = {
+				limit = {
+					check_variable = { global.METALGEAR_exposure > 60 }
+					NOT = { has_global_flag = METALGEAR_scandal_cooldown }
+				}
+				set_global_flag = { flag = METALGEAR_scandal_cooldown value = 1 days = 365 }
+				country_event = { id = METALGEAR.40 days = 1 }
+			}
+		}
+	}
+}
+
+# USA scope. Call after every change to coherence, reach or exposure.
+METALGEAR_refresh_patriots_factors = {
+	METALGEAR_clamp_network = yes
+	set_variable = { METALGEAR_pp_factor = { value = global.METALGEAR_coherence subtract = 50 multiply = 0.005 } }
+	set_variable = { METALGEAR_stability_factor = { value = global.METALGEAR_reach multiply = 0.0004 subtract = { value = global.METALGEAR_exposure multiply = 0.001 } } }
+	set_variable = { METALGEAR_intel_factor = { value = global.METALGEAR_reach multiply = 0.002 } }
+}
+
+# USA scope, temp mg_i set to the node the operation runs through. It holds a commitment until the operation ends and
+# leaves 3 exposure, 6 through a node that is really compromised, whatever the estimate says.
+METALGEAR_start_operation = {
+	subtract_from_variable = { global.METALGEAR_capacity = 1 }
+	add_to_variable = { global.METALGEAR_exposure = 3 }
+	if = {
+		limit = { check_variable = { global.METALGEAR_node_true^mg_i = 2 } }
+		add_to_variable = { global.METALGEAR_exposure = 3 }
+	}
+	METALGEAR_refresh_patriots_factors = yes
+}
+
+METALGEAR_end_operation = {
+	add_to_variable = { global.METALGEAR_capacity = 1 }
+}
