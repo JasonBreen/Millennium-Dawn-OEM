@@ -1,0 +1,30 @@
+# Startup records the rule because it is unavailable during load-time trigger resolution.
+DEUSEX_scenario_enabled = {
+	has_global_flag = GLOBAL_DEUSEX_scenario_enabled
+}
+
+DEUSEX_exchange_available = {
+	DEUSEX_scenario_enabled = yes
+	check_variable = { DEUSEX_program_phase = 3 }
+	check_variable = { DEUSEX_exchange_phase = 0 }
+	OR = {
+		AND = {
+			tag = USA
+			country_exists = GER
+			NOT = { has_war_with = GER }
+			GER = { check_variable = { DEUSEX_program_phase > 0 } }
+		}
+		AND = {
+			tag = CHI
+			country_exists = USA
+			NOT = { has_war_with = USA }
+			USA = { check_variable = { DEUSEX_program_phase > 0 } }
+		}
+		AND = {
+			tag = GER
+			country_exists = CHI
+			NOT = { has_war_with = CHI }
+			CHI = { check_variable = { DEUSEX_program_phase > 0 } }
+		}
+	}
+}

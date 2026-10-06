@@ -1,0 +1,31 @@
+DEUSEX_initialize_scenario = {
+	if = {
+		limit = {
+			has_game_rule = { rule = rule_deusex_scenario option = ENABLED }
+			NOT = { has_global_flag = GLOBAL_DEUSEX_scenario_enabled }
+		}
+		set_global_flag = GLOBAL_DEUSEX_scenario_enabled
+		if = { limit = { country_exists = USA } USA = { country_event = { id = DEUSEX.1 days = 15 } } }
+		if = { limit = { country_exists = CHI } CHI = { country_event = { id = DEUSEX.10 days = 15 } } }
+		if = { limit = { country_exists = GER } GER = { country_event = { id = DEUSEX.20 days = 15 } } }
+	}
+}
+
+DEUSEX_monthly_usa_pulse = {
+	if = {
+		limit = { DEUSEX_scenario_enabled = yes country_exists = USA }
+		USA = {
+			if = {
+				limit = {
+					check_variable = { DEUSEX_exchange_phase = 1 }
+					OR = {
+						NOT = { country_exists = GER }
+						has_war_with = GER
+					}
+				}
+				set_variable = { DEUSEX_exchange_phase = 4 }
+				country_event = { id = DEUSEX.4 days = 1 }
+			}
+		}
+	}
+}
