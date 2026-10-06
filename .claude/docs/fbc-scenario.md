@@ -25,10 +25,21 @@ event IDs, so parallel work does not collide. It ships on OEM only. Built like S
   `99_FBC_scripted_effects.txt`, `99_FBC_pulse_effects.txt`, `99_FBC_on_actions.txt`.
 - **European Anomaly Desk (10–19):** `FBC_europe.txt`; loc `_europe_`;
   `99_FBC_europe_effects.txt`.
+- **Polar Desk (20–29):** `FBC_polar.txt`; loc `_polar_`;
+  `99_FBC_polar_effects.txt`. One case at a time.
+  `FBC_monthly_polar_pulse` gives each Antarctic Treaty member with a working Ice Core Deep Drilling Rig
+  (`antarctica_lab_ice_tech_boost > 0`) at station tier 2 or higher a 2% monthly chance of an Altered World
+  Event in the core (`FBC.20`, to the station's controller, which keeps `FBC_polar_station_id`). Sealing the
+  borehole costs 25 PP and ends it. Reporting it sends `FBC.21` to the United States, which keeps
+  `FBC_polar_country`. A response team contains it three times in four (`FBC.22`: +5 containment, a
+  one-use excavation bonus for the controller), or fails (`FBC.24`). Declining or failing breaks it out
+  (`FBC.23`): Antarctica's `antarctica_mark_blizzard_slot_damaged` damages the rig's slot, and the
+  controller's `research_station_module_repair_days_remaining` restores it in 30 days. Every close starts
+  a 1,095-day cooldown.
 
 Localisation file names are `MD_FBC_<subsystem>_l_english.yml`.
 
-The next free block is 20–29.
+The next free block is 30–39.
 
 ## Hooks into shared files
 
@@ -38,6 +49,8 @@ The next free block is 20–29.
 - Targeted Operations organizations 39 and 40 in `tools/data/targeted_operations.json`. Both are public state-security records at the host capital, which is what that class allows.
 
 The Bureau is its own scenario. It does not read STALKER state, and STALKER does not read Bureau state. The two Targeted Operations rows are the only shared runtime hook.
+
+The Polar Desk reads Antarctica's station state and changes it only through Antarctica's own slot-damage and laboratory-recalculation effects, plus the controller's repair countdown.
 
 ## Playable slice
 
