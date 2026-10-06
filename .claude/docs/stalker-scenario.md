@@ -104,9 +104,10 @@ names and events against the in-game text as documented by the S.T.A.L.K.E.R. Wi
 - **Antarctic Research (190–199):** `STALKER_antarctic.txt`; loc `_antarctic_`;
   `99_STALKER_antarctic_effects.txt`, `STALKER_antarctic_decisions.txt`.
   `STALKER_polar_artifact_study` spends 5 artifacts at a station with a working Radiation
-  Laboratory (`antarctica_lab_cat_nuclear_reactors > 0`): 180 days of +3% research and +15%
-  station iteration progress, then `STALKER.190`. Observers who visit during the study seize the
-  samples (`STALKER.191` and Antarctica's `MD_antarctica.4` penalty).
+  Laboratory (`STALKER_has_working_radiation_lab`, the station's live slot, fuel and power): 180
+  days of +3% research and +15% station iteration progress, then `STALKER.190`. Observers who
+  visit during the study always seize the samples (major news `STALKER.191`). Antarctica's
+  `MD_antarctica.4` penalty applies unless the visit already reported another violation.
 
 Localisation file names are `MD_STALKER_<subsystem>_l_english.yml`.
 
@@ -130,8 +131,8 @@ where possible; they are what an upstream port has to carry.
   `[STALKER_top_package_zone_crisis]` in the package-page localisation. See
   [Targeted Operations](targeted-operations.md).
 - `localisation/english/MD_game_rules_l_english.yml`: the three STALKER rules.
-- `events/MD_Antarctica.txt`: the observer report event's `else_if` that finds a polar artifact
-  study when the station shows no other violation.
+- `events/MD_Antarctica.txt`: the observer report event's block that seizes a polar artifact study
+  and adds the Treaty penalty only when the station shows no other violation.
 
 ## Scripting traps found at runtime
 
