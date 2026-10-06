@@ -1,0 +1,143 @@
+# Augmentation Boom. The United States (Sarif Industries) and China (Tai Yong Medical) each keep their own adoption
+# and anti-augmentation unrest, both 0-100.
+DEUSEX_monthly_augmentation_pulse = {
+	if = {
+		limit = { DEUSEX_scenario_enabled = yes }
+		if = {
+			limit = {
+				date > 2007.1.1
+				country_exists = USA
+				NOT = { has_global_flag = DEUSEX_aug_usa_offered }
+			}
+			set_global_flag = DEUSEX_aug_usa_offered
+			USA = { country_event = { id = DEUSEX.30 days = 1 } }
+		}
+		if = {
+			limit = {
+				date > 2009.1.1
+				country_exists = CHI
+				NOT = { has_global_flag = DEUSEX_aug_chi_offered }
+			}
+			set_global_flag = DEUSEX_aug_chi_offered
+			CHI = { country_event = { id = DEUSEX.31 days = 1 } }
+		}
+		if = {
+			limit = { country_exists = USA USA = { has_country_flag = DEUSEX_aug_open } }
+			USA = { DEUSEX_augmentation_month = yes }
+		}
+		if = {
+			limit = { country_exists = CHI CHI = { has_country_flag = DEUSEX_aug_open } }
+			CHI = { DEUSEX_augmentation_month = yes }
+		}
+		if = {
+			limit = {
+				date > 2027.10.1
+				NOT = { has_global_flag = DEUSEX_aug_incident_done }
+			}
+			set_global_flag = DEUSEX_aug_incident_done
+			if = {
+				limit = {
+					OR = {
+						USA = { DEUSEX_has_augmentation_industry = yes }
+						CHI = { DEUSEX_has_augmentation_industry = yes }
+					}
+				}
+				news_event = { id = DEUSEX.35 days = 1 }
+			}
+			if = {
+				limit = { USA = { DEUSEX_has_augmentation_industry = yes } }
+				USA = { country_event = { id = DEUSEX.34 days = 1 } }
+			}
+			if = {
+				limit = { CHI = { DEUSEX_has_augmentation_industry = yes } }
+				CHI = { country_event = { id = DEUSEX.34 days = 1 } }
+			}
+		}
+		if = {
+			limit = {
+				date > 2029.1.1
+				has_global_flag = DEUSEX_aug_incident_done
+				NOT = { has_global_flag = DEUSEX_aug_restoration_act_done }
+			}
+			set_global_flag = DEUSEX_aug_restoration_act_done
+			if = {
+				limit = { USA = { DEUSEX_has_augmentation_industry = yes } }
+				USA = { country_event = { id = DEUSEX.36 days = 1 } }
+			}
+			if = {
+				limit = { CHI = { DEUSEX_has_augmentation_industry = yes } }
+				CHI = { country_event = { id = DEUSEX.36 days = 1 } }
+			}
+		}
+	}
+}
+
+# Host scope. Unrest grows with adoption and fades by 2 a month. A state Neuropozyne programme halves the growth and
+# pays for the drug: 0.015 billion a month per point of adoption.
+DEUSEX_augmentation_month = {
+	set_temp_variable = { DEUSEX_unrest_gain = { value = DEUSEX_aug_adoption multiply = 0.05 } }
+	if = {
+		limit = { has_country_flag = DEUSEX_aug_neuropozyne_funded }
+		multiply_temp_variable = { DEUSEX_unrest_gain = 0.5 }
+		set_temp_variable = { treasury_change = { value = DEUSEX_aug_adoption multiply = -0.015 } }
+		modify_treasury_effect = yes
+	}
+	add_to_variable = { DEUSEX_aug_unrest = DEUSEX_unrest_gain }
+	add_to_variable = { DEUSEX_aug_unrest = -2 }
+	DEUSEX_update_augmentation = yes
+	if = {
+		limit = {
+			check_variable = { DEUSEX_aug_adoption > 19 }
+			NOT = { has_country_flag = DEUSEX_aug_shortage_cooldown }
+		}
+		random = {
+			chance = 4
+			set_country_flag = { flag = DEUSEX_aug_shortage_cooldown value = 1 days = 365 }
+			country_event = { id = DEUSEX.32 days = 1 }
+		}
+	}
+	if = {
+		limit = {
+			check_variable = { DEUSEX_aug_unrest > 59 }
+			NOT = { has_country_flag = DEUSEX_aug_riot_cooldown }
+		}
+		set_country_flag = { flag = DEUSEX_aug_riot_cooldown value = 1 days = 365 }
+		country_event = { id = DEUSEX.33 days = 1 }
+	}
+}
+
+# Host scope. Both opening options call this after setting the starting adoption.
+DEUSEX_open_augmentation_industry = {
+	set_country_flag = DEUSEX_aug_open
+	DEUSEX_update_augmentation = yes
+	add_dynamic_modifier = { modifier = DEUSEX_augmentation_industry }
+}
+
+# Host scope. The Aug Incident's toll scales with adoption; both responses pay it.
+DEUSEX_aug_incident_damage = {
+	if = {
+		limit = { check_variable = { DEUSEX_aug_adoption > 59 } }
+		add_stability = -0.1
+	}
+	else_if = {
+		limit = { check_variable = { DEUSEX_aug_adoption > 29 } }
+		add_stability = -0.06
+	}
+	else = { add_stability = -0.03 }
+	custom_effect_tooltip = DEUSEX_unrest_plus_40_tt
+	hidden_effect = { add_to_variable = { DEUSEX_aug_unrest = 40 } }
+}
+
+# Host scope. Call after every change to adoption, unrest or the military programme.
+DEUSEX_update_augmentation = {
+	clamp_variable = { var = DEUSEX_aug_adoption min = 0 max = 100 }
+	clamp_variable = { var = DEUSEX_aug_unrest min = 0 max = 100 }
+	set_variable = { DEUSEX_aug_research_factor = { value = DEUSEX_aug_adoption multiply = 0.001 } }
+	set_variable = { DEUSEX_aug_industry_factor = { value = DEUSEX_aug_adoption multiply = 0.0005 } }
+	set_variable = { DEUSEX_aug_army_factor = 0 }
+	if = {
+		limit = { has_country_flag = DEUSEX_aug_military }
+		set_variable = { DEUSEX_aug_army_factor = { value = DEUSEX_aug_adoption multiply = 0.0008 } }
+	}
+	set_variable = { DEUSEX_aug_stability_factor = { value = DEUSEX_aug_unrest multiply = -0.0015 } }
+}

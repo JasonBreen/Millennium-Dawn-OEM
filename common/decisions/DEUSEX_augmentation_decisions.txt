@@ -1,0 +1,130 @@
+DEUSEX_augmentation_category = {
+	DEUSEX_fund_augmentation_research = {
+		icon = GFX_decision_generic_research
+		visible = { NOT = { has_country_flag = DEUSEX_aug_restricted } }
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = DEUSEX_adoption_below_full_tt
+				check_variable = { DEUSEX_aug_adoption < 100 }
+			}
+		}
+		custom_cost_trigger = { check_variable = { treasury > 9.99 } }
+		custom_cost_text = cost_10_0
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_fund_augmentation_research"
+			set_temp_variable = { treasury_change = -10 }
+			modify_treasury_effect = yes
+			custom_effect_tooltip = DEUSEX_adoption_plus_10_tt
+			hidden_effect = {
+				add_to_variable = { DEUSEX_aug_adoption = 10 }
+				DEUSEX_update_augmentation = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 10
+			modifier = { factor = 0 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 0.25 ai_has_high_deficit = yes }
+			modifier = { factor = 0.25 check_variable = { DEUSEX_aug_unrest > 49 } }
+		}
+	}
+
+	DEUSEX_military_augmentation_programme = {
+		icon = GFX_decision_generic_military
+		visible = {
+			NOT = { has_country_flag = DEUSEX_aug_military }
+			NOT = { has_country_flag = DEUSEX_aug_restricted }
+		}
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = DEUSEX_adoption_40_tt
+				check_variable = { DEUSEX_aug_adoption > 39 }
+			}
+		}
+		cost = 50
+		fire_only_once = yes
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_military_augmentation_programme"
+			custom_effect_tooltip = DEUSEX_military_augmentation_programme_tt
+			hidden_effect = {
+				set_country_flag = DEUSEX_aug_military
+				DEUSEX_update_augmentation = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 3 has_war = yes }
+		}
+	}
+
+	DEUSEX_fund_neuropozyne = {
+		icon = GFX_decision_money_dec
+		visible = {
+			NOT = { has_country_flag = DEUSEX_aug_neuropozyne_funded }
+			NOT = { has_country_flag = DEUSEX_aug_restricted }
+		}
+		cost = 25
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_fund_neuropozyne"
+			custom_effect_tooltip = DEUSEX_fund_neuropozyne_tt
+			hidden_effect = { set_country_flag = DEUSEX_aug_neuropozyne_funded }
+		}
+
+		ai_will_do = {
+			base = 2
+			modifier = { factor = 5 check_variable = { DEUSEX_aug_unrest > 39 } }
+			modifier = { factor = 0 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 0 ai_has_high_deficit = yes }
+		}
+	}
+
+	DEUSEX_end_neuropozyne_funding = {
+		icon = GFX_decision_money_dec
+		visible = { has_country_flag = DEUSEX_aug_neuropozyne_funded }
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_end_neuropozyne_funding"
+			custom_effect_tooltip = DEUSEX_end_neuropozyne_funding_tt
+			hidden_effect = { clr_country_flag = DEUSEX_aug_neuropozyne_funded }
+		}
+
+		ai_will_do = {
+			base = 0
+			modifier = { add = 10 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { add = 5 ai_has_high_deficit = yes }
+		}
+	}
+
+	DEUSEX_suppress_anti_augmentation_groups = {
+		icon = GFX_decision_generic_police_action
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = DEUSEX_unrest_20_tt
+				check_variable = { DEUSEX_aug_unrest > 19 }
+			}
+		}
+		cost = 25
+		days_re_enable = 180
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_suppress_anti_augmentation_groups"
+			custom_effect_tooltip = DEUSEX_unrest_minus_20_tt
+			hidden_effect = {
+				add_to_variable = { DEUSEX_aug_unrest = -20 }
+				DEUSEX_update_augmentation = yes
+			}
+		}
+
+		ai_will_do = {
+			base = 0
+			modifier = { add = 10 check_variable = { DEUSEX_aug_unrest > 39 } }
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+}
