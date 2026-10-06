@@ -1,0 +1,128 @@
+# Polar Desk. One case at a time. The Bureau keeps FBC_polar_country, so each queued event reads its own country,
+# never a shared current site.
+FBC_monthly_polar_pulse = {
+	# A queued event is lost if its recipient stops existing: the United States at any point, or the station's
+	# controller before the Bureau commits a team. The case closes and the team returns.
+	if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			has_global_flag = FBC_polar_case_open
+			OR = {
+				NOT = { country_exists = USA }
+				USA = {
+					check_variable = { FBC_polar_committed < 1 }
+					check_variable = { FBC_polar_country > 0 }
+					var:FBC_polar_country = { exists = no }
+				}
+			}
+		}
+		USA = { FBC_release_polar_team = yes }
+		FBC_polar_close_case = yes
+	}
+	if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			country_exists = USA
+			USA = { has_variable = FBC_containment_integrity }
+			NOT = { has_global_flag = FBC_polar_case_open }
+			NOT = { has_global_flag = FBC_polar_cooldown }
+		}
+		# Every eligible member rolls its own 2%; one of the hits gets the case, so list order does not matter.
+		clear_temp_array = FBC_polar_hits
+		for_each_scope_loop = {
+			array = global.at_members
+			if = {
+				limit = {
+					exists = yes
+					check_variable = { antarctica_lab_ice_tech_boost > 0 }
+				}
+				FBC_polar_find_drilling_station = yes
+				if = {
+					limit = { check_variable = { FBC_polar_candidate > 0 } }
+					random = {
+						chance = 2
+						add_to_temp_array = { FBC_polar_hits = THIS }
+					}
+				}
+			}
+		}
+		if = {
+			limit = { check_variable = { FBC_polar_hits^num > 0 } }
+			random_scope_in_array = {
+				array = FBC_polar_hits
+				FBC_polar_find_drilling_station = yes
+				set_global_flag = FBC_polar_case_open
+				USA = {
+					set_variable = { FBC_polar_country = PREV.id }
+					set_variable = { FBC_polar_station_id = FBC_polar_candidate }
+				}
+				country_event = FBC.20
+			}
+		}
+	}
+}
+
+# Sets temp FBC_polar_candidate to a station of ours at tier 2 or higher whose drilling rig works, else 0.
+# Antarctica sets antarctica_lab_ice_tech_boost only while a rig has fuel, power and no damage.
+FBC_polar_find_drilling_station = {
+	set_temp_variable = { FBC_polar_candidate = 0 }
+	for_each_loop = {
+		array = country_owned_station_ids
+		value = FBC_polar_station
+		if = {
+			limit = {
+				check_variable = { FBC_polar_candidate = 0 }
+				check_variable = { FBC_polar_station > 0 }
+				check_variable = { global.antarctica_station_exists^FBC_polar_station > 0 }
+				check_variable = { global.antarctica_station_controller^FBC_polar_station = THIS.id }
+				check_variable = { global.antarctica_station_tier^FBC_polar_station > 1 }
+				OR = {
+					check_variable = { global.antarctica_station_module_slot_6^FBC_polar_station = 12 }
+					check_variable = { global.antarctica_station_module_slot_7^FBC_polar_station = 12 }
+					check_variable = { global.antarctica_station_module_slot_8^FBC_polar_station = 12 }
+					check_variable = { global.antarctica_station_module_slot_9^FBC_polar_station = 12 }
+				}
+			}
+			set_temp_variable = { FBC_polar_candidate = FBC_polar_station }
+		}
+	}
+}
+
+FBC_commit_polar_team = {
+	if = {
+		limit = {
+			check_variable = { FBC_response_capacity > 0 }
+			check_variable = { FBC_polar_committed < 1 }
+		}
+		add_to_variable = { FBC_response_capacity = -1 }
+		set_variable = { FBC_polar_committed = 1 }
+	}
+}
+
+FBC_release_polar_team = {
+	if = {
+		limit = { check_variable = { FBC_polar_committed > 0 } }
+		set_variable = { FBC_polar_committed = 0 }
+		add_to_variable = { FBC_response_capacity = 1 }
+		clamp_variable = { var = FBC_response_capacity min = 0 max = 2 }
+	}
+}
+
+FBC_polar_close_case = {
+	USA = {
+		clear_variable = FBC_polar_country
+		clear_variable = FBC_polar_station_id
+	}
+	clr_global_flag = FBC_polar_case_open
+	set_global_flag = { flag = FBC_polar_cooldown value = 1 days = 1095 }
+}
+
+# Station controller scope. The event breaks out of the core and the rig stops for 30 days. The outage is FBC's own
+# flag, which Antarctica's lab count, laboratory effects and iteration rewards read, so it never touches blizzard
+# damage or repairs. FBC.25 ends it and restores the output at once; the flag lapses a day later on its own in
+# case FBC.25 is lost to an annexation.
+FBC_polar_breakout = {
+	set_country_flag = { flag = FBC_polar_rig_down value = 1 days = 31 }
+	antarctica_recalculate_country_laboratory_effects = yes
+	country_event = { id = FBC.25 days = 30 }
+}
