@@ -1,0 +1,84 @@
+DEUSEX_preparation_category = {
+	DEUSEX_audit_program = {
+		icon = GFX_decision_generic_research
+		visible = { DEUSEX_scenario_enabled = yes check_variable = { DEUSEX_program_phase = 1 } }
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = DEUSEX_audit_program_available_tt
+				check_variable = { DEUSEX_program_phase = 1 }
+			}
+		}
+		cost = 25
+		fire_only_once = yes
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_audit_program"
+			custom_effect_tooltip = DEUSEX_audit_program_tt
+			hidden_effect = {
+				if = {
+					limit = { DEUSEX_scenario_enabled = yes check_variable = { DEUSEX_program_phase = 1 } }
+					set_variable = { DEUSEX_program_phase = 2 }
+					if = { limit = { tag = USA } country_event = { id = DEUSEX.2 days = 60 } }
+					if = { limit = { tag = CHI } country_event = { id = DEUSEX.11 days = 60 } }
+					if = { limit = { tag = GER } country_event = { id = DEUSEX.21 days = 60 } }
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	DEUSEX_request_exchange = {
+		icon = GFX_decision_generic_political_discourse
+		visible = {
+			DEUSEX_scenario_enabled = yes
+			check_variable = { DEUSEX_program_phase = 3 }
+			check_variable = { DEUSEX_exchange_phase = 0 }
+		}
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = DEUSEX_request_exchange_available_tt
+				DEUSEX_exchange_available = yes
+			}
+		}
+		cost = 15
+		fire_only_once = yes
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision DEUSEX_request_exchange"
+			custom_effect_tooltip = DEUSEX_request_exchange_tt
+			hidden_effect = {
+				if = {
+					limit = { DEUSEX_exchange_available = yes }
+					set_variable = { DEUSEX_exchange_phase = 1 }
+					if = {
+						limit = { tag = USA country_exists = GER NOT = { has_war_with = GER } }
+						GER = { country_event = { id = DEUSEX.22 days = 1 } }
+					}
+					if = {
+						limit = { tag = CHI country_exists = USA NOT = { has_war_with = USA } }
+						USA = { country_event = { id = DEUSEX.3 days = 1 } }
+					}
+					if = {
+						limit = { tag = GER country_exists = CHI NOT = { has_war_with = CHI } }
+						CHI = { country_event = { id = DEUSEX.12 days = 1 } }
+					}
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { add = 2 tag = USA has_opinion = { target = GER value > 30 } }
+			modifier = { factor = 0.25 tag = USA has_opinion = { target = GER value < -30 } }
+			modifier = { add = 2 tag = CHI has_opinion = { target = USA value > 30 } }
+			modifier = { factor = 0.25 tag = CHI has_opinion = { target = USA value < -30 } }
+			modifier = { add = 2 tag = GER has_opinion = { target = CHI value > 30 } }
+			modifier = { factor = 0.25 tag = GER has_opinion = { target = CHI value < -30 } }
+		}
+	}
+}

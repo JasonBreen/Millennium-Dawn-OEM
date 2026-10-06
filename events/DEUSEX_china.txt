@@ -1,0 +1,199 @@
+add_namespace = DEUSEX
+
+country_event = {
+	id = DEUSEX.10
+	title = DEUSEX.10.t
+	desc = DEUSEX.10.d
+	picture = GFX_hospital
+	is_triggered_only = yes
+
+	trigger = {
+		DEUSEX_scenario_enabled = yes
+		tag = CHI
+		check_variable = { DEUSEX_program_phase = 0 }
+	}
+
+	option = {
+		name = DEUSEX.10.a
+		log = "[GetDateText]: [This.GetName]: DEUSEX.10.a executed"
+		hidden_effect = {
+			if = {
+				limit = { DEUSEX_scenario_enabled = yes check_variable = { DEUSEX_program_phase = 0 } }
+				set_variable = { DEUSEX_program_phase = 1 }
+			}
+		}
+		unlock_decision_category_tooltip = DEUSEX_preparation_category
+		ai_chance = { base = 1 }
+	}
+}
+
+country_event = {
+	id = DEUSEX.11
+	title = DEUSEX.11.t
+	desc = DEUSEX.11.d
+	picture = GFX_hospital
+	is_triggered_only = yes
+
+	trigger = {
+		DEUSEX_scenario_enabled = yes
+		tag = CHI
+		check_variable = { DEUSEX_program_phase = 2 }
+	}
+
+	option = {
+		name = DEUSEX.11.a
+		log = "[GetDateText]: [This.GetName]: DEUSEX.11.a executed"
+		custom_effect_tooltip = DEUSEX_public_review_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { DEUSEX_program_phase = 2 } }
+				set_variable = { DEUSEX_program_phase = 3 }
+				add_stability = -0.01
+			}
+		}
+		unlock_decision_tooltip = DEUSEX_request_exchange
+		ai_chance = {
+			base = 60
+			modifier = { factor = 0.25 has_stability < 0.3 }
+		}
+	}
+
+	option = {
+		name = DEUSEX.11.b
+		log = "[GetDateText]: [This.GetName]: DEUSEX.11.b executed"
+		custom_effect_tooltip = DEUSEX_domestic_review_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { DEUSEX_program_phase = 2 } }
+				set_variable = { DEUSEX_program_phase = 4 }
+				add_stability = 0.01
+			}
+		}
+		ai_chance = { base = 40 }
+	}
+}
+
+country_event = {
+	id = DEUSEX.12
+	title = DEUSEX.12.t
+	desc = DEUSEX.12.d
+	picture = GFX_hospital
+	is_triggered_only = yes
+
+	trigger = {
+		DEUSEX_scenario_enabled = yes
+		tag = CHI
+		country_exists = GER
+		NOT = { has_war_with = GER }
+		GER = { check_variable = { DEUSEX_exchange_phase = 1 } }
+	}
+
+	option = {
+		name = DEUSEX.12.a
+		log = "[GetDateText]: [This.GetName]: DEUSEX.12.a executed"
+		custom_effect_tooltip = DEUSEX_accept_exchange_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					country_exists = GER
+					NOT = { has_war_with = GER }
+					GER = { check_variable = { DEUSEX_exchange_phase = 1 } }
+				}
+				add_political_power = -10
+				add_opinion_modifier = { target = GER modifier = diplomatic_support }
+				reverse_add_opinion_modifier = { target = GER modifier = diplomatic_support }
+				GER = {
+					set_variable = { DEUSEX_exchange_phase = 2 }
+					country_event = { id = DEUSEX.23 days = 1 }
+				}
+			}
+			else_if = {
+				limit = {
+					country_exists = GER
+					GER = { check_variable = { DEUSEX_exchange_phase = 1 } }
+				}
+				GER = {
+					set_variable = { DEUSEX_exchange_phase = 4 }
+					country_event = { id = DEUSEX.23 days = 1 }
+				}
+			}
+		}
+		ai_chance = {
+			base = 60
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { add = 20 has_opinion = { target = GER value > 30 } }
+			modifier = { factor = 0.25 has_opinion = { target = GER value < -30 } }
+		}
+	}
+
+	option = {
+		name = DEUSEX.12.b
+		log = "[GetDateText]: [This.GetName]: DEUSEX.12.b executed"
+		custom_effect_tooltip = DEUSEX_decline_exchange_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					country_exists = GER
+					GER = { check_variable = { DEUSEX_exchange_phase = 1 } }
+				}
+				GER = {
+					if = {
+						limit = { has_war_with = CHI }
+						set_variable = { DEUSEX_exchange_phase = 4 }
+					}
+					else = { set_variable = { DEUSEX_exchange_phase = 3 } }
+					country_event = { id = DEUSEX.23 days = 1 }
+				}
+			}
+		}
+		ai_chance = {
+			base = 40
+			modifier = { add = 20 has_opinion = { target = GER value < -30 } }
+		}
+	}
+}
+
+country_event = {
+	id = DEUSEX.13
+	title = DEUSEX.13.t
+	desc = {
+		text = DEUSEX.13.accepted.d
+		trigger = {
+			check_variable = { DEUSEX_exchange_phase = 2 }
+			country_exists = USA
+			NOT = { has_war_with = USA }
+		}
+	}
+	desc = {
+		text = DEUSEX.13.accepted_unavailable.d
+		trigger = {
+			check_variable = { DEUSEX_exchange_phase = 2 }
+			OR = {
+				NOT = { country_exists = USA }
+				has_war_with = USA
+			}
+		}
+	}
+	desc = {
+		text = DEUSEX.13.declined.d
+		trigger = { check_variable = { DEUSEX_exchange_phase = 3 } }
+	}
+	desc = {
+		text = DEUSEX.13.interrupted.d
+		trigger = { check_variable = { DEUSEX_exchange_phase = 4 } }
+	}
+	picture = GFX_hospital
+	is_triggered_only = yes
+	minor_flavor = yes
+
+	trigger = {
+		DEUSEX_scenario_enabled = yes
+		tag = CHI
+		check_variable = { DEUSEX_exchange_phase > 1 }
+	}
+
+	option = {
+		name = DEUSEX.13.a
+		ai_chance = { base = 1 }
+	}
+}
