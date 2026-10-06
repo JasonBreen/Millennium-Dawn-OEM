@@ -38,6 +38,16 @@ once, and only while that lab's chain is initialized. The events belong to the U
 their options change lab axes through each lab's clamp, never race state, so the race stays the
 sole writer of `ai_race_*`.
 
+## Antarctica
+
+A working Quantum Research Vault adds capability to its station's controller: +2, +4 or +6 at
+station tier 1, 2 or 3, shown as "Antarctic station" in the capability breakdown
+(`ai_race_antarctica_contribution`). The race reads Antarctica's own `antarctica_lab_cat_ai`, which
+is non-zero only for a treaty member whose Vault has fuel, power and no blizzard damage, and the
+tier from `global.antarctica_station_tier`. It never writes Antarctica state. While a racing AI's
+station has no Vault, its monthly laboratory install picks the Vault; the normal install checks
+still apply.
+
 ## Stages and centralized values
 
 `common/scripted_effects/01_ai_race_capacity_effects.txt` owns the stage requirement table.
