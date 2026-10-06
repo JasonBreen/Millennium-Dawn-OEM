@@ -27,10 +27,12 @@ event IDs, so parallel work does not collide. It ships on OEM only. Built like S
   `99_DEUSEX_china_effects.txt`.
 - **Germany (20–29):** `DEUSEX_germany.txt`; loc `_germany_`;
   `99_DEUSEX_germany_effects.txt`.
+- **Augmentation Boom (30–39):** `DEUSEX_augmentation.txt`; loc `_augmentation_`;
+  `99_DEUSEX_augmentation_effects.txt`.
 
 Localisation file names are `MD_DEUSEX_<subsystem>_l_english.yml`.
 
-The next free block is 30–39.
+The next free block is 40–49.
 
 ## Hooks into shared files
 
@@ -75,6 +77,41 @@ It retains the historical accepted result if relations end before delivery and
 uses separate text to acknowledge that the counterpart is now unavailable.
 No authority, program or request transfers to a civil-war tag or conquering
 country. Missed introductions are not replayed if a host is restored later.
+
+## Augmentation Boom
+
+The augmentation economy follows the games' timeline at year-level fidelity. The United States hosts Sarif
+Industries and China hosts Tai Yong Medical. It does not read the opening's state. The monthly pulse offers
+`DEUSEX.30` to the United States after 2007.1.1 (Sarif Industries was founded in Detroit in 2007) and `DEUSEX.31`
+to China after 2009.1.1 (a scenario date, not a canon one). Each offer is spent on its date, and a host that does
+not exist then never gets it.
+
+Each host keeps `DEUSEX_aug_adoption` and `DEUSEX_aug_unrest`, both 0-100. Accepting the state contract costs 10
+billion and starts adoption at 20; declining starts it at 10. Adoption only moves in steps of 10. Either way the host gets the `DEUSEX_augmentation_industry`
+dynamic modifier, which `DEUSEX_update_augmentation` drives from the two values:
+
+- research speed: adoption x 0.1%, up to +10%;
+- factory output: adoption x 0.05%, up to +5%;
+- army attack and defence: adoption x 0.08%, up to +8%, only after the military programme;
+- stability: unrest x -0.15%, down to -15%.
+
+Each month unrest grows by adoption x 0.05 and falls by 2. A funded Neuropozyne programme halves the growth and
+costs 0.015 billion per point of adoption a month. At 20 adoption or more a host rolls 4% a month for a
+Neuropozyne shortage (`DEUSEX.32`, one a year). At 60 unrest or more it gets anti-augmentation riots
+(`DEUSEX.33`, one a year). Unrest is fractional, so unrest thresholds compare with `greater_than_or_equals`.
+
+Decisions in `DEUSEX_augmentation_category`: fund research (10 billion, +10 adoption, every 180 days), the military
+programme (50 PP, at 40 adoption, once), fund or end Neuropozyne (25 PP to start), and suppress anti-augmentation
+groups (25 PP, -20 unrest, every 180 days).
+
+After 2027.10.1 the Aug Incident hits every open host with adoption above 0 (`DEUSEX.34`), and one news event goes out to everyone
+(`DEUSEX.35`). Stability falls by 3%, 6% or 10% depending on adoption, and unrest rises by 40. A biochip recall
+costs 0.1 billion per point of adoption and cuts adoption by 30; a state of emergency costs 50 PP. After 2029.1.1 each
+open host, even one at 0 adoption, chooses whether to adopt the Human Restoration Act (`DEUSEX.36`). Adopting it cuts adoption and unrest
+by 50, sets `DEUSEX_aug_restricted` and closes every decision except the suppression decision.
+
+The AI receives every event and decision. Treasury costs check `bankruptcy_incoming_collapse` and
+`ai_has_high_deficit`; the AI never funds research at 50 unrest or more.
 
 ## Persistent state and event ownership
 

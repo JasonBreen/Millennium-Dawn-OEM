@@ -1,0 +1,295 @@
+add_namespace = DEUSEX
+
+# Sarif Industries opens in Detroit.
+country_event = {
+	id = DEUSEX.30
+	title = DEUSEX.30.t
+	desc = DEUSEX.30.d
+	picture = GFX_FRA_corporate_cleanroom
+	is_triggered_only = yes
+
+	trigger = {
+		DEUSEX_scenario_enabled = yes
+		tag = USA
+		NOT = { has_country_flag = DEUSEX_aug_open }
+	}
+
+	option = {
+		name = DEUSEX.30.a
+		log = "[GetDateText]: [This.GetName]: DEUSEX.30.a executed"
+		set_temp_variable = { treasury_change = -10 }
+		modify_treasury_effect = yes
+		custom_effect_tooltip = DEUSEX_open_20_tt
+		hidden_effect = {
+			set_variable = { DEUSEX_aug_adoption = 20 }
+			DEUSEX_open_augmentation_industry = yes
+		}
+		unlock_decision_category_tooltip = DEUSEX_augmentation_category
+		ai_chance = {
+			base = 60
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 0.25 ai_has_high_deficit = yes }
+		}
+	}
+
+	option = {
+		name = DEUSEX.30.b
+		log = "[GetDateText]: [This.GetName]: DEUSEX.30.b executed"
+		custom_effect_tooltip = DEUSEX_open_10_tt
+		hidden_effect = {
+			set_variable = { DEUSEX_aug_adoption = 10 }
+			DEUSEX_open_augmentation_industry = yes
+		}
+		unlock_decision_category_tooltip = DEUSEX_augmentation_category
+		ai_chance = { base = 40 }
+	}
+}
+
+# Tai Yong Medical builds its augmentation business in Hengsha.
+country_event = {
+	id = DEUSEX.31
+	title = DEUSEX.31.t
+	desc = DEUSEX.31.d
+	picture = GFX_hospital
+	is_triggered_only = yes
+
+	trigger = {
+		DEUSEX_scenario_enabled = yes
+		tag = CHI
+		NOT = { has_country_flag = DEUSEX_aug_open }
+	}
+
+	option = {
+		name = DEUSEX.31.a
+		log = "[GetDateText]: [This.GetName]: DEUSEX.31.a executed"
+		set_temp_variable = { treasury_change = -10 }
+		modify_treasury_effect = yes
+		custom_effect_tooltip = DEUSEX_open_20_tt
+		hidden_effect = {
+			set_variable = { DEUSEX_aug_adoption = 20 }
+			DEUSEX_open_augmentation_industry = yes
+		}
+		unlock_decision_category_tooltip = DEUSEX_augmentation_category
+		ai_chance = {
+			base = 60
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 0.25 ai_has_high_deficit = yes }
+		}
+	}
+
+	option = {
+		name = DEUSEX.31.b
+		log = "[GetDateText]: [This.GetName]: DEUSEX.31.b executed"
+		custom_effect_tooltip = DEUSEX_open_10_tt
+		hidden_effect = {
+			set_variable = { DEUSEX_aug_adoption = 10 }
+			DEUSEX_open_augmentation_industry = yes
+		}
+		unlock_decision_category_tooltip = DEUSEX_augmentation_category
+		ai_chance = { base = 40 }
+	}
+}
+
+# A Neuropozyne shortage. VersaLife is the only supplier.
+country_event = {
+	id = DEUSEX.32
+	title = DEUSEX.32.t
+	desc = DEUSEX.32.d
+	picture = GFX_hospital
+	is_triggered_only = yes
+
+	trigger = {
+		DEUSEX_scenario_enabled = yes
+		has_country_flag = DEUSEX_aug_open
+	}
+
+	option = {
+		name = DEUSEX.32.a
+		log = "[GetDateText]: [This.GetName]: DEUSEX.32.a executed"
+		set_temp_variable = { treasury_change = { value = DEUSEX_aug_adoption multiply = -0.05 } }
+		modify_treasury_effect = yes
+		ai_chance = {
+			base = 60
+			modifier = { factor = 0.1 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 0.25 ai_has_high_deficit = yes }
+		}
+	}
+
+	option = {
+		name = DEUSEX.32.b
+		log = "[GetDateText]: [This.GetName]: DEUSEX.32.b executed"
+		custom_effect_tooltip = DEUSEX_unrest_plus_15_tt
+		hidden_effect = {
+			add_to_variable = { DEUSEX_aug_unrest = 15 }
+			DEUSEX_update_augmentation = yes
+		}
+		ai_chance = {
+			base = 40
+			modifier = { factor = 0.25 check_variable = { DEUSEX_aug_unrest > 44 } }
+		}
+	}
+}
+
+# Anti-augmentation riots: Purity First in Detroit, street protests in Hengsha.
+country_event = {
+	id = DEUSEX.33
+	title = DEUSEX.33.t
+	desc = {
+		text = DEUSEX.33.d_usa
+		trigger = { tag = USA }
+	}
+	desc = {
+		text = DEUSEX.33.d_chi
+		trigger = { tag = CHI }
+	}
+	picture = GFX_CAN_g20_riots_toronto
+	is_triggered_only = yes
+
+	trigger = {
+		DEUSEX_scenario_enabled = yes
+		has_country_flag = DEUSEX_aug_open
+	}
+
+	option = {
+		name = DEUSEX.33.a
+		log = "[GetDateText]: [This.GetName]: DEUSEX.33.a executed"
+		add_political_power = -25
+		custom_effect_tooltip = DEUSEX_unrest_minus_30_tt
+		hidden_effect = {
+			add_to_variable = { DEUSEX_aug_unrest = -30 }
+			DEUSEX_update_augmentation = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	option = {
+		name = DEUSEX.33.b
+		log = "[GetDateText]: [This.GetName]: DEUSEX.33.b executed"
+		custom_effect_tooltip = DEUSEX_concede_regulation_tt
+		hidden_effect = {
+			add_to_variable = { DEUSEX_aug_adoption = -10 }
+			add_to_variable = { DEUSEX_aug_unrest = -40 }
+			DEUSEX_update_augmentation = yes
+		}
+		ai_chance = { base = 50 }
+	}
+}
+
+# The Aug Incident. Hugh Darrow's signal from Panchaea drives the augmented into violent delusion.
+country_event = {
+	id = DEUSEX.34
+	title = DEUSEX.34.t
+	desc = DEUSEX.34.d
+	picture = GFX_USA_Berkley_Riot
+	is_triggered_only = yes
+
+	trigger = {
+		DEUSEX_scenario_enabled = yes
+		DEUSEX_has_augmented_population = yes
+	}
+
+	option = {
+		name = DEUSEX.34.a
+		log = "[GetDateText]: [This.GetName]: DEUSEX.34.a executed"
+		DEUSEX_aug_incident_damage = yes
+		set_temp_variable = { treasury_change = { value = DEUSEX_aug_adoption multiply = -0.1 } }
+		modify_treasury_effect = yes
+		custom_effect_tooltip = DEUSEX_biochip_recall_tt
+		hidden_effect = {
+			add_to_variable = { DEUSEX_aug_adoption = -30 }
+			add_to_variable = { DEUSEX_aug_unrest = -20 }
+			DEUSEX_update_augmentation = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = { factor = 0.1 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 0.25 ai_has_high_deficit = yes }
+		}
+	}
+
+	option = {
+		name = DEUSEX.34.b
+		log = "[GetDateText]: [This.GetName]: DEUSEX.34.b executed"
+		DEUSEX_aug_incident_damage = yes
+		add_political_power = -50
+		add_stability = 0.03
+		custom_effect_tooltip = DEUSEX_state_of_emergency_tt
+		hidden_effect = {
+			add_to_variable = { DEUSEX_aug_adoption = -10 }
+			add_to_variable = { DEUSEX_aug_unrest = 10 }
+			DEUSEX_update_augmentation = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+}
+
+# The Aug Incident, for everyone.
+news_event = {
+	id = DEUSEX.35
+	title = DEUSEX.35.t
+	desc = DEUSEX.35.d
+	picture = GFX_USA_collapse_riots_global_event
+	major = yes
+	is_triggered_only = yes
+
+	trigger = { DEUSEX_scenario_enabled = yes }
+
+	option = {
+		name = DEUSEX.35.a
+		ai_chance = { base = 1 }
+	}
+}
+
+# The Human Restoration Act, two years after the Aug Incident.
+country_event = {
+	id = DEUSEX.36
+	title = DEUSEX.36.t
+	desc = DEUSEX.36.d
+	picture = GFX_UN_gen_assembly
+	is_triggered_only = yes
+
+	trigger = {
+		DEUSEX_scenario_enabled = yes
+		DEUSEX_has_augmentation_industry = yes
+	}
+
+	option = {
+		name = DEUSEX.36.a
+		log = "[GetDateText]: [This.GetName]: DEUSEX.36.a executed"
+		add_stability = 0.03
+		custom_effect_tooltip = DEUSEX_restoration_act_tt
+		hidden_effect = {
+			set_country_flag = DEUSEX_aug_restricted
+			clr_country_flag = DEUSEX_aug_neuropozyne_funded
+			add_to_variable = { DEUSEX_aug_adoption = -50 }
+			add_to_variable = { DEUSEX_aug_unrest = -50 }
+			DEUSEX_update_augmentation = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = { factor = 2 check_variable = { DEUSEX_aug_unrest > 49 } }
+		}
+	}
+
+	option = {
+		name = DEUSEX.36.b
+		log = "[GetDateText]: [This.GetName]: DEUSEX.36.b executed"
+		add_political_power = -25
+		custom_effect_tooltip = DEUSEX_unrest_plus_20_tt
+		hidden_effect = {
+			add_to_variable = { DEUSEX_aug_unrest = 20 }
+			DEUSEX_update_augmentation = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = { factor = 0.5 check_variable = { DEUSEX_aug_unrest > 49 } }
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+}
