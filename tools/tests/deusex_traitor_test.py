@@ -130,7 +130,8 @@ def test_the_clock_running_out_costs_the_member_its_seat():
     lost = pulse[: pulse.index("else_if = {")]
     assert "NOT = { has_variable = global.DEUSEX_illum_member }" in lost
     assert "DEUSEX_end_traitor_hunt = yes" in lost
-    tick = pulse[pulse.index("check_variable = { global.DEUSEX_traitor_clock < 1 }") :]
+    assert "DEUSEX_check_traitor_clock = yes" in pulse
+    tick = _named_block(EFFECTS, "DEUSEX_check_traitor_clock")
     assert tick.index("DEUSEX_end_traitor_hunt = yes") < tick.index(
         "country_event = { id = DEUSEX.51 days = 1 }"
     )
@@ -180,5 +181,21 @@ def test_the_traitors_monthly_leak_refreshes_the_member():
         pulse.index("add_to_variable = { global.DEUSEX_illum_exposure = 3 }") :
     ]
     assert leak.index("DEUSEX_refresh_member = yes") < leak.index(
-        "global.DEUSEX_traitor_clock < 1"
+        "DEUSEX_check_traitor_clock = yes"
     )
+
+
+def test_every_clock_cut_can_end_the_hunt_at_once():
+    check = _named_block(EFFECTS, "DEUSEX_check_traitor_clock")
+    assert "check_variable = { global.DEUSEX_traitor_clock < 1 }" in check
+    assert check.index("DEUSEX_end_traitor_hunt = yes") < check.index(
+        "country_event = { id = DEUSEX.51 days = 1 }"
+    )
+    for text in (EFFECTS, DECISIONS):
+        for match in re.finditer(
+            r"add_to_variable = \{ global\.DEUSEX_traitor_clock = -\d \}", text
+        ):
+            assert (
+                "DEUSEX_check_traitor_clock = yes"
+                in text[match.end() : match.end() + 300]
+            )

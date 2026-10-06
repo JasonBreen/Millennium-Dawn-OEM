@@ -16,12 +16,7 @@ DEUSEX_monthly_traitor_pulse = {
 			add_to_variable = { global.DEUSEX_traitor_clock = -1 }
 			add_to_variable = { global.DEUSEX_illum_exposure = 3 }
 			DEUSEX_refresh_member = yes
-			if = {
-				limit = { check_variable = { global.DEUSEX_traitor_clock < 1 } }
-				DEUSEX_end_traitor_hunt = yes
-				news_event = { id = DEUSEX.52 days = 1 }
-				var:global.DEUSEX_illum_member = { country_event = { id = DEUSEX.51 days = 1 } }
-			}
+			DEUSEX_check_traitor_clock = yes
 		}
 		else_if = {
 			limit = {
@@ -89,6 +84,19 @@ DEUSEX_set_traitor_traits = {
 	}
 }
 
+# Any scope. Call after every cut to the clock: at 0 the traitor goes public at once.
+DEUSEX_check_traitor_clock = {
+	if = {
+		limit = {
+			has_global_flag = DEUSEX_traitor_hunt
+			check_variable = { global.DEUSEX_traitor_clock < 1 }
+		}
+		DEUSEX_end_traitor_hunt = yes
+		news_event = { id = DEUSEX.52 days = 1 }
+		var:global.DEUSEX_illum_member = { country_event = { id = DEUSEX.51 days = 1 } }
+	}
+}
+
 DEUSEX_end_traitor_hunt = {
 	clr_global_flag = DEUSEX_traitor_hunt
 	set_global_flag = DEUSEX_traitor_hunt_done
@@ -133,6 +141,7 @@ DEUSEX_accuse_suspect = {
 		add_to_variable = { global.DEUSEX_traitor_clock = -3 }
 		DEUSEX_update_inner_circle = yes
 		country_event = { id = DEUSEX.54 days = 1 }
+		DEUSEX_check_traitor_clock = yes
 	}
 }
 
