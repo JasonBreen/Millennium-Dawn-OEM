@@ -1,122 +1,54 @@
 # Metal Gear Scenario
 
-The opt-in Metal Gear scenario. It is split into subsystems; each owns its own files and its own block of
-event IDs, so parallel work does not collide. It ships on OEM only. Built like STALKER: see
-[STALKER Scenario](stalker-scenario.md) for the patterns this follows.
+The opt-in OEM scenario combines the existing USA-controlled Patriots network with finite national preparation cases for the United States, Japan and Russia. Shadow Moses occurs in 2005. Its tactical outcome stays recognizable; player choices change national authorization, disclosure and relations.
 
-## Rules
+## Ownership and hooks
 
-- **Own files only.** New events, decisions, effects and localisation go in the subsystem's files.
-  Add a subsystem with `python tools/generators/add_scenario.py subsystem METALGEAR <name> "<Display>"`.
-- **Event IDs.** Use only your subsystem's block. Never reuse or renumber an ID.
-- **Gate everything** on `METALGEAR_scenario_enabled = yes`. It reads a global flag that startup sets from
-  `rule_metalgear_scenario`; never read the rule from a trigger that can run at load.
-- **Monthly work.** Add a line to `METALGEAR_monthly_pulse` in `common/scripted_effects/99_METALGEAR_pulse_effects.txt`. It runs once a month,
-  in the scope of whichever country ticks first, so scope explicitly into what it touches.
-- **AI.** Every decision and event option gets AI weights, and the AI must actually receive the
-  content. If something is player-only, say so here. Check with `/scenario-audit METALGEAR`.
-- **Context.** Bind delayed events to a fixed state or a per-event target. Never read a shared
-  "current site" global from a queued event.
-- **Changelog.** Each PR adds one BLUF line to `Changelog.txt`, as `AGENTS.md` requires.
+- Core IDs 1-9: existing network events 1-3 in `METALGEAR.txt`; new USA preparation events 4-8 in `METALGEAR_preparation.txt`. Core English strings remain in `MD_METALGEAR_l_english.yml`.
+- Shadow Moses IDs 10-19: briefing 10, aftermath 12 and news 13 in `METALGEAR_shadow_moses.txt`. ID 11 is retired and must not be reused. English strings use `MD_METALGEAR_shadow_moses_l_english.yml`.
+- Japan IDs 20-29: introduction 20, review 21, crisis response 22, outgoing return 23, incoming USA request 24 and crisis report 25. Files use `METALGEAR_japan` and `99_METALGEAR_japan_effects.txt`.
+- Russia IDs 30-39: introduction 30, review 31, crisis response 32, outgoing return 33, incoming Japan request 34 and crisis report 35. Files use `METALGEAR_russia` and `99_METALGEAR_russia_effects.txt`.
+- The next free block is 40-49. Every subsystem keeps its own events, effects, decisions and English localisation.
+- Shared hooks: `rule_metalgear_scenario` in the game rules and its English keys; `METALGEAR_dispatch_shadow_moses` in the 2005 yearly effect; the existing Konami milestone guards in `99_JAP_scripted_effects.txt`.
 
-## Subsystems
+The scenario reads its rule only in the startup initializer. Runtime gates read `GLOBAL_METALGEAR_scenario_enabled`. Event Horizon's existing host conflict remains. There are no authored crossovers or dependencies on Deus Ex.
 
-- **Core (1–9):** `METALGEAR.txt`; loc `MD_METALGEAR_l_english.yml`;
-  `99_METALGEAR_scripted_effects.txt`, `99_METALGEAR_pulse_effects.txt`, `99_METALGEAR_on_actions.txt`,
-  `99_METALGEAR_scripted_triggers.txt`, `99_METALGEAR_scripted_localisation.txt`, `METALGEAR_decisions.txt` and
-  `00_METALGEAR_network_category.txt`. Used: 1 (briefing), 2 (quarterly report), 3 (audit findings).
-- **Shadow Moses (10–19):** `METALGEAR_shadow_moses.txt`; loc `_shadow_moses_`;
-  `99_METALGEAR_shadow_moses_effects.txt`. Used: 10 (dossier), 11 (complication), 12 (after action), 13 (news).
+## Existing Patriots network
 
-Localisation file names are `MD_METALGEAR_<subsystem>_l_english.yml`.
+The United States' controller, human or AI, still runs the network. Japan and Russia receive their own government preparation and diplomatic cases; they do not become network controllers. The earlier USA-only ownership decision applies to the network dashboard, not these new national cases.
 
-The next free block is 20–29.
+The existing core remains intact: global coherence starts at 70, reach at 50, exposure at 10 and capacity at 2. Its three fixed nodes are defense procurement, special operations oversight and information control. Audits cost 25 Political Power and hold a commitment for two months; repairs cost 50 and hold one for three months. Quarterly degradation, confirmation, compartmentalization and monthly exposure retain their existing behavior.
 
-## Hooks into shared files
+## National preparation and exchanges
 
-- `common/game_rules/00_game_rules.txt`: `rule_metalgear_scenario`, off by default.
-- `localisation/english/MD_game_rules_l_english.yml`: the rule's five keys.
-- `common/scripted_effects/99_JAP_scripted_effects.txt`: the 2001, 2015 and 2021 Konami milestones skip their
-  events while the scenario is on and set the historical Outcomes Only flag instead, because those beats treat
-  Metal Gear as a game.
+Startup schedules introductions after 15 days for each existing fixed country. No replacement recipient or reannexation bootstrap is used. These procurement and record-review cases are original scenario bridges, not claims of dated canon incidents.
 
-Everything else lives in the scenario's own files, including its on_actions.
+Each country has one review costing 25 Political Power and lasting 60 days. The timed decision stays visible while running and uses its phase to prevent repeat use. Its report offers cooperative review, which enables one outgoing request, or classified review, which grants 1% Stability and closes that outgoing branch.
 
-## Controller and gating
+Country-owned `METALGEAR_review_phase` is 1 available, 2 running, 3 report awaiting choice and 4 completed. `METALGEAR_review_policy` records 1 cooperative or 2 classified. An unset phase is an introduction not yet acknowledged. No new zero-valued variables need startup initialization.
 
-- **Owner decisions (2026-10-04):** the United States' controller, human or AI, runs the Patriots, and no other
-  country sees their content (O01). The scenario is off while Event Horizon is on (O07): `METALGEAR_initialize_scenario`
-  checks `EH_scenario_enabled`, which reads its game rule directly and so works at startup. Konami's Metal Gear beats are
-  suppressed under the rule.
-- `METALGEAR_is_controller` (USA, scenario on, network set up) gates the category, every decision and every country
-  event. The monthly pulses scope into `USA`; with no United States the network waits.
-- `METALGEAR_setup_network` runs once (`GLOBAL_METALGEAR_network_ready`), separate from the enabled flag, and sends the
-  briefing `METALGEAR.1`.
+The fixed exchange cycle is USA to Japan, Japan to Russia and Russia to USA. Each one-time request costs 15 Political Power. The recipient accepts for 10 Political Power and gives mutual `diplomatic_support` (+20 opinion), or refuses for free without a penalty. Benefits apply in the recipient's guarded option; the sender's return is only a notification.
 
-## Network state (MG-01)
+Country-owned `METALGEAR_request_phase` is 0 unused, 1 pending, 2 accepted, 3 refused or 4 interrupted. The once-monthly fixed-country checks quietly close a pending request if its partner disappears or war begins. They send a return notification when the sender exists. No request is resent or rewarded twice.
 
-All state is global and scenario-owned. Nothing duplicates queryable country state.
+## Shadow Moses in 2005
 
-| Variable                      | Start | Meaning                                                    |
-| ----------------------------- | ----- | ---------------------------------------------------------- |
-| `METALGEAR_coherence`         | 70    | Whether the network can act consistently                   |
-| `METALGEAR_reach`             | 50    | Where it has access                                        |
-| `METALGEAR_exposure`          | 10    | Evidence that has escaped; -1 a month, +2 per compromised node (+1 compartmentalized) |
-| `METALGEAR_capacity`          | 2     | Free commitments; audits, repairs and the incident hold them |
+The 2005 yearly dispatcher calls `METALGEAR_dispatch_shadow_moses`. It schedules the briefing one day later. January placement is scenario timing at year-level canon fidelity, not a claim about an exact canonical day.
 
-Nodes are fixed records 0 defense procurement, 1 special operations oversight, 2 information control, in arrays:
-`METALGEAR_node_true` (0 secure, 1 strained, 2 compromised; oversight starts strained), `_known` (what the network
-believes), `_confirmed` (months left on a confirmation), `_audit` and `_repair` (months left), `_audited` (audit just
-finished, for `METALGEAR.3`).
+Alaska state 814 is a coarse control guard, not an exact island map. Missing USA or missing USA control at dispatch marks the incident unavailable once. Losing the host or its control while the crisis is pending interrupts the chain without a replay after annexation.
 
-- **Quarterly** (`METALGEAR_network_quarter`, months 1, 4, 7 and 10): each node not under repair degrades one step with
-  chance `20 + exposure / 5 - coherence / 5`, halved while compartmentalized, clamped 2-40. Degradation is hidden: the
-  known value only changes through an audit, a repair or the incident. Compartmentalized, coherence and reach fall by 1;
-  otherwise reach rises by 1 while coherence is above 60, up to 80. A human controller gets `METALGEAR.2`.
-- **Decisions** (`METALGEAR_network_category`, the dashboard): audit a node (25 PP, one commitment, two months, confirms
-  it for six); repair a known strained or compromised node (50 PP, one commitment, three months, one step);
-  compartmentalize or end it. AI weights: audits favor unconfirmed nodes, repairs favor known compromised ones,
-  compartmentalization starts above 40 exposure and ends below 20.
+The USA briefing authorizes a compartmentalized response, authorizes limited partner disclosure, or refuses discretionary support. Authorization costs 25 Political Power if the national review completed, otherwise 50. Solid Snake's operation against the FOXHOUND nuclear threat remains the recognizable story; no option grants equipment, nuclear stockpiles, states or war goals.
 
-## Shadow Moses (MG-01)
+Japan and Russia receive their own requests for records. Providing records costs 10 Political Power; withholding is free. Earlier accepted exchanges affect AI willingness. Their contributions are local historical choices, not remote control of the tactical operation.
 
-Opens in February 2004 (`METALGEAR_monthly_shadow_moses_pulse`), once (`METALGEAR_shadow_moses_started`). A debug-only
-decision starts it early. One incident, so its delayed events read globals safely.
+The aftermath arrives 30 days after the briefing choice. A prepared authorized response costs 1% Stability; an unprepared or unsupported response costs 2%. If the USA promised disclosure, it can honor the agreement with cooperating partners for mutual +20 opinion or suppress the promised report for mutual -10 `diplomatic_insults`. Relations are applied only to existing cooperating partners at peace with USA. Each partner receives a terminal report describing its contribution and the resulting disclosure policy.
 
-`global.METALGEAR_sm_stage` records the step it waits on (1 dossier, 2 complication, 3 after action), and
-`METALGEAR_sm_step_pending` (60 days) outlasts every delay. If the United States is annexed while a step is queued,
-the event is discarded; once it exists again and the flag has lapsed, the pulse resends that step. Each event fires only
-at its own stage, and its options act only while that stage is current, so a resent duplicate cannot apply twice or
-charge twice.
+USA-owned `METALGEAR_crisis_phase` is 1 briefing, 2 response pending, 3 aftermath awaiting choice and 4 terminal. `METALGEAR_crisis_route` is 1 compartmentalized, 2 partner disclosure or 3 unsupported. `METALGEAR_crisis_disclosure` records 1 honored or 2 suppressed. Each partner's `METALGEAR_crisis_records` is 1 supplied, 2 withheld or 3 interrupted.
 
-1. **Dossier** (`METALGEAR.10`): the first priority is the weapons program (1), the story (2) or the response (3, $2B).
-   Each holds one commitment, or costs 10 coherence when none is free.
-2. **Complication** (`METALGEAR.11`, 10 days later): commit a second line (also covers the next objective), cut the
-   priority loose (commitments return now, +5 coherence, -5 exposure), or hold the course (50% the priority is lost).
-3. **After action** (`METALGEAR.12`, 14 days later): `METALGEAR_resolve_shadow_moses` records the milestone once and
-   applies the outcome. Secure oversight going in holds the response on its own.
+The only new shared crisis result is `global.METALGEAR_shadow_moses_result`: 1 prepared authorized resolution, 2 unprepared or unsupported resolution, 3 interrupted or 4 unavailable. The existing started flag records the historical dispatch and prevents repeated activation. The old 2004 monthly start, lost-step replay, commitment flow, follow-on decisions and debug start are retired.
 
-| Objective | Kept                                  | Lost                                              |
-| --------- | ------------------------------------- | ------------------------------------------------- |
-| Program   | reach +5                              | reach -5, procurement one step worse              |
-| Story     | exposure +10                          | exposure +25, USA stability -2%                   |
-| Response  | coherence +5, oversight one step better | coherence -10, oversight one step worse         |
+## AI and acceptance
 
-The incident confirms procurement and oversight, returns every commitment and opens one follow-on decision: move the
-design data into the network (program kept), bury the program (story held), or publish an official account. Every
-country gets the news event `METALGEAR.13`, whose text depends on whether the story held.
+Human and AI USA, Japan and Russia receive the same choice events. Cost-aware weights consider bankruptcy; diplomatic choices also consider opinion and the completed national policy. Pure return reports use minor flavor notifications. Monthly work stays under the scenario's existing once-monthly entrypoint and explicitly scopes fixed countries.
 
-The recognizable beat is the same every time: the facility is retaken, the prototype destroyed and the rebellion's
-leader dead. Choices change what the network keeps, not the canon.
-
-## AI
-
-The United States receives every country event whether human or AI, and every option and decision has weights. The
-quarterly report and audit findings go only to a human, since they carry no choices.
-
-## Not yet verified
-
-- No in-game run: startup, the briefing, the pulses, the incident and save/reload are untested.
-- Canon: the dossier names FOXHOUND, Metal Gear REX and the remains demand, and frames FOXHOUND as under the network's
-  oversight. That framing and the complication's intermediary need the canon review in handoff §16.1.
-- Balance values are first-pass.
+Native acceptance remains required: disabled isolation, enabled introduction timing, all national review choices, reciprocal requests under cooperation/refusal/war/annexation, 2005 dispatch, all authorization/disclosure outcomes, Alaska control loss, rapid annexation and restoration between monthly checks, and save/reload during a timed review or delayed crisis. Rapid annexation and restoration between monthly checks has no authored timeout or resend; delivery recovery is unverified. Source checks and CI do not establish gameplay balance or rendered UI behavior. Development saves receive no migration support.

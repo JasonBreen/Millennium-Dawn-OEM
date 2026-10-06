@@ -2085,6 +2085,32 @@ antarctica_process_station_research_progress = {
 				}
 				add_to_temp_variable = { station_active_lab_slots = 1 }
 			}
+			# FBC: a rig stopped by a breakout does not count as a working lab. A station holds one rig at most.
+			if = {
+				limit = {
+					check_variable = { station_controller > 0 }
+					var:station_controller = { has_country_flag = FBC_polar_rig_down }
+					OR = {
+						AND = {
+							check_variable = { global.antarctica_station_module_slot_6^process_station_id = 12 }
+							NOT = { check_variable = { global.antarctica_station_module_slot_6_blizzard_damaged^process_station_id > 0 } }
+						}
+						AND = {
+							check_variable = { global.antarctica_station_module_slot_7^process_station_id = 12 }
+							NOT = { check_variable = { global.antarctica_station_module_slot_7_blizzard_damaged^process_station_id > 0 } }
+						}
+						AND = {
+							check_variable = { global.antarctica_station_module_slot_8^process_station_id = 12 }
+							NOT = { check_variable = { global.antarctica_station_module_slot_8_blizzard_damaged^process_station_id > 0 } }
+						}
+						AND = {
+							check_variable = { global.antarctica_station_module_slot_9^process_station_id = 12 }
+							NOT = { check_variable = { global.antarctica_station_module_slot_9_blizzard_damaged^process_station_id > 0 } }
+						}
+					}
+				}
+				add_to_temp_variable = { station_active_lab_slots = -1 }
+			}
 
 			# Blackout gate for iteration progress:
 			# fuel-consuming stations need remaining storage; renewable stations can progress normally.
@@ -2907,8 +2933,12 @@ antarctica_apply_single_laboratory_module_effect = {
 	# Ice Core Deep Drilling Rig
 	else_if = {
 		limit = { check_variable = { station_lab_module = 12 } }
-		add_to_variable = { antarctica_lab_cat_excavation_tech = 0.025 }
-		add_to_variable = { antarctica_lab_ice_tech_boost = 1 }
+		# FBC: a breakout in the core stops the rig for 30 days.
+		if = {
+			limit = { NOT = { has_country_flag = FBC_polar_rig_down } }
+			add_to_variable = { antarctica_lab_cat_excavation_tech = 0.025 }
+			add_to_variable = { antarctica_lab_ice_tech_boost = 1 }
+		}
 	}
 }
 
@@ -3127,7 +3157,11 @@ antarctica_apply_single_laboratory_iteration_reward = {
 	}
 	# Ice Core Deep Drilling Rig
 	else_if = {
-		limit = { check_variable = { station_lab_module = 12 } }
+		limit = {
+			check_variable = { station_lab_module = 12 }
+			# FBC: a rig stopped by a breakout earns no iteration reward.
+			NOT = { has_country_flag = FBC_polar_rig_down }
+		}
 		add_tech_bonus = { name = antarctica_lab_tech_bonus bonus = 0.05 uses = 1 category = CAT_excavation }
 		if = {
 			limit = { check_variable = { antarctica_lab_ice_tech_boost > 0 } }
