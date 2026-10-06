@@ -172,3 +172,13 @@ def test_events_are_gated_in_the_block_and_every_key_has_english_text():
     for line in LOC.splitlines()[1:]:
         assert re.match(r'^ [A-Za-z0-9_.]+: ".*"$', line), line
     assert "judas" not in (EFFECTS + EVENTS + DECISIONS + LOC).lower()
+
+
+def test_the_traitors_monthly_leak_refreshes_the_member():
+    pulse = _named_block(EFFECTS, "DEUSEX_monthly_traitor_pulse")
+    leak = pulse[
+        pulse.index("add_to_variable = { global.DEUSEX_illum_exposure = 3 }") :
+    ]
+    assert leak.index("DEUSEX_refresh_member = yes") < leak.index(
+        "global.DEUSEX_traitor_clock < 1"
+    )
