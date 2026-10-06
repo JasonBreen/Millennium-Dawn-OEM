@@ -108,6 +108,8 @@ names and events against the in-game text as documented by the S.T.A.L.K.E.R. Wi
   days of +3% research and +15% station iteration progress, then `STALKER.190`. Observers who
   visit during the study always seize the samples (major news `STALKER.191`). Antarctica's
   `MD_antarctica.4` penalty applies unless the visit already reported another violation.
+  `STALKER_monthly_antarctic_pulse` ends a study whose laboratory stops working. Either way
+  `STALKER_polar_study_cut_short` blocks `STALKER.190`.
 
 Localisation file names are `MD_STALKER_<subsystem>_l_english.yml`.
 
