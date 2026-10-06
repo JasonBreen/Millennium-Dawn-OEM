@@ -108,6 +108,10 @@ def test_a_racing_ai_with_full_laboratories_swaps_one_for_the_vault():
             in swap
         )
     assert swap.count("antarctica_station_slot_unlocked_by_tier = yes") == 4
+    for slot in range(6, 10):
+        damaged = f"global.antarctica_station_module_slot_{slot}_blizzard_damaged^player_station_id > 0"
+        pick = swap.index(f"set_temp_variable = {{ ai_vault_slot = {slot} }}")
+        assert swap.rindex(damaged, 0, pick) > swap.rindex("else_if = {", 0, pick)
     assert "check_variable = { ai_vault_empty_lab = 0 }" in swap
     assert "set_variable = { selected_antarctica_station_selected_module = 11 }" in swap
     for check in (
