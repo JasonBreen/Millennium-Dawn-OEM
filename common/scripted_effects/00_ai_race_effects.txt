@@ -6,6 +6,7 @@ ai_race_clear_country_state = {
 	clear_variable = ai_race_capability_external
 	clear_variable = ai_race_capability_national_input
 	clear_variable = ai_race_capability_lab_overlay
+	clear_variable = ai_race_capability_antarctica
 	clear_variable = ai_race_capability_funded_usable
 	clear_variable = ai_race_capability
 	clear_variable = ai_race_compute_stock
@@ -224,6 +225,30 @@ ai_race_usa_palantir_contribution = {
 		add_to_variable = { ai_race_deployment_external = USA_palantir_corporate_government_reach }
 		add_to_variable = { ai_race_deployment_external = USA_palantir_corporate_commercial_reach }
 		add_to_variable = { ai_race_control_capacity_external = USA_palantir_corporate_deployment_governance }
+	}
+}
+
+# A working Quantum Research Vault adds capability by station tier. Antarctica decides when it works:
+# antarctica_lab_cat_ai is non-zero only for a treaty member whose Vault has fuel, power and no damage.
+ai_race_antarctica_contribution = {
+	clear_variable = ai_race_capability_antarctica
+	if = {
+		limit = { check_variable = { antarctica_lab_cat_ai > 0 } }
+		set_temp_variable = { ai_race_polar_tier = 1 }
+		for_each_loop = {
+			array = country_owned_station_ids
+			value = ai_race_station_id
+			if = {
+				limit = {
+					check_variable = { ai_race_station_id > 0 }
+					check_variable = { global.antarctica_station_tier^ai_race_station_id > ai_race_polar_tier }
+				}
+				set_temp_variable = { ai_race_polar_tier = global.antarctica_station_tier^ai_race_station_id }
+			}
+		}
+		set_variable = { ai_race_capability_antarctica = { value = ai_race_polar_tier multiply = 2 } }
+		clamp_variable = { var = ai_race_capability_antarctica max = 6 }
+		add_to_variable = { ai_race_capability_external = ai_race_capability_antarctica }
 	}
 }
 
@@ -453,6 +478,7 @@ ai_race_rebuild_country_metrics = {
 			set_variable = { ai_race_capability_lab_overlay = ai_race_capability_external }
 			subtract_from_variable = { ai_race_capability_lab_overlay = ai_race_capability_national_input }
 		}
+		ai_race_antarctica_contribution = yes
 
 		set_variable = { ai_race_capability = ai_race_capability_stock }
 		add_to_variable = { ai_race_capability = ai_race_capability_external }
