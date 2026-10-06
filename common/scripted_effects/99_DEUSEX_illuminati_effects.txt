@@ -22,6 +22,13 @@ DEUSEX_monthly_illuminati_pulse = {
 				}
 			}
 			clear_variable = global.DEUSEX_illum_member
+			# Its Masquerade choice was lost with it, so the slip resolves as if there were no member.
+			if = {
+				limit = { has_global_flag = DEUSEX_masquerade_choice_pending }
+				clr_global_flag = DEUSEX_masquerade_choice_pending
+				add_to_variable = { global.DEUSEX_illum_exposure = -30 }
+				DEUSEX_clamp_illuminati = yes
+			}
 		}
 		every_country = {
 			limit = {
@@ -77,6 +84,8 @@ DEUSEX_illuminati_month = {
 	}
 	add_to_variable = { DEUSEX_illum_influence = DEUSEX_illum_gain }
 	DEUSEX_update_illuminati_grip = yes
+	# Keeps the values the join decision previews current.
+	DEUSEX_update_inner_circle = yes
 	if = {
 		limit = { NOT = { has_dynamic_modifier = { modifier = DEUSEX_illuminati_grip } } }
 		add_dynamic_modifier = { modifier = DEUSEX_illuminati_grip }
@@ -109,6 +118,7 @@ DEUSEX_masquerade_slips = {
 	}
 	if = {
 		limit = { has_variable = global.DEUSEX_illum_member }
+		set_global_flag = DEUSEX_masquerade_choice_pending
 		var:global.DEUSEX_illum_member = { country_event = { id = DEUSEX.42 days = 1 } }
 	}
 	else = {
