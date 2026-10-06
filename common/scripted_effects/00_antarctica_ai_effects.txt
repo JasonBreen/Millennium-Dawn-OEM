@@ -8,6 +8,7 @@ ai_antarctica_monthly = {
 	}
 
 	ai_install_station_module_in_empty_slot = yes
+	ai_antarctica_swap_in_quantum_vault = yes
 	ai_restock_station_fuel = yes
 	ai_antarctica_call_observers = yes
 }
@@ -137,6 +138,88 @@ ai_install_station_module_in_empty_slot = {
 							log = "[THIS.GetTag] AI queued Antarctica module install: station = [?player_station_id] slot = [?selected_antarctica_station_selected_slot] module = [?selected_antarctica_station_selected_module]"
 						}
 					}
+				}
+			}
+		}
+	}
+}
+
+# A country in the AI Race whose unlocked laboratory slots are all full swaps one for the Quantum Research Vault,
+# which the empty-slot install never reaches. The checks are the ones the GUI applies.
+ai_antarctica_swap_in_quantum_vault = {
+	if = {
+		limit = {
+			ai_race_active = yes
+			check_variable = { treasury > 10 }
+		}
+		antarctica_find_player_station = yes
+		if = {
+			limit = {
+				check_variable = { player_station_id > 0 }
+				NOT = { check_variable = { global.antarctica_station_install_pending^player_station_id > 0 } }
+				NOT = { check_variable = { global.antarctica_station_module_slot_6^player_station_id = 11 } }
+				NOT = { check_variable = { global.antarctica_station_module_slot_7^player_station_id = 11 } }
+				NOT = { check_variable = { global.antarctica_station_module_slot_8^player_station_id = 11 } }
+				NOT = { check_variable = { global.antarctica_station_module_slot_9^player_station_id = 11 } }
+			}
+			set_variable = { selected_antarctica_station = player_station_id }
+			antarctica_set_selected_station_controller = yes
+			set_temp_variable = { ai_vault_slot = 0 }
+			set_temp_variable = { ai_vault_empty_lab = 0 }
+			set_variable = { selected_antarctica_station_selected_slot = 6 }
+			if = {
+				limit = { antarctica_station_slot_unlocked_by_tier = yes }
+				if = {
+					limit = { check_variable = { global.antarctica_station_module_slot_6^player_station_id < 1 } }
+					set_temp_variable = { ai_vault_empty_lab = 1 }
+				}
+				else = { set_temp_variable = { ai_vault_slot = 6 } }
+			}
+			set_variable = { selected_antarctica_station_selected_slot = 7 }
+			if = {
+				limit = { antarctica_station_slot_unlocked_by_tier = yes }
+				if = {
+					limit = { check_variable = { global.antarctica_station_module_slot_7^player_station_id < 1 } }
+					set_temp_variable = { ai_vault_empty_lab = 1 }
+				}
+				else = { set_temp_variable = { ai_vault_slot = 7 } }
+			}
+			set_variable = { selected_antarctica_station_selected_slot = 8 }
+			if = {
+				limit = { antarctica_station_slot_unlocked_by_tier = yes }
+				if = {
+					limit = { check_variable = { global.antarctica_station_module_slot_8^player_station_id < 1 } }
+					set_temp_variable = { ai_vault_empty_lab = 1 }
+				}
+				else = { set_temp_variable = { ai_vault_slot = 8 } }
+			}
+			set_variable = { selected_antarctica_station_selected_slot = 9 }
+			if = {
+				limit = { antarctica_station_slot_unlocked_by_tier = yes }
+				if = {
+					limit = { check_variable = { global.antarctica_station_module_slot_9^player_station_id < 1 } }
+					set_temp_variable = { ai_vault_empty_lab = 1 }
+				}
+				else = { set_temp_variable = { ai_vault_slot = 9 } }
+			}
+			if = {
+				limit = {
+					check_variable = { ai_vault_slot > 0 }
+					check_variable = { ai_vault_empty_lab = 0 }
+				}
+				set_variable = { selected_antarctica_station_selected_slot = ai_vault_slot }
+				antarctica_set_selected_station_preview_defaults = yes
+				set_variable = { selected_antarctica_station_selected_module = 11 }
+				antarctica_calculate_selected_preview_module_install_time = yes
+				if = {
+					limit = {
+						antarctica_is_module_researched = yes
+						antarctica_can_install_module_power_balance = yes
+						antarctica_can_install_module_staff_availability = yes
+						antarctica_can_install_module_no_duplicate_laboratories = yes
+						antarctica_station_selected_slot_module_different = yes
+					}
+					antarctica_queue_selected_station_module_install = yes
 				}
 			}
 		}

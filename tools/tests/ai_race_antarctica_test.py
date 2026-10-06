@@ -41,6 +41,14 @@ def test_a_working_quantum_vault_adds_capability_by_station_tier(tier, expected)
     assert variables["ai_race_capability_external"] == 10 + expected
 
 
+def test_a_dismantled_station_tombstone_is_skipped():
+    race, variables = _station_race(tier=1)
+    variables["country_owned_station_ids"] = [-1, STATION]
+    race.globals["antarctica_station_tier"] = [0] * STATION + [1, 3]
+    race.run("ai_race_antarctica_contribution", 1)
+    assert variables["ai_race_capability_antarctica"] == 2
+
+
 def test_no_working_vault_adds_nothing_and_clears_the_last_reading():
     race, variables = _station_race(lab_ai=0, tier=3)
     variables["ai_race_capability_antarctica"] = 6
@@ -78,3 +86,38 @@ def test_a_racing_ai_builds_the_quantum_vault_first():
             in hook
         )
     assert pick < ai.index("antarctica_queue_selected_station_module_install = yes")
+
+
+def test_a_racing_ai_with_full_laboratories_swaps_one_for_the_vault():
+    ai = (ROOT / "common/scripted_effects/00_antarctica_ai_effects.txt").read_text(
+        encoding="utf-8"
+    )
+    monthly = _named_block(ai, "ai_antarctica_monthly")
+    assert monthly.index("ai_install_station_module_in_empty_slot = yes") < (
+        monthly.index("ai_antarctica_swap_in_quantum_vault = yes")
+    )
+    swap = _named_block(ai, "ai_antarctica_swap_in_quantum_vault")
+    assert "ai_race_active = yes" in swap
+    assert (
+        "NOT = { check_variable = { global.antarctica_station_install_pending^player_station_id > 0 } }"
+        in swap
+    )
+    for slot in range(6, 10):
+        assert (
+            f"NOT = {{ check_variable = {{ global.antarctica_station_module_slot_{slot}^player_station_id = 11 }} }}"
+            in swap
+        )
+    assert swap.count("antarctica_station_slot_unlocked_by_tier = yes") == 4
+    assert "check_variable = { ai_vault_empty_lab = 0 }" in swap
+    assert "set_variable = { selected_antarctica_station_selected_module = 11 }" in swap
+    for check in (
+        "antarctica_is_module_researched = yes",
+        "antarctica_can_install_module_power_balance = yes",
+        "antarctica_can_install_module_staff_availability = yes",
+        "antarctica_can_install_module_no_duplicate_laboratories = yes",
+        "antarctica_station_selected_slot_module_different = yes",
+    ):
+        assert check in swap
+    assert swap.index("selected_antarctica_station_selected_module = 11") < swap.index(
+        "antarctica_queue_selected_station_module_install = yes"
+    )
