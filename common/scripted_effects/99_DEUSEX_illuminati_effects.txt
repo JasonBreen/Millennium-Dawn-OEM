@@ -30,8 +30,7 @@ DEUSEX_monthly_illuminati_pulse = {
 			}
 			DEUSEX_illuminati_month = yes
 		}
-		add_to_variable = { global.DEUSEX_illum_exposure = -1 }
-		DEUSEX_clamp_illuminati = yes
+		# The threshold is checked before the month's decay, so 70 exposure is enough.
 		if = {
 			limit = {
 				check_variable = { global.DEUSEX_illum_exposure > 69 }
@@ -39,10 +38,8 @@ DEUSEX_monthly_illuminati_pulse = {
 			}
 			DEUSEX_masquerade_slips = yes
 		}
-		if = {
-			limit = { has_variable = global.DEUSEX_illum_member }
-			var:global.DEUSEX_illum_member = { DEUSEX_update_inner_circle = yes }
-		}
+		add_to_variable = { global.DEUSEX_illum_exposure = -1 }
+		DEUSEX_refresh_member = yes
 	}
 }
 
@@ -116,7 +113,16 @@ DEUSEX_masquerade_slips = {
 	}
 	else = {
 		add_to_variable = { global.DEUSEX_illum_exposure = -30 }
-		DEUSEX_clamp_illuminati = yes
+		DEUSEX_refresh_member = yes
+	}
+}
+
+# Any scope. Clamps the globals and refreshes the member's modifier, for exposure changes made by non-members.
+DEUSEX_refresh_member = {
+	DEUSEX_clamp_illuminati = yes
+	if = {
+		limit = { has_variable = global.DEUSEX_illum_member }
+		var:global.DEUSEX_illum_member = { DEUSEX_update_inner_circle = yes }
 	}
 }
 
@@ -179,7 +185,7 @@ DEUSEX_empower_wing = {
 }
 
 # Member scope. Stage 2 fits the control biochip to new implants: every augmentation host gains a fifth of its
-# adoption as influence.
+# adoption as influence. Stage 4 doubles the grip, so every target is refreshed at once.
 DEUSEX_advance_agenda = {
 	add_to_variable = { global.DEUSEX_illum_agenda = 1 }
 	if = {
@@ -193,6 +199,16 @@ DEUSEX_advance_agenda = {
 			set_temp_variable = { DEUSEX_chip_gain = DEUSEX_aug_adoption }
 			multiply_temp_variable = { DEUSEX_chip_gain = 0.2 }
 			add_to_variable = { DEUSEX_illum_influence = DEUSEX_chip_gain }
+			DEUSEX_update_illuminati_grip = yes
+		}
+	}
+	else_if = {
+		limit = { check_variable = { global.DEUSEX_illum_agenda = 4 } }
+		every_country = {
+			limit = {
+				DEUSEX_is_illuminati_target = yes
+				NOT = { has_country_flag = DEUSEX_inner_circle }
+			}
 			DEUSEX_update_illuminati_grip = yes
 		}
 	}
