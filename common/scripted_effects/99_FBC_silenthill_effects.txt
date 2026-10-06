@@ -1,0 +1,151 @@
+# Silent Hill. A Bureau case in Maine (state 764). The fog lives on the state; the case lives on USA with the Bureau.
+# FBC_sh_phase: 0 dormant, 1 reported, 2 intervention running, 3 answered. FBC_sh_intervention: 1 a response team,
+# 2 a quarantine, 3 a cover-up. The town answers the intervention when FBC_sh_answer_in reaches 0.
+FBC_monthly_silenthill_pulse = {
+	if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			country_exists = USA
+			USA = { has_variable = FBC_containment_integrity }
+		}
+		if = {
+			limit = { NOT = { has_global_flag = FBC_sh_ready } }
+			set_global_flag = FBC_sh_ready
+			764 = {
+				set_variable = { FBC_sh_fog = 10 }
+				FBC_update_silenthill_fog = yes
+				add_dynamic_modifier = { modifier = FBC_silent_hill_fog }
+			}
+		}
+		764 = { FBC_silenthill_fog_month = yes }
+		USA = { FBC_silenthill_case_month = yes }
+	}
+}
+
+# State 764 scope. The fog climbs by 1 a month; a response team in town holds it back, a cover-up lets it run.
+FBC_silenthill_fog_month = {
+	set_temp_variable = { FBC_sh_fog_gain = 1 }
+	if = {
+		limit = { USA = { check_variable = { FBC_sh_committed > 0 } } }
+		set_temp_variable = { FBC_sh_fog_gain = -1 }
+	}
+	else_if = {
+		limit = {
+			USA = {
+				check_variable = { FBC_sh_phase = 2 }
+				check_variable = { FBC_sh_intervention = 3 }
+			}
+		}
+		set_temp_variable = { FBC_sh_fog_gain = 2 }
+	}
+	add_to_variable = { FBC_sh_fog = FBC_sh_fog_gain }
+	FBC_update_silenthill_fog = yes
+}
+
+# State 764 scope. Call after every change to the fog.
+FBC_update_silenthill_fog = {
+	clamp_variable = { var = FBC_sh_fog min = 0 max = 100 }
+	set_variable = { FBC_sh_supply_factor = { value = FBC_sh_fog multiply = -0.004 } }
+	set_variable = { FBC_sh_building_factor = { value = FBC_sh_fog multiply = -0.003 } }
+	set_variable = { FBC_sh_resource_factor = { value = FBC_sh_fog multiply = -0.002 } }
+	set_variable = { FBC_sh_attrition_factor = { value = FBC_sh_fog multiply = 0.002 } }
+}
+
+# USA scope. Reports come at 25 fog; the town answers the intervention when its timer runs out. Both need the Bureau
+# to hold the town. FBC.30 sets phase 1 when it arrives, so reports lost to a change of control are sent again.
+FBC_silenthill_case_month = {
+	if = {
+		limit = {
+			check_variable = { FBC_sh_phase = 0 }
+			764 = {
+				check_variable = { FBC_sh_fog > 24 }
+				is_controlled_by = USA
+			}
+			NOT = { has_country_flag = FBC_sh_report_pending }
+		}
+		set_country_flag = { flag = FBC_sh_report_pending value = 1 days = 7 }
+		country_event = { id = FBC.30 days = 1 }
+	}
+	else_if = {
+		limit = {
+			check_variable = { FBC_sh_phase = 2 }
+			764 = { is_controlled_by = USA }
+		}
+		# A team intervention needs a team in town: recommit one after a lost town, or wait until one is free.
+		if = {
+			limit = {
+				check_variable = { FBC_sh_intervention = 1 }
+				check_variable = { FBC_sh_committed < 1 }
+			}
+			FBC_commit_silenthill_team = yes
+		}
+		if = {
+			limit = {
+				OR = {
+					NOT = { check_variable = { FBC_sh_intervention = 1 } }
+					check_variable = { FBC_sh_committed > 0 }
+				}
+			}
+			add_to_variable = { FBC_sh_answer_in = -1 }
+		}
+		if = {
+			limit = { check_variable = { FBC_sh_answer_in < 1 } }
+			set_variable = { FBC_sh_phase = 3 }
+			if = {
+				limit = { check_variable = { FBC_sh_intervention = 1 } }
+				random_list = {
+					60 = { country_event = { id = FBC.31 days = 1 } }
+					40 = { country_event = { id = FBC.32 days = 1 } }
+				}
+			}
+			else_if = {
+				limit = { check_variable = { FBC_sh_intervention = 2 } }
+				country_event = { id = FBC.33 days = 1 }
+			}
+			else = { country_event = { id = FBC.34 days = 1 } }
+		}
+	}
+	# Losing the town pauses the case and frees its team; the intervention stays on record.
+	else_if = {
+		limit = {
+			check_variable = { FBC_sh_phase = 2 }
+			check_variable = { FBC_sh_committed > 0 }
+		}
+		FBC_release_silenthill_team = yes
+	}
+}
+
+# USA scope. Records the intervention and when the town answers it, in months.
+FBC_silenthill_intervene = {
+	set_variable = { FBC_sh_phase = 2 }
+	set_variable = { FBC_sh_intervention = FBC_sh_choice }
+	set_variable = { FBC_sh_answer_in = FBC_sh_delay }
+}
+
+FBC_commit_silenthill_team = {
+	if = {
+		limit = {
+			check_variable = { FBC_response_capacity > 0 }
+			check_variable = { FBC_sh_committed < 1 }
+		}
+		add_to_variable = { FBC_response_capacity = -1 }
+		set_variable = { FBC_sh_committed = 1 }
+	}
+}
+
+FBC_release_silenthill_team = {
+	if = {
+		limit = { check_variable = { FBC_sh_committed > 0 } }
+		set_variable = { FBC_sh_committed = 0 }
+		add_to_variable = { FBC_response_capacity = 1 }
+		clamp_variable = { var = FBC_response_capacity min = 0 max = 2 }
+	}
+}
+
+# USA scope, temp FBC_sh_fog_change set.
+FBC_change_silenthill_fog = {
+	764 = {
+		add_to_variable = { FBC_sh_fog = FBC_sh_fog_change }
+		FBC_update_silenthill_fog = yes
+	}
+}
