@@ -1,0 +1,360 @@
+add_namespace = METALGEAR
+
+country_event = {
+	id = METALGEAR.30
+	title = METALGEAR.30.t
+	desc = METALGEAR.30.d
+	picture = GFX_crime_fighting
+	is_triggered_only = yes
+
+	trigger = {
+		METALGEAR_scenario_enabled = yes
+		tag = SOV
+		check_variable = { METALGEAR_review_phase < 1 }
+	}
+
+	option = {
+		name = METALGEAR.30.a
+		log = "[GetDateText]: [This.GetName]: METALGEAR.30.a executed"
+		custom_effect_tooltip = METALGEAR_review_unlocked_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { METALGEAR_review_phase < 1 } }
+				set_variable = { METALGEAR_review_phase = 1 }
+			}
+		}
+		ai_chance = {
+			base = 1
+		}
+	}
+}
+
+country_event = {
+	id = METALGEAR.31
+	title = METALGEAR.31.t
+	desc = METALGEAR.31.d
+	picture = GFX_crime_fighting
+	is_triggered_only = yes
+
+	trigger = {
+		METALGEAR_scenario_enabled = yes
+		tag = SOV
+		check_variable = { METALGEAR_review_phase = 3 }
+	}
+
+	option = {
+		name = METALGEAR.31.a
+		log = "[GetDateText]: [This.GetName]: METALGEAR.31.a executed"
+		custom_effect_tooltip = METALGEAR_review_cooperative_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { METALGEAR_review_phase = 3 } }
+				set_variable = { METALGEAR_review_phase = 4 }
+				set_variable = { METALGEAR_review_policy = 1 }
+			}
+		}
+		ai_chance = {
+			base = 60
+		}
+	}
+
+	option = {
+		name = METALGEAR.31.b
+		log = "[GetDateText]: [This.GetName]: METALGEAR.31.b executed"
+		custom_effect_tooltip = METALGEAR_review_classified_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { METALGEAR_review_phase = 3 } }
+				set_variable = { METALGEAR_review_phase = 4 }
+				set_variable = { METALGEAR_review_policy = 2 }
+				add_stability = 0.01
+			}
+		}
+		ai_chance = {
+			base = 40
+		}
+	}
+}
+
+country_event = {
+	id = METALGEAR.34
+	title = METALGEAR.34.t
+	desc = METALGEAR.34.d
+	picture = GFX_crime_fighting
+	is_triggered_only = yes
+
+	trigger = {
+		METALGEAR_scenario_enabled = yes
+		tag = SOV
+		country_exists = JAP
+		JAP = { check_variable = { METALGEAR_request_phase = 1 } }
+	}
+
+	option = {
+		name = METALGEAR.34.a
+		log = "[GetDateText]: [This.GetName]: METALGEAR.34.a executed"
+		custom_effect_tooltip = METALGEAR_accept_exchange_tt
+		trigger = {
+			country_exists = JAP
+			NOT = { has_war_with = JAP }
+			JAP = { check_variable = { METALGEAR_request_phase = 1 } }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					country_exists = JAP
+					NOT = { has_war_with = JAP }
+					JAP = { check_variable = { METALGEAR_request_phase = 1 } }
+				}
+				add_political_power = -10
+				add_opinion_modifier = { target = JAP modifier = diplomatic_support }
+				JAP = {
+					set_variable = { METALGEAR_request_phase = 2 }
+					add_opinion_modifier = { target = SOV modifier = diplomatic_support }
+					country_event = { id = METALGEAR.23 days = 1 }
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 2 has_opinion = { target = JAP value > 25 } }
+			modifier = { factor = 0.25 has_opinion = { target = JAP value < -25 } }
+			modifier = { factor = 1.5 check_variable = { METALGEAR_review_policy = 1 } }
+		}
+	}
+
+	option = {
+		name = METALGEAR.34.b
+		log = "[GetDateText]: [This.GetName]: METALGEAR.34.b executed"
+		custom_effect_tooltip = METALGEAR_decline_exchange_tt
+		trigger = {
+			country_exists = JAP
+			NOT = { has_war_with = JAP }
+			JAP = { check_variable = { METALGEAR_request_phase = 1 } }
+		}
+		hidden_effect = {
+			if = {
+				limit = { country_exists = JAP JAP = { check_variable = { METALGEAR_request_phase = 1 } } }
+				JAP = {
+					set_variable = { METALGEAR_request_phase = 3 }
+					country_event = { id = METALGEAR.23 days = 1 }
+				}
+			}
+		}
+		ai_chance = {
+			base = 30
+			modifier = { factor = 2 has_opinion = { target = JAP value < 0 } }
+		}
+	}
+
+	option = {
+		name = METALGEAR.34.c
+		log = "[GetDateText]: [This.GetName]: METALGEAR.34.c executed"
+		custom_effect_tooltip = METALGEAR_exchange_interrupted_tt
+		trigger = {
+			OR = {
+				NOT = { country_exists = JAP }
+				has_war_with = JAP
+				JAP = { NOT = { check_variable = { METALGEAR_request_phase = 1 } } }
+			}
+		}
+		hidden_effect = {
+			if = {
+				limit = { country_exists = JAP JAP = { check_variable = { METALGEAR_request_phase = 1 } } }
+				JAP = {
+					set_variable = { METALGEAR_request_phase = 4 }
+					country_event = { id = METALGEAR.23 days = 1 }
+				}
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+country_event = {
+	id = METALGEAR.33
+	title = METALGEAR.33.t
+	desc = {
+		trigger = { check_variable = { METALGEAR_request_phase = 2 } }
+		text = METALGEAR.33.d_accepted
+	}
+	desc = {
+		trigger = { check_variable = { METALGEAR_request_phase = 3 } }
+		text = METALGEAR.33.d_declined
+	}
+	desc = {
+		trigger = { check_variable = { METALGEAR_request_phase = 4 } }
+		text = METALGEAR.33.d_interrupted
+	}
+	picture = GFX_crime_fighting
+	minor_flavor = yes
+	is_triggered_only = yes
+
+	trigger = {
+		METALGEAR_scenario_enabled = yes
+		tag = SOV
+		check_variable = { METALGEAR_request_phase > 1 }
+	}
+
+	option = {
+		name = METALGEAR.33.a
+		ai_chance = {
+			base = 1
+		}
+	}
+}
+
+country_event = {
+	id = METALGEAR.32
+	title = METALGEAR.32.t
+	desc = METALGEAR.32.d
+	picture = GFX_generic_nuclear_smuggling
+	is_triggered_only = yes
+
+	trigger = {
+		METALGEAR_scenario_enabled = yes
+		tag = SOV
+		check_variable = { METALGEAR_crisis_records < 1 }
+		country_exists = USA
+		USA = { check_variable = { METALGEAR_crisis_phase = 2 } }
+		check_variable = { global.METALGEAR_shadow_moses_result < 1 }
+	}
+
+	option = {
+		name = METALGEAR.32.a
+		log = "[GetDateText]: [This.GetName]: METALGEAR.32.a executed"
+		custom_effect_tooltip = METALGEAR_supply_records_tt
+		trigger = {
+			NOT = { has_war_with = USA }
+			country_exists = USA
+			USA = { check_variable = { METALGEAR_crisis_phase = 2 } }
+			check_variable = { global.METALGEAR_shadow_moses_result < 1 }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { METALGEAR_crisis_records < 1 }
+					NOT = { has_war_with = USA }
+					country_exists = USA
+					USA = { check_variable = { METALGEAR_crisis_phase = 2 } }
+					check_variable = { global.METALGEAR_shadow_moses_result < 1 }
+				}
+				add_political_power = -10
+				set_variable = { METALGEAR_crisis_records = 1 }
+			}
+		}
+		ai_chance = {
+			base = 40
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 2 has_opinion = { target = USA value > 25 } }
+			modifier = { factor = 0.25 has_opinion = { target = USA value < -25 } }
+			modifier = { factor = 2 check_variable = { METALGEAR_request_phase = 2 } }
+		}
+	}
+
+	option = {
+		name = METALGEAR.32.b
+		log = "[GetDateText]: [This.GetName]: METALGEAR.32.b executed"
+		custom_effect_tooltip = METALGEAR_withhold_records_tt
+		trigger = {
+			country_exists = USA
+			USA = { check_variable = { METALGEAR_crisis_phase = 2 } }
+			check_variable = { global.METALGEAR_shadow_moses_result < 1 }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					check_variable = { METALGEAR_crisis_records < 1 }
+					country_exists = USA
+					USA = { check_variable = { METALGEAR_crisis_phase = 2 } }
+					check_variable = { global.METALGEAR_shadow_moses_result < 1 }
+				}
+				set_variable = { METALGEAR_crisis_records = 2 }
+			}
+		}
+		ai_chance = {
+			base = 40
+			modifier = { factor = 2 has_opinion = { target = USA value < 0 } }
+		}
+	}
+
+	option = {
+		name = METALGEAR.32.c
+		log = "[GetDateText]: [This.GetName]: METALGEAR.32.c executed"
+		custom_effect_tooltip = METALGEAR_crisis_interrupted_tt
+		trigger = {
+			OR = {
+				NOT = { country_exists = USA }
+				USA = { NOT = { check_variable = { METALGEAR_crisis_phase = 2 } } }
+				check_variable = { global.METALGEAR_shadow_moses_result > 0 }
+			}
+		}
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { METALGEAR_crisis_records < 1 } }
+				set_variable = { METALGEAR_crisis_records = 3 }
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+
+country_event = {
+	id = METALGEAR.35
+	title = METALGEAR.35.t
+	desc = {
+		trigger = {
+			country_exists = USA
+			USA = { check_variable = { METALGEAR_crisis_disclosure = 1 } }
+			check_variable = { METALGEAR_crisis_records = 1 }
+		}
+		text = METALGEAR.35.d_shared
+	}
+	desc = {
+		trigger = {
+			country_exists = USA
+			USA = { check_variable = { METALGEAR_crisis_disclosure = 2 } }
+			check_variable = { METALGEAR_crisis_records = 1 }
+		}
+		text = METALGEAR.35.d_suppressed
+	}
+	desc = {
+		trigger = {
+			check_variable = { global.METALGEAR_shadow_moses_result = 3 }
+		}
+		text = METALGEAR.35.d_interrupted
+	}
+	desc = {
+		trigger = {
+			NOT = { check_variable = { global.METALGEAR_shadow_moses_result = 3 } }
+			OR = {
+				NOT = { check_variable = { METALGEAR_crisis_records = 1 } }
+				NOT = { country_exists = USA }
+				USA = { check_variable = { METALGEAR_crisis_disclosure < 1 } }
+			}
+		}
+		text = METALGEAR.35.d
+	}
+	picture = GFX_generic_nuclear_smuggling
+	minor_flavor = yes
+	is_triggered_only = yes
+
+	trigger = {
+		METALGEAR_scenario_enabled = yes
+		tag = SOV
+		check_variable = { global.METALGEAR_shadow_moses_result > 0 }
+	}
+
+	option = {
+		name = METALGEAR.35.a
+		ai_chance = {
+			base = 1
+		}
+	}
+}

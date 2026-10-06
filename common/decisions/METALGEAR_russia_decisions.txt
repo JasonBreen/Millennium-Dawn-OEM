@@ -1,0 +1,98 @@
+METALGEAR_russia_category = {
+	METALGEAR_russia_review = {
+		icon = GFX_decision_generic_intelligence_operation
+
+		cost = 25
+		days_remove = 60
+
+		visible = {
+			METALGEAR_scenario_enabled = yes
+			OR = {
+				check_variable = { METALGEAR_review_phase = 1 }
+				check_variable = { METALGEAR_review_phase = 2 }
+			}
+		}
+
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = METALGEAR_review_available_tt
+				check_variable = { METALGEAR_review_phase = 1 }
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision METALGEAR_russia_review"
+			custom_effect_tooltip = METALGEAR_review_start_tt
+			hidden_effect = {
+				if = {
+					limit = { check_variable = { METALGEAR_review_phase = 1 } }
+					set_variable = { METALGEAR_review_phase = 2 }
+				}
+			}
+		}
+
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision METALGEAR_russia_review"
+			hidden_effect = {
+				if = {
+					limit = { check_variable = { METALGEAR_review_phase = 2 } }
+					set_variable = { METALGEAR_review_phase = 3 }
+					country_event = METALGEAR.31
+				}
+			}
+		}
+
+		ai_will_do = {
+			base = 10
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	METALGEAR_russia_request = {
+		icon = GFX_decision_generic_political_discourse
+
+		cost = 15
+		fire_only_once = yes
+
+		visible = {
+			METALGEAR_scenario_enabled = yes
+			check_variable = { METALGEAR_review_policy = 1 }
+			check_variable = { METALGEAR_request_phase < 1 }
+		}
+
+		available = {
+			country_exists = USA
+			NOT = { has_war_with = USA }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision METALGEAR_russia_request"
+			custom_effect_tooltip = METALGEAR_request_exchange_tt
+			hidden_effect = {
+				if = {
+					limit = {
+						METALGEAR_scenario_enabled = yes
+					check_variable = { METALGEAR_review_policy = 1 }
+					check_variable = { METALGEAR_request_phase < 1 }
+						country_exists = USA
+						NOT = { has_war_with = USA }
+					}
+					set_variable = { METALGEAR_request_phase = 1 }
+					USA = { country_event = { id = METALGEAR.6 days = 1 } }
+				}
+			}
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = {
+				add_opinion_modifier = { target = USA modifier = diplomatic_support }
+				USA = { add_opinion_modifier = { target = ROOT modifier = diplomatic_support } }
+			}
+		}
+
+		ai_will_do = {
+			base = 6
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 2 has_opinion = { target = USA value > 25 } }
+			modifier = { factor = 0.25 has_opinion = { target = USA value < -25 } }
+		}
+	}
+}

@@ -1,208 +1,175 @@
-# Global monthly pulse. The incident opens in February 2004, once.
+METALGEAR_dispatch_shadow_moses = {
+	if = {
+		limit = {
+			METALGEAR_scenario_enabled = yes
+			NOT = { has_global_flag = METALGEAR_shadow_moses_started }
+		}
+		set_global_flag = METALGEAR_shadow_moses_started
+		if = {
+			limit = {
+				country_exists = USA
+				814 = { is_controlled_by = USA }
+			}
+			USA = {
+				set_variable = { METALGEAR_crisis_phase = 1 }
+				country_event = { id = METALGEAR.10 days = 1 }
+			}
+		}
+		else = {
+			log = "[GetDateText]: METALGEAR Shadow Moses unavailable: United States or Alaska control missing"
+			set_variable = { global.METALGEAR_shadow_moses_result = 4 }
+		}
+	}
+}
+
+METALGEAR_authorize_shadow_moses = {
+	if = {
+		limit = { check_variable = { METALGEAR_review_phase > 2 } }
+		add_political_power = -25
+	}
+	else = { add_political_power = -50 }
+}
+
+METALGEAR_begin_shadow_moses_response = {
+	set_variable = { METALGEAR_crisis_phase = 2 }
+	if = {
+		limit = { country_exists = JAP }
+		JAP = { country_event = { id = METALGEAR.22 days = 1 } }
+	}
+	if = {
+		limit = { country_exists = SOV }
+		SOV = { country_event = { id = METALGEAR.32 days = 1 } }
+	}
+	country_event = { id = METALGEAR.12 days = 30 }
+}
+
+METALGEAR_resolve_shadow_moses = {
+	if = {
+		limit = {
+			check_variable = { METALGEAR_crisis_phase = 2 }
+			check_variable = { global.METALGEAR_shadow_moses_result < 1 }
+		}
+		if = {
+			limit = { 814 = { is_controlled_by = USA } }
+			set_variable = { METALGEAR_crisis_phase = 3 }
+			if = {
+				limit = {
+					check_variable = { METALGEAR_review_phase > 2 }
+					NOT = { check_variable = { METALGEAR_crisis_route = 3 } }
+				}
+				set_variable = { global.METALGEAR_shadow_moses_result = 1 }
+				add_stability = -0.01
+			}
+			else = {
+				set_variable = { global.METALGEAR_shadow_moses_result = 2 }
+				add_stability = -0.02
+			}
+		}
+		else = {
+			set_variable = { global.METALGEAR_shadow_moses_result = 3 }
+			set_variable = { METALGEAR_crisis_phase = 3 }
+			METALGEAR_send_shadow_moses_reports = yes
+		}
+	}
+}
+
+METALGEAR_complete_shadow_moses = {
+	set_variable = { METALGEAR_crisis_phase = 4 }
+	METALGEAR_send_shadow_moses_reports = yes
+	news_event = { id = METALGEAR.13 days = 1 }
+}
+
+METALGEAR_send_shadow_moses_reports = {
+	if = {
+		limit = { country_exists = JAP }
+		JAP = {
+			if = {
+				limit = { check_variable = { METALGEAR_crisis_records < 1 } }
+				set_variable = { METALGEAR_crisis_records = 3 }
+			}
+			country_event = { id = METALGEAR.25 days = 1 }
+		}
+	}
+	if = {
+		limit = { country_exists = SOV }
+		SOV = {
+			if = {
+				limit = { check_variable = { METALGEAR_crisis_records < 1 } }
+				set_variable = { METALGEAR_crisis_records = 3 }
+			}
+			country_event = { id = METALGEAR.35 days = 1 }
+		}
+	}
+}
+
+METALGEAR_interrupt_shadow_moses = {
+	if = {
+		limit = { check_variable = { global.METALGEAR_shadow_moses_result < 1 } }
+		set_variable = { global.METALGEAR_shadow_moses_result = 3 }
+		if = {
+			limit = { country_exists = USA }
+			USA = {
+				set_variable = { METALGEAR_crisis_phase = 3 }
+				country_event = { id = METALGEAR.8 days = 1 }
+			}
+		}
+		METALGEAR_send_shadow_moses_reports = yes
+	}
+}
+
 METALGEAR_monthly_shadow_moses_pulse = {
 	if = {
 		limit = {
-			has_global_flag = GLOBAL_METALGEAR_network_ready
-			NOT = { has_global_flag = METALGEAR_shadow_moses_started }
-			date > 2004.1.31
-			country_exists = USA
-		}
-		USA = { METALGEAR_start_shadow_moses = yes }
-	}
-	# A step queued for a United States that was annexed meanwhile is discarded; resend it once it is back.
-	else_if = {
-		limit = {
+			METALGEAR_scenario_enabled = yes
 			has_global_flag = METALGEAR_shadow_moses_started
-			NOT = { has_global_flag = METALGEAR_shadow_moses_resolved }
-			NOT = { has_global_flag = METALGEAR_sm_step_pending }
-			country_exists = USA
+			check_variable = { global.METALGEAR_shadow_moses_result < 1 }
+			OR = {
+				NOT = { country_exists = USA }
+				814 = { NOT = { is_controlled_by = USA } }
+			}
 		}
-		USA = { METALGEAR_sm_send_step = yes }
+		METALGEAR_interrupt_shadow_moses = yes
 	}
 }
 
-# USA scope. The incident is a single fixed record, so its delayed events read these globals safely.
-METALGEAR_start_shadow_moses = {
-	set_global_flag = METALGEAR_shadow_moses_started
-	set_variable = { global.METALGEAR_sm_priority = 0 }
-	set_variable = { global.METALGEAR_sm_second = 0 }
-	set_variable = { global.METALGEAR_sm_committed = 0 }
-	set_variable = { global.METALGEAR_sm_covered = 0 }
-	set_variable = { global.METALGEAR_sm_stage = 1 }
-	METALGEAR_sm_send_step = yes
-}
-
-# USA scope. Sends the step the incident waits on: 1 the dossier, 2 the complication, 3 the after action. The flag
-# outlasts any delay, so the pulse only resends a step that was really lost.
-METALGEAR_sm_send_step = {
-	set_global_flag = { flag = METALGEAR_sm_step_pending value = 1 days = 60 }
+METALGEAR_share_shadow_moses_report = {
 	if = {
-		limit = { check_variable = { global.METALGEAR_sm_stage = 1 } }
-		country_event = METALGEAR.10
+		limit = {
+			country_exists = JAP
+			NOT = { has_war_with = JAP }
+			JAP = { check_variable = { METALGEAR_crisis_records = 1 } }
+		}
+		add_opinion_modifier = { target = JAP modifier = diplomatic_support }
+		JAP = { add_opinion_modifier = { target = USA modifier = diplomatic_support } }
 	}
-	else_if = {
-		limit = { check_variable = { global.METALGEAR_sm_stage = 2 } }
-		country_event = METALGEAR.11
-	}
-	else = {
-		country_event = METALGEAR.12
-	}
-}
-
-# USA scope. Moves the incident to the next stage and queues its event after the delay.
-METALGEAR_sm_advance = {
-	add_to_variable = { global.METALGEAR_sm_stage = 1 }
-	set_global_flag = { flag = METALGEAR_sm_step_pending value = 1 days = 60 }
 	if = {
-		limit = { check_variable = { global.METALGEAR_sm_stage = 2 } }
-		country_event = { id = METALGEAR.11 days = 10 }
-	}
-	else = {
-		country_event = { id = METALGEAR.12 days = 14 }
+		limit = {
+			country_exists = SOV
+			NOT = { has_war_with = SOV }
+			SOV = { check_variable = { METALGEAR_crisis_records = 1 } }
+		}
+		add_opinion_modifier = { target = SOV modifier = diplomatic_support }
+		SOV = { add_opinion_modifier = { target = USA modifier = diplomatic_support } }
 	}
 }
 
-# USA scope. Commits one unit of capacity to the incident, or costs coherence when none is free.
-METALGEAR_sm_commit = {
+METALGEAR_suppress_shadow_moses_report = {
 	if = {
-		limit = { check_variable = { global.METALGEAR_capacity > 0 } }
-		subtract_from_variable = { global.METALGEAR_capacity = 1 }
-		add_to_variable = { global.METALGEAR_sm_committed = 1 }
+		limit = {
+			country_exists = JAP
+			NOT = { has_war_with = JAP }
+			JAP = { check_variable = { METALGEAR_crisis_records = 1 } }
+		}
+		add_opinion_modifier = { target = JAP modifier = diplomatic_insults }
+		JAP = { add_opinion_modifier = { target = USA modifier = diplomatic_insults } }
 	}
-	else = {
-		subtract_from_variable = { global.METALGEAR_coherence = 10 }
-	}
-}
-
-# USA scope. Returns every unit committed to the incident.
-METALGEAR_sm_release = {
-	add_to_variable = { global.METALGEAR_capacity = global.METALGEAR_sm_committed }
-	set_variable = { global.METALGEAR_sm_committed = 0 }
-}
-
-# USA scope, from METALGEAR.12. Three objectives: the weapons program (1), the story (2) and the response (3).
-# The first decision covers one; reallocating covers the next as well; cutting the first loose abandons it; holding
-# the course risks losing it to the complication. Secure special operations oversight covers the response anyway.
-METALGEAR_resolve_shadow_moses = {
 	if = {
-		limit = { NOT = { has_global_flag = METALGEAR_shadow_moses_resolved } }
-		set_global_flag = METALGEAR_shadow_moses_resolved
-		set_temp_variable = { mg_program = 0 }
-		set_temp_variable = { mg_story = 0 }
-		set_temp_variable = { mg_response = 0 }
-		set_temp_variable = { mg_primary = global.METALGEAR_sm_priority }
-		if = {
-			limit = { check_variable = { global.METALGEAR_sm_second = 3 } }
-			random = {
-				chance = 50
-				set_global_flag = METALGEAR_sm_complication_bit
-				set_temp_variable = { mg_primary = 0 }
-			}
+		limit = {
+			country_exists = SOV
+			NOT = { has_war_with = SOV }
+			SOV = { check_variable = { METALGEAR_crisis_records = 1 } }
 		}
-		if = {
-			limit = { check_variable = { global.METALGEAR_sm_second = 2 } }
-			set_temp_variable = { mg_primary = 0 }
-		}
-		if = {
-			limit = { check_variable = { mg_primary = 1 } }
-			set_temp_variable = { mg_program = 1 }
-		}
-		else_if = {
-			limit = { check_variable = { mg_primary = 2 } }
-			set_temp_variable = { mg_story = 1 }
-		}
-		else_if = {
-			limit = { check_variable = { mg_primary = 3 } }
-			set_temp_variable = { mg_response = 1 }
-		}
-		if = {
-			limit = { check_variable = { global.METALGEAR_sm_second = 1 } }
-			if = {
-				limit = { check_variable = { global.METALGEAR_sm_priority = 1 } }
-				set_temp_variable = { mg_story = 1 }
-			}
-			else_if = {
-				limit = { check_variable = { global.METALGEAR_sm_priority = 2 } }
-				set_temp_variable = { mg_response = 1 }
-			}
-			else = {
-				set_temp_variable = { mg_program = 1 }
-			}
-		}
-		if = {
-			limit = { check_variable = { global.METALGEAR_node_true^1 = 0 } }
-			set_temp_variable = { mg_response = 1 }
-		}
-
-		if = {
-			limit = { check_variable = { mg_program = 1 } }
-			set_global_flag = METALGEAR_sm_program_retained
-			add_to_variable = { global.METALGEAR_reach = 5 }
-		}
-		else = {
-			set_global_flag = METALGEAR_sm_program_lost
-			subtract_from_variable = { global.METALGEAR_reach = 5 }
-			if = {
-				limit = { check_variable = { global.METALGEAR_node_true^0 < 2 } }
-				add_to_variable = { global.METALGEAR_node_true^0 = 1 }
-			}
-		}
-		if = {
-			limit = { check_variable = { mg_story = 1 } }
-			set_global_flag = METALGEAR_sm_story_held
-			add_to_variable = { global.METALGEAR_exposure = 10 }
-		}
-		else = {
-			set_global_flag = METALGEAR_sm_story_broke
-			add_to_variable = { global.METALGEAR_exposure = 25 }
-			add_stability = -0.02
-		}
-		if = {
-			limit = { check_variable = { mg_response = 1 } }
-			set_global_flag = METALGEAR_sm_response_held
-			add_to_variable = { global.METALGEAR_coherence = 5 }
-			if = {
-				limit = { check_variable = { global.METALGEAR_node_true^1 > 0 } }
-				subtract_from_variable = { global.METALGEAR_node_true^1 = 1 }
-			}
-		}
-		else = {
-			set_global_flag = METALGEAR_sm_response_failed
-			subtract_from_variable = { global.METALGEAR_coherence = 10 }
-			if = {
-				limit = { check_variable = { global.METALGEAR_node_true^1 < 2 } }
-				add_to_variable = { global.METALGEAR_node_true^1 = 1 }
-			}
-		}
-		if = {
-			limit = { check_variable = { global.METALGEAR_sm_second = 2 } }
-			add_to_variable = { global.METALGEAR_coherence = 5 }
-			subtract_from_variable = { global.METALGEAR_exposure = 5 }
-		}
-		# The incident tested procurement and oversight, so the network now knows where they stand.
-		for_loop_effect = {
-			end = 2
-			value = mg_i
-
-			set_variable = { global.METALGEAR_node_known^mg_i = global.METALGEAR_node_true^mg_i }
-			set_variable = { global.METALGEAR_node_confirmed^mg_i = 6 }
-		}
-		METALGEAR_sm_release = yes
-		set_variable = { global.METALGEAR_sm_covered = { value = mg_program add = mg_story add = mg_response } }
-		METALGEAR_clamp_network = yes
-
-		# One follow-on decision, chosen by what the network kept.
-		if = {
-			limit = { check_variable = { mg_program = 1 } }
-			set_global_flag = METALGEAR_sm_followon_exploit
-		}
-		else_if = {
-			limit = { check_variable = { mg_story = 1 } }
-			set_global_flag = METALGEAR_sm_followon_bury
-		}
-		else = {
-			set_global_flag = METALGEAR_sm_followon_account
-		}
-		news_event = { id = METALGEAR.13 days = 2 }
+		add_opinion_modifier = { target = SOV modifier = diplomatic_insults }
+		SOV = { add_opinion_modifier = { target = USA modifier = diplomatic_insults } }
 	}
 }
