@@ -219,3 +219,30 @@ def test_non_member_exposure_changes_and_stage_four_refresh_at_once():
         agenda.index("check_variable = { global.DEUSEX_illum_agenda = 4 }") :
     ]
     assert "DEUSEX_update_illuminati_grip = yes" in final
+
+
+def test_a_lost_choice_offers_a_valid_threshold_and_a_preview():
+    slips = _named_block(EFFECTS, "DEUSEX_masquerade_slips")
+    assert slips.index(
+        "set_global_flag = DEUSEX_masquerade_choice_pending"
+    ) < slips.index("country_event = { id = DEUSEX.42 days = 1 }")
+    choice = _event("DEUSEX.42")
+    assert choice.count("clr_global_flag = DEUSEX_masquerade_choice_pending") == 2
+    pulse = _named_block(EFFECTS, "DEUSEX_monthly_illuminati_pulse")
+    lost = pulse[pulse.index("var:global.DEUSEX_illum_member = { exists = no }") :]
+    lost = lost[: lost.index("every_country")]
+    pending = lost[lost.index("has_global_flag = DEUSEX_masquerade_choice_pending") :]
+    assert "add_to_variable = { global.DEUSEX_illum_exposure = -30 }" in pending
+    offer = _event("DEUSEX.40").split("option = {", 1)[0]
+    assert (
+        "check_variable = { var = DEUSEX_illum_influence value = 40 compare = greater_than_or_equals }"
+        in offer
+    )
+    seek = _named_block(DECISIONS, "DEUSEX_seek_inner_circle")
+    assert (
+        "effect_tooltip = { add_dynamic_modifier = { modifier = DEUSEX_inner_circle } }"
+        in seek
+    )
+    assert "DEUSEX_update_inner_circle = yes" in _named_block(
+        EFFECTS, "DEUSEX_illuminati_month"
+    )
