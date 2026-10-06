@@ -26,9 +26,11 @@ def test_the_pulse_opens_one_case_at_a_working_tier_two_drilling_rig():
     assert "array = global.at_members" in pulse
     assert "check_variable = { antarctica_lab_ice_tech_boost > 0 }" in pulse
     assert "chance = 2" in pulse
-    assert "set_variable = { FBC_polar_station_id = FBC_polar_candidate }" in pulse
     find = _named_block(EFFECTS, "FBC_polar_find_drilling_station")
-    assert "global.antarctica_station_tier^FBC_polar_station > 1" in find
+    guard = find.index("check_variable = { FBC_polar_station > 0 }")
+    assert guard < find.index("global.antarctica_station_tier^FBC_polar_station > 1")
+    assert "global.antarctica_station_exists^FBC_polar_station > 0" in find
+    assert "global.antarctica_station_controller^FBC_polar_station = THIS.id" in find
     for slot in range(6, 10):
         assert (
             f"global.antarctica_station_module_slot_{slot}^FBC_polar_station = 12"
@@ -59,20 +61,57 @@ def test_every_ending_closes_the_case_and_releases_the_team():
     assert "25 = { country_event = { id = FBC.24 days = 45 } }" in commit
 
 
-def test_a_breakout_damages_only_the_drilling_rig_through_antarctica():
+def test_a_breakout_stops_only_the_rig_with_its_own_timer():
     breakout = _named_block(EFFECTS, "FBC_polar_breakout")
-    assert "global.antarctica_station_controller^station_id = THIS.id" in breakout
-    assert breakout.count("antarctica_mark_blizzard_slot_damaged = yes") == 4
-    for slot in range(6, 10):
-        assert (
-            f"global.antarctica_station_module_slot_{slot}^station_id = 12" in breakout
-        )
     assert (
-        "set_variable = { research_station_module_repair_days_remaining = 30 }"
+        "set_country_flag = { flag = FBC_polar_rig_down value = 1 days = 30 }"
         in breakout
     )
     assert "antarctica_recalculate_country_laboratory_effects = yes" in breakout
-    assert "set_variable = { global.antarctica_station" not in breakout
+    for avoided in (
+        "antarctica_mark_blizzard_slot_damaged",
+        "research_station_module_repair_days_remaining",
+        "global.antarctica_station",
+    ):
+        assert avoided not in breakout
+    antarctica = _read("common/scripted_effects/00_antarctica_effects.txt")
+    module = _named_block(
+        antarctica, "antarctica_apply_single_laboratory_module_effect"
+    )
+    rig = module[module.index("check_variable = { station_lab_module = 12 }") :]
+    gate = rig.index("NOT = { has_country_flag = FBC_polar_rig_down }")
+    assert gate < rig.index("add_to_variable = { antarctica_lab_ice_tech_boost = 1 }")
+    assert gate < rig.index(
+        "add_to_variable = { antarctica_lab_cat_excavation_tech = 0.025 }"
+    )
+
+
+def test_a_lost_bureau_result_closes_the_case_and_returns_the_team():
+    pulse = _named_block(EFFECTS, "FBC_monthly_polar_pulse")
+    recovery = _named_block(pulse, "if")
+    assert "has_global_flag = FBC_polar_case_open" in recovery
+    assert "NOT = { country_exists = USA }" in recovery
+    assert "FBC_release_polar_team = yes" in recovery
+    assert "FBC_polar_close_case = yes" in recovery
+
+
+def test_every_event_is_gated_and_bureau_factors_refresh_after_changes():
+    for event_id in ("FBC.20", "FBC.21", "FBC.22", "FBC.23", "FBC.24"):
+        assert (
+            "trigger = { FBC_scenario_enabled = yes }"
+            in _event(event_id).split("option", 1)[0]
+        )
+    for body in (
+        _event("FBC.21").split("name = FBC.21.b", 1)[1],
+        _event("FBC.22"),
+        _event("FBC.24"),
+    ):
+        assert body.index("FBC_clamp_bureau = yes") < body.index(
+            "FBC_refresh_bureau_factors = yes"
+        )
+    seal = _event("FBC.20").split("name = FBC.20.b", 1)[0]
+    assert "has_political_power < 25" in seal
+    assert "has_active_mission = bankruptcy_incoming_collapse" in seal
 
 
 def test_event_ids_stay_in_the_block_and_every_key_has_english_text():

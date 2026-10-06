@@ -1,6 +1,19 @@
-# Polar Desk. One case at a time. The station's controller keeps FBC_polar_station_id and the Bureau keeps
-# FBC_polar_country, so each queued event reads its own country, never a shared current site.
+# Polar Desk. One case at a time. The Bureau keeps FBC_polar_country, so each queued event reads its own country,
+# never a shared current site.
 FBC_monthly_polar_pulse = {
+	# A queued Bureau result is lost if the United States stops existing; the case closes and the team returns.
+	if = {
+		limit = {
+			FBC_scenario_enabled = yes
+			has_global_flag = FBC_polar_case_open
+			NOT = { country_exists = USA }
+		}
+		USA = {
+			FBC_release_polar_team = yes
+			clear_variable = FBC_polar_country
+		}
+		FBC_polar_close_case = yes
+	}
 	if = {
 		limit = {
 			FBC_scenario_enabled = yes
@@ -21,7 +34,6 @@ FBC_monthly_polar_pulse = {
 					random = {
 						chance = 2
 						set_global_flag = FBC_polar_case_open
-						set_variable = { FBC_polar_station_id = FBC_polar_candidate }
 						country_event = FBC.20
 					}
 				}
@@ -40,6 +52,9 @@ FBC_polar_find_drilling_station = {
 		if = {
 			limit = {
 				check_variable = { FBC_polar_candidate = 0 }
+				check_variable = { FBC_polar_station > 0 }
+				check_variable = { global.antarctica_station_exists^FBC_polar_station > 0 }
+				check_variable = { global.antarctica_station_controller^FBC_polar_station = THIS.id }
 				check_variable = { global.antarctica_station_tier^FBC_polar_station > 1 }
 				OR = {
 					check_variable = { global.antarctica_station_module_slot_6^FBC_polar_station = 12 }
@@ -78,40 +93,9 @@ FBC_polar_close_case = {
 	set_global_flag = { flag = FBC_polar_cooldown value = 1 days = 1095 }
 }
 
-# Station controller scope. The event in the core breaks out: Antarctica marks the drilling rig's slot damaged, and
-# its own repair countdown restores it in 30 days.
+# Station controller scope. The event breaks out of the core and the rig stops for 30 days. The outage is FBC's own
+# flag, which Antarctica's laboratory effects read, so it never touches the station's blizzard damage or repairs.
 FBC_polar_breakout = {
-	set_temp_variable = { station_id = FBC_polar_station_id }
-	if = {
-		limit = {
-			check_variable = { station_id > 0 }
-			check_variable = { global.antarctica_station_controller^station_id = THIS.id }
-		}
-		if = {
-			limit = { check_variable = { global.antarctica_station_module_slot_6^station_id = 12 } }
-			set_temp_variable = { blizzard_slot = 6 }
-			antarctica_mark_blizzard_slot_damaged = yes
-		}
-		if = {
-			limit = { check_variable = { global.antarctica_station_module_slot_7^station_id = 12 } }
-			set_temp_variable = { blizzard_slot = 7 }
-			antarctica_mark_blizzard_slot_damaged = yes
-		}
-		if = {
-			limit = { check_variable = { global.antarctica_station_module_slot_8^station_id = 12 } }
-			set_temp_variable = { blizzard_slot = 8 }
-			antarctica_mark_blizzard_slot_damaged = yes
-		}
-		if = {
-			limit = { check_variable = { global.antarctica_station_module_slot_9^station_id = 12 } }
-			set_temp_variable = { blizzard_slot = 9 }
-			antarctica_mark_blizzard_slot_damaged = yes
-		}
-		if = {
-			limit = { NOT = { check_variable = { research_station_module_repair_days_remaining > 29 } } }
-			set_variable = { research_station_module_repair_days_remaining = 30 }
-		}
-		antarctica_recalculate_country_laboratory_effects = yes
-	}
-	clear_variable = FBC_polar_station_id
+	set_country_flag = { flag = FBC_polar_rig_down value = 1 days = 30 }
+	antarctica_recalculate_country_laboratory_effects = yes
 }

@@ -1,6 +1,6 @@
 add_namespace = FBC
 
-# The station's controller. The pulse set FBC_polar_station_id on it just before.
+# The station's controller.
 country_event = {
 	id = FBC.20
 	title = FBC.20.t
@@ -8,16 +8,25 @@ country_event = {
 	picture = GFX_antarctic_treaty_generic_picture
 	is_triggered_only = yes
 
+	trigger = { FBC_scenario_enabled = yes }
+
 	option = {
 		name = FBC.20.a
 		log = "[GetDateText]: [This.GetName]: FBC.20.a executed"
 		custom_effect_tooltip = FBC.20.a_tt
 		add_political_power = -25
-		hidden_effect = {
-			clear_variable = FBC_polar_station_id
-			FBC_polar_close_case = yes
+		hidden_effect = { FBC_polar_close_case = yes }
+		ai_chance = {
+			base = 60
+			modifier = {
+				factor = 0
+				has_political_power < 25
+			}
+			modifier = {
+				factor = 0
+				has_active_mission = bankruptcy_incoming_collapse
+			}
 		}
-		ai_chance = { base = 60 }
 	}
 
 	option = {
@@ -46,6 +55,8 @@ country_event = {
 	picture = GFX_crime_fighting
 	is_triggered_only = yes
 
+	trigger = { FBC_scenario_enabled = yes }
+
 	immediate = {
 		hidden_effect = { set_variable = { FBC_polar_country = FROM.id } }
 	}
@@ -72,6 +83,7 @@ country_event = {
 		hidden_effect = {
 			add_to_variable = { FBC_exposure = 5 }
 			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
 			FROM = { country_event = FBC.23 }
 			clear_variable = FBC_polar_country
 			FBC_polar_close_case = yes
@@ -88,6 +100,8 @@ country_event = {
 	picture = GFX_crime_fighting
 	is_triggered_only = yes
 
+	trigger = { FBC_scenario_enabled = yes }
+
 	option = {
 		name = FBC.22.a
 		log = "[GetDateText]: [This.GetName]: FBC.22.a executed"
@@ -96,6 +110,7 @@ country_event = {
 			add_to_variable = { FBC_containment_integrity = 5 }
 			FBC_release_polar_team = yes
 			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
 			if = {
 				limit = { check_variable = { FBC_polar_country > 0 } }
 				var:FBC_polar_country = {
@@ -105,7 +120,6 @@ country_event = {
 						uses = 1
 						category = CAT_excavation
 					}
-					clear_variable = FBC_polar_station_id
 				}
 			}
 			clear_variable = FBC_polar_country
@@ -122,6 +136,8 @@ country_event = {
 	desc = FBC.23.d
 	picture = GFX_antarctic_treaty_generic_picture
 	is_triggered_only = yes
+
+	trigger = { FBC_scenario_enabled = yes }
 
 	option = {
 		name = FBC.23.a
@@ -140,6 +156,8 @@ country_event = {
 	picture = GFX_crime_fighting
 	is_triggered_only = yes
 
+	trigger = { FBC_scenario_enabled = yes }
+
 	option = {
 		name = FBC.24.a
 		log = "[GetDateText]: [This.GetName]: FBC.24.a executed"
@@ -149,6 +167,7 @@ country_event = {
 			add_to_variable = { FBC_exposure = 10 }
 			FBC_release_polar_team = yes
 			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
 			if = {
 				limit = { check_variable = { FBC_polar_country > 0 } }
 				var:FBC_polar_country = { country_event = FBC.23 }

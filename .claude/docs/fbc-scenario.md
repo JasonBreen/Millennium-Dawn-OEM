@@ -29,13 +29,14 @@ event IDs, so parallel work does not collide. It ships on OEM only. Built like S
   `99_FBC_polar_effects.txt`. One case at a time.
   `FBC_monthly_polar_pulse` gives each Antarctic Treaty member with a working Ice Core Deep Drilling Rig
   (`antarctica_lab_ice_tech_boost > 0`) at station tier 2 or higher a 2% monthly chance of an Altered World
-  Event in the core (`FBC.20`, to the station's controller, which keeps `FBC_polar_station_id`). Sealing the
+  Event in the core (`FBC.20`, to the station's controller). Sealing the
   borehole costs 25 PP and ends it. Reporting it sends `FBC.21` to the United States, which keeps
   `FBC_polar_country`. A response team contains it three times in four (`FBC.22`: +5 containment, a
   one-use excavation bonus for the controller), or fails (`FBC.24`). Declining or failing breaks it out
-  (`FBC.23`): Antarctica's `antarctica_mark_blizzard_slot_damaged` damages the rig's slot, and the
-  controller's `research_station_module_repair_days_remaining` restores it in 30 days. Every close starts
-  a 1,095-day cooldown.
+  (`FBC.23`): `FBC_polar_rig_down` stops the rig's laboratory output for 30 days, read in Antarctica's
+  `antarctica_apply_single_laboratory_module_effect`, so blizzard damage and repairs are untouched. Every
+  close starts a 1,095-day cooldown. If the United States stops existing with a result queued, the pulse
+  closes the case and returns the team.
 
 Localisation file names are `MD_FBC_<subsystem>_l_english.yml`.
 
@@ -50,7 +51,7 @@ The next free block is 30–39.
 
 The Bureau is its own scenario. It does not read STALKER state, and STALKER does not read Bureau state. The two Targeted Operations rows are the only shared runtime hook.
 
-The Polar Desk reads Antarctica's station state and changes it only through Antarctica's own slot-damage and laboratory-recalculation effects, plus the controller's repair countdown.
+The Polar Desk reads Antarctica's station state and never writes it. Its one hook in Antarctica is the `FBC_polar_rig_down` check on the rig's laboratory output in `00_antarctica_effects.txt`, plus a call to `antarctica_recalculate_country_laboratory_effects`.
 
 ## Playable slice
 
