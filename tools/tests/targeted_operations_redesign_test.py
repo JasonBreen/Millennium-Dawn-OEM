@@ -2,13 +2,17 @@ import json
 import re
 from pathlib import Path
 
+import pytest
 from targeted_operations_model_test import _named_block
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def read(relative: str) -> str:
-    return (ROOT / relative).read_text(encoding="utf-8-sig")
+    source_path = ROOT / relative
+    if not source_path.exists() and not (ROOT / Path(relative).parts[0]).exists():
+        pytest.skip("game content not checked out (sparse checkout)")
+    return source_path.read_text(encoding="utf-8-sig")
 
 
 def block(relative: str, name: str) -> str:

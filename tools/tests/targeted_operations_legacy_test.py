@@ -19,7 +19,10 @@ IRAQ = tuple(
 
 
 def source(path):
-    return (ROOT / path).read_text(encoding="utf-8-sig")
+    source_path = ROOT / path
+    if not source_path.exists() and not (ROOT / Path(path).parts[0]).exists():
+        pytest.skip("game content not checked out (sparse checkout)")
+    return source_path.read_text(encoding="utf-8-sig")
 
 
 def event(event_id, path):

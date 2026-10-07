@@ -287,9 +287,10 @@ def test_every_raid_has_a_gate_that_binds_its_own_person_and_method(manifest):
 @pytest.mark.parametrize("method", [1, 2])
 def test_native_raid_map_icons_resolve_to_existing_sprites(method):
     icon = re.search(r"(?m)^\s*custom_map_icon\s*=\s*(\w+)", GENERATOR.raid(1, method))
-    sprites = (ROOT / "interface/military_raids/MD_military_raids.gfx").read_text(
-        encoding="utf-8-sig"
-    )
+    sprite_path = ROOT / "interface/military_raids/MD_military_raids.gfx"
+    if not sprite_path.exists() and not (ROOT / "interface").exists():
+        pytest.skip("game content not checked out (sparse checkout)")
+    sprites = sprite_path.read_text(encoding="utf-8-sig")
     names = set(re.findall(r'name\s*=\s*"([^"]+)"', sprites))
     assert icon is not None
     assert icon.group(1) in names
