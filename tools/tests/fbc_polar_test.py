@@ -91,6 +91,25 @@ def test_every_ending_closes_the_case_and_releases_the_team():
     assert "25 = { country_event = { id = FBC.24 days = 45 } }" in commit
 
 
+def test_delayed_event_transitions_renew_the_case_watchdog():
+    watchdog = (
+        "set_global_flag = { flag = FBC_polar_case_watchdog value = 1 days = 60 }"
+    )
+    controller_choice = _event("FBC.20").split("name = FBC.20.b", 1)[1]
+    usa_path = _named_block(controller_choice, "if")
+    assert "limit = { country_exists = USA }" in usa_path
+    assert usa_path.index(watchdog) < usa_path.index(
+        "USA = { country_event = { id = FBC.21 days = 7 } }"
+    )
+
+    bureau_commit = _event("FBC.21").split("name = FBC.21.b", 1)[0]
+    hidden_effect = _named_block(bureau_commit, "hidden_effect")
+    assert hidden_effect.index("FBC_commit_polar_team = yes") < hidden_effect.index(
+        watchdog
+    )
+    assert hidden_effect.index(watchdog) < hidden_effect.index("random_list = {")
+
+
 def test_a_breakout_stops_only_the_rig_with_its_own_timer():
     breakout = _named_block(EFFECTS, "FBC_polar_breakout")
     assert (
@@ -218,10 +237,12 @@ def test_delayed_results_land_only_on_the_station_the_case_opened_on():
     )
     assert "global.antarctica_station_output_storage^FBC_polar_station_id > 0" in stands
     assert "global.antarctica_station_output_power^FBC_polar_station_id" in stands
-    assert (
+    exists_guard = "var:FBC_polar_country = { exists = yes }"
+    rig_down_guard = (
         "var:FBC_polar_country = { NOT = { has_country_flag = FBC_polar_rig_down } }"
-        in stands
     )
+    assert exists_guard in stands
+    assert stands.index(exists_guard) < stands.index(rig_down_guard)
     for body, result in (
         (
             _event("FBC.21").split("name = FBC.21.b", 1)[1],
