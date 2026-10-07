@@ -41,6 +41,13 @@ def test_the_pulse_sets_up_once_and_only_targets_outside_the_circle_grow():
     assert sorted(re.findall(r"tag = ([A-Z]{3})", targets)) == sorted(TARGETS)
 
 
+def test_setup_announces_the_illuminati_category_to_every_target():
+    setup = _named_block(EFFECTS, "DEUSEX_setup_illuminati")
+    targets = _named_block(setup, "every_country")
+    assert "DEUSEX_is_illuminati_target = yes" in _named_block(targets, "limit")
+    assert "unlock_decision_category_tooltip = DEUSEX_illuminati_category" in targets
+
+
 def test_a_lost_member_frees_the_seat_and_keeps_nothing():
     pulse = _named_block(EFFECTS, "DEUSEX_monthly_illuminati_pulse")
     lost = pulse[pulse.index("var:global.DEUSEX_illum_member = { exists = no }") :]
@@ -58,8 +65,14 @@ def test_influence_drives_the_grip_and_the_offer():
     assert month.index("DEUSEX_update_illuminati_grip = yes") < month.index(
         "add_dynamic_modifier = { modifier = DEUSEX_illuminati_grip }"
     )
-    assert "flag = DEUSEX_illum_offer_cooldown value = 1 days = 730" in month
+    assert "set_country_flag = { flag = DEUSEX_illum_offer_cooldown" not in month
+    assert "NOT = { has_country_flag = DEUSEX_illum_offer_cooldown }" in month
     assert "country_event = { id = DEUSEX.40 days = 1 }" in month
+    offer = _event("DEUSEX.40")
+    assert (
+        "set_country_flag = { flag = DEUSEX_illum_offer_cooldown value = 1 days = 730 }"
+        in _named_block(offer, "immediate")
+    )
     modifiers = _read(
         "common/dynamic_modifiers/00_DEUSEX_illuminati_dynamic_modifiers.txt"
     )
@@ -214,6 +227,9 @@ def test_non_member_exposure_changes_and_stage_four_refresh_at_once():
         "var:global.DEUSEX_illum_member = { DEUSEX_update_inner_circle = yes }"
         in refresh
     )
+    candidates = _named_block(refresh[refresh.index("else = {") :], "every_country")
+    assert "DEUSEX_is_illuminati_target = yes" in _named_block(candidates, "limit")
+    assert "DEUSEX_update_inner_circle = yes" in candidates
     agenda = _named_block(EFFECTS, "DEUSEX_advance_agenda")
     final = agenda[
         agenda.index("check_variable = { global.DEUSEX_illum_agenda = 4 }") :
@@ -245,4 +261,15 @@ def test_a_lost_choice_offers_a_valid_threshold_and_a_preview():
     )
     assert "DEUSEX_update_inner_circle = yes" in _named_block(
         EFFECTS, "DEUSEX_illuminati_month"
+    )
+
+
+def test_exposure_increases_are_localised_as_penalties():
+    assert (
+        'DEUSEX_investigate_fronts_result_tt: "Illuminati influence here: §G-10§!\\nExposure: §R+3§!"'
+        in LOC
+    )
+    assert (
+        'DEUSEX_leak_the_files_tt: "Illuminati influence here: §G-30§!\\nExposure: §R+15§!"'
+        in LOC
     )
