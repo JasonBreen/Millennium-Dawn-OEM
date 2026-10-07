@@ -52,10 +52,10 @@ def test_game_rule_modes_and_authoritative_eligibility_contract():
 def test_all_generated_native_raids_are_player_only():
     raids = read("common/raids/targeted_operations_raids.txt")
     raid_count = len(
-        re.findall(r"^[ \t]*TOP_(?:drone|capture) = \{", raids, re.MULTILINE)
+        re.findall(r"^[ \t]*TOP_(?:drone|capture)_\d+ = \{", raids, re.MULTILINE)
     )
 
-    assert raid_count == 2
+    assert raid_count > 0
     assert raids.count("ai_will_do = { base = 0 }") == raid_count
     assert "ai_will_do = { base = 1 }" not in raids
 

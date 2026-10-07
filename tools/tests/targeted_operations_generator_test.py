@@ -179,34 +179,47 @@ def test_every_authored_location_host_resolves_to_a_real_country(manifest):
     assert hosts <= countries, sorted(hosts - countries)
 
 
-def test_the_two_generic_raids_bind_to_the_operation_slot(manifest):
+def test_all_native_raids_bind_their_own_person_method_and_callback(manifest):
     text = GENERATOR.render(manifest)["common/raids/targeted_operations_raids.txt"]
-    definitions = re.findall(r"(?m)^\s*(TOP_(drone|capture))\s*=", text)
-    assert set(definitions) == {("TOP_drone", "drone"), ("TOP_capture", "capture")}
-    assert len(definitions) == 2
+    definitions = re.findall(r"(?m)^\s*(TOP_(drone|capture)_(\d+))\s*=", text)
+    expected = {
+        (f"TOP_{kind}_{ident}", kind, str(ident))
+        for ident in range(1, manifest["capacity"])
+        for kind in ("drone", "capture")
+    }
+    assert set(definitions) == expected
+    assert len(definitions) == 2 * (manifest["capacity"] - 1)
     assert "has_dlc" not in text
     assert text.count("ai_will_do = { base = 0 }") == len(definitions)
-    for token, kind in definitions:
+    assert "add = 50 TOP_native_gate" not in text
+    for token, kind, target in definitions:
         raid = _named_block(text, token)
         method = "1" if kind == "drone" else "2"
         visible = _named_block(raid, "visible")
         assert "allowed =" not in raid
         assert "TOP_enabled = yes" in visible
-        assert f"TOP_native_slot_method_{method} = yes" in visible
-        # Raids cannot pass parameters to a trigger, so each raid names a gate
-        # that reads the country's one operation slot.
+        assert f"TOP_case_phase^{target} = 3" in visible
+        assert f"TOP_case_method^{target} = {method}" in visible
+        assert "TOP_authorized_target" not in visible
+        # common/raids/ is parsed before the scripted trigger and effect files
+        # register, and the engine does not substitute $PARAM$ for a trigger, so
+        # each raid names its own gate and sets its own result variables.
+        expected_gate = f"TOP_native_gate_{target}_{method}"
         for gate in ("show_target", "available", "launchable"):
             statements = _parse_race_script(_named_block(raid, gate))[gate]
             assert any(
-                key == f"TOP_native_gate_{method}" and operand == "yes"
+                key == expected_gate and operand == "yes"
                 for key, _, operand in statements
             ), (token, gate)
             assert not any(key == "TOP_native_authorized" for key, _, _ in statements)
         success = _named_block(_named_block(raid, "success_factors"), "success")
-        assert "var:TOP_native_success_bonus_now" in success
-        assert "var:TOP_native_success_penalty_now" in success
+        assert "TOP_native_success_bonus" in success
+        assert "TOP_native_success_penalty" in success
+        assert f"var:TOP_case_native_success_bonus^{target}" in success
+        assert f"var:TOP_case_native_success_penalty^{target}" in success
         assert "weight = 1" in success
         assert "weight = -1" in success
+
         for tier, outcome in enumerate(
             ("failure", "limited_success", "success", "critical_success")
         ):
@@ -219,37 +232,61 @@ def test_the_two_generic_raids_bind_to_the_operation_slot(manifest):
                 if key == "set_temp_variable":
                     for name, _, value in operand:
                         temps[name] = value
-            assert temps == {"TOP_method": method, "TOP_tier": str(tier)}, (
+            assert temps == {
+                "TOP_target": target,
+                "TOP_method": method,
+                "TOP_tier": str(tier),
+            }, (token, outcome)
+            assert any(key == "TOP_native_result_args" for key, _, _ in effects), (
                 token,
                 outcome,
             )
-            assert any(key == "TOP_native_result_args" for key, _, _ in effects)
 
 
-def test_each_generic_raid_has_a_gate_reading_the_operation_slot(manifest):
+@pytest.mark.parametrize("kind,method", [("drone", 1), ("capture", 2)])
+def test_successive_people_have_independent_same_method_native_cooldowns(
+    manifest, kind, method
+):
+    text = GENERATOR.render(manifest)["common/raids/targeted_operations_raids.txt"]
+    first = _named_block(text, f"TOP_{kind}_11")
+    second = _named_block(text, f"TOP_{kind}_12")
+
+    assert "days_re_enable = 30" in first
+    assert "days_re_enable = 30" in second
+    assert f"TOP_native_gate_11_{method} = yes" in first
+    assert f"TOP_native_gate_12_{method} = yes" in second
+    assert f"TOP_{kind} = {{" not in text
+
+
+def test_every_raid_has_a_gate_that_binds_its_own_person_and_method(manifest):
+    """The gate is the only thing carrying the binding into the raid."""
     rendered = GENERATOR.render(manifest)
     gates = rendered["common/scripted_triggers/06_targeted_operations_native_gates.txt"]
     raids = rendered["common/raids/targeted_operations_raids.txt"]
-    assert set(re.findall(r"(?m)^(TOP_native_gate_\d+) =", gates)) == {
-        "TOP_native_gate_1",
-        "TOP_native_gate_2",
+
+    defined = set(re.findall(r"(?m)^(TOP_native_gate_\d+_\d+) =", gates))
+    expected = {
+        f"TOP_native_gate_{ident}_{method}"
+        for ident in range(1, manifest["capacity"])
+        for method in (1, 2)
     }
-    for method in (1, 2):
-        gate = _named_block(gates, f"TOP_native_gate_{method}")
-        assert "TOP_arg_target = TOP_operation_subject_id" in gate
-        assert f"TOP_arg_method = {method}" in gate
-        assert "TOP_native_authorized = yes" in gate
-        slot = _named_block(gates, f"TOP_native_slot_method_{method}")
-        assert "TOP_operation_subject_kind = 1" in slot
-        assert "TOP_case_phase^TOP_operation_subject_id = 3" in slot
-        assert f"TOP_case_method^TOP_operation_subject_id = {method}" in slot
+    assert defined == expected
+
+    for ident in range(1, manifest["capacity"]):
+        for method in (1, 2):
+            body = _named_block(gates, f"TOP_native_gate_{ident}_{method}")
+            assert f"TOP_arg_target = {ident}" in body
+            assert f"TOP_arg_method = {method}" in body
+            assert "TOP_native_authorized = yes" in body
+
+    # Nothing in the generated raids may pass parameters.
     assert "TOP_native_authorized = {" not in raids
     assert "TOP_native_result = {" not in raids
 
 
 @pytest.mark.parametrize("method", [1, 2])
 def test_native_raid_map_icons_resolve_to_existing_sprites(method):
-    icon = re.search(r"(?m)^\s*custom_map_icon\s*=\s*(\w+)", GENERATOR.raid(method))
+    icon = re.search(r"(?m)^\s*custom_map_icon\s*=\s*(\w+)", GENERATOR.raid(1, method))
     sprites = (ROOT / "interface/military_raids/MD_military_raids.gfx").read_text(
         encoding="utf-8-sig"
     )
@@ -260,7 +297,7 @@ def test_native_raid_map_icons_resolve_to_existing_sprites(method):
 
 @pytest.mark.parametrize("method", [1, 2])
 def test_native_raid_experience_reaches_full_weight_on_the_engine_scale(method):
-    raid = GENERATOR.raid(method)
+    raid = GENERATOR.raid(1, method)
     factors = _named_block(raid, "success_factors")
     success = _named_block(factors, "success")
     experience = _parse_race_script(_named_block(success, "experience"))["experience"]
@@ -273,9 +310,12 @@ def test_generated_names_and_roles_have_english_localisation(manifest):
     output = GENERATOR.render(manifest)
     roster = output["localisation/english/MD_targeted_operations_roster_l_english.yml"]
     keys = set(re.findall(r"(?m)^ ([A-Za-z0-9_]+):", roster))
-    assert {"TOP_drone", "TOP_drone_desc", "TOP_capture", "TOP_capture_desc"} <= keys
     for ident in range(1, manifest["capacity"]):
-        assert f"TOP_person_{ident}" in keys
+        assert {
+            f"TOP_person_{ident}",
+            f"TOP_drone_{ident}",
+            f"TOP_capture_{ident}",
+        } <= keys
     for target in manifest["targets"]:
         assert f"TOP_person_{target['id']}_role" in keys
     for path in (ROOT / "localisation/english").glob(

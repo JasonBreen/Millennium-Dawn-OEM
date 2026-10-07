@@ -680,7 +680,7 @@ def registry(data: dict) -> str:
     return output
 
 
-def raid(method: int) -> str:
+def raid(ident: int, method: int) -> str:
     drone = method == 1
     kind = "drone" if drone else "capture"
     lines = [
@@ -694,16 +694,16 @@ def raid(method: int) -> str:
         "days_re_enable = 30",
         "command_power = 20",
         "arrow = { type = line }",
-        f"visible = {{ TOP_enabled = yes TOP_native_slot_method_{method} = yes }}",
-        f"show_target = {{ TOP_native_gate_{method} = yes }}",
+        f"visible = {{ TOP_enabled = yes check_variable = {{ TOP_case_phase^{ident} = 3 }} check_variable = {{ TOP_case_method^{ident} = {method} }} }}",
+        f"show_target = {{ TOP_native_gate_{ident}_{method} = yes }}",
         "available = {",
-        f"\tTOP_native_gate_{method} = yes",
+        f"\tTOP_native_gate_{ident}_{method} = yes",
     ]
     if not drone:
         lines.append("\thas_tech = special_forces_tech_1")
     lines += [
         "}",
-        f"launchable = {{ TOP_native_gate_{method} = yes }}",
+        f"launchable = {{ TOP_native_gate_{ident}_{method} = yes }}",
         "target_type = { state = { always = yes } }",
         "unit_requirements = {",
     ]
@@ -734,7 +734,7 @@ def raid(method: int) -> str:
         ),
         "\t\tTOP_native_success_bonus = {",
         "\t\t\tscope = country",
-        "\t\t\tformula = { base = 1 modifier = { factor = var:TOP_native_success_bonus_now } }",
+        f"\t\t\tformula = {{ base = 1 modifier = {{ factor = var:TOP_case_native_success_bonus^{ident} }} }}",
         "\t\t\tweight = 1",
         "\t\t\treference = 100",
         "\t\t\tcan_actor_affect = no",
@@ -742,7 +742,7 @@ def raid(method: int) -> str:
         "\t\t}",
         "\t\tTOP_native_success_penalty = {",
         "\t\t\tscope = country",
-        "\t\t\tformula = { base = 1 modifier = { factor = var:TOP_native_success_penalty_now } }",
+        f"\t\t\tformula = {{ base = 1 modifier = {{ factor = var:TOP_case_native_success_penalty^{ident} }} }}",
         "\t\t\tweight = -1",
         "\t\t\treference = 100",
         "\t\t\tcan_actor_affect = no",
@@ -774,6 +774,7 @@ def raid(method: int) -> str:
         lines += [
             f"\t{name} = {{",
             "\t\tactor_effects = {",
+            f"\t\t\tset_temp_variable = {{ TOP_target = {ident} }}",
             f"\t\t\tset_temp_variable = {{ TOP_method = {method} }}",
             f"\t\t\tset_temp_variable = {{ TOP_tier = {tier} }}",
             "\t\t\tTOP_native_result_args = yes",
@@ -784,7 +785,7 @@ def raid(method: int) -> str:
         "}",
         "ai_will_do = { base = 0 }",
     ]
-    return block(f"TOP_{kind}", lines)
+    return block(f"TOP_{kind}_{ident}", lines)
 
 
 def names(data: dict) -> dict[str, str]:
@@ -808,16 +809,14 @@ def names(data: dict) -> dict[str, str]:
 
 
 def localisation(data: dict) -> str:
-    lines = [
-        "l_english:",
-        ' TOP_drone: "Targeted Remote Strike"',
-        ' TOP_drone_desc: "Strike the person our prepared operation is aimed at, in the state where we have located them."',
-        ' TOP_capture: "Targeted Capture Raid"',
-        ' TOP_capture_desc: "Send special forces to take the person our prepared operation is aimed at alive."',
-    ]
+    lines = ["l_english:"]
     for ident, name in names(data).items():
         lines += [
             f' TOP_person_{ident}: "{name}"',
+            f' TOP_drone_{ident}: "Remote Strike: {name}"',
+            f' TOP_drone_{ident}_desc: "Conduct the authorized native map operation against this target package."',
+            f' TOP_capture_{ident}: "Capture Raid: {name}"',
+            f' TOP_capture_{ident}_desc: "Attempt to secure this target alive through a native special-forces raid."',
         ]
     for target in data["targets"]:
         lines.append(
@@ -1004,37 +1003,32 @@ def dispatch(data: dict) -> str:
 
 
 def native_gates(data: dict) -> str:
-    """One gate per generic raid, reading the reserved operation slot.
+    """One concrete gate per raid.
 
-    A raid cannot pass parameters to TOP_native_authorized, so each gate sets the
-    temp variables it reads from the country's one operation slot. The slot holds a
-    single person at a time, which is why two generic raids are enough.
+    A raid cannot call TOP_native_authorized with parameters: common/raids/ is
+    parsed before the scripted trigger files register, and the engine does not
+    substitute $PARAM$ for a trigger in any case. Each gate sets the temp
+    variables the trigger reads and is called as a plain `= yes`.
     """
     blocks = []
-    for method in (1, 2):
-        blocks.append(
-            "\n".join(
-                [
-                    f"TOP_native_slot_method_{method} = {{",
-                    "\tcheck_variable = { TOP_operation_subject_kind = 1 }",
-                    "\tcheck_variable = { TOP_case_phase^TOP_operation_subject_id = 3 }",
-                    f"\tcheck_variable = {{ TOP_case_method^TOP_operation_subject_id = {method} }}",
-                    "}",
-                ]
+    for ident in range(1, data["capacity"]):
+        for method in (1, 2):
+            blocks.append(
+                "\n".join(
+                    [
+                        f"TOP_native_gate_{ident}_{method} = {{",
+                        f"\tset_temp_variable = {{ TOP_arg_target = {ident} }}",
+                        f"\tset_temp_variable = {{ TOP_arg_method = {method} }}",
+                        "\tTOP_native_authorized = yes",
+                        "}",
+                    ]
+                )
             )
-        )
-        blocks.append(
-            "\n".join(
-                [
-                    f"TOP_native_gate_{method} = {{",
-                    "\tset_temp_variable = { TOP_arg_target = TOP_operation_subject_id }",
-                    f"\tset_temp_variable = {{ TOP_arg_method = {method} }}",
-                    "\tTOP_native_authorized = yes",
-                    "}",
-                ]
-            )
-        )
-    header = "# Generated by tools/generators/generate_targeted_operations.py.\n\n"
+    header = (
+        "# Generated by tools/generators/generate_targeted_operations.py.\n"
+        "# One gate per raid; see native_gates() for why raids cannot call the\n"
+        "# parameterised trigger directly.\n\n"
+    )
     return header + "\n\n".join(blocks) + "\n"
 
 
@@ -1042,7 +1036,8 @@ def render(data: dict) -> dict[str, str]:
     raids = (
         "types = {\n"
         + "\n".join(
-            "\n".join("\t" + line for line in raid(method).splitlines())
+            "\n".join("\t" + line for line in raid(ident, method).splitlines())
+            for ident in range(1, data["capacity"])
             for method in (1, 2)
         )
         + "\n}\n"

@@ -113,7 +113,6 @@ class ReviewScript(TargetedScript):
             country["vars"]["TOP_liaison_partners"] = []
         manifest = json.loads(source("tools/data/targeted_operations.json"))
         self.globals = {
-            "num_days": 0,
             "TOP_clock": 7,
             "TOP_status^num": manifest["capacity"],
             "TOP_registry_capacity": manifest["capacity"],
@@ -423,11 +422,6 @@ def test_explicit_replacement_cannot_accept_the_retired_native_callback(changed)
         review.move_target(1, 101, 2)
     review.approve_unilateral(method)
     assert not review.binding()
-    if changed == "target":
-        # A raid against a different person waits out the closed slot's settling period.
-        review.begin_operation()
-        assert not review.binding(target=2, method=2, state=100)
-        review.globals["num_days"] = 15
     review.begin_operation()
     assert review.binding(
         target=review.actor["TOP_authorized_target"],
@@ -458,9 +452,6 @@ def test_two_host_approvals_preserve_both_immutable_native_cases():
     assert review.case(2, "phase") == 2
     assert not review.binding(target=2, method=1, state=101)
     review.call("TOP_close_case", TARGET=1, SEQUENCE=review.case(1, "sequence"))
-    review.begin_operation(target=2)
-    assert not review.binding(target=2, method=1, state=101)
-    review.globals["num_days"] = 15
     review.begin_operation(target=2)
     assert review.binding(target=2, method=1, state=101)
     assert review.countries[1]["power"] == 100
