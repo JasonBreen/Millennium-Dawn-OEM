@@ -109,10 +109,6 @@ Two more values live on state 764, both 0-100:
 - Letters (`FBC.36`) at 20 visitors, 180 days apart. Turning visitors back costs 1 PP for each visitor on record when
   the letters arrive and sends three quarters of that same count home (+2 exposure). Tracking them gives +3
   containment and +5 Order. Letting them come costs +5 exposure and +5 fog.
-
-The Siren, the letters and the Rite start their cooldowns when they arrive, and the letters and the Rite recheck their
-threshold then. A 7-day pending flag covers each while it
-is queued, so one lost to a change of control goes out again.
 - The Order (`FBC.37`) at 40, once; it marks the Order known on arrival, so a lost notice goes out again a week later.
   A raid needs a free team and works half the time, 65% above 59 containment and 35% below 30 (success: -40 Order,
   -10 fog, +5 containment; failure: -10 containment, +10 exposure, +10 Order). Putting someone inside costs 50 PP for
@@ -121,6 +117,12 @@ is queued, so one lost to a change of control goes out again.
   (success: -50 Order, -20 fog, +5 containment; failure: the rite is finished). Evacuating the county costs 100 PP
   and 3% stability, clears every visitor and takes 30 Order for +10 fog. Letting it happen, or failing to stop it,
   finishes the rite: -10 or -15 containment, more exposure, less Order, +20 or +25 fog and 60 days of the Otherworld.
+
+The Siren, the letters and the Rite start their cooldowns when they arrive, and the letters and the Rite recheck their
+threshold then. A 7-day pending flag covers each while it is queued, so one lost to a change of control goes out
+again. Only one letters event is open at a time (`FBC_sh_letters_open`), so its snapshot cannot be overwritten. The
+Rite's Otherworld sets `FBC_sh_long_otherworld` on the state for its first 30 days, and a Siren in that window leaves
+the longer Otherworld alone.
 
 The dashboard adds visitor bands (few, steady, many) and, once the Bureau knows of it, Order bands (quiet, gathering,
 ready).

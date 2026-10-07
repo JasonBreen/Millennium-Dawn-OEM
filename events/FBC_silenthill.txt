@@ -279,11 +279,17 @@ country_event = {
 
 	immediate = {
 		add_stability = -0.01
+		custom_effect_tooltip = { localization_key = adds_dynamic_modifier_tt MODIFIER = FBC_silent_hill_otherworld }
 		hidden_effect = {
 			set_country_flag = { flag = FBC_sh_siren_cooldown value = 1 days = 180 }
 			set_temp_variable = { FBC_sh_fog_change = 10 }
 			FBC_change_silenthill_fog = yes
-			764 = { add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld days = 30 } }
+			764 = {
+				if = {
+					limit = { NOT = { has_state_flag = FBC_sh_long_otherworld } }
+					add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld days = 30 }
+				}
+			}
 		}
 	}
 
@@ -365,6 +371,7 @@ country_event = {
 	immediate = {
 		hidden_effect = {
 			set_country_flag = { flag = FBC_sh_letters_cooldown value = 1 days = 180 }
+			set_country_flag = FBC_sh_letters_open
 			764 = { set_temp_variable = { FBC_sh_visitors_now = FBC_sh_visitors } }
 			set_variable = { FBC_sh_turnback_visitors = FBC_sh_visitors_now }
 			set_variable = { FBC_sh_turnback_cost = { value = FBC_sh_visitors_now multiply = -1 } }
@@ -377,6 +384,7 @@ country_event = {
 		add_political_power = FBC_sh_turnback_cost
 		custom_effect_tooltip = FBC.36.a_tt
 		hidden_effect = {
+			clr_country_flag = FBC_sh_letters_open
 			set_temp_variable = { FBC_sh_visitors_change = { value = FBC_sh_turnback_visitors multiply = -0.75 } }
 			FBC_change_silenthill_visitors = yes
 			add_to_variable = { FBC_exposure = 2 }
@@ -395,6 +403,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: FBC.36.b executed"
 		custom_effect_tooltip = FBC.36.b_tt
 		hidden_effect = {
+			clr_country_flag = FBC_sh_letters_open
 			add_to_variable = { FBC_containment_integrity = 3 }
 			FBC_clamp_bureau = yes
 			FBC_refresh_bureau_factors = yes
@@ -409,6 +418,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: FBC.36.c executed"
 		custom_effect_tooltip = FBC.36.c_tt
 		hidden_effect = {
+			clr_country_flag = FBC_sh_letters_open
 			add_to_variable = { FBC_exposure = 5 }
 			FBC_clamp_bureau = yes
 			FBC_refresh_bureau_factors = yes
@@ -526,6 +536,7 @@ country_event = {
 		log = "[GetDateText]: [This.GetName]: FBC.38.a executed"
 		trigger = { check_variable = { FBC_response_capacity > 0 } }
 		custom_effect_tooltip = FBC.38.a_tt
+		custom_effect_tooltip = { localization_key = adds_dynamic_modifier_tt MODIFIER = FBC_silent_hill_otherworld }
 		hidden_effect = {
 			random_list = {
 				50 = {
@@ -546,7 +557,10 @@ country_event = {
 					FBC_change_silenthill_order = yes
 					set_temp_variable = { FBC_sh_fog_change = 20 }
 					FBC_change_silenthill_fog = yes
-					764 = { add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld days = 60 } }
+					764 = {
+						add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld days = 60 }
+						set_state_flag = { flag = FBC_sh_long_otherworld days = 30 }
+					}
 					set_global_flag = FBC_sh_rite_performed
 				}
 			}
@@ -582,6 +596,7 @@ country_event = {
 		name = FBC.38.c
 		log = "[GetDateText]: [This.GetName]: FBC.38.c executed"
 		custom_effect_tooltip = FBC.38.c_tt
+		custom_effect_tooltip = { localization_key = adds_dynamic_modifier_tt MODIFIER = FBC_silent_hill_otherworld }
 		hidden_effect = {
 			add_to_variable = { FBC_containment_integrity = -10 }
 			add_to_variable = { FBC_exposure = 10 }
@@ -591,7 +606,10 @@ country_event = {
 			FBC_change_silenthill_order = yes
 			set_temp_variable = { FBC_sh_fog_change = 25 }
 			FBC_change_silenthill_fog = yes
-			764 = { add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld days = 60 } }
+			764 = {
+				add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld days = 60 }
+				set_state_flag = { flag = FBC_sh_long_otherworld days = 30 }
+			}
 			set_global_flag = FBC_sh_rite_performed
 		}
 		ai_chance = { base = 30 }
@@ -760,7 +778,10 @@ country_event = {
 				}
 				set_variable = { FBC_sh_fog = 40 }
 				FBC_update_silenthill_fog = yes
-				remove_dynamic_modifier = { modifier = FBC_silent_hill_otherworld }
+				if = {
+					limit = { has_dynamic_modifier = { modifier = FBC_silent_hill_otherworld } }
+					remove_dynamic_modifier = { modifier = FBC_silent_hill_otherworld }
+				}
 			}
 			add_to_variable = { FBC_containment_integrity = -20 }
 			add_to_variable = { FBC_exposure = 25 }

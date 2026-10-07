@@ -221,6 +221,7 @@ FBC_silenthill_town_events_month = {
 			limit = {
 				764 = { check_variable = { FBC_sh_visitors > 19 } }
 				NOT = { has_country_flag = FBC_sh_letters_cooldown }
+				NOT = { has_country_flag = FBC_sh_letters_open }
 				NOT = { has_country_flag = FBC_sh_letters_pending }
 			}
 			set_country_flag = { flag = FBC_sh_letters_pending value = 1 days = 7 }
@@ -321,7 +322,13 @@ FBC_silenthill_lift_fog = {
 	764 = {
 		set_variable = { FBC_sh_fog = 0 }
 		FBC_update_silenthill_fog = yes
-		remove_dynamic_modifier = { modifier = FBC_silent_hill_fog }
-		remove_dynamic_modifier = { modifier = FBC_silent_hill_otherworld }
+		if = {
+			limit = { has_dynamic_modifier = { modifier = FBC_silent_hill_fog } }
+			remove_dynamic_modifier = { modifier = FBC_silent_hill_fog }
+		}
+		if = {
+			limit = { has_dynamic_modifier = { modifier = FBC_silent_hill_otherworld } }
+			remove_dynamic_modifier = { modifier = FBC_silent_hill_otherworld }
+		}
 	}
 }
