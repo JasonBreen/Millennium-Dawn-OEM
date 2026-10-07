@@ -279,7 +279,11 @@ def test_endings_are_checked_in_order_and_the_jokes_need_their_rule():
         month.index("rule = rule_fbc_silenthill_jokes option = ENABLED"),
     ]
     assert order == sorted(order)
-    rebirth = month[: order[0]]
+    assert "FBC_sh_rebirth_ready = yes" in month[: order[0]]
+    assert "FBC_sh_in_water_ready = yes" in month[order[0] : order[1]]
+    assert "FBC_sh_leave_ready = yes" in month[order[1] : order[2]]
+    triggers = _read("common/scripted_triggers/99_FBC_silenthill_scripted_triggers.txt")
+    rebirth = _named_block(triggers, "FBC_sh_rebirth_ready")
     assert "has_global_flag = FBC_sh_rite_performed" in rebirth
     assert "check_variable = { FBC_sh_fog > 89 }" in rebirth
     jokes = month[order[3] :]
@@ -348,3 +352,24 @@ def test_queued_letters_and_rite_recheck_their_threshold_on_arrival():
         gate = _named_block(head[head.index("\n\ttrigger = {") :], "trigger")
         assert threshold in gate, event_id
         assert "is_controlled_by = ROOT" in gate, event_id
+
+
+def test_an_ending_queues_alone_and_every_event_rejects_a_closed_case():
+    pulse = _named_block(EFFECTS, "FBC_monthly_silenthill_pulse")
+    usa = pulse[pulse.index("FBC_silenthill_ending_month = yes") :]
+    gated = usa[usa.index("NOT = { has_country_flag = FBC_sh_ending_pending }") :]
+    assert "FBC_silenthill_case_month = yes" in gated
+    assert "FBC_silenthill_town_events_month = yes" in gated
+    for event_id in range(30, 44):
+        head = _event(f"FBC.{event_id}").split("option = {", 1)[0]
+        gate = _named_block(head[head.index("\n\ttrigger = {") :], "trigger")
+        assert "NOT = { has_global_flag = FBC_sh_ended }" in gate, event_id
+    for event_id, condition in (
+        ("FBC.39", "FBC_sh_leave_ready = yes"),
+        ("FBC.40", "FBC_sh_in_water_ready = yes"),
+        ("FBC.41", "FBC_sh_rebirth_ready = yes"),
+        ("FBC.43", "check_variable = { FBC_sh_committed > 0 }"),
+    ):
+        head = _event(event_id).split("option = {", 1)[0]
+        gate = _named_block(head[head.index("\n\ttrigger = {") :], "trigger")
+        assert condition in gate, event_id

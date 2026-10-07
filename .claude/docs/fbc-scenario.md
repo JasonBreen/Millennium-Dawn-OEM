@@ -43,7 +43,7 @@ event IDs, so parallel work does not collide. It ships on OEM only. Built like S
   United States stops existing with a result queued, or the controller stops existing before a team is
   committed, the pulse closes the case and returns the team.
 - **Silent Hill (30–49):** `FBC_silenthill.txt`; loc `_silenthill_`;
-  `99_FBC_silenthill_effects.txt`. It took a second block for its endings.
+  `99_FBC_silenthill_effects.txt`, `99_FBC_silenthill_scripted_triggers.txt`. It took a second block for its endings.
 
 Localisation file names are `MD_FBC_<subsystem>_l_english.yml`.
 
@@ -127,8 +127,12 @@ ready).
 
 ### Endings
 
-One ending per game closes the case. `FBC_silenthill_ending_month` checks them in this order while the case is on
-file and USA holds Maine, with a 7-day pending flag so an ending lost to a change of control goes out again:
+One ending per game closes the case. `FBC_silenthill_ending_month` runs first in the pulse and checks them in this
+order while the case is on file and USA holds Maine, with a 7-day pending flag so an ending lost to a change of
+control goes out again. While an ending is queued, the case and town checks wait, so no other Silent Hill event is
+queued beside it. Every Silent Hill event rejects a closed case, and each ending rechecks its own condition on arrival
+through `99_FBC_silenthill_scripted_triggers.txt` (`FBC_sh_rebirth_ready`, `FBC_sh_in_water_ready`,
+`FBC_sh_leave_ready`; the dog also needs its team):
 
 - Rebirth (`FBC.41`): the rite was finished (`FBC_sh_rite_performed`, set by `FBC.38` when the rite goes ahead) and
   the fog is 90 or more. 5% stability. Seal the county for 100 PP and +10 exposure, which leaves the Otherworld on

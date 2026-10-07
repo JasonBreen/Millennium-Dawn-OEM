@@ -22,10 +22,14 @@ FBC_monthly_silenthill_pulse = {
 			FBC_silenthill_fog_month = yes
 			FBC_silenthill_town_month = yes
 		}
+		# Endings come first; while one is queued, nothing else is sent, so no case event lands after the case closes.
 		USA = {
-			FBC_silenthill_case_month = yes
-			FBC_silenthill_town_events_month = yes
 			FBC_silenthill_ending_month = yes
+			if = {
+				limit = { NOT = { has_country_flag = FBC_sh_ending_pending } }
+				FBC_silenthill_case_month = yes
+				FBC_silenthill_town_events_month = yes
+			}
 		}
 	}
 }
@@ -272,38 +276,17 @@ FBC_silenthill_ending_month = {
 			NOT = { has_country_flag = FBC_sh_ending_pending }
 		}
 		if = {
-			limit = {
-				has_global_flag = FBC_sh_rite_performed
-				764 = { check_variable = { FBC_sh_fog > 89 } }
-			}
+			limit = { FBC_sh_rebirth_ready = yes }
 			set_country_flag = { flag = FBC_sh_ending_pending value = 1 days = 7 }
 			country_event = { id = FBC.41 days = 1 }
 		}
 		else_if = {
-			limit = {
-				OR = {
-					AND = {
-						check_variable = { FBC_exposure > 79 }
-						764 = { check_variable = { FBC_sh_fog > 49 } }
-					}
-					AND = {
-						check_variable = { FBC_containment_integrity < 20 }
-						764 = { check_variable = { FBC_sh_fog > 74 } }
-					}
-				}
-			}
+			limit = { FBC_sh_in_water_ready = yes }
 			set_country_flag = { flag = FBC_sh_ending_pending value = 1 days = 7 }
 			country_event = { id = FBC.40 days = 1 }
 		}
 		else_if = {
-			limit = {
-				check_variable = { FBC_sh_phase = 3 }
-				764 = {
-					check_variable = { FBC_sh_fog < 15 }
-					check_variable = { FBC_sh_order < 20 }
-					check_variable = { FBC_sh_visitors < 10 }
-				}
-			}
+			limit = { FBC_sh_leave_ready = yes }
 			set_country_flag = { flag = FBC_sh_ending_pending value = 1 days = 7 }
 			country_event = { id = FBC.39 days = 1 }
 		}
