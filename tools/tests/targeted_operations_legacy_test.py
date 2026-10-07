@@ -1,6 +1,5 @@
 import operator
 import re
-from pathlib import Path
 
 import pytest
 from targeted_operations_model_test import (
@@ -8,21 +7,14 @@ from targeted_operations_model_test import (
     _named_block,
     _parse_race_script,
 )
+from targeted_operations_redesign_test import read as source
 
-ROOT = Path(__file__).resolve().parents[2]
 IRAQ = tuple(
     zip(
         ("saddam", "qusay", "uday", "abid", "majid", "walter", "tilfah", "salih"),
         range(56, 64),
     )
 )
-
-
-def source(path):
-    source_path = ROOT / path
-    if not source_path.exists() and not (ROOT / Path(path).parts[0]).exists():
-        pytest.skip("game content not checked out (sparse checkout)")
-    return source_path.read_text(encoding="utf-8-sig")
 
 
 def event(event_id, path):
