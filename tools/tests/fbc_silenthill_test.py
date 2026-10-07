@@ -105,7 +105,7 @@ def test_the_dashboard_shows_the_case():
 
 def test_events_are_gated_in_the_block_and_every_key_has_english_text():
     ids = [int(n) for n in re.findall(r"(?m)^\tid = FBC\.(\d+)$", EVENTS)]
-    assert sorted(ids) == [30, 31, 32, 33, 34, 35, 36, 37, 38]
+    assert sorted(ids) == list(range(30, 44))
     for event_id in ids:
         head = _event(f"FBC.{event_id}").split("option = {", 1)[0]
         gate = _named_block(head[head.index("\n\ttrigger = {") :], "trigger")
@@ -243,3 +243,58 @@ def test_the_otherworld_is_a_fixed_state_modifier_with_english_text():
     core = _read("localisation/english/MD_FBC_l_english.yml")
     line = re.search(r'(?m)^ FBC_bureau_category_desc: "(.*)"$', core).group(1)
     assert "[FBC_sh_visitors_band] [FBC_sh_order_band]" in line
+
+
+def test_one_ending_closes_the_case_and_stops_the_pulse():
+    pulse = _named_block(EFFECTS, "FBC_monthly_silenthill_pulse")
+    gate = pulse[: pulse.index("FBC_sh_ready")]
+    assert "NOT = { has_global_flag = FBC_sh_ended }" in gate
+    assert "FBC_silenthill_ending_month = yes" in pulse
+    close = _named_block(EFFECTS, "FBC_silenthill_end_case")
+    assert "set_global_flag = FBC_sh_ended" in close
+    assert "set_variable = { FBC_sh_ending = FBC_sh_ending_choice }" in close
+    assert "FBC_release_silenthill_team = yes" in close
+    for choice, event_id in enumerate(
+        ("FBC.39", "FBC.40", "FBC.41", "FBC.42", "FBC.43"), 1
+    ):
+        head = _event(event_id).split("option = {", 1)[0]
+        gate = _named_block(head[head.index("\n\ttrigger = {") :], "trigger")
+        assert "NOT = { has_global_flag = FBC_sh_ended }" in gate, event_id
+        immediate = _named_block(head, "immediate")
+        assert f"set_temp_variable = {{ FBC_sh_ending_choice = {choice} }}" in immediate
+        assert "FBC_silenthill_end_case = yes" in immediate
+        lifts = "FBC_silenthill_lift_fog = yes" in immediate
+        assert lifts == (event_id in ("FBC.39", "FBC.42", "FBC.43")), event_id
+        for option in _event(event_id).split("option = {")[1:]:
+            assert "ai_chance = {" in option, event_id
+
+
+def test_endings_are_checked_in_order_and_the_jokes_need_their_rule():
+    month = _named_block(EFFECTS, "FBC_silenthill_ending_month")
+    assert "NOT = { has_country_flag = FBC_sh_ending_pending }" in month
+    order = [
+        month.index("country_event = { id = FBC.41 days = 1 }"),
+        month.index("country_event = { id = FBC.40 days = 1 }"),
+        month.index("country_event = { id = FBC.39 days = 1 }"),
+        month.index("rule = rule_fbc_silenthill_jokes option = ENABLED"),
+    ]
+    assert order == sorted(order)
+    rebirth = month[: order[0]]
+    assert "has_global_flag = FBC_sh_rite_performed" in rebirth
+    assert "check_variable = { FBC_sh_fog > 89 }" in rebirth
+    jokes = month[order[3] :]
+    dog = jokes[jokes.index("FBC.42") :]
+    assert "modifier = { factor = 0 check_variable = { FBC_sh_committed < 1 } }" in dog
+    rules = _read("common/game_rules/00_game_rules.txt")
+    rule = _named_block(rules, "rule_fbc_silenthill_jokes")
+    default = _named_block(rule, "default")
+    assert "name = DISABLED" in default
+
+
+def test_a_finished_rite_is_recorded_for_rebirth():
+    rite = _event("FBC.38")
+    stop, evacuate, let_happen = rite.split("option = {")[1:]
+    failure = stop[stop.index("50 = {", stop.index("50 = {") + 1) :]
+    assert "set_global_flag = FBC_sh_rite_performed" in failure
+    assert "set_global_flag = FBC_sh_rite_performed" not in evacuate
+    assert "set_global_flag = FBC_sh_rite_performed" in let_happen
