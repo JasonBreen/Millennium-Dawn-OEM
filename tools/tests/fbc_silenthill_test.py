@@ -293,3 +293,28 @@ def test_queued_letters_and_rite_recheck_their_threshold_on_arrival():
         gate = _named_block(head[head.index("\n\ttrigger = {") :], "trigger")
         assert threshold in gate, event_id
         assert "is_controlled_by = ROOT" in gate, event_id
+
+
+def test_a_siren_never_shortens_the_rites_longer_otherworld():
+    siren = _named_block(_event("FBC.35").split("option = {", 1)[0], "immediate")
+    assert "NOT = { has_state_flag = FBC_sh_long_otherworld }" in siren
+    assert "MODIFIER = FBC_silent_hill_otherworld" in siren
+    rite = _event("FBC.38")
+    assert (
+        rite.count("set_state_flag = { flag = FBC_sh_long_otherworld days = 30 }") == 2
+    )
+    stop, _, let_happen = rite.split("option = {")[1:]
+    for option in (stop, let_happen):
+        assert (
+            "localization_key = adds_dynamic_modifier_tt MODIFIER = FBC_silent_hill_otherworld"
+            in option
+        )
+
+
+def test_only_one_letters_event_is_open_at_a_time():
+    month = _named_block(EFFECTS, "FBC_silenthill_town_events_month")
+    assert "NOT = { has_country_flag = FBC_sh_letters_open }" in month
+    head = _event("FBC.36").split("option = {", 1)[0]
+    assert "set_country_flag = FBC_sh_letters_open" in _named_block(head, "immediate")
+    for option in _event("FBC.36").split("option = {")[1:]:
+        assert "clr_country_flag = FBC_sh_letters_open" in option
