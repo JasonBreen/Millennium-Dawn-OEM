@@ -104,11 +104,14 @@ Two more values live on state 764, both 0-100:
 - The Siren (`FBC.35`) from 40 fog, at 0.15% a month per point of fog (6% at 40, 15% at 100), 180 days apart. It costs
   1% stability, adds 10 fog and the Otherworld (`FBC_silent_hill_otherworld`: -0.5 supply, -50% construction, +25%
   attrition) for 30 days. A team in town can hold and record it (70%: +5 containment; 30%: lost, -10 containment, +5
-  exposure). Otherwise pull back for 25 PP, which delays the town's answer by 2 months and adds 5 fog, or call it a
-  weather alert for +5 exposure and +10 visitors.
-- Letters (`FBC.36`) at 20 visitors, 180 days apart. Turning visitors back costs 1 PP for each one and sends three
-  quarters home (+2 exposure). Tracking them gives +3 containment and +5 Order. Letting them come costs +5 exposure and
-  +5 fog.
+  exposure). During an intervention the Bureau can pull back for 25 PP, which delays the town's answer by 2 months
+  and adds 5 fog. It can always call it a weather alert for +5 exposure and +10 visitors.
+- Letters (`FBC.36`) at 20 visitors, 180 days apart. Turning visitors back costs 1 PP for each visitor on record when
+  the letters arrive and sends three quarters of that same count home (+2 exposure). Tracking them gives +3
+  containment and +5 Order. Letting them come costs +5 exposure and +5 fog.
+
+The Siren, the letters and the Rite start their cooldowns when they arrive. A 7-day pending flag covers each while it
+is queued, so one lost to a change of control goes out again.
 - The Order (`FBC.37`) at 40, once; it marks the Order known on arrival, so a lost notice goes out again a week later.
   A raid needs a free team and works half the time, 65% above 59 containment and 35% below 30 (success: -40 Order,
   -10 fog, +5 containment; failure: -10 containment, +10 exposure, +10 Order). Putting someone inside costs 50 PP for
