@@ -282,3 +282,14 @@ def test_turning_visitors_back_charges_and_removes_the_same_snapshot():
     turnback = _event("FBC.36").split("name = FBC.36.a", 1)[1].split("option = {", 1)[0]
     assert "value = FBC_sh_turnback_visitors multiply = -0.75" in turnback
     assert "value = FBC_sh_visitors multiply" not in turnback
+
+
+def test_queued_letters_and_rite_recheck_their_threshold_on_arrival():
+    for event_id, threshold in (
+        ("FBC.36", "check_variable = { FBC_sh_visitors > 19 }"),
+        ("FBC.38", "check_variable = { FBC_sh_order > 79 }"),
+    ):
+        head = _event(event_id).split("option = {", 1)[0]
+        gate = _named_block(head[head.index("\n\ttrigger = {") :], "trigger")
+        assert threshold in gate, event_id
+        assert "is_controlled_by = ROOT" in gate, event_id
