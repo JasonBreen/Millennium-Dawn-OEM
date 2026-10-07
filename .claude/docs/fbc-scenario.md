@@ -110,7 +110,8 @@ Two more values live on state 764, both 0-100:
   the letters arrive and sends three quarters of that same count home (+2 exposure). Tracking them gives +3
   containment and +5 Order. Letting them come costs +5 exposure and +5 fog.
 
-The Siren, the letters and the Rite start their cooldowns when they arrive. A 7-day pending flag covers each while it
+The Siren, the letters and the Rite start their cooldowns when they arrive, and the letters and the Rite recheck their
+threshold then. A 7-day pending flag covers each while it
 is queued, so one lost to a change of control goes out again.
 - The Order (`FBC.37`) at 40, once; it marks the Order known on arrival, so a lost notice goes out again a week later.
   A raid needs a free team and works half the time, 65% above 59 containment and 35% below 30 (success: -40 Order,
