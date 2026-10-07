@@ -105,7 +105,7 @@ def test_the_dashboard_shows_the_case():
 
 def test_events_are_gated_in_the_block_and_every_key_has_english_text():
     ids = [int(n) for n in re.findall(r"(?m)^\tid = FBC\.(\d+)$", EVENTS)]
-    assert sorted(ids) == [30, 31, 32, 33, 34]
+    assert sorted(ids) == [30, 31, 32, 33, 34, 35, 36, 37, 38]
     for event_id in ids:
         head = _event(f"FBC.{event_id}").split("option = {", 1)[0]
         gate = _named_block(head[head.index("\n\ttrigger = {") :], "trigger")
@@ -114,7 +114,12 @@ def test_events_are_gated_in_the_block_and_every_key_has_english_text():
     keys = re.findall(
         r"(?:title|desc|name|custom_effect_tooltip) = (FBC[A-Za-z0-9_.]*)", EVENTS
     )
-    keys += ["FBC_silent_hill_fog", "FBC_silent_hill_fog_desc"]
+    keys += [
+        "FBC_silent_hill_fog",
+        "FBC_silent_hill_fog_desc",
+        "FBC_silent_hill_otherworld",
+        "FBC_silent_hill_otherworld_desc",
+    ]
     for key in set(keys):
         assert re.search(rf"(?m)^ {re.escape(key)}: \"", LOC), key
     for line in LOC.splitlines()[1:]:
@@ -149,3 +154,92 @@ def test_a_retaken_town_waits_for_a_team_before_the_timer_resumes():
         "common/scripted_localisation/99_FBC_silenthill_scripted_localisation.txt"
     )
     assert sloc.index("FBC_sh_waiting_for_team") < sloc.index("FBC_sh_team_in_town")
+
+
+def test_visitors_and_the_order_grow_on_the_state_from_the_pulse():
+    pulse = _named_block(EFFECTS, "FBC_monthly_silenthill_pulse")
+    state = pulse[pulse.index("FBC_silenthill_fog_month = yes") :]
+    assert state.index("FBC_silenthill_fog_month = yes") < state.index(
+        "FBC_silenthill_town_month = yes"
+    )
+    assert "FBC_silenthill_town_events_month = yes" in pulse
+    fog = _named_block(EFFECTS, "FBC_silenthill_fog_month")
+    assert "value = FBC_sh_visitors multiply = 0.02" in fog
+    town = _named_block(EFFECTS, "FBC_silenthill_town_month")
+    visitors, order = town.split("check_variable = { FBC_sh_fog > 49 }")
+    assert "check_variable = { FBC_sh_fog > 24 }" in visitors
+    assert "check_variable = { FBC_sh_intervention = 2 }" in visitors
+    assert "multiply_temp_variable = { FBC_sh_visitor_gain = 0.5 }" in visitors
+    assert "clamp_variable = { var = FBC_sh_visitors min = 0 max = 100 }" in visitors
+    assert "has_country_flag = FBC_sh_order_watched" in order
+    assert "multiply_temp_variable = { FBC_sh_order_gain = 0.5 }" in order
+    assert "clamp_variable = { var = FBC_sh_order min = 0 max = 100 }" in order
+
+
+def test_the_siren_letters_and_order_need_a_reported_case_in_the_bureaus_hands():
+    month = _named_block(EFFECTS, "FBC_silenthill_town_events_month")
+    gate = month[: month.index("FBC_sh_siren_cooldown")]
+    assert "check_variable = { FBC_sh_phase > 0 }" in gate
+    assert "764 = { is_controlled_by = USA }" in gate
+    siren = month[: month.index("FBC_sh_letters_cooldown")]
+    assert "check_variable = { FBC_sh_fog > 39 }" in siren
+    assert "value = FBC_sh_fog multiply = 0.15" in siren
+    assert "chance = FBC_sh_siren_chance" in siren
+    assert "country_event = { id = FBC.35 days = 1 }" in siren
+    assert "check_variable = { FBC_sh_visitors > 19 }" in month
+    assert "country_event = { id = FBC.36 days = 1 }" in month
+    order = month[month.index("FBC_sh_order_known") :]
+    first, rite = order.split("else_if", 1)
+    assert "check_variable = { FBC_sh_order > 39 }" in first
+    assert "country_event = { id = FBC.37 days = 1 }" in first
+    assert "has_country_flag = FBC_sh_order_known" in rite
+    assert "check_variable = { FBC_sh_order > 79 }" in rite
+    assert "country_event = { id = FBC.38 days = 1 }" in rite
+
+
+def test_the_order_is_known_on_arrival_so_a_lost_notice_is_sent_again():
+    head = _event("FBC.37").split("option = {", 1)[0]
+    gate = _named_block(head[head.index("\n\ttrigger = {") :], "trigger")
+    assert "NOT = { has_country_flag = FBC_sh_order_known }" in gate
+    assert "set_country_flag = FBC_sh_order_known" in _named_block(head, "immediate")
+    month = _named_block(EFFECTS, "FBC_silenthill_town_events_month")
+    assert (
+        "set_country_flag = { flag = FBC_sh_order_pending value = 1 days = 7 }" in month
+    )
+
+
+def test_team_options_need_a_team_and_the_turnback_cost_scales():
+    siren = _event("FBC.35").split("name = FBC.35.a", 1)[1].split("option = {", 1)[0]
+    assert "trigger = { check_variable = { FBC_sh_committed > 0 } }" in siren
+    assert "FBC_release_silenthill_team = yes" in siren
+    for event_id in ("FBC.37", "FBC.38"):
+        raid = _event(event_id).split(f"name = {event_id}.a", 1)[1]
+        raid = raid.split("option = {", 1)[0]
+        assert "trigger = { check_variable = { FBC_response_capacity > 0 } }" in raid
+    head = _event("FBC.36").split("option = {", 1)[0]
+    immediate = _named_block(head, "immediate")
+    assert "set_variable = { FBC_sh_turnback_cost = " in immediate
+    turnback = _event("FBC.36").split("name = FBC.36.a", 1)[1].split("option = {", 1)[0]
+    assert "add_political_power = FBC_sh_turnback_cost" in turnback
+
+
+def test_every_new_option_is_weighted_for_the_ai():
+    for event_id in ("FBC.35", "FBC.36", "FBC.37", "FBC.38"):
+        options = _event(event_id).split("option = {")[1:]
+        assert len(options) == 3, event_id
+        for option in options:
+            assert "ai_chance = {" in option, event_id
+
+
+def test_the_otherworld_is_a_fixed_state_modifier_with_english_text():
+    modifiers = _read(
+        "common/dynamic_modifiers/00_FBC_silenthill_dynamic_modifiers.txt"
+    )
+    otherworld = _named_block(modifiers, "FBC_silent_hill_otherworld")
+    assert "local_supplies = -0.5" in otherworld
+    assert "attrition_for_controller = 0.25" in otherworld
+    assert "modifier = FBC_silent_hill_otherworld days = 30" in _event("FBC.35")
+    assert EVENTS.count("modifier = FBC_silent_hill_otherworld days = 60") == 2
+    core = _read("localisation/english/MD_FBC_l_english.yml")
+    line = re.search(r'(?m)^ FBC_bureau_category_desc: "(.*)"$', core).group(1)
+    assert "[FBC_sh_visitors_band] [FBC_sh_order_band]" in line

@@ -90,8 +90,39 @@ The Bureau dashboard (`FBC_bureau_category_desc`) gains a Toluca County line fro
 `99_FBC_silenthill_scripted_localisation.txt`. The fog shows in bands (thin, heavy, thick, covering the town), read
 straight from the state.
 
-Next slices (#453): the Siren, visitors and the Order; then the Leave, In Water and Rebirth endings, with the UFO and
-Dog jokes behind their own sub-rule.
+### The Siren, visitors and the Order
+
+Two more values live on state 764, both 0-100:
+
+- `FBC_sh_visitors`: from 25 fog, letters draw a twentieth of the fog in visitors each month, half that under
+  quarantine. The town feeds on them: every 50 visitors add 1 fog a month.
+- `FBC_sh_order`: from 50 fog, the Order grows by 1 a month plus 1 for every 50 visitors, half that once the Bureau
+  has someone inside (`FBC_sh_order_watched`).
+
+`FBC_silenthill_town_events_month` runs on USA once the case is on file and USA holds Maine:
+
+- The Siren (`FBC.35`) from 40 fog, at 0.15% a month per point of fog (6% at 40, 15% at 100), 180 days apart. It costs
+  1% stability, adds 10 fog and the Otherworld (`FBC_silent_hill_otherworld`: -0.5 supply, -50% construction, +25%
+  attrition) for 30 days. A team in town can hold and record it (70%: +5 containment; 30%: lost, -10 containment, +5
+  exposure). Otherwise pull back for 25 PP, which delays the town's answer by 2 months and adds 5 fog, or call it a
+  weather alert for +5 exposure and +10 visitors.
+- Letters (`FBC.36`) at 20 visitors, 180 days apart. Turning visitors back costs 1 PP for each one and sends three
+  quarters home (+2 exposure). Tracking them gives +3 containment and +5 Order. Letting them come costs +5 exposure and
+  +5 fog.
+- The Order (`FBC.37`) at 40, once; it marks the Order known on arrival, so a lost notice goes out again a week later.
+  A raid needs a free team and works half the time, 65% above 59 containment and 35% below 30 (success: -40 Order,
+  -10 fog, +5 containment; failure: -10 containment, +10 exposure, +10 Order). Putting someone inside costs 50 PP for
+  -15 Order and halves its growth for good. Leaving it alone costs nothing now.
+- The Rite (`FBC.38`) at 80 Order once it is known, a year apart. Stopping it needs a free team at even odds
+  (success: -50 Order, -20 fog, +5 containment; failure: the rite is finished). Evacuating the county costs 100 PP
+  and 3% stability, clears every visitor and takes 30 Order for +10 fog. Letting it happen, or failing to stop it,
+  finishes the rite: -10 or -15 containment, more exposure, less Order, +20 or +25 fog and 60 days of the Otherworld.
+
+The dashboard adds visitor bands (few, steady, many) and, once the Bureau knows of it, Order bands (quiet, gathering,
+ready).
+
+Next slice (#453): the Leave, In Water and Rebirth endings, with the UFO and Dog jokes behind their own sub-rule. The
+block has one free ID left (39), so the endings need the next free block.
 
 ## Hooks into shared files
 

@@ -256,3 +256,321 @@ country_event = {
 		}
 	}
 }
+
+# The Siren. The town turns for a month: the fog spikes and the Otherworld covers it.
+country_event = {
+	id = FBC.35
+	title = FBC.35.t
+	desc = FBC.35.d
+	picture = GFX_CAN_ontario_goes_dark
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		764 = { is_controlled_by = ROOT }
+	}
+
+	immediate = {
+		add_stability = -0.01
+		hidden_effect = {
+			set_temp_variable = { FBC_sh_fog_change = 10 }
+			FBC_change_silenthill_fog = yes
+			764 = { add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld days = 30 } }
+		}
+	}
+
+	option = {
+		name = FBC.35.a
+		log = "[GetDateText]: [This.GetName]: FBC.35.a executed"
+		trigger = { check_variable = { FBC_sh_committed > 0 } }
+		custom_effect_tooltip = FBC.35.a_tt
+		hidden_effect = {
+			random_list = {
+				70 = {
+					add_to_variable = { FBC_containment_integrity = 5 }
+					FBC_clamp_bureau = yes
+					FBC_refresh_bureau_factors = yes
+				}
+				30 = {
+					FBC_release_silenthill_team = yes
+					add_to_variable = { FBC_containment_integrity = -10 }
+					add_to_variable = { FBC_exposure = 5 }
+					FBC_clamp_bureau = yes
+					FBC_refresh_bureau_factors = yes
+				}
+			}
+		}
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = FBC.35.b
+		log = "[GetDateText]: [This.GetName]: FBC.35.b executed"
+		add_political_power = -25
+		custom_effect_tooltip = FBC.35.b_tt
+		hidden_effect = {
+			if = {
+				limit = { check_variable = { FBC_sh_phase = 2 } }
+				add_to_variable = { FBC_sh_answer_in = 2 }
+			}
+			set_temp_variable = { FBC_sh_fog_change = 5 }
+			FBC_change_silenthill_fog = yes
+		}
+		ai_chance = {
+			base = 30
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	option = {
+		name = FBC.35.c
+		log = "[GetDateText]: [This.GetName]: FBC.35.c executed"
+		custom_effect_tooltip = FBC.35.c_tt
+		hidden_effect = {
+			add_to_variable = { FBC_exposure = 5 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+			set_temp_variable = { FBC_sh_visitors_change = 10 }
+			FBC_change_silenthill_visitors = yes
+		}
+		ai_chance = { base = 20 }
+	}
+}
+
+# Letters to Toluca County. Turning visitors back costs 1 political power for each one on record.
+country_event = {
+	id = FBC.36
+	title = FBC.36.t
+	desc = FBC.36.d
+	picture = GFX_letter_event
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		764 = { is_controlled_by = ROOT }
+	}
+
+	immediate = {
+		hidden_effect = {
+			764 = { set_temp_variable = { FBC_sh_visitors_now = FBC_sh_visitors } }
+			set_variable = { FBC_sh_turnback_cost = { value = FBC_sh_visitors_now multiply = -1 } }
+		}
+	}
+
+	option = {
+		name = FBC.36.a
+		log = "[GetDateText]: [This.GetName]: FBC.36.a executed"
+		add_political_power = FBC_sh_turnback_cost
+		custom_effect_tooltip = FBC.36.a_tt
+		hidden_effect = {
+			764 = { set_temp_variable = { FBC_sh_visitors_change = { value = FBC_sh_visitors multiply = -0.75 } } }
+			FBC_change_silenthill_visitors = yes
+			add_to_variable = { FBC_exposure = 2 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = {
+			base = 45
+			modifier = { factor = 0.25 has_political_power < 100 }
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	option = {
+		name = FBC.36.b
+		log = "[GetDateText]: [This.GetName]: FBC.36.b executed"
+		custom_effect_tooltip = FBC.36.b_tt
+		hidden_effect = {
+			add_to_variable = { FBC_containment_integrity = 3 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+			set_temp_variable = { FBC_sh_order_change = 5 }
+			FBC_change_silenthill_order = yes
+		}
+		ai_chance = { base = 35 }
+	}
+
+	option = {
+		name = FBC.36.c
+		log = "[GetDateText]: [This.GetName]: FBC.36.c executed"
+		custom_effect_tooltip = FBC.36.c_tt
+		hidden_effect = {
+			add_to_variable = { FBC_exposure = 5 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+			set_temp_variable = { FBC_sh_fog_change = 5 }
+			FBC_change_silenthill_fog = yes
+		}
+		ai_chance = { base = 20 }
+	}
+}
+
+# The Order. A congregation in the town that remembers what the town was for.
+country_event = {
+	id = FBC.37
+	title = FBC.37.t
+	desc = FBC.37.d
+	picture = GFX_church_of_sweden
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		NOT = { has_country_flag = FBC_sh_order_known }
+		764 = { is_controlled_by = ROOT }
+	}
+
+	immediate = {
+		hidden_effect = { set_country_flag = FBC_sh_order_known }
+	}
+
+	option = {
+		name = FBC.37.a
+		log = "[GetDateText]: [This.GetName]: FBC.37.a executed"
+		trigger = { check_variable = { FBC_response_capacity > 0 } }
+		custom_effect_tooltip = FBC.37.a_tt
+		hidden_effect = {
+			random_list = {
+				50 = {
+					modifier = { add = 15 check_variable = { FBC_containment_integrity > 59 } }
+					modifier = { add = -15 check_variable = { FBC_containment_integrity < 30 } }
+					set_temp_variable = { FBC_sh_order_change = -40 }
+					FBC_change_silenthill_order = yes
+					set_temp_variable = { FBC_sh_fog_change = -10 }
+					FBC_change_silenthill_fog = yes
+					add_to_variable = { FBC_containment_integrity = 5 }
+					FBC_clamp_bureau = yes
+					FBC_refresh_bureau_factors = yes
+				}
+				50 = {
+					modifier = { add = -15 check_variable = { FBC_containment_integrity > 59 } }
+					modifier = { add = 15 check_variable = { FBC_containment_integrity < 30 } }
+					add_to_variable = { FBC_containment_integrity = -10 }
+					add_to_variable = { FBC_exposure = 10 }
+					FBC_clamp_bureau = yes
+					FBC_refresh_bureau_factors = yes
+					set_temp_variable = { FBC_sh_order_change = 10 }
+					FBC_change_silenthill_order = yes
+				}
+			}
+		}
+		ai_chance = {
+			base = 40
+			modifier = { factor = 0.5 check_variable = { FBC_containment_integrity < 30 } }
+		}
+	}
+
+	option = {
+		name = FBC.37.b
+		log = "[GetDateText]: [This.GetName]: FBC.37.b executed"
+		add_political_power = -50
+		custom_effect_tooltip = FBC.37.b_tt
+		hidden_effect = {
+			set_country_flag = FBC_sh_order_watched
+			set_temp_variable = { FBC_sh_order_change = -15 }
+			FBC_change_silenthill_order = yes
+		}
+		ai_chance = {
+			base = 35
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	option = {
+		name = FBC.37.c
+		log = "[GetDateText]: [This.GetName]: FBC.37.c executed"
+		custom_effect_tooltip = FBC.37.c_tt
+		ai_chance = { base = 25 }
+	}
+}
+
+# The Rite. The Order means to finish what it started at the lake.
+country_event = {
+	id = FBC.38
+	title = FBC.38.t
+	desc = FBC.38.d
+	picture = GFX_FRA_eldest_daughter_of_the_church
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		764 = { is_controlled_by = ROOT }
+	}
+
+	option = {
+		name = FBC.38.a
+		log = "[GetDateText]: [This.GetName]: FBC.38.a executed"
+		trigger = { check_variable = { FBC_response_capacity > 0 } }
+		custom_effect_tooltip = FBC.38.a_tt
+		hidden_effect = {
+			random_list = {
+				50 = {
+					set_temp_variable = { FBC_sh_order_change = -50 }
+					FBC_change_silenthill_order = yes
+					set_temp_variable = { FBC_sh_fog_change = -20 }
+					FBC_change_silenthill_fog = yes
+					add_to_variable = { FBC_containment_integrity = 5 }
+					FBC_clamp_bureau = yes
+					FBC_refresh_bureau_factors = yes
+				}
+				50 = {
+					add_to_variable = { FBC_containment_integrity = -15 }
+					add_to_variable = { FBC_exposure = 5 }
+					FBC_clamp_bureau = yes
+					FBC_refresh_bureau_factors = yes
+					set_temp_variable = { FBC_sh_order_change = -20 }
+					FBC_change_silenthill_order = yes
+					set_temp_variable = { FBC_sh_fog_change = 20 }
+					FBC_change_silenthill_fog = yes
+					764 = { add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld days = 60 } }
+				}
+			}
+		}
+		ai_chance = {
+			base = 40
+			modifier = { factor = 0.5 check_variable = { FBC_containment_integrity < 30 } }
+		}
+	}
+
+	option = {
+		name = FBC.38.b
+		log = "[GetDateText]: [This.GetName]: FBC.38.b executed"
+		add_political_power = -100
+		add_stability = -0.03
+		custom_effect_tooltip = FBC.38.b_tt
+		hidden_effect = {
+			set_temp_variable = { FBC_sh_visitors_change = -100 }
+			FBC_change_silenthill_visitors = yes
+			set_temp_variable = { FBC_sh_order_change = -30 }
+			FBC_change_silenthill_order = yes
+			set_temp_variable = { FBC_sh_fog_change = 10 }
+			FBC_change_silenthill_fog = yes
+		}
+		ai_chance = {
+			base = 30
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 0.25 has_stability < 0.3 }
+		}
+	}
+
+	option = {
+		name = FBC.38.c
+		log = "[GetDateText]: [This.GetName]: FBC.38.c executed"
+		custom_effect_tooltip = FBC.38.c_tt
+		hidden_effect = {
+			add_to_variable = { FBC_containment_integrity = -10 }
+			add_to_variable = { FBC_exposure = 10 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+			set_temp_variable = { FBC_sh_order_change = -40 }
+			FBC_change_silenthill_order = yes
+			set_temp_variable = { FBC_sh_fog_change = 25 }
+			FBC_change_silenthill_fog = yes
+			764 = { add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld days = 60 } }
+		}
+		ai_chance = { base = 30 }
+	}
+}

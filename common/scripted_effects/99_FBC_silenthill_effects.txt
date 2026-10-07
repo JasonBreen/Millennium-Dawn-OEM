@@ -17,12 +17,19 @@ FBC_monthly_silenthill_pulse = {
 				add_dynamic_modifier = { modifier = FBC_silent_hill_fog }
 			}
 		}
-		764 = { FBC_silenthill_fog_month = yes }
-		USA = { FBC_silenthill_case_month = yes }
+		764 = {
+			FBC_silenthill_fog_month = yes
+			FBC_silenthill_town_month = yes
+		}
+		USA = {
+			FBC_silenthill_case_month = yes
+			FBC_silenthill_town_events_month = yes
+		}
 	}
 }
 
 # State 764 scope. The fog climbs by 1 a month; a response team in town holds it back, a cover-up lets it run.
+# The town also feeds on its visitors: every 50 of them add 1 fog a month.
 FBC_silenthill_fog_month = {
 	set_temp_variable = { FBC_sh_fog_gain = 1 }
 	if = {
@@ -38,6 +45,7 @@ FBC_silenthill_fog_month = {
 		}
 		set_temp_variable = { FBC_sh_fog_gain = 2 }
 	}
+	add_to_temp_variable = { FBC_sh_fog_gain = { value = FBC_sh_visitors multiply = 0.02 } }
 	add_to_variable = { FBC_sh_fog = FBC_sh_fog_gain }
 	FBC_update_silenthill_fog = yes
 }
@@ -147,5 +155,100 @@ FBC_change_silenthill_fog = {
 	764 = {
 		add_to_variable = { FBC_sh_fog = FBC_sh_fog_change }
 		FBC_update_silenthill_fog = yes
+	}
+}
+
+# State 764 scope. Letters draw visitors while the fog is up, at a twentieth of the fog a month, half that under
+# quarantine. Thick fog grows the Order by 1 a month plus 1 for every 50 visitors, half that while it is watched.
+FBC_silenthill_town_month = {
+	if = {
+		limit = { check_variable = { FBC_sh_fog > 24 } }
+		set_temp_variable = { FBC_sh_visitor_gain = { value = FBC_sh_fog multiply = 0.05 } }
+		if = {
+			limit = {
+				USA = {
+					check_variable = { FBC_sh_phase = 2 }
+					check_variable = { FBC_sh_intervention = 2 }
+				}
+			}
+			multiply_temp_variable = { FBC_sh_visitor_gain = 0.5 }
+		}
+		add_to_variable = { FBC_sh_visitors = FBC_sh_visitor_gain }
+		clamp_variable = { var = FBC_sh_visitors min = 0 max = 100 }
+	}
+	if = {
+		limit = { check_variable = { FBC_sh_fog > 49 } }
+		set_temp_variable = { FBC_sh_order_gain = { value = FBC_sh_visitors multiply = 0.02 add = 1 } }
+		if = {
+			limit = { USA = { has_country_flag = FBC_sh_order_watched } }
+			multiply_temp_variable = { FBC_sh_order_gain = 0.5 }
+		}
+		add_to_variable = { FBC_sh_order = FBC_sh_order_gain }
+		clamp_variable = { var = FBC_sh_order min = 0 max = 100 }
+	}
+}
+
+# USA scope. Once the case is on file, while the Bureau holds the town: the Siren at 40 fog, at 0.15% a month per
+# point of fog; the letters at 20 visitors; the Order at 40, and its rite at 80 once the Bureau knows of it.
+FBC_silenthill_town_events_month = {
+	if = {
+		limit = {
+			check_variable = { FBC_sh_phase > 0 }
+			764 = { is_controlled_by = USA }
+		}
+		if = {
+			limit = {
+				764 = { check_variable = { FBC_sh_fog > 39 } }
+				NOT = { has_country_flag = FBC_sh_siren_cooldown }
+			}
+			764 = { set_temp_variable = { FBC_sh_siren_chance = { value = FBC_sh_fog multiply = 0.15 } } }
+			random = {
+				chance = FBC_sh_siren_chance
+				set_country_flag = { flag = FBC_sh_siren_cooldown value = 1 days = 180 }
+				country_event = { id = FBC.35 days = 1 }
+			}
+		}
+		if = {
+			limit = {
+				764 = { check_variable = { FBC_sh_visitors > 19 } }
+				NOT = { has_country_flag = FBC_sh_letters_cooldown }
+			}
+			set_country_flag = { flag = FBC_sh_letters_cooldown value = 1 days = 180 }
+			country_event = { id = FBC.36 days = 1 }
+		}
+		if = {
+			limit = {
+				NOT = { has_country_flag = FBC_sh_order_known }
+				764 = { check_variable = { FBC_sh_order > 39 } }
+				NOT = { has_country_flag = FBC_sh_order_pending }
+			}
+			set_country_flag = { flag = FBC_sh_order_pending value = 1 days = 7 }
+			country_event = { id = FBC.37 days = 1 }
+		}
+		else_if = {
+			limit = {
+				has_country_flag = FBC_sh_order_known
+				764 = { check_variable = { FBC_sh_order > 79 } }
+				NOT = { has_country_flag = FBC_sh_rite_cooldown }
+			}
+			set_country_flag = { flag = FBC_sh_rite_cooldown value = 1 days = 365 }
+			country_event = { id = FBC.38 days = 1 }
+		}
+	}
+}
+
+# USA scope, temp FBC_sh_visitors_change set.
+FBC_change_silenthill_visitors = {
+	764 = {
+		add_to_variable = { FBC_sh_visitors = FBC_sh_visitors_change }
+		clamp_variable = { var = FBC_sh_visitors min = 0 max = 100 }
+	}
+}
+
+# USA scope, temp FBC_sh_order_change set.
+FBC_change_silenthill_order = {
+	764 = {
+		add_to_variable = { FBC_sh_order = FBC_sh_order_change }
+		clamp_variable = { var = FBC_sh_order min = 0 max = 100 }
 	}
 }
