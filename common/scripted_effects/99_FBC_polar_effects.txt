@@ -1,13 +1,14 @@
 # Polar Desk. One case at a time. The Bureau keeps FBC_polar_country, so each queued event reads its own country,
 # never a shared current site.
 FBC_monthly_polar_pulse = {
-	# A queued event is lost if its recipient stops existing: the United States at any point, or the station's
-	# controller before the Bureau commits a team. The case closes and the team returns.
+	# A queued event is lost if its recipient stops existing, or if no result closes the case before the watchdog
+	# expires. The case closes and the team returns.
 	if = {
 		limit = {
 			FBC_scenario_enabled = yes
 			has_global_flag = FBC_polar_case_open
 			OR = {
+				NOT = { has_global_flag = FBC_polar_case_watchdog }
 				NOT = { country_exists = USA }
 				USA = {
 					check_variable = { FBC_polar_committed < 1 }
@@ -52,6 +53,7 @@ FBC_monthly_polar_pulse = {
 				array = FBC_polar_hits
 				FBC_polar_find_drilling_station = yes
 				set_global_flag = FBC_polar_case_open
+				set_global_flag = { flag = FBC_polar_case_watchdog value = 1 days = 60 }
 				USA = {
 					set_variable = { FBC_polar_country = PREV.id }
 					set_variable = { FBC_polar_station_id = FBC_polar_candidate }
@@ -63,7 +65,7 @@ FBC_monthly_polar_pulse = {
 }
 
 # Sets temp FBC_polar_candidate to a station of ours at tier 2 or higher whose drilling rig works, else 0.
-# Antarctica sets antarctica_lab_ice_tech_boost only while a rig has fuel, power and no damage.
+# Match Antarctica's live fuel, power and damage gates instead of trusting the country's cached aggregate bonus.
 FBC_polar_find_drilling_station = {
 	set_temp_variable = { FBC_polar_candidate = 0 }
 	for_each_loop = {
@@ -77,10 +79,28 @@ FBC_polar_find_drilling_station = {
 				check_variable = { global.antarctica_station_controller^FBC_polar_station = THIS.id }
 				check_variable = { global.antarctica_station_tier^FBC_polar_station > 1 }
 				OR = {
-					check_variable = { global.antarctica_station_module_slot_6^FBC_polar_station = 12 }
-					check_variable = { global.antarctica_station_module_slot_7^FBC_polar_station = 12 }
-					check_variable = { global.antarctica_station_module_slot_8^FBC_polar_station = 12 }
-					check_variable = { global.antarctica_station_module_slot_9^FBC_polar_station = 12 }
+					check_variable = { global.antarctica_station_output_fuel_usage^FBC_polar_station < 1 }
+					check_variable = { global.antarctica_station_output_storage^FBC_polar_station > 0 }
+				}
+				check_variable = { var = global.antarctica_station_output_power^FBC_polar_station value = 0 compare = greater_than_or_equals }
+				NOT = { has_country_flag = FBC_polar_rig_down }
+				OR = {
+					AND = {
+						check_variable = { global.antarctica_station_module_slot_6^FBC_polar_station = 12 }
+						NOT = { check_variable = { global.antarctica_station_module_slot_6_blizzard_damaged^FBC_polar_station > 0 } }
+					}
+					AND = {
+						check_variable = { global.antarctica_station_module_slot_7^FBC_polar_station = 12 }
+						NOT = { check_variable = { global.antarctica_station_module_slot_7_blizzard_damaged^FBC_polar_station > 0 } }
+					}
+					AND = {
+						check_variable = { global.antarctica_station_module_slot_8^FBC_polar_station = 12 }
+						NOT = { check_variable = { global.antarctica_station_module_slot_8_blizzard_damaged^FBC_polar_station > 0 } }
+					}
+					AND = {
+						check_variable = { global.antarctica_station_module_slot_9^FBC_polar_station = 12 }
+						NOT = { check_variable = { global.antarctica_station_module_slot_9_blizzard_damaged^FBC_polar_station > 0 } }
+					}
 				}
 			}
 			set_temp_variable = { FBC_polar_candidate = FBC_polar_station }
@@ -114,6 +134,7 @@ FBC_polar_close_case = {
 		clear_variable = FBC_polar_station_id
 	}
 	clr_global_flag = FBC_polar_case_open
+	clr_global_flag = FBC_polar_case_watchdog
 	set_global_flag = { flag = FBC_polar_cooldown value = 1 days = 1095 }
 }
 
