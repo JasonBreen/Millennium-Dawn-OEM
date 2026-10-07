@@ -274,6 +274,7 @@ country_event = {
 	immediate = {
 		add_stability = -0.01
 		hidden_effect = {
+			set_country_flag = { flag = FBC_sh_siren_cooldown value = 1 days = 180 }
 			set_temp_variable = { FBC_sh_fog_change = 10 }
 			FBC_change_silenthill_fog = yes
 			764 = { add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld days = 30 } }
@@ -307,13 +308,11 @@ country_event = {
 	option = {
 		name = FBC.35.b
 		log = "[GetDateText]: [This.GetName]: FBC.35.b executed"
+		trigger = { check_variable = { FBC_sh_phase = 2 } }
 		add_political_power = -25
 		custom_effect_tooltip = FBC.35.b_tt
 		hidden_effect = {
-			if = {
-				limit = { check_variable = { FBC_sh_phase = 2 } }
-				add_to_variable = { FBC_sh_answer_in = 2 }
-			}
+			add_to_variable = { FBC_sh_answer_in = 2 }
 			set_temp_variable = { FBC_sh_fog_change = 5 }
 			FBC_change_silenthill_fog = yes
 		}
@@ -338,7 +337,8 @@ country_event = {
 	}
 }
 
-# Letters to Toluca County. Turning visitors back costs 1 political power for each one on record.
+# Letters to Toluca County. Turning visitors back costs 1 political power for each one on record when the letters
+# arrive, and sends three quarters of that same count home.
 country_event = {
 	id = FBC.36
 	title = FBC.36.t
@@ -354,7 +354,9 @@ country_event = {
 
 	immediate = {
 		hidden_effect = {
+			set_country_flag = { flag = FBC_sh_letters_cooldown value = 1 days = 180 }
 			764 = { set_temp_variable = { FBC_sh_visitors_now = FBC_sh_visitors } }
+			set_variable = { FBC_sh_turnback_visitors = FBC_sh_visitors_now }
 			set_variable = { FBC_sh_turnback_cost = { value = FBC_sh_visitors_now multiply = -1 } }
 		}
 	}
@@ -365,7 +367,7 @@ country_event = {
 		add_political_power = FBC_sh_turnback_cost
 		custom_effect_tooltip = FBC.36.a_tt
 		hidden_effect = {
-			764 = { set_temp_variable = { FBC_sh_visitors_change = { value = FBC_sh_visitors multiply = -0.75 } } }
+			set_temp_variable = { FBC_sh_visitors_change = { value = FBC_sh_turnback_visitors multiply = -0.75 } }
 			FBC_change_silenthill_visitors = yes
 			add_to_variable = { FBC_exposure = 2 }
 			FBC_clamp_bureau = yes
@@ -498,6 +500,10 @@ country_event = {
 		FBC_scenario_enabled = yes
 		original_tag = USA
 		764 = { is_controlled_by = ROOT }
+	}
+
+	immediate = {
+		hidden_effect = { set_country_flag = { flag = FBC_sh_rite_cooldown value = 1 days = 365 } }
 	}
 
 	option = {

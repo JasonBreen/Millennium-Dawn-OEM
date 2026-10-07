@@ -243,3 +243,42 @@ def test_the_otherworld_is_a_fixed_state_modifier_with_english_text():
     core = _read("localisation/english/MD_FBC_l_english.yml")
     line = re.search(r'(?m)^ FBC_bureau_category_desc: "(.*)"$', core).group(1)
     assert "[FBC_sh_visitors_band] [FBC_sh_order_band]" in line
+
+
+def test_cooldowns_start_on_arrival_and_a_pending_flag_covers_the_queue():
+    month = _named_block(EFFECTS, "FBC_silenthill_town_events_month")
+    for name, event_id, days in (
+        ("siren", "FBC.35", 180),
+        ("letters", "FBC.36", 180),
+        ("rite", "FBC.38", 365),
+    ):
+        assert f"NOT = {{ has_country_flag = FBC_sh_{name}_pending }}" in month
+        assert (
+            f"set_country_flag = {{ flag = FBC_sh_{name}_pending value = 1 days = 7 }}"
+            in month
+        )
+        assert f"set_country_flag = {{ flag = FBC_sh_{name}_cooldown" not in month
+        head = _event(event_id).split("option = {", 1)[0]
+        assert (
+            f"set_country_flag = {{ flag = FBC_sh_{name}_cooldown value = 1 days = {days} }}"
+            in _named_block(head, "immediate")
+        )
+
+
+def test_pulling_back_needs_a_running_intervention():
+    pull_back = (
+        _event("FBC.35").split("name = FBC.35.b", 1)[1].split("option = {", 1)[0]
+    )
+    assert "trigger = { check_variable = { FBC_sh_phase = 2 } }" in pull_back
+    assert "add_to_variable = { FBC_sh_answer_in = 2 }" in pull_back
+
+
+def test_turning_visitors_back_charges_and_removes_the_same_snapshot():
+    head = _event("FBC.36").split("option = {", 1)[0]
+    immediate = _named_block(head, "immediate")
+    assert (
+        "set_variable = { FBC_sh_turnback_visitors = FBC_sh_visitors_now }" in immediate
+    )
+    turnback = _event("FBC.36").split("name = FBC.36.a", 1)[1].split("option = {", 1)[0]
+    assert "value = FBC_sh_turnback_visitors multiply = -0.75" in turnback
+    assert "value = FBC_sh_visitors multiply" not in turnback

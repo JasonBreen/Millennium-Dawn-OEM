@@ -190,6 +190,8 @@ FBC_silenthill_town_month = {
 
 # USA scope. Once the case is on file, while the Bureau holds the town: the Siren at 40 fog, at 0.15% a month per
 # point of fog; the letters at 20 visitors; the Order at 40, and its rite at 80 once the Bureau knows of it.
+# Each event starts its own cooldown on arrival; a 7-day pending flag covers the queue, so one lost to a change of
+# control goes out again.
 FBC_silenthill_town_events_month = {
 	if = {
 		limit = {
@@ -200,11 +202,12 @@ FBC_silenthill_town_events_month = {
 			limit = {
 				764 = { check_variable = { FBC_sh_fog > 39 } }
 				NOT = { has_country_flag = FBC_sh_siren_cooldown }
+				NOT = { has_country_flag = FBC_sh_siren_pending }
 			}
 			764 = { set_temp_variable = { FBC_sh_siren_chance = { value = FBC_sh_fog multiply = 0.15 } } }
 			random = {
 				chance = FBC_sh_siren_chance
-				set_country_flag = { flag = FBC_sh_siren_cooldown value = 1 days = 180 }
+				set_country_flag = { flag = FBC_sh_siren_pending value = 1 days = 7 }
 				country_event = { id = FBC.35 days = 1 }
 			}
 		}
@@ -212,8 +215,9 @@ FBC_silenthill_town_events_month = {
 			limit = {
 				764 = { check_variable = { FBC_sh_visitors > 19 } }
 				NOT = { has_country_flag = FBC_sh_letters_cooldown }
+				NOT = { has_country_flag = FBC_sh_letters_pending }
 			}
-			set_country_flag = { flag = FBC_sh_letters_cooldown value = 1 days = 180 }
+			set_country_flag = { flag = FBC_sh_letters_pending value = 1 days = 7 }
 			country_event = { id = FBC.36 days = 1 }
 		}
 		if = {
@@ -230,8 +234,9 @@ FBC_silenthill_town_events_month = {
 				has_country_flag = FBC_sh_order_known
 				764 = { check_variable = { FBC_sh_order > 79 } }
 				NOT = { has_country_flag = FBC_sh_rite_cooldown }
+				NOT = { has_country_flag = FBC_sh_rite_pending }
 			}
-			set_country_flag = { flag = FBC_sh_rite_cooldown value = 1 days = 365 }
+			set_country_flag = { flag = FBC_sh_rite_pending value = 1 days = 7 }
 			country_event = { id = FBC.38 days = 1 }
 		}
 	}
