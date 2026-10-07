@@ -169,6 +169,7 @@ class TargetScript(TargetedScript):
         self.run("TOP_setup_registry", 1)
         self.run("TOP_initialize_redesign_global", 1)
         self.globals.update(
+            num_days=0,
             TOP_rule_mode=1,
             TOP_active_targets=ScriptArray(),
             active_terror_orgs=ScriptArray([0, 10]),
@@ -1223,9 +1224,9 @@ def test_disabled_rule_keeps_global_and_country_state_inert():
     assert (script.globals, script.countries) == before
 
 
-@pytest.mark.parametrize(
-    "target,method,state", [(12, 1, 101), (11, 2, 101), (11, 1, 102)]
-)
+# A generic raid reads its person from the actor's slot, so only a method or state that no longer matches the
+# current case can make a callback stale.
+@pytest.mark.parametrize("target,method,state", [(11, 2, 101), (11, 1, 102)])
 def test_native_callback_for_a_superseded_binding_cannot_touch_current_case(
     target, method, state
 ):
@@ -1408,9 +1409,9 @@ def test_designation_allows_multiple_persistent_packages_in_one_host():
 def fire_native_callback(script, target=11, method=1, tier=2, state=101):
     """Run a raid callback from its own instance scope.
 
-    TOP_native_result_args reads TOP_target, TOP_method and TOP_tier: raids set
-    them inline because common/raids/ is parsed before the scripted effects
-    register, so a parameterised call there cannot resolve.
+    The two generic raids set TOP_method and TOP_tier inline. TOP_native_result_args
+    takes the person from the actor's operation slot, so `target` only documents the
+    caller's intent.
     """
     script.country(1000, tag="raid_instance")
     script.countries[1000]["vars"].update(actor_country=1, target_state=state)
@@ -2187,72 +2188,6 @@ def test_native_stand_down_releases_capacity_without_retiring_the_prepared_tuple
     assert variables["TOP_archive_cursor"] == 1
 
 
-def test_stood_down_native_callback_resolves_without_clearing_a_newer_slot():
-    script = TargetScript()
-    variables = script.authorize(method=1)
-    variables["TOP_selected"] = 11
-    script.run("TOP_stand_down_selected", 1)
-    script.authorize(12, method=3, host=3, state=102)
-
-    assert variables["TOP_operation_subject_id"] == 12
-    assert variables["TOP_case_phase"][11] == 2
-    fire_native_callback(script, target=11, method=1, tier=1, state=101)
-
-    assert variables["TOP_case_native_prepared"][11] == 0
-    assert variables["TOP_attempts"][11] == 1
-    assert variables["TOP_archive_target"][0] == 11
-    assert variables["TOP_operation_subject_kind"] == 1
-    assert variables["TOP_operation_subject_id"] == 12
-    assert variables["TOP_operation_sequence"] == 12
-
-
-@pytest.mark.parametrize(
-    "invalidation",
-    ("expired", "inactive", "role", "access", "controller", "visit"),
-)
-def test_invalid_stood_down_native_callback_retires_without_resolving(invalidation):
-    script = TargetScript()
-    method = 2 if invalidation == "access" else 1
-    variables = script.authorize(method=method)
-    variables["TOP_selected"] = 11
-    script.run("TOP_stand_down_selected", 1)
-
-    if invalidation == "expired":
-        script.globals["TOP_clock"] = variables["TOP_case_until"][11]
-    elif invalidation == "inactive":
-        script.globals["TOP_status"][11] = 2
-    elif invalidation == "role":
-        script.ineligible_roles.add(11)
-    elif invalidation == "access":
-        script.countries[1]["techs"].remove("special_forces_tech_1")
-    elif invalidation == "controller":
-        script.countries[101]["controller"] = 3
-    else:
-        capacity = int(script.globals["TOP_registry_capacity"])
-        for field in (
-            "TOP_visit_active_token",
-            "TOP_visit_story",
-            "TOP_visit_status",
-            "TOP_visit_execution_until",
-        ):
-            script.globals.setdefault(field, ScriptArray([0] * capacity))
-        variables["TOP_case_visit_status"][11] = 2
-        variables["TOP_case_visit_token"][11] = 7
-        variables["TOP_case_visit_story"][11] = 1
-        script.globals["TOP_visit_active_token"][11] = 8
-        script.globals["TOP_visit_story"][11] = 1
-        script.globals["TOP_visit_status"][11] = 2
-        script.globals["TOP_visit_execution_until"][11] = 100
-
-    fire_native_callback(script, method=method)
-
-    assert script.globals["TOP_status"][11] == (2 if invalidation == "inactive" else 1)
-    assert variables["TOP_attempts"][11] == 0
-    assert variables["TOP_case_phase"][11] == 0
-    assert variables["TOP_case_native_prepared"][11] == 0
-    assert len(variables["TOP_retired_native_bindings"]) == 1
-
-
 def test_revoking_a_stood_down_native_case_retires_its_unresolved_tuple():
     script = TargetScript()
     variables = script.authorize(method=1)
@@ -2385,36 +2320,6 @@ def test_bda_dispatch_discards_a_stale_head_before_opening_the_next_notice():
     assert variables["TOP_bda_notice_rows"] == []
 
 
-def test_stood_down_callback_cannot_overwrite_an_open_field_report():
-    script = TargetScript()
-    variables = script.authorize(target=11, method=1, host=2, state=101)
-    variables["TOP_selected"] = 11
-    script.run("TOP_stand_down_selected", 1)
-    script.authorize(target=12, method=3, host=3, state=102)
-    script.temps.update(TOP_target=12, TOP_method=3, TOP_tier=2)
-    script.run("TOP_complete_operation", 1)
-
-    assert variables["TOP_report_open"] == 1
-    assert variables["TOP_report_subject_kind"] == 1
-    assert variables["TOP_report_subject_id"] == 12
-    assert variables["TOP_report_state"] == 102
-    assert variables["TOP_report_host"] == 3
-
-    fire_native_callback(script, target=11, method=1, tier=1, state=101)
-
-    assert variables["TOP_report_subject_id"] == 12
-    assert variables["TOP_report_subject_ids"] == [11]
-    assert variables["TOP_report_states"] == [101]
-    assert variables["TOP_report_hosts"] == [2]
-
-    script.run("TOP_finish_field_report", 1)
-    assert variables["TOP_report_open"] == 1
-    assert variables["TOP_report_subject_id"] == 11
-    assert variables["TOP_report_state"] == 101
-    assert variables["TOP_report_host"] == 2
-    assert variables["TOP_report_subject_ids"] == []
-
-
 def test_custody_archive_tracks_transfer_release_and_contextual_exchange():
     script = TargetScript()
     variables = script.target(11)
@@ -2488,3 +2393,34 @@ def test_repeated_custody_episodes_update_only_their_own_archive_rows():
     assert variables["TOP_archive_custodian"][0] == 1
     assert variables["TOP_archive_disposition"][1] == 2
     assert variables["TOP_archive_custodian"][1] == 1
+
+
+def test_a_stood_down_callback_finds_an_empty_slot_and_resolves_nothing():
+    script = TargetScript()
+    variables = script.authorize(method=1)
+    variables["TOP_selected"] = 11
+    script.run("TOP_stand_down_selected", 1)
+    before = case_snapshot(script, 11)
+
+    fire_native_callback(script, target=11, method=1, tier=2, state=101)
+
+    assert variables["TOP_operation_subject_id"] == 0
+    assert case_snapshot(script, 11) == before
+    assert variables["TOP_attempts"][11] == 0
+    assert "TOP_native_slot_settling" in script.countries[1]["flags"]
+
+
+def test_a_settling_slot_holds_only_a_raid_against_a_different_person():
+    script = TargetScript()
+    variables = script.authorize(method=1)
+    variables["TOP_selected"] = 11
+    script.run("TOP_stand_down_selected", 1)
+    assert "TOP_native_slot_settling" in script.countries[1]["flags"]
+    assert variables["TOP_native_settling_subject"] == 11
+
+    script.authorize(12, method=1, host=3, state=102, begin=False)
+    script.call("TOP_begin_person_operation", TARGET=12)
+    assert variables["TOP_operation_subject_id"] == 0
+
+    script.call("TOP_begin_person_operation", TARGET=11)
+    assert variables["TOP_operation_subject_id"] == 11
