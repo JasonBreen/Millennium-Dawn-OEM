@@ -31,6 +31,10 @@ def test_the_pulse_opens_one_case_at_a_working_tier_two_drilling_rig():
     assert "add_to_temp_array = { FBC_polar_hits = THIS }" in member
     loop_end = pulse.index("check_variable = { FBC_polar_hits^num > 0 }")
     assert pulse.index("set_global_flag = FBC_polar_case_open") > loop_end
+    assert (
+        "set_global_flag = { flag = FBC_polar_case_watchdog value = 1 days = 60 }"
+        in pulse[loop_end:]
+    )
     assert pulse.index("country_event = FBC.20") > loop_end
     assert "array = FBC_polar_hits" in pulse[loop_end:]
     chosen = _named_block(pulse[loop_end:], "random_scope_in_array")
@@ -49,6 +53,14 @@ def test_the_pulse_opens_one_case_at_a_working_tier_two_drilling_rig():
             f"global.antarctica_station_module_slot_{slot}^FBC_polar_station = 12"
             in find
         )
+        assert (
+            f"global.antarctica_station_module_slot_{slot}_blizzard_damaged^FBC_polar_station > 0"
+            in find
+        )
+    assert "global.antarctica_station_output_fuel_usage^FBC_polar_station < 1" in find
+    assert "global.antarctica_station_output_storage^FBC_polar_station > 0" in find
+    assert "global.antarctica_station_output_power^FBC_polar_station" in find
+    assert "NOT = { has_country_flag = FBC_polar_rig_down }" in find
     pulse_file = _read("common/scripted_effects/99_FBC_pulse_effects.txt")
     assert "FBC_monthly_polar_pulse = yes" in _named_block(
         pulse_file, "FBC_monthly_pulse"
@@ -62,6 +74,7 @@ def test_every_ending_closes_the_case_and_releases_the_team():
     )
     assert "clear_variable = FBC_polar_country" in _named_block(close, "USA")
     assert "clear_variable = FBC_polar_station_id" in _named_block(close, "USA")
+    assert "clr_global_flag = FBC_polar_case_watchdog" in close
     assert "clear_variable = FBC_polar_country" not in EVENTS
     for event_id in ("FBC.22", "FBC.24"):
         body = _event(event_id)
@@ -76,6 +89,25 @@ def test_every_ending_closes_the_case_and_releases_the_team():
     assert "check_variable = { FBC_response_capacity > 0 }" in commit
     assert "75 = { country_event = { id = FBC.22 days = 45 } }" in commit
     assert "25 = { country_event = { id = FBC.24 days = 45 } }" in commit
+
+
+def test_delayed_event_transitions_renew_the_case_watchdog():
+    watchdog = (
+        "set_global_flag = { flag = FBC_polar_case_watchdog value = 1 days = 60 }"
+    )
+    controller_choice = _event("FBC.20").split("name = FBC.20.b", 1)[1]
+    usa_path = _named_block(controller_choice, "if")
+    assert "limit = { country_exists = USA }" in usa_path
+    assert usa_path.index(watchdog) < usa_path.index(
+        "USA = { country_event = { id = FBC.21 days = 7 } }"
+    )
+
+    bureau_commit = _event("FBC.21").split("name = FBC.21.b", 1)[0]
+    hidden_effect = _named_block(bureau_commit, "hidden_effect")
+    assert hidden_effect.index("FBC_commit_polar_team = yes") < hidden_effect.index(
+        watchdog
+    )
+    assert hidden_effect.index(watchdog) < hidden_effect.index("random_list = {")
 
 
 def test_a_breakout_stops_only_the_rig_with_its_own_timer():
@@ -152,6 +184,7 @@ def test_a_lost_bureau_result_closes_the_case_and_returns_the_team():
     assert "FROM = { exists = yes }" in _named_block(_event("FBC.21"), "trigger")
     assert "FBC_release_polar_team = yes" in recovery
     assert "FBC_polar_close_case = yes" in recovery
+    assert "NOT = { has_global_flag = FBC_polar_case_watchdog }" in recovery
 
 
 def test_every_event_is_gated_and_bureau_factors_refresh_after_changes():
@@ -195,6 +228,21 @@ def test_delayed_results_land_only_on_the_station_the_case_opened_on():
             f"global.antarctica_station_module_slot_{slot}^FBC_polar_station_id = 12"
             in stands
         )
+        assert (
+            f"global.antarctica_station_module_slot_{slot}_blizzard_damaged^FBC_polar_station_id > 0"
+            in stands
+        )
+    assert (
+        "global.antarctica_station_output_fuel_usage^FBC_polar_station_id < 1" in stands
+    )
+    assert "global.antarctica_station_output_storage^FBC_polar_station_id > 0" in stands
+    assert "global.antarctica_station_output_power^FBC_polar_station_id" in stands
+    exists_guard = "var:FBC_polar_country = { exists = yes }"
+    rig_down_guard = (
+        "var:FBC_polar_country = { NOT = { has_country_flag = FBC_polar_rig_down } }"
+    )
+    assert exists_guard in stands
+    assert stands.index(exists_guard) < stands.index(rig_down_guard)
     for body, result in (
         (
             _event("FBC.21").split("name = FBC.21.b", 1)[1],
@@ -206,3 +254,17 @@ def test_delayed_results_land_only_on_the_station_the_case_opened_on():
         assert body.index("limit = { FBC_polar_case_rig_stands = yes }") < body.index(
             result
         )
+
+
+def test_result_tooltips_match_whether_the_original_rig_still_works():
+    for event_id, regular, stale in (
+        ("FBC.21", "FBC.21.b_tt", "FBC_polar_stale_breakout_tt"),
+        ("FBC.22", "FBC.22.a_tt", "FBC_polar_stale_containment_tt"),
+        ("FBC.24", "FBC.24.a_tt", "FBC_polar_stale_failure_tt"),
+    ):
+        body = _event(event_id)
+        if event_id == "FBC.21":
+            body = body.split("name = FBC.21.b", 1)[1]
+        assert "limit = { FBC_polar_case_rig_stands = yes }" in body
+        assert f"custom_effect_tooltip = {regular}" in body
+        assert f"custom_effect_tooltip = {stale}" in body
