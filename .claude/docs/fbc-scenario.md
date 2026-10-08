@@ -42,12 +42,12 @@ event IDs, so parallel work does not collide. It ships on OEM only. Built like S
   flag lapses after 31 days on its own if `FBC.25` is lost. Every close starts a 1,095-day cooldown. If the
   United States stops existing with a result queued, or the controller stops existing before a team is
   committed, the pulse closes the case and returns the team.
-- **Silent Hill (30–39):** `FBC_silenthill.txt`; loc `_silenthill_`;
-  `99_FBC_silenthill_effects.txt`.
+- **Silent Hill (30–49):** `FBC_silenthill.txt`; loc `_silenthill_`;
+  `99_FBC_silenthill_effects.txt`, `99_FBC_silenthill_scripted_triggers.txt`. It took a second block for its endings.
 
 Localisation file names are `MD_FBC_<subsystem>_l_english.yml`.
 
-The next free block is 40–49.
+The next free block is 50–59.
 
 ## Silent Hill
 
@@ -127,13 +127,35 @@ the longer Otherworld alone.
 The dashboard adds visitor bands (few, steady, many) and, once the Bureau knows of it, Order bands (quiet, gathering,
 ready).
 
-Next slice (#453): the Leave, In Water and Rebirth endings, with the UFO and Dog jokes behind their own sub-rule. The
-block has one free ID left (39), so the endings need the next free block.
+### Endings
+
+One ending per game closes the case. `FBC_silenthill_ending_month` runs first in the pulse and checks them in this
+order while the case is on file and USA holds Maine, with a 7-day pending flag so an ending lost to a change of
+control goes out again. While an ending is queued, the case and town checks wait, so no other Silent Hill event is
+queued beside it. Every Silent Hill event rejects a closed case, and each ending rechecks its own condition on arrival
+through `99_FBC_silenthill_scripted_triggers.txt` (`FBC_sh_rebirth_ready`, `FBC_sh_in_water_ready`,
+`FBC_sh_leave_ready`; the dog also needs its team):
+
+- Rebirth (`FBC.41`): the rite was finished (`FBC_sh_rite_performed`, set by `FBC.38` when the rite goes ahead) and
+  the fog is 90 or more. 5% stability. Seal the county for 100 PP and +10 exposure, which leaves the Otherworld on
+  the town for good, or raze it: 2 infrastructure, fog to 40, -20 containment and +25 exposure.
+- In Water (`FBC.40`): exposure 80 or more in fog of 50 or more, or containment under 20 in fog of 75 or more. The
+  town keeps its fog for good. Close the file (-10 containment, -10 exposure) or drag the lake (50 PP, -5
+  containment, -20 fog).
+- Leave (`FBC.39`): the town has answered and fog is under 15, the Order under 20 and visitors under 10. The fog
+  lifts and both town modifiers go. Close the case (+10 containment) or keep a watch (25 PP, +5 containment, -10
+  exposure). A team that comes back early is the usual way here.
+- With `rule_fbc_silenthill_jokes` on (off by default), lights over the lake (`FBC.42`) and the dog (`FBC.43`, only
+  with a team in town) come at 0.5% a month each and lift the fog. The rule is read directly in the monthly check,
+  which never runs at load.
+
+Each ending sets `FBC_sh_ending` (1 Leave, 2 In Water, 3 Rebirth, 4 lights, 5 the dog), sets `FBC_sh_ended`, which
+stops the pulse, and frees the team. The dashboard shows the ending in place of the case status.
 
 ## Hooks into shared files
 
-- `common/game_rules/00_game_rules.txt`: `rule_fbc_scenario`, off by default.
-- `localisation/english/MD_game_rules_l_english.yml`: the rule's five keys.
+- `common/game_rules/00_game_rules.txt`: `rule_fbc_scenario` and `rule_fbc_silenthill_jokes`, both off by default.
+- `localisation/english/MD_game_rules_l_english.yml`: each rule's five keys.
 - `common/scripted_effects/07_targeted_operations_organization_cases.txt`: `FBC_apply_top_organization_sabotage` beside the STALKER sabotage call.
 - Targeted Operations organizations 39 and 40 in `tools/data/targeted_operations.json`. Both are public state-security records at the host capital, which is what that class allows.
 

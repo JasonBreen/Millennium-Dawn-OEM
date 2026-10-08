@@ -11,6 +11,7 @@ country_event = {
 	trigger = {
 		FBC_scenario_enabled = yes
 		original_tag = USA
+		NOT = { has_global_flag = FBC_sh_ended }
 		check_variable = { FBC_sh_phase = 0 }
 		764 = { is_controlled_by = ROOT }
 	}
@@ -96,6 +97,7 @@ country_event = {
 	trigger = {
 		FBC_scenario_enabled = yes
 		original_tag = USA
+		NOT = { has_global_flag = FBC_sh_ended }
 		check_variable = { FBC_sh_intervention = 1 }
 	}
 
@@ -126,6 +128,7 @@ country_event = {
 	trigger = {
 		FBC_scenario_enabled = yes
 		original_tag = USA
+		NOT = { has_global_flag = FBC_sh_ended }
 		check_variable = { FBC_sh_intervention = 1 }
 	}
 
@@ -177,6 +180,7 @@ country_event = {
 	trigger = {
 		FBC_scenario_enabled = yes
 		original_tag = USA
+		NOT = { has_global_flag = FBC_sh_ended }
 		check_variable = { FBC_sh_intervention = 2 }
 	}
 
@@ -221,6 +225,7 @@ country_event = {
 	trigger = {
 		FBC_scenario_enabled = yes
 		original_tag = USA
+		NOT = { has_global_flag = FBC_sh_ended }
 		check_variable = { FBC_sh_intervention = 3 }
 	}
 
@@ -268,6 +273,7 @@ country_event = {
 	trigger = {
 		FBC_scenario_enabled = yes
 		original_tag = USA
+		NOT = { has_global_flag = FBC_sh_ended }
 		764 = { is_controlled_by = ROOT }
 	}
 
@@ -355,6 +361,7 @@ country_event = {
 	trigger = {
 		FBC_scenario_enabled = yes
 		original_tag = USA
+		NOT = { has_global_flag = FBC_sh_ended }
 		764 = {
 			is_controlled_by = ROOT
 			check_variable = { FBC_sh_visitors > 19 }
@@ -435,6 +442,7 @@ country_event = {
 	trigger = {
 		FBC_scenario_enabled = yes
 		original_tag = USA
+		NOT = { has_global_flag = FBC_sh_ended }
 		NOT = { has_country_flag = FBC_sh_order_known }
 		764 = { is_controlled_by = ROOT }
 	}
@@ -515,6 +523,7 @@ country_event = {
 	trigger = {
 		FBC_scenario_enabled = yes
 		original_tag = USA
+		NOT = { has_global_flag = FBC_sh_ended }
 		764 = {
 			is_controlled_by = ROOT
 			check_variable = { FBC_sh_order > 79 }
@@ -555,6 +564,7 @@ country_event = {
 						add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld days = 60 }
 						set_state_flag = { flag = FBC_sh_long_otherworld value = 1 days = 30 }
 					}
+					set_global_flag = FBC_sh_rite_performed
 				}
 			}
 		}
@@ -604,7 +614,262 @@ country_event = {
 				add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld days = 60 }
 				set_state_flag = { flag = FBC_sh_long_otherworld value = 1 days = 30 }
 			}
+			set_global_flag = FBC_sh_rite_performed
 		}
 		ai_chance = { base = 30 }
+	}
+}
+
+# Leave. The town lets go: the fog lifts and the case closes.
+country_event = {
+	id = FBC.39
+	title = FBC.39.t
+	desc = FBC.39.d
+	picture = GFX_CAN_ontario_goes_dark
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		FBC_sh_leave_ready = yes
+		NOT = { has_global_flag = FBC_sh_ended }
+		764 = { is_controlled_by = ROOT }
+	}
+
+	immediate = {
+		hidden_effect = {
+			set_temp_variable = { FBC_sh_ending_choice = 1 }
+			FBC_silenthill_end_case = yes
+			FBC_silenthill_lift_fog = yes
+		}
+	}
+
+	option = {
+		name = FBC.39.a
+		log = "[GetDateText]: [This.GetName]: FBC.39.a executed"
+		custom_effect_tooltip = FBC.39.a_tt
+		hidden_effect = {
+			add_to_variable = { FBC_containment_integrity = 10 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = { base = 60 }
+	}
+
+	option = {
+		name = FBC.39.b
+		log = "[GetDateText]: [This.GetName]: FBC.39.b executed"
+		add_political_power = -25
+		custom_effect_tooltip = FBC.39.b_tt
+		hidden_effect = {
+			add_to_variable = { FBC_containment_integrity = 5 }
+			add_to_variable = { FBC_exposure = -10 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = {
+			base = 40
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+}
+
+# In Water. The Bureau's lead investigator walks into the lake, and the town keeps its fog for good.
+country_event = {
+	id = FBC.40
+	title = FBC.40.t
+	desc = FBC.40.d
+	picture = GFX_emptychair_ast
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		FBC_sh_in_water_ready = yes
+		NOT = { has_global_flag = FBC_sh_ended }
+		764 = { is_controlled_by = ROOT }
+	}
+
+	immediate = {
+		hidden_effect = {
+			set_temp_variable = { FBC_sh_ending_choice = 2 }
+			FBC_silenthill_end_case = yes
+		}
+	}
+
+	option = {
+		name = FBC.40.a
+		log = "[GetDateText]: [This.GetName]: FBC.40.a executed"
+		custom_effect_tooltip = FBC.40.a_tt
+		hidden_effect = {
+			add_to_variable = { FBC_containment_integrity = -10 }
+			add_to_variable = { FBC_exposure = -10 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = { base = 60 }
+	}
+
+	option = {
+		name = FBC.40.b
+		log = "[GetDateText]: [This.GetName]: FBC.40.b executed"
+		trigger = { 764 = { is_controlled_by = ROOT } }
+		add_political_power = -50
+		custom_effect_tooltip = FBC.40.b_tt
+		hidden_effect = {
+			add_to_variable = { FBC_containment_integrity = -5 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+			set_temp_variable = { FBC_sh_fog_change = -20 }
+			FBC_change_silenthill_fog = yes
+		}
+		ai_chance = {
+			base = 40
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+}
+
+# Rebirth. The rite brought something back, and Toluca County will not be the same.
+country_event = {
+	id = FBC.41
+	title = FBC.41.t
+	desc = FBC.41.d
+	picture = GFX_FRA_eldest_daughter_of_the_church
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		FBC_sh_rebirth_ready = yes
+		NOT = { has_global_flag = FBC_sh_ended }
+		764 = { is_controlled_by = ROOT }
+	}
+
+	immediate = {
+		add_stability = -0.05
+		hidden_effect = {
+			set_temp_variable = { FBC_sh_ending_choice = 3 }
+			FBC_silenthill_end_case = yes
+		}
+	}
+
+	option = {
+		name = FBC.41.a
+		log = "[GetDateText]: [This.GetName]: FBC.41.a executed"
+		add_political_power = -100
+		custom_effect_tooltip = FBC.41.a_tt
+		hidden_effect = {
+			764 = { add_dynamic_modifier = { modifier = FBC_silent_hill_otherworld } }
+			add_to_variable = { FBC_exposure = 10 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	option = {
+		name = FBC.41.b
+		log = "[GetDateText]: [This.GetName]: FBC.41.b executed"
+		trigger = { 764 = { is_controlled_by = ROOT } }
+		custom_effect_tooltip = FBC.41.b_tt
+		hidden_effect = {
+			764 = {
+				if = {
+					limit = { infrastructure > 1 }
+					damage_building = { type = infrastructure damage = 2 }
+				}
+				set_variable = { FBC_sh_fog = 40 }
+				FBC_update_silenthill_fog = yes
+				if = {
+					limit = { has_dynamic_modifier = { modifier = FBC_silent_hill_otherworld } }
+					remove_dynamic_modifier = { modifier = FBC_silent_hill_otherworld }
+				}
+			}
+			add_to_variable = { FBC_containment_integrity = -20 }
+			add_to_variable = { FBC_exposure = 25 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = { factor = 0.25 has_stability < 0.3 }
+		}
+	}
+}
+
+# Lights over the lake. Joke ending, behind its own rule.
+country_event = {
+	id = FBC.42
+	title = FBC.42.t
+	desc = FBC.42.d
+	picture = GFX_CAN_ontario_goes_dark
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		NOT = { has_global_flag = FBC_sh_ended }
+		764 = { is_controlled_by = ROOT }
+	}
+
+	immediate = {
+		hidden_effect = {
+			set_temp_variable = { FBC_sh_ending_choice = 4 }
+			FBC_silenthill_end_case = yes
+			FBC_silenthill_lift_fog = yes
+		}
+	}
+
+	option = {
+		name = FBC.42.a
+		log = "[GetDateText]: [This.GetName]: FBC.42.a executed"
+		custom_effect_tooltip = FBC.42.a_tt
+		hidden_effect = {
+			add_to_variable = { FBC_exposure = 10 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = { base = 1 }
+	}
+}
+
+# The dog. Joke ending, behind its own rule.
+country_event = {
+	id = FBC.43
+	title = FBC.43.t
+	desc = FBC.43.d
+	picture = GFX_crime_fighting
+	is_triggered_only = yes
+
+	trigger = {
+		FBC_scenario_enabled = yes
+		original_tag = USA
+		check_variable = { FBC_sh_committed > 0 }
+		NOT = { has_global_flag = FBC_sh_ended }
+		764 = { is_controlled_by = ROOT }
+	}
+
+	immediate = {
+		hidden_effect = {
+			set_temp_variable = { FBC_sh_ending_choice = 5 }
+			FBC_silenthill_end_case = yes
+			FBC_silenthill_lift_fog = yes
+		}
+	}
+
+	option = {
+		name = FBC.43.a
+		log = "[GetDateText]: [This.GetName]: FBC.43.a executed"
+		custom_effect_tooltip = FBC.43.a_tt
+		hidden_effect = {
+			add_to_variable = { FBC_containment_integrity = 5 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+		ai_chance = { base = 1 }
 	}
 }
