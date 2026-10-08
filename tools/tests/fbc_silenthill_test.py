@@ -210,12 +210,12 @@ def test_the_order_is_known_on_arrival_so_a_lost_notice_is_sent_again():
 
 def test_team_options_need_a_team_and_the_turnback_cost_scales():
     siren = _event("FBC.35").split("name = FBC.35.a", 1)[1].split("option = {", 1)[0]
-    assert "trigger = { check_variable = { FBC_sh_committed > 0 } }" in siren
+    assert "check_variable = { FBC_sh_committed > 0 }" in siren
     assert "FBC_release_silenthill_team = yes" in siren
     for event_id in ("FBC.37", "FBC.38"):
         raid = _event(event_id).split(f"name = {event_id}.a", 1)[1]
         raid = raid.split("option = {", 1)[0]
-        assert "trigger = { check_variable = { FBC_response_capacity > 0 } }" in raid
+        assert "check_variable = { FBC_response_capacity > 0 }" in raid
     head = _event("FBC.36").split("option = {", 1)[0]
     immediate = _named_block(head, "immediate")
     assert "set_variable = { FBC_sh_turnback_cost = " in immediate
@@ -269,7 +269,7 @@ def test_pulling_back_needs_a_running_intervention():
     pull_back = (
         _event("FBC.35").split("name = FBC.35.b", 1)[1].split("option = {", 1)[0]
     )
-    assert "trigger = { check_variable = { FBC_sh_phase = 2 } }" in pull_back
+    assert "check_variable = { FBC_sh_phase = 2 }" in pull_back
     assert "add_to_variable = { FBC_sh_answer_in = 2 }" in pull_back
 
 
@@ -324,3 +324,12 @@ def test_only_one_letters_event_is_open_at_a_time():
     )
     for option in _event("FBC.36").split("option = {")[1:]:
         assert "clr_country_flag = FBC_sh_letters_open" in option
+
+
+def test_operational_options_need_maine_when_chosen_and_a_fallback_stays():
+    for event_id in ("FBC.35", "FBC.36", "FBC.37", "FBC.38"):
+        options = _event(event_id).split("option = {")[1:]
+        for option in options[:2]:
+            trigger = option.split("\n\t\ttrigger = {", 1)[1].split("\n", 1)[0]
+            assert "764 = { is_controlled_by = ROOT }" in trigger, event_id
+        assert "\n\t\ttrigger = {" not in options[2], event_id
