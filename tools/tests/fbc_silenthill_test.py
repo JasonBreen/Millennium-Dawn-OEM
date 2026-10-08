@@ -381,7 +381,10 @@ def test_a_siren_never_shortens_the_rites_longer_otherworld():
     assert "MODIFIER = FBC_silent_hill_otherworld" in siren
     rite = _event("FBC.38")
     assert (
-        rite.count("set_state_flag = { flag = FBC_sh_long_otherworld days = 30 }") == 2
+        rite.count(
+            "set_state_flag = { flag = FBC_sh_long_otherworld value = 1 days = 30 }"
+        )
+        == 2
     )
     stop, _, let_happen = rite.split("option = {")[1:]
     for option in (stop, let_happen):
@@ -395,6 +398,9 @@ def test_only_one_letters_event_is_open_at_a_time():
     month = _named_block(EFFECTS, "FBC_silenthill_town_events_month")
     assert "NOT = { has_country_flag = FBC_sh_letters_open }" in month
     head = _event("FBC.36").split("option = {", 1)[0]
-    assert "set_country_flag = FBC_sh_letters_open" in _named_block(head, "immediate")
+    assert (
+        "set_country_flag = { flag = FBC_sh_letters_open value = 1 days = 30 }"
+        in _named_block(head, "immediate")
+    )
     for option in _event("FBC.36").split("option = {")[1:]:
         assert "clr_country_flag = FBC_sh_letters_open" in option

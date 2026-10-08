@@ -120,7 +120,7 @@ Two more values live on state 764, both 0-100:
 
 The Siren, the letters and the Rite start their cooldowns when they arrive, and the letters and the Rite recheck their
 threshold then. A 7-day pending flag covers each while it is queued, so one lost to a change of control goes out
-again. Only one letters event is open at a time (`FBC_sh_letters_open`), so its snapshot cannot be overwritten. The
+again. Only one letters event is open at a time (`FBC_sh_letters_open`, which lapses after 30 days if the event is lost), so its snapshot cannot be overwritten. The
 Rite's Otherworld sets `FBC_sh_long_otherworld` on the state for its first 30 days, and a Siren in that window leaves
 the longer Otherworld alone.
 
