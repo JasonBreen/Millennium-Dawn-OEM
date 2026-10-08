@@ -413,3 +413,13 @@ def test_operational_options_need_maine_when_chosen_and_a_fallback_stays():
             trigger = option.split("\n\t\ttrigger = {", 1)[1].split("\n", 1)[0]
             assert "764 = { is_controlled_by = ROOT }" in trigger, event_id
         assert "\n\t\ttrigger = {" not in options[2], event_id
+
+
+def test_ending_options_that_act_in_the_town_need_maine():
+    for event_id in ("FBC.40", "FBC.41"):
+        first, second = _event(event_id).split("option = {")[1:]
+        assert (
+            "764 = { is_controlled_by = ROOT }"
+            in second.split("\n\t\ttrigger = {", 1)[1].split("\n", 1)[0]
+        )
+        assert "\n\t\ttrigger = {" not in first, event_id
