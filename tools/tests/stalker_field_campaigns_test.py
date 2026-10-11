@@ -36,13 +36,7 @@ def campaign():
             ).read_text(encoding="utf-8")
         )
     )
-    script.actor = 2
-    script.run("STALKER_initialize_zone_society", 698)
-    script.countries[698]["vars"].update(
-        STALKER_zone_activity=50,
-        STALKER_zone_containment=50,
-        STALKER_zone_exploitation=50,
-    )
+    script.prepare_original_zone()
     script.run("STALKER_monthly_field_campaigns_pulse", 2)
     return script
 

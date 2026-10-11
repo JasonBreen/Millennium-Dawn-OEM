@@ -138,6 +138,15 @@ class StalkerScript(TargetScript):
             self.actor,
         )
 
+    def prepare_original_zone(self):
+        self.actor = 2
+        self.run("STALKER_initialize_zone_society", 698)
+        self.countries[698]["vars"].update(
+            STALKER_zone_activity=50,
+            STALKER_zone_containment=50,
+            STALKER_zone_exploitation=50,
+        )
+
 
 @pytest.mark.parametrize("permanent_controller", [False, True])
 def test_council_queues_the_live_permanent_roster_once(permanent_controller):
