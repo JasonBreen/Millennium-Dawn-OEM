@@ -44,10 +44,12 @@ event IDs, so parallel work does not collide. It ships on OEM only. Built like S
   committed, the pulse closes the case and returns the team.
 - **Silent Hill (30–49):** `FBC_silenthill.txt`; loc `_silenthill_`;
   `99_FBC_silenthill_effects.txt`, `99_FBC_silenthill_scripted_triggers.txt`. It took a second block for its endings.
+- **Bright Falls (50–59):** `FBC_bright_falls.txt`; loc `_bright_falls_`;
+  `99_FBC_bright_falls_effects.txt`.
 
 Localisation file names are `MD_FBC_<subsystem>_l_english.yml`.
 
-The next free block is 50–59.
+The next free block is 60–69.
 
 ## Silent Hill
 
@@ -204,3 +206,15 @@ protocol, 5 Belgian national handling, 6 German national handling, 7 unresolved 
   exposure, and states the membership rule.
 - **Not verified in game:** membership loss mid-inquiry, a Commission handover during a case, and annexation of
   Belgium or Germany during national handling.
+
+## Bright Falls field file
+
+Bright Falls is a USA-owned case at Washington State 809, separate from the DC wing at 1182. Early incidents are original governmental investigations. The 2010 crisis preserves Alan Wake's disappearance and the continuing danger beneath Cauldron Lake ([official story](https://www.alanwake.com/alan-wake-2/)). Events 50-53 belong to this subsystem.
+
+USA stores phase (1 intake, 2 early work, 3 review, 4 prepared/closed, 5 crisis intake, 6 response, 7 aftermath, 8 ended, 9 host disappeared), protocol, preserved evidence, response, result and a single team commitment. Work stores an absolute day deadline; lost-site suspension converts it to remaining days. Regaining 809 resumes only after a required team can be reserved. The state-control hook and monthly fallback release the team idempotently. Preparedness becomes final only when the early report is answered. The 2010 dispatcher cancels every unfinished preparation timer and releases its commitment before crisis intake.
+
+Monitoring costs 25 PP; a major field intervention costs 50 PP and one of the existing two teams. Work takes 60 days, settling at the next monthly pulse. Prepared field response refunds 25 PP of its 50 PP authorization. Perimeter response needs no team and remains available when capacity is exhausted. Local records reviews cost 25 PP, take 60 days and have a 180-day completion cooldown. Withdrawal forfeits unfinished early evidence or downgrades the crisis response. Every conclusion, suspension and host disappearance returns its team once.
+
+Prepared field response grants 10 integrity, 5 exposure (zero with the earlier field handling protocol) and one 25% electronics bonus. Perimeter response grants 5 integrity and 10 exposure; an unprepared field response grants 5 integrity and 5 exposure. Both retain a continuing surveillance result. Disavowal loses 10 integrity, gains 10 exposure, loses 2% stability and applies 180 days of state disruption. The result does not reopen Silent Hill endings or resolve the lake's supernatural danger.
+
+Acceptance: exercise both teams occupied, early and crisis withdrawal, loss/regain of 809 at each timer/report, annexed USA, duplicate pulses/options and pending-work save/reload. Verify simultaneous floor, wing, Silent Hill and Polar Desk commitments; all rules off and all scenarios together. Python behavioral tests are source execution evidence; native rendering, AI, dispatch and serialization remain separate acceptance checks.
