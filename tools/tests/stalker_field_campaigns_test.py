@@ -235,3 +235,52 @@ def test_2022_road_preparation_offsets_five_containment_only_once(result):
     assert variables["STALKER_zone_containment"] == 35 + (5 if 0 < result < 4 else 0)
     script.run("STALKER_begin_battle_for_the_zone", 2)
     assert variables["STALKER_zone_containment"] == 20 + (5 if 0 < result < 4 else 0)
+
+
+@pytest.mark.parametrize("case", [1, 2, 3])
+@pytest.mark.parametrize("step", range(7))
+def test_battle_closes_unfinished_preparation_and_rejects_delayed_reports(case, step):
+    script = campaign()
+    site = script.countries[698]
+    variables = site["vars"]
+    variables.update(STALKER_field_case=case, STALKER_field_step=step)
+    names = ("yantar", "road", "forest")
+    for completed in names[: case - 1]:
+        variables[f"STALKER_field_{completed}_result"] = 1
+    site["flags"]["STALKER_field_work_wait"] = None
+    script.global_flags["STALKER_battle_for_the_zone"] = None
+    script = deepcopy(script)
+    script.run("STALKER_monthly_field_campaigns_pulse", 2)
+    variables = script.countries[698]["vars"]
+    assert variables["STALKER_field_case"] == 4
+    assert variables["STALKER_field_step"] == 0
+    assert "STALKER_field_work_wait" not in script.countries[698]["flags"]
+    for index, name in enumerate(names):
+        assert variables[f"STALKER_field_{name}_result"] == (
+            1 if index < case - 1 else 4
+        )
+    before = variables.copy()
+    event = f"STALKER.{202 + (case - 1) * 3}"
+    script.hidden_option(event, event + ".a", EVENTS)
+    script.run("STALKER_monthly_field_campaigns_pulse", 2)
+    assert variables == before
+    assert script.research_rewards == []
+
+
+@pytest.mark.parametrize("result,duty,freedom", [(1, 5, 5), (2, 5, -5), (3, -5, 5)])
+def test_road_patrol_follows_the_recorded_faction_settlement_once(
+    result, duty, freedom
+):
+    script = campaign()
+    variables = script.countries[698]["vars"]
+    variables["STALKER_field_road_result"] = result
+    before = variables["STALKER_zone_duty"], variables["STALKER_zone_freedom"]
+    script.execute(assignment(script, "STALKER_field_patrol"), 2)
+    script.goto(2012, 3, 1)
+    script.run("STALKER_monthly_field_campaigns_pulse", 2)
+    assert variables["STALKER_zone_duty"] == before[0] + duty
+    assert variables["STALKER_zone_freedom"] == before[1] + freedom
+    completed = variables.copy()
+    script.run("STALKER_monthly_field_campaigns_pulse", 2)
+    assert variables == completed
+    assert script.research_rewards == []

@@ -158,6 +158,9 @@ the original Zone and its current controller. A transferred or lost report retri
 An investigation costs 25 PP; recovery costs 50 PP. Escorting scientific supplies or patrolling the road costs
 25 PP and takes 60 days, with a 180-day cooldown after completion. These share the field-assignment slot and
 grant only their 5-point effects, never the campaign's research reward. Abandoning a dossier strengthens bandits.
+Road patrols support both factions by 5 after an accord, or strengthen the backed faction by 5 while weakening
+its rival by 5. When the existing 2022 battle begins, unfinished dossiers close unprepared and their campaign
+timer stops. Completed history and recurring management assignments remain available.
 Shared Yantar findings add 5 scientists when the existing 2018 SIRCAA choice resolves. A secured road offsets
 5 containment loss in the 2022 battle once. Preserved Red Forest evidence discounts one MDST purge for the Zone
 controller from 75 to 50 PP; its custom cost and affordability use the same site-owned condition.
