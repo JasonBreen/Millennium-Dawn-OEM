@@ -1,0 +1,81 @@
+METALGEAR_pf_tanker_release = {
+	if = { limit = { check_variable = { METALGEAR_pf_tanker_committed > 0 } } set_variable = { METALGEAR_pf_tanker_committed = 0 } add_to_variable = { global.METALGEAR_capacity = 1 } clamp_variable = { var = global.METALGEAR_capacity min = 0 max = 2 } }
+}
+
+METALGEAR_pf_tanker_month = {
+	if = {
+		limit = { date > 2007.4.30 USA = { check_variable = { METALGEAR_pf_tanker_phase = 0 } } }
+		USA = {
+			METALGEAR_pf_interrupt = yes
+			if = { limit = { check_variable = { METALGEAR_pf_inquiry < 4 } } METALGEAR_pf_close_inquiry = yes set_variable = { METALGEAR_pf_inquiry = 5 } }
+			set_variable = { METALGEAR_pf_tanker_phase = 1 }
+		}
+	}
+	USA = {
+		if = {
+			limit = { NOT = { exists = yes } }
+			METALGEAR_pf_tanker_release = yes
+			if = { limit = { check_variable = { METALGEAR_pf_tanker_phase > 0 } check_variable = { METALGEAR_pf_tanker_phase < 4 } } set_variable = { METALGEAR_pf_tanker_phase = 5 } }
+		}
+		else = {
+			if = {
+				limit = { check_variable = { METALGEAR_pf_tanker_phase = 2 } 769 = { NOT = { is_controlled_by = USA } } }
+				METALGEAR_pf_tanker_release = yes
+				set_variable = { METALGEAR_pf_tanker_route = 3 }
+				set_variable = { METALGEAR_pf_tanker_phase = 3 }
+				clr_country_flag = METALGEAR_pf_tanker_wait
+			}
+			if = { limit = { check_variable = { METALGEAR_pf_tanker_phase = 2 } NOT = { has_country_flag = METALGEAR_pf_tanker_wait } } set_variable = { METALGEAR_pf_tanker_phase = 3 } }
+			if = {
+				limit = { NOT = { has_country_flag = METALGEAR_pf_tanker_notice } }
+				if = { limit = { check_variable = { METALGEAR_pf_tanker_phase = 1 } } set_country_flag = { flag = METALGEAR_pf_tanker_notice value = 1 days = 35 } country_event = { id = METALGEAR.59 days = 1 } }
+				else_if = { limit = { check_variable = { METALGEAR_pf_tanker_phase = 3 } } set_country_flag = { flag = METALGEAR_pf_tanker_notice value = 1 days = 35 } country_event = { id = METALGEAR.60 days = 1 } }
+			}
+		}
+	}
+}
+
+METALGEAR_pf_shell_release = {
+	if = { limit = { check_variable = { METALGEAR_pf_shell_committed > 0 } } set_variable = { METALGEAR_pf_shell_committed = 0 } add_to_variable = { global.METALGEAR_capacity = 1 } clamp_variable = { var = global.METALGEAR_capacity min = 0 max = 2 } }
+}
+
+METALGEAR_pf_shell_month = {
+	if = {
+		limit = { date > 2009.4.30 USA = { check_variable = { METALGEAR_pf_shell_phase = 0 } } }
+		USA = {
+			METALGEAR_pf_interrupt = yes
+			if = { limit = { check_variable = { METALGEAR_pf_inquiry < 4 } } METALGEAR_pf_close_inquiry = yes set_variable = { METALGEAR_pf_inquiry = 5 } }
+			set_variable = { METALGEAR_pf_shell_phase = 1 }
+		}
+	}
+	USA = {
+		if = {
+			limit = { NOT = { exists = yes } }
+			METALGEAR_pf_shell_release = yes
+			if = { limit = { check_variable = { METALGEAR_pf_shell_phase > 0 } check_variable = { METALGEAR_pf_shell_phase < 4 } } set_variable = { METALGEAR_pf_shell_phase = 5 } }
+		}
+		else = {
+			if = {
+				limit = { check_variable = { METALGEAR_pf_shell_phase = 2 } 769 = { NOT = { is_controlled_by = USA } } }
+				METALGEAR_pf_shell_release = yes
+				set_variable = { METALGEAR_pf_shell_route = 3 }
+				set_variable = { METALGEAR_pf_shell_phase = 3 }
+				clr_country_flag = METALGEAR_pf_shell_wait
+			}
+			if = { limit = { check_variable = { METALGEAR_pf_shell_phase = 2 } NOT = { has_country_flag = METALGEAR_pf_shell_wait } } set_variable = { METALGEAR_pf_shell_phase = 3 } }
+			if = {
+				limit = { NOT = { has_country_flag = METALGEAR_pf_shell_notice } }
+				if = { limit = { check_variable = { METALGEAR_pf_shell_phase = 1 } } set_country_flag = { flag = METALGEAR_pf_shell_notice value = 1 days = 35 } country_event = { id = METALGEAR.61 days = 1 } }
+				else_if = { limit = { check_variable = { METALGEAR_pf_shell_phase = 3 } } set_country_flag = { flag = METALGEAR_pf_shell_notice value = 1 days = 35 } country_event = { id = METALGEAR.62 days = 1 } }
+			}
+		}
+	}
+}
+
+METALGEAR_monthly_incidents_pulse = {
+	if = {
+		limit = { METALGEAR_scenario_enabled = yes }
+		METALGEAR_pf_tanker_month = yes
+		METALGEAR_pf_shell_month = yes
+	}
+}

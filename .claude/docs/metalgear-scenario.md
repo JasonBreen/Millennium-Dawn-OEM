@@ -2,14 +2,21 @@
 
 The opt-in OEM scenario combines the existing USA-controlled Patriots network with finite national preparation cases for the United States, Japan and Russia. Shadow Moses occurs in 2005. Its tactical outcome stays recognizable; player choices change national authorization, disclosure and relations.
 
-## Ownership and hooks
+## Subsystems
 
 - Core IDs 1-9: existing network events 1-3 in `METALGEAR.txt`; new USA preparation events 4-8 in `METALGEAR_preparation.txt`. Core English strings remain in `MD_METALGEAR_l_english.yml`.
 - Shadow Moses IDs 10-19: briefing 10, aftermath 12 and news 13 in `METALGEAR_shadow_moses.txt`. ID 11 is retired and must not be reused. English strings use `MD_METALGEAR_shadow_moses_l_english.yml`.
 - Japan IDs 20-29: introduction 20, review 21, crisis response 22, outgoing return 23, incoming USA request 24 and crisis report 25. Files use `METALGEAR_japan` and `99_METALGEAR_japan_effects.txt`.
 - Russia IDs 30-39: introduction 30, review 31, crisis response 32, outgoing return 33, incoming Japan request 34 and crisis report 35. Files use `METALGEAR_russia` and `99_METALGEAR_russia_effects.txt`.
 - Operations IDs 40-49: scandal 40 in `METALGEAR_operations.txt`. Files use `METALGEAR_operations`, `99_METALGEAR_operations_effects.txt` and `METALGEAR_operations_decisions.txt`, whose decisions join the existing `METALGEAR_network_category`.
-- The next free block is 50-59. Every subsystem keeps its own events, effects, decisions and English localisation.
+- **Proliferation (50–59):** `METALGEAR_proliferation.txt`; loc `_proliferation_`;
+  `99_METALGEAR_proliferation_effects.txt`.
+- **Tanker and Big Shell (60–69):** `METALGEAR_incidents.txt`; loc `_incidents_`;
+  `99_METALGEAR_incidents_effects.txt`.
+
+Localisation file names are kept per subsystem.
+
+- The next free block is 70–79. Every subsystem keeps its own events, effects, decisions and English localisation.
 - Shared hooks: `rule_metalgear_scenario` in the game rules and its English keys; `METALGEAR_dispatch_shadow_moses` in the 2005 yearly effect; the existing Konami milestone guards in `99_JAP_scripted_effects.txt`.
 
 The scenario reads its rule only in the startup initializer. Runtime gates read `GLOBAL_METALGEAR_scenario_enabled`. Event Horizon's existing host conflict remains. There are no authored crossovers or dependencies on Deus Ex.
@@ -78,3 +85,17 @@ The only new shared crisis result is `global.METALGEAR_shadow_moses_result`: 1 p
 Human and AI USA, Japan and Russia receive the same choice events. Cost-aware weights consider bankruptcy; diplomatic choices also consider opinion and the completed national policy. Pure return reports use minor flavor notifications. Monthly work stays under the scenario's existing once-monthly entrypoint and explicitly scopes fixed countries.
 
 Native acceptance remains required: disabled isolation, enabled introduction timing, all national review choices, reciprocal requests under cooperation/refusal/war/annexation, 2005 dispatch, all authorization/disclosure outcomes, Alaska control loss, rapid annexation and restoration between monthly checks, and save/reload during a timed review or delayed crisis. Rapid annexation and restoration between monthly checks has no authored timeout or resend; delivery recovery is unverified. Source checks and CI do not establish gameplay balance or rendered UI behavior. Development saves receive no migration support.
+
+## Proliferation, Tanker and Big Shell
+
+Events 50-58 cover national procurement trails, American proliferation intake, consenting Japanese/Russian exchanges and terminal reports. Event 59 briefs Tanker. Events 60-64 cover Tanker aftermath, Big Shell and national incident returns; 65-69 remain reserved. The generator owns both subsystem hooks. The dated incidents follow [Konami's chronology](https://www.konami.com/mg/archive/mgs_tlc/sp/index.html): Tanker 2007 and Big Shell 2009. Government cases are original scenario material; tactical protagonists and the manipulated information story remain recognizable.
+
+After each opening review, a national procurement decision costs 25 PP and takes 60 days. USA reserves one existing network commitment; partners use national investigators. Each report records cooperation, national retention or concealment. Unfinished preparation closes unprepared in 2005. Country-owned pf_phase is 2 work, 3 report, 4 complete or 5 interrupted/unprepared. pf_policy records the historical handling choice.
+
+The proliferation inquiry opens after the Shadow Moses result, with a 2006 fallback for incomplete records. USA chooses a 25 PP/60-day inquiry holding one commitment, with or without partner requests, or free concealment. Each partner consents for 25 PP or refuses without penalty. pf_exchange is 1 pending, 2 delivered, 3 refused or 4 interrupted/unanswered. War/disappearance closes only that exchange. A completed inquiry adds 5 exposure and 5 reach per accepted partner. Concealment reduces exposure by 10. Partner reports do not replay rewards.
+
+Tanker and Big Shell each own phase, route, commitment, disclosure, timer and result. Phase 1 is intake, 2 response, 3 aftermath, 4 closed or 5 host disappeared. Independent command costs 50 PP, refunded by 25 with usable national procurement or proliferation findings. Each existing cooperating partner at peace refunds another 5 PP from independent authorization; affordability checks the actual discounted cost. Existing channels cost 25 PP and add 5 exposure. Both hold one commitment for 60 days. Local emergency authority costs no PP or capacity and remains available after New York loss. Loss during work releases its commitment and downgrades only that incident to emergency aftermath. Missing USA closes active work without transfer or replay. Every release is idempotent.
+
+Independent verification loses 5 coherence; compromised channels lose 10 coherence and reach; local emergency response loses 10 coherence and 2% stability. Disclosure adds 10 exposure and loses 10 reach, improves consenting partners' relations and adds 1% stability with a completed inquiry. Restriction adds 5 exposure. Earlier evidence changes authorization and credibility; disclosure history remains visible and influences partner AI willingness. No tactical result, state, equipment or focus tree is selected.
+
+Acceptance includes both partners accepting/refusing, war/annexation while pending, full network capacity, missing Shadow Moses records, New York loss, duplicate deliveries and separate Tanker/Big Shell results. Pending-work save/reload and native AI/rendering remain required separately from Python source execution. All rules remain independent and disabled by default.
