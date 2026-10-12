@@ -1,0 +1,88 @@
+FBC_bureau_category = {
+	FBC_bf_records_review = {
+		icon = GFX_decision_generic_police_action
+		cost = 25
+		visible = {
+			FBC_scenario_enabled = yes
+			tag = USA
+			exists = yes
+			809 = { is_controlled_by = USA }
+			check_variable = { FBC_bf_phase = 4 }
+			date < 2010.1.2
+		}
+		available = {
+			NOT = { has_variable = FBC_bf_due }
+			NOT = { has_variable = FBC_bf_remaining }
+			NOT = { has_country_flag = FBC_bf_review_cooldown }
+		}
+		complete_effect = {
+			if = {
+				limit = { FBC_scenario_enabled = yes
+					tag = USA
+					exists = yes
+					809 = { is_controlled_by = USA }
+					check_variable = { FBC_bf_phase = 4 }
+					date < 2010.1.2
+					NOT = { has_variable = FBC_bf_due }
+					NOT = { has_variable = FBC_bf_remaining }
+					NOT = { has_country_flag = FBC_bf_review_cooldown } }
+				log = "[GetDateText]: [Root.GetName]: Decision FBC_bf_records_review"
+				set_country_flag = FBC_bf_review_running
+				FBC_bf_start_clock = yes
+			}
+		}
+		ai_will_do = {
+			base = 30
+			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
+			modifier = { factor = 2 check_variable = { FBC_exposure > 40 } }
+		}
+	}
+
+	FBC_bf_withdraw_team = {
+		icon = GFX_decision_generic_police_action
+		cost = 0
+		visible = {
+			FBC_scenario_enabled = yes
+			tag = USA
+			exists = yes
+			809 = { is_controlled_by = USA }
+		}
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = FBC_bf_team_assigned_tt
+				check_variable = { FBC_bf_committed > 0 }
+			}
+		}
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision FBC_bf_withdraw_team"
+			FBC_bf_withdraw = yes
+		}
+		ai_will_do = {
+			base = 1
+			modifier = {
+				add = 12
+				check_variable = { FBC_response_capacity < 1 }
+				OR = {
+					AND = {
+						check_variable = { FBC_floor_phase > 0 }
+						check_variable = { FBC_floor_phase < 4 }
+						check_variable = { FBC_floor_committed < 1 }
+					}
+					AND = {
+						check_variable = { FBC_wing_phase > 0 }
+						check_variable = { FBC_wing_phase < 4 }
+						check_variable = { FBC_wing_committed < 1 }
+					}
+					AND = {
+						check_variable = { FBC_sh_phase = 2 }
+						check_variable = { FBC_sh_intervention = 1 }
+						check_variable = { FBC_sh_committed < 1 }
+						764 = { is_controlled_by = USA }
+						NOT = { has_global_flag = FBC_sh_ended }
+						NOT = { has_country_flag = FBC_sh_ending_pending }
+					}
+				}
+			}
+		}
+	}
+}
