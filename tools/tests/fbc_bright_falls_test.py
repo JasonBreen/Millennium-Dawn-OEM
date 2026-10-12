@@ -200,15 +200,128 @@ def test_recurring_review_does_not_reserve_teams_or_repeat_completion():
     assert script.condition([("has_country_flag", "=", "FBC_bf_review_cooldown")], 1)
 
 
-@pytest.mark.parametrize("evidence,price", [(0, 50), (1, 25), (2, 25)])
-def test_field_authorization_checks_and_charges_its_discounted_cost(evidence, price):
+@pytest.mark.parametrize(
+    "number,letter,evidence,price,phase,capacity",
+    [
+        (50, "a", 0, 25, 2, 2),
+        (50, "b", 0, 50, 2, 1),
+        (52, "a", 0, 50, 6, 1),
+        (52, "a", 1, 25, 6, 1),
+        (52, "a", 2, 25, 6, 1),
+        (52, "b", 0, 50, 6, 2),
+    ],
+)
+@pytest.mark.parametrize("balance", [-20, 0, 24, 49, 50])
+def test_paid_options_allow_negative_power_and_charge_once(
+    number, letter, evidence, price, phase, capacity, balance
+):
     script = BrightFallsScript()
     variables = script.countries[1]["vars"]
     variables.update(
-        FBC_bf_phase=5, FBC_bf_evidence=evidence, political_power=price - 1
+        FBC_bf_phase=1 if number == 50 else 5,
+        FBC_bf_evidence=evidence,
+        political_power=balance,
     )
-    assert not option_allowed(script, 52, "a")
-    variables["political_power"] = price
-    assert option_allowed(script, 52, "a")
-    choose(script, 52, "a")
-    assert variables["political_power"] == 0
+    assert option_allowed(script, number, letter)
+    choose(script, number, letter)
+    assert variables["political_power"] == balance - price
+    assert variables["FBC_bf_phase"] == phase
+    assert variables["FBC_response_capacity"] == capacity
+    before = variables.copy()
+    choose(script, number, letter)
+    assert variables == before
+
+
+def ai_weight(script, body):
+    weight = float(next(value for key, _, value in body if key == "base"))
+    for key, _, modifier in body:
+        if key != "modifier":
+            continue
+        conditions = [entry for entry in modifier if entry[0] not in {"factor", "add"}]
+        if script.condition(conditions, 1):
+            for name, _, value in modifier:
+                if name == "factor":
+                    weight *= float(value)
+                elif name == "add":
+                    weight += float(value)
+    return weight
+
+
+@pytest.mark.parametrize("number,letter", [(50, "a"), (50, "b"), (52, "a"), (52, "b")])
+def test_paid_options_keep_positive_but_reduced_bankruptcy_weights(number, letter):
+    script = BrightFallsScript()
+    body = next(
+        value
+        for key, _, value in _option(f"FBC.{number}", f"FBC.{number}.{letter}", EVENTS)
+        if key == "ai_chance"
+    )
+    normal = ai_weight(script, body)
+    script.countries[1]["missions"].add("bankruptcy_incoming_collapse")
+    assert 0 < ai_weight(script, body) < normal
+
+
+@pytest.mark.parametrize("phase", range(10))
+@pytest.mark.parametrize("controlled", [False, True])
+def test_dashboard_pauses_only_active_cases_when_washington_is_lost(phase, controlled):
+    script = BrightFallsScript()
+    script.countries[1]["vars"]["FBC_bf_phase"] = phase
+    script.countries[809]["controller"] = 1 if controlled else 2
+    text = (
+        ROOT
+        / "common/scripted_localisation/99_FBC_bright_falls_scripted_localisation.txt"
+    ).read_text(encoding="utf-8")
+    definitions = _parse_race_script("source = {" + text + "}")["source"]
+    status = next(
+        body for _, _, body in definitions if ("name", "=", "FBC_bf_status") in body
+    )
+    for key, _, body in status:
+        if key != "text":
+            continue
+        trigger = next((value for name, _, value in body if name == "trigger"), [])
+        if script.condition(trigger, 1):
+            actual = next(
+                value for name, _, value in body if name == "localization_key"
+            )
+            break
+    expected = f"FBC_bf_phase_{phase}" if phase else "FBC_bf_dormant"
+    if not controlled and 0 < phase < 8:
+        expected = "FBC_bf_paused"
+    assert actual == expected
+
+
+@pytest.mark.parametrize("exposure", [10, 80])
+@pytest.mark.parametrize(
+    "capacity,case,phase,committed,expected",
+    [
+        (1, "floor", 1, 0, 1),
+        (0, "floor", 0, 0, 1),
+        (0, "floor", 1, 0, 13),
+        (0, "floor", 3, 0, 13),
+        (0, "floor", 4, 0, 1),
+        (0, "floor", 2, 1, 1),
+        (0, "wing", 1, 0, 13),
+        (0, "wing", 3, 0, 13),
+        (0, "wing", 5, 0, 1),
+        (0, "wing", 2, 1, 1),
+    ],
+)
+def test_ai_withdrawal_rises_only_for_a_case_waiting_on_exhausted_capacity(
+    exposure, capacity, case, phase, committed, expected
+):
+    script = BrightFallsScript()
+    choose(script, 50, "b")
+    script.countries[1]["vars"].update(
+        {
+            "FBC_exposure": exposure,
+            "FBC_response_capacity": capacity,
+            f"FBC_{case}_phase": phase,
+            f"FBC_{case}_committed": committed,
+        }
+    )
+    text = (ROOT / "common/decisions/FBC_bright_falls_decisions.txt").read_text(
+        encoding="utf-8"
+    )
+    body = _parse_race_script(
+        _named_block(_named_block(text, "FBC_bf_withdraw_team"), "ai_will_do")
+    )["ai_will_do"]
+    assert ai_weight(script, body) == expected

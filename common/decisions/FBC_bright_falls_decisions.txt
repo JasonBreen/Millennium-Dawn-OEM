@@ -58,9 +58,23 @@ FBC_bureau_category = {
 			FBC_bf_withdraw = yes
 		}
 		ai_will_do = {
-			base = 30
-			modifier = { factor = 0.25 has_active_mission = bankruptcy_incoming_collapse }
-			modifier = { factor = 2 check_variable = { FBC_exposure > 40 } }
+			base = 1
+			modifier = {
+				add = 12
+				check_variable = { FBC_response_capacity < 1 }
+				OR = {
+					AND = {
+						check_variable = { FBC_floor_phase > 0 }
+						check_variable = { FBC_floor_phase < 4 }
+						check_variable = { FBC_floor_committed < 1 }
+					}
+					AND = {
+						check_variable = { FBC_wing_phase > 0 }
+						check_variable = { FBC_wing_phase < 4 }
+						check_variable = { FBC_wing_committed < 1 }
+					}
+				}
+			}
 		}
 	}
 }
