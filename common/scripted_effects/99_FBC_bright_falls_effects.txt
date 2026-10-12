@@ -1,0 +1,199 @@
+FBC_bf_commit_team = {
+	if = {
+		limit = { check_variable = { FBC_response_capacity > 0 } check_variable = { FBC_bf_committed < 1 } }
+		add_to_variable = { FBC_response_capacity = -1 }
+		set_variable = { FBC_bf_committed = 1 }
+	}
+}
+
+FBC_bf_release_team = {
+	if = {
+		limit = { check_variable = { FBC_bf_committed > 0 } }
+		set_variable = { FBC_bf_committed = 0 }
+		add_to_variable = { FBC_response_capacity = 1 }
+		clamp_variable = { var = FBC_response_capacity min = 0 max = 2 }
+	}
+}
+
+FBC_bf_start_clock = {
+	set_variable = { FBC_bf_due = global.num_days }
+	add_to_variable = { FBC_bf_due = 60 }
+	clear_variable = FBC_bf_remaining
+	clr_country_flag = FBC_bf_notice_pending
+}
+
+FBC_bf_pause = {
+	if = {
+		limit = { has_variable = FBC_bf_due }
+		set_variable = { FBC_bf_remaining = FBC_bf_due }
+		subtract_from_variable = { FBC_bf_remaining = global.num_days }
+		clamp_variable = { var = FBC_bf_remaining min = 0 max = 60 }
+		clear_variable = FBC_bf_due
+	}
+	FBC_bf_release_team = yes
+	clr_country_flag = FBC_bf_notice_pending
+}
+
+FBC_bf_close_preparation = {
+	FBC_bf_release_team = yes
+	clear_variable = FBC_bf_due
+	clear_variable = FBC_bf_remaining
+	clr_country_flag = FBC_bf_review_running
+	clr_country_flag = FBC_bf_notice_pending
+}
+
+FBC_bf_settle_preparation = {
+	if = {
+		limit = { check_variable = { FBC_bf_phase = 3 } }
+		set_variable = { FBC_bf_evidence = FBC_bf_protocol }
+		set_variable = { FBC_bf_phase = 4 }
+		FBC_bf_close_preparation = yes
+		add_to_variable = { FBC_containment_integrity = 5 }
+		add_to_variable = { FBC_exposure = 5 }
+		FBC_clamp_bureau = yes
+		FBC_refresh_bureau_factors = yes
+	}
+}
+
+FBC_bf_withdraw = {
+	if = {
+		limit = { check_variable = { FBC_bf_committed > 0 } }
+		FBC_bf_close_preparation = yes
+		if = {
+			limit = { check_variable = { FBC_bf_phase < 5 } }
+			set_variable = { FBC_bf_phase = 4 }
+			set_variable = { FBC_bf_evidence = 0 }
+		}
+		else = {
+			set_variable = { FBC_bf_phase = 7 }
+			set_variable = { FBC_bf_response = 2 }
+		}
+		add_to_variable = { FBC_exposure = 5 }
+		FBC_clamp_bureau = yes
+		FBC_refresh_bureau_factors = yes
+	}
+}
+
+FBC_bf_finish_crisis = {
+	if = {
+		limit = { check_variable = { FBC_bf_phase = 7 } }
+		set_variable = { FBC_bf_phase = 8 }
+		FBC_bf_close_preparation = yes
+		if = {
+			limit = { check_variable = { FBC_bf_response = 1 } check_variable = { FBC_bf_evidence > 0 } }
+			set_variable = { FBC_bf_result = 1 }
+			add_to_variable = { FBC_containment_integrity = 10 }
+			add_to_variable = { FBC_exposure = 5 }
+			if = { limit = { check_variable = { FBC_bf_evidence = 2 } } add_to_variable = { FBC_exposure = -5 } }
+			add_tech_bonus = { name = FBC_bf_recovered_records bonus = 0.25 uses = 1 category = CAT_electronics }
+		}
+		else_if = {
+			limit = { check_variable = { FBC_bf_response < 3 } }
+			set_variable = { FBC_bf_result = 2 }
+			add_to_variable = { FBC_containment_integrity = 5 }
+			add_to_variable = { FBC_exposure = 10 }
+			if = { limit = { check_variable = { FBC_bf_response = 1 } } add_to_variable = { FBC_exposure = -5 } }
+		}
+		else = {
+			set_variable = { FBC_bf_result = 3 }
+			add_to_variable = { FBC_containment_integrity = -10 }
+			add_to_variable = { FBC_exposure = 10 }
+			add_stability = -0.02
+			809 = { add_dynamic_modifier = { modifier = FBC_bf_local_disruption days = 180 } }
+		}
+		FBC_clamp_bureau = yes
+		FBC_refresh_bureau_factors = yes
+	}
+}
+
+FBC_bf_case_month = {
+	if = {
+		limit = { NOT = { has_variable = FBC_bf_phase } }
+		set_variable = { FBC_bf_phase = 1 }
+		set_variable = { FBC_bf_committed = 0 }
+		set_variable = { FBC_bf_evidence = 0 }
+	}
+	if = {
+		limit = { date > 2010.1.1 check_variable = { FBC_bf_phase < 5 } }
+		FBC_bf_close_preparation = yes
+		set_variable = { FBC_bf_phase = 5 }
+	}
+	if = {
+		limit = { has_variable = FBC_bf_remaining }
+		if = {
+			limit = {
+				OR = {
+					AND = { check_variable = { FBC_bf_phase = 2 } check_variable = { FBC_bf_protocol = 2 } }
+					AND = { check_variable = { FBC_bf_phase = 6 } check_variable = { FBC_bf_response = 1 } }
+				}
+			}
+			FBC_bf_commit_team = yes
+		}
+		if = {
+			limit = {
+				OR = {
+					check_variable = { FBC_bf_committed > 0 }
+					AND = { check_variable = { FBC_bf_phase = 2 } NOT = { check_variable = { FBC_bf_protocol = 2 } } }
+					AND = { check_variable = { FBC_bf_phase = 6 } NOT = { check_variable = { FBC_bf_response = 1 } } }
+					has_country_flag = FBC_bf_review_running
+				}
+			}
+			set_variable = { FBC_bf_due = global.num_days }
+			add_to_variable = { FBC_bf_due = FBC_bf_remaining }
+			clear_variable = FBC_bf_remaining
+		}
+	}
+	if = {
+		limit = { has_variable = FBC_bf_due check_variable = { var = FBC_bf_due value = global.num_days compare = less_than_or_equals } }
+		clear_variable = FBC_bf_due
+		if = { limit = { check_variable = { FBC_bf_phase = 2 } } set_variable = { FBC_bf_phase = 3 } }
+		else_if = { limit = { check_variable = { FBC_bf_phase = 6 } } set_variable = { FBC_bf_phase = 7 } }
+		else_if = {
+			limit = { has_country_flag = FBC_bf_review_running }
+			clr_country_flag = FBC_bf_review_running
+			set_country_flag = { flag = FBC_bf_review_cooldown value = 1 days = 180 }
+			if = { limit = { check_variable = { FBC_bf_evidence < 1 } } set_variable = { FBC_bf_evidence = 1 } }
+			add_to_variable = { FBC_containment_integrity = 5 }
+			FBC_clamp_bureau = yes
+			FBC_refresh_bureau_factors = yes
+		}
+	}
+	if = {
+		limit = { NOT = { has_country_flag = FBC_bf_notice_pending } }
+		if = {
+			limit = { check_variable = { FBC_bf_phase = 1 } }
+			set_country_flag = { flag = FBC_bf_notice_pending value = 1 days = 35 }
+			country_event = { id = FBC.50 days = 1 }
+		}
+		else_if = {
+			limit = { check_variable = { FBC_bf_phase = 3 } }
+			set_country_flag = { flag = FBC_bf_notice_pending value = 1 days = 35 }
+			country_event = { id = FBC.51 days = 1 }
+		}
+		else_if = {
+			limit = { check_variable = { FBC_bf_phase = 5 } }
+			set_country_flag = { flag = FBC_bf_notice_pending value = 1 days = 35 }
+			country_event = { id = FBC.52 days = 1 }
+		}
+		else_if = {
+			limit = { check_variable = { FBC_bf_phase = 7 } }
+			set_country_flag = { flag = FBC_bf_notice_pending value = 1 days = 35 }
+			country_event = { id = FBC.53 days = 1 }
+		}
+	}
+}
+
+FBC_monthly_bright_falls_pulse = {
+	if = {
+		limit = { FBC_scenario_enabled = yes USA = { has_variable = FBC_containment_integrity } }
+		if = {
+			limit = { NOT = { country_exists = USA } }
+			USA = { FBC_bf_close_preparation = yes set_variable = { FBC_bf_phase = 9 } }
+		}
+		else_if = {
+			limit = { 809 = { is_controlled_by = USA } }
+			USA = { FBC_bf_case_month = yes }
+		}
+		else = { USA = { FBC_bf_pause = yes } }
+	}
+}
