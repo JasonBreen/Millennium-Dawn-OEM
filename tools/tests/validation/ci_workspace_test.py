@@ -93,7 +93,7 @@ def _staged_fetch(tmp_path):
         source.as_uri(),
         str(checkout),
     )
-    fetch = workflow_step("tools-tests", "Fetch merge revision for staged integration")
+    fetch = workflow_step("tools-tests", "Fetch PR head for staged integration")
     command = shlex.split(
         substitute_expressions(
             fetch["run"],

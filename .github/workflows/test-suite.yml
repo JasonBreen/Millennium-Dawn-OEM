@@ -438,11 +438,13 @@ jobs:
 
       - name: Pack prepared workspace
         run: |
-          # Word splitting on WORKSPACE_PATHS also expands *.mod.
-          # shellcheck disable=SC2086
+          # Optional profile globs may have no matches in a sparse checkout.
+          shopt -s globstar nullglob
+          # shellcheck disable=SC2206
+          workspace_paths=( $WORKSPACE_PATHS )
           tar --zstd --exclude='music/*.ogg' --exclude='music/*.mp3' \
             --exclude='music/*.wav' -cf "$RUNNER_TEMP/prepared-workspace.tar.zst" \
-            $WORKSPACE_PATHS .workspace-manifest .validation_cache
+            "${workspace_paths[@]}" .workspace-manifest .validation_cache
 
       - name: Upload prepared workspace
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
