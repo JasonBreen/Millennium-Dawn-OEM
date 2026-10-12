@@ -74,7 +74,9 @@ def start_trail(script, tag):
         encoding="utf-8"
     )
     body = _parse_race_script(
-        _named_block(_named_block(text, f"METALGEAR_pf_{tag}_trail"), "complete_effect")
+        _named_block(
+            _named_block(text, f"METALGEAR_pf_{tag.lower()}_trail"), "complete_effect"
+        )
     )["complete_effect"]
     script.actor = script.tag(tag)
     script.execute(body, script.actor)
@@ -101,17 +103,45 @@ def test_national_trail_has_a_real_delay_and_one_terminal_policy(
     before = variables.copy(), script.globals.copy()
     choose(script, number, letter, tag)
     assert (variables, script.globals) == before
+    script.goto(2005, 1, 2)
+    script.run("METALGEAR_monthly_proliferation_pulse", 1)
+    assert variables["METALGEAR_pf_phase"] == 4
+    assert variables["METALGEAR_pf_policy"] == policy
 
 
 @pytest.mark.parametrize("tag", ["USA", "JAP", "SOV"])
-def test_2005_cancels_unfinished_trail_and_abandonment_is_idempotent(tag):
+@pytest.mark.parametrize("phase", [2, 3])
+def test_2005_cancels_unfinished_trail_and_abandonment_is_idempotent(tag, phase):
     script = ProliferationScript()
     start_trail(script, tag)
+    script.countries[script.tag(tag)]["vars"]["METALGEAR_pf_phase"] = phase
     script.goto(2005, 1, 2)
     script.run("METALGEAR_monthly_proliferation_pulse", 1)
     script.run("METALGEAR_pf_interrupt", script.tag(tag))
     assert script.countries[script.tag(tag)]["vars"]["METALGEAR_pf_phase"] == 5
     assert script.globals["METALGEAR_capacity"] == 2
+
+
+@pytest.mark.parametrize("tag", ["USA", "JAP", "SOV"])
+@pytest.mark.parametrize("capacity", [0, 2])
+def test_2005_closes_an_unstarted_trail_without_releasing_unreserved_capacity(
+    tag, capacity
+):
+    script = ProliferationScript()
+    script.globals["METALGEAR_capacity"] = capacity
+    script.goto(2005, 1, 1)
+    script.run("METALGEAR_monthly_proliferation_pulse", 1)
+    assert script.countries[script.tag(tag)]["vars"].get("METALGEAR_pf_phase", 0) == 0
+    script = deepcopy(script)
+    script.goto(2005, 1, 2)
+    script.run("METALGEAR_monthly_proliferation_pulse", 1)
+    variables = script.countries[script.tag(tag)]["vars"]
+    assert variables["METALGEAR_pf_phase"] == 5
+    before = variables.copy(), script.globals.copy()
+    script.run("METALGEAR_monthly_proliferation_pulse", 1)
+    start_trail(script, tag)
+    assert (variables, script.globals) == before
+    assert script.globals["METALGEAR_capacity"] == capacity
 
 
 @pytest.mark.parametrize(
@@ -157,6 +187,35 @@ def test_interrupted_partner_closes_without_canceling_other_country(
     assert script.countries[1]["vars"]["METALGEAR_pf_inquiry"] == 2
 
 
+@pytest.mark.parametrize("tag,number", [("JAP", 54), ("SOV", 55)])
+@pytest.mark.parametrize("reply", [None, "a", "b"])
+def test_initial_partner_notice_prevents_early_duplicates_and_allows_later_recovery(
+    tag, number, reply
+):
+    script = ProliferationScript()
+    script.countries[1]["vars"]["METALGEAR_pf_inquiry"] = 1
+    choose(script, 53, "a")
+    choose(script, 53, "a")
+    requests = [
+        (script.tag("JAP"), "METALGEAR.54"),
+        (script.tag("SOV"), "METALGEAR.55"),
+    ]
+    assert [script.events.count(request) for request in requests] == [1, 1]
+    script = deepcopy(script)
+    script.goto(2001, 2, 1)
+    script.run("METALGEAR_monthly_proliferation_pulse", 1)
+    script.run("METALGEAR_monthly_proliferation_pulse", 1)
+    assert [script.events.count(request) for request in requests] == [1, 1]
+    if reply is not None:
+        choose(script, number, reply, tag)
+    script.goto(2001, 2, 5)
+    script.run("METALGEAR_monthly_proliferation_pulse", 1)
+    for request in requests:
+        answered = request[0] == script.tag(tag) and reply is not None
+        assert script.events.count(request) == (1 if answered else 2)
+    assert script.globals["METALGEAR_capacity"] == 1
+
+
 def test_missing_shadow_records_still_dispatches_inquiry_and_both_incidents():
     script = ProliferationScript()
     script.goto(2006, 1, 2)
@@ -192,8 +251,11 @@ def test_incident_routes_keep_separate_results_and_release_once(
     assert f"METALGEAR_pf_{other}_result" not in variables
 
 
-@pytest.mark.parametrize("brief,case", [(59, "tanker"), (61, "shell")])
-def test_exhausted_capacity_or_lost_new_york_retains_emergency_authority(brief, case):
+@pytest.mark.parametrize("brief,case,report", [(59, "tanker", 60), (61, "shell", 62)])
+@pytest.mark.parametrize("controlled", [False, True])
+def test_emergency_authority_keeps_its_delay_with_exhausted_capacity_or_lost_site(
+    brief, case, report, controlled
+):
     script = ProliferationScript()
     script.actor = 1
     script.countries[1]["vars"][f"METALGEAR_pf_{case}_phase"] = 1
@@ -201,23 +263,44 @@ def test_exhausted_capacity_or_lost_new_york_retains_emergency_authority(brief, 
     assert not available(script, brief, "a")
     assert not available(script, brief, "b")
     assert available(script, brief, "c")
-    script.countries[769]["controller"] = 2
+    script.countries[769]["controller"] = 1 if controlled else 2
     choose(script, brief, "c")
+    for month, day in [(1, 1), (2, 1), (3, 1)]:
+        script.goto(2001, month, day)
+        script.run("METALGEAR_monthly_incidents_pulse", 1)
+        assert script.countries[1]["vars"][f"METALGEAR_pf_{case}_phase"] == 2
+        assert script.events.count((1, f"METALGEAR.{report}")) == 0
+    script = deepcopy(script)
+    script.goto(2001, 3, 2)
     script.run("METALGEAR_monthly_incidents_pulse", 1)
-    assert script.countries[1]["vars"][f"METALGEAR_pf_{case}_phase"] == 3
+    variables = script.countries[1]["vars"]
+    assert variables[f"METALGEAR_pf_{case}_phase"] == 3
+    assert script.events.count((1, f"METALGEAR.{report}")) == 1
+    choose(script, report, "a")
+    assert variables[f"METALGEAR_pf_{case}_result"] == 3
     assert script.globals["METALGEAR_capacity"] == 0
 
 
 @pytest.mark.parametrize("case,brief", [("tanker", 59), ("shell", 61)])
-def test_lost_site_or_host_releases_only_the_affected_commitment(case, brief):
+@pytest.mark.parametrize("route", ["a", "b"])
+def test_lost_site_downgrades_and_releases_only_the_affected_commitment(
+    case, brief, route
+):
     script = ProliferationScript()
+    script.run("METALGEAR_pf_commit", 1)
     script.countries[1]["vars"][f"METALGEAR_pf_{case}_phase"] = 1
-    choose(script, brief, "a")
+    choose(script, brief, route)
     script.countries[769]["controller"] = 2
     script.run("METALGEAR_monthly_incidents_pulse", 1)
     script.run("METALGEAR_monthly_incidents_pulse", 1)
-    assert script.globals["METALGEAR_capacity"] == 2
-    assert script.countries[1]["vars"][f"METALGEAR_pf_{case}_route"] == 3
+    assert script.globals["METALGEAR_capacity"] == 1
+    variables = script.countries[1]["vars"]
+    assert variables[f"METALGEAR_pf_{case}_route"] == 3
+    assert variables[f"METALGEAR_pf_{case}_phase"] == 3
+    assert variables["METALGEAR_pf_committed"] == 1
+    assert not script.condition(
+        [("has_country_flag", "=", f"METALGEAR_pf_{case}_wait")], 1
+    )
 
 
 @pytest.mark.parametrize("prepared", [False, True])
