@@ -9,7 +9,7 @@ import re
 
 import pytest
 import validate_localisation as VL
-from shared.suite import write_under_str
+from shared.suite import write_under_str, yml_scan
 
 
 def _validator(tmp_path, workers=1):
@@ -40,7 +40,7 @@ def test_typo_scan_finds_whole_words_on_every_line_shape(tmp_path):
         ' C:0 "Café Isreal xseperate"',
     )
 
-    assert VL.process_yml_for_typos((path,)) == [
+    assert yml_scan(path, "typos") == [
         "typo_l_english.yml - line 2 - 'Seperate' -> 'separate'",
         "typo_l_english.yml - line 2 - 'seperate' -> 'separate'",
         "typo_l_english.yml - line 2 - 'seperate' -> 'separate'",
@@ -240,7 +240,7 @@ def _pooled_tree(tmp_path):
     write_under_str(
         tmp_path,
         "localisation/english/t_l_english.yml",
-        'l_english:\n orphan_tt:0 "x"\n used_tt:0 "y"\n',
+        'l_english:\n orphan_tt: "x"\n used_tt: "y"\n',
     )
     for index in range(12):
         write_under_str(

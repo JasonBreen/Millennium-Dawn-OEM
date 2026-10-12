@@ -24,7 +24,7 @@ def reuse_repository_import_graph(monkeypatch, repository_import_graph):
 
 
 def test_every_batch_spec_script_exists():
-    assert len(vb.ALL_SPECS) == 44
+    assert len(vb.ALL_SPECS) == 45
     assert not {spec.name for spec in vb.ALL_SPECS} & {
         spec.name for spec in vb.IMPACT_ONLY_SPECS
     }
@@ -45,7 +45,9 @@ def test_batches_cover_every_ci_validator_exactly_once():
 
 def test_core_batch_selects_from_the_core_groups():
     for spec in vb.BATCHES["core"]:
-        assert set(spec.groups) == set(vb._CORE_GROUPS)
+        # Only common-mistakes also scans the music tree.
+        extra = {"music"} if spec.name == "common-mistakes" else set()
+        assert set(spec.groups) == set(vb._CORE_GROUPS) | extra
 
 
 def test_variables_spec_carries_the_redundant_focus_flag_scan():
@@ -60,6 +62,18 @@ def test_decisions_spec_carries_the_unannounced_category_scan():
     assert spec.strict is True
 
 
+def test_math_expressions_spec_carries_the_clamp_bounds_check():
+    spec = next(spec for spec in vb.ALL_SPECS if spec.name == "math-expressions")
+    assert spec.args == ("--clamp-bounds",)
+    assert spec.strict is True
+
+
+def test_events_spec_carries_the_cost_sensitivity_check():
+    spec = next(spec for spec in vb.ALL_SPECS if spec.name == "events")
+    assert spec.args == ("--check-ai-chance-costs",)
+    assert spec.strict is True
+
+
 def test_selected_specs_filters_by_changed_groups():
     selected = {
         spec.name
@@ -70,6 +84,23 @@ def test_selected_specs_filters_by_changed_groups():
     assert selected == {"decisions", "mios"}
     # An unknown or empty group list selects the whole batch (dispatch flow).
     assert len(rvb.selected_specs("targeted-a", None)) == len(vb.BATCHES["targeted-a"])
+
+
+def test_graphic_db_group_selects_gfx_references():
+    selected = {spec.name for spec in rvb.selected_specs("targeted-b", {"graphic-db"})}
+    assert selected == {"gfx-references"}
+
+
+def test_common_group_selects_graphical_culture_registration():
+    selected = {spec.name for spec in rvb.selected_specs("targeted-b", {"common"})}
+    assert "graphical-cultures" in selected
+    spec = next(spec for spec in vb.ALL_SPECS if spec.name == "graphical-cultures")
+    assert spec.strict is False
+
+
+def test_music_group_selects_only_common_mistakes():
+    selected = {spec.name for spec in rvb.selected_specs("core", {"music"})}
+    assert selected == {"common-mistakes"}
 
 
 def test_selected_specs_rejects_unknown_batch():
@@ -99,7 +130,8 @@ def test_shared_module_change_selects_its_transitive_consumers():
 
 @pytest.mark.usefixtures("reuse_repository_import_graph")
 def test_linting_wrapper_change_selects_the_validator_it_wraps():
-    # Both validate_common_mistakes and validate_decisions import this scanner.
+    # validate_common_mistakes, validate_decisions, validate_equipment_variants,
+    # and validate_events import this scanner.
     batch, adhoc = vb.select_for_changed_files(
         ["tools/linting/check_common_mistakes.py"]
     )
@@ -107,6 +139,7 @@ def test_linting_wrapper_change_selects_the_validator_it_wraps():
         "common-mistakes",
         "decisions",
         "equipment-variants",
+        "events",
     }
     assert adhoc == []
 
