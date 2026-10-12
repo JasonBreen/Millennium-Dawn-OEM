@@ -2,9 +2,10 @@ from copy import deepcopy
 
 import pytest
 from ai_race_state_model_test import _named_block, _parse_race_script
-from stalker_lifecycle_test import ROOT, StalkerScript
+from stalker_lifecycle_test import ROOT, StalkerScript, _option
 
 EVENTS = "events/DEUSEX_corporate_cold_war.txt"
+CRISIS_CASES = [("USA", 66), ("CHI", 67), ("GER", 68)]
 
 
 class CorporateScript(StalkerScript):
@@ -55,18 +56,11 @@ class CorporateScript(StalkerScript):
     def execute_statement(self, statement, identifier):
         key, _, operand = statement
         if key == "random":
-            chance = float(
-                next(value for name, _, value in operand if name == "chance")
+            assert all(name != "modifier" for name, _, _ in operand)
+            chance = self.value(
+                next(value for name, _, value in operand if name == "chance"),
+                identifier,
             )
-            for name, _, body in operand:
-                if name == "modifier":
-                    factor = float(
-                        next(value for item, _, value in body if item == "factor")
-                    )
-                    if self.condition(
-                        [entry for entry in body if entry[0] != "factor"], identifier
-                    ):
-                        chance *= factor
             self.rolls.append(chance)
         elif key != "custom_effect_tooltip":
             super().execute_statement(statement, identifier)
@@ -75,6 +69,14 @@ class CorporateScript(StalkerScript):
 def choose(script, number, letter, tag):
     script.actor = script.tag(tag)
     script.hidden_option(f"DEUSEX.{number}", f"DEUSEX.{number}.{letter}", EVENTS)
+
+
+def option_allowed(script, number, letter, tag):
+    body = _option(f"DEUSEX.{number}", f"DEUSEX.{number}.{letter}", EVENTS)
+    script.actor = script.tag(tag)
+    return script.condition(
+        next(value for key, _, value in body if key == "trigger"), script.actor
+    )
 
 
 def decision(script, name, tag):
@@ -189,7 +191,19 @@ def test_shortage_probability_changes_only_with_safety_and_active_funding(
     assert script.rolls == [chance]
 
 
-@pytest.mark.parametrize("tag,number", [("USA", 66), ("CHI", 67), ("GER", 68)])
+def test_shortage_chance_resets_after_funding_ends_and_respects_existing_cooldown():
+    script = CorporateScript()
+    flags = script.countries[1]["flags"]
+    flags.update(DEUSEX_cc_safety_protocol=None, DEUSEX_aug_neuropozyne_funded=None)
+    script.run("DEUSEX_augmentation_month", 1)
+    del flags["DEUSEX_aug_neuropozyne_funded"]
+    script.run("DEUSEX_augmentation_month", 1)
+    flags["DEUSEX_aug_shortage_cooldown"] = None
+    script.run("DEUSEX_augmentation_month", 1)
+    assert script.rolls == [2, 4]
+
+
+@pytest.mark.parametrize("tag,number", CRISIS_CASES)
 @pytest.mark.parametrize("prepared", [False, True])
 def test_2027_safety_verification_requires_preexisting_preparation(
     tag, number, prepared
@@ -229,7 +243,7 @@ def test_verified_safety_limits_stability_loss_without_removing_incident_unrest(
 
 def test_october_closes_unfinished_intervention_before_delayed_choice_can_execute():
     script = CorporateScript()
-    script.goto(2027, 9, 1)
+    script.goto(2027, 8, 2)
     script.countries[1]["vars"]["DEUSEX_cc_crisis"] = 1
     choose(script, 66, "a", "USA")
     script.goto(2027, 10, 2)
@@ -252,7 +266,7 @@ def test_abandonment_and_disabled_pulse_cannot_grant_safety_or_corporate_rewards
     assert "DEUSEX_cc_crisis" not in script.countries[1]["vars"]
 
 
-@pytest.mark.parametrize("tag,number", [("USA", 66), ("CHI", 67), ("GER", 68)])
+@pytest.mark.parametrize("tag,number", CRISIS_CASES)
 @pytest.mark.parametrize("letter,prepared", [("b", False), ("b", True), ("c", False)])
 def test_patient_protection_and_corporate_deference_costs_and_outcomes(
     tag, number, letter, prepared
@@ -273,3 +287,145 @@ def test_patient_protection_and_corporate_deference_costs_and_outcomes(
     assert variables["DEUSEX_cc_crisis"] == 4
     assert variables["DEUSEX_illum_influence"] == (10 if letter == "b" else 30)
     assert "DEUSEX_cc_safety_verified" not in script.countries[identifier]["flags"]
+
+
+@pytest.mark.parametrize("tag,number", CRISIS_CASES)
+@pytest.mark.parametrize("letter", ["a", "b"])
+@pytest.mark.parametrize(
+    "month,day,allowed", [(8, 2, True), (8, 3, False), (10, 1, False), (10, 2, False)]
+)
+def test_paid_interventions_require_a_full_runway_at_display_and_execution(
+    tag, number, letter, month, day, allowed
+):
+    script = CorporateScript()
+    identifier = script.tag(tag)
+    script.countries[identifier]["vars"]["DEUSEX_cc_crisis"] = 1
+    script.goto(2027, month, day)
+    assert option_allowed(script, number, letter, tag) == allowed
+    before = deepcopy(script.countries)
+    choose(script, number, letter, tag)
+    if allowed:
+        assert script.countries[identifier]["vars"]["DEUSEX_cc_crisis"] == 2
+        assert script.countries[identifier]["flags"]["DEUSEX_cc_crisis_wait"] == (
+            script.globals["num_days"] + 60
+        )
+    else:
+        assert script.countries == before
+
+
+@pytest.mark.parametrize("tag,number", CRISIS_CASES)
+@pytest.mark.parametrize("letter", ["a", "b"])
+def test_last_day_intervention_finishes_in_october_and_rewards_once(
+    tag, number, letter
+):
+    script = CorporateScript()
+    identifier = script.tag(tag)
+    variables = script.countries[identifier]["vars"]
+    variables["DEUSEX_cc_crisis"] = 1
+    script.countries[identifier]["flags"]["DEUSEX_cc_safety_protocol"] = None
+    script.goto(2027, 8, 2)
+    choose(script, number, letter, tag)
+    script.goto(2027, 9, 1)
+    script.run("DEUSEX_monthly_corporate_cold_war_pulse", 1)
+    assert variables["DEUSEX_cc_crisis"] == 2
+    script = deepcopy(script)
+    script.goto(2027, 10, 1)
+    script.run("DEUSEX_monthly_corporate_cold_war_pulse", 1)
+    country = script.countries[identifier]
+    assert country["vars"]["DEUSEX_cc_crisis"] == 4
+    assert "DEUSEX_cc_evidence" in country["flags"]
+    assert ("DEUSEX_cc_safety_verified" in country["flags"]) == (letter == "a")
+    assert country["vars"]["DEUSEX_illum_influence"] == (20 if letter == "a" else 10)
+    before = deepcopy(country)
+    script.goto(2027, 10, 2)
+    script.run("DEUSEX_monthly_corporate_cold_war_pulse", 1)
+    choose(script, number, letter, tag)
+    assert script.countries[identifier] == before
+    for other in {"USA", "CHI", "GER"} - {tag}:
+        assert script.countries[script.tag(other)]["vars"]["DEUSEX_cc_crisis"] == 5
+
+
+@pytest.mark.parametrize("tag,number", CRISIS_CASES)
+@pytest.mark.parametrize("month,day", [(8, 3), (10, 1)])
+def test_corporate_response_stays_available_after_intervention_deadline(
+    tag, number, month, day
+):
+    script = CorporateScript()
+    identifier = script.tag(tag)
+    script.countries[identifier]["vars"]["DEUSEX_cc_crisis"] = 1
+    script.goto(2027, month, day)
+    assert option_allowed(script, number, "c", tag)
+    choose(script, number, "c", tag)
+    assert script.countries[identifier]["vars"]["DEUSEX_cc_crisis"] == 4
+    assert script.countries[identifier]["vars"]["political_power"] == 200
+
+
+@pytest.mark.parametrize(
+    "sender,recipient,number",
+    [("USA", "GER", 63), ("CHI", "USA", 64), ("GER", "CHI", 65)],
+)
+@pytest.mark.parametrize("balance", [-10, 0, 24])
+def test_exchange_consent_can_charge_negative_political_power_once(
+    sender, recipient, number, balance
+):
+    script = CorporateScript()
+    script.countries[script.tag(sender)]["vars"]["DEUSEX_cc_policy"] = 2
+    decision(script, f"DEUSEX_cc_{sender}_exchange", sender)
+    variables = script.countries[script.tag(recipient)]["vars"]
+    variables["political_power"] = balance
+    assert option_allowed(script, number, "a", recipient)
+    choose(script, number, "a", recipient)
+    assert variables["political_power"] == balance - 25
+    assert script.countries[script.tag(sender)]["vars"]["DEUSEX_cc_exchange"] == 2
+    before = deepcopy(script.countries)
+    choose(script, number, "a", recipient)
+    assert script.countries == before
+
+
+@pytest.mark.parametrize("tag,number", CRISIS_CASES)
+@pytest.mark.parametrize("letter", ["a", "b"])
+@pytest.mark.parametrize("evidence", [False, True])
+@pytest.mark.parametrize("balance", [-10, 0, 24])
+def test_crisis_choices_can_charge_negative_political_power_once(
+    tag, number, letter, evidence, balance
+):
+    script = CorporateScript()
+    script.goto(2027, 1, 2)
+    identifier = script.tag(tag)
+    variables = script.countries[identifier]["vars"]
+    variables.update(DEUSEX_cc_crisis=1, political_power=balance)
+    if evidence:
+        script.countries[identifier]["flags"]["DEUSEX_cc_evidence"] = None
+    assert option_allowed(script, number, letter, tag)
+    choose(script, number, letter, tag)
+    cost = 25 if letter == "a" or evidence else 50
+    assert variables["political_power"] == balance - cost
+    assert variables["DEUSEX_cc_crisis"] == 2
+    before = deepcopy(script.countries)
+    choose(script, number, letter, tag)
+    assert script.countries == before
+
+
+@pytest.mark.parametrize(
+    "number,letter,tag",
+    [(63, "a", "GER"), (64, "a", "USA"), (65, "a", "CHI")]
+    + [(number, letter, tag) for tag, number in CRISIS_CASES for letter in ["a", "b"]],
+)
+def test_paid_choices_retain_positive_bankruptcy_ai_weights(number, letter, tag):
+    script = CorporateScript()
+    identifier = script.tag(tag)
+    body = _option(f"DEUSEX.{number}", f"DEUSEX.{number}.{letter}", EVENTS)
+    ai = next(value for key, _, value in body if key == "ai_chance")
+    base = float(next(value for key, _, value in ai if key == "base"))
+    modifier = next(
+        value
+        for key, _, value in ai
+        if key == "modifier"
+        and ("has_active_mission", "=", "bankruptcy_incoming_collapse") in value
+    )
+    conditions = [entry for entry in modifier if entry[0] != "factor"]
+    assert not script.condition(conditions, identifier)
+    script.countries[identifier]["missions"].add("bankruptcy_incoming_collapse")
+    assert script.condition(conditions, identifier)
+    factor = float(next(value for key, _, value in modifier if key == "factor"))
+    assert 0 < base * factor < base
