@@ -147,6 +147,7 @@ def test_additional_exchange_requires_consent_and_cannot_reward_twice(
     variables = script.countries[script.tag(sender)]["vars"]
     variables["DEUSEX_cc_policy"] = 2
     decision(script, f"DEUSEX_cc_{sender}_exchange", sender)
+    assert "DEUSEX_cc_exchange_notice" in script.countries[script.tag(sender)]["flags"]
     choose(script, number, letter, recipient)
     assert variables["DEUSEX_cc_exchange"] == expected
     before = deepcopy(script.countries)
@@ -292,7 +293,8 @@ def test_patient_protection_and_corporate_deference_costs_and_outcomes(
 @pytest.mark.parametrize("tag,number", CRISIS_CASES)
 @pytest.mark.parametrize("letter", ["a", "b"])
 @pytest.mark.parametrize(
-    "month,day,allowed", [(8, 2, True), (8, 3, False), (10, 1, False), (10, 2, False)]
+    "month,day,allowed",
+    [(7, 2, True), (7, 3, False), (8, 2, False), (10, 1, False), (10, 2, False)],
 )
 def test_paid_interventions_require_a_full_runway_at_display_and_execution(
     tag, number, letter, month, day, allowed
@@ -315,7 +317,7 @@ def test_paid_interventions_require_a_full_runway_at_display_and_execution(
 
 @pytest.mark.parametrize("tag,number", CRISIS_CASES)
 @pytest.mark.parametrize("letter", ["a", "b"])
-def test_last_day_intervention_finishes_in_october_and_rewards_once(
+def test_latest_allowed_intervention_finishes_at_next_review_and_rewards_once(
     tag, number, letter
 ):
     script = CorporateScript()
@@ -323,11 +325,11 @@ def test_last_day_intervention_finishes_in_october_and_rewards_once(
     variables = script.countries[identifier]["vars"]
     variables["DEUSEX_cc_crisis"] = 1
     script.countries[identifier]["flags"]["DEUSEX_cc_safety_protocol"] = None
-    script.goto(2027, 8, 2)
+    script.goto(2027, 7, 2)
     choose(script, number, letter, tag)
     script.goto(2027, 9, 1)
     script.run("DEUSEX_monthly_corporate_cold_war_pulse", 1)
-    assert variables["DEUSEX_cc_crisis"] == 2
+    assert variables["DEUSEX_cc_crisis"] == 4
     script = deepcopy(script)
     script.goto(2027, 10, 1)
     script.run("DEUSEX_monthly_corporate_cold_war_pulse", 1)
