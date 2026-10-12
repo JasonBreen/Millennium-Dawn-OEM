@@ -111,10 +111,12 @@ names and events against the in-game text as documented by the S.T.A.L.K.E.R. Wi
   Hidden `STALKER.192` checks the laboratory daily while a study runs, for that country only, and ends
   the study the first day it is not working. Either way `STALKER_polar_study_cut_short` (181 days)
   blocks `STALKER.190`.
+- **Field Campaigns (200–209):** `STALKER_field_campaigns.txt`; loc `_field_campaigns_`;
+  `99_STALKER_field_campaigns_effects.txt`.
 
 Localisation file names are `MD_STALKER_<subsystem>_l_english.yml`.
 
-Events 182–189 remain available in the Legend block. The next free block is 200–209. Decision categories are one file each in
+Events 182–189 remain available in the Legend block. The next free block is 210–219. Decision categories are one file each in
 `common/decisions/categories/00_STALKER_*_category.txt`. Dynamic modifiers are one file per
 subsystem in `common/dynamic_modifiers/00_STALKER_*dynamic_modifiers.txt`.
 
@@ -143,3 +145,27 @@ where possible; they are what an upstream port has to carry.
   with "provided: None" and do nothing. This kept the whole scenario from starting until 2026-09-27.
 - `clamp_variable` on an unset variable is a runtime error. Initialize any variable that a shared
   clamp such as `STALKER_clamp_zone_society` touches, even when its value is 0.
+
+## Original Zone field campaigns
+
+Field Campaigns owns IDs 200-209. The Yantar, Army Warehouses and Red Forest dossiers each use an intake,
+first report and final choice. They run in that order, after the original Zone opens and its policy is answered.
+All phases, 60-day assignment flags, outcomes and recurring assignment cooldowns live on state 698. Campaign
+steps are 0 intake, 1 investigation available, 2 investigating, 3 first report, 4 recovery available,
+5 recovering and 6 final report; case 4 means all dossiers are closed. Monthly delivery binds each event to
+the original Zone and its current controller. A transferred or lost report retries without changing the result.
+
+An investigation costs 25 PP; recovery costs 50 PP. Escorting scientific supplies or patrolling the road costs
+25 PP and takes 60 days, with a 180-day cooldown after completion. These share the field-assignment slot and
+grant only their 5-point effects, never the campaign's research reward. Abandoning a dossier strengthens bandits.
+Road patrols support both factions by 5 after an accord, or strengthen the backed faction by 5 while weakening
+its rival by 5. When the existing 2022 battle begins, unfinished dossiers close unprepared and their campaign
+timer stops. Completed history and recurring management assignments remain available.
+Shared Yantar findings add 5 scientists when the existing 2018 SIRCAA choice resolves. A secured road offsets
+5 containment loss in the 2022 battle once. Preserved Red Forest evidence discounts one MDST purge for the Zone
+controller from 75 to 50 PP; its custom cost and affordability use the same site-owned condition.
+
+Yantar, the Army Warehouses and the Red Forest are narrative locations, not new map states. These are original
+government missions using existing factions. No existing dated route or ending is selected by this subsystem.
+Native acceptance: save/reload during both assignments, transfer during every report, inactive Zone,
+repeat pulses and options, recurring rewards, all 2018/2022 branches, and one-use purge cost.
