@@ -20,13 +20,7 @@ def _script():
             )
         )
     )
-    script.actor = 2
-    script.run("STALKER_initialize_zone_society", 698)
-    script.countries[698]["vars"].update(
-        STALKER_zone_activity=50,
-        STALKER_zone_containment=50,
-        STALKER_zone_exploitation=50,
-    )
+    script.prepare_original_zone()
     script.globals["STALKER_2012_route"] = 1
     return script
 
