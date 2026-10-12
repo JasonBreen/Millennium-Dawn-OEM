@@ -20,6 +20,8 @@ class BrightFallsScript(StalkerScript):
         self.research = []
         self.country(809, tag="WASHINGTON")
         self.countries[809]["controller"] = 1
+        self.country(764, tag="MAINE")
+        self.countries[764]["controller"] = 1
         self.actor = 1
         self.countries[1]["vars"].update(
             FBC_response_capacity=2,
@@ -247,6 +249,16 @@ def ai_weight(script, body):
     return weight
 
 
+def withdrawal_ai_weight(script):
+    text = (ROOT / "common/decisions/FBC_bright_falls_decisions.txt").read_text(
+        encoding="utf-8"
+    )
+    body = _parse_race_script(
+        _named_block(_named_block(text, "FBC_bf_withdraw_team"), "ai_will_do")
+    )["ai_will_do"]
+    return ai_weight(script, body)
+
+
 @pytest.mark.parametrize("number,letter", [(50, "a"), (50, "b"), (52, "a"), (52, "b")])
 def test_paid_options_keep_positive_but_reduced_bankruptcy_weights(number, letter):
     script = BrightFallsScript()
@@ -318,10 +330,40 @@ def test_ai_withdrawal_rises_only_for_a_case_waiting_on_exhausted_capacity(
             f"FBC_{case}_committed": committed,
         }
     )
-    text = (ROOT / "common/decisions/FBC_bright_falls_decisions.txt").read_text(
-        encoding="utf-8"
+    assert withdrawal_ai_weight(script) == expected
+
+
+@pytest.mark.parametrize(
+    "overrides,controlled,ended,pending,expected",
+    [
+        ({}, True, False, False, 13),
+        ({"FBC_response_capacity": 1}, True, False, False, 1),
+        ({"FBC_sh_phase": 0}, True, False, False, 1),
+        ({"FBC_sh_phase": 1}, True, False, False, 1),
+        ({"FBC_sh_phase": 3}, True, False, False, 1),
+        ({"FBC_sh_intervention": 2}, True, False, False, 1),
+        ({"FBC_sh_intervention": 3}, True, False, False, 1),
+        ({"FBC_sh_committed": 1}, True, False, False, 1),
+        ({}, False, False, False, 1),
+        ({}, True, True, False, 1),
+        ({}, True, False, True, 1),
+    ],
+)
+def test_ai_withdrawal_counts_only_resumable_silent_hill_team_interventions(
+    overrides, controlled, ended, pending, expected
+):
+    script = BrightFallsScript()
+    choose(script, 50, "b")
+    script.countries[764]["controller"] = 1 if controlled else 2
+    script.countries[1]["vars"].update(
+        FBC_response_capacity=0,
+        FBC_sh_phase=2,
+        FBC_sh_intervention=1,
+        FBC_sh_committed=0,
     )
-    body = _parse_race_script(
-        _named_block(_named_block(text, "FBC_bf_withdraw_team"), "ai_will_do")
-    )["ai_will_do"]
-    assert ai_weight(script, body) == expected
+    script.countries[1]["vars"].update(overrides)
+    if ended:
+        script.global_flags["FBC_sh_ended"] = None
+    if pending:
+        script.countries[1]["flags"]["FBC_sh_ending_pending"] = None
+    assert withdrawal_ai_weight(script) == expected
