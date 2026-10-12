@@ -52,7 +52,7 @@ def classify(line):
     """Recognize explicit labels, never prose style or incidental tool mentions."""
     line = line.lstrip("\ufeff \t").replace("**", "").replace("`", "")
     line = re.sub(r"^(?:<!--|/\*|//|\#+|\*|--|;)\s*", "", line)
-    line = re.sub(r"\s*(?:-->|\*/)\s*$", "", line)
+    line = re.sub(r"\s*(?:--!?>|\*/)\s*$", "", line)
     line = line.removeprefix("🤖").strip()
     match = ATTRIBUTION.fullmatch(line)
     if not match:
