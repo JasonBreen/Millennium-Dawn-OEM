@@ -97,7 +97,10 @@ def _staged_fetch(tmp_path):
     command = shlex.split(
         substitute_expressions(
             fetch["run"],
-            {"github.repository": "owner/repo", "github.sha": target},
+            {
+                "needs.detect-changes.outputs.checkout-repository": "owner/repo",
+                "needs.detect-changes.outputs.head-sha": target,
+            },
         ).replace("https://github.com/owner/repo.git", source.as_uri())
     )
     assert command[:2] == ["git", "fetch"]
@@ -114,7 +117,10 @@ def test_staged_worktree_step_checks_out_only_the_staged_profile(tmp_path):
     step = workflow_step("tools-quality", "Create staged integration worktree")
     script = substitute_expressions(
         step["run"],
-        {"runner.temp": str(tmp_path / "runner"), "github.sha": target},
+        {
+            "runner.temp": str(tmp_path / "runner"),
+            "needs.detect-changes.outputs.head-sha": target,
+        },
     )
 
     result = run_bash_step(script, checkout)
