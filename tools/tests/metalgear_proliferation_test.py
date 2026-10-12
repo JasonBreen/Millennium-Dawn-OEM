@@ -42,6 +42,15 @@ class ProliferationScript(StalkerScript):
         if statement[0] != "custom_effect_tooltip":
             super().execute_statement(statement, identifier)
 
+    def run_control_change_hook(self):
+        text = (
+            ROOT / "common/on_actions/99_METALGEAR_proliferation_on_actions.txt"
+        ).read_text(encoding="utf-8")
+        body = _parse_race_script(
+            _named_block(_named_block(text, "on_state_control_changed"), "effect")
+        )["effect"]
+        self.execute(body, 698)
+
 
 def choose(script, number, letter, tag="USA"):
     script.actor = script.tag(tag)
@@ -267,11 +276,18 @@ def test_emergency_authority_keeps_its_delay_with_exhausted_capacity_or_lost_sit
     choose(script, brief, "c")
     for month, day in [(1, 1), (2, 1), (3, 1)]:
         script.goto(2001, month, day)
+        script.run_control_change_hook()
+        script.run_control_change_hook()
         script.run("METALGEAR_monthly_incidents_pulse", 1)
         assert script.countries[1]["vars"][f"METALGEAR_pf_{case}_phase"] == 2
         assert script.events.count((1, f"METALGEAR.{report}")) == 0
+        assert script.condition(
+            [("has_country_flag", "=", f"METALGEAR_pf_{case}_wait")], 1
+        )
+        assert script.globals["METALGEAR_capacity"] == 0
     script = deepcopy(script)
     script.goto(2001, 3, 2)
+    script.run_control_change_hook()
     script.run("METALGEAR_monthly_incidents_pulse", 1)
     variables = script.countries[1]["vars"]
     assert variables[f"METALGEAR_pf_{case}_phase"] == 3
@@ -283,16 +299,20 @@ def test_emergency_authority_keeps_its_delay_with_exhausted_capacity_or_lost_sit
 
 @pytest.mark.parametrize("case,brief", [("tanker", 59), ("shell", 61)])
 @pytest.mark.parametrize("route", ["a", "b"])
+@pytest.mark.parametrize("dispatch", ["monthly", "control_hook"])
 def test_lost_site_downgrades_and_releases_only_the_affected_commitment(
-    case, brief, route
+    case, brief, route, dispatch
 ):
     script = ProliferationScript()
     script.run("METALGEAR_pf_commit", 1)
     script.countries[1]["vars"][f"METALGEAR_pf_{case}_phase"] = 1
     choose(script, brief, route)
     script.countries[769]["controller"] = 2
-    script.run("METALGEAR_monthly_incidents_pulse", 1)
-    script.run("METALGEAR_monthly_incidents_pulse", 1)
+    for _ in range(2):
+        if dispatch == "control_hook":
+            script.run_control_change_hook()
+        else:
+            script.run("METALGEAR_monthly_incidents_pulse", 1)
     assert script.globals["METALGEAR_capacity"] == 1
     variables = script.countries[1]["vars"]
     assert variables[f"METALGEAR_pf_{case}_route"] == 3
