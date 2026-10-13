@@ -5,7 +5,27 @@ import pytest
 # pyradox ships in the optional analysis group; only the Linux CI leg installs it.
 pytest.importorskip("pyradox")
 
-from tools.types.equipment import Equipment, LandEquipmentStats
+from tools.types.equipment import AllEquipmentStats, Equipment, LandEquipmentStats
+
+
+@pytest.mark.parametrize(
+    "stat",
+    [
+        "build_cost_ic",
+        "lend_lease_cost",
+        "manpower",
+        "sub_visibility",
+        "surface_visibility",
+        "fuel_consumption",
+    ],
+)
+@pytest.mark.parametrize("value", [-0.05, 0.05])
+def test_cost_score_preserves_penalty_direction(stat, value):
+    bonus = AllEquipmentStats(**{stat: value})
+    weights = AllEquipmentStats(**{stat: 2.0})
+
+    assert bonus.score() == pytest.approx(-value)
+    assert bonus.score(weights) == pytest.approx(-value * 2)
 
 
 def test_GivenEquipmentTree_WhenReadEquipment_ThenReturnsEquipment():

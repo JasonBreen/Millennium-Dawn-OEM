@@ -100,7 +100,8 @@ def spreadsheet_report(
     Report layout:
         - ``Cover`` sheet with report summary and archetypes lacking any bonus.
         - One sheet per archetype that has at least one non-empty MIO bonus.
-        - Per-equipment rows sorted by descending total score.
+        - Rows sorted by descending initial-and-common score.
+        - Choice-dependent branch bonuses listed separately, excluded from totals.
         - For each visible stat: total value column followed by ``_avg`` column.
         - Stat columns with no values across all rows are omitted.
     """
@@ -149,8 +150,9 @@ def spreadsheet_report(
         header: list[object] = [
             "MIO",
             "Countries",
-            "Score",
-            "Contributing Traits",
+            "Common Score",
+            "Common Contributions (including initial)",
+            "Choice-dependent Bonuses (excluded from totals)",
             *stat_columns,
         ]
 
@@ -170,6 +172,7 @@ def spreadsheet_report(
                     countries_cell,
                     report.score,
                     report.n_traits,
+                    report.alternatives_display(),
                     *stat_values,
                 ]
             )
@@ -178,6 +181,9 @@ def spreadsheet_report(
 
     cover_rows: list[list[object]] = [
         ["MIO Balance Report"],
+        [
+            "Totals and scores include initial and common bonuses only; branch choices are listed separately."
+        ],
         [""],
         ["Total archetypes", len(archetypes)],
         [
@@ -346,13 +352,21 @@ def spreadsheet_report(
             sheet = xlsx_workbook.add_worksheet(unique_sheet_name(sheet_name))
 
             header_row = sheet_rows[0]
-            score_col = header_row.index("Score")
-            trait_count_col = header_row.index("Contributing Traits")
+            score_col = header_row.index("Common Score")
+            trait_count_col = header_row.index(
+                "Common Contributions (including initial)"
+            )
             stat_cols = {
                 idx
                 for idx, name in enumerate(header_row)
                 if isinstance(name, str)
-                and name not in {"MIO", "Countries", "Contributing Traits"}
+                and name
+                not in {
+                    "MIO",
+                    "Countries",
+                    "Common Contributions (including initial)",
+                    "Choice-dependent Bonuses (excluded from totals)",
+                }
             }
 
             write_sheet(

@@ -5,8 +5,161 @@ import pytest
 # pyradox ships in the optional analysis group; only the Linux CI leg installs it.
 pytest.importorskip("pyradox")
 
+from shared.suite import write_text
+
 from tools.types.equipment import Equipment, LandEquipmentStats
 from tools.types.mio import MIO, EquipmentGroup
+
+
+@pytest.fixture
+def infantry():
+    return Equipment(
+        tag="infantry",
+        is_archetype=True,
+        archetype=None,
+        types=["infantry"],
+        is_buildable=False,
+        stats=LandEquipmentStats(),
+    )
+
+
+def test_initial_bonus_is_inherited_and_included_in_totals(tmp_path, infantry):
+    write_text(
+        tmp_path / "mios.txt",
+        """
+        base = {
+            equipment_type = { infantry }
+            initial_trait = {
+                equipment_bonus = { reliability = 0.05 build_cost_ic = -0.1 }
+            }
+            trait = {
+                token = common
+                equipment_bonus = { reliability = 0.03 }
+            }
+        }
+        child = { include = base allowed = { original_tag = TST } }
+        """,
+    )
+    mios = MIO.from_directory(
+        tmp_path, {}, False, equipment_index={infantry.tag: infantry}
+    )
+
+    report = mios["child"].sum_bonuses_for(infantry)
+
+    assert report.n_traits == 2
+    assert report.boost.reliability == pytest.approx(0.08)
+    assert report.boost.build_cost_ic == -0.1
+    assert report.averaged_boost.reliability == pytest.approx(0.04)
+    assert report.averaged_boost.build_cost_ic == -0.1
+    assert report.score == pytest.approx(0.18)
+
+
+def test_initial_only_organization_is_not_empty(tmp_path, infantry):
+    write_text(
+        tmp_path / "mios.txt",
+        """
+        initial_only = {
+            equipment_type = { infantry }
+            initial_trait = { equipment_bonus = { reliability = 0.05 } }
+        }
+        """,
+    )
+    mio = MIO.from_directory(
+        tmp_path, {}, False, equipment_index={"infantry": infantry}
+    )["initial_only"]
+
+    assert not mio.sum_bonuses_for(infantry).is_empty()
+
+
+@pytest.mark.parametrize(
+    "customization",
+    [
+        "delete_included_values = { equipment_type } equipment_type = { other }",
+        "override_trait = { token = common equipment_bonus = { reliability = 0.2 } }",
+        "initial_trait = { equipment_bonus = { reliability = 0.2 } }",
+        "available = { has_country_flag = special_permission }",
+        "research_categories = { special_research }",
+        "override_trait = { token = common mutually_exclusive = { alternative } }",
+    ],
+)
+def test_merge_generics_retains_customized_children(tmp_path, infantry, customization):
+    write_text(
+        tmp_path / "mios.txt",
+        """
+        base = {
+            equipment_type = { infantry }
+            initial_trait = { equipment_bonus = { reliability = 0.05 } }
+            trait = { token = common equipment_bonus = { reliability = 0.1 } }
+        }
+        renamed = { include = base allowed = { original_tag = TST } }
+        customized = {
+            include = base
+            allowed = { original_tag = POL }
+        """ + customization + "\n}",
+    )
+
+    mios = MIO.from_directory(
+        tmp_path, {}, merge_generics=True, equipment_index={"infantry": infantry}
+    )
+
+    assert set(mios) == {"base", "customized"}
+    assert mios["base"].countries == {"TST"}
+    assert mios["customized"].countries == {"POL"}
+
+
+def test_exclusive_branches_and_descendants_are_reported_separately(tmp_path, infantry):
+    write_text(
+        tmp_path / "mios.txt",
+        """
+        choices = {
+            equipment_type = { infantry }
+            trait = { token = common equipment_bonus = { reliability = 0.05 } }
+            trait = {
+                token = left
+                parent = { common }
+                mutually_exclusive = { right }
+                equipment_bonus = { soft_attack = 0.1 }
+            }
+            trait = { token = right equipment_bonus = { soft_attack = 0.2 } }
+            trait = {
+                token = left_child
+                all_parents = { left }
+                equipment_bonus = { soft_attack = 0.3 }
+            }
+            trait = {
+                token = either_child
+                any_parent = { left_child right }
+                equipment_bonus = { defense = 0.4 }
+            }
+        }
+        """,
+    )
+    mio = MIO.from_directory(
+        tmp_path, {}, False, equipment_index={"infantry": infantry}
+    )["choices"]
+
+    report = mio.sum_bonuses_for(infantry)
+
+    assert report.n_traits == 1
+    assert report.boost.reliability == 0.05
+    assert report.boost.soft_attack is None
+    assert report.boost.defense is None
+    assert report.score == 0.05
+    assert {trait.token for trait in report.alternatives} == {
+        "left",
+        "right",
+        "left_child",
+        "either_child",
+    }
+    display = report.to_pretty_display()
+    assert "Choice-dependent bonuses (excluded from totals)" in display
+    assert "excludes: right" in display
+    assert "requires all: left" in display
+    assert "requires any: left_child, right" in display
+    assert "soft_attack: +0.20" in display
+
+    mio.traits = [trait for trait in mio.traits if trait.token != "common"]
+    assert not mio.sum_bonuses_for(infantry).is_empty()
 
 
 def test_GivenMioDefinition_WhenParsed_ThenEquipmentTypesAndTraitScopesExpand(tmp_path):

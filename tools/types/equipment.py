@@ -110,7 +110,7 @@ class EquipmentStats:
             value = getattr(self, field.name)
             if value is not None:
                 if field.name in negative_is_better:
-                    value = abs(value)
+                    value = -value
                 total_score += value * weights.get_or_default(field.name, 1)
         return total_score
 

@@ -48,9 +48,11 @@ _BASE_STAT_KEYS = _field_names(EquipmentStats)
 
 
 def _expand_equipment_tokens(
-    tokens: list[str], equipment_groups: dict[str, "EquipmentGroup"]
+    tokens: list[str],
+    equipment_groups: dict[str, "EquipmentGroup"],
+    equipment_index: dict[str, Equipment],
 ) -> set[str]:
-    """Expand group tokens to member equipment types, keeping raw tokens otherwise."""
+    """Expand groups and resolve concrete members to their report archetype."""
     expanded: set[str] = set()
     for token in tokens:
         group = equipment_groups.get(token)
@@ -58,7 +60,15 @@ def _expand_equipment_tokens(
             expanded.add(token)
             continue
         expanded.update(group.types)
-    return expanded
+    return {
+        (
+            equipment.archetype.tag
+            if (equipment := equipment_index.get(token)) is not None
+            and equipment.archetype is not None
+            else token
+        )
+        for token in expanded
+    }
 
 
 def _iter_original_tags(value: object) -> list[str]:
@@ -387,6 +397,11 @@ class Trait:
             self.token == other.token
             and self.name == other.name
             and self.applies_to == other.applies_to
+            and self.bonuses == other.bonuses
+            and self.parent_tokens == other.parent_tokens
+            and self.all_parent_tokens == other.all_parent_tokens
+            and self.any_parent_tokens == other.any_parent_tokens
+            and self.mutually_exclusive_tokens == other.mutually_exclusive_tokens
         )
 
     def __hash__(self) -> int:
@@ -411,6 +426,7 @@ class MIO:
     traits: list[Trait] = field(default_factory=list)
     required_flags: set[str] = field(default_factory=set)
     """Flags required for this MIO."""
+    initial_bonuses: EquipmentStats = field(default_factory=EquipmentStats)
 
     @staticmethod
     def _build_trait(
@@ -433,7 +449,7 @@ class MIO:
 
         limit_tokens = token_list(trait_data.get("limit_to_equipment_type"))
         applies_to: set[str] = (
-            _expand_equipment_tokens(limit_tokens, equipment_groups)
+            _expand_equipment_tokens(limit_tokens, equipment_groups, equipment_index)
             if limit_tokens
             else set(default_applies_to)
         )
@@ -513,7 +529,7 @@ class MIO:
             token_list(data.get("equipment_type"))
         )  # Raw equipment scope tokens.
         equipment_types = _expand_equipment_tokens(
-            equipment_tokens, equipment_groups
+            equipment_tokens, equipment_groups, equipment_index
         )  # Expanded equipment scope tokens.
         research_categories = dedupe_preserve_order(
             token_list(data.get("research_categories"))
@@ -538,6 +554,12 @@ class MIO:
             include=include,
             traits=traits,
             required_flags=set(required_flags),
+            initial_bonuses=_parse_equipment_bonus(
+                as_mapping(data.get("initial_trait", {})).get("equipment_bonus"),
+                stats_class=_detect_stats_class_from_equipment_scope(
+                    equipment_types, equipment_index
+                ),
+            ),
         )
 
     @classmethod
@@ -624,42 +646,70 @@ class MIO:
         for token, mio in mios.items():
             if mio.include is not None:
                 included: "MIO" = mios[mio.include]
-                if included.traits == mio.traits:
+                if (
+                    included.traits == mio.traits
+                    and included.equipment_types == mio.equipment_types
+                    and included.research_categories == mio.research_categories
+                    and included.required_flags == mio.required_flags
+                    and included.initial_bonuses == mio.initial_bonuses
+                ):
                     included.countries.update(mio.countries)
-                continue
+                    continue
             result[token] = mio
         return result
 
     def sum_bonuses_for(
         self, equipment_type: Equipment, weights: Optional[EquipmentStats] = None
     ) -> "BonusReport":
-        """Calculate the total and per-stat average bonuses this MIO provides to a type.
-
-        The aggregate bonus is the sum across all matching traits. The averaged report is
-        computed per stat using only the traits that actually improve that stat, so empty
-        contributions are excluded from that stat's denominator.
-        """
+        """Sum initial and common bonuses; report exclusive branches separately."""
         stats_class = type(equipment_type.stats)
-        total: EquipmentStats = (
-            stats_class()
-        )  # Running total bonus accumulated across matching traits.
-        matching_traits: list[Trait] = []  # Traits that apply to equipment_type.
+        total: EquipmentStats = stats_class()
+        contributions: list[EquipmentStats] = []
+        alternatives: list[Trait] = []
+        choice_tokens = {
+            token
+            for trait in self.traits
+            if trait.mutually_exclusive_tokens
+            for token in [trait.token, *trait.mutually_exclusive_tokens]
+        }
+        while True:
+            dependent_tokens = {
+                trait.token
+                for trait in self.traits
+                if choice_tokens.intersection(
+                    trait.parent_tokens
+                    + trait.all_parent_tokens
+                    + trait.any_parent_tokens
+                )
+            }
+            if dependent_tokens <= choice_tokens:
+                break
+            choice_tokens.update(dependent_tokens)
+
+        if (
+            equipment_type.tag in self.equipment_types
+            and not self.initial_bonuses.is_empty()
+        ):
+            total = total.applyFlatBonus(self.initial_bonuses)
+            contributions.append(self.initial_bonuses)
 
         for trait in self.traits:
             if equipment_type.tag not in trait.applies_to:
                 continue
+            if trait.token in choice_tokens:
+                alternatives.append(trait)
+                continue
             total = total.applyFlatBonus(trait.bonuses)
-            matching_traits.append(trait)
+            contributions.append(trait.bonuses)
 
-        average_boost = stats_class.average_field_values(
-            [trait.bonuses for trait in matching_traits]
-        )
+        average_boost = stats_class.average_field_values(contributions)
         return BonusReport(
             mio=self,
             boost=total,
-            n_traits=len(matching_traits),
+            n_traits=len(contributions),
             score=total.score(weights),
             averaged_boost=average_boost,
+            alternatives=alternatives,
         )
 
     def __hash__(self) -> int:
@@ -682,23 +732,44 @@ class BonusReport:
     mio: MIO
     """The MIO providing the boost"""
     boost: EquipmentStats
-    """The boost provided by the MIO if it is completely applied"""
+    """Initial and common bonuses, excluding choice-dependent branches."""
     n_traits: int
     """How many traits contributed to the boost"""
     score: float
     """The overall score of the boost, typically calculated from the EquipmentStats"""
     averaged_boost: EquipmentStats
     """The boost provided by the MIO averaged over the number of contributing traits"""
+    alternatives: list[Trait] = field(default_factory=list)
 
     def is_empty(self) -> bool:
         """Check if no traits contributed to the boost."""
-        return self.n_traits == 0
+        return self.n_traits == 0 and not self.alternatives
+
+    def alternatives_display(self) -> str:
+        """Describe individual branch bonuses without summing incompatible choices."""
+        rows = []
+        for trait in self.alternatives:
+            bonuses = ", ".join(
+                f"{item.name}: {getattr(trait.bonuses, item.name):+.2f}"
+                for item in fields(trait.bonuses)
+                if getattr(trait.bonuses, item.name) is not None
+            )
+            parents = trait.parent_tokens + trait.all_parent_tokens
+            rows.append(
+                f"{trait.token}: {bonuses or 'no equipment bonus'}; "
+                f"requires all: {', '.join(parents) or 'none'}; "
+                f"requires any: {', '.join(trait.any_parent_tokens) or 'none'}; "
+                f"excludes: {', '.join(trait.mutually_exclusive_tokens) or 'none'}"
+            )
+        return "\n".join(rows)
 
     def to_pretty_display(self) -> str:
-        buffer = f"MIO: {self.mio.token}, countries: [{', '.join(self.mio.countries)}], score: {self.score:.2f}, n_traits: {self.n_traits}\n"
+        buffer = f"MIO: {self.mio.token}, countries: [{', '.join(self.mio.countries)}], common score: {self.score:.2f}, common contributions (including initial): {self.n_traits}\n"
         for boosted in fields(self.boost):
             if self.boost.get_or_default(boosted.name, None) is None:
                 continue
             value = getattr(self.boost, boosted.name)
             buffer += f"  {boosted.name}: {value:.2f} (avg: {getattr(self.averaged_boost, boosted.name):.2f})\n"
+        if self.alternatives:
+            buffer += f"  Choice-dependent bonuses (excluded from totals):\n{self.alternatives_display()}\n"
         return buffer
