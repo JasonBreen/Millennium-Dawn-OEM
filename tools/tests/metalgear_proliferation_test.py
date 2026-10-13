@@ -1,4 +1,5 @@
 from copy import deepcopy
+from datetime import date, timedelta
 
 import pytest
 from ai_race_state_model_test import _named_block, _parse_race_script
@@ -40,14 +41,25 @@ class ProliferationScript(StalkerScript):
         if statement[0] != "custom_effect_tooltip":
             super().execute_statement(statement, identifier)
 
-    def run_control_change_hook(self):
+    def condition_statement(self, statement, identifier):
+        if statement[0] == "has_stability":
+            return self.comparisons[statement[1]](
+                self.countries[identifier]["vars"].get("stability", 0),
+                float(statement[2]),
+            )
+        return super().condition_statement(statement, identifier)
+
+    def run_hook(self, name, identifier):
         text = (
             ROOT / "common/on_actions/99_METALGEAR_proliferation_on_actions.txt"
         ).read_text(encoding="utf-8")
-        body = _parse_race_script(
-            _named_block(_named_block(text, "on_state_control_changed"), "effect")
-        )["effect"]
-        self.execute(body, 698)
+        body = _parse_race_script(_named_block(_named_block(text, name), "effect"))[
+            "effect"
+        ]
+        self.execute(body, identifier)
+
+    def run_control_change_hook(self):
+        self.run_hook("on_state_control_changed", 698)
 
 
 def choose(script, number, letter, tag="USA"):
@@ -93,6 +105,143 @@ def prepare_partner_record(script, tag):
     script.countries[script.tag(tag)]["vars"].update(
         METALGEAR_pf_phase=4, METALGEAR_pf_policy=1
     )
+
+
+def begin_timed_work(script, tag, case, route="a"):
+    if case == "trail":
+        start_trail(script, tag)
+        return "METALGEAR_pf_phase", {"USA": 50, "JAP": 51, "SOV": 52}[tag]
+    if case == "inquiry":
+        script.countries[1]["vars"]["METALGEAR_pf_inquiry"] = 1
+        choose(script, 53, route)
+        return "METALGEAR_pf_inquiry", 56
+    phase = f"METALGEAR_pf_{case}_phase"
+    script.countries[1]["vars"][phase] = 1
+    choose(script, 59 if case == "tanker" else 61, route)
+    return phase, 60 if case == "tanker" else 62
+
+
+@pytest.mark.parametrize(
+    "tag,case,route",
+    [(tag, "trail", "a") for tag in ("USA", "JAP", "SOV")]
+    + [("USA", "inquiry", route) for route in ("a", "b")]
+    + [
+        ("USA", case, route)
+        for case in ("tanker", "shell")
+        for route in ("a", "b", "c")
+    ],
+)
+def test_daily_completion_delivers_at_expiration_without_a_monthly_wait(
+    tag, case, route
+):
+    script = ProliferationScript()
+    script.goto(2001, 1, 15)
+    phase, report = begin_timed_work(script, tag, case, route)
+    actor = script.tag(tag)
+    script.goto(2001, 3, 1)
+    script.run("METALGEAR_monthly_proliferation_pulse", 1)
+    script.run("METALGEAR_monthly_incidents_pulse", 1)
+    deadline = date(2001, 1, 15) + timedelta(days=60)
+    before_deadline = deadline - timedelta(days=1)
+    script.goto(before_deadline.year, before_deadline.month, before_deadline.day)
+    script.run_hook("on_daily", actor)
+    assert script.countries[actor]["vars"][phase] == 2
+    assert script.events.count((actor, f"METALGEAR.{report}")) == 0
+    script = deepcopy(script)
+    script.goto(deadline.year, deadline.month, deadline.day)
+    script.run_hook("on_daily", actor)
+    assert script.countries[actor]["vars"][phase] == 3
+    assert script.events.count((actor, f"METALGEAR.{report}")) == 1
+    for _ in range(2):
+        script.run_hook("on_daily", actor)
+        script.run("METALGEAR_monthly_proliferation_pulse", 1)
+        script.run("METALGEAR_monthly_incidents_pulse", 1)
+    assert script.events.count((actor, f"METALGEAR.{report}")) == 1
+    choose(script, report, "a", tag)
+    before = deepcopy(script.countries), script.globals.copy()
+    script.run_hook("on_daily", actor)
+    choose(script, report, "a", tag)
+    assert (script.countries, script.globals) == before
+
+
+@pytest.mark.parametrize("case", ["trail", "inquiry", "tanker", "shell"])
+@pytest.mark.parametrize("interruption", ["site", "host", "disabled", "abandoned"])
+def test_daily_completion_rechecks_interruption_before_delivering(case, interruption):
+    script = ProliferationScript()
+    phase, report = begin_timed_work(script, "USA", case)
+    script.goto(2001, 3, 2)
+    if interruption == "site":
+        script.countries[769]["controller"] = 2
+    elif interruption == "host":
+        script.countries[1]["exists"] = False
+    elif interruption == "disabled":
+        script.triggers["METALGEAR_scenario_enabled"] = [("always", "=", "no")]
+    else:
+        if case == "trail":
+            script.run("METALGEAR_pf_interrupt", 1)
+        elif case == "inquiry":
+            script.countries[1]["vars"][phase] = 5
+            script.run("METALGEAR_pf_close_inquiry", 1)
+        else:
+            script.countries[1]["vars"][phase] = 5
+            script.run(f"METALGEAR_pf_{case}_release", 1)
+    script.run_hook("on_daily", 1)
+    emergency_report = interruption == "site" and case in ("tanker", "shell")
+    assert script.events.count((1, f"METALGEAR.{report}")) == int(emergency_report)
+    if emergency_report:
+        assert script.countries[1]["vars"][f"METALGEAR_pf_{case}_route"] == 3
+    if interruption in ("site", "abandoned"):
+        assert script.globals["METALGEAR_capacity"] == 2
+
+
+@pytest.mark.parametrize("tag", ["USA", "JAP", "SOV"])
+def test_daily_completion_honors_the_2005_preparation_cutoff(tag):
+    script = ProliferationScript()
+    script.goto(2004, 12, 1)
+    phase, report = begin_timed_work(script, tag, "trail")
+    script.goto(2005, 2, 1)
+    script.run_hook("on_daily", script.tag(tag))
+    assert script.countries[script.tag(tag)]["vars"][phase] == 5
+    assert script.events.count((script.tag(tag), f"METALGEAR.{report}")) == 0
+    assert script.globals["METALGEAR_capacity"] == 2
+
+
+def test_simultaneous_daily_completions_keep_independent_commitments():
+    script = ProliferationScript()
+    begin_timed_work(script, "USA", "inquiry")
+    begin_timed_work(script, "USA", "tanker")
+    assert script.globals["METALGEAR_capacity"] == 0
+    script.goto(2001, 3, 2)
+    script.run_hook("on_daily", 1)
+    assert script.events.count((1, "METALGEAR.56")) == 1
+    assert script.events.count((1, "METALGEAR.60")) == 1
+    choose(script, 56, "a")
+    assert script.globals["METALGEAR_capacity"] == 1
+    choose(script, 60, "a")
+    assert script.globals["METALGEAR_capacity"] == 2
+
+
+@pytest.mark.parametrize("brief", [59, 61])
+def test_emergency_ai_weight_falls_at_low_stability_but_stays_nonzero(brief):
+    script = ProliferationScript()
+    filename = (
+        "events/METALGEAR_" + ("proliferation" if brief == 59 else "incidents") + ".txt"
+    )
+    option = _option(f"METALGEAR.{brief}", f"METALGEAR.{brief}.c", filename)
+    ai = next(body for key, _, body in option if key == "ai_chance")
+    weights = []
+    for stability in (0.5, 0.2):
+        script.countries[1]["vars"]["stability"] = stability
+        weight = float(next(value for key, _, value in ai if key == "base"))
+        for key, _, modifier in ai:
+            if key == "modifier" and script.condition(
+                [entry for entry in modifier if entry[0] != "factor"], 1
+            ):
+                weight *= float(
+                    next(value for name, _, value in modifier if name == "factor")
+                )
+        weights.append(weight)
+    assert 0 < weights[1] < weights[0]
 
 
 @pytest.mark.parametrize("tag,number", [("USA", 50), ("JAP", 51), ("SOV", 52)])

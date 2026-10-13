@@ -29,6 +29,64 @@ METALGEAR_pf_interrupt = {
 	}
 }
 
+METALGEAR_pf_complete_work = {
+	if = {
+		limit = { METALGEAR_scenario_enabled = yes exists = yes OR = { tag = USA tag = JAP tag = SOV } }
+		if = {
+			limit = { check_variable = { METALGEAR_pf_phase = 2 } NOT = { has_country_flag = METALGEAR_pf_work_wait } }
+			if = {
+				limit = { OR = { date > 2005.1.1 AND = { tag = USA 769 = { NOT = { is_controlled_by = USA } } } } }
+				METALGEAR_pf_interrupt = yes
+			}
+			else = {
+				set_variable = { METALGEAR_pf_phase = 3 }
+				set_country_flag = { flag = METALGEAR_pf_notice_pending value = 1 days = 35 }
+				if = { limit = { tag = USA } country_event = METALGEAR.50 }
+				else_if = { limit = { tag = JAP } country_event = METALGEAR.51 }
+				else = { country_event = METALGEAR.52 }
+			}
+		}
+		if = {
+			limit = { tag = USA }
+			if = {
+				limit = { check_variable = { METALGEAR_pf_inquiry = 2 } NOT = { has_country_flag = METALGEAR_pf_inquiry_wait } }
+				if = {
+					limit = { 769 = { NOT = { is_controlled_by = USA } } }
+					set_variable = { METALGEAR_pf_inquiry = 5 }
+					METALGEAR_pf_close_inquiry = yes
+				}
+				else = {
+					set_variable = { METALGEAR_pf_inquiry = 3 }
+					set_country_flag = { flag = METALGEAR_pf_inquiry_notice value = 1 days = 35 }
+					country_event = METALGEAR.56
+				}
+			}
+			if = {
+				limit = { check_variable = { METALGEAR_pf_tanker_phase = 2 } NOT = { has_country_flag = METALGEAR_pf_tanker_wait } }
+				if = {
+					limit = { check_variable = { METALGEAR_pf_tanker_route < 3 } 769 = { NOT = { is_controlled_by = USA } } }
+					METALGEAR_pf_tanker_release = yes
+					set_variable = { METALGEAR_pf_tanker_route = 3 }
+				}
+				set_variable = { METALGEAR_pf_tanker_phase = 3 }
+				set_country_flag = { flag = METALGEAR_pf_tanker_notice value = 1 days = 35 }
+				country_event = METALGEAR.60
+			}
+			if = {
+				limit = { check_variable = { METALGEAR_pf_shell_phase = 2 } NOT = { has_country_flag = METALGEAR_pf_shell_wait } }
+				if = {
+					limit = { check_variable = { METALGEAR_pf_shell_route < 3 } 769 = { NOT = { is_controlled_by = USA } } }
+					METALGEAR_pf_shell_release = yes
+					set_variable = { METALGEAR_pf_shell_route = 3 }
+				}
+				set_variable = { METALGEAR_pf_shell_phase = 3 }
+				set_country_flag = { flag = METALGEAR_pf_shell_notice value = 1 days = 35 }
+				country_event = METALGEAR.62
+			}
+		}
+	}
+}
+
 METALGEAR_pf_usa_month = {
 	if = {
 		limit = { NOT = { country_exists = USA } }
@@ -40,10 +98,6 @@ METALGEAR_pf_usa_month = {
 				limit = { date > 2005.1.1 OR = { check_variable = { METALGEAR_pf_phase = 0 } check_variable = { METALGEAR_pf_phase = 2 } check_variable = { METALGEAR_pf_phase = 3 } } }
 				set_variable = { METALGEAR_pf_phase = 5 }
 				METALGEAR_pf_close_work = yes
-			}
-			if = {
-				limit = { check_variable = { METALGEAR_pf_phase = 2 } NOT = { has_country_flag = METALGEAR_pf_work_wait } }
-				set_variable = { METALGEAR_pf_phase = 3 }
 			}
 			if = {
 				limit = { check_variable = { METALGEAR_pf_phase = 3 } NOT = { has_country_flag = METALGEAR_pf_notice_pending } }
@@ -67,10 +121,6 @@ METALGEAR_pf_jap_month = {
 				METALGEAR_pf_close_work = yes
 			}
 			if = {
-				limit = { check_variable = { METALGEAR_pf_phase = 2 } NOT = { has_country_flag = METALGEAR_pf_work_wait } }
-				set_variable = { METALGEAR_pf_phase = 3 }
-			}
-			if = {
 				limit = { check_variable = { METALGEAR_pf_phase = 3 } NOT = { has_country_flag = METALGEAR_pf_notice_pending } }
 				set_country_flag = { flag = METALGEAR_pf_notice_pending value = 1 days = 35 }
 				country_event = { id = METALGEAR.51 days = 1 }
@@ -90,10 +140,6 @@ METALGEAR_pf_sov_month = {
 				limit = { date > 2005.1.1 OR = { check_variable = { METALGEAR_pf_phase = 0 } check_variable = { METALGEAR_pf_phase = 2 } check_variable = { METALGEAR_pf_phase = 3 } } }
 				set_variable = { METALGEAR_pf_phase = 5 }
 				METALGEAR_pf_close_work = yes
-			}
-			if = {
-				limit = { check_variable = { METALGEAR_pf_phase = 2 } NOT = { has_country_flag = METALGEAR_pf_work_wait } }
-				set_variable = { METALGEAR_pf_phase = 3 }
 			}
 			if = {
 				limit = { check_variable = { METALGEAR_pf_phase = 3 } NOT = { has_country_flag = METALGEAR_pf_notice_pending } }
@@ -150,6 +196,9 @@ METALGEAR_pf_sov_exchange_month = {
 METALGEAR_monthly_proliferation_pulse = {
 	if = {
 		limit = { METALGEAR_scenario_enabled = yes }
+		USA = { METALGEAR_pf_complete_work = yes }
+		JAP = { METALGEAR_pf_complete_work = yes }
+		SOV = { METALGEAR_pf_complete_work = yes }
 		METALGEAR_pf_usa_month = yes
 		METALGEAR_pf_jap_month = yes
 		METALGEAR_pf_sov_month = yes
@@ -169,10 +218,6 @@ METALGEAR_monthly_proliferation_pulse = {
 					limit = { 769 = { NOT = { is_controlled_by = USA } } }
 					METALGEAR_pf_interrupt = yes
 					if = { limit = { OR = { check_variable = { METALGEAR_pf_inquiry = 2 } check_variable = { METALGEAR_pf_inquiry = 3 } } } set_variable = { METALGEAR_pf_inquiry = 5 } METALGEAR_pf_close_inquiry = yes }
-				}
-				if = {
-					limit = { check_variable = { METALGEAR_pf_inquiry = 2 } NOT = { has_country_flag = METALGEAR_pf_inquiry_wait } }
-					set_variable = { METALGEAR_pf_inquiry = 3 }
 				}
 				if = {
 					limit = { NOT = { has_country_flag = METALGEAR_pf_inquiry_notice } }
