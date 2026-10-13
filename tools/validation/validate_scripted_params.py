@@ -154,9 +154,13 @@ _TEMP_WRITERS = (
     r"(?:set_temp_variable(?:_to_random)?|add_to_temp_variable"
     r"|subtract_from_temp_variable)"
 )
-_TEMP_TARGET = r"(?:var\s*=\s*)?([a-zA-Z_][a-zA-Z0-9_]*)"
+_TEMP_TARGET = r"(?:var\s*=\s*(?=\w+\s+(?:value|min|max)\s*=))?([a-zA-Z_][a-zA-Z0-9_]*)"
 _SET_TEMP_RE = re.compile(
-    r"\b" + _TEMP_WRITERS + r"\s*=\s*\{\s*" + _TEMP_TARGET + r"\s*=?\s*([^}]*?)\s*\}",
+    r"\b"
+    + _TEMP_WRITERS
+    + r"\s*=\s*\{\s*"
+    + _TEMP_TARGET
+    + r"\s*=?\s*(?:value\s*=\s*)?([^}]*?)\s*\}",
 )
 _CALL_RE = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*=\s*yes\b")
 _SINGLE_CALL_LINE_RE = re.compile(

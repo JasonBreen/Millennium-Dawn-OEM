@@ -89,6 +89,16 @@ def test_a_meta_effect_template_sets_one_tag_per_country(tmp_path, write_path):
     ]
 
 
+def test_country_template_keeps_prefix_and_suffix(tmp_path, write_path):
+    path = write_path(
+        tmp_path, "common/decisions/flags.txt", "set_cosmetic_tag = EFS_[TAG]_REB\n"
+    )
+    assert V.process_file_for_set_cosmetic_tag(
+        (str(path), False, ["EFS_GER_REB", "GER_REB", "EFS_GER"]),
+        country_tags=frozenset({"GER"}),
+    ) == {"EFS_GER_REB": 1}
+
+
 def test_a_flag_named_exactly_after_the_tag_counts_as_used(tmp_path, write_path):
     write_path(
         tmp_path, "common/national_focus/tags.txt", "set_cosmetic_tag = TAG_EXACT\n"
