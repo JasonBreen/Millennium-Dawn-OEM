@@ -48,8 +48,10 @@ _TOKEN_RE = re.compile(r"[A-Za-z_]\w*")
 _TRANSPORT_RE = re.compile(r"\btransport\s*=\s*(\w+)")
 _ARCHETYPE_RE = re.compile(r"\barchetype\s*=\s*(\w+)")
 _IS_ARCHETYPE_RE = re.compile(r"\bis_archetype\s*=\s*yes\b")
-_ADD_TO_VARIABLE_RE = re.compile(r"\badd_to_variable\s*=\s*\{")
-_VAR_RE = re.compile(r"\bvar\s*=\s*" + _ACCUMULATOR + r"\b")
+_VARIABLE_WRITE_RE = re.compile(r"\b(?:add_to_variable|set_variable)\s*=\s*\{")
+_VAR_RE = re.compile(
+    r"\bvar\s*=\s*" + _ACCUMULATOR + r"\b|\b" + _ACCUMULATOR + r"\s*=\s*\{"
+)
 _DEPLOYED_RE = re.compile(r"num_equipment_in_armies(?:_k)?@(\w+)")
 _STOCKPILE_RE = re.compile(r"num_equipment@(\w+)")
 _INIT_RE = re.compile(r"\bset_variable\s*=\s*\{\s*" + _ACCUMULATOR + r"\s*=")
@@ -122,14 +124,12 @@ def _land_equipment_refs(text: str) -> Dict[str, Tuple[str, int]]:
 def _upkeep_terms(text: str) -> Tuple[Set[str], Set[str], int]:
     """(deployed archetypes, stockpiled archetypes, accumulator line).
 
-    Blocks are found by their `var = equipment_operative_cost` assignment rather
-    than by position, so reordering or moving the accumulator does not blind the
-    check.
+    Recognize both incremental writes and the single math-expression assignment.
     """
     deployed: Set[str] = set()
     stockpiled: Set[str] = set()
     line = 0
-    for m in _ADD_TO_VARIABLE_RE.finditer(text):
+    for m in _VARIABLE_WRITE_RE.finditer(text):
         open_idx = m.end() - 1
         close = find_matching_brace(text, open_idx)
         if close == -1:

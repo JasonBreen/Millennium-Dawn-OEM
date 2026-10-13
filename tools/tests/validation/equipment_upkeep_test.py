@@ -79,6 +79,32 @@ def test_costed_archetype_passes(tmp_path):
     assert v.errors_found == 0
 
 
+def test_math_expression_accumulator_preserves_coverage(tmp_path):
+    money = (
+        "update_military_rate = {\n"
+        "set_variable = { equipment_operative_cost = { value = 0\n"
+        "add = { value = num_equipment_in_armies@medium_tank_chassis multiply = 0.7\n"
+        "add = { value = num_equipment@medium_tank_chassis multiply = 0.14 } }\n"
+        "} }\n}\n"
+    )
+    assert _run(tmp_path, _MBT_BATTALION, money)._issues == []
+
+
+def test_math_expression_ignores_stockpile_refs_outside_accumulator(tmp_path):
+    money = (
+        "update_military_rate = {\n"
+        "set_variable = { unrelated = { value = num_equipment@medium_tank_chassis } }\n"
+        "set_variable = { equipment_operative_cost = { value = 0\n"
+        "add = { value = num_equipment_in_armies@medium_tank_chassis multiply = 0.7 }\n"
+        "} }\n}\n"
+    )
+    messages = _messages(
+        _run(tmp_path, _MBT_BATTALION, money), "partial-equipment-cost"
+    )
+    assert len(messages) == 1
+    assert "num_equipment@medium_tank_chassis" in messages[0]
+
+
 def test_uncosted_archetype_is_reported(tmp_path):
     battalions = _MBT_BATTALION + (
         "\tSP_R_arty_Bat = {\n"
