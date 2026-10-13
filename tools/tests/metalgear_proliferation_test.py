@@ -89,6 +89,12 @@ def start_trail(script, tag):
     script.execute(body, script.actor)
 
 
+def prepare_partner_record(script, tag):
+    script.countries[script.tag(tag)]["vars"].update(
+        METALGEAR_pf_phase=4, METALGEAR_pf_policy=1
+    )
+
+
 @pytest.mark.parametrize("tag,number", [("USA", 50), ("JAP", 51), ("SOV", 52)])
 @pytest.mark.parametrize("letter,policy", [("a", 1), ("b", 2), ("c", 3)])
 def test_national_trail_has_a_real_delay_and_one_terminal_policy(
@@ -157,9 +163,7 @@ def test_2005_closes_an_unstarted_trail_without_releasing_unreserved_capacity(
 def test_cooperation_requires_both_national_consents_and_returns_once(japan, russia):
     script = ProliferationScript()
     for tag in ("JAP", "SOV"):
-        script.countries[script.tag(tag)]["vars"].update(
-            METALGEAR_pf_phase=4, METALGEAR_pf_policy=1
-        )
+        prepare_partner_record(script, tag)
     script.countries[1]["vars"]["METALGEAR_pf_inquiry"] = 1
     choose(script, 53, "a")
     choose(script, 54, japan, "JAP")
@@ -204,9 +208,7 @@ def test_initial_partner_notice_prevents_early_duplicates_and_allows_later_recov
     tag, number, reply
 ):
     script = ProliferationScript()
-    script.countries[script.tag(tag)]["vars"].update(
-        METALGEAR_pf_phase=4, METALGEAR_pf_policy=1
-    )
+    prepare_partner_record(script, tag)
     script.countries[1]["vars"]["METALGEAR_pf_inquiry"] = 1
     choose(script, 53, "a")
     choose(script, 53, "a")
@@ -478,9 +480,7 @@ def test_each_incident_disclosure_adds_distinct_relations_and_cannot_repeat(
     script.countries[1]["vars"]["METALGEAR_pf_inquiry"] = 1
     choose(script, 53, "a")
     for tag, event, accepted in (("JAP", 54, japan), ("SOV", 55, russia)):
-        script.countries[script.tag(tag)]["vars"].update(
-            METALGEAR_pf_phase=4, METALGEAR_pf_policy=1
-        )
+        prepare_partner_record(script, tag)
         choose(script, event, "a" if accepted else "b", tag)
     for case, event in (("tanker", 60), ("shell", 62)):
         script.countries[1]["vars"].update(
