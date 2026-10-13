@@ -64,6 +64,33 @@ def test_a_meta_effect_placeholder_is_not_a_cosmetic_tag(tmp_path, write_path):
     assert _categories(_run(tmp_path)) == []
 
 
+def test_country_template_resolves_only_declared_tags(tmp_path, write_path):
+    write_path(
+        tmp_path,
+        "common/country_tags/00_countries.txt",
+        'GER = "countries/Germany.txt"\n',
+    )
+    write_path(
+        tmp_path, "common/countries/cosmetic.txt", "EFS_GER = { }\nEFS_NOR = { }\n"
+    )
+    write_path(
+        tmp_path,
+        "common/decisions/flags.txt",
+        "has_cosmetic_tag = EFS_GER\nset_cosmetic_tag = EFS_[TAG]\n",
+    )
+    assert _rows(_run(tmp_path)) == [("unused-cosmetic-color", "EFS_NOR", "", 0)]
+
+
+def test_country_template_keeps_prefix_and_suffix(tmp_path, write_path):
+    path = write_path(
+        tmp_path, "common/decisions/flags.txt", "set_cosmetic_tag = EFS_[TAG]_REB\n"
+    )
+    assert V.process_file_for_set_cosmetic_tag(
+        (str(path), False, ["EFS_GER_REB", "GER_REB", "EFS_GER"]),
+        country_tags=frozenset({"GER"}),
+    ) == {"EFS_GER_REB": 1}
+
+
 def test_a_flag_named_exactly_after_the_tag_counts_as_used(tmp_path, write_path):
     write_path(
         tmp_path, "common/national_focus/tags.txt", "set_cosmetic_tag = TAG_EXACT\n"

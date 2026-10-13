@@ -134,8 +134,17 @@ EFFECT_BLOCK_KEYWORDS: Set[str] = {
     "on_remove",
 }
 
+_TEMP_WRITERS = (
+    r"(?:set_temp_variable(?:_to_random)?|add_to_temp_variable"
+    r"|subtract_from_temp_variable)"
+)
+_TEMP_TARGET = r"(?:var\s*=\s*(?=\w+\s+(?:value|min|max)\s*=))?([a-zA-Z_][a-zA-Z0-9_]*)"
 _SET_TEMP_RE = re.compile(
-    r"\bset_temp_variable\s*=\s*\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([^}]+?)\s*\}",
+    r"\b"
+    + _TEMP_WRITERS
+    + r"\s*=\s*\{\s*"
+    + _TEMP_TARGET
+    + r"\s*=?\s*(?:value\s*=\s*)?([^}]*?)\s*\}",
 )
 _CALL_RE = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*=\s*yes\b")
 _SINGLE_CALL_LINE_RE = re.compile(
@@ -433,16 +442,14 @@ def _parse_effect_contracts_from_file(
 
 
 def _normalize_multiline_set_temp(text: str) -> str:
-    """Collapse multi-line set_temp_variable blocks without changing line numbers."""
+    """Collapse multi-line temp writes without changing line numbers."""
     normalized = []
     cursor = 0
-    pattern = re.compile(r"\bset_temp_variable\s*=\s*\{")
+    pattern = re.compile(r"\b" + _TEMP_WRITERS + r"\s*=\s*\{")
 
     while match := pattern.search(text, cursor):
         block_start = match.end() - 1
-        name_match = re.match(
-            r"\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=", text[block_start + 1 :]
-        )
+        name_match = re.match(r"\s*" + _TEMP_TARGET, text[block_start + 1 :])
         if not name_match:
             normalized.append(text[cursor : match.end()])
             cursor = match.end()
