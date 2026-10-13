@@ -163,7 +163,7 @@ def spreadsheet_report(
                 stat_values.append(report.boost.get_or_default(stat_name, ""))
                 stat_values.append(report.averaged_boost.get_or_default(stat_name, ""))
 
-            countries_cell = ", ".join(report.mio.countries)
+            countries_cell = report.mio.countries_display()
             if report.mio.required_flags:
                 countries_cell += f"[{', '.join(report.mio.required_flags)}]"
             rows.append(

@@ -568,7 +568,7 @@ def test_prepare_workspace_separates_pr_data_from_validation_tooling():
         and step.get("with", {}).get("path")
         and "sparse" in step.get("id", "")
     )
-    assert "md-sparse-v2-${{ runner.os }}" in cache["with"]["key"]
+    assert "md-sparse-v3-${{ runner.os }}" in cache["with"]["key"]
     assert "needs.detect-changes.outputs.head-sha" in cache["with"]["key"]
     assert "if" not in cache
     valcache = next(
@@ -581,6 +581,16 @@ def test_prepare_workspace_separates_pr_data_from_validation_tooling():
     assert "workflow_dispatch" not in valcache["if"]
     assert "steps.toolshash.outputs.hash" in valcache["with"]["key"]
     assert "base-sha" not in valcache["with"]["key"]
+
+
+def test_graphic_database_is_present_throughout_workspace_preparation():
+    workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
+    path = "gfx/interface/equipmentdesigner/graphic_db"
+    checkout = workflow_step("prepare-workspace", "Checkout PR content")
+    cache = workflow_step("prepare-workspace", "Restore sparse workspace cache")
+    assert path in checkout["with"]["sparse-checkout"].split()
+    assert path in cache["with"]["path"].split()
+    assert path in workflow["env"]["WORKSPACE_PATHS"].split()
 
 
 def test_targeted_b_downloads_and_hands_off_party_loc_scope():

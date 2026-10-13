@@ -28,6 +28,36 @@ def _parsed_states(mod, repo):
 class TestTokenizerAndIdeaParser:
     """Token parsing + idea modifier extraction (comments, strings, nested blocks)."""
 
+    @pytest.mark.parametrize(
+        "plant,resource",
+        [("microchip_plant", "microchips"), ("composite_plant", "composites")],
+    )
+    @pytest.mark.parametrize("factor", [0.05, -0.2])
+    def test_plant_specific_resource_modifiers_reach_sector_gdp(
+        self, import_estimate_gdp, plant, resource, factor
+    ):
+        mod = import_estimate_gdp
+        ideas = {}
+        mod._extract_ideas_from_content(
+            f"ideas = {{ plant_idea = {{ modifier = {{ local_resources_{resource}_factor = {factor} }} }} }}",
+            ideas,
+        )
+        stack = mod.build_modifier_stack(["plant_idea"], ideas)
+        states = [
+            {
+                "manpower": 1_000_000,
+                "productivity": 100,
+                "buildings": {plant: 3},
+                "resources": {},
+            }
+        ]
+        result = mod.calculate_gdp(states, modifier_stack=stack)
+        expected = 3 * mod.PLANT_RESOURCE_OUTPUT[plant] * (1 + factor)
+        assert result["total_resources"] == pytest.approx(expected)
+        assert result["gdp_from_resources"] == pytest.approx(
+            expected * mod.RESOURCE_GDP_COEFF
+        )
+
     def test_tokenize_handles_strings_and_braces(self, import_estimate_gdp):
         mod = import_estimate_gdp
         toks = mod._tokenize('a = "b c" d = { e = 1 }')

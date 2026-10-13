@@ -1,3 +1,4 @@
+import json
 from copy import deepcopy
 from dataclasses import dataclass, field, fields
 from pathlib import Path
@@ -8,6 +9,7 @@ import pyradox
 # Importing equipment puts tools/utils on sys.path for pyradox_utils.
 from equipment import (
     AirEquipmentStats,
+    AllEquipmentStats,
     Equipment,
     EquipmentStats,
     LandEquipmentStats,
@@ -150,10 +152,14 @@ def _parse_equipment_bonus(
     allowed = {
         item.name for item in fields(selected_class)
     }  # Fields accepted by the selected stats dataclass.
-    stat_values: dict[str, object] = {
-        key: inner for key, inner in raw_stats.items() if key in allowed
-    }  # Filtered stat key -> value payload passed to dataclass constructor.
-    return selected_class(**cast(Any, stat_values))
+    if not raw_stats.keys() <= allowed:
+        selected_class = AllEquipmentStats
+        unsupported = raw_stats.keys() - _field_names(selected_class)
+        if unsupported:
+            raise ValueError(
+                f"Unsupported MIO equipment bonuses: {sorted(unsupported)}"
+            )
+    return selected_class(**cast(Any, raw_stats))
 
 
 def _detect_stats_class_from_equipment_scope(
@@ -427,6 +433,14 @@ class MIO:
     required_flags: set[str] = field(default_factory=set)
     """Flags required for this MIO."""
     initial_bonuses: EquipmentStats = field(default_factory=EquipmentStats)
+    allowed_scope: dict[str, object] = field(default_factory=dict)
+
+    def countries_display(self) -> str:
+        if self.countries:
+            return ", ".join(sorted(self.countries))
+        if self.allowed_scope:
+            return f"Allowed: {json.dumps(self.allowed_scope, sort_keys=True)}"
+        return "No explicit country restriction"
 
     @staticmethod
     def _build_trait(
@@ -554,6 +568,7 @@ class MIO:
             include=include,
             traits=traits,
             required_flags=set(required_flags),
+            allowed_scope=as_mapping(data.get("allowed", {})),
             initial_bonuses=_parse_equipment_bonus(
                 as_mapping(data.get("initial_trait", {})).get("equipment_bonus"),
                 stats_class=_detect_stats_class_from_equipment_scope(
@@ -652,6 +667,10 @@ class MIO:
                     and included.research_categories == mio.research_categories
                     and included.required_flags == mio.required_flags
                     and included.initial_bonuses == mio.initial_bonuses
+                    and (
+                        bool(mio.countries)
+                        or included.allowed_scope == mio.allowed_scope
+                    )
                 ):
                     included.countries.update(mio.countries)
                     continue
@@ -764,7 +783,7 @@ class BonusReport:
         return "\n".join(rows)
 
     def to_pretty_display(self) -> str:
-        buffer = f"MIO: {self.mio.token}, countries: [{', '.join(self.mio.countries)}], common score: {self.score:.2f}, common contributions (including initial): {self.n_traits}\n"
+        buffer = f"MIO: {self.mio.token}, countries: [{self.mio.countries_display()}], common score: {self.score:.2f}, common contributions (including initial): {self.n_traits}\n"
         for boosted in fields(self.boost):
             if self.boost.get_or_default(boosted.name, None) is None:
                 continue

@@ -13,8 +13,9 @@ from shared.suite import write_text
 from tools.balance import mio_report
 
 
+@pytest.mark.parametrize("predicate", ["is_usa_or_breakaway", "is_benelux_country"])
 def test_concrete_group_members_reach_console_and_spreadsheet(
-    tmp_path, monkeypatch, capsys
+    tmp_path, monkeypatch, capsys, predicate
 ):
     equipment = mio_report.Equipment
     carrier = equipment(
@@ -59,12 +60,14 @@ def test_concrete_group_members_reach_console_and_spreadsheet(
         False,
         equipment_index=index,
     )
+    mios["carrier_org"].allowed_scope = {predicate: "yes"}
     assert mios["carrier_org"].equipment_types == {"carrier"}
     assert mios["carrier_org"].traits[0].applies_to == {"carrier"}
 
     mio_report.report_specific_equipment_type(carrier, mios, mio_report.WEIGHTS)
     console = capsys.readouterr().out
     assert "MIO: carrier_org" in console
+    assert predicate in console
     assert "common score: 0.05" in console
     assert "carrier_size: +0.20" in console
 
@@ -88,6 +91,7 @@ def test_concrete_group_members_reach_console_and_spreadsheet(
         assert values[int(cells["C1"].find("x:v", ns).text)] == "Common Score"
         assert float(cells["C2"].find("x:v", ns).text) == pytest.approx(0.05)
         assert float(cells["D2"].find("x:v", ns).text) == 1
+        assert predicate in values[int(cells["B2"].find("x:v", ns).text)]
         alternatives = values[int(cells["E2"].find("x:v", ns).text)]
         assert "left: carrier_size: +0.10" in alternatives
         assert "right: carrier_size: +0.20" in alternatives

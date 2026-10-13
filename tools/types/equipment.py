@@ -36,6 +36,8 @@ class EquipmentStats:
     """Indicates whether units of this equipment can be converted or upgraded to other types."""
     reliability: Optional[float] = None
     """Indicates the overall reliability of the equipment."""
+    default_morale: Optional[float] = None
+    night_penalty: Optional[float] = None
 
     def applyFlatBonus(self, bonus: "EquipmentStats") -> "EquipmentStats":
         """Apply a flat bonus from another EquipmentStats object.
@@ -106,6 +108,9 @@ class EquipmentStats:
             "surface_visibility",
             "fuel_consumption",
             "supply_consumption",
+            "weight",
+            "night_penalty",
+            "naval_torpedo_enemy_critical_chance_factor",
         ]
         for field in fields(self):
             value = getattr(self, field.name)
@@ -181,6 +186,8 @@ class NavalEquipmentStats(EquipmentStats):
     Additional source: common/units/equipment/modules/MD_ship_modules.txt
     """
 
+    naval_torpedo_hit_chance_factor: Optional[float] = None
+    naval_torpedo_enemy_critical_chance_factor: Optional[float] = None
     naval_speed: Optional[float] = None
     """Maximum speed in kilometres per hour of the ship, higher means faster in combat and contributes to evasion."""
     lg_armor_piercing: Optional[float] = None
@@ -229,6 +236,8 @@ class AirEquipmentStats(EquipmentStats):
     """Maximum speed of the aircraft."""
     air_attack: Optional[float] = None
     """Amount of damage done against other planes."""
+    thrust: Optional[float] = None
+    weight: Optional[float] = None
     air_defence: Optional[float] = None
     """How many hits a plane takes before being shot down."""
     air_range: Optional[float] = None

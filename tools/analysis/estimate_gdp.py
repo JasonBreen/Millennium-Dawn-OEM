@@ -131,6 +131,8 @@ RESOURCE_FACTOR_KEYS = {
     "tungsten": "local_resources_tungsten_factor",
     "steel": "local_resources_steel_factor",
     "chromium": "local_resources_chromium_factor",
+    "microchips": "local_resources_microchips_factor",
+    "composites": "local_resources_composites_factor",
 }
 
 # All modifier keys we care about for GDP calculation
@@ -152,6 +154,8 @@ GDP_MODIFIER_KEYS = {
     "local_resources_tungsten_factor",
     "local_resources_steel_factor",
     "local_resources_chromium_factor",
+    "local_resources_microchips_factor",
+    "local_resources_composites_factor",
 }
 
 
@@ -494,7 +498,13 @@ def calculate_gdp(states, modifier_stack=None):
         resource_factor = 1 + modifier_stack.get(factor_key, 0) if factor_key else 1
         total_resources += base_amount * resource_factor
     for plant, per_level in PLANT_RESOURCE_OUTPUT.items():
-        total_resources += buildings.get(plant, 0) * per_level
+        resource = PLANT_RESOURCES[plant]
+        factor_key = RESOURCE_FACTOR_KEYS[resource]
+        total_resources += (
+            buildings.get(plant, 0)
+            * per_level
+            * (1 + modifier_stack.get(factor_key, 0))
+        )
 
     gdpc_converging = max(overall_productivity * 0.05, 2)
 

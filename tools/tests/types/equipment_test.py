@@ -18,6 +18,9 @@ from tools.types.equipment import AllEquipmentStats, Equipment, LandEquipmentSta
         "surface_visibility",
         "fuel_consumption",
         "supply_consumption",
+        "weight",
+        "night_penalty",
+        "naval_torpedo_enemy_critical_chance_factor",
     ],
 )
 @pytest.mark.parametrize("value", [-0.05, 0.05])

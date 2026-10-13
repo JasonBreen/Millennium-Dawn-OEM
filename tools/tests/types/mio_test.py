@@ -7,8 +7,14 @@ pytest.importorskip("pyradox")
 
 from shared.suite import write_text
 
-from tools.types.equipment import Equipment, LandEquipmentStats
-from tools.types.mio import MIO, EquipmentGroup
+from tools.types.equipment import (
+    AirEquipmentStats,
+    Equipment,
+    EquipmentStats,
+    LandEquipmentStats,
+    NavalEquipmentStats,
+)
+from tools.types.mio import MIO, EquipmentGroup, Trait
 
 
 @pytest.fixture
@@ -21,6 +27,120 @@ def infantry():
         is_buildable=False,
         stats=LandEquipmentStats(),
     )
+
+
+@pytest.mark.parametrize(
+    "stat,stats_class,value",
+    [
+        ("thrust", AirEquipmentStats, 0.05),
+        ("weight", AirEquipmentStats, -0.1),
+        ("night_penalty", AirEquipmentStats, -0.15),
+        ("default_morale", LandEquipmentStats, 0.05),
+        ("naval_torpedo_hit_chance_factor", NavalEquipmentStats, 0.15),
+        ("naval_torpedo_enemy_critical_chance_factor", NavalEquipmentStats, -0.1),
+    ],
+)
+def test_supported_equipment_bonuses_reach_totals_and_scores(
+    tmp_path, stat, stats_class, value
+):
+    equipment = Equipment("test", True, None, [], False, stats_class())
+    write_text(
+        tmp_path / "mio.txt",
+        f"""
+        test_org = {{
+            equipment_type = {{ test }}
+            trait = {{ token = bonus equipment_bonus = {{ {stat} = {value} }} }}
+        }}
+    """,
+    )
+    mio = MIO.from_directory(tmp_path, {}, False, equipment_index={"test": equipment})[
+        "test_org"
+    ]
+    report = mio.sum_bonuses_for(equipment)
+    assert getattr(report.boost, stat) == value
+    assert report.n_traits == 1
+    assert report.score == pytest.approx(abs(value))
+
+
+def test_mixed_scope_retains_all_supported_bonus_fields(tmp_path, infantry):
+    aircraft = Equipment("aircraft", True, None, [], False, AirEquipmentStats())
+    write_text(
+        tmp_path / "mixed.txt",
+        """
+        mixed_org = {
+            equipment_type = { infantry aircraft }
+            trait = { token = boost equipment_bonus = { soft_attack = 0.1 thrust = 0.2 } }
+        }
+    """,
+    )
+    mio = MIO.from_directory(
+        tmp_path,
+        {},
+        False,
+        equipment_index={"infantry": infantry, "aircraft": aircraft},
+    )["mixed_org"]
+    assert mio.traits[0].bonuses.soft_attack == 0.1
+    assert mio.traits[0].bonuses.thrust == 0.2
+    assert mio.sum_bonuses_for(infantry).boost.soft_attack == 0.1
+    assert mio.sum_bonuses_for(aircraft).boost.thrust == 0.2
+
+
+def test_unknown_equipment_bonus_reports_an_error_instead_of_disappearing(
+    tmp_path, infantry
+):
+    write_text(
+        tmp_path / "invalid.txt",
+        """
+        invalid = {
+            equipment_type = { infantry }
+            trait = { token = boost equipment_bonus = { invented_stat = 0.1 } }
+        }
+    """,
+    )
+    with pytest.raises(
+        ValueError, match="Unsupported MIO equipment bonuses.*invented_stat"
+    ):
+        MIO.from_directory(tmp_path, {}, False, equipment_index={"infantry": infantry})
+
+
+@pytest.mark.parametrize("empty_only", [False, True])
+def test_empty_equipment_bonuses_do_not_count_as_contributions(infantry, empty_only):
+    traits = [Trait("production", "production", {"infantry"}, EquipmentStats())]
+    if not empty_only:
+        traits.append(
+            Trait(
+                "equipment",
+                "equipment",
+                {"infantry"},
+                LandEquipmentStats(reliability=0.05),
+            )
+        )
+    mio = MIO("test", {"TST"}, {"infantry"}, set(), traits=traits)
+    report = mio.sum_bonuses_for(infantry)
+    assert report.n_traits == (0 if empty_only else 1)
+    assert report.is_empty() == empty_only
+
+
+@pytest.mark.parametrize("predicate", ["is_usa_or_breakaway", "is_benelux_country"])
+def test_scripted_country_scope_remains_visible_and_is_not_merged_away(
+    tmp_path, infantry, predicate
+):
+    write_text(
+        tmp_path / "scoped.txt",
+        f"""
+        generic = {{
+            equipment_type = {{ infantry }}
+            initial_trait = {{ equipment_bonus = {{ reliability = 0.05 }} }}
+        }}
+        scoped = {{ include = generic allowed = {{ {predicate} = yes }} }}
+    """,
+    )
+    mios = MIO.from_directory(
+        tmp_path, {}, True, equipment_index={"infantry": infantry}
+    )
+    assert set(mios) == {"generic", "scoped"}
+    assert predicate in mios["scoped"].countries_display()
+    assert predicate in mios["scoped"].sum_bonuses_for(infantry).to_pretty_display()
 
 
 def test_initial_bonus_is_inherited_and_included_in_totals(tmp_path, infantry):
