@@ -14,14 +14,7 @@ class ProliferationScript(StalkerScript):
                 _parse_race_script((ROOT / path).read_text(encoding="utf-8"))
             )
         self.triggers["METALGEAR_scenario_enabled"] = [("always", "=", "yes")]
-        self.triggers.update(
-            _parse_race_script(
-                (
-                    ROOT
-                    / "common/scripted_triggers/99_METALGEAR_proliferation_triggers.txt"
-                ).read_text(encoding="utf-8")
-            )
-        )
+        self.opinion_modifiers = set()
         if self.tag("JAP") is None:
             self.country(920, tag="JAP")
         self.country(769, tag="NEW_YORK")
@@ -39,6 +32,11 @@ class ProliferationScript(StalkerScript):
         self.goto(2001, 1, 1)
 
     def execute_statement(self, statement, identifier):
+        if statement[0] == "add_opinion_modifier":
+            fields = {key: value for key, _, value in statement[2]}
+            self.opinion_modifiers.add(
+                (identifier, self.tag(fields["target"]), fields["modifier"])
+            )
         if statement[0] != "custom_effect_tooltip":
             super().execute_statement(statement, identifier)
 
@@ -158,6 +156,10 @@ def test_2005_closes_an_unstarted_trail_without_releasing_unreserved_capacity(
 )
 def test_cooperation_requires_both_national_consents_and_returns_once(japan, russia):
     script = ProliferationScript()
+    for tag in ("JAP", "SOV"):
+        script.countries[script.tag(tag)]["vars"].update(
+            METALGEAR_pf_phase=4, METALGEAR_pf_policy=1
+        )
     script.countries[1]["vars"]["METALGEAR_pf_inquiry"] = 1
     choose(script, 53, "a")
     choose(script, 54, japan, "JAP")
@@ -202,6 +204,9 @@ def test_initial_partner_notice_prevents_early_duplicates_and_allows_later_recov
     tag, number, reply
 ):
     script = ProliferationScript()
+    script.countries[script.tag(tag)]["vars"].update(
+        METALGEAR_pf_phase=4, METALGEAR_pf_policy=1
+    )
     script.countries[1]["vars"]["METALGEAR_pf_inquiry"] = 1
     choose(script, 53, "a")
     choose(script, 53, "a")
@@ -325,21 +330,182 @@ def test_lost_site_downgrades_and_releases_only_the_affected_commitment(
 
 @pytest.mark.parametrize("prepared", [False, True])
 @pytest.mark.parametrize("partners", [0, 1, 2])
-def test_independent_authorization_checks_and_charges_the_actual_discounted_cost(
-    prepared, partners
+@pytest.mark.parametrize("brief,case", [(59, "tanker"), (61, "shell")])
+@pytest.mark.parametrize("political_power", [-25, 0, 100])
+def test_independent_authorization_remains_available_and_charges_discounted_cost(
+    prepared, partners, brief, case, political_power
 ):
     script = ProliferationScript()
     script.actor = 1
     variables = script.countries[1]["vars"]
     variables.update(
-        METALGEAR_pf_tanker_phase=1, METALGEAR_pf_inquiry_result=int(prepared)
+        {f"METALGEAR_pf_{case}_phase": 1, "METALGEAR_pf_inquiry_result": int(prepared)}
     )
     for tag in ("JAP", "SOV")[:partners]:
         script.countries[script.tag(tag)]["vars"]["METALGEAR_pf_exchange"] = 2
     price = (25 if prepared else 50) - 5 * partners
-    variables["political_power"] = price - 1
-    assert not available(script, 59, "a")
-    variables["political_power"] = price
-    assert available(script, 59, "a")
-    choose(script, 59, "a")
-    assert variables["political_power"] == 0
+    variables["political_power"] = political_power
+    assert available(script, brief, "a")
+    choose(script, brief, "a")
+    assert variables["political_power"] == political_power - price
+    before = variables.copy(), script.globals.copy()
+    choose(script, brief, "a")
+    assert (variables, script.globals) == before
+
+
+@pytest.mark.parametrize("brief,case", [(53, "inquiry"), (59, "tanker"), (61, "shell")])
+@pytest.mark.parametrize("route", ["a", "b"])
+def test_paid_responses_do_not_force_low_power_players_into_fallbacks(
+    brief, case, route
+):
+    script = ProliferationScript()
+    variables = script.countries[1]["vars"]
+    phase = (
+        "METALGEAR_pf_inquiry" if case == "inquiry" else f"METALGEAR_pf_{case}_phase"
+    )
+    variables.update({phase: 1, "political_power": -10})
+    assert available(script, brief, route)
+
+    choose(script, brief, route)
+
+    assert variables[phase] == 2
+    assert variables["political_power"] == (
+        -60 if route == "a" and brief != 53 else -35
+    )
+    assert script.globals["METALGEAR_capacity"] == 1
+    before = variables.copy(), script.globals.copy()
+    choose(script, brief, route)
+    assert (variables, script.globals) == before
+
+
+@pytest.mark.parametrize("tag,number", [("JAP", 54), ("SOV", 55)])
+@pytest.mark.parametrize(
+    "phase,policy,usable",
+    [
+        (0, 0, False),
+        (2, 0, False),
+        (3, 0, False),
+        (4, 0, False),
+        (4, 1, True),
+        (4, 2, True),
+        (4, 3, False),
+        (5, 0, False),
+    ],
+)
+@pytest.mark.parametrize("political_power", [-10, 200])
+def test_partner_can_transfer_only_completed_nonconcealed_records(
+    tag, number, phase, policy, usable, political_power
+):
+    script = ProliferationScript()
+    script.countries[1]["vars"]["METALGEAR_pf_inquiry"] = 1
+    choose(script, 53, "a")
+    script.actor = script.tag(tag)
+    variables = script.countries[script.actor]["vars"]
+    variables.update(
+        METALGEAR_pf_phase=phase,
+        METALGEAR_pf_policy=policy,
+        political_power=political_power,
+    )
+    assert available(script, number, "a") == usable
+    assert available(script, number, "b")
+    choose(script, number, "a", tag)
+    assert variables["METALGEAR_pf_exchange"] == (2 if usable else 1)
+    assert variables["political_power"] == political_power - (25 if usable else 0)
+    before = variables.copy(), script.globals.copy(), script.opinion_modifiers.copy()
+    choose(script, number, "a", tag)
+    assert (variables, script.globals, script.opinion_modifiers) == before
+    if not usable:
+        choose(script, number, "b", tag)
+        assert variables["METALGEAR_pf_exchange"] == 3
+    script.goto(2001, 3, 2)
+    script.run("METALGEAR_monthly_proliferation_pulse", 1)
+    choose(script, 56, "a")
+    assert script.globals["METALGEAR_reach"] == 50 + (5 if usable else 0)
+
+
+@pytest.mark.parametrize("japan", range(5))
+@pytest.mark.parametrize("russia", range(5))
+def test_usa_exchange_status_reads_each_partners_record(japan, russia):
+    script = ProliferationScript()
+    script.countries[1]["vars"]["METALGEAR_pf_exchange"] = 2
+    script.countries[script.tag("JAP")]["vars"]["METALGEAR_pf_exchange"] = japan
+    script.countries[script.tag("SOV")]["vars"]["METALGEAR_pf_exchange"] = russia
+    blocks = _parse_race_script(
+        "source = {"
+        + (
+            ROOT
+            / "common/scripted_localisation/99_METALGEAR_proliferation_scripted_localisation.txt"
+        ).read_text(encoding="utf-8")
+        + "}"
+    )["source"]
+    for tag, state in (("jap", japan), ("sov", russia)):
+        record = next(
+            body
+            for key, _, body in blocks
+            if key == "defined_text"
+            and ("name", "=", f"METALGEAR_pf_{tag}_exchange_record") in body
+        )
+        for key, _, branch in record:
+            if key != "text":
+                continue
+            fields = {name: value for name, _, value in branch}
+            if "trigger" not in fields or script.condition(fields["trigger"], 1):
+                assert fields["localization_key"] == (
+                    f"METALGEAR_pf_exchange_{state}"
+                    if state
+                    else "METALGEAR_pf_exchange_none"
+                )
+                break
+        else:
+            pytest.fail("Exchange status has no matching text")
+    for filename in (
+        "MD_METALGEAR_l_english.yml",
+        "MD_METALGEAR_preparation_l_english.yml",
+    ):
+        text = (ROOT / "localisation/english" / filename).read_text(
+            encoding="utf-8-sig"
+        )
+        assert "[METALGEAR_pf_jap_exchange_record]" in text
+        assert "[METALGEAR_pf_sov_exchange_record]" in text
+        assert "[METALGEAR_pf_exchange_record]" not in text
+
+
+@pytest.mark.parametrize("japan,russia", [(True, True), (True, False), (False, True)])
+def test_each_incident_disclosure_adds_distinct_relations_and_cannot_repeat(
+    japan, russia
+):
+    script = ProliferationScript()
+    script.countries[1]["vars"]["METALGEAR_pf_inquiry"] = 1
+    choose(script, 53, "a")
+    for tag, event, accepted in (("JAP", 54, japan), ("SOV", 55, russia)):
+        script.countries[script.tag(tag)]["vars"].update(
+            METALGEAR_pf_phase=4, METALGEAR_pf_policy=1
+        )
+        choose(script, event, "a" if accepted else "b", tag)
+    for case, event in (("tanker", 60), ("shell", 62)):
+        script.countries[1]["vars"].update(
+            {f"METALGEAR_pf_{case}_phase": 3, f"METALGEAR_pf_{case}_route": 1}
+        )
+        choose(script, event, "a")
+        for tag, accepted in (("JAP", japan), ("SOV", russia)):
+            partner = script.tag(tag)
+            assert (
+                (1, partner, f"METALGEAR_pf_{case}_disclosure")
+                in script.opinion_modifiers
+            ) == accepted
+            assert (
+                (partner, 1, f"METALGEAR_pf_{case}_disclosure")
+                in script.opinion_modifiers
+            ) == accepted
+        before = script.opinion_modifiers.copy(), script.external.copy()
+        choose(script, event, "a")
+        assert (script.opinion_modifiers, script.external) == before
+    for tag, accepted in (("JAP", japan), ("SOV", russia)):
+        partner = script.tag(tag)
+        ids = {
+            modifier
+            for source, target, modifier in script.opinion_modifiers
+            if source == 1 and target == partner
+        }
+        assert len(ids) == (3 if accepted else 0)
+        assert ("diplomatic_support" in ids) == accepted
