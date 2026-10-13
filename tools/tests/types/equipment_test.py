@@ -17,6 +17,7 @@ from tools.types.equipment import AllEquipmentStats, Equipment, LandEquipmentSta
         "sub_visibility",
         "surface_visibility",
         "fuel_consumption",
+        "supply_consumption",
     ],
 )
 @pytest.mark.parametrize("value", [-0.05, 0.05])

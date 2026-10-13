@@ -105,6 +105,7 @@ class EquipmentStats:
             "sub_visibility",
             "surface_visibility",
             "fuel_consumption",
+            "supply_consumption",
         ]
         for field in fields(self):
             value = getattr(self, field.name)

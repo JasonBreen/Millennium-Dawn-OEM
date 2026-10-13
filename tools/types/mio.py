@@ -694,7 +694,7 @@ class MIO:
             contributions.append(self.initial_bonuses)
 
         for trait in self.traits:
-            if equipment_type.tag not in trait.applies_to:
+            if equipment_type.tag not in trait.applies_to or trait.bonuses.is_empty():
                 continue
             if trait.token in choice_tokens:
                 alternatives.append(trait)

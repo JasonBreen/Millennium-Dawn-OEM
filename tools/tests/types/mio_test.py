@@ -71,6 +71,29 @@ def test_initial_only_organization_is_not_empty(tmp_path, infantry):
     assert not mio.sum_bonuses_for(infantry).is_empty()
 
 
+def test_traits_without_equipment_bonuses_do_not_count(tmp_path, infantry):
+    write_text(
+        tmp_path / "mios.txt",
+        """
+        logistics_only = {
+            equipment_type = { infantry }
+            trait = {
+                token = logistics
+                production_bonus = { production_capacity_factor = 0.05 }
+            }
+        }
+        """,
+    )
+    mio = MIO.from_directory(
+        tmp_path, {}, False, equipment_index={"infantry": infantry}
+    )["logistics_only"]
+
+    report = mio.sum_bonuses_for(infantry)
+
+    assert report.n_traits == 0
+    assert report.is_empty()
+
+
 @pytest.mark.parametrize(
     "customization",
     [
