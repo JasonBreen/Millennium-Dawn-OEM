@@ -94,8 +94,13 @@ DEUSEX_augmentation_month = {
 			check_variable = { DEUSEX_aug_adoption > 19 }
 			NOT = { has_country_flag = DEUSEX_aug_shortage_cooldown }
 		}
+		set_temp_variable = { DEUSEX_shortage_chance = 4 }
+		if = {
+			limit = { has_country_flag = DEUSEX_cc_safety_protocol has_country_flag = DEUSEX_aug_neuropozyne_funded }
+			set_temp_variable = { DEUSEX_shortage_chance = 2 }
+		}
 		random = {
-			chance = 4
+			chance = DEUSEX_shortage_chance
 			set_country_flag = { flag = DEUSEX_aug_shortage_cooldown value = 1 days = 365 }
 			country_event = { id = DEUSEX.32 days = 1 }
 		}
@@ -114,21 +119,28 @@ DEUSEX_augmentation_month = {
 # steps of 10, so a +10 grant below 100 is never clamped.
 DEUSEX_open_augmentation_industry = {
 	set_country_flag = DEUSEX_aug_open
+	DEUSEX_cc_apply_arrangement = yes
 	DEUSEX_update_augmentation = yes
 	add_dynamic_modifier = { modifier = DEUSEX_augmentation_industry }
 }
 
 # Host scope. The Aug Incident's toll scales with adoption; both responses pay it.
 DEUSEX_aug_incident_damage = {
+	set_temp_variable = { DEUSEX_incident_stability_loss = -0.03 }
 	if = {
 		limit = { check_variable = { DEUSEX_aug_adoption > 59 } }
-		add_stability = -0.1
+		set_temp_variable = { DEUSEX_incident_stability_loss = -0.1 }
 	}
 	else_if = {
 		limit = { check_variable = { DEUSEX_aug_adoption > 29 } }
-		add_stability = -0.06
+		set_temp_variable = { DEUSEX_incident_stability_loss = -0.06 }
 	}
-	else = { add_stability = -0.03 }
+	if = {
+		limit = { DEUSEX_scenario_enabled = yes has_country_flag = DEUSEX_cc_safety_verified }
+		add_to_temp_variable = { DEUSEX_incident_stability_loss = 0.02 }
+		custom_effect_tooltip = DEUSEX_cc_incident_relief_tt
+	}
+	add_stability = DEUSEX_incident_stability_loss
 	custom_effect_tooltip = DEUSEX_unrest_plus_40_tt
 	hidden_effect = { add_to_variable = { DEUSEX_aug_unrest = 40 } }
 }

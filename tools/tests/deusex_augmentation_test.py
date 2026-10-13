@@ -68,7 +68,8 @@ def test_unrest_and_neuropozyne_scale_with_adoption():
     assert month.index("add_to_variable = { DEUSEX_aug_unrest = -2 }") < month.index(
         "DEUSEX_update_augmentation = yes"
     )
-    assert "chance = 4" in month
+    assert "set_temp_variable = { DEUSEX_shortage_chance = 4 }" in month
+    assert "chance = DEUSEX_shortage_chance" in month
     assert "flag = DEUSEX_aug_shortage_cooldown value = 1 days = 365" in month
     assert (
         "check_variable = { var = DEUSEX_aug_unrest value = 60 compare = greater_than_or_equals }"

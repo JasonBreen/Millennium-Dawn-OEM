@@ -33,10 +33,12 @@ event IDs, so parallel work does not collide. It ships on OEM only. Built like S
   `99_DEUSEX_illuminati_effects.txt`.
 - **A Traitor at the Table (50–59):** `DEUSEX_traitor.txt`; loc `_traitor_`;
   `99_DEUSEX_traitor_effects.txt`.
+- **Corporate Cold War (60–69):** `DEUSEX_corporate_cold_war.txt`; loc `_corporate_cold_war_`;
+  `99_DEUSEX_corporate_cold_war_effects.txt`.
 
 Localisation file names are `MD_DEUSEX_<subsystem>_l_english.yml`.
 
-The next free block is 60–69.
+The next free block is 70–79.
 
 ## Hooks into shared files
 
@@ -182,13 +184,13 @@ because he is missing after Panchaea. The member gets `DEUSEX.50` and the `DEUSE
 
 The dossiers (wing; stance on augmentation; public face) are unique, so three clues always name one suspect:
 
-| Suspect | Wing | Stance | Face |
-| --- | --- | --- | --- |
-| Bob Page | capital | for | corporate |
-| Zhao Yun Ru | security | for | corporate |
-| William Taggart | media | against | public |
-| Elizabeth DuClare | media | for | public |
-| Hugh Darrow | capital | against (privately) | corporate |
+| Suspect           | Wing     | Stance              | Face      |
+| ----------------- | -------- | ------------------- | --------- |
+| Bob Page          | capital  | for                 | corporate |
+| Zhao Yun Ru       | security | for                 | corporate |
+| William Taggart   | media    | against             | public    |
+| Elizabeth DuClare | media    | for                 | public    |
+| Hugh Darrow       | capital  | against (privately) | corporate |
 
 `global.DEUSEX_traitor_clock` starts at 18. Each month it falls by 1 and the traitor adds 3 exposure. Clue decisions
 take 60 days each and set `DEUSEX_clue_wing`, `_stance` or `_face`. The category's text shows the revealed clues next
@@ -245,3 +247,15 @@ on ordering against MD's shared startup-event dispatcher.
 - Normal focus trees, technology and Targeted Operations Off remain playable.
 
 Source review and GitHub CI do not substitute for these in-game observations.
+
+## Corporate cold war
+
+Events 60-62 conclude national early investigations: USA's Undeclared Sponsor, China's Second Manifest, Germany's Missing Trial. Events 63-65 carry consenting additional exchanges in the existing USA to Germany to China to USA cycle. Events 66-68 open national 2027 cases; 69 reports the current national record without rewards. New government cases are original scenario material, following the [Human Revolution setting](https://www.eidosmontreal.com/games/deus-ex-human-revolution/) and the [2027/2029 timeline](https://www.eidosmontreal.com/news/deus-ex-mankind-divided-announced/).
+
+After either opening audit conclusion, each country can pay 25 PP for a 60-day corporate investigation. cc_phase is 2 running, 3 report, 4 completed or 5 abandoned/unprepared. cc_policy records 1 independent scrutiny, 2 controlled disclosure or 3 exclusive arrangement. Independent scrutiny reduces Illuminati influence by 10 and creates a safety protocol. While Neuropozyne funding is active, the existing 4% shortage random roll becomes 2%; the existing annual cooldown is unchanged. Controlled disclosure preserves evidence, adds 10 conspiracy exposure and enables one further 25 PP request. The recipient must consent for 25 PP; refusal, war, disappearance or 60 days without consent closes it. cc_exchange is 1 pending, 2 delivered, 3 refused or 4 interrupted.
+
+Exclusive arrangements add 10 Illuminati influence once when initialized and 10 adoption once for an existing USA/China industry. The opening helper and monthly fallback support delayed industry opening without duplicating either reward. Germany receives no industry or adoption. Restricted, unopened and missing hosts retain the existing industry conditions.
+
+The 2027 corporate case opens before October: USA investigates the Sarif attack, China examines Tai Yong records, and Germany protects patient evidence. A 25 PP/60-day safety intervention verifies preparation only with an independent protocol or preserved evidence. A 50 PP/60-day patient-protection and disclosure intervention refunds 25 PP with evidence, reduces influence by 10 and preserves its new record. Paid interventions must start by August 2 to finish their 60-day assignment before the October cutoff. Free corporate deference remains available through October 1, adds 10 influence and verifies nothing. cc_crisis is 1 intake, 2 running, 4 concluded or 5 unprepared/interrupted. Unfinished early work closes in January; unfinished crisis work closes before October's existing incident. Completed verification gives an augmentation host 2 percentage points of stability relief; it does not prevent the incident, its +40 unrest, or the 2029 Restoration Act.
+
+Acceptance: all three national routes and countries, refusal/war/annexation while awaiting consent, stale delayed events, duplicate pulses/reports, delayed or restricted industry opening, Germany's non-industry boundary, shortage probability with/without funding, pending work across save/reload and the unchanged 2027/2029 progression. Python source execution, CI and native gameplay are separate evidence. No migration support is added.
