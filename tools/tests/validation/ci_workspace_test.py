@@ -28,6 +28,7 @@ def test_workspace_profile_materializes_only_validator_inputs(tmp_path):
         "interface/core.gfx",
         "gfx/flags/probe.tga",
         "gfx/interface/decisions/probe.dds",
+        "gfx/interface/equipmentdesigner/graphic_db/probe.txt",
         "map/adjacency_rules.txt",
         "music/playlists/probe.txt",
         "resources/documentation/probe.md",
@@ -92,11 +93,14 @@ def _staged_fetch(tmp_path):
         source.as_uri(),
         str(checkout),
     )
-    fetch = workflow_step("tools-tests", "Fetch merge revision for staged integration")
+    fetch = workflow_step("tools-quality", "Fetch PR head for staged integration")
     command = shlex.split(
         substitute_expressions(
             fetch["run"],
-            {"github.repository": "owner/repo", "github.sha": target},
+            {
+                "needs.detect-changes.outputs.checkout-repository": "owner/repo",
+                "needs.detect-changes.outputs.head-sha": target,
+            },
         ).replace("https://github.com/owner/repo.git", source.as_uri())
     )
     assert command[:2] == ["git", "fetch"]
@@ -110,10 +114,13 @@ def test_staged_worktree_step_checks_out_only_the_staged_profile(tmp_path):
     for profile in ("staged_sparse_profile.txt", "ci_workspace_profile.txt"):
         body = (REPO_ROOT / "tools/validation" / profile).read_text(encoding="utf-8")
         write_under_str(checkout, f"tools/validation/{profile}", body)
-    step = workflow_step("tools-tests", "Create staged integration worktree")
+    step = workflow_step("tools-quality", "Create staged integration worktree")
     script = substitute_expressions(
         step["run"],
-        {"runner.temp": str(tmp_path / "runner"), "github.sha": target},
+        {
+            "runner.temp": str(tmp_path / "runner"),
+            "needs.detect-changes.outputs.head-sha": target,
+        },
     )
 
     result = run_bash_step(script, checkout)

@@ -26,6 +26,7 @@ from typing import (
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from shared_utils import OPTION_OPEN_RE as _OPTION_RE
 from shared_utils import blank_quoted_strings, extract_block_from_text, strip_comments
 from validator_common import BaseValidator, run_validator_main
 
@@ -42,7 +43,6 @@ _EVENT_ALT = "|".join(_EVENT_KEYWORDS)
 _EVENT_DEF_RE = re.compile(r"(?m)^(" + _EVENT_ALT + r")\s*=\s*\{")
 _BLOCK_IDENTIFIER = r"[A-Za-z0-9_.:@^\[\]-]+"
 _TOP_LEVEL_BLOCK_RE = re.compile(r"(?m)^(" + _BLOCK_IDENTIFIER + r")\s*=\s*\{")
-_OPTION_RE = re.compile(r"\boption\s*=\s*\{")
 _IMMEDIATE_RE = re.compile(r"\bimmediate\s*=\s*\{")
 _ID_RE = re.compile(r"\bid\s*=\s*([A-Za-z0-9_.]+)")
 _EVENT_SHORT_CALL_RE = re.compile(

@@ -45,6 +45,8 @@ Millennium Dawn is a Hearts of Iron IV mod (2000-present). Game data lives in
 - Before changing a large system, map it with
   `python3 tools/analysis/system_inspector.py <preset>` (`--list` for presets such as
   `stalker` and `top`, `--path-pattern` for any other system, `--json` for structured output).
+- Per-building and resource GDP factors live only in the `@gdp_*` constants of
+  `common/scripted_effects/00_money_system.txt`.
 
 ## Formatting
 
