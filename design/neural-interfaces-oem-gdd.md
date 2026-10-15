@@ -4,14 +4,51 @@
 | Field | Value |
 | --- | --- |
 | Document | Neural Interface Initiative (NII) |
-| Version | v0.1, initial design |
-| Date | 2026-10-14 |
+| Version | v0.2, implementation contract |
+| Date | 2026-10-15 |
 | Target | `JasonBreen/Millennium-Dawn-OEM` |
 | Working branch | `oem/neural-interfaces-prototype` |
-| Status | Design specification; implementation not yet started |
+| Status | Source implementation drafted; native gameplay acceptance pending |
 | Priority | Vertical slice first; avoid adding a parallel game system |
 
-> **Bottom line:** Implement one native special project that unlocks one neural-control aircraft avionics module. Prove the complete research-to-aircraft loop before adding the prototype NI-X01 "Nightmare," loyal-wingman drones, accidents, or international competition. Reuse existing OEM technology, air research, special projects and the BBA plane designer.
+The first release adds a native neural flight-control project, a priced manned-fighter avionics module, five-focus national branches for eight powers, and their AI research and procurement route. Native designer, production, deployment, focus-layout, and save/reload acceptance is still pending; the feature stays in draft until those results are recorded.
+
+## Current implementation contract
+
+This contract reflects the October 15 decisions in [issue #536](https://github.com/JasonBreen/Millennium-Dawn-OEM/issues/536) and supersedes the initial proposal below.
+
+| Component | Implemented contract |
+| --- | --- |
+| Startup selector | `rule_oem_neural_aviation`, default `DISABLED`, displayed as Experimental Neural Aviation |
+| Native project | `oem_sp_neural_flight_control`, air specialization, avionics/aeronautics tag, long prototype time, large complexity |
+| Requirements | By Blood Alone, completed `sp_aircraft_project`, `avionics_3`, `computing_5`, and 2030 `artificial_intelligence_9` |
+| Research costs | Three air breakthroughs and five microchips through native project resource costs |
+| Completion | Enables only `oem_avionics_neural_assisted_1`; focuses and events do not grant that module |
+| Aircraft path | Existing fighter/interceptor designs, normal production, and ordinary air-wing deployment |
+
+Neural avionics explicitly retain the fourth-generation manned package's defense, targeting, night, ground-attack, bombing, and manpower fields. The module costs 37 IC, 11 weight, five microchips, and four design XP; it adds -0.08 reliability and uses agility 0.24, air attack 0.24, and air superiority 0.19 modifier coefficients. These coefficients describe module modifiers, not guaranteed final-aircraft percentage changes. Existing conventional aircraft do not receive these stats automatically.
+
+Designer restrictions exclude other mission types, light/heavy fully autonomous flight control, and the Arsenal Bird mothership. The repeated-module count limits follow installed game documentation but still need native designer proof. The copied conversion field is unverified; this release makes no retrofit claim.
+
+USA, CHI, SOV, ENG, FRA, GER, JAP, and RAJ each receive the same five-step mechanical sequence with national names and descriptions:
+
+1. Charter: one 20% AI9 research bonus and 10 air XP.
+2. Control laboratory: one air breakthrough after AI8.
+3. Manned testbed: 10% native project progress after the project prerequisites and an air facility.
+4. Flight qualification: another 10% progress, with five air XP if research is already complete.
+5. Procurement: 25 air XP after native project completion.
+
+The testbed also gives five air XP if research is already complete. All branches require the selector and By Blood Alone. Other qualifying countries can use the global project without these national branches.
+
+The eight AI powers receive prerequisite research preferences, focus-plan support, project selection weight, and a shared neural interceptor template. The template follows organically unlocked gen4/gen5/gen6 medium fighter hulls and uses conventional module fallbacks where later components are missing. Its preference retires at `avionics_4` so the prototype does not displace newer conventional avionics. Existing interceptor ratios, resource production, and plane caps control procurement. Actual facility/scientist staffing, focus selection, designs, producing lines, wings, chip shortages, and cap behavior remain native acceptance gates.
+
+Ace Combat supplies broader technology and program references than COFFIN alone. The first slice uses original OEM names and restrained Belkan references; later work retains the earlier Nightmare concept, COFFIN integration, Flight 017, separately researched weapons, and priced manned-unmanned teaming. Reference sources include the [official Ace Combat chronology](https://acecombat.jp/en/chronicle/details/) and [Bandai Namco's manned and unmanned aircraft overview](https://www.bandainamcoent.com/news/ace-combat-7-skies-unknown-season-pass-revealed).
+
+The existing `sp_arsenal_bird` already unlocks `mothership_equipment_1`, fighter/bomber/anti-ship drone-swarm modules, a missile bay, and arsenal autonomous control. It requires nuclear engines plus autonomous fighters and bombers. That implementation remains adjacent content; this slice adds no mothership or drone reward. No new 3D model is needed. A later custom airframe can reuse or port a suitable existing model after its source and usable asset terms are checked.
+
+## Archived v0.1 design proposal
+
+The remaining sections preserve the October 14 proposal for future design context. Their earlier identifiers, prerequisites, costs, and milestone allocation are historical; use the current implementation contract above for this release.
 
 ## 1. Feature concept
 
