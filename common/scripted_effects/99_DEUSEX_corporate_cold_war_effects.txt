@@ -1,0 +1,201 @@
+DEUSEX_cc_apply_arrangement = {
+	if = {
+		limit = { check_variable = { DEUSEX_cc_policy = 3 } NOT = { has_country_flag = DEUSEX_cc_influence_applied } has_variable = DEUSEX_illum_influence }
+		set_country_flag = DEUSEX_cc_influence_applied
+		add_to_variable = { DEUSEX_illum_influence = 10 }
+		DEUSEX_update_illuminati_grip = yes
+		DEUSEX_update_inner_circle = yes
+	}
+	if = {
+		limit = { check_variable = { DEUSEX_cc_policy = 3 } OR = { tag = USA tag = CHI } DEUSEX_has_augmentation_industry = yes NOT = { has_country_flag = DEUSEX_cc_adoption_applied } }
+		set_country_flag = DEUSEX_cc_adoption_applied
+		add_to_variable = { DEUSEX_aug_adoption = 10 }
+		DEUSEX_update_augmentation = yes
+	}
+}
+
+DEUSEX_cc_abandon = {
+	if = {
+		limit = { OR = { check_variable = { DEUSEX_cc_phase = 2 } check_variable = { DEUSEX_cc_phase = 3 } } }
+		set_variable = { DEUSEX_cc_phase = 5 }
+		clr_country_flag = DEUSEX_cc_work_wait
+		clr_country_flag = DEUSEX_cc_notice
+	}
+}
+
+DEUSEX_cc_USA_month = {
+	if = {
+		limit = { NOT = { country_exists = USA } }
+		USA = { DEUSEX_cc_abandon = yes if = { limit = { check_variable = { DEUSEX_cc_exchange = 1 } } set_variable = { DEUSEX_cc_exchange = 4 } } if = { limit = { check_variable = { DEUSEX_cc_crisis = 2 } } set_variable = { DEUSEX_cc_crisis = 5 } clr_country_flag = DEUSEX_cc_crisis_wait } }
+	}
+	else = {
+		USA = {
+			DEUSEX_cc_apply_arrangement = yes
+			if = { limit = { date > 2027.1.1 OR = { check_variable = { DEUSEX_cc_phase = 2 } check_variable = { DEUSEX_cc_phase = 3 } } } DEUSEX_cc_abandon = yes }
+			if = {
+				limit = {
+					date > 2026.9.30
+					check_variable = { DEUSEX_cc_phase = 0 }
+					OR = { check_variable = { DEUSEX_program_phase = 3 } check_variable = { DEUSEX_program_phase = 4 } }
+				}
+				set_variable = { DEUSEX_cc_phase = 5 }
+			}
+			if = { limit = { check_variable = { DEUSEX_cc_phase = 2 } NOT = { has_country_flag = DEUSEX_cc_work_wait } } set_variable = { DEUSEX_cc_phase = 3 } }
+			if = { limit = { check_variable = { DEUSEX_cc_phase = 3 } NOT = { has_country_flag = DEUSEX_cc_notice } } set_country_flag = { flag = DEUSEX_cc_notice value = 1 days = 35 } country_event = { id = DEUSEX.60 days = 1 } }
+			if = {
+				limit = { check_variable = { DEUSEX_cc_exchange = 1 } }
+				if = {
+					limit = { OR = { NOT = { country_exists = GER } has_war_with = GER NOT = { has_country_flag = DEUSEX_cc_exchange_deadline } } }
+					set_variable = { DEUSEX_cc_exchange = 4 }
+					clr_country_flag = DEUSEX_cc_exchange_deadline
+					country_event = { id = DEUSEX.69 days = 1 }
+				}
+				else_if = {
+					limit = { NOT = { has_country_flag = DEUSEX_cc_exchange_notice } }
+					set_country_flag = { flag = DEUSEX_cc_exchange_notice value = 1 days = 35 }
+					GER = { country_event = { id = DEUSEX.63 days = 1 } }
+				}
+			}
+			if = { limit = { date > 2027.1.1 check_variable = { DEUSEX_cc_crisis = 0 } } set_variable = { DEUSEX_cc_crisis = 1 } }
+			if = {
+				limit = { date > 2027.10.1 OR = { check_variable = { DEUSEX_cc_crisis = 1 } check_variable = { DEUSEX_cc_crisis = 2 } } }
+				set_variable = { DEUSEX_cc_crisis = 5 }
+				clr_country_flag = DEUSEX_cc_crisis_wait
+				clr_country_flag = DEUSEX_cc_crisis_notice
+			}
+			if = {
+				limit = { check_variable = { DEUSEX_cc_crisis = 2 } NOT = { has_country_flag = DEUSEX_cc_crisis_wait } }
+				set_variable = { DEUSEX_cc_crisis = 4 }
+				if = {
+					limit = { check_variable = { DEUSEX_cc_crisis_route = 1 } OR = { has_country_flag = DEUSEX_cc_safety_protocol has_country_flag = DEUSEX_cc_evidence } }
+					set_country_flag = DEUSEX_cc_safety_verified
+				}
+				else_if = { limit = { check_variable = { DEUSEX_cc_crisis_route = 2 } } add_to_variable = { DEUSEX_illum_influence = -10 } DEUSEX_update_illuminati_grip = yes DEUSEX_update_inner_circle = yes }
+				set_country_flag = DEUSEX_cc_evidence
+				country_event = { id = DEUSEX.69 days = 1 }
+			}
+			if = { limit = { check_variable = { DEUSEX_cc_crisis = 1 } date < 2027.10.2 NOT = { has_country_flag = DEUSEX_cc_crisis_notice } } set_country_flag = { flag = DEUSEX_cc_crisis_notice value = 1 days = 35 } country_event = { id = DEUSEX.66 days = 1 } }
+		}
+	}
+}
+
+DEUSEX_cc_CHI_month = {
+	if = {
+		limit = { NOT = { country_exists = CHI } }
+		CHI = { DEUSEX_cc_abandon = yes if = { limit = { check_variable = { DEUSEX_cc_exchange = 1 } } set_variable = { DEUSEX_cc_exchange = 4 } } if = { limit = { check_variable = { DEUSEX_cc_crisis = 2 } } set_variable = { DEUSEX_cc_crisis = 5 } clr_country_flag = DEUSEX_cc_crisis_wait } }
+	}
+	else = {
+		CHI = {
+			DEUSEX_cc_apply_arrangement = yes
+			if = { limit = { date > 2027.1.1 OR = { check_variable = { DEUSEX_cc_phase = 2 } check_variable = { DEUSEX_cc_phase = 3 } } } DEUSEX_cc_abandon = yes }
+			if = {
+				limit = {
+					date > 2026.9.30
+					check_variable = { DEUSEX_cc_phase = 0 }
+					OR = { check_variable = { DEUSEX_program_phase = 3 } check_variable = { DEUSEX_program_phase = 4 } }
+				}
+				set_variable = { DEUSEX_cc_phase = 5 }
+			}
+			if = { limit = { check_variable = { DEUSEX_cc_phase = 2 } NOT = { has_country_flag = DEUSEX_cc_work_wait } } set_variable = { DEUSEX_cc_phase = 3 } }
+			if = { limit = { check_variable = { DEUSEX_cc_phase = 3 } NOT = { has_country_flag = DEUSEX_cc_notice } } set_country_flag = { flag = DEUSEX_cc_notice value = 1 days = 35 } country_event = { id = DEUSEX.61 days = 1 } }
+			if = {
+				limit = { check_variable = { DEUSEX_cc_exchange = 1 } }
+				if = {
+					limit = { OR = { NOT = { country_exists = USA } has_war_with = USA NOT = { has_country_flag = DEUSEX_cc_exchange_deadline } } }
+					set_variable = { DEUSEX_cc_exchange = 4 }
+					clr_country_flag = DEUSEX_cc_exchange_deadline
+					country_event = { id = DEUSEX.69 days = 1 }
+				}
+				else_if = {
+					limit = { NOT = { has_country_flag = DEUSEX_cc_exchange_notice } }
+					set_country_flag = { flag = DEUSEX_cc_exchange_notice value = 1 days = 35 }
+					USA = { country_event = { id = DEUSEX.64 days = 1 } }
+				}
+			}
+			if = { limit = { date > 2027.1.1 check_variable = { DEUSEX_cc_crisis = 0 } } set_variable = { DEUSEX_cc_crisis = 1 } }
+			if = {
+				limit = { date > 2027.10.1 OR = { check_variable = { DEUSEX_cc_crisis = 1 } check_variable = { DEUSEX_cc_crisis = 2 } } }
+				set_variable = { DEUSEX_cc_crisis = 5 }
+				clr_country_flag = DEUSEX_cc_crisis_wait
+				clr_country_flag = DEUSEX_cc_crisis_notice
+			}
+			if = {
+				limit = { check_variable = { DEUSEX_cc_crisis = 2 } NOT = { has_country_flag = DEUSEX_cc_crisis_wait } }
+				set_variable = { DEUSEX_cc_crisis = 4 }
+				if = {
+					limit = { check_variable = { DEUSEX_cc_crisis_route = 1 } OR = { has_country_flag = DEUSEX_cc_safety_protocol has_country_flag = DEUSEX_cc_evidence } }
+					set_country_flag = DEUSEX_cc_safety_verified
+				}
+				else_if = { limit = { check_variable = { DEUSEX_cc_crisis_route = 2 } } add_to_variable = { DEUSEX_illum_influence = -10 } DEUSEX_update_illuminati_grip = yes DEUSEX_update_inner_circle = yes }
+				set_country_flag = DEUSEX_cc_evidence
+				country_event = { id = DEUSEX.69 days = 1 }
+			}
+			if = { limit = { check_variable = { DEUSEX_cc_crisis = 1 } date < 2027.10.2 NOT = { has_country_flag = DEUSEX_cc_crisis_notice } } set_country_flag = { flag = DEUSEX_cc_crisis_notice value = 1 days = 35 } country_event = { id = DEUSEX.67 days = 1 } }
+		}
+	}
+}
+
+DEUSEX_cc_GER_month = {
+	if = {
+		limit = { NOT = { country_exists = GER } }
+		GER = { DEUSEX_cc_abandon = yes if = { limit = { check_variable = { DEUSEX_cc_exchange = 1 } } set_variable = { DEUSEX_cc_exchange = 4 } } if = { limit = { check_variable = { DEUSEX_cc_crisis = 2 } } set_variable = { DEUSEX_cc_crisis = 5 } clr_country_flag = DEUSEX_cc_crisis_wait } }
+	}
+	else = {
+		GER = {
+			DEUSEX_cc_apply_arrangement = yes
+			if = { limit = { date > 2027.1.1 OR = { check_variable = { DEUSEX_cc_phase = 2 } check_variable = { DEUSEX_cc_phase = 3 } } } DEUSEX_cc_abandon = yes }
+			if = {
+				limit = {
+					date > 2026.9.30
+					check_variable = { DEUSEX_cc_phase = 0 }
+					OR = { check_variable = { DEUSEX_program_phase = 3 } check_variable = { DEUSEX_program_phase = 4 } }
+				}
+				set_variable = { DEUSEX_cc_phase = 5 }
+			}
+			if = { limit = { check_variable = { DEUSEX_cc_phase = 2 } NOT = { has_country_flag = DEUSEX_cc_work_wait } } set_variable = { DEUSEX_cc_phase = 3 } }
+			if = { limit = { check_variable = { DEUSEX_cc_phase = 3 } NOT = { has_country_flag = DEUSEX_cc_notice } } set_country_flag = { flag = DEUSEX_cc_notice value = 1 days = 35 } country_event = { id = DEUSEX.62 days = 1 } }
+			if = {
+				limit = { check_variable = { DEUSEX_cc_exchange = 1 } }
+				if = {
+					limit = { OR = { NOT = { country_exists = CHI } has_war_with = CHI NOT = { has_country_flag = DEUSEX_cc_exchange_deadline } } }
+					set_variable = { DEUSEX_cc_exchange = 4 }
+					clr_country_flag = DEUSEX_cc_exchange_deadline
+					country_event = { id = DEUSEX.69 days = 1 }
+				}
+				else_if = {
+					limit = { NOT = { has_country_flag = DEUSEX_cc_exchange_notice } }
+					set_country_flag = { flag = DEUSEX_cc_exchange_notice value = 1 days = 35 }
+					CHI = { country_event = { id = DEUSEX.65 days = 1 } }
+				}
+			}
+			if = { limit = { date > 2027.1.1 check_variable = { DEUSEX_cc_crisis = 0 } } set_variable = { DEUSEX_cc_crisis = 1 } }
+			if = {
+				limit = { date > 2027.10.1 OR = { check_variable = { DEUSEX_cc_crisis = 1 } check_variable = { DEUSEX_cc_crisis = 2 } } }
+				set_variable = { DEUSEX_cc_crisis = 5 }
+				clr_country_flag = DEUSEX_cc_crisis_wait
+				clr_country_flag = DEUSEX_cc_crisis_notice
+			}
+			if = {
+				limit = { check_variable = { DEUSEX_cc_crisis = 2 } NOT = { has_country_flag = DEUSEX_cc_crisis_wait } }
+				set_variable = { DEUSEX_cc_crisis = 4 }
+				if = {
+					limit = { check_variable = { DEUSEX_cc_crisis_route = 1 } OR = { has_country_flag = DEUSEX_cc_safety_protocol has_country_flag = DEUSEX_cc_evidence } }
+					set_country_flag = DEUSEX_cc_safety_verified
+				}
+				else_if = { limit = { check_variable = { DEUSEX_cc_crisis_route = 2 } } add_to_variable = { DEUSEX_illum_influence = -10 } DEUSEX_update_illuminati_grip = yes DEUSEX_update_inner_circle = yes }
+				set_country_flag = DEUSEX_cc_evidence
+				country_event = { id = DEUSEX.69 days = 1 }
+			}
+			if = { limit = { check_variable = { DEUSEX_cc_crisis = 1 } date < 2027.10.2 NOT = { has_country_flag = DEUSEX_cc_crisis_notice } } set_country_flag = { flag = DEUSEX_cc_crisis_notice value = 1 days = 35 } country_event = { id = DEUSEX.68 days = 1 } }
+		}
+	}
+}
+
+DEUSEX_monthly_corporate_cold_war_pulse = {
+	if = {
+		limit = { DEUSEX_scenario_enabled = yes }
+		DEUSEX_cc_USA_month = yes
+		DEUSEX_cc_CHI_month = yes
+		DEUSEX_cc_GER_month = yes
+	}
+}

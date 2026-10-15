@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from shared.paths import REPO_ROOT
 from shared_utils import atomic_write_bytes, read_text_strict

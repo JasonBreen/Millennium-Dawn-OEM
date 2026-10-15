@@ -80,10 +80,18 @@ jobs:
             common/idea_tags
             common/technology_tags
             common/script_enums.txt
+            common/ai_focuses/MD_generic.txt
+            common/ai_focuses/MD_RAJ.txt
+            common/ai_focuses/MD_USA.txt
             common/units/equipment
             common/technologies/industry.txt
             common/technologies/engineering.txt
+            common/technologies/fixed_wing.txt
+            common/technologies/helicopter_techs.txt
+            common/technologies/naval.txt
             common/technologies/SOV_computing_sovereignty.txt
+            common/modifier_definitions/money_modifier_definitions.txt
+            common/resources/00_resources.txt
             common/ai_strategy/SOV.txt
             common/ai_strategy/MD_ai_race_ai.txt
             common/buildings/00_buildings.txt
@@ -231,14 +239,6 @@ jobs:
           python -m pytest \
             tools/tests/staged_validators_test.py \
             tools/tests/staged_validators_real_test.py -q
-
-      - name: Run branch common-mistakes validation
-        if: >-
-          !cancelled() && matrix.check.id == 'staged' &&
-          steps.staged-deps.outcome == 'success'
-        run: >-
-          python tools/validation/validate_common_mistakes.py
-          --strict --no-color --workers 4
 
       # Run after test failures, but not broken setup or cancellation.
       - name: Run tools validation

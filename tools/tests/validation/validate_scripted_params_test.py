@@ -21,6 +21,7 @@ import sys
 import pytest
 import validate_scripted_params as vsp
 from shared.suite import initialize_git_repository, run_git
+from shared.suite import write_text as _write
 from shared_utils import collapse_or_compact
 from validate_scripted_params import _validate_call_sites_in_file
 
@@ -59,12 +60,6 @@ _TEST_VALID_TAGS = frozenset(
         "NTR",  # alias
     }
 )
-
-
-def _write(path, content):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8", newline="") as file:
-        file.write(content)
 
 
 def _issues(caller_body, contracts, mod_path, valid_tags=_TEST_VALID_TAGS):
@@ -947,6 +942,20 @@ _SHARED = "call-shares-line"
 
 # name -> (script, expected (category, line) findings in order)
 _SEMANTIC_FIXTURES = {
+    "short_form_variable_named_var": (
+        "option = {\n\tset_temp_variable = { var = amount }\n\ttest_effect = yes\n}\n",
+        [(_MISSING, 3)],
+    ),
+    "long_form_set_temp_math_value": (
+        "option = {\n\tset_temp_variable = { var = amount value = { value = gdp_total multiply = -0.003 } }\n"
+        "\ttest_effect = yes\n}\n",
+        [],
+    ),
+    "multiline_random_set_temp_min_max": (
+        "option = {\n\tset_temp_variable_to_random = {\n\t\tvar = amount\n"
+        "\t\tmin = 2\n\t\tmax = 8\n\t}\n\ttest_effect = yes\n}\n",
+        [],
+    ),
     "quoted_call": ('option = {\n\tlog = "test_effect = yes"\n}\n', []),
     "quoted_set_temp": (
         'option = {\n\tlog = "set_temp_variable = { amount = 1 }"\n'
@@ -991,6 +1000,33 @@ _SEMANTIC_FIXTURES = {
         "option = {\n\tset_temp_variable = {\n\t\tother = 1\n\t}\n"
         "\ttest_effect = yes\n}\n",
         [(_MISSING, 5)],
+    ),
+    "add_to_temp": (
+        "option = {\n\tadd_to_temp_variable = { amount = 1 }\n\ttest_effect = yes\n}\n",
+        [],
+    ),
+    "subtract_from_temp": (
+        "option = {\n\tsubtract_from_temp_variable = { amount = 1 }\n"
+        "\ttest_effect = yes\n}\n",
+        [],
+    ),
+    "long_form_set_temp": (
+        "option = {\n\tset_temp_variable = { var = amount value = 1 }\n"
+        "\ttest_effect = yes\n}\n",
+        [],
+    ),
+    "multiline_random_set_temp": (
+        "option = {\n\tset_temp_variable_to_random = {\n\t\tvar = amount\n"
+        "\t\tmax = 8\n\t}\n\ttest_effect = yes\n}\n",
+        [],
+    ),
+    "variable_named_var": (
+        "option = {\n\tset_temp_variable = { var = 1 }\n\ttest_effect = yes\n}\n",
+        [(_MISSING, 3)],
+    ),
+    "multiply_temp_sets_nothing": (
+        "option = {\n\tmultiply_temp_variable = { amount = 2 }\n\ttest_effect = yes\n}\n",
+        [(_MISSING, 3)],
     ),
     "multiline_string": (
         'option = {\n\tlog = "first\n\ttest_effect = yes"\n\ttest_effect = yes\n}\n',
@@ -1533,6 +1569,37 @@ def test_staged_tag_or_alias_change_rechecks_unchanged_callers(
 
     assert _cli_findings(tmp_path, monkeypatch, "--staged") == [
         ("invalid-influence-tag", "events/e.txt", 3)
+    ]
+
+
+def test_staged_trigger_change_rechecks_unchanged_callers(tmp_path, monkeypatch):
+    """A trigger that stops reading a parameter leaves its callers' setters dead."""
+    trigger = "common/scripted_triggers/t.txt"
+    caller = (
+        "option = {\n"
+        "\tif = {\n"
+        "\t\tlimit = {\n"
+        "\t\t\tset_temp_variable = { amount = 5 }\n"
+        "\t\t\ttest_trigger = yes\n"
+        "\t\t}\n"
+        "\t}\n"
+        "}\n"
+    )
+    _committed_tree(
+        tmp_path,
+        monkeypatch,
+        {
+            _EFFECT_FILE: _REQUIRES_AMOUNT,
+            trigger: "test_trigger = {\n\tcheck_variable = { amount > 1 }\n}\n",
+            "events/e.txt": caller,
+        },
+    )
+    assert _cli_findings(tmp_path, monkeypatch) == []
+
+    _stage(tmp_path, trigger, "test_trigger = {\n\talways = yes\n}\n")
+
+    assert _cli_findings(tmp_path, monkeypatch, "--staged") == [
+        ("orphan-param-setter", "events/e.txt", 4)
     ]
 
 
