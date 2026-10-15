@@ -39,16 +39,6 @@ def write_path():
 
 
 @pytest.fixture
-def country_file(tmp_path):
-    from shared.suite import write_text
-
-    def write(body, name="ARA - Arabistan.txt"):
-        return str(write_text(tmp_path / "history" / "countries" / name, body))
-
-    return write
-
-
-@pytest.fixture
 def issues_by_line():
     def run(validator_cls, root):
         validator = validator_cls(str(root), use_colors=False, workers=1)
