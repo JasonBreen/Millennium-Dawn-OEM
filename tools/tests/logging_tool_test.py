@@ -633,7 +633,7 @@ _SKIP_ALL = [
 
 
 def test_tech_add_inserts_log_into_on_research_complete_blocks(tmp_path):
-    source = _write(
+    source = write_text(
         tmp_path / "common" / "technologies" / "techs.txt",
         _padded(
             "technologies = {\n"
