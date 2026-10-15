@@ -37203,4 +37203,177 @@ focus_tree = {
 			modifier = { factor = 0 SOV_ai_not_oligarchs_path = yes }
 		}
 	}
+
+	focus = {
+		id = SOV_oem_neural_charter
+		icon = science2
+
+		x = 5
+		y = 1
+		relative_position_id = SOV_form_the_uac
+
+		cost = 5
+
+		allow_branch = {
+			has_game_rule = { rule = rule_oem_neural_aviation option = ENABLED }
+			has_dlc = "By Blood Alone"
+		}
+
+		prerequisite = { focus = SOV_form_the_uac }
+		search_filters = { FOCUS_FILTER_RUSSIA_ARMY FOCUS_FILTER_RESEARCH FOCUS_FILTER_AIRCRAFT }
+
+		available = {
+			has_tech = computing_5
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SOV_oem_neural_charter"
+			add_tech_bonus = {
+				name = SOV_oem_neural_charter
+				bonus = 0.20
+				uses = 1
+				technology = artificial_intelligence_9
+			}
+			air_experience = 10
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	focus = {
+		id = SOV_oem_neural_control_lab
+		icon = focus_generic_university_3
+
+		x = 0
+		y = 1
+		relative_position_id = SOV_oem_neural_charter
+
+		cost = 5
+
+		allow_branch = {
+			has_game_rule = { rule = rule_oem_neural_aviation option = ENABLED }
+			has_dlc = "By Blood Alone"
+		}
+
+		prerequisite = { focus = SOV_oem_neural_charter }
+		search_filters = { FOCUS_FILTER_RUSSIA_ARMY FOCUS_FILTER_RESEARCH FOCUS_FILTER_AIRCRAFT }
+
+		available = {
+			has_tech = artificial_intelligence_8
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SOV_oem_neural_control_lab"
+			add_breakthrough_points = {
+				specialization = specialization_air
+				value = 1
+			}
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	focus = {
+		id = SOV_oem_neural_manned_testbed
+		icon = modern_fighter
+
+		x = 0
+		y = 1
+		relative_position_id = SOV_oem_neural_control_lab
+
+		cost = 5
+
+		allow_branch = {
+			has_game_rule = { rule = rule_oem_neural_aviation option = ENABLED }
+			has_dlc = "By Blood Alone"
+		}
+
+		prerequisite = { focus = SOV_oem_neural_control_lab }
+		search_filters = { FOCUS_FILTER_RUSSIA_ARMY FOCUS_FILTER_RESEARCH FOCUS_FILTER_AIRCRAFT }
+
+		available = {
+			has_tech = computing_5
+			has_tech = artificial_intelligence_9
+			has_tech = avionics_3
+			is_special_project_completed = sp:sp_aircraft_project
+			air_facility > 0
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SOV_oem_neural_manned_testbed"
+			if = {
+				limit = {
+					has_dlc = "By Blood Alone"
+					NOT = { is_special_project_completed = sp:oem_sp_neural_flight_control }
+				}
+				sp:oem_sp_neural_flight_control = { add_project_progress_ratio = 0.10 }
+			}
+			else = { air_experience = 5 }
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	focus = {
+		id = SOV_oem_neural_flight_qualification
+		icon = air_superiority
+
+		x = 0
+		y = 1
+		relative_position_id = SOV_oem_neural_manned_testbed
+
+		cost = 5
+
+		allow_branch = {
+			has_game_rule = { rule = rule_oem_neural_aviation option = ENABLED }
+			has_dlc = "By Blood Alone"
+		}
+
+		prerequisite = { focus = SOV_oem_neural_manned_testbed }
+		search_filters = { FOCUS_FILTER_RUSSIA_ARMY FOCUS_FILTER_RESEARCH FOCUS_FILTER_AIRCRAFT }
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SOV_oem_neural_flight_qualification"
+			if = {
+				limit = {
+					has_dlc = "By Blood Alone"
+					NOT = { is_special_project_completed = sp:oem_sp_neural_flight_control }
+				}
+				sp:oem_sp_neural_flight_control = { add_project_progress_ratio = 0.10 }
+			}
+			else = { air_experience = 5 }
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	focus = {
+		id = SOV_oem_neural_procurement
+		icon = aviation_industry
+
+		x = 0
+		y = 1
+		relative_position_id = SOV_oem_neural_flight_qualification
+
+		cost = 5
+
+		allow_branch = {
+			has_game_rule = { rule = rule_oem_neural_aviation option = ENABLED }
+			has_dlc = "By Blood Alone"
+		}
+
+		prerequisite = { focus = SOV_oem_neural_flight_qualification }
+		search_filters = { FOCUS_FILTER_RUSSIA_ARMY FOCUS_FILTER_AIRCRAFT FOCUS_FILTER_AIR_XP }
+
+		available = {
+			is_special_project_completed = sp:oem_sp_neural_flight_control
+		}
+
+		completion_reward = {
+			log = "[GetDateText]: [Root.GetName]: Focus SOV_oem_neural_procurement"
+			air_experience = 25
+		}
+
+		ai_will_do = { base = 5 }
+	}
 }
