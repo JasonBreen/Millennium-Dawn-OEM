@@ -19,9 +19,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "linting"))
 import disk_cache
 from check_common_mistakes import _iter_event_log_mismatches
 from image_size import read_image_size
-from shared_utils import MODIFIER_OPEN_RE as _AI_CHANCE_MODIFIER_RE
-from shared_utils import OPTION_OPEN_RE as _OPTION_OPEN_RE
-from shared_utils import TRIGGER_OPEN_RE as _TRIGGER_OPEN_RE
 from shared_utils import (
     DEFAULT_EXTRA_SKIP_PATTERNS,
     blank_quoted_strings,
@@ -33,6 +30,9 @@ from shared_utils import (
     strip_inline_comment,
     validation_config,
 )
+from shared_utils import MODIFIER_OPEN_RE as _AI_CHANCE_MODIFIER_RE
+from shared_utils import OPTION_OPEN_RE as _OPTION_OPEN_RE
+from shared_utils import TRIGGER_OPEN_RE as _TRIGGER_OPEN_RE
 from sprite_index import build_sprite_index, build_sprite_texture_index
 from validator_common import BANKRUPTCY_GUARD_RE as _BANKRUPTCY_GUARD_RE
 from validator_common import (
