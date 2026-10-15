@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from shared.suite import write_text as _write
 
 
 def _module():
@@ -19,12 +20,6 @@ def _module():
 
 
 VARS = {"space": "var_open_MD_space_gui", "un": "var_open_MD_UN_gui"}
-
-
-def _write(path, text):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8", newline="") as handle:
-        handle.write(text)
 
 
 def _repo(tmp_path, keys=("space", "un")):

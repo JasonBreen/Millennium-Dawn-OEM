@@ -63,7 +63,7 @@ def test_child_blocks_on_empty_span():
 
 
 def test_match_brace_returns_minus_one_when_unclosed():
-    assert VC._match_brace("{ a = 1", 0) == -1
+    assert VC.find_unquoted_brace_close("{ a = 1", 0) == -1
 
 
 # ---- leader trait parsing -------------------------------------------------
@@ -306,6 +306,43 @@ def test_pool_map_falls_back_to_sequential_without_a_pool(tmp_path, monkeypatch)
     assert v._pool_map(str, list(range(12))) == [str(i) for i in range(12)]
 
 
+def test_pool_map_init_closes_the_shared_pool_before_starting_its_own(
+    tmp_path, monkeypatch
+):
+    events = []
+
+    class _SharedPool:
+        def terminate(self):
+            events.append("terminate")
+
+        def join(self):
+            events.append("join")
+
+    class _DedicatedPool:
+        def __init__(self, **_kwargs):
+            events.append("start")
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_exc):
+            return False
+
+        def map(self, func, items, chunksize=None):
+            return [func(item) for item in items]
+
+    monkeypatch.setenv("MD_MAX_WORKERS", "2")
+    monkeypatch.setattr(VC, "Pool", _DedicatedPool)
+    v = _Dummy(mod_path=str(tmp_path), use_colors=False, workers=2)
+    v._pool = _SharedPool()
+
+    result = v._pool_map_init(str, list(range(12)), lambda: None, ())
+
+    assert events == ["terminate", "join", "start"]
+    assert v._pool is None
+    assert result == [str(i) for i in range(12)]
+
+
 # ---- localisation keys ----------------------------------------------------
 
 
@@ -319,6 +356,52 @@ def test_localisation_loader_skips_unreadable_yml(dummy, write_path, tmp_path):
 
     assert "k" in keys
     assert "recruit_in_europe" in keys
+
+
+def _loc_tree(write_path, tmp_path):
+    write_path(
+        tmp_path,
+        "localisation/english/test_l_english.yml",
+        'l_english:\n TEST_key_one:0 "One"\n TEST_key_two:0 "Two"\n',
+    )
+
+
+# A staged .txt reads its loc keys from unstaged files. Restricting the lookup
+# to staged files once flooded --staged runs with false positives.
+def test_staged_run_loads_loc_keys_from_the_whole_repo(dummy, write_path, tmp_path):
+    _loc_tree(write_path, tmp_path)
+    dummy.staged_only = True
+    dummy.staged_files = ["events/some_event.txt"]
+
+    assert {"TEST_key_one", "TEST_key_two"} <= dummy._load_localisation_keys()
+
+
+def test_loc_keys_are_memoized(dummy, write_path, tmp_path):
+    _loc_tree(write_path, tmp_path)
+    assert dummy._load_localisation_keys() is dummy._load_localisation_keys()
+
+
+def test_loc_keys_hit_the_disk_cache_across_instances(
+    write_path, tmp_path, monkeypatch
+):
+    monkeypatch.delenv("MD_NO_CACHE", raising=False)
+    _loc_tree(write_path, tmp_path)
+    first = _Dummy(
+        mod_path=str(tmp_path), use_colors=False, workers=1
+    )._load_localisation_keys()
+    opens = []
+    original_open = open
+
+    def wrapped(path, *args, **kwargs):
+        opens.append(str(path))
+        return original_open(path, *args, **kwargs)
+
+    monkeypatch.setattr("builtins.open", wrapped)
+    second = _Dummy(
+        mod_path=str(tmp_path), use_colors=False, workers=1
+    )._load_localisation_keys()
+    assert not any(path.endswith(".yml") for path in opens)
+    assert second == first
 
 
 # ---- run wiring -----------------------------------------------------------
