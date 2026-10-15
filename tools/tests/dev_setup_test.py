@@ -8,6 +8,8 @@ from types import SimpleNamespace
 
 import dev_setup
 import pytest
+from shared.suite import run_tool_script
+from shared.suite import write_text as write
 
 Version = namedtuple("Version", "major minor micro releaselevel serial")
 
@@ -46,12 +48,6 @@ def stub_run(monkeypatch, handler=lambda cmd: completed()):
 
     monkeypatch.setattr(dev_setup, "run", fake_run)
     return calls
-
-
-def write(path, text):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        handle.write(text)
 
 
 def venv_python(root):
@@ -719,6 +715,14 @@ def run_main(monkeypatch, *argv):
     with pytest.raises(SystemExit) as exc:
         dev_setup.main()
     return exc.value.code
+
+
+def test_the_script_checks_the_real_environment():
+    result = run_tool_script("dev_setup.py", "--check")
+
+    assert "Python:" in result.stdout
+    assert "pre-commit" in result.stdout
+    assert result.returncode in (0, 1), f"crashed: {result.stderr[:200]}"
 
 
 def test_check_mode_reports_a_ready_environment(setup_env, monkeypatch, capsys):
