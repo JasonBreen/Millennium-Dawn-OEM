@@ -122,6 +122,36 @@ IMP_dissolve = {
 	clear_array = global.IMP_full_members
 }
 
+# Civil-war victor's scope, from on_civil_war_end. Inherited ideas skip on_add, as EU_resync_member_array notes
+IMP_resync_after_civil_war = {
+	if = {
+		limit = {
+			has_idea = IMP_full_member
+			NOT = { is_in_array = { global.IMP_full_members = THIS } }
+		}
+		if = {
+			limit = { IMP_council_exists = yes }
+			add_to_array = { global.IMP_full_members = THIS }
+		}
+		else = {
+			remove_ideas = IMP_full_member
+		}
+	}
+	if = {
+		limit = {
+			has_idea = IMP_associate
+			NOT = { is_in_array = { global.IMP_associates = THIS } }
+		}
+		if = {
+			limit = { IMP_council_exists = yes }
+			add_to_array = { global.IMP_associates = THIS }
+		}
+		else = {
+			remove_ideas = IMP_associate
+		}
+	}
+}
+
 # Global scope, monthly
 IMP_monthly_update = {
 	if = {
