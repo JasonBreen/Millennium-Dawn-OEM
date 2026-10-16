@@ -167,6 +167,16 @@ These adapt the existing AI Race harness, not the game engine. No tools or
 validators were modified. No content-validator suite was run, per AGENTS.md.
 One current-version Content changelog entry covers the implementation.
 
+The first PR validation run reported 23 Enigma errors: twelve id-only event calls
+needing shorthand, seven placeholder event pictures, two research requirement
+tooltips, one DLC bonus guard, and a mission visibility block ignored by the engine.
+The follow-up replaces the art with existing 217x163 country-event textures,
+uses activation and explicit cancellation for the mission with fresh random seeds,
+and supplies readable research requirements and a local DLC guard. Focused
+regressions also exercise all 96 mission gate combinations, event-call syntax,
+picture resolution/dimensions, and requirement-tooltip wrappers. CI warnings in
+unmodified content are outside this feature's scope.
+
 Native acceptance remains outstanding. Use a disposable development save to check
 feature modes; timers and automatic mission activation; same-version save/reload;
 Flight 017 and native project progression; cockpit exclusions in the designer;

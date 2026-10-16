@@ -3,16 +3,20 @@ USA_enigma_category = {
 		icon = generic_operation
 		is_good = no
 		days_mission_timeout = 180
+		fixed_random_seed = no
 		available = { always = no }
 		activation = {
+			USA_enigma_enabled = yes
 			check_variable = { USA_enigma_phase = 7 }
 			OR = { check_variable = { USA_enigma_hearing = 0 } check_variable = { USA_enigma_hearing = 2 } }
 		}
-		visible = {
-			check_variable = { USA_enigma_phase = 7 }
-			OR = { check_variable = { USA_enigma_hearing = 0 } check_variable = { USA_enigma_hearing = 2 } }
+		cancel_trigger = {
+			OR = {
+				USA_enigma_enabled = no
+				NOT = { check_variable = { USA_enigma_phase = 7 } }
+				NOT = { OR = { check_variable = { USA_enigma_hearing = 0 } check_variable = { USA_enigma_hearing = 2 } } }
+			}
 		}
-		cancel_if_not_visible = yes
 		timeout_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_scrutiny"
 			custom_effect_tooltip = USA_enigma_scrutiny_tt
@@ -68,9 +72,9 @@ USA_enigma_category = {
 		complete_effect = {
 			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_reopen_consequences"
 			hidden_effect = {
-				if = { limit = { check_variable = { USA_enigma_hearing = 1 } } country_event = { id = USA_enigma.3 } }
-				else_if = { limit = { check_variable = { USA_enigma_hearing = 4 } } country_event = { id = USA_enigma.4 } }
-				else_if = { limit = { check_variable = { USA_enigma_fallout = 1 } } country_event = { id = USA_enigma.5 } }
+				if = { limit = { check_variable = { USA_enigma_hearing = 1 } } country_event = USA_enigma.3 }
+				else_if = { limit = { check_variable = { USA_enigma_hearing = 4 } } country_event = USA_enigma.4 }
+				else_if = { limit = { check_variable = { USA_enigma_fallout = 1 } } country_event = USA_enigma.5 }
 			}
 		}
 		ai_will_do = { base = 1 }
@@ -214,7 +218,7 @@ USA_enigma_category = {
 				if = {
 					limit = { USA_enigma_enabled = yes check_variable = { USA_enigma_phase = 5 } }
 					set_variable = { USA_enigma_phase = 6 }
-					country_event = { id = USA_enigma.2 }
+					country_event = USA_enigma.2
 				}
 			}
 		}
@@ -239,11 +243,11 @@ USA_enigma_category = {
 			hidden_effect = {
 				if = {
 					limit = { check_variable = { USA_enigma_phase = 3 } }
-					country_event = { id = USA_enigma.1 }
+					country_event = USA_enigma.1
 				}
 				else_if = {
 					limit = { check_variable = { USA_enigma_phase = 6 } }
-					country_event = { id = USA_enigma.2 }
+					country_event = USA_enigma.2
 				}
 			}
 		}
