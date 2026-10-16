@@ -7,7 +7,10 @@ IMP_found_council = {
 
 IMP_admit_full_member = {
 	if = {
-		limit = { IMP_can_join_full = yes }
+		limit = {
+			IMP_council_exists = yes
+			IMP_can_join_full = yes
+		}
 		if = {
 			limit = { has_idea = IMP_associate }
 			remove_ideas = IMP_associate
@@ -18,7 +21,10 @@ IMP_admit_full_member = {
 
 IMP_admit_associate = {
 	if = {
-		limit = { IMP_can_join_associate = yes }
+		limit = {
+			IMP_council_exists = yes
+			IMP_can_join_associate = yes
+		}
 		add_ideas = IMP_associate
 	}
 }
@@ -47,7 +53,7 @@ IMP_remove_associate = {
 	}
 }
 
-# The largest economy among the full members takes a vacant chair; no full members dissolves the council
+# The largest valid economy among the full members takes a vacant chair; no valid full member dissolves the council
 IMP_refresh_chair = {
 	if = {
 		limit = {
@@ -60,24 +66,25 @@ IMP_refresh_chair = {
 			}
 		}
 		if = {
-			limit = { check_variable = { global.IMP_full_members^num > 0 } }
+			limit = {
+				any_of_scopes = {
+					array = global.IMP_full_members
+					IMP_is_valid_full_member = yes
+				}
+			}
 			set_temp_variable = { IMP_best_gdp = -1 }
 			for_each_scope_loop = {
 				array = global.IMP_full_members
 				if = {
 					limit = {
-						exists = yes
+						IMP_is_valid_full_member = yes
 						check_variable = { gdp_total > IMP_best_gdp }
 					}
 					set_temp_variable = { IMP_best_gdp = gdp_total }
 					set_variable = { global.IMP_chair = THIS.id }
 				}
 			}
-			# Only annexed members left: the monthly update removes them and dissolves the council
-			if = {
-				limit = { check_variable = { IMP_best_gdp > -1 } }
-				var:global.IMP_chair = { country_event = { id = IMP.30 days = 1 } }
-			}
+			var:global.IMP_chair = { country_event = { id = IMP.30 days = 1 } }
 		}
 		else = {
 			IMP_dissolve = yes
@@ -88,6 +95,18 @@ IMP_refresh_chair = {
 IMP_dissolve = {
 	clear_variable = global.IMP_chair
 	clear_variable = global.IMP_fund
+	# Only invalid full members can remain here; the cleared chair keeps on_remove off the arrays
+	for_each_scope_loop = {
+		array = global.IMP_full_members
+		if = {
+			limit = { has_idea = IMP_full_member }
+			remove_ideas = IMP_full_member
+			if = {
+				limit = { exists = yes }
+				country_event = { id = IMP.40 days = 1 }
+			}
+		}
+	}
 	for_each_scope_loop = {
 		array = global.IMP_associates
 		if = {

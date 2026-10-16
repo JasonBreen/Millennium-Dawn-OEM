@@ -14,7 +14,15 @@ country_event = {
 		clr_country_flag = IMP_invite_pending
 		IMP_admit_full_member = yes
 		unlock_decision_category_tooltip = IMP_council_category
-		hidden_effect = { FROM = { country_event = { id = IMP.12 days = 1 } } }
+		hidden_effect = {
+			if = {
+				limit = { has_idea = IMP_full_member }
+				FROM = { country_event = { id = IMP.12 days = 1 } }
+			}
+			else = {
+				FROM = { country_event = { id = IMP.14 days = 1 } }
+			}
+		}
 		ai_chance = {
 			base = 10
 			modifier = { add = 5 has_opinion = { target = FROM value > 25 } }
@@ -45,7 +53,15 @@ country_event = {
 		clr_country_flag = IMP_invite_pending
 		IMP_admit_associate = yes
 		unlock_decision_category_tooltip = IMP_council_category
-		hidden_effect = { FROM = { country_event = { id = IMP.12 days = 1 } } }
+		hidden_effect = {
+			if = {
+				limit = { has_idea = IMP_associate }
+				FROM = { country_event = { id = IMP.12 days = 1 } }
+			}
+			else = {
+				FROM = { country_event = { id = IMP.14 days = 1 } }
+			}
+		}
 		ai_chance = {
 			base = 10
 			modifier = { add = 5 has_opinion = { target = FROM value > 25 } }
@@ -64,7 +80,7 @@ country_event = {
 	}
 }
 
-# Invitation accepted. ROOT is the chair, FROM the invitee
+# Invitation accepted and admitted. ROOT is the chair, FROM the invitee
 country_event = {
 	id = IMP.12
 	title = IMP.12.t
@@ -75,10 +91,6 @@ country_event = {
 	desc = {
 		text = IMP.12.d_associate
 		trigger = { FROM = { has_idea = IMP_associate } }
-	}
-	desc = {
-		text = IMP.12.d_ineligible
-		trigger = { FROM = { IMP_is_member = no } }
 	}
 	picture = GFX_belarus_intermarium
 	is_triggered_only = yes
@@ -100,6 +112,20 @@ country_event = {
 
 	option = {
 		name = IMP.13.a
+	}
+}
+
+# Invitation accepted, but the invitee no longer qualified. ROOT is the chair, FROM the invitee
+country_event = {
+	id = IMP.14
+	title = IMP.14.t
+	desc = IMP.14.d
+	picture = GFX_belarus_intermarium
+	is_triggered_only = yes
+	minor_flavor = yes
+
+	option = {
+		name = IMP.14.a
 	}
 }
 
