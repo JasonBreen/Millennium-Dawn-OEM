@@ -494,9 +494,9 @@ jobs:
       - name: Run common-mistakes check
         if: always() && steps.style-files.outputs.has-files == 'true'
         run: |
-          # Feed check_common_mistakes.py NUL-delimited paths through xargs.
-          tr '\n' '\0' < style_files.txt | xargs -0 -r \
-            python3 tools/linting/check_common_mistakes.py \
+          MD_STAGED_FILES="$(cat style_files.txt)" \
+            python3 tools/validation/validate_common_mistakes.py \
+              --staged --strict --no-color \
               --output validation-common-mistakes.log
 
       - name: Verify style result files
