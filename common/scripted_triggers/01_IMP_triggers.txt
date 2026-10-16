@@ -70,13 +70,9 @@ IMP_is_valid_associate = {
 	}
 }
 
-# Two days of grace past the closing day, so a vote whose tally recipients all vanished cannot block proposals forever
+# Until the tally runs; the monthly update tallies a vote whose queued tallies were all lost
 IMP_vote_in_progress = {
-	check_expr = {
-		value = global.IMP_vote_end
-		add = 2
-		greater_than = { value = global.num_days }
-	}
+	check_variable = { global.IMP_vote_end > 0 }
 }
 
 # A ballot counts only for the vote that issued it, and only while its voter holds a valid seat
