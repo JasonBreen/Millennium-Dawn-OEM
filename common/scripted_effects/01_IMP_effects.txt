@@ -98,6 +98,88 @@ IMP_dissolve = {
 	}
 	clear_array = global.IMP_associates
 	clear_array = global.IMP_full_members
+	clr_global_flag = IMP_vote_open
+	clear_variable = global.IMP_mobility_stage
+	clear_variable = global.IMP_air_stage
+	clear_variable = global.IMP_procurement_stage
+	clear_variable = global.IMP_cyber_stage
+	IMP_update_program_bonuses = yes
+}
+
+# ROOT is the proposing chair and votes in favor. Temp IMP_track: 1 mobility, 2 air defense, 3 procurement, 4 cyber
+IMP_open_vote = {
+	set_variable = { global.IMP_vote_track = IMP_track }
+	set_variable = { global.IMP_votes_for = 1 }
+	set_variable = { global.IMP_votes_against = 0 }
+	set_global_flag = { flag = IMP_vote_open days = 31 value = 1 }
+	save_global_event_target_as = IMP_vote_proposer
+	for_each_scope_loop = {
+		array = global.IMP_full_members
+		if = {
+			limit = { NOT = { tag = ROOT } }
+			country_event = { id = IMP.20 days = 1 }
+		}
+	}
+	country_event = { id = IMP.21 days = 30 }
+}
+
+# A tie passes. The fund cannot fall during a vote, so only the council's survival is rechecked
+IMP_tally_vote = {
+	if = {
+		limit = {
+			has_global_flag = IMP_vote_open
+			IMP_council_exists = yes
+			check_variable = { var = global.IMP_votes_for value = global.IMP_votes_against compare = greater_than_or_equals }
+		}
+		if = {
+			limit = { check_variable = { global.IMP_vote_track = 1 } }
+			set_temp_variable = { IMP_stage = global.IMP_mobility_stage }
+			add_to_variable = { global.IMP_mobility_stage = 1 }
+		}
+		else_if = {
+			limit = { check_variable = { global.IMP_vote_track = 2 } }
+			set_temp_variable = { IMP_stage = global.IMP_air_stage }
+			add_to_variable = { global.IMP_air_stage = 1 }
+		}
+		else_if = {
+			limit = { check_variable = { global.IMP_vote_track = 3 } }
+			set_temp_variable = { IMP_stage = global.IMP_procurement_stage }
+			add_to_variable = { global.IMP_procurement_stage = 1 }
+		}
+		else = {
+			set_temp_variable = { IMP_stage = global.IMP_cyber_stage }
+			add_to_variable = { global.IMP_cyber_stage = 1 }
+		}
+		subtract_from_variable = { global.IMP_fund = { value = IMP_stage multiply = 0.75 add = 0.5 } }
+		IMP_update_program_bonuses = yes
+		for_each_scope_loop = {
+			array = global.IMP_full_members
+			country_event = { id = IMP.22 days = 1 }
+		}
+		for_each_scope_loop = {
+			array = global.IMP_associates
+			country_event = { id = IMP.22 days = 1 }
+		}
+	}
+	else_if = {
+		limit = {
+			has_global_flag = IMP_vote_open
+			IMP_council_exists = yes
+		}
+		for_each_scope_loop = {
+			array = global.IMP_full_members
+			country_event = { id = IMP.23 days = 1 }
+		}
+	}
+	clr_global_flag = IMP_vote_open
+}
+
+IMP_update_program_bonuses = {
+	set_variable = { global.IMP_mobility_bonus = { value = global.IMP_mobility_stage multiply = 0.05 } }
+	set_variable = { global.IMP_air_bonus = { value = global.IMP_air_stage multiply = 0.05 } }
+	set_variable = { global.IMP_procurement_bonus = { value = global.IMP_procurement_stage multiply = 0.03 } }
+	set_variable = { global.IMP_cyber_rating = { value = global.IMP_cyber_stage multiply = 2 } }
+	set_variable = { global.IMP_cyber_bonus = { value = global.IMP_cyber_stage multiply = 0.05 } }
 }
 
 # Global scope, monthly

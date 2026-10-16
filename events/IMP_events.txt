@@ -103,6 +103,76 @@ country_event = {
 	}
 }
 
+# Program vote. ROOT is a full member other than the proposer
+country_event = {
+	id = IMP.20
+	title = IMP.20.t
+	desc = IMP.20.d
+	picture = GFX_belarus_intermarium
+	is_triggered_only = yes
+
+	option = {
+		name = IMP.20.a
+		log = "[GetDateText]: [This.GetName]: IMP.20.a executed"
+		add_to_variable = { global.IMP_votes_for = 1 }
+		ai_chance = {
+			base = 10
+			modifier = { add = 5 has_opinion = { target = event_target:IMP_vote_proposer value > 25 } }
+			modifier = { factor = 0.25 has_opinion = { target = event_target:IMP_vote_proposer value < -25 } }
+		}
+	}
+
+	option = {
+		name = IMP.20.b
+		log = "[GetDateText]: [This.GetName]: IMP.20.b executed"
+		add_to_variable = { global.IMP_votes_against = 1 }
+		ai_chance = {
+			base = 2
+			modifier = { add = 4 NOT = { has_government = democratic } }
+		}
+	}
+}
+
+# Vote count, at the proposer
+country_event = {
+	id = IMP.21
+	hidden = yes
+	is_triggered_only = yes
+
+	immediate = {
+		log = "[GetDateText]: [This.GetName]: IMP.21 tally"
+		IMP_tally_vote = yes
+	}
+}
+
+# Program advanced. ROOT is a full member or associate
+country_event = {
+	id = IMP.22
+	title = IMP.22.t
+	desc = IMP.22.d
+	picture = GFX_belarus_intermarium
+	is_triggered_only = yes
+	minor_flavor = yes
+
+	option = {
+		name = IMP.22.a
+	}
+}
+
+# Program voted down. ROOT is a full member
+country_event = {
+	id = IMP.23
+	title = IMP.23.t
+	desc = IMP.23.d
+	picture = GFX_belarus_intermarium
+	is_triggered_only = yes
+	minor_flavor = yes
+
+	option = {
+		name = IMP.23.a
+	}
+}
+
 # ROOT now chairs the council
 country_event = {
 	id = IMP.30
