@@ -1,0 +1,253 @@
+USA_enigma_category = {
+	USA_enigma_scrutiny = {
+		icon = generic_operation
+		is_good = no
+		days_mission_timeout = 180
+		available = { always = no }
+		activation = {
+			check_variable = { USA_enigma_phase = 7 }
+			OR = { check_variable = { USA_enigma_hearing = 0 } check_variable = { USA_enigma_hearing = 2 } }
+		}
+		visible = {
+			check_variable = { USA_enigma_phase = 7 }
+			OR = { check_variable = { USA_enigma_hearing = 0 } check_variable = { USA_enigma_hearing = 2 } }
+		}
+		cancel_if_not_visible = yes
+		timeout_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_scrutiny"
+			custom_effect_tooltip = USA_enigma_scrutiny_tt
+			hidden_effect = { USA_enigma_scrutiny_tick = yes }
+		}
+	}
+
+	USA_enigma_safety_review = {
+		icon = generic_research
+		cost = 50
+		days_re_enable = 180
+		visible = { check_variable = { USA_enigma_phase = 7 } check_variable = { USA_enigma_hearing = 0 } }
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = USA_enigma_exposure_present_tt
+				check_variable = { USA_enigma_exposure > 0 }
+			}
+		}
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_safety_review"
+			custom_effect_tooltip = USA_enigma_safety_review_tt
+			hidden_effect = {
+				subtract_from_variable = { USA_enigma_exposure = 20 }
+				USA_enigma_clamp_exposure = yes
+			}
+		}
+		ai_will_do = { base = 3 }
+	}
+
+	USA_enigma_close_program = {
+		icon = generic_political_discourse
+		cost = 0
+		visible = { check_variable = { USA_enigma_phase = 7 } }
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_close_program"
+			custom_effect_tooltip = USA_enigma_cancel_tt
+			hidden_effect = { USA_enigma_cancel_program = yes }
+		}
+		ai_will_do = { base = 0 }
+	}
+
+	USA_enigma_reopen_consequences = {
+		icon = generic_political_discourse
+		cost = 0
+		days_re_enable = 14
+		visible = {
+			OR = {
+				check_variable = { USA_enigma_hearing = 1 }
+				check_variable = { USA_enigma_hearing = 4 }
+				check_variable = { USA_enigma_fallout = 1 }
+			}
+		}
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_reopen_consequences"
+			hidden_effect = {
+				if = { limit = { check_variable = { USA_enigma_hearing = 1 } } country_event = { id = USA_enigma.3 } }
+				else_if = { limit = { check_variable = { USA_enigma_hearing = 4 } } country_event = { id = USA_enigma.4 } }
+				else_if = { limit = { check_variable = { USA_enigma_fallout = 1 } } country_event = { id = USA_enigma.5 } }
+			}
+		}
+		ai_will_do = { base = 1 }
+	}
+
+	USA_enigma_open_charter = {
+		icon = generic_research
+		cost = 50
+		fire_only_once = yes
+
+		visible = { check_variable = { USA_enigma_phase = 0 } }
+		available = {
+			has_tech = computing_5
+			has_tech = avionics_3
+			has_tech = artificial_intelligence_8
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_open_charter"
+			custom_effect_tooltip = USA_enigma_open_charter_tt
+			hidden_effect = {
+				set_variable = { USA_enigma_phase = 1 }
+				set_variable = { USA_enigma_funding = 1 }
+			}
+			unlock_decision_tooltip = USA_enigma_open_trials
+		}
+
+		ai_will_do = { base = 2 }
+	}
+
+	USA_enigma_classified_charter = {
+		icon = generic_operation
+		cost = 25
+		fire_only_once = yes
+
+		visible = { check_variable = { USA_enigma_phase = 0 } }
+		available = {
+			has_tech = computing_5
+			has_tech = avionics_3
+			has_tech = artificial_intelligence_8
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_classified_charter"
+			custom_effect_tooltip = USA_enigma_classified_charter_tt
+			hidden_effect = {
+				set_variable = { USA_enigma_phase = 1 }
+				set_variable = { USA_enigma_funding = 2 }
+				add_to_variable = { USA_enigma_exposure = 20 }
+			}
+			unlock_decision_tooltip = USA_enigma_classified_trials
+		}
+
+		ai_will_do = { base = 0.2 }
+	}
+
+	USA_enigma_open_trials = {
+		icon = generic_research
+		cost = 75
+		days_remove = 90
+
+		visible = {
+			check_variable = { USA_enigma_funding = 1 }
+			check_variable = { USA_enigma_phase > 0 }
+			check_variable = { USA_enigma_phase < 3 }
+		}
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = USA_enigma_ready_for_trials_tt
+				check_variable = { USA_enigma_phase = 1 }
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_open_trials"
+			custom_effect_tooltip = USA_enigma_trials_tt
+			hidden_effect = { USA_enigma_start_trials = yes }
+		}
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_open_trials completed"
+			hidden_effect = { USA_enigma_finish_trials = yes }
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	USA_enigma_classified_trials = {
+		icon = generic_operation
+		cost = 75
+		days_remove = 60
+
+		visible = {
+			check_variable = { USA_enigma_funding = 2 }
+			check_variable = { USA_enigma_phase > 0 }
+			check_variable = { USA_enigma_phase < 3 }
+		}
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = USA_enigma_ready_for_trials_tt
+				check_variable = { USA_enigma_phase = 1 }
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_classified_trials"
+			custom_effect_tooltip = USA_enigma_trials_tt
+			hidden_effect = { USA_enigma_start_trials = yes }
+		}
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_classified_trials completed"
+			hidden_effect = { USA_enigma_finish_trials = yes }
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	USA_enigma_review = {
+		icon = generic_research
+		cost = 25
+		days_remove = 60
+
+		visible = {
+			check_variable = { USA_enigma_phase > 3 }
+			check_variable = { USA_enigma_phase < 6 }
+		}
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = USA_enigma_ready_for_review_tt
+				check_variable = { USA_enigma_phase = 4 }
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_review"
+			custom_effect_tooltip = USA_enigma_review_tt
+			hidden_effect = { set_variable = { USA_enigma_phase = 5 } }
+		}
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_review completed"
+			hidden_effect = {
+				if = {
+					limit = { USA_enigma_enabled = yes check_variable = { USA_enigma_phase = 5 } }
+					set_variable = { USA_enigma_phase = 6 }
+					country_event = { id = USA_enigma.2 }
+				}
+			}
+		}
+
+		ai_will_do = { base = 5 }
+	}
+
+	USA_enigma_read_file = {
+		icon = generic_political_discourse
+		cost = 0
+		days_re_enable = 14
+
+		visible = {
+			OR = {
+				check_variable = { USA_enigma_phase = 3 }
+				check_variable = { USA_enigma_phase = 6 }
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision USA_enigma_read_file"
+			hidden_effect = {
+				if = {
+					limit = { check_variable = { USA_enigma_phase = 3 } }
+					country_event = { id = USA_enigma.1 }
+				}
+				else_if = {
+					limit = { check_variable = { USA_enigma_phase = 6 } }
+					country_event = { id = USA_enigma.2 }
+				}
+			}
+		}
+
+		ai_will_do = { base = 1 }
+	}
+}

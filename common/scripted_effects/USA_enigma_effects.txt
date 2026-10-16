@@ -1,0 +1,96 @@
+USA_enigma_clamp_exposure = {
+	clamp_variable = { var = USA_enigma_exposure min = 0 max = 100 }
+}
+
+USA_enigma_project_evidence = {
+	if = {
+		limit = { USA_enigma_development_enabled = yes check_variable = { USA_enigma_exposure > 59 } check_variable = { USA_enigma_hearing = 0 } }
+		USA_enigma_open_hearing = yes
+	}
+}
+
+USA_enigma_open_hearing = {
+	if = {
+		limit = { USA_enigma_enabled = yes check_variable = { USA_enigma_phase = 7 } check_variable = { USA_enigma_hearing = 0 } }
+		set_variable = { USA_enigma_hearing = 1 }
+		add_to_variable = { USA_enigma_leaks = 1 }
+		country_event = { id = USA_enigma.3 }
+	}
+}
+
+USA_enigma_scrutiny_tick = {
+	if = {
+		limit = { USA_enigma_enabled = yes check_variable = { USA_enigma_phase = 7 } }
+		if = { limit = { check_variable = { USA_enigma_funding = 2 } } add_to_variable = { USA_enigma_exposure = 10 } }
+		else = { add_to_variable = { USA_enigma_exposure = 5 } }
+		if = { limit = { has_war = yes } add_to_variable = { USA_enigma_exposure = 10 } }
+		USA_enigma_clamp_exposure = yes
+		if = {
+			limit = { check_variable = { USA_enigma_hearing = 2 } }
+			set_variable = { USA_enigma_hearing = 4 }
+			add_to_variable = { USA_enigma_leaks = 1 }
+			country_event = { id = USA_enigma.4 }
+		}
+		else_if = {
+			limit = { check_variable = { USA_enigma_hearing = 0 } }
+			if = { limit = { check_variable = { USA_enigma_exposure > 99 } } USA_enigma_open_hearing = yes }
+			else = { random = { chance = USA_enigma_exposure USA_enigma_open_hearing = yes } }
+		}
+	}
+}
+
+USA_enigma_begin_fallout = {
+	if = {
+		limit = { USA_enigma_enabled = yes check_variable = { USA_enigma_fallout = 0 } }
+		set_variable = { USA_enigma_fallout = 1 }
+		country_event = { id = USA_enigma.5 }
+	}
+}
+
+USA_enigma_cancel_program = {
+	if = {
+		limit = {
+			OR = {
+				check_variable = { USA_enigma_hearing = 1 }
+				check_variable = { USA_enigma_hearing = 2 }
+				check_variable = { USA_enigma_hearing = 4 }
+			}
+		}
+		set_variable = { USA_enigma_hearing = 5 }
+	}
+	set_variable = { USA_enigma_phase = 9 }
+	USA_enigma_begin_fallout = yes
+}
+
+USA_enigma_offer_captured_data = {
+	if = {
+		limit = {
+			USA_enigma_enabled = yes
+			country_exists = CHI
+			check_variable = { USA_enigma_exposure > 59 }
+			NOT = { has_done_agency_upgrade = upgrade_passive_defense }
+			CHI = { CHI_enigma_enabled = yes check_variable = { CHI_enigma_data_offer = 0 } }
+		}
+		CHI = {
+			set_variable = { CHI_enigma_data_offer = 1 }
+			country_event = { id = USA_enigma.6 }
+		}
+	}
+}
+
+USA_enigma_start_trials = {
+	if = {
+		limit = { USA_enigma_enabled = yes check_variable = { USA_enigma_phase = 1 } }
+		set_variable = { USA_enigma_phase = 2 }
+	}
+}
+
+USA_enigma_finish_trials = {
+	if = {
+		limit = { USA_enigma_enabled = yes check_variable = { USA_enigma_phase = 2 } }
+		set_variable = { USA_enigma_phase = 3 }
+		add_to_variable = { USA_enigma_casualties = 1 }
+		add_to_variable = { USA_enigma_exposure = 10 }
+		country_event = { id = USA_enigma.1 }
+	}
+}
