@@ -140,7 +140,13 @@ country_event = {
 	option = {
 		name = IMP.20.a
 		log = "[GetDateText]: [This.GetName]: IMP.20.a executed"
-		add_to_variable = { global.IMP_votes_for = 1 }
+		hidden_effect = {
+			if = {
+				limit = { IMP_ballot_counts = yes }
+				add_to_variable = { global.IMP_votes_for = 1 }
+			}
+			clear_variable = IMP_ballot_vote
+		}
 		ai_chance = {
 			base = 10
 			modifier = { add = 5 has_opinion = { target = event_target:IMP_vote_proposer value > 25 } }
@@ -151,7 +157,13 @@ country_event = {
 	option = {
 		name = IMP.20.b
 		log = "[GetDateText]: [This.GetName]: IMP.20.b executed"
-		add_to_variable = { global.IMP_votes_against = 1 }
+		hidden_effect = {
+			if = {
+				limit = { IMP_ballot_counts = yes }
+				add_to_variable = { global.IMP_votes_against = 1 }
+			}
+			clear_variable = IMP_ballot_vote
+		}
 		ai_chance = {
 			base = 2
 			modifier = { add = 4 NOT = { has_government = democratic } }
@@ -159,7 +171,7 @@ country_event = {
 	}
 }
 
-# Vote count, at the proposer
+# Vote count, queued on every full member; only the first on or after the closing day counts
 country_event = {
 	id = IMP.21
 	hidden = yes

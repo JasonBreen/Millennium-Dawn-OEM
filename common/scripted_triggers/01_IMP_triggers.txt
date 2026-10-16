@@ -69,3 +69,19 @@ IMP_is_valid_associate = {
 		IMP_is_nato_member = yes
 	}
 }
+
+# Two days of grace past the closing day, so a vote whose tally recipients all vanished cannot block proposals forever
+IMP_vote_in_progress = {
+	check_expr = {
+		value = global.IMP_vote_end
+		add = 2
+		greater_than = { value = global.num_days }
+	}
+}
+
+# A ballot counts only for the vote that issued it, and only while its voter holds a valid seat
+IMP_ballot_counts = {
+	IMP_vote_in_progress = yes
+	IMP_is_valid_full_member = yes
+	check_variable = { IMP_ballot_vote = global.IMP_vote_id }
+}

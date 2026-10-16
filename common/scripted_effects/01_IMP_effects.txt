@@ -127,8 +127,7 @@ IMP_dissolve = {
 		limit = { has_country_flag = IMP_invite_pending }
 		clr_country_flag = IMP_invite_pending
 	}
-	clr_global_flag = IMP_vote_open
-	clr_global_flag = IMP_vote_young
+	clear_variable = global.IMP_vote_end
 	clear_variable = global.IMP_mobility_stage
 	clear_variable = global.IMP_air_stage
 	clear_variable = global.IMP_procurement_stage
@@ -137,34 +136,36 @@ IMP_dissolve = {
 }
 
 # ROOT is the proposing chair and votes in favor. Temp IMP_track: 1 mobility, 2 air defense, 3 procurement, 4 cyber
+# Every full member queues the tally, so it survives the proposer's annexation; the first to fire counts it
 IMP_open_vote = {
+	add_to_variable = { global.IMP_vote_id = 1 }
+	set_variable = { global.IMP_vote_end = { value = global.num_days add = 30 } }
 	set_variable = { global.IMP_vote_track = IMP_track }
 	set_variable = { global.IMP_votes_for = 1 }
 	set_variable = { global.IMP_votes_against = 0 }
-	set_global_flag = { flag = IMP_vote_open days = 31 value = 1 }
-	set_global_flag = { flag = IMP_vote_young days = 29 value = 1 }
 	save_global_event_target_as = IMP_vote_proposer
 	for_each_scope_loop = {
 		array = global.IMP_full_members
 		if = {
 			limit = { NOT = { tag = ROOT } }
+			set_variable = { IMP_ballot_vote = global.IMP_vote_id }
 			country_event = { id = IMP.20 days = 1 }
 		}
+		country_event = { id = IMP.21 days = 30 }
 	}
-	country_event = { id = IMP.21 days = 30 }
 }
 
 # A tie passes. The fund cannot fall during a vote, so only the council's survival is rechecked.
-# IMP_vote_young stops a tally queued by a dissolved council's vote from closing a newer one.
+# A tally queued by an older vote fires before this vote's closing day and does nothing.
 # The result notices read IMP_result_track, since a new proposal can overwrite IMP_vote_track first
 IMP_tally_vote = {
 	if = {
 		limit = {
-			has_global_flag = IMP_vote_open
-			NOT = { has_global_flag = IMP_vote_young }
+			check_variable = { global.IMP_vote_end > 0 }
+			check_variable = { var = global.num_days value = global.IMP_vote_end compare = greater_than_or_equals }
 		}
 		set_variable = { global.IMP_result_track = global.IMP_vote_track }
-		clr_global_flag = IMP_vote_open
+		clear_variable = global.IMP_vote_end
 		if = {
 			limit = {
 				IMP_council_exists = yes
