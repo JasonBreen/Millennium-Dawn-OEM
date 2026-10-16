@@ -75,9 +75,10 @@ IMP_vote_in_progress = {
 	check_variable = { global.IMP_vote_end > 0 }
 }
 
-# A ballot counts only for the vote that issued it, and only while its voter holds a valid seat
+# A ballot counts only for the vote that issued it, once, and only while its voter holds a valid seat
 IMP_ballot_counts = {
 	IMP_vote_in_progress = yes
 	IMP_is_valid_full_member = yes
 	check_variable = { IMP_ballot_vote = global.IMP_vote_id }
+	NOT = { check_variable = { IMP_voted_in = global.IMP_vote_id } }
 }

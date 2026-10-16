@@ -144,14 +144,25 @@ IMP_open_vote = {
 	set_variable = { global.IMP_votes_for = 1 }
 	set_variable = { global.IMP_votes_against = 0 }
 	save_global_event_target_as = IMP_vote_proposer
+	set_variable = { IMP_voted_in = global.IMP_vote_id }
 	for_each_scope_loop = {
 		array = global.IMP_full_members
-		if = {
-			limit = { NOT = { tag = ROOT } }
-			set_variable = { IMP_ballot_vote = global.IMP_vote_id }
-			country_event = { id = IMP.20 days = 1 }
-		}
+		IMP_issue_ballot = yes
 		country_event = { id = IMP.21 days = 30 }
+	}
+}
+
+# A full member without a ballot for the open vote gets one, including one admitted mid-vote; a member who
+# already voted, or proposed, in this vote and rejoined gets none
+IMP_issue_ballot = {
+	if = {
+		limit = {
+			IMP_vote_in_progress = yes
+			NOT = { check_variable = { IMP_ballot_vote = global.IMP_vote_id } }
+			NOT = { check_variable = { IMP_voted_in = global.IMP_vote_id } }
+		}
+		set_variable = { IMP_ballot_vote = global.IMP_vote_id }
+		country_event = { id = IMP.20 days = 1 }
 	}
 }
 
