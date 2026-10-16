@@ -8,6 +8,7 @@ IMP_found_council = {
 IMP_admit_full_member = {
 	if = {
 		limit = {
+			has_country_flag = IMP_invite_pending
 			IMP_council_exists = yes
 			IMP_can_join_full = yes
 		}
@@ -22,6 +23,7 @@ IMP_admit_full_member = {
 IMP_admit_associate = {
 	if = {
 		limit = {
+			has_country_flag = IMP_invite_pending
 			IMP_council_exists = yes
 			IMP_can_join_associate = yes
 		}
@@ -120,7 +122,13 @@ IMP_dissolve = {
 	}
 	clear_array = global.IMP_associates
 	clear_array = global.IMP_full_members
+	# Invitations die with the council, so a refounded council cannot admit on them
+	every_country = {
+		limit = { has_country_flag = IMP_invite_pending }
+		clr_country_flag = IMP_invite_pending
+	}
 	clr_global_flag = IMP_vote_open
+	clr_global_flag = IMP_vote_young
 	clear_variable = global.IMP_mobility_stage
 	clear_variable = global.IMP_air_stage
 	clear_variable = global.IMP_procurement_stage
@@ -134,6 +142,7 @@ IMP_open_vote = {
 	set_variable = { global.IMP_votes_for = 1 }
 	set_variable = { global.IMP_votes_against = 0 }
 	set_global_flag = { flag = IMP_vote_open days = 31 value = 1 }
+	set_global_flag = { flag = IMP_vote_young days = 29 value = 1 }
 	save_global_event_target_as = IMP_vote_proposer
 	for_each_scope_loop = {
 		array = global.IMP_full_members
@@ -145,57 +154,60 @@ IMP_open_vote = {
 	country_event = { id = IMP.21 days = 30 }
 }
 
-# A tie passes. The fund cannot fall during a vote, so only the council's survival is rechecked
+# A tie passes. The fund cannot fall during a vote, so only the council's survival is rechecked.
+# IMP_vote_young stops a tally queued by a dissolved council's vote from closing a newer one.
 # The result notices read IMP_result_track, since a new proposal can overwrite IMP_vote_track first
 IMP_tally_vote = {
-	set_variable = { global.IMP_result_track = global.IMP_vote_track }
 	if = {
 		limit = {
 			has_global_flag = IMP_vote_open
-			IMP_council_exists = yes
-			check_variable = { var = global.IMP_votes_for value = global.IMP_votes_against compare = greater_than_or_equals }
+			NOT = { has_global_flag = IMP_vote_young }
 		}
+		set_variable = { global.IMP_result_track = global.IMP_vote_track }
+		clr_global_flag = IMP_vote_open
 		if = {
-			limit = { check_variable = { global.IMP_vote_track = 1 } }
-			set_temp_variable = { IMP_stage = global.IMP_mobility_stage }
-			add_to_variable = { global.IMP_mobility_stage = 1 }
+			limit = {
+				IMP_council_exists = yes
+				check_variable = { var = global.IMP_votes_for value = global.IMP_votes_against compare = greater_than_or_equals }
+			}
+			if = {
+				limit = { check_variable = { global.IMP_vote_track = 1 } }
+				set_temp_variable = { IMP_stage = global.IMP_mobility_stage }
+				add_to_variable = { global.IMP_mobility_stage = 1 }
+			}
+			else_if = {
+				limit = { check_variable = { global.IMP_vote_track = 2 } }
+				set_temp_variable = { IMP_stage = global.IMP_air_stage }
+				add_to_variable = { global.IMP_air_stage = 1 }
+			}
+			else_if = {
+				limit = { check_variable = { global.IMP_vote_track = 3 } }
+				set_temp_variable = { IMP_stage = global.IMP_procurement_stage }
+				add_to_variable = { global.IMP_procurement_stage = 1 }
+			}
+			else = {
+				set_temp_variable = { IMP_stage = global.IMP_cyber_stage }
+				add_to_variable = { global.IMP_cyber_stage = 1 }
+			}
+			subtract_from_variable = { global.IMP_fund = { value = IMP_stage multiply = 0.75 add = 0.5 } }
+			IMP_update_program_bonuses = yes
+			for_each_scope_loop = {
+				array = global.IMP_full_members
+				country_event = { id = IMP.22 days = 1 }
+			}
+			for_each_scope_loop = {
+				array = global.IMP_associates
+				country_event = { id = IMP.22 days = 1 }
+			}
 		}
 		else_if = {
-			limit = { check_variable = { global.IMP_vote_track = 2 } }
-			set_temp_variable = { IMP_stage = global.IMP_air_stage }
-			add_to_variable = { global.IMP_air_stage = 1 }
-		}
-		else_if = {
-			limit = { check_variable = { global.IMP_vote_track = 3 } }
-			set_temp_variable = { IMP_stage = global.IMP_procurement_stage }
-			add_to_variable = { global.IMP_procurement_stage = 1 }
-		}
-		else = {
-			set_temp_variable = { IMP_stage = global.IMP_cyber_stage }
-			add_to_variable = { global.IMP_cyber_stage = 1 }
-		}
-		subtract_from_variable = { global.IMP_fund = { value = IMP_stage multiply = 0.75 add = 0.5 } }
-		IMP_update_program_bonuses = yes
-		for_each_scope_loop = {
-			array = global.IMP_full_members
-			country_event = { id = IMP.22 days = 1 }
-		}
-		for_each_scope_loop = {
-			array = global.IMP_associates
-			country_event = { id = IMP.22 days = 1 }
+			limit = { IMP_council_exists = yes }
+			for_each_scope_loop = {
+				array = global.IMP_full_members
+				country_event = { id = IMP.23 days = 1 }
+			}
 		}
 	}
-	else_if = {
-		limit = {
-			has_global_flag = IMP_vote_open
-			IMP_council_exists = yes
-		}
-		for_each_scope_loop = {
-			array = global.IMP_full_members
-			country_event = { id = IMP.23 days = 1 }
-		}
-	}
-	clr_global_flag = IMP_vote_open
 }
 
 IMP_update_program_bonuses = {
