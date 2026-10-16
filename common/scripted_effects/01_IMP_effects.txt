@@ -1,0 +1,138 @@
+# Intermarium Council membership (Issue #5828). Never touches the NATO faction itself.
+
+IMP_found_council = {
+	set_variable = { global.IMP_chair = THIS.id }
+	add_ideas = IMP_full_member
+}
+
+IMP_admit_full_member = {
+	if = {
+		limit = { IMP_can_join_full = yes }
+		if = {
+			limit = { has_idea = IMP_associate }
+			remove_ideas = IMP_associate
+		}
+		add_ideas = IMP_full_member
+	}
+}
+
+IMP_admit_associate = {
+	if = {
+		limit = { IMP_can_join_associate = yes }
+		add_ideas = IMP_associate
+	}
+}
+
+# Also clears the array entry of an annexed member, whose idea may never fire on_remove
+IMP_remove_full_member = {
+	if = {
+		limit = { has_idea = IMP_full_member }
+		remove_ideas = IMP_full_member
+	}
+	if = {
+		limit = { is_in_array = { global.IMP_full_members = THIS } }
+		remove_from_array = { global.IMP_full_members = THIS }
+		IMP_refresh_chair = yes
+	}
+}
+
+IMP_remove_associate = {
+	if = {
+		limit = { has_idea = IMP_associate }
+		remove_ideas = IMP_associate
+	}
+	if = {
+		limit = { is_in_array = { global.IMP_associates = THIS } }
+		remove_from_array = { global.IMP_associates = THIS }
+	}
+}
+
+# The largest economy among the full members takes a vacant chair; no full members dissolves the council
+IMP_refresh_chair = {
+	if = {
+		limit = {
+			IMP_council_exists = yes
+			NOT = {
+				any_of_scopes = {
+					array = global.IMP_full_members
+					IMP_is_chair = yes
+				}
+			}
+		}
+		if = {
+			limit = { check_variable = { global.IMP_full_members^num > 0 } }
+			set_temp_variable = { IMP_best_gdp = -1 }
+			for_each_scope_loop = {
+				array = global.IMP_full_members
+				if = {
+					limit = {
+						exists = yes
+						check_variable = { gdp_total > IMP_best_gdp }
+					}
+					set_temp_variable = { IMP_best_gdp = gdp_total }
+					set_variable = { global.IMP_chair = THIS.id }
+				}
+			}
+			# Only annexed members left: the monthly update removes them and dissolves the council
+			if = {
+				limit = { check_variable = { IMP_best_gdp > -1 } }
+				var:global.IMP_chair = { country_event = { id = IMP.30 days = 1 } }
+			}
+		}
+		else = {
+			IMP_dissolve = yes
+		}
+	}
+}
+
+IMP_dissolve = {
+	clear_variable = global.IMP_chair
+	clear_variable = global.IMP_fund
+	for_each_scope_loop = {
+		array = global.IMP_associates
+		if = {
+			limit = { has_idea = IMP_associate }
+			remove_ideas = IMP_associate
+			country_event = { id = IMP.32 days = 1 }
+		}
+	}
+	clear_array = global.IMP_associates
+	clear_array = global.IMP_full_members
+}
+
+# Global scope, monthly
+IMP_monthly_update = {
+	if = {
+		limit = { IMP_council_exists = yes }
+		while_loop_effect = {
+			limit = {
+				any_of_scopes = {
+					array = global.IMP_full_members
+					IMP_is_valid_full_member = no
+				}
+			}
+			random_scope_in_array = {
+				array = global.IMP_full_members
+				limit = { IMP_is_valid_full_member = no }
+				IMP_remove_full_member = yes
+				if = {
+					limit = { exists = yes }
+					country_event = { id = IMP.40 days = 1 }
+				}
+			}
+		}
+		while_loop_effect = {
+			limit = {
+				any_of_scopes = {
+					array = global.IMP_associates
+					IMP_is_valid_associate = no
+				}
+			}
+			random_scope_in_array = {
+				array = global.IMP_associates
+				limit = { IMP_is_valid_associate = no }
+				IMP_remove_associate = yes
+			}
+		}
+	}
+}

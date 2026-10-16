@@ -1,0 +1,146 @@
+add_namespace = IMP
+
+# Full membership invitation. ROOT is the invitee, FROM the chair
+country_event = {
+	id = IMP.10
+	title = IMP.10.t
+	desc = IMP.10.d
+	picture = GFX_belarus_intermarium
+	is_triggered_only = yes
+
+	option = {
+		name = IMP.10.a
+		log = "[GetDateText]: [This.GetName]: IMP.10.a executed"
+		clr_country_flag = IMP_invite_pending
+		IMP_admit_full_member = yes
+		unlock_decision_category_tooltip = IMP_council_category
+		hidden_effect = { FROM = { country_event = { id = IMP.12 days = 1 } } }
+		ai_chance = {
+			base = 10
+			modifier = { add = 5 has_opinion = { target = FROM value > 25 } }
+			modifier = { factor = 0 has_opinion = { target = FROM value < -25 } }
+		}
+	}
+
+	option = {
+		name = IMP.10.b
+		log = "[GetDateText]: [This.GetName]: IMP.10.b executed"
+		clr_country_flag = IMP_invite_pending
+		hidden_effect = { FROM = { country_event = { id = IMP.13 days = 1 } } }
+		ai_chance = { base = 2 }
+	}
+}
+
+# Associate invitation. ROOT is the invitee, FROM the chair
+country_event = {
+	id = IMP.11
+	title = IMP.11.t
+	desc = IMP.11.d
+	picture = GFX_belarus_intermarium
+	is_triggered_only = yes
+
+	option = {
+		name = IMP.11.a
+		log = "[GetDateText]: [This.GetName]: IMP.11.a executed"
+		clr_country_flag = IMP_invite_pending
+		IMP_admit_associate = yes
+		unlock_decision_category_tooltip = IMP_council_category
+		hidden_effect = { FROM = { country_event = { id = IMP.12 days = 1 } } }
+		ai_chance = {
+			base = 10
+			modifier = { add = 5 has_opinion = { target = FROM value > 25 } }
+			modifier = { add = 5 has_government = democratic }
+			modifier = { factor = 0.25 has_opinion = { target = SOV value > 50 } }
+			modifier = { factor = 0 has_opinion = { target = FROM value < -25 } }
+		}
+	}
+
+	option = {
+		name = IMP.11.b
+		log = "[GetDateText]: [This.GetName]: IMP.11.b executed"
+		clr_country_flag = IMP_invite_pending
+		hidden_effect = { FROM = { country_event = { id = IMP.13 days = 1 } } }
+		ai_chance = { base = 5 }
+	}
+}
+
+# Invitation accepted. ROOT is the chair, FROM the invitee
+country_event = {
+	id = IMP.12
+	title = IMP.12.t
+	desc = {
+		text = IMP.12.d_full
+		trigger = { FROM = { has_idea = IMP_full_member } }
+	}
+	desc = {
+		text = IMP.12.d_associate
+		trigger = { FROM = { has_idea = IMP_associate } }
+	}
+	desc = {
+		text = IMP.12.d_ineligible
+		trigger = { FROM = { IMP_is_member = no } }
+	}
+	picture = GFX_belarus_intermarium
+	is_triggered_only = yes
+	minor_flavor = yes
+
+	option = {
+		name = IMP.12.a
+	}
+}
+
+# Invitation declined. ROOT is the chair, FROM the invitee
+country_event = {
+	id = IMP.13
+	title = IMP.13.t
+	desc = IMP.13.d
+	picture = GFX_belarus_intermarium
+	is_triggered_only = yes
+	minor_flavor = yes
+
+	option = {
+		name = IMP.13.a
+	}
+}
+
+# ROOT now chairs the council
+country_event = {
+	id = IMP.30
+	title = IMP.30.t
+	desc = IMP.30.d
+	picture = GFX_belarus_intermarium
+	is_triggered_only = yes
+	minor_flavor = yes
+
+	option = {
+		name = IMP.30.a
+	}
+}
+
+# The council dissolved under an associate
+country_event = {
+	id = IMP.32
+	title = IMP.32.t
+	desc = IMP.32.d
+	picture = GFX_belarus_intermarium
+	is_triggered_only = yes
+	minor_flavor = yes
+
+	option = {
+		name = IMP.32.a
+	}
+}
+
+# A full member lost its seat by leaving NATO or becoming a subject
+country_event = {
+	id = IMP.40
+	title = IMP.40.t
+	desc = IMP.40.d
+	picture = GFX_belarus_intermarium
+	is_triggered_only = yes
+	minor_flavor = yes
+
+	option = {
+		name = IMP.40.a
+	}
+}

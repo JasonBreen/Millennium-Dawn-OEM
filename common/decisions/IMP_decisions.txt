@@ -1,0 +1,170 @@
+IMP_council_category = {
+
+	IMP_found_council = {
+		icon = GFX_decision_nato
+		cost = 75
+
+		visible = { IMP_council_exists = no }
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = IMP_found_council_partner_tt
+				any_of_scopes = {
+					array = global.nato_members
+					NOT = { tag = ROOT }
+					IMP_can_join_full = yes
+				}
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision IMP_found_council"
+			IMP_found_council = yes
+			custom_effect_tooltip = IMP_found_council_tt
+		}
+
+		# The Bucharest Nine formed in 2015, after Crimea
+		ai_will_do = {
+			base = 0
+			modifier = { add = 3 date > 2015.1.1 }
+			modifier = { add = 5 SOV = { has_war_with = UKR } }
+			modifier = { factor = 2 original_tag = POL }
+		}
+	}
+
+	IMP_invite_full_member = {
+		icon = GFX_decision_generic_join_nato
+		cost = 25
+
+		target_root_trigger = { IMP_is_chair = yes }
+		targets = { POL EST LAT LIT ROM BUL CZE SLO HUN UKR MLV BLR }
+		target_trigger = {
+			FROM = {
+				IMP_can_join_full = yes
+				NOT = { has_country_flag = IMP_invite_pending }
+				NOT = { has_war_with = ROOT }
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision IMP_invite_full_member"
+			FROM = {
+				set_country_flag = { flag = IMP_invite_pending days = 31 value = 1 }
+				country_event = { id = IMP.10 days = 1 }
+			}
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = { FROM = { add_ideas = IMP_full_member } }
+		}
+
+		ai_will_do = {
+			base = 5
+			modifier = { factor = 0 FROM = { has_opinion = { target = ROOT value < -25 } } }
+		}
+	}
+
+	IMP_invite_associate = {
+		icon = GFX_decision_generic_political_discourse
+		cost = 25
+
+		target_root_trigger = { IMP_is_chair = yes }
+		targets = { POL EST LAT LIT ROM BUL CZE SLO HUN UKR MLV BLR }
+		target_trigger = {
+			FROM = {
+				IMP_can_join_associate = yes
+				NOT = { has_country_flag = IMP_invite_pending }
+				NOT = { has_war_with = ROOT }
+			}
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision IMP_invite_associate"
+			FROM = {
+				set_country_flag = { flag = IMP_invite_pending days = 31 value = 1 }
+				country_event = { id = IMP.11 days = 1 }
+			}
+			custom_effect_tooltip = TT_IF_THEY_ACCEPT
+			effect_tooltip = { FROM = { add_ideas = IMP_associate } }
+		}
+
+		ai_will_do = {
+			base = 3
+			modifier = { factor = 0 FROM = { has_opinion = { target = ROOT value < -25 } } }
+		}
+	}
+
+	IMP_contribute_to_fund = {
+		icon = GFX_decision_money_dec
+		days_re_enable = 180
+
+		custom_cost_trigger = {
+			check_expr = {
+				value = gdp_total
+				multiply = 0.004
+				less_than = { value = treasury }
+			}
+		}
+		custom_cost_text = cost_medium_expenditure
+
+		visible = { IMP_is_member = yes }
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision IMP_contribute_to_fund"
+			set_temp_variable = { IMP_contribution = { value = gdp_total multiply = 0.004 } }
+			set_temp_variable = { treasury_change = { value = IMP_contribution multiply = -1 } }
+			modify_treasury_effect = yes
+			add_to_variable = { global.IMP_fund = IMP_contribution }
+			custom_effect_tooltip = IMP_contribute_to_fund_tt
+		}
+
+		ai_will_do = {
+			base = 2
+			modifier = { add = 3 IMP_is_chair = yes }
+			modifier = { factor = 0.5 ai_has_high_deficit = yes }
+			modifier = { factor = 0 has_active_mission = bankruptcy_incoming_collapse }
+		}
+	}
+
+	IMP_transfer_chair = {
+		icon = GFX_decision_generic_speech
+		cost = 25
+
+		target_root_trigger = { IMP_is_chair = yes }
+		target_array = global.IMP_full_members
+		target_trigger = {
+			FROM = { NOT = { tag = ROOT } }
+		}
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision IMP_transfer_chair"
+			FROM = {
+				set_variable = { global.IMP_chair = THIS.id }
+				country_event = { id = IMP.30 days = 1 }
+			}
+			custom_effect_tooltip = IMP_transfer_chair_tt
+		}
+
+		ai_will_do = { base = 0 }
+	}
+
+	IMP_leave_council = {
+		icon = GFX_decision_generic_leave_nato
+
+		visible = { IMP_is_member = yes }
+
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision IMP_leave_council"
+			if = {
+				limit = { has_idea = IMP_full_member }
+				if = {
+					limit = { IMP_is_chair = yes }
+					custom_effect_tooltip = IMP_leave_council_chair_tt
+				}
+				IMP_remove_full_member = yes
+			}
+			else = {
+				IMP_remove_associate = yes
+			}
+		}
+
+		ai_will_do = { base = 0 }
+	}
+}

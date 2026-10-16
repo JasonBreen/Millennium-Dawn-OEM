@@ -1,0 +1,56 @@
+ideas = {
+	country = {
+
+		IMP_full_member = {
+			picture = faction_baltic_black_sea_union_member
+			on_add = {
+				log = "[GetDateText]: [Root.GetName]: add idea IMP_full_member"
+				if = {
+					limit = { NOT = { is_in_array = { global.IMP_full_members = THIS } } }
+					add_to_array = { global.IMP_full_members = THIS }
+				}
+			}
+			on_remove = {
+				log = "[GetDateText]: [Root.GetName]: remove idea IMP_full_member"
+				# Dissolution clears the chair first and empties the arrays itself
+				if = {
+					limit = {
+						IMP_council_exists = yes
+						is_in_array = { global.IMP_full_members = THIS }
+					}
+					remove_from_array = { global.IMP_full_members = THIS }
+					IMP_refresh_chair = yes
+				}
+			}
+
+			modifier = {
+				custom_modifier_tooltip = IMP_full_member_tt
+			}
+		}
+
+		IMP_associate = {
+			picture = baltic_defence_idea
+			on_add = {
+				log = "[GetDateText]: [Root.GetName]: add idea IMP_associate"
+				if = {
+					limit = { NOT = { is_in_array = { global.IMP_associates = THIS } } }
+					add_to_array = { global.IMP_associates = THIS }
+				}
+			}
+			on_remove = {
+				log = "[GetDateText]: [Root.GetName]: remove idea IMP_associate"
+				if = {
+					limit = {
+						IMP_council_exists = yes
+						is_in_array = { global.IMP_associates = THIS }
+					}
+					remove_from_array = { global.IMP_associates = THIS }
+				}
+			}
+
+			modifier = {
+				custom_modifier_tooltip = IMP_associate_tt
+			}
+		}
+	}
+}
