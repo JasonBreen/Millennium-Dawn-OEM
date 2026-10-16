@@ -8,6 +8,7 @@ IMP_found_council = {
 IMP_admit_full_member = {
 	if = {
 		limit = {
+			has_country_flag = IMP_invite_pending
 			IMP_council_exists = yes
 			IMP_can_join_full = yes
 		}
@@ -22,6 +23,7 @@ IMP_admit_full_member = {
 IMP_admit_associate = {
 	if = {
 		limit = {
+			has_country_flag = IMP_invite_pending
 			IMP_council_exists = yes
 			IMP_can_join_associate = yes
 		}
@@ -120,6 +122,11 @@ IMP_dissolve = {
 	}
 	clear_array = global.IMP_associates
 	clear_array = global.IMP_full_members
+	# Invitations die with the council, so a refounded council cannot admit on them
+	every_country = {
+		limit = { has_country_flag = IMP_invite_pending }
+		clr_country_flag = IMP_invite_pending
+	}
 }
 
 # Civil-war victor's scope, from on_civil_war_end. Inherited ideas skip on_add, as EU_resync_member_array notes
