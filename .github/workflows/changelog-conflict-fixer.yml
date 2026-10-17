@@ -85,11 +85,29 @@ jobs:
               failed=$((failed + 1))
               continue
             fi
-            # Workflow-token pushes do not trigger pull_request runs.
-            if ! gh workflow run test-suite.yml --ref main \
-                -f pr_number="$num" -f head_sha="$commit" \
-                -f base_sha="$base_sha"; then
-              echo "::warning::PR #$num validation could not be dispatched"
+            # The low-trust rerun resolves the live PR head and base itself.
+            runs_url="repos/$GH_REPO/actions/workflows/test-suite.yml/runs"
+            runs_url="$runs_url?event=pull_request&per_page=100"
+            if ! runs=$(gh api --paginate --slurp "$runs_url"); then
+              echo "::warning::PR #$num Test Suite runs could not be listed"
+              failed=$((failed + 1))
+              continue
+            fi
+            run=$(printf '%s' "$runs" | jq -c \
+              --argjson number "$num" \
+              '[.[].workflow_runs[] | select(
+                .event == "pull_request" and
+                any(.pull_requests[]?; .number == $number)
+              )] | sort_by(.created_at) | reverse | first // empty')
+            if [ -z "$run" ]; then
+              echo "::warning::PR #$num has no Test Suite pull_request run"
+              failed=$((failed + 1))
+              continue
+            fi
+            run_id=$(printf '%s' "$run" | jq -r '.id')
+            rerun_url="repos/$GH_REPO/actions/runs/$run_id/rerun"
+            if ! gh api --method POST "$rerun_url"; then
+              echo "::warning::PR #$num Test Suite run could not be rerun"
               failed=$((failed + 1))
               continue
             fi
