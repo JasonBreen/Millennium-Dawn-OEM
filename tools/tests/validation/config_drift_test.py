@@ -820,6 +820,10 @@ def test_schedulers_rerun_only_pull_request_test_suite_runs(workflow_name, job_n
     assert 'if [ -z "$run" ]; then' in script
     assert "failed=$((failed + 1))" in script
     if workflow_name == "changelog-conflict-fixer.yml":
+        assert '.status == "completed"' in script
+        assert ".run_attempt <= 50" in script
+        assert "(.created_at | fromdateiso8601) > (now - 30 * 24 * 60 * 60)" in script
+        assert script.index("run_id=$(printf") < script.index("git push --quiet")
         for condition in (
             'if ! runs=$(gh api --paginate --slurp "$runs_url"); then',
             'if [ -z "$run" ]; then',
