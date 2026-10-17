@@ -14,11 +14,13 @@ Tests follow [Test Structure](../../tools/README.md#test-structure): one file pe
 
 `test-suite.yml` triggers on `pull_request` (`opened`, `synchronize`, `reopened`) for every base branch, including stacked feature PRs. Marking a draft ready does not re-run it. `detect-changes` scopes the jobs after the event, so fork, conflicted, and content-clean PRs still receive a report. Validation reads game data from the live PR head repository and SHA, which avoids stale synthetic merge refs and keeps conflicted PRs in the pipeline. Read-only change detection, mod validation, and tools tests use matching PR-head tooling. The file-path validator and read-only report job use the protected default-branch SHA. Every job in this PR-controlled workflow has read-only permissions. PR comments and check annotations remain in the separate base-owned Code Standards & Validation workflow. The PR base SHA is used only for the diff. PR-authored tooling stays in read-only pull-request jobs and their PR-scoped caches.
 
-Extra entry points cover open PRs that get no pushes of their own:
+Schedulers can request another attempt of an existing PR run:
 
-- `workflow_dispatch` accepts optional `pr_number`, `head_sha`, and `base_sha`. With a PR number, `detect-changes` resolves the live PR JSON and rejects stale requested head/base pins. Without one, it validates the current repository at `github.sha` and skips PR-only comment posting. Dispatch validates every content group except diff-only `style`, but deliberately skips PR-authored tooling execution and default-scope cache writes. Its report is therefore marked partial; the ordinary PR run remains the tools-code gate.
-- `nightly-pr-validation.yml`: cron (06:00 UTC) + manual dispatch. It resolves main's live SHA, then dispatches the test-suite workflow from `main` for each open PR that lacks a successful exact head/base pair. Failed and incomplete runs are retried. The optional manual `force` input preserves the content sweep. The test suite records both pins in its run name and uses them for baseline selection.
-- `changelog-conflict-fixer.yml`: on main pushes that touch `Changelog.txt`, plus manual dispatch. It merges main into same-repo PRs whose only conflict is `Changelog.txt` (union merge), then dispatches the test suite for the new head, since workflow-token pushes fire no `pull_request` run. Fork PRs are skipped.
+- `test-suite.yml` has no `workflow_dispatch` trigger or dispatch inputs. Its `detect-changes` job resolves the live PR head and base through the API on each attempt. Job selection uses that diff; rerunning does not force a full content sweep.
+- `nightly-pr-validation.yml`: cron (06:00 UTC) + manual dispatch of the scheduler itself. It selects each open main-targeting PR's latest associated Test Suite `pull_request` run and requests a rerun. With `force: false`, it skips a run whose latest conclusion is `success`; it does not compare that success with the live head/base pair. A missing run or failed rerun request fails the scheduler.
+- `changelog-conflict-fixer.yml`: on main pushes that touch `Changelog.txt`, plus manual dispatch. It merges main into same-repo PRs whose conflicts the changelog merge driver can resolve, then requests a rerun of the latest associated Test Suite `pull_request` run. Fork PRs are skipped. Lookup failures, missing runs, and failed rerun requests fail the fixer. Changelog lint still has its own dispatch trigger.
+
+Rerunning validates the live content but does not create a check suite for a new commit. [GitHub retains the original event's SHA and ref on reruns](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs). The required `Test suite gate` therefore stays attached to the original revision. A workflow-token push does not trigger a fresh `pull_request` run, so the conflict fixer cannot satisfy the new merge commit's required gate through a historical rerun alone. That path remains blocked until a fresh validation entry tied to the new revision is approved and implemented. Do not treat the rerun's success as proof that the new commit has its required check.
 
 Job layout. `detect-changes` classifies the diff with `collect_changed_files.py` + `change_groups.py`. Changes under `tools/validation/` or `tools/linting/`, changes to `tools/shared_utils.py`, the workflow files the suite consumes, or `resources/documentation/` force the full suite, so a PR that ships new validator code is exercised against real mod content with its own code before merge; there is no separate impact bridge. `validate-paths` runs the index-only file-path check for shipped-path changes, including `gfx/` and non-adjacency `map/` changes, without fetching the content tree. `prepare-workspace` checks out the PR workspace (content plus the PR's own `tools/`), caches the sparse workspace keyed on the head SHA, and distributes it to the mod jobs as an artifact. `tools-tests` runs the Python suite on Linux, macOS, and Windows and uploads one `suite-run.json` sidecar per OS. `content-tests` runs the shared live-content contracts once, and `tools-quality` runs the quality checks beside the matrix. Both publish sidecars and feed the report and final gate. `mod-tests` runs the three bounded-parallel batches (core, targeted-a, targeted-b) from `tools/validation/validator_batches.py` plus the style, common-mistakes, encoding, and descriptor checks inside the core job. The nightly `validator-cache.yml` baseline re-scans once on `main`; its single job builds the disk cache and compares the baseline candidate without an intermediate checkout or artifact.
 
@@ -28,8 +30,8 @@ The CI validator list lives in `validator_batches.py`, so the batch jobs and pre
 
 ## CI artifacts and reports
 
-- `test-suite.yml` checks out the live PR head and holds no write credentials until the
-  `report` job. A head predating the tooling contract stops with one error asking
+- `test-suite.yml` checks out the live PR head and holds no write credentials in any
+  job, including `report`. A head predating the tooling contract stops with one error asking
   to merge main.
 - `detect-changes` uses `collect_changed_files.py` and `change_groups.py`.
   `validate-paths` reads the git index. `prepare-workspace` shares one sparse artifact
@@ -37,12 +39,12 @@ The CI validator list lives in `validator_batches.py`, so the batch jobs and pre
   and only `gfx/flags` and `gfx/interface/decisions` from the art trees.
 - `tools-quality` runs Ruff, Black, pylint, mypy, jscpd, the staged-validator
   integration, and `validate_tools.py`. Coverage runs on Linux only.
-- `workflow_dispatch` takes `pr_number`, `head_sha`, and `base_sha`, and skips
-  diff-scoped style sections. `nightly-pr-validation.yml` re-dispatches PRs with no
-  successful run on their current head and base. `validator-cache.yml` rebuilds main's
-  baseline.
+- `nightly-pr-validation.yml` reruns existing PR runs through the Actions API;
+  Test Suite itself cannot be dispatched. Reruns resolve live content but keep
+  their original check SHA. `validator-cache.yml` rebuilds main's baseline.
 - `changelog-conflict-fixer.yml` merges main into same-repo PRs whose only conflict is
-  `Changelog.txt`, then dispatches the suite. `changelog-lint.yml` checks entry order;
+  `Changelog.txt`, then requests a historical suite rerun with the gate limitation
+  above. `changelog-lint.yml` checks entry order;
   `python3 tools/merge_changelog.py --fix` repairs it.
 - The report posts one PR comment: new findings against main's baseline first, then
   findings in touched files. A clean run removes the older comment. Section titles
