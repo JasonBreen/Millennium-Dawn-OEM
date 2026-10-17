@@ -792,9 +792,18 @@ def test_tools_sidecars_have_stable_schema():
     assert upload["with"]["name"] == "tools-tests-${{ matrix.os }}-results"
 
 
-def test_nightly_reruns_only_pull_request_test_suite_runs():
-    config = yaml.safe_load(NIGHTLY_WORKFLOW.read_text(encoding="utf-8"))
-    job = config["jobs"]["revalidate-open-prs"]
+@pytest.mark.parametrize(
+    "workflow_name,job_name",
+    (
+        ("nightly-pr-validation.yml", "revalidate-open-prs"),
+        ("changelog-conflict-fixer.yml", "fix-changelog-conflicts"),
+    ),
+)
+def test_schedulers_rerun_only_pull_request_test_suite_runs(workflow_name, job_name):
+    config = yaml.safe_load(
+        (CI_WORKFLOW.parent / workflow_name).read_text(encoding="utf-8")
+    )
+    job = config["jobs"][job_name]
     script = next(
         step["run"] for step in job["steps"] if "actions/runs" in step.get("run", "")
     )
@@ -802,8 +811,34 @@ def test_nightly_reruns_only_pull_request_test_suite_runs():
     assert "actions/workflows/test-suite.yml/runs" in script
     assert "event=pull_request" in script
     assert 'event == "pull_request"' in script
+    assert "--paginate --slurp" in script
+    assert "any(.pull_requests[]?; .number == $number)" in script
+    assert "sort_by(.created_at) | reverse | first // empty" in script
     assert "actions/runs/$run_id/rerun" in script
-    assert "gh workflow run" not in script
+    assert "gh workflow run test-suite.yml" not in script
+    assert "approve" not in script
+    assert 'if [ -z "$run" ]; then' in script
+    assert "failed=$((failed + 1))" in script
+    if workflow_name == "changelog-conflict-fixer.yml":
+        assert "--method GET" in script
+        assert '-f branch="$head"' in script
+        assert '.status == "completed"' in script
+        assert ".run_attempt <= 50" in script
+        assert "(.created_at | fromdateiso8601) > (now - 30 * 24 * 60 * 60)" in script
+        assert script.index("run_id=$(printf") < script.index("git push --quiet")
+        for condition in (
+            'if ! runs=$(gh api --paginate --slurp "$runs_url" '
+            '--method GET -f branch="$head"); then',
+            'if [ -z "$run" ]; then',
+            'if ! gh api --method POST "$rerun_url"; then',
+        ):
+            branch = re.search(re.escape(condition) + r"(.*?)\n\s*fi", script, re.S)
+            assert branch is not None
+            assert "failed=$((failed + 1))" in branch[1]
+            assert "continue" in branch[1]
+        assert 'gh workflow run changelog-lint.yml --ref "$head"' in script
+    else:
+        assert "gh workflow run" not in script
 
 
 def test_housekeeping_has_one_job_and_three_actions():
