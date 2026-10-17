@@ -1,0 +1,69 @@
+ideas = {
+	country = {
+
+		IMP_full_member = {
+			picture = faction_baltic_black_sea_union_member
+			allowed_civil_war = { has_government = democratic }
+			on_add = {
+				log = "[GetDateText]: [Root.GetName]: add idea IMP_full_member"
+				if = {
+					limit = { NOT = { is_in_array = { global.IMP_full_members = THIS } } }
+					add_to_array = { global.IMP_full_members = THIS }
+				}
+				add_dynamic_modifier = { modifier = IMP_council_programs }
+				IMP_issue_ballot = yes
+			}
+			on_remove = {
+				log = "[GetDateText]: [Root.GetName]: remove idea IMP_full_member"
+				if = {
+					limit = { has_dynamic_modifier = { modifier = IMP_council_programs } }
+					remove_dynamic_modifier = { modifier = IMP_council_programs }
+				}
+				# Dissolution clears the chair first and empties the arrays itself
+				if = {
+					limit = {
+						IMP_council_exists = yes
+						is_in_array = { global.IMP_full_members = THIS }
+					}
+					remove_from_array = { global.IMP_full_members = THIS }
+					IMP_refresh_chair = yes
+				}
+			}
+
+			modifier = {
+				custom_modifier_tooltip = IMP_full_member_tt
+			}
+		}
+
+		IMP_associate = {
+			picture = baltic_defence_idea
+			allowed_civil_war = { always = yes }
+			on_add = {
+				log = "[GetDateText]: [Root.GetName]: add idea IMP_associate"
+				if = {
+					limit = { NOT = { is_in_array = { global.IMP_associates = THIS } } }
+					add_to_array = { global.IMP_associates = THIS }
+				}
+				add_dynamic_modifier = { modifier = IMP_associate_programs }
+			}
+			on_remove = {
+				log = "[GetDateText]: [Root.GetName]: remove idea IMP_associate"
+				if = {
+					limit = { has_dynamic_modifier = { modifier = IMP_associate_programs } }
+					remove_dynamic_modifier = { modifier = IMP_associate_programs }
+				}
+				if = {
+					limit = {
+						IMP_council_exists = yes
+						is_in_array = { global.IMP_associates = THIS }
+					}
+					remove_from_array = { global.IMP_associates = THIS }
+				}
+			}
+
+			modifier = {
+				custom_modifier_tooltip = IMP_associate_tt
+			}
+		}
+	}
+}

@@ -1,0 +1,84 @@
+# Intermarium Council: a regional pact inside NATO, not a second faction (Issue #5828)
+
+IMP_council_exists = {
+	check_variable = { global.IMP_chair > 0 }
+}
+
+IMP_is_regional_country = {
+	OR = {
+		original_tag = POL
+		original_tag = EST
+		original_tag = LAT
+		original_tag = LIT
+		original_tag = ROM
+		original_tag = BUL
+		original_tag = CZE
+		original_tag = SLO
+		original_tag = HUN
+		original_tag = UKR
+		original_tag = MLV
+		original_tag = BLR
+	}
+}
+
+# A stale NATO_member idea outside the NATO faction does not count
+IMP_is_nato_member = {
+	has_idea = NATO_member
+	has_faction_template = faction_template_nato
+}
+
+IMP_is_member = {
+	OR = {
+		has_idea = IMP_full_member
+		has_idea = IMP_associate
+	}
+}
+
+# A chair that slipped out of NATO keeps no powers and loses the seat at the next refresh
+IMP_is_chair = {
+	check_variable = { global.IMP_chair = THIS.id }
+	IMP_is_valid_full_member = yes
+}
+
+IMP_can_join_full = {
+	IMP_is_regional_country = yes
+	IMP_is_nato_member = yes
+	is_subject = no
+	NOT = { has_idea = IMP_full_member }
+}
+
+IMP_can_join_associate = {
+	IMP_is_regional_country = yes
+	is_subject = no
+	is_in_faction = no
+	NOT = { has_idea = IMP_associate }
+}
+
+IMP_is_valid_full_member = {
+	exists = yes
+	is_subject = no
+	IMP_is_nato_member = yes
+}
+
+# Associates may join NATO and wait for a full invitation, but not another faction
+IMP_is_valid_associate = {
+	exists = yes
+	is_subject = no
+	OR = {
+		is_in_faction = no
+		IMP_is_nato_member = yes
+	}
+}
+
+# Until the tally runs; the monthly update tallies a vote whose queued tallies were all lost
+IMP_vote_in_progress = {
+	check_variable = { global.IMP_vote_end > 0 }
+}
+
+# A ballot counts only for the vote that issued it, once, and only while its voter holds a valid seat
+IMP_ballot_counts = {
+	IMP_vote_in_progress = yes
+	IMP_is_valid_full_member = yes
+	check_variable = { IMP_ballot_vote = global.IMP_vote_id }
+	NOT = { check_variable = { IMP_voted_in = global.IMP_vote_id } }
+}
