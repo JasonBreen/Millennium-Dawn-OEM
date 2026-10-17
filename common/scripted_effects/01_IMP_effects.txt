@@ -133,6 +133,10 @@ IMP_dissolve = {
 	clear_variable = global.IMP_procurement_stage
 	clear_variable = global.IMP_cyber_stage
 	IMP_update_program_bonuses = yes
+	clear_variable = global.IMP_mobility_ready
+	clear_variable = global.IMP_air_ready
+	clear_variable = global.IMP_procurement_ready
+	clear_variable = global.IMP_cyber_ready
 }
 
 # ROOT is the proposing chair and votes in favor. Temp IMP_track: 1 mobility, 2 air defense, 3 procurement, 4 cyber
@@ -205,6 +209,10 @@ IMP_tally_vote = {
 			IMP_update_program_bonuses = yes
 			for_each_scope_loop = {
 				array = global.IMP_full_members
+				IMP_sync_tech_share = yes
+			}
+			for_each_scope_loop = {
+				array = global.IMP_full_members
 				country_event = { id = IMP.22 days = 1 }
 			}
 			for_each_scope_loop = {
@@ -245,6 +253,7 @@ IMP_resync_after_civil_war = {
 				add_dynamic_modifier = { modifier = IMP_council_programs }
 			}
 			IMP_issue_ballot = yes
+			IMP_sync_tech_share = yes
 		}
 		else = {
 			remove_ideas = IMP_full_member
@@ -304,5 +313,51 @@ IMP_monthly_update = {
 				IMP_remove_associate = yes
 			}
 		}
+		IMP_count_ready_members = yes
+	}
+}
+
+# Global scope, after the monthly cleanup, so only valid full members count
+IMP_count_ready_members = {
+	set_variable = { global.IMP_mobility_ready = 0 }
+	set_variable = { global.IMP_air_ready = 0 }
+	set_variable = { global.IMP_procurement_ready = 0 }
+	set_variable = { global.IMP_cyber_ready = 0 }
+	for_each_scope_loop = {
+		array = global.IMP_full_members
+		if = {
+			limit = { IMP_ready_mobility = yes }
+			add_to_variable = { global.IMP_mobility_ready = 1 }
+		}
+		if = {
+			limit = { IMP_ready_air = yes }
+			add_to_variable = { global.IMP_air_ready = 1 }
+		}
+		if = {
+			limit = { IMP_ready_procurement = yes }
+			add_to_variable = { global.IMP_procurement_ready = 1 }
+		}
+		if = {
+			limit = { IMP_ready_cyber = yes }
+			add_to_variable = { global.IMP_cyber_ready = 1 }
+		}
+	}
+}
+
+# Joint Procurement stage 2 opens a research group to full members only
+IMP_sync_tech_share = {
+	if = {
+		limit = {
+			has_idea = IMP_full_member
+			check_variable = { global.IMP_procurement_stage > 1 }
+		}
+		if = {
+			limit = { NOT = { is_in_tech_sharing_group = IMP_Tech_Share } }
+			add_to_tech_sharing_group = IMP_Tech_Share
+		}
+	}
+	else_if = {
+		limit = { is_in_tech_sharing_group = IMP_Tech_Share }
+		remove_from_tech_sharing_group = IMP_Tech_Share
 	}
 }
