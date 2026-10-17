@@ -632,16 +632,20 @@ def test_native_annex_hook_records_recipient_history_without_scanning_investors(
     source = (ROOT / "common/on_actions/MD_on_actions.txt").read_text(encoding="utf-8")
     annex = _parse_race_script(_named_block(source, "on_annex"))["on_annex"]
     effects = next(value for key, _op, value in annex if key == "effect")
+    callback = ("investment_ai_record_recipient_annexation", "=", "yes")
     hook = next(
-        entry
-        for entry in effects
-        if entry[0] == "FROM"
-        and ("investment_ai_record_recipient_annexation", "=", "yes") in entry[2]
+        entry for entry in effects if entry[0] == "FROM" and callback in entry[2]
+    )
+    # Other annexation cleanup belongs to systems outside this investment harness.
+    investment_hook = (
+        hook[0],
+        hook[1],
+        [entry for entry in hook[2] if entry[0] == callback[0]],
     )
     model, investor, recipient, _chosen = world()
     model.root = model.current = 1
     model.sender = 2
-    model.execute([hook], 1)
+    model.execute([investment_hook], 1)
     assert recipient["investment_ai_annex_generation"] == 1
     assert "investment_ai_annex_generation" not in investor
     assert not model.queue and not model.charges
