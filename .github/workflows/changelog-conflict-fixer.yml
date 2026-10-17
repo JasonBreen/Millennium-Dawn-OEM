@@ -81,7 +81,7 @@ jobs:
             # Check rerun eligibility before changing the PR branch.
             runs_url="repos/$GH_REPO/actions/workflows/test-suite.yml/runs"
             runs_url="$runs_url?event=pull_request&per_page=100"
-            if ! runs=$(gh api --paginate --slurp "$runs_url"); then
+            if ! runs=$(gh api --paginate --slurp "$runs_url" --method GET -f branch="$head"); then
               echo "::warning::PR #$num Test Suite runs could not be listed"
               failed=$((failed + 1))
               continue
