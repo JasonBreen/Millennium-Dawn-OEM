@@ -1,0 +1,308 @@
+# Intermarium Council membership (Issue #5828). Never touches the NATO faction itself.
+
+IMP_found_council = {
+	set_variable = { global.IMP_chair = THIS.id }
+	add_ideas = IMP_full_member
+}
+
+IMP_admit_full_member = {
+	if = {
+		limit = {
+			has_country_flag = IMP_invite_pending
+			IMP_council_exists = yes
+			IMP_can_join_full = yes
+		}
+		if = {
+			limit = { has_idea = IMP_associate }
+			remove_ideas = IMP_associate
+		}
+		add_ideas = IMP_full_member
+	}
+}
+
+IMP_admit_associate = {
+	if = {
+		limit = {
+			has_country_flag = IMP_invite_pending
+			IMP_council_exists = yes
+			IMP_can_join_associate = yes
+		}
+		add_ideas = IMP_associate
+	}
+}
+
+# Also clears the array entry of an annexed member, whose idea may never fire on_remove
+IMP_remove_full_member = {
+	if = {
+		limit = { has_idea = IMP_full_member }
+		remove_ideas = IMP_full_member
+	}
+	if = {
+		limit = { is_in_array = { global.IMP_full_members = THIS } }
+		remove_from_array = { global.IMP_full_members = THIS }
+		IMP_refresh_chair = yes
+	}
+}
+
+IMP_remove_associate = {
+	if = {
+		limit = { has_idea = IMP_associate }
+		remove_ideas = IMP_associate
+	}
+	if = {
+		limit = { is_in_array = { global.IMP_associates = THIS } }
+		remove_from_array = { global.IMP_associates = THIS }
+	}
+}
+
+# The largest valid economy among the full members takes a vacant chair; no valid full member dissolves the council
+IMP_refresh_chair = {
+	if = {
+		limit = {
+			IMP_council_exists = yes
+			NOT = {
+				any_of_scopes = {
+					array = global.IMP_full_members
+					IMP_is_chair = yes
+				}
+			}
+		}
+		if = {
+			limit = {
+				any_of_scopes = {
+					array = global.IMP_full_members
+					IMP_is_valid_full_member = yes
+				}
+			}
+			set_temp_variable = { IMP_best_gdp = -1 }
+			for_each_scope_loop = {
+				array = global.IMP_full_members
+				if = {
+					limit = {
+						IMP_is_valid_full_member = yes
+						check_variable = { gdp_total > IMP_best_gdp }
+					}
+					set_temp_variable = { IMP_best_gdp = gdp_total }
+					set_variable = { global.IMP_chair = THIS.id }
+				}
+			}
+			var:global.IMP_chair = { country_event = { id = IMP.30 days = 1 } }
+		}
+		else = {
+			IMP_dissolve = yes
+		}
+	}
+}
+
+IMP_dissolve = {
+	clear_variable = global.IMP_chair
+	clear_variable = global.IMP_fund
+	# Only invalid full members can remain here; the cleared chair keeps on_remove off the arrays
+	for_each_scope_loop = {
+		array = global.IMP_full_members
+		if = {
+			limit = { has_idea = IMP_full_member }
+			remove_ideas = IMP_full_member
+			if = {
+				limit = { exists = yes }
+				country_event = { id = IMP.40 days = 1 }
+			}
+		}
+	}
+	for_each_scope_loop = {
+		array = global.IMP_associates
+		if = {
+			limit = { has_idea = IMP_associate }
+			remove_ideas = IMP_associate
+			if = {
+				limit = { exists = yes }
+				country_event = { id = IMP.32 days = 1 }
+			}
+		}
+	}
+	clear_array = global.IMP_associates
+	clear_array = global.IMP_full_members
+	# Invitations die with the council, so a refounded council cannot admit on them
+	every_country = {
+		limit = { has_country_flag = IMP_invite_pending }
+		clr_country_flag = IMP_invite_pending
+	}
+	clear_variable = global.IMP_vote_end
+	clear_variable = global.IMP_mobility_stage
+	clear_variable = global.IMP_air_stage
+	clear_variable = global.IMP_procurement_stage
+	clear_variable = global.IMP_cyber_stage
+	IMP_update_program_bonuses = yes
+}
+
+# ROOT is the proposing chair and votes in favor. Temp IMP_track: 1 mobility, 2 air defense, 3 procurement, 4 cyber
+# Every full member queues the tally, so it survives the proposer's annexation; the first to fire counts it
+IMP_open_vote = {
+	add_to_variable = { global.IMP_vote_id = 1 }
+	set_variable = { global.IMP_vote_end = { value = global.num_days add = 30 } }
+	set_variable = { global.IMP_vote_track = IMP_track }
+	set_variable = { global.IMP_votes_for = 1 }
+	set_variable = { global.IMP_votes_against = 0 }
+	save_global_event_target_as = IMP_vote_proposer
+	set_variable = { IMP_voted_in = global.IMP_vote_id }
+	for_each_scope_loop = {
+		array = global.IMP_full_members
+		IMP_issue_ballot = yes
+		country_event = { id = IMP.21 days = 30 }
+	}
+}
+
+# A full member without a ballot for the open vote gets one, including one admitted mid-vote; a member who
+# already voted, or proposed, in this vote and rejoined gets none
+IMP_issue_ballot = {
+	if = {
+		limit = {
+			IMP_vote_in_progress = yes
+			NOT = { check_variable = { IMP_ballot_vote = global.IMP_vote_id } }
+			NOT = { check_variable = { IMP_voted_in = global.IMP_vote_id } }
+		}
+		set_variable = { IMP_ballot_vote = global.IMP_vote_id }
+		country_event = { id = IMP.20 days = 1 }
+	}
+}
+
+# A tie passes. The fund cannot fall during a vote, so only the council's survival is rechecked.
+# A tally queued by an older vote fires before this vote's closing day and does nothing.
+# The result notices read IMP_result_track, since a new proposal can overwrite IMP_vote_track first
+IMP_tally_vote = {
+	if = {
+		limit = {
+			check_variable = { global.IMP_vote_end > 0 }
+			check_variable = { var = global.num_days value = global.IMP_vote_end compare = greater_than_or_equals }
+		}
+		set_variable = { global.IMP_result_track = global.IMP_vote_track }
+		clear_variable = global.IMP_vote_end
+		if = {
+			limit = {
+				IMP_council_exists = yes
+				check_variable = { var = global.IMP_votes_for value = global.IMP_votes_against compare = greater_than_or_equals }
+			}
+			if = {
+				limit = { check_variable = { global.IMP_vote_track = 1 } }
+				set_temp_variable = { IMP_stage = global.IMP_mobility_stage }
+				add_to_variable = { global.IMP_mobility_stage = 1 }
+			}
+			else_if = {
+				limit = { check_variable = { global.IMP_vote_track = 2 } }
+				set_temp_variable = { IMP_stage = global.IMP_air_stage }
+				add_to_variable = { global.IMP_air_stage = 1 }
+			}
+			else_if = {
+				limit = { check_variable = { global.IMP_vote_track = 3 } }
+				set_temp_variable = { IMP_stage = global.IMP_procurement_stage }
+				add_to_variable = { global.IMP_procurement_stage = 1 }
+			}
+			else = {
+				set_temp_variable = { IMP_stage = global.IMP_cyber_stage }
+				add_to_variable = { global.IMP_cyber_stage = 1 }
+			}
+			subtract_from_variable = { global.IMP_fund = { value = IMP_stage multiply = 0.75 add = 0.5 } }
+			IMP_update_program_bonuses = yes
+			for_each_scope_loop = {
+				array = global.IMP_full_members
+				country_event = { id = IMP.22 days = 1 }
+			}
+			for_each_scope_loop = {
+				array = global.IMP_associates
+				country_event = { id = IMP.22 days = 1 }
+			}
+		}
+		else_if = {
+			limit = { IMP_council_exists = yes }
+			for_each_scope_loop = {
+				array = global.IMP_full_members
+				country_event = { id = IMP.23 days = 1 }
+			}
+		}
+	}
+}
+
+IMP_update_program_bonuses = {
+	set_variable = { global.IMP_mobility_bonus = { value = global.IMP_mobility_stage multiply = 0.05 } }
+	set_variable = { global.IMP_air_bonus = { value = global.IMP_air_stage multiply = 0.05 } }
+	set_variable = { global.IMP_procurement_bonus = { value = global.IMP_procurement_stage multiply = 0.03 } }
+	set_variable = { global.IMP_cyber_rating = { value = global.IMP_cyber_stage multiply = 2 } }
+	set_variable = { global.IMP_cyber_bonus = { value = global.IMP_cyber_stage multiply = 0.05 } }
+}
+
+# Civil-war victor's scope, before the loser's annexation removes its seat. Inherited ideas skip on_add, as EU_resync_member_array notes
+IMP_resync_after_civil_war = {
+	if = {
+		limit = {
+			has_idea = IMP_full_member
+			NOT = { is_in_array = { global.IMP_full_members = THIS } }
+		}
+		if = {
+			limit = { IMP_council_exists = yes }
+			add_to_array = { global.IMP_full_members = THIS }
+			if = {
+				limit = { NOT = { has_dynamic_modifier = { modifier = IMP_council_programs } } }
+				add_dynamic_modifier = { modifier = IMP_council_programs }
+			}
+			IMP_issue_ballot = yes
+		}
+		else = {
+			remove_ideas = IMP_full_member
+		}
+	}
+	if = {
+		limit = {
+			has_idea = IMP_associate
+			NOT = { is_in_array = { global.IMP_associates = THIS } }
+		}
+		if = {
+			limit = { IMP_council_exists = yes }
+			add_to_array = { global.IMP_associates = THIS }
+			if = {
+				limit = { NOT = { has_dynamic_modifier = { modifier = IMP_associate_programs } } }
+				add_dynamic_modifier = { modifier = IMP_associate_programs }
+			}
+		}
+		else = {
+			remove_ideas = IMP_associate
+		}
+	}
+}
+
+# Global scope, monthly
+IMP_monthly_update = {
+	if = {
+		limit = { IMP_council_exists = yes }
+		IMP_tally_vote = yes
+		while_loop_effect = {
+			limit = {
+				any_of_scopes = {
+					array = global.IMP_full_members
+					IMP_is_valid_full_member = no
+				}
+			}
+			random_scope_in_array = {
+				array = global.IMP_full_members
+				limit = { IMP_is_valid_full_member = no }
+				IMP_remove_full_member = yes
+				if = {
+					limit = { exists = yes }
+					country_event = { id = IMP.40 days = 1 }
+				}
+			}
+		}
+		while_loop_effect = {
+			limit = {
+				any_of_scopes = {
+					array = global.IMP_associates
+					IMP_is_valid_associate = no
+				}
+			}
+			random_scope_in_array = {
+				array = global.IMP_associates
+				limit = { IMP_is_valid_associate = no }
+				IMP_remove_associate = yes
+			}
+		}
+	}
+}

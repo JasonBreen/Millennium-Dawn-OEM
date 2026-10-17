@@ -1,7 +1,7 @@
 import re
 
 import pytest
-from ai_race_state_model_test import _named_block
+from ai_race_state_model_test import _named_block, _parse_race_script
 from stalker_lifecycle_test import ROOT, StalkerScript
 
 ZONE = 698
@@ -142,3 +142,33 @@ def test_relief_runs_from_the_monthly_pulse_and_matches_the_decision():
     assert "NOT = { has_state_flag = STALKER_zone_reinforced }" in relief
     assert "FROM = { has_state_flag = STALKER_zone_reinforced }" in decision
     assert "small_expenditure = yes" in decision and "small_expenditure = yes" in relief
+
+
+@pytest.mark.parametrize(
+    "breach,exploitation,expected",
+    [(False, 19, 15), (False, 20, 5), (True, 19, 0), (True, 20, 0)],
+)
+def test_trader_license_ai_respects_breach_and_exploitation_together(
+    breach, exploitation, expected
+):
+    script, state, holder_id = _zone(breach=breach)
+    state["vars"]["STALKER_zone_exploitation"] = exploitation
+    decision = _named_block(
+        (ROOT / "common/decisions/STALKER_decisions.txt").read_text(encoding="utf-8"),
+        "STALKER_license_cordon_trader",
+    )
+    weights = _parse_race_script(_named_block(decision, "ai_will_do"))["ai_will_do"]
+    weight = float(next(value for key, _, value in weights if key == "base"))
+    for key, _, body in weights:
+        if key != "modifier":
+            continue
+        fields = {key: value for key, _, value in body}
+        conditions = [
+            (str(ZONE) if key == "FROM" else key, op, value)
+            for key, op, value in body
+            if key not in {"factor", "add"}
+        ]
+        if script.condition(conditions, holder_id):
+            weight *= float(fields.get("factor", 1))
+            weight += float(fields.get("add", 0))
+    assert weight == expected
