@@ -1,0 +1,148 @@
+USA_enigma_sp_coffin = {
+	allowed = { original_tag = USA has_dlc = "By Blood Alone" }
+	specialization = specialization_air
+	icon = GFX_sp_awacs
+	project_tags = sp_tag_avionics_aeronautics
+	visible = { FROM = { USA_enigma_enabled = yes check_variable = { USA_enigma_phase > 0 } } }
+	available = {
+		FROM = {
+			USA_enigma_development_enabled = yes
+			date > 2034.12.31
+			has_tech = computing_6
+			has_tech = avionics_3
+			has_tech = artificial_intelligence_9
+		}
+	}
+	special_project_parent = { oem_sp_neural_flight_control }
+	prototype_time = sp_time.prototype.long
+	complexity = sp_complexity.large
+	breakthrough_cost = { specialization_air = 3 }
+	resource_cost = { resources = { microchips = 5 composites = 2 } }
+	project_output = {
+		enable_equipment_modules = { USA_enigma_coffin_balanced }
+		country_effects = { USA_enigma_project_evidence = yes }
+	}
+	unique_prototype_rewards = {
+		USA_enigma_flight_017 = {
+			fire_only_once = yes
+			threshold = { min = 10 max = 90 }
+			weight = { base = 20 }
+			option = {
+				token = USA_enigma_flight_017_limited
+				default = yes
+				iteration_output = {
+					enable_equipment_modules = { USA_enigma_coffin_limited }
+					country_effects = {
+						if = {
+							limit = { NOT = { has_variable = USA_enigma_cockpit_policy } }
+							set_variable = { USA_enigma_cockpit_policy = 1 }
+						}
+					}
+				}
+			}
+			option = {
+				token = USA_enigma_flight_017_calibrate
+				iteration_output = {
+					scientist_effects = {
+						add_scientist_xp = { experience = constant:sp_scientist_xp_gain.low specialization = specialization_air }
+					}
+					country_effects = {
+						if = {
+							limit = { NOT = { has_variable = USA_enigma_cockpit_policy } }
+							set_variable = { USA_enigma_cockpit_policy = 2 }
+						}
+					}
+				}
+			}
+			option = {
+				token = USA_enigma_flight_017_unrestricted
+				iteration_output = {
+					enable_equipment_modules = { USA_enigma_coffin_unrestricted }
+					country_effects = {
+						if = {
+							limit = { NOT = { has_variable = USA_enigma_cockpit_policy } }
+							set_variable = { USA_enigma_cockpit_policy = 3 }
+							add_to_variable = { USA_enigma_exposure = 20 }
+							USA_enigma_clamp_exposure = yes
+						}
+					}
+				}
+			}
+		}
+	}
+	generic_prototype_rewards = { sp_air_generic_reward_test_failure_1 sp_air_generic_reward_scientist_xp_1 }
+	ai_will_do = {
+		base = 10
+		modifier = { factor = 0 FROM = { NOT = { ai_for_units_is_not_disabled = yes } } }
+	}
+}
+
+USA_enigma_sp_nightmare = {
+	allowed = { original_tag = USA has_dlc = "By Blood Alone" }
+	specialization = specialization_air
+	icon = GFX_sp_awacs
+	project_tags = sp_tag_avionics_aeronautics
+	visible = { FROM = { USA_enigma_enabled = yes check_variable = { USA_enigma_phase > 0 } } }
+	available = {
+		FROM = {
+			USA_enigma_development_enabled = yes
+			has_tech = gen_6_medium
+			has_tech = engines_4
+			has_tech = avionics_4
+			has_tech = artificial_intelligence_10
+		}
+	}
+	special_project_parent = { USA_enigma_sp_coffin }
+	prototype_time = sp_time.prototype.very_long
+	complexity = sp_complexity.insane
+	breakthrough_cost = { specialization_air = 4 }
+	resource_cost = { resources = { microchips = 8 composites = 5 aluminium = 3 } }
+	project_output = {
+		enable_equipments = { USA_enigma_nightmare_airframe }
+		country_effects = {
+			USA_enigma_project_evidence = yes
+			if = { limit = { USA_enigma_enabled = yes } country_event = { id = USA_enigma.7 days = 1 } }
+		}
+	}
+	generic_prototype_rewards = { sp_air_generic_reward_critical_failure sp_air_generic_reward_resource_scarcity sp_air_generic_reward_major_progress_1 }
+	ai_will_do = {
+		base = 5
+		modifier = { factor = 0 FROM = { NOT = { ai_for_units_is_not_disabled = yes } } }
+	}
+}
+
+CHI_enigma_sp_recovered_interface = {
+	allowed = { original_tag = CHI has_dlc = "By Blood Alone" }
+	specialization = specialization_air
+	icon = GFX_sp_awacs
+	project_tags = sp_tag_avionics_aeronautics
+	visible = {
+		FROM = {
+			CHI_enigma_enabled = yes
+			check_variable = { CHI_enigma_data_offer = 2 }
+		}
+	}
+	available = {
+		FROM = {
+			CHI_enigma_enabled = yes
+			custom_trigger_tooltip = {
+				tooltip = CHI_enigma_data_accepted_tt
+				check_variable = { CHI_enigma_data_offer = 2 }
+			}
+			has_tech = computing_6
+			has_tech = avionics_4
+			has_tech = artificial_intelligence_9
+		}
+	}
+	special_project_parent = { sp_aircraft_project }
+	prototype_time = sp_time.prototype.very_long
+	complexity = sp_complexity.insane
+	breakthrough_cost = { specialization_air = 4 }
+	resource_cost = { resources = { microchips = 6 composites = 3 } }
+	project_output = { enable_equipment_modules = { USA_enigma_coffin_limited } }
+	generic_prototype_rewards = { sp_air_generic_reward_test_failure_1 sp_air_generic_reward_scientist_xp_1 }
+	ai_will_do = {
+		base = 25
+		modifier = { factor = 0 FROM = { NOT = { ai_for_units_is_not_disabled = yes } } }
+	}
+}
