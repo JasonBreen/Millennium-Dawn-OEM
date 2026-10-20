@@ -6,8 +6,13 @@ from pathlib import Path
 
 import pytest
 from ai_race_state_model_test import RaceScript, _named_block, _parse_race_script
+from validate_scripted_params import (
+    _parse_effect_contracts_from_file,
+    _validate_call_sites_in_file,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
+FACTION_EFFECTS_PATH = ROOT / "common/scripted_effects/00_internal_faction_effects.txt"
 FOCUSES = (ROOT / "common/national_focus/05_usa.txt").read_text(encoding="utf-8")
 DECISIONS = _parse_race_script(
     (ROOT / "common/decisions/USA_presidential_agenda.txt").read_text(encoding="utf-8")
@@ -50,6 +55,12 @@ class AgendaScript(RaceScript):
                 ).read_text(encoding="utf-8")
             )
         )
+        faction_source = FACTION_EFFECTS_PATH.read_text(encoding="utf-8")
+        for name in (
+            "autocrats_opinion_change",
+            "change_industrial_conglomerates_opinion",
+        ):
+            self.effects.update(_parse_race_script(_named_block(faction_source, name)))
         for filename in (
             "USA_presidential_agenda_triggers.txt",
             "99_USA_scripted_triggers.txt",
@@ -64,6 +75,7 @@ class AgendaScript(RaceScript):
         self.party = party
         self.root = 1
         self.country(1, tag="USA")
+        self.countries[1]["ideas"] = {"industrial_conglomerates"}
         self.country(2, tag="JAP")
         self.completed = {
             "USA_focus_working_majority",
@@ -88,6 +100,8 @@ class AgendaScript(RaceScript):
             USA_agenda_review_day=0,
             treasury=100,
             political_power=500,
+            industrial_conglomerates_opinion=50,
+            ruling_party=2 if party == "democrat" else 1,
             senators_support=60,
             representatives_support=260,
             quorum_low=40,
@@ -111,6 +125,8 @@ class AgendaScript(RaceScript):
                 )
             elif key == "has_completed_focus":
                 result = operand in self.completed
+            elif key == "western_autocrats_are_in_power":
+                result = operand == "no"
             elif key in {
                 "western_liberals_are_in_power",
                 "western_conservatism_are_in_power",
@@ -167,7 +183,7 @@ class AgendaScript(RaceScript):
                 self.vars["fuel"] += float(operand)
             elif key == "USA_congress_small_support":
                 self.congress_calls += 1
-            elif key == "change_industrial_conglomerates_opinion":
+            elif key == "apply_industrial_conglomerates_dynamic_effect_DYNMOD":
                 self.opinion_changes.append(self.temps["temp_opinion_change"])
             elif key == "change_relative_party_popularity":
                 self.popularity.append(
@@ -372,12 +388,46 @@ def test_compute_requires_power_after_energy_multipliers_and_stops_on_shortage()
     assert game.condition(IDEAS["USA_agenda_compute_access_idea"]["cancel"])
 
 
-def test_privacy_reuses_existing_corporate_opposition_effect():
+@pytest.mark.parametrize("faction_present", (True, False))
+def test_privacy_reuses_existing_corporate_opposition_effect(faction_present):
     game = AgendaScript()
+    if not faction_present:
+        game.countries[1]["ideas"].clear()
+    game.temps["temp_opinion_change"] = 40
     game.announce("national_data_privacy_standard")
     game.take("USA_agenda_privacy_enforce")
-    assert game.opinion_changes == [-5]
+    assert game.vars["industrial_conglomerates_opinion"] == (
+        45 if faction_present else 50
+    )
+    assert game.opinion_changes == ([-5] if faction_present else [])
     assert not game.can_take("USA_agenda_privacy_transition")
+
+
+@pytest.mark.parametrize(
+    "setter,missing", (("temp_opinion", False), ("temp_opinion_change", True))
+)
+def test_agenda_faction_calls_use_helper_parameter_contract(tmp_path, setter, missing):
+    source = (ROOT / "common/decisions/USA_presidential_agenda.txt").read_text(
+        encoding="utf-8"
+    )
+    caller = tmp_path / "agenda.txt"
+    with caller.open("w", encoding="utf-8", newline="") as stream:
+        stream.write(source.replace("temp_opinion = -5", setter + " = -5"))
+    issues = _validate_call_sites_in_file(
+        (
+            str(caller),
+            _parse_effect_contracts_from_file(str(FACTION_EFFECTS_PATH)),
+            str(tmp_path),
+            frozenset(),
+            frozenset(),
+        )
+    )
+    failures = [
+        message
+        for category, message, _ in issues
+        if category == "missing-required-param"
+    ]
+    assert bool(failures) == missing
 
 
 def test_allied_embargo_exposure_differs_from_domestic_qualification():
