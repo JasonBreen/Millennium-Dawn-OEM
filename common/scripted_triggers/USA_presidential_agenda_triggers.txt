@@ -1,0 +1,133 @@
+USA_agenda_elected_government = {
+	OR = {
+		AND = {
+			western_liberals_are_in_power = yes
+			OR = {
+				has_completed_focus = USA_focus_2020_democrat_victory
+				has_completed_focus = USA_focus_2024_democrat_victory
+				has_completed_focus = USA_focus_2028_democrat_victory
+			}
+		}
+		AND = {
+			western_conservatism_are_in_power = yes
+			OR = {
+				has_completed_focus = USA_focus_2020_republican_victory
+				has_completed_focus = USA_focus_2024_republican_victory
+				has_completed_focus = USA_focus_2028_republican_victory
+			}
+		}
+	}
+}
+
+USA_agenda_policy_open = {
+	has_completed_focus = USA_focus_working_majority
+	custom_trigger_tooltip = {
+		tooltip = USA_agenda_majority_agreed_tt
+		check_variable = { USA_agenda_majority > 0 }
+	}
+	NOT = { has_completed_focus = USA_focus_deliver_legislative_agenda }
+}
+
+USA_agenda_compute_capacity = {
+	custom_trigger_tooltip = {
+		tooltip = USA_agenda_compute_capacity_tt
+		ai_race_full_mode = yes
+		ai_race_active = yes
+		check_variable = { ai_race_stage > 0 }
+		check_variable = { ai_race_capacity_settled = 1 }
+		check_variable = { ai_race_current_readiness > 0.99 }
+		check_variable = { energy_balance > 2 }
+		check_variable = { var = energy_balance value = ai_race_power_multiplier compare = greater_than_or_equals }
+		check_variable = { resource@microchips > 4 }
+	}
+}
+
+USA_agenda_allied_supplier = {
+	OR = {
+		AND = {
+			country_exists = JAP
+			NOT = { has_war_with = JAP }
+			NOT = { is_embargoed_by = JAP }
+			NOT = { is_embargoing = JAP }
+			OR = {
+				is_in_faction_with = JAP
+				has_country_flag = trade_agreement@JAP
+			}
+			JAP = { any_owned_state = { is_controlled_by = JAP microchip_plant > 0 } }
+		}
+		AND = {
+			country_exists = KOR
+			NOT = { has_war_with = KOR }
+			NOT = { is_embargoed_by = KOR }
+			NOT = { is_embargoing = KOR }
+			OR = {
+				is_in_faction_with = KOR
+				has_country_flag = trade_agreement@KOR
+			}
+			KOR = { any_owned_state = { is_controlled_by = KOR microchip_plant > 0 } }
+		}
+		AND = {
+			country_exists = TAI
+			NOT = { has_war_with = TAI }
+			NOT = { is_embargoed_by = TAI }
+			NOT = { is_embargoing = TAI }
+			OR = {
+				is_in_faction_with = TAI
+				has_country_flag = trade_agreement@TAI
+			}
+			TAI = { any_owned_state = { is_controlled_by = TAI microchip_plant > 0 } }
+		}
+	}
+}
+
+USA_agenda_no_projects_pending = {
+	custom_trigger_tooltip = {
+		tooltip = USA_agenda_no_projects_pending_tt
+		NOT = { check_variable = { USA_agenda_rural_774 = 1 } }
+		NOT = { check_variable = { USA_agenda_rural_787 = 1 } }
+		NOT = { check_variable = { USA_agenda_rural_788 = 1 } }
+		NOT = { check_variable = { USA_agenda_reserve = 1 } }
+		NOT = { check_variable = { USA_agenda_privacy = 1 } }
+		NOT = { check_variable = { USA_agenda_trade = 1 } }
+		NOT = { check_variable = { USA_agenda_compute = 1 } }
+		NOT = { check_variable = { USA_agenda_supply = 1 } }
+	}
+}
+
+USA_agenda_delivery_available = {
+	USA_agenda_elected_government = yes
+	USA_agenda_policy_open = yes
+	USA_agenda_no_projects_pending = yes
+	OR = {
+		AND = {
+			western_liberals_are_in_power = yes
+			has_completed_focus = USA_focus_2028_democrat_victory
+		}
+		AND = {
+			western_conservatism_are_in_power = yes
+			has_completed_focus = USA_focus_2028_republican_victory
+		}
+	}
+	custom_trigger_tooltip = {
+		tooltip = USA_agenda_year_governing_tt
+		check_variable = { var = global.num_days value = USA_agenda_review_day compare = greater_than_or_equals }
+	}
+	OR = {
+		AND = {
+			western_liberals_are_in_power = yes
+			OR = {
+				has_completed_focus = USA_focus_reconnect_rural_america
+				has_completed_focus = USA_focus_national_data_privacy_standard
+				has_completed_focus = USA_focus_public_compute_commons
+			}
+		}
+		AND = {
+			western_conservatism_are_in_power = yes
+			OR = {
+				has_completed_focus = USA_focus_rebuild_strategic_fuel_reserve
+				has_completed_focus = USA_focus_trade_adjustment_fund
+				has_completed_focus = USA_focus_secure_critical_supply_chain
+			}
+		}
+	}
+}
