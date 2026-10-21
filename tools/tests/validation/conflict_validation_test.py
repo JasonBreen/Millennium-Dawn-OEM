@@ -61,6 +61,7 @@ class API:
             for name in publisher.JOBS
         ]
         self.runs = [self.run]
+        self.sources = {100: self.run}
         self.checks, self.writes = [], []
         self.reads = 0
         self.race_at = None
@@ -82,8 +83,8 @@ class API:
             if self.reads == self.race_at:
                 self.pr["head"]["sha"] = "c" * 40
             return {"default_branch": self.default_branch}
-        if path == "actions/runs/100":
-            return copy.deepcopy(self.run)
+        if path.startswith("actions/runs/"):
+            return copy.deepcopy(self.sources[int(path.rsplit("/", 1)[1])])
         if path == "actions/workflows/test-suite.yml":
             return self.workflow
         if path == "git/ref/heads/main":
@@ -94,7 +95,9 @@ class API:
 
     def pages(self, path, key):
         if key == "jobs":
-            assert path == "actions/runs/100/attempts/2/jobs"
+            assert path == (
+                f"actions/runs/{self.run['id']}/attempts/{self.run['run_attempt']}/jobs"
+            )
             return self.jobs
         if key == "check_runs":
             assert path == f"commits/{HEAD}/check-runs?filter=all"
@@ -132,6 +135,101 @@ def test_success_attaches_only_to_the_validated_pr_sha_and_replays_update_one_ch
     assert sum(method == "POST" for _, method, _ in api.writes) == 1
 
 
+@pytest.mark.parametrize("event_suffix", ["", "@main"])
+@pytest.mark.parametrize("run_suffix", ["", "@main"])
+def test_registered_workflow_accepts_plain_and_trusted_ref_qualified_paths(
+    event_suffix, run_suffix
+):
+    api = API()
+    api.event["workflow_run"]["path"] += event_suffix
+    api.run["path"] += run_suffix
+    api.publish()
+    assert api.checks[0]["conclusion"] == "success"
+
+
+@pytest.mark.parametrize("target", ["event", "run"])
+@pytest.mark.parametrize(
+    "path",
+    [
+        f"{publisher.WORKFLOW}@attacker",
+        f"{publisher.WORKFLOW}@refs/tags/main",
+        f"{publisher.WORKFLOW}@refs/heads/main",
+        f"{publisher.WORKFLOW}@main@attacker",
+        f"{publisher.WORKFLOW}@",
+        f"{publisher.WORKFLOW}@main\n",
+        f"{publisher.WORKFLOW}@main/../attacker",
+        f"{publisher.WORKFLOW}@{BASE}",
+        f"owner/repo/{publisher.WORKFLOW}@main",
+        ".github/workflows/other.yml@main",
+        ".github/workflows/../workflows/test-suite.yml@main",
+        None,
+    ],
+)
+def test_ref_suffix_cannot_replace_registered_workflow_branch_or_revision(target, path):
+    api = API()
+    record = api.event["workflow_run"] if target == "event" else api.run
+    record["path"] = path
+    with pytest.raises(ValueError, match="Workflow path mismatch"):
+        api.publish()
+    assert not api.writes
+
+
+@pytest.mark.parametrize("suffix", ["@main", "@attacker"])
+def test_live_path_rechecks_accept_only_the_same_registered_workflow(suffix):
+    api = API()
+    original_call = api.call
+
+    def path_changes(path, method="GET", data=None):
+        if path == "":
+            api.run["path"] = publisher.WORKFLOW + suffix
+        return original_call(path, method, data)
+
+    api.call = path_changes
+    if suffix == "@attacker":
+        _assert_failed_check(api)
+    else:
+        api.publish()
+        assert api.checks[0]["conclusion"] == "success"
+
+
+@pytest.mark.parametrize("new_id,new_attempt", [(100, 3), (101, 1)])
+@pytest.mark.parametrize("newest_first", [True, False])
+def test_queued_callbacks_for_distinct_runs_and_attempts_converge_to_latest_result(
+    new_id, new_attempt, newest_first
+):
+    api = API()
+    api.run.update(status="in_progress", conclusion=None)
+    api.event["workflow_run"] = copy.deepcopy(api.run)
+    api.publish()
+    assert api.checks[0]["status"] == "in_progress"
+    old_callback = copy.deepcopy(api.event["workflow_run"])
+    api.run = {
+        **api.run,
+        "id": new_id,
+        "run_attempt": new_attempt,
+        "status": "completed",
+        "conclusion": "success",
+    }
+    api.sources[new_id] = api.run
+    api.runs.append(api.run)
+    for job in api.jobs:
+        job.update(run_id=new_id, run_attempt=new_attempt)
+    callbacks = [old_callback, copy.deepcopy(api.run)]
+    if newest_first:
+        callbacks.reverse()
+    for callback in callbacks:
+        api.event["workflow_run"] = callback
+        if callback == api.run:
+            api.publish()
+        else:
+            with pytest.raises(ValueError):
+                api.publish()
+    assert len(api.checks) == 1
+    assert api.checks[0]["conclusion"] == "success"
+    assert api.checks[0]["details_url"].endswith(f"/{new_id}/attempts/{new_attempt}")
+
+
+@pytest.mark.parametrize("suffix", ["", "@main"])
 @pytest.mark.parametrize(
     "target,path,value",
     [
@@ -156,8 +254,10 @@ def test_success_attaches_only_to_the_validated_pr_sha_and_replays_update_one_ch
         ("workflow", "path", "other.yml"),
     ],
 )
-def test_identity_rejection_never_writes_a_check(target, path, value):
+def test_identity_rejection_never_writes_a_check(suffix, target, path, value):
     api = API()
+    api.run["path"] += suffix
+    api.event["workflow_run"]["path"] += suffix
     _set(getattr(api, target), path, value)
     with pytest.raises(ValueError):
         api.publish()
@@ -364,13 +464,20 @@ def test_base_updates_reuse_one_check_and_live_source_races_fail_closed(change):
     if change == "none":
         new_base = "d" * 40
         api.main = api.pr["base"]["sha"] = new_base
-        api.run.update(
-            head_sha=new_base,
-            display_title=api.run["display_title"].replace(BASE, new_base),
-        )
+        api.run = {
+            **api.run,
+            "id": 101,
+            "run_attempt": 1,
+            "head_sha": new_base,
+            "display_title": api.run["display_title"].replace(BASE, new_base),
+        }
+        api.sources[101] = api.run
+        api.runs.append(api.run)
         api.event["workflow_run"] = copy.deepcopy(api.run)
-        for job in api.jobs:
-            job["head_sha"] = new_base
+        api.jobs = [
+            {**job, "run_id": 101, "run_attempt": 1, "head_sha": new_base}
+            for job in api.jobs
+        ]
         # The real API route is pinned to the current base, not the fixture's BASE.
         original_pages = api.pages
         api.pages = lambda path, key: (
@@ -379,6 +486,9 @@ def test_base_updates_reuse_one_check_and_live_source_races_fail_closed(change):
         api.publish()
         assert len(api.checks) == 1
         assert api.checks[0]["conclusion"] == "success"
+        assert api.checks[0]["details_url"].endswith("/101/attempts/1")
+        assert api.sources[100]["head_sha"] == BASE
+        assert api.sources[100]["display_title"].endswith(f"base {BASE}")
         return
     original = api.call
 

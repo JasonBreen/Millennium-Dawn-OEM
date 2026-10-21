@@ -73,6 +73,17 @@ class GitHub:
         raise ValueError("API pagination exhausted")
 
 
+def workflow_path(value):
+    """Accept only the registered path and its protected-main qualification."""
+    require(isinstance(value, str), "Workflow path mismatch")
+    path, separator, ref = value.partition("@")
+    require(
+        path == WORKFLOW and (not separator or ref == "main"),
+        "Workflow path mismatch",
+    )
+    return path
+
+
 def identity(api, event, repository, repository_id):
     """Authenticate the source before trusting its protected-workflow run name."""
     source = event["workflow_run"]
@@ -86,7 +97,7 @@ def identity(api, event, repository, repository_id):
         require(item["repository"]["full_name"] == repository, "Run owner mismatch")
         require(item["head_repository"]["id"] == repository_id, "Fork run rejected")
         require(item["workflow_id"] == workflow["id"], "Workflow ID mismatch")
-        require(item["path"] == WORKFLOW, "Workflow path mismatch")
+        workflow_path(item["path"])
         require(item["event"] == "workflow_dispatch", "Historical PR run rejected")
         require(item["head_branch"] == "main", "Untrusted source branch")
         require(item["display_title"] == run["display_title"], "Run title mismatch")
@@ -121,9 +132,9 @@ def current(api, run, number, head, base, repository_id):
                 "head_sha",
                 "display_title",
                 "event",
-                "path",
             )
-        ),
+        )
+        and workflow_path(latest["path"]) == workflow_path(run["path"]),
         "Run identity or attempt changed",
     )
     runs = api.pages(

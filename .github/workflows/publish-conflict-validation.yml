@@ -8,14 +8,14 @@ on:
 permissions: {}
 cache-mode: none
 
-# Serialize check updates across source runs and attempts. Never cancel a writer.
-concurrency:
-  group: publish-conflict-validation
-  cancel-in-progress: false
-
 jobs:
   publish:
     if: github.event.workflow_run.event == 'workflow_dispatch'
+    # Queue dispatch callbacks and serialize writers across runs and attempts.
+    concurrency:
+      group: publish-conflict-validation
+      queue: max
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       contents: read

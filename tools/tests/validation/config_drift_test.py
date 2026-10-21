@@ -860,12 +860,18 @@ def test_exact_head_publisher_holds_the_only_new_write_permission():
     workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
     assert workflow["permissions"] == {}
     assert workflow["cache-mode"] == "none"
-    assert workflow["concurrency"]["cancel-in-progress"] is False
+    assert "concurrency" not in workflow
     assert _workflow_trigger(path)["workflow_run"] == {
         "workflows": ["Test Suite"],
         "types": ["in_progress", "completed"],
     }
     job = workflow["jobs"]["publish"]
+    assert job["if"] == "github.event.workflow_run.event == 'workflow_dispatch'"
+    assert job["concurrency"] == {
+        "group": "publish-conflict-validation",
+        "queue": "max",
+        "cancel-in-progress": False,
+    }
     assert job["permissions"] == {
         "contents": "read",
         "actions": "read",
