@@ -1,0 +1,89 @@
+USA_agenda_policy_duration = {
+	set_temp_variable = { USA_agenda_days = 365 }
+	if = {
+		limit = { check_variable = { USA_agenda_majority = 2 } }
+		set_temp_variable = { USA_agenda_days = 730 }
+	}
+}
+
+USA_agenda_deliver = {
+	set_temp_variable = { USA_agenda_promised = 0 }
+	set_temp_variable = { USA_agenda_delivered = 0 }
+	if = {
+		limit = { western_liberals_are_in_power = yes }
+		set_temp_variable = { party_index = 2 }
+		if = {
+			limit = { has_completed_focus = USA_focus_reconnect_rural_america }
+			add_to_temp_variable = { USA_agenda_promised = 1 }
+			if = {
+				limit = { OR = { check_variable = { USA_agenda_rural_774 = 2 } check_variable = { USA_agenda_rural_787 = 2 } check_variable = { USA_agenda_rural_788 = 2 } } }
+				add_to_temp_variable = { USA_agenda_delivered = 1 }
+			}
+		}
+		if = {
+			limit = { has_completed_focus = USA_focus_national_data_privacy_standard }
+			add_to_temp_variable = { USA_agenda_promised = 1 }
+			if = {
+				limit = { check_variable = { USA_agenda_privacy = 2 } }
+				add_to_temp_variable = { USA_agenda_delivered = 1 }
+			}
+		}
+		if = {
+			limit = { has_completed_focus = USA_focus_public_compute_commons }
+			add_to_temp_variable = { USA_agenda_promised = 1 }
+			if = {
+				limit = { check_variable = { USA_agenda_compute = 2 } }
+				add_to_temp_variable = { USA_agenda_delivered = 1 }
+			}
+		}
+	}
+	else_if = {
+		limit = { western_conservatism_are_in_power = yes }
+		set_temp_variable = { party_index = 1 }
+		if = {
+			limit = { has_completed_focus = USA_focus_rebuild_strategic_fuel_reserve }
+			add_to_temp_variable = { USA_agenda_promised = 1 }
+			if = {
+				limit = { check_variable = { USA_agenda_reserve = 2 } }
+				add_to_temp_variable = { USA_agenda_delivered = 1 }
+			}
+		}
+		if = {
+			limit = { has_completed_focus = USA_focus_trade_adjustment_fund }
+			add_to_temp_variable = { USA_agenda_promised = 1 }
+			if = {
+				limit = { check_variable = { USA_agenda_trade = 2 } }
+				add_to_temp_variable = { USA_agenda_delivered = 1 }
+			}
+		}
+		if = {
+			limit = { has_completed_focus = USA_focus_secure_critical_supply_chain }
+			add_to_temp_variable = { USA_agenda_promised = 1 }
+			if = {
+				limit = { check_variable = { USA_agenda_supply = 2 } }
+				add_to_temp_variable = { USA_agenda_delivered = 1 }
+			}
+		}
+	}
+	if = {
+		limit = {
+			check_variable = { USA_agenda_delivered > 1 }
+			check_variable = { USA_agenda_delivered = USA_agenda_promised }
+		}
+		custom_effect_tooltip = USA_agenda_delivered_full_tt
+		set_temp_variable = { party_popularity_increase = 0.02 }
+		change_relative_party_popularity = yes
+		add_timed_idea = { idea = USA_agenda_delivery_legacy days = 365 }
+	}
+	else_if = {
+		limit = { check_variable = { USA_agenda_delivered > 0 } }
+		custom_effect_tooltip = USA_agenda_delivered_partial_tt
+		set_temp_variable = { party_popularity_increase = 0.01 }
+		change_relative_party_popularity = yes
+		add_timed_idea = { idea = USA_agenda_delivery_legacy days = 180 }
+	}
+	else = {
+		custom_effect_tooltip = USA_agenda_delivered_unfulfilled_tt
+		add_timed_idea = { idea = USA_agenda_unfulfilled_promises days = 180 }
+	}
+}
