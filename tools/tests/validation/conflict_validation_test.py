@@ -113,6 +113,13 @@ def _set(value, path, replacement):
     value[parts[-1]] = replacement
 
 
+def _assert_failed_check(api):
+    with pytest.raises(ValueError):
+        api.publish()
+    assert api.checks[0]["conclusion"] == "failure"
+    assert not any(data.get("conclusion") == "success" for _, _, data in api.writes)
+
+
 def test_success_attaches_only_to_the_validated_pr_sha_and_replays_update_one_check():
     api = API()
     api.publish()
@@ -195,10 +202,7 @@ def test_protected_title_is_a_strict_pin_record(title, source_sha):
 def test_unacceptable_live_evidence_blocks_the_gate(target, path, value):
     api = API()
     _set(getattr(api, target), path, value)
-    with pytest.raises(ValueError):
-        api.publish()
-    assert api.checks[0]["conclusion"] == "failure"
-    assert not any(data.get("conclusion") == "success" for _, _, data in api.writes)
+    _assert_failed_check(api)
 
 
 @pytest.mark.parametrize(
@@ -244,10 +248,7 @@ def test_missing_failed_or_mismatched_attempt_evidence_fails_closed(change):
             "in_progress": ("status", "in_progress"),
         }.get(change, ("conclusion", change))
         api.jobs[0][key] = value
-    with pytest.raises(ValueError):
-        api.publish()
-    assert api.checks[0]["conclusion"] == "failure"
-    assert not any(data.get("conclusion") == "success" for _, _, data in api.writes)
+    _assert_failed_check(api)
 
 
 @pytest.mark.parametrize("race_at", [2, 3])
@@ -371,9 +372,9 @@ def test_base_updates_reuse_one_check_and_live_source_races_fail_closed(change):
         for job in api.jobs:
             job["head_sha"] = new_base
         # The real API route is pinned to the current base, not the fixture's BASE.
-        original = api.pages
+        original_pages = api.pages
         api.pages = lambda path, key: (
-            api.runs if key == "workflow_runs" else original(path, key)
+            api.runs if key == "workflow_runs" else original_pages(path, key)
         )
         api.publish()
         assert len(api.checks) == 1
