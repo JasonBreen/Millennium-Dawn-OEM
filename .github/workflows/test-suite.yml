@@ -1,17 +1,37 @@
 name: Test Suite
-run-name: Validate live PR #${{ github.event.pull_request.number || 'current' }}
+run-name: >-
+  ${{ github.event_name == 'workflow_dispatch' &&
+  format('Conflict validation PR #{0} head {1} base {2}', inputs.pr_number, inputs.head_sha, inputs.base_sha) ||
+  format('Validate live PR #{0}', github.event.pull_request.number) }}
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Same-repository PR to validate
+        required: true
+        type: string
+      head_sha:
+        description: Exact PR head
+        required: true
+        type: string
+      base_sha:
+        description: Exact main base
+        required: true
+        type: string
 
 concurrency:
   group: >-
-    ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    ${{ github.workflow }}-${{ inputs.pr_number || github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
+
+# Dispatched PR tooling must not write default-branch caches, even via runtime APIs.
+cache-mode: read
 
 env:
   WORKSPACE_PATHS: |
@@ -91,7 +111,9 @@ jobs:
         id: resolve-ref
         env:
           GH_TOKEN: ${{ github.token }}
-          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
+          REQUESTED_HEAD: ${{ inputs.head_sha }}
+          REQUESTED_BASE: ${{ inputs.base_sha }}
         run: |
           pr_number="$EVENT_PR_NUMBER"
           if [ -n "$pr_number" ] &&
@@ -120,6 +142,20 @@ jobs:
             echo "::error::Unable to resolve the default branch SHA"
             exit 1
           fi
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            if [ "$GITHUB_REF" != "refs/heads/main" ] ||
+                [ "$GITHUB_SHA" != "$protected_sha" ] ||
+                [ "$default_branch" != "main" ] ||
+                [ "$head_repository" != "$GITHUB_REPOSITORY" ] ||
+                [ "$head_sha" != "$REQUESTED_HEAD" ] ||
+                [ "$base_sha" != "$REQUESTED_BASE" ] ||
+                [ "$base_sha" != "$protected_sha" ] ||
+                [ "$(printf '%s' "$pr" | jq -r '.base.ref')" != "main" ] ||
+                [ "$(printf '%s' "$pr" | jq -r '.state')" != "open" ]; then
+              echo "::error::Dispatch requires main and the exact live PR head/base"
+              exit 1
+            fi
+          fi
           {
             echo "pr-number=$pr_number"
             echo "repository=$head_repository"
@@ -129,8 +165,7 @@ jobs:
             echo "protected-sha=$protected_sha"
           } >> "$GITHUB_OUTPUT"
 
-      # The job is pull_request-only with read permissions. Use the PR's own
-      # helper version so newly introduced grouping rules can validate themselves.
+      # PR helpers run with read-only repository and cache tokens.
       - name: Checkout PR index
         id: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -209,8 +244,14 @@ jobs:
 
       - name: Compute changed groups
         id: groups
+        env:
+          EVENT_NAME: ${{ github.event_name }}
         run: |
-          python3 tooling/tools/validation/change_groups.py < changed-files.txt
+          args=()
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            args+=(--dispatch)
+          fi
+          python3 tooling/tools/validation/change_groups.py "${args[@]}" < changed-files.txt
 
       - name: Upload changed files
         if: always()
@@ -524,6 +565,8 @@ jobs:
             .github/workflows/pr-housekeeping.yml
             .github/workflows/issue-triage.yml
             .github/workflows/changelog-conflict-fixer.yml
+            .github/workflows/publish-conflict-validation.yml
+            .github/scripts/publish_conflict_validation.py
             .github/workflows/changelog-lint.yml
             docs/src/content/resources/developer-setup.md
           sparse-checkout-cone-mode: false
@@ -1085,6 +1128,10 @@ jobs:
       needs.detect-changes.outputs.docs == 'true' ||
       needs.detect-changes.outputs.full_suite == 'true'
     uses: ./.github/workflows/docs-quality.yml
+    cache-mode: read
+    with:
+      checkout-repository: ${{ needs.detect-changes.outputs.checkout-repository }}
+      checkout-ref: ${{ needs.detect-changes.outputs.checkout-ref }}
     permissions:
       contents: read
 

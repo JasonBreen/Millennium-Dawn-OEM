@@ -103,14 +103,18 @@ jobs:
             run_id=$(printf '%s' "$run" | jq -r '.id')
             commit=$(git commit-tree "$tree" -p "$head_sha" -p "$base_sha" \
               -m "Merge main into $head (auto-resolved Changelog.txt)")
-            if ! git push --quiet origin "$commit:refs/heads/$head"; then
+            if ! git push --quiet --force-with-lease="refs/heads/$head:$head_sha" \
+                origin "$commit:refs/heads/$head"; then
               echo "::warning::PR #$num could not be pushed"
               failed=$((failed + 1))
               continue
             fi
-            rerun_url="repos/$GH_REPO/actions/runs/$run_id/rerun"
-            if ! gh api --method POST "$rerun_url"; then
-              echo "::warning::PR #$num Test Suite run could not be rerun"
+            # Historical reruns keep their old check SHA. Dispatch trusted code.
+            echo "PR #$num: eligible historical run $run_id; validating $commit"
+            if ! gh workflow run test-suite.yml --ref main \
+                -f pr_number="$num" -f head_sha="$commit" \
+                -f base_sha="$base_sha"; then
+              echo "::warning::PR #$num exact-head validation could not be dispatched"
               failed=$((failed + 1))
               continue
             fi

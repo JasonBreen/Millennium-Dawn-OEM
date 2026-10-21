@@ -303,6 +303,8 @@ def test_unit_checkouts_include_required_content_sources(
         ".github/workflows/docs-quality.yml",
         ".github/workflows/tools-validation.yml",
         ".github/workflows/changelog-conflict-fixer.yml",
+        ".github/workflows/publish-conflict-validation.yml",
+        ".github/scripts/publish_conflict_validation.py",
         "history/countries/KOR - Korea.txt",
         "resources/documentation/loc_objects_documentation.md",
         "common/technology_tags",
@@ -475,7 +477,8 @@ def test_pull_request_grouping_reads_changed_files_only():
         for step in workflow["jobs"]["detect-changes"]["steps"]
         if step.get("name") == "Compute changed groups"
     )
-    assert "--dispatch" not in script
+    assert 'if [ "$EVENT_NAME" = "workflow_dispatch" ]; then' in script
+    assert "args+=(--dispatch)" in script
     assert "< changed-files.txt" in script
 
 
@@ -484,7 +487,10 @@ def test_stacked_pull_requests_keep_validation_read_only():
     trigger = _workflow_trigger(CI_WORKFLOW)["pull_request"]
     assert "branches" not in trigger
     assert "branches-ignore" not in trigger
-    assert "workflow_dispatch" not in CI_WORKFLOW.read_text(encoding="utf-8")
+    dispatch = _workflow_trigger(CI_WORKFLOW)["workflow_dispatch"]
+    assert set(dispatch["inputs"]) == {"pr_number", "head_sha", "base_sha"}
+    assert all(value["required"] for value in dispatch["inputs"].values())
+    assert workflow["cache-mode"] == "read"
     detect = workflow["jobs"]["detect-changes"]
     resolver = next(
         step["run"]
@@ -799,13 +805,13 @@ def test_tools_sidecars_have_stable_schema():
         ("changelog-conflict-fixer.yml", "fix-changelog-conflicts"),
     ),
 )
-def test_schedulers_rerun_only_pull_request_test_suite_runs(workflow_name, job_name):
+def test_schedulers_select_only_eligible_pr_runs(workflow_name, job_name):
     config = yaml.safe_load(
         (CI_WORKFLOW.parent / workflow_name).read_text(encoding="utf-8")
     )
     job = config["jobs"][job_name]
     script = next(
-        step["run"] for step in job["steps"] if "actions/runs" in step.get("run", "")
+        step["run"] for step in job["steps"] if "test-suite.yml" in step.get("run", "")
     )
     assert "test-suite.yml" in script
     assert "actions/workflows/test-suite.yml/runs" in script
@@ -814,8 +820,6 @@ def test_schedulers_rerun_only_pull_request_test_suite_runs(workflow_name, job_n
     assert "--paginate --slurp" in script
     assert "any(.pull_requests[]?; .number == $number)" in script
     assert "sort_by(.created_at) | reverse | first // empty" in script
-    assert "actions/runs/$run_id/rerun" in script
-    assert "gh workflow run test-suite.yml" not in script
     assert "approve" not in script
     assert 'if [ -z "$run" ]; then' in script
     assert "failed=$((failed + 1))" in script
@@ -830,15 +834,60 @@ def test_schedulers_rerun_only_pull_request_test_suite_runs(workflow_name, job_n
             'if ! runs=$(gh api --paginate --slurp "$runs_url" '
             '--method GET -f branch="$head"); then',
             'if [ -z "$run" ]; then',
-            'if ! gh api --method POST "$rerun_url"; then',
         ):
             branch = re.search(re.escape(condition) + r"(.*?)\n\s*fi", script, re.S)
             assert branch is not None
             assert "failed=$((failed + 1))" in branch[1]
             assert "continue" in branch[1]
+        dispatch = re.search(
+            r"if ! gh workflow run test-suite\.yml --ref main \\\n"
+            r'\s+-f pr_number="\$num" -f head_sha="\$commit" \\\n'
+            r'\s+-f base_sha="\$base_sha"; then(.*?)\n\s*fi',
+            script,
+            re.S,
+        )
+        assert dispatch is not None
+        assert "failed=$((failed + 1))" in dispatch[1]
+        assert "continue" in dispatch[1]
         assert 'gh workflow run changelog-lint.yml --ref "$head"' in script
     else:
+        assert "actions/runs/$run_id/rerun" in script
         assert "gh workflow run" not in script
+
+
+def test_exact_head_publisher_holds_the_only_new_write_permission():
+    path = CI_WORKFLOW.parent / "publish-conflict-validation.yml"
+    workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert workflow["permissions"] == {}
+    assert workflow["cache-mode"] == "none"
+    assert workflow["concurrency"]["cancel-in-progress"] is False
+    assert _workflow_trigger(path)["workflow_run"] == {
+        "workflows": ["Test Suite"],
+        "types": ["in_progress", "completed"],
+    }
+    job = workflow["jobs"]["publish"]
+    assert job["permissions"] == {
+        "contents": "read",
+        "actions": "read",
+        "checks": "write",
+    }
+    assert "workflow_dispatch" in job["if"]
+    checkout, publish = job["steps"]
+    assert checkout["with"]["ref"] == "${{ github.workflow_sha }}"
+    assert checkout["with"]["persist-credentials"] is False
+    assert checkout["with"]["sparse-checkout"] == (
+        ".github/scripts/publish_conflict_validation.py"
+    )
+    assert publish["run"] == "python3 -I .github/scripts/publish_conflict_validation.py"
+    suite = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
+    for job in suite["jobs"].values():
+        assert job.get("cache-mode", suite["cache-mode"]) == "read"
+        assert "secrets" not in job
+        assert "write" not in job.get("permissions", {}).values()
+    docs = suite["jobs"]["docs-quality"]
+    assert docs["with"]["checkout-ref"] == (
+        "${{ needs.detect-changes.outputs.checkout-ref }}"
+    )
 
 
 def test_housekeeping_has_one_job_and_three_actions():

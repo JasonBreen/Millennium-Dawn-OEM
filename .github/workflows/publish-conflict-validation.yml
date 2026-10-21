@@ -1,0 +1,35 @@
+name: Publish conflict validation
+
+on:
+  workflow_run:
+    workflows: [Test Suite]
+    types: [in_progress, completed]
+
+permissions: {}
+cache-mode: none
+
+# Serialize check updates across source runs and attempts. Never cancel a writer.
+concurrency:
+  group: publish-conflict-validation
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event.workflow_run.event == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      checks: write
+    steps:
+      - name: Checkout trusted publisher only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          sparse-checkout: .github/scripts/publish_conflict_validation.py
+          sparse-checkout-cone-mode: false
+      - name: Publish verified exact-head gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I .github/scripts/publish_conflict_validation.py
