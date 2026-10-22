@@ -38,6 +38,9 @@ def test_graphical_culture_inputs_select_common_validators(path):
     (
         "tools/validation/change_groups.py",
         "tools/linting/check_common_mistakes.py",
+        ".github/scripts/publish_conflict_validation.py",
+        ".github/workflows/publish-conflict-validation.yml",
+        ".github/workflows/changelog-conflict-fixer.yml",
     ),
 )
 def test_validation_tool_change_runs_full_suite(path):

@@ -94,6 +94,9 @@ GROUP_PATTERNS = {
 }
 
 _FULL_SUITE_EXACT = {
+    ".github/scripts/publish_conflict_validation.py",
+    ".github/workflows/publish-conflict-validation.yml",
+    ".github/workflows/changelog-conflict-fixer.yml",
     ".pre-commit-config.yaml",
     "pyproject.toml",
     "package.json",
