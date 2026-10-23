@@ -1,0 +1,42 @@
+scripted_gui = {
+	imp_council_dashboard = {
+		context_type = player_context
+		window_name = "imp_council_window"
+		parent_window_token = decision_tab
+
+		# Read live state so AI actions, monthly readiness and loaded saves refresh without UI-only gameplay hooks.
+		visible = {
+			is_ai = no
+			has_country_flag = imp_council_dashboard_open
+			imp_can_view_council = yes
+		}
+
+		dynamic_lists = {
+			imp_full_members_grid = {
+				array = global.IMP_full_members
+				entry_container = "imp_full_member_row"
+				change_scope = yes
+			}
+			imp_associates_grid = {
+				array = global.IMP_associates
+				entry_container = "imp_associate_row"
+				change_scope = yes
+			}
+		}
+
+		triggers = {
+			imp_vote_visible = {
+				set_temp_variable = { imp_gui_vote_days = { value = global.IMP_vote_end subtract = global.num_days max = 0 } }
+				always = yes
+			}
+		}
+
+		effects = {
+			imp_close_button_click = {
+				clr_country_flag = imp_council_dashboard_open
+			}
+		}
+
+		ai_enabled = { always = no }
+	}
+}
