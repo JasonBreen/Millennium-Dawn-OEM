@@ -107,6 +107,21 @@ backlogs live in GitHub issues, not here. Pipeline rules:
   `event-ai-chance-ignores-cost`, with the same known gaps. A finding behind a treasury
   `custom_cost_trigger` carries a "verify" note, because the engine already stops a
   country that cannot pay.
+- `decision-custom-cost-not-charged` (WARNING): a `custom_cost_trigger` that checks
+  treasury, political power, command power, manpower, or equipment needs a matching
+  charge in `complete_effect`. A charge found only in `remove_effect` is reported as
+  late; timeout and cancellation payments do not satisfy the check either. All five
+  resource kinds follow scripted effects in the choosing country's scope, including
+  nested math and equipment transfers. Previews, quoted text, foreign-country writes,
+  literal `always = no` branches, and zero-chance random blocks do not count as payment.
+  Amounts, equipment types, and dynamic branch coverage are not compared. Other custom
+  resource variables and scripted cost triggers still need manual review.
+- `decision-days-remove-without-effect` (WARNING): a `days_remove` timer that nothing
+  reads. A `remove_effect`, a top-level `modifier` or `targeted_modifier`, or a
+  `has_decision` naming the decision anywhere in shipped script exempts it. Repeatable
+  decisions that use the timer as a cooldown are reported too; `days_re_enable` is the
+  cooldown. Missions are skipped, though some set `days_remove`. Known gap: a
+  `has_decision` in the decision's own block also exempts it.
 - Decision staffing guards are not checked. A money guard does not prove that
   the target state can staff a building; scripted building chains need a separate
   target-state analysis.
@@ -128,7 +143,8 @@ backlogs live in GitHub issues, not here. Pipeline rules:
 - It follows effect order, direct technology guards, conditional grants, and
   `allow_without_tech = yes`. Country history through the earliest bookmark supplies
   starting technologies only for proven recipients. Tooltip effects and foreign scopes
-  cannot supply an unlock.
+  cannot supply an unlock. Starting-history DLC branches support both nested and
+  sibling `else`/`else_if` forms.
 - Scripted-effect calls share the caller's country, guards, technologies, and pending
   variants, including nested calls across files. Definitions are checked through their
   callers, not as separate executions. Recursive calls stop at an active effect.
@@ -136,6 +152,19 @@ backlogs live in GitHub issues, not here. Pipeline rules:
   consumption files.
 - It does not follow unrelated event or focus chains, substitute scripted-effect
   parameters, or resolve dynamic names, so findings need review.
+
+## validate_history.py
+
+- `history-influence-order` (WARNING): country history writes to `influence_array`
+  or `influence_array_val` need preceding `init_influence` and following
+  `sort_influence` (or its `recalculate_influence` wrapper). A later initialization
+  clears earlier writes; a sort before a later write is premature.
+- Checks track explicit country scopes, ROOT/THIS, hidden effects, and conditional
+  paths. Dated setups remain independent. Comments, tooltip blocks, unrelated
+  arrays, and countries without foreign influence writes do not require setup.
+  Arbitrary scripted effects and dynamic country scopes are not expanded.
+- Warning-only while the audited content backlog in #5825 remains. The existing
+  history CI batch selects this check for country-history changes.
 
 ## validate_events.py
 
@@ -156,10 +185,47 @@ backlogs live in GitHub issues, not here. Pipeline rules:
   conditions. `original_tag`, foreign-scope tags, and tags mentioned only inside
   `OR` or `NOT` do not prove the receiver.
   - Display-only `effect_tooltip` costs and temp writes do not execute.
-  - Known gaps: stored negative values built from math or arrays, unsubstituted
+  - Skipped: an option at `base = 0` with no `add` while another option can win, and
+    a cost kind every option always pays, or every option pays only sometimes. A kind
+    some options always pay and others only sometimes pay is not shared. An
+    `if`/`else` chain or `random_list` whose every arm charges counts as always, and
+    so does a charge behind the `MD_skip_treasury_cost` flag or an unset
+    `skip_payment`. Tax rate is never shared, since options can move it apart.
+  - Known gaps: a shared cost of different sizes is skipped too, so the dearer
+    option goes unreported. So is a kind every option pays only sometimes, at
+    different odds. Charges that depend on a variable set in each arm stay
+    conditional. Costs behind conditions that can never hold still count. Stored negative values built from math or arrays, unsubstituted
     `[TOKEN]` values, custom cost-guard triggers, delayed event-chain costs,
     nonconjunctive recipient gates, caller-derived recipients, and single-option
     events. Review these manually.
+- `event-corruption-pp-cost` (WARNING, opt-in with
+  `--check-corruption-pp-costs`): event options with a literal negative
+  `add_political_power` and `decrease_corruption` in the choosing country, without a
+  recognized local guard. Each decrease refunds 150 PP at level 1, so only a charge
+  above 150 PP per decrease is reported. Event/option triggers and nested `if`
+  limits can supply a lower corruption-level bound; fewer decreases must run than
+  that bound. A direct
+  level-1 exclusion supplies a bound of 2, so repeated decreases still need review.
+  Entry bounds are discarded when event `immediate` effects can change corruption.
+  Option bounds are discarded when a literal corruption-idea change precedes a
+  decrease in that option. Nested `if` bounds expire after a corruption-idea change
+  before a later decrease; a guard evaluated after an earlier change can establish a
+  fresh bound. Every relevant operation must be guarded before nested limits suppress
+  an option. Numeric state scopes are excluded; only explicit `ROOT` effects are
+  followed back to the choosing country. Numeric weights directly under `random_list`
+  remain in the choosing country's scope. Run:
+
+  ```sh
+  python3 tools/validation/validate_events.py --path . --check-corruption-pp-costs \
+    --workers 1 --no-color --no-cache --output /tmp/event-corruption-audit.txt
+  ```
+
+  This runs all event checks; review the `event-corruption-pp-cost` diagnostics.
+  Findings are review candidates, not proven content bugs. Dynamic PP costs,
+  scripted-effect bodies, caller conditions, surrounding conditions in foreign scopes,
+  and indirect corruption mutations are not followed. Mutually exclusive branches are
+  aggregated. These gaps keep the check opt-in. No decisions are checked.
+
 - Other gaps from #5738 are not checked:
   - Double building charges need both payments resolved to the same country and
     reachable path. Adjacent costs alone do not prove a double charge.
@@ -226,14 +292,18 @@ backlogs live in GitHub issues, not here. Pipeline rules:
   sprite still reports once its backing declaration is deleted: `GFX_<FOCUS_FILTER_X>`,
   `GFX_EMI_<module>`, `GFX_SMI_<module>`,
   `GFX_unit_<subunit|category>_icon_{small,medium}[_white|_black]`,
-  `GFX_<TAG|graphical_culture>_ace_<m|f>_<n>`, and anything a `[...]` template in
-  scripted loc or a scripted-GUI `image` can build. A template with under four literal
-  characters after `GFX_` is rejected.
+  `GFX_<TAG|graphical_culture>_ace_<m|f>_<n>`, bare decision icons as
+  `GFX_decision_<icon>` and `GFX_decision_category_<icon>`, and anything a `[...]`
+  template in scripted loc or a scripted-GUI `image` can build. A template with under four
+  literal characters after `GFX_` is rejected, except `GFX_[?x.GetTokenKey]`, which
+  resolves `GFX_<token>` for every synchronized dynamic token. Known gap: a sprite that
+  shares a token's name never reports, whichever variable holds the token.
 - True exemptions: equipment, tech, and designer icons, and any name vanilla also defines.
 - `sprite-ref-case` (ERROR): an English `£name` that matches a sprite only
-  case-insensitively, so the icon is missing on Linux. `unused-sprite-case` (WARNING): a
-  sprite whose only reference is miscased.
-- `duplicate-sprite`, `case-variant-sprite` (WARNING): the message says whether the blocks
+  case-insensitively, so the icon is missing on Linux. `undefined-loc-sprite` (ERROR): an
+  English `£name` that matches no sprite at all. A `£` before a digit is the pound sign.
+  `unused-sprite-case` (WARNING): a sprite whose only reference is miscased.
+- `duplicate-sprite`, `case-variant-sprite` (ERROR): the message says whether the blocks
   share a texture. Unquoted `texturefile` values are read the same as quoted ones.
 - `raw-icon-path` (ERROR): `icon =` inside `create_equipment_variant`, or an entry in a
   `graphic_db` `icons = { }` block, that is a texture path instead of a `GFX_` sprite.
@@ -261,6 +331,13 @@ backlogs live in GitHub issues, not here. Pipeline rules:
 - `idea-quality` (WARNING): an idea `equipment_bonus` without `instant = yes` applies only
   to variants created afterwards. Exempt name prefixes go in
   `equipment_bonus_instant_exempt`.
+- `idea-quality` (WARNING): `weekly_war_support` and `weekly_stability` in a top-level
+  `modifier` on a `country` idea need a permanent grant to tick as intended. The check
+  reads static `add_idea(s)` and `add_timed_idea` call sites across `common/`, `events/`,
+  and `history/`; display-only `effect_tooltip` references are ignored. Timed-only ideas
+  are skipped, while mixed grants are reported. A definition with no statically resolved
+  grant is advisory because dynamic references and grants from outside those trees
+  cannot establish permanence.
 - `bonus-type-archetype-stack` (ERROR, also in `validate_mios.py`): a nested
   `equipment_bonus` naming a type category (`carrier`) and a child archetype of that type
   with the same modifier stacks twice. Helicopter operators are `type = carrier`.
@@ -419,6 +496,8 @@ backlogs live in GitHub issues, not here. Pipeline rules:
   is ERROR.
 - The default run scopes format checks to the tags the branch touched. `--all` sweeps
   everything, `--tag TAG` audits one nation. Missing slots are never reported.
+- Full `run_all_validators.py` runs, including main's baseline, pass `--all`, so a PR's
+  scoped findings in a touched tag match main's results instead of reading NEW.
 
 ## validate_scientist_traits.py
 
@@ -437,9 +516,16 @@ backlogs live in GitHub issues, not here. Pipeline rules:
 
 - Contracts come from the `# Parameters:` block above a scripted effect, plus the
   `HARDCODED_CONTRACTS` table in the validator. Declare a parameter in the block to
-  have it checked. An effect with neither is never checked itself.
+  have its required temp variables checked. Effects without a contract still get the
+  unsupported-argument checks below.
 - `content/tool_data_drift_test.py` pins the four money and party popularity blocks. A
   blank line inside a block, or a renamed header, silently drops the contract.
+- `unsupported-effect-arguments` (WARNING): a known scripted effect called with a
+  block such as `HLS_holy_wargoal = { TARGET = FRA }` instead of `= yes`.
+- `unsupported-effect-placeholder` (WARNING): an unquoted `$NAME$` in a scripted
+  effect definition. Use scopes, temp variables, or `meta_effect` instead. Definitions,
+  comments, quoted strings, native effect blocks, and scripted trigger parameters are
+  not flagged. Both unsupported-syntax checks stay advisory pending backlog triage.
 - `call-shares-line` (ERROR): a contracted call sharing its line with another statement.
   Single-call wrappers and trailing comments are accepted. `--audit-shared-lines` adds
   uncontracted mixed lines as WARNING.
