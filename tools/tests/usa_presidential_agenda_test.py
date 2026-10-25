@@ -10,6 +10,7 @@ from validate_scripted_params import (
     _parse_effect_contracts_from_file,
     _validate_call_sites_in_file,
 )
+from validate_unused_scripted import extract_definitions
 
 ROOT = Path(__file__).resolve().parents[2]
 FACTION_EFFECTS_PATH = ROOT / "common/scripted_effects/00_internal_faction_effects.txt"
@@ -420,6 +421,11 @@ def test_agenda_faction_calls_use_helper_parameter_contract(tmp_path, setter, mi
             str(tmp_path),
             frozenset(),
             frozenset(),
+            frozenset(
+                name
+                for path in (ROOT / "common/scripted_effects").glob("*.txt")
+                for name, _, _ in extract_definitions((str(path), str(ROOT)))
+            ),
         )
     )
     failures = [
