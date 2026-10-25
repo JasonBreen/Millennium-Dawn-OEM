@@ -966,42 +966,70 @@ def test_exact_head_publisher_holds_the_only_new_write_permission():
 @pytest.mark.parametrize(
     ("head_repository", "event", "allowed"),
     [
-        pytest.param("o/r", {"INPUT_PR_NUMBER": "5"}, True, id="same-repo dispatch"),
-        pytest.param("fork/r", {"INPUT_PR_NUMBER": "5"}, False, id="fork dispatch"),
+        pytest.param(
+            "o/r",
+            {"GITHUB_EVENT_NAME": "workflow_dispatch"},
+            True,
+            id="same-repo dispatch",
+        ),
         pytest.param(
             "fork/r",
-            {"EVENT_PR_NUMBER": "5", "EVENT_HEAD_REPOSITORY": "fork/r"},
+            {"GITHUB_EVENT_NAME": "workflow_dispatch"},
+            False,
+            id="fork dispatch",
+        ),
+        pytest.param(
+            "fork/r",
+            {"GITHUB_EVENT_NAME": "pull_request"},
             True,
             id="fork pull_request run",
+        ),
+        pytest.param(
+            "o/r",
+            {"GITHUB_EVENT_NAME": "workflow_dispatch", "REQUESTED_HEAD": "c" * 40},
+            False,
+            id="stale head pin",
+        ),
+        pytest.param(
+            "o/r",
+            {"GITHUB_EVENT_NAME": "workflow_dispatch", "REQUESTED_BASE": "c" * 40},
+            False,
+            id="stale base pin",
+        ),
+        pytest.param(
+            "o/r",
+            {
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_REF": "refs/heads/feature",
+            },
+            False,
+            id="unprotected dispatch ref",
+        ),
+        pytest.param(
+            "o/r",
+            {"GITHUB_EVENT_NAME": "workflow_dispatch", "GITHUB_SHA": "c" * 40},
+            False,
+            id="moved protected revision",
         ),
     ],
 )
 def test_dispatch_validates_only_same_repository_prs(
     tmp_path, head_repository, event, allowed
 ):
-    pr = json.dumps({"head": {"sha": "head", "repo": {"full_name": head_repository}}})
-    gh = write_under_str(tmp_path, "bin/gh", f"#!/bin/sh\nprintf '%s' '{pr}'\n")
-    os.chmod(gh, 0o755)
-    env = {
-        "PATH": f"{tmp_path / 'bin'}{os.pathsep}{os.environ['PATH']}",
-        "GITHUB_OUTPUT": str(tmp_path / "output.txt"),
-        "GITHUB_REPOSITORY": "o/r",
-        "GITHUB_SHA": "main",
-        "EVENT_PR_NUMBER": "",
-        "EVENT_HEAD_REPOSITORY": "",
-        "EVENT_HEAD_SHA": "",
-        "EVENT_BASE_SHA": "base",
-        "INPUT_PR_NUMBER": "",
-        "INPUT_HEAD_SHA": "",
-        "INPUT_BASE_SHA": "",
-        **event,
-    }
+    env = _resolver_environment(tmp_path, head_repository, **event)
     step = workflow_step("detect-changes", "Resolve validation ref")
 
     result = run_bash_step(step["run"], tmp_path, env)
 
-    assert (result.returncode == 0) is allowed, result.stdout
-    assert ("same-repository PRs only" in result.stdout) is not allowed
+    assert (result.returncode == 0) is allowed, result.stdout + result.stderr
+    if allowed:
+        output = (tmp_path / "output.txt").read_text(encoding="utf-8")
+        assert f"repository={head_repository}\n" in output
+        assert f"head-sha={_LIVE_HEAD}\n" in output
+        assert f"base-sha={_LIVE_BASE}\n" in output
+    else:
+        assert "Dispatch requires main and the exact live PR head/base" in result.stdout
+        assert not (tmp_path / "output.txt").exists()
 
 
 def test_housekeeping_has_one_job_and_three_actions():
@@ -1263,7 +1291,7 @@ def test_detect_changes_flags_validator_tooling_changes(tmp_path, path, changed)
     outputs = workflow["jobs"]["detect-changes"]["outputs"]
     assert outputs["tooling-changed"] == "${{ steps.tooling.outputs.changed }}"
     assert step["env"]["MERGE_BASE"] == "${{ steps.changed.outputs.merge-base }}"
-    report = workflow_step("report", "Generate and post validation report")
+    report = workflow_step("report", "Generate validation report")
     assert "args+=(--tooling-changed)" in report["run"]
 
 
@@ -1276,68 +1304,102 @@ def _stub_commands(tmp_path, **scripts):
     return f"{bin_dir}{os.pathsep}{os.environ['PATH']}"
 
 
-_LIVE_PR = '{"head":{"sha":"live","repo":{"full_name":"o/r"}},"base":{"ref":"main"}}'
+_LIVE_HEAD = "a" * 40
+_LIVE_BASE = "b" * 40
+_LIVE_PR = {
+    "head": {"sha": _LIVE_HEAD, "repo": {"full_name": "o/r"}},
+    "base": {"sha": _LIVE_BASE, "ref": "main", "repo": {"full_name": "o/r"}},
+    "state": "open",
+}
+
+
+def _resolver_environment(tmp_path, head_repository="o/r", **overrides):
+    pr = {
+        **_LIVE_PR,
+        "head": {"sha": _LIVE_HEAD, "repo": {"full_name": head_repository}},
+    }
+    gh = (
+        'case "$2" in\n'
+        f"repos/o/r/pulls/5) printf '%s' '{json.dumps(pr)}';;\n"
+        "repos/o/r) printf '%s' main;;\n"
+        f"repos/o/r/commits/main) printf '%s' '{_LIVE_BASE}';;\n"
+        "*) exit 1;;\nesac"
+    )
+    return {
+        "PATH": _stub_commands(tmp_path, gh=gh),
+        "GITHUB_OUTPUT": str(tmp_path / "output.txt"),
+        "GITHUB_REPOSITORY": "o/r",
+        "GITHUB_SHA": _LIVE_BASE,
+        "GITHUB_REF": "refs/heads/main",
+        "GITHUB_EVENT_NAME": "pull_request",
+        "EVENT_PR_NUMBER": "5",
+        "REQUESTED_HEAD": _LIVE_HEAD,
+        "REQUESTED_BASE": _LIVE_BASE,
+        **overrides,
+    }
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="the step runs in bash on Linux")
 @pytest.mark.parametrize(
-    ("event", "expected"),
+    "event",
     [
-        pytest.param(
-            {"EVENT_PR_NUMBER": "5", "EVENT_HEAD_SHA": "event"}, "event", id="re-run"
-        ),
-        pytest.param({"INPUT_PR_NUMBER": "5"}, "live", id="dispatch refresh"),
+        pytest.param({"EVENT_HEAD_SHA": "c" * 40}, id="pull_request rerun refresh"),
+        pytest.param({"GITHUB_EVENT_NAME": "workflow_dispatch"}, id="pinned dispatch"),
     ],
 )
-def test_pull_request_runs_keep_their_event_head(tmp_path, event, expected):
-    output = tmp_path / "output.txt"
-    env = {
-        "PATH": _stub_commands(tmp_path, gh=f"printf '%s' '{_LIVE_PR}'"),
-        "GITHUB_OUTPUT": str(output),
-        "GITHUB_REPOSITORY": "o/r",
-        "GITHUB_SHA": "merge",
-        "EVENT_PR_NUMBER": "",
-        "EVENT_HEAD_REPOSITORY": "o/r",
-        "EVENT_HEAD_SHA": "",
-        "EVENT_BASE_SHA": "base",
-        "INPUT_PR_NUMBER": "",
-        "INPUT_HEAD_SHA": "",
-        "INPUT_BASE_SHA": "",
-        **event,
-    }
+def test_resolver_refreshes_the_live_head_and_preserves_dispatch_pins(tmp_path, event):
+    env = _resolver_environment(tmp_path, **event)
     step = workflow_step("detect-changes", "Resolve validation ref")
 
     result = run_bash_step(step["run"], tmp_path, env)
 
-    assert result.returncode == 0, result.stderr
-    assert f"head-sha={expected}\n" in output.read_text(encoding="utf-8")
+    assert result.returncode == 0, result.stdout + result.stderr
+    output = (tmp_path / "output.txt").read_text(encoding="utf-8")
+    assert f"head-sha={_LIVE_HEAD}\n" in output
+    assert f"protected-sha={_LIVE_BASE}\n" in output
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="the step runs in bash on Linux")
 @pytest.mark.parametrize(
-    ("gh", "posts"),
+    "gh",
     [
-        pytest.param("echo head", True, id="head unchanged"),
-        pytest.param("echo newer", False, id="head moved"),
-        pytest.param("exit 1", True, id="head unreadable"),
+        pytest.param("echo head", id="head unchanged"),
+        pytest.param("echo newer", id="head moved"),
+        pytest.param("exit 1", id="head unreadable"),
     ],
 )
-def test_report_never_replaces_a_newer_heads_comment(tmp_path, gh, posts):
+def test_pull_request_report_never_posts_comments_or_checks_the_live_head(tmp_path, gh):
     calls = tmp_path / "calls.txt"
-    path = _stub_commands(tmp_path, gh=gh, python3=f'echo "$@" > "{calls}"')
-    step = workflow_step("report", "Generate and post validation report")
+    gh_calls = tmp_path / "gh-calls.txt"
+    path = _stub_commands(
+        tmp_path,
+        gh=f'echo called >> "{gh_calls}"\n{gh}',
+        python3=f'if [ "$2" = --help ]; then echo --baseline-commit; else printf "%s\n" "$@" > "{calls}"; fi',
+    )
+    step = workflow_step("report", "Generate validation report")
     script = substitute_expressions(step["run"], {"github.repository": "o/r"})
     env = {
         "PATH": path,
         "PR_NUMBER": "5",
-        "HEAD_SHA": "head",
+        "HEAD_SHA": _LIVE_HEAD,
         "GITHUB_REPOSITORY": "o/r",
+        "GITHUB_SERVER_URL": "https://github.com",
+        "GITHUB_RUN_ID": "42",
+        "VALIDATION_SCOPE": "full",
+        "BASELINE_SHA": _LIVE_BASE,
+        "TOOLSHASH": "hash",
+        "TOOLING_CHANGED": "false",
     }
 
     result = run_bash_step(script, tmp_path, env)
 
-    assert result.returncode == 0, result.stderr
-    assert ("--post-comment" in calls.read_text(encoding="utf-8")) is posts
+    assert result.returncode == 0, result.stdout + result.stderr
+    arguments = calls.read_text(encoding="utf-8").splitlines()
+    assert "--post-comment" not in arguments
+    assert "--checks-api" not in arguments
+    assert arguments[arguments.index("--commit-sha") + 1] == _LIVE_HEAD
+    assert arguments[arguments.index("--baseline-commit") + 1] == _LIVE_BASE
+    assert not gh_calls.exists()
 
 
 def test_every_fingerprint_site_hashes_the_same_inputs():

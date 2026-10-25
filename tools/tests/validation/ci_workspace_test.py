@@ -182,7 +182,8 @@ def test_workspace_archive_ships_the_declared_paths_without_git(tmp_path):
     shipped = [".workspace-manifest", ".validation_cache/v10/cache.db"]
     for entry in workspace_paths.split():
         entry = entry.replace("*", "descriptor")
-        shipped.append(entry if PurePosixPath(entry).suffix else f"{entry}/probe")
+        if entry not in shipped:
+            shipped.append(entry if PurePosixPath(entry).suffix else f"{entry}/probe")
     left_out = [".git/HEAD", "gfx/interface/portraits/probe.dds"]
     workspace = tmp_path / "workspace"
     for relative in shipped + left_out:
