@@ -10,6 +10,59 @@ CI and pre-push run the collection-layout guard by explicit path with config `ad
 
 Tests follow [Test Structure](../../tools/README.md#test-structure): one file per module or group of checks, one parametrized table per check, a new case is a new row. A row stays only if it is the flagged or passing baseline, runs a path no other row runs, or is the only row that fails when one rule of the check is broken. Removing a test is a separate cleanup change that keeps the missed-line and partial-branch totals.
 
+- Most content validators are CI-only. The `mod-tests` batch jobs in
+  `.github/workflows/test-suite.yml` are the gate. `tools/validation/validator_batches.py`
+  is the single list of what runs, which change groups select each validator, and which
+  run without `--strict`. Its `args` are also the flags of the main baseline run, so a
+  PR and main enable the same checks.
+- `git commit` runs only the fast subset: the `md-validate-content` dispatcher
+  (`tools/precommit_validate.py`), `validate_defines.py`, and `validate_mesh_textures.py`
+  on staged `gfx/models/` or `gfx/entities/` paths. The mesh check never runs in CI.
+  On a merge commit the dispatcher checks only the conflicted files pre-commit passes,
+  plus staged deletions and rename origins.
+- Run a CI-only validator locally with
+  `python3 tools/validation/validate_<topic>.py --staged --no-color`. Drop `--staged`
+  for a full-repo scan.
+- `--strict` gates on ERROR only. A check with a standing backlog ships as WARNING until
+  the backlog is cleared. A new strict check needs a baseline audit first, see the
+  review checklist in `tools/README.md`.
+- The events batch enables `--check-ai-chance-costs` as WARNING while the existing
+  backlog is reviewed. It checks relevant AI modifiers, not just their presence, and
+  ignores display-only `effect_tooltip` costs. Commit hooks leave this cross-reference
+  scan disabled; functional Indonesia contracts run in the `Content tests` job.
+- Strictness can differ by stage. `validate_ai_equipment.py` runs without `--strict`
+  locally and with it in CI.
+- `validate_unused_textures.py` is a `stages: [manual]` hook. `validate_standardization.py`
+  is unwired and run by hand. The `md-standardize` auto-fixer hook stays disabled.
+- The Test Suite runs on every PR to `main`, drafts included. Changes under
+  `tools/validation/`, `tools/linting/`, `tools/shared_utils.py`, the workflow files,
+  `resources/documentation/`, or `validation_config.json` force the full suite.
+- The style check is diff-scoped in CI. The nightly `main` baseline is full-repo, so
+  the PR report flags only new findings, and references orphaned by a deleted
+  definition surface on the nightly run. Common mistakes run full-repo in the core batch
+  over `common`, `events`, `history`, and `music`. A `music/*.txt` change selects only
+  that validator, through the `music` group.
+- `validate_graphical_cultures.py` runs in the targeted-b batch for `common` changes,
+  in warning mode while the standing backlog is triaged. It compares top-level country
+  `graphical_culture` assignments with bare identifier values, matching current country
+  file syntax, against entries in MD's
+  `common/graphicalculturetype.txt`. The CI workspace profile includes `/common/`,
+  which supplies both inputs. No local HOI4 install or vanilla culture registry was
+  available to verify base-game-only fallback behavior, so the check does not add a
+  guessed vanilla allowlist. Resolve this source/policy question before making the
+  check strict.
+- Remaining phases of [#5383](https://github.com/MillenniumDawn/Millennium-Dawn/issues/5383):
+  confirm the vanilla culture source/policy; validate entity
+  clone parents and `attach` targets (including vanilla entities); check that cultural
+  sprite sets cover `_1` through `_7`, including the known tierless-only
+  `northamerican_gfx` entries; validate cross-file clone load order; report cosmetic-tag
+  users of tag-prefixed entity sets; and include `gfx/entities/` in the CI workspace.
+  Those checks depend on entity parsing and/or game lookup behavior and are not covered
+  by the country registration milestone.
+- Everything that fans out shares `cpu_budget()` in `tools/shared_utils.py`: 75% of the
+  cores locally, all of them on CI. `MD_MAX_WORKERS=N` overrides it.
+
+
 ## When the Test Suite runs
 
 `test-suite.yml` triggers on `pull_request` (`opened`, `synchronize`, `reopened`) for every base branch, including stacked feature PRs. Marking a draft ready does not re-run it. `detect-changes` scopes the jobs after the event, so fork, conflicted, and content-clean PRs still receive a report. Validation reads game data from the live PR head repository and SHA, which avoids stale synthetic merge refs and keeps conflicted PRs in the pipeline. Read-only change detection, mod validation, and tools tests use matching PR-head tooling. The file-path validator and read-only report job use the protected default-branch SHA. Every job in this PR-controlled workflow has read-only permissions. PR comments and check annotations remain in the separate base-owned Code Standards & Validation workflow. The PR base SHA is used only for the diff. PR-authored tooling stays in read-only pull-request jobs and their PR-scoped caches.
@@ -46,6 +99,37 @@ The CI validator list lives in `validator_batches.py`, so the batch jobs and pre
 - `nightly-pr-validation.yml` reruns existing PR runs through the Actions API.
   Reruns resolve live content but keep
   their original check SHA. `validator-cache.yml` rebuilds main's baseline.
+- `validator-cache.yml` runs on every push to main. It saves each complete run as that
+  commit's baseline (`md-baseline-v1-<os>-<hash>-<sha>-*`), even when the alarm fails.
+  The alarm compares the run with the last accepted one (`md-accepted-v1-*`) and goes
+  red on new errors until they are fixed. Main's run also widens diff-scoped checks to
+  their whole domain through `baseline_args` (party-loc audits every tag).
+- The report restores only the baseline of the PR's merge base, the main commit its
+  content started from, and checks the commit in the meta. Against main's tip, fixes
+  main made after the branch point would read as the PR's findings. When main has not
+  saved one, the advisory `baseline-scan` job scans the merge base in the same run:
+  the PR's tooling over the base content, no shared cache, a 20-minute budget. The
+  report reads its artifact and marks the source. The scan saves no cache entry,
+  because a dispatched run on main would let PR tooling write a main-scoped baseline.
+  With neither, the comparison is unavailable.
+- Main's findings in a file the PR renamed count as the new path's, in the file
+  field and in messages. A finding that names only a basename does not move.
+- Each main finding matches one PR finding with the same category, file, and message.
+  `detect-changes` ships the merge-base diff's hunk headers, so a match also needs the
+  same place: main's line shifted past the PR's edits, or the same changed hunk.
+  Fixing one copy and adding another elsewhere reads NEW, and so does a block moved
+  within a file. Findings with no line or only a basename match by count.
+- Main's findings come only from the validators the PR ran, so a severity difference
+  is a real transition: RAISED (warning to error) or LOWERED (error to warning).
+  This needs batch spec names to equal the script-derived sidecar names.
+- When a PR changes validator code or reference data, both scans use its validators,
+  so findings that code adds to unchanged content read EXISTING. `detect-changes`
+  flags this and the report says so. The base scan also restores main's own baseline
+  of the merge base, keyed by the base's own validator hash, and the report lists per
+  category what the PR's validators add to and drop from it.
+- The validator hash covers `tools/validation` sources and data, `shared_utils.py`,
+  `validation_config.json`, `resources/documentation/`, and the typo watchlist. All
+  four `hashFiles` sites must match, and each checkout must hold those files.
 - `changelog-conflict-fixer.yml` merges main into same-repo PRs whose only conflict is
   `Changelog.txt`, then requests protected pinned validation and metadata-only
   publication as described above. `changelog-lint.yml` checks entry order;
@@ -53,6 +137,10 @@ The CI validator list lives in `validator_batches.py`, so the batch jobs and pre
 - The report posts one PR comment: new findings against main's baseline first, then
   findings in touched files. A clean run removes the older comment. Section titles
   derive from artifact directory names, so keep those slugs stable.
+- Every validator writes a sidecar, even when clean, and the baseline meta lists them.
+  A missing, extra, or malformed sidecar makes the baseline unavailable, so the report
+  drops the NEW tags instead of reading lost findings as new. `baseline_check.py`
+  refuses a run with no sidecars or a malformed one, and saves neither baseline.
 
 ## Validation config
 
