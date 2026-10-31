@@ -37,9 +37,9 @@ from linting.check_common_mistakes import (
     _war_at_scope,
 )
 from shared_utils import (
-    DEFAULT_EXTRA_SKIP_PATTERNS,
     ALWAYS_NO_RE,
     COUNTRY_TAG_ASSIGNMENT_LINE_RE,
+    DEFAULT_EXTRA_SKIP_PATTERNS,
     IS_AI_NO_RE,
     ai_only_decision_categories,
     atomic_write_text,
