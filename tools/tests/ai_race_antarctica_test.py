@@ -1,5 +1,5 @@
 import pytest
-from ai_race_state_model_test import (
+from shared.ai_race_test_support import (
     EFFECTS_PATH,
     RACE_LOC_PATH,
     ROOT,

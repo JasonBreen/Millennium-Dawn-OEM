@@ -1,4 +1,4 @@
-from ai_race_state_model_test import ROOT, _named_block
+from shared.ai_race_test_support import ROOT, _named_block
 
 
 def test_the_private_room_invite_needs_the_hosted_forum_to_be_preparing():

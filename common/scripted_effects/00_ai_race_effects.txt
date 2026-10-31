@@ -589,7 +589,7 @@ ai_race_rebuild_derived_state = {
 			var:ai_race_participant = {
 				ai_race_rebuild_country_metrics = yes
 				ai_race_refresh_operating_state = yes
-				ai_race_refresh_offer = yes
+				if = { limit = { ai_race_full_mode = yes } ai_race_refresh_offer = yes }
 				ai_race_refresh_effective_capability = yes
 			}
 		}
@@ -694,7 +694,7 @@ ai_race_monthly_dispatch = {
 	}
 }
 
-ai_race_debug_repair = {
+ai_race_debug_repair_state = {
 	if = {
 		limit = {
 			is_debug = yes
@@ -793,8 +793,7 @@ ai_race_refresh_effective_capability = {
 		}
 		set_variable = { ai_race_effective_capability = ai_race_capability_external }
 		set_variable = { ai_race_capability_funded_usable = { value = ai_race_capability_stock multiply = ai_race_current_readiness } }
-		set_temp_variable = { ai_race_ready_funded_capability = { value = ai_race_capability_stock multiply = ai_race_current_readiness } }
-		add_to_variable = { ai_race_effective_capability = ai_race_ready_funded_capability }
+		add_to_variable = { ai_race_effective_capability = ai_race_capability_funded_usable }
 	}
 	clamp_variable = { var = ai_race_effective_capability min = 0 max = 100 }
 }

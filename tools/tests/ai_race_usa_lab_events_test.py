@@ -3,7 +3,7 @@ from datetime import date
 from pathlib import Path
 
 import pytest
-from ai_race_state_model_test import (
+from shared.ai_race_test_support import (
     EFFECTS_PATH,
     PROGRESSION_PATH,
     UPSTREAM_PREFIXES,

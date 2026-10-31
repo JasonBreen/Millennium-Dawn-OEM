@@ -15,6 +15,10 @@ Tests follow [Test Structure](../../tools/README.md#test-structure): one file pe
   is the single list of what runs, which change groups select each validator, and which
   run without `--strict`. Its `args` are also the flags of the main baseline run, so a
   PR and main enable the same checks.
+- Trailing-whitespace cleanup uses `fix_styling.py --trailing-whitespace-only` on
+  staged-diff lines only, preserving untouched lines and refusing worktree/index
+  mismatches. The normal commit flow stashes unstaged work first. The fixer never
+  stages its output; stage the changed lines and retry when it makes a correction.
 - `git commit` runs only the fast subset: the `md-validate-content` dispatcher
   (`tools/precommit_validate.py`), `validate_defines.py`, and `validate_mesh_textures.py`
   on staged `gfx/models/` or `gfx/entities/` paths. The mesh check never runs in CI.
@@ -93,7 +97,8 @@ The CI validator list lives in `validator_batches.py`, so the batch jobs and pre
 - `detect-changes` uses `collect_changed_files.py` and `change_groups.py`.
   `validate-paths` reads the git index. `prepare-workspace` shares one sparse artifact
   across the core, targeted-a, and targeted-b batches. It has no `.git`, no `map/`,
-  and only `gfx/flags` and `gfx/interface/decisions` from the art trees.
+  and only `gfx/flags`, `gfx/interface/decisions`, and `gfx/texticons` from the art
+  trees. Size checks report art outside them as `decision-icon-unmeasured`.
 - `tools-quality` runs Ruff, Black, pylint, mypy, jscpd, the staged-validator
   integration, and `validate_tools.py`. Coverage runs on Linux only.
 - `nightly-pr-validation.yml` reruns existing PR runs through the Actions API.

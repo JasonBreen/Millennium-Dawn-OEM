@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from ai_race_state_model_test import _extract_block, _parse_race_script
+from shared.ai_race_test_support import _extract_block, _parse_race_script
 from targeted_operations_authorization_test import ReviewScript
 from targeted_operations_core_test import TargetScript
 

@@ -265,6 +265,19 @@ country_event = {
 	}
 }
 
+country_event = {
+	id = investments_event.13
+	title = investments_event.13.t
+	desc = investments_event.13.d
+	picture = GFX_united_states_dollar
+	is_triggered_only = yes
+	minor_flavor = yes
+
+	option = {
+		name = investments_event.13.a
+	}
+}
+
 #Construction Refused
 country_event = {
 	id = investments_event.11
@@ -348,29 +361,33 @@ country_event = {
 		set_temp_variable = { inv_has_EU_ECOFIN_office_idea = 0 }
 		if = { limit = { has_idea = EU_ECOFIN_office_idea } set_temp_variable = { inv_has_EU_ECOFIN_office_idea = 1 } }
 
-		for_each_scope_loop = {
-			array = investment_targets
-			if = {
-				limit = {
-					country_exists = THIS
-					NOT = { has_country_flag = int_auto_reject_investment_flag }
-					NOT = { has_country_flag = not_investment_target }
-					NOT = { has_country_flag = recently_failed_to_invest }
-					OR = {
-						is_subject = no
-						is_subject_of = ROOT
-						AND = { is_subject = yes OVERLORD = { is_in_faction_with = ROOT } }
+		calculate_investment_spendable_treasury = yes
+		if = {
+			limit = { check_variable = { investment_spendable_treasury > 5 } }
+			for_each_scope_loop = {
+				array = investment_targets
+				if = {
+					limit = {
+						country_exists = THIS
+						NOT = { has_country_flag = int_auto_reject_investment_flag }
+						NOT = { has_country_flag = not_investment_target }
+						NOT = { has_country_flag = recently_failed_to_invest }
+						OR = {
+							is_subject = no
+							is_subject_of = ROOT
+							AND = { is_subject = yes OVERLORD = { is_in_faction_with = ROOT } }
+						}
 					}
-				}
-				set_temp_variable = { AI_selected_country = THIS.id }
-				set_temp_variable = { AI_country_score = 0 }
-				AI_country_selection_calculation = yes
+					set_temp_variable = { AI_selected_country = THIS.id }
+					set_temp_variable = { AI_country_score = 0 }
+					AI_country_selection_calculation = yes
 
 
-				# Sets the new best country
-				if = { limit = { check_variable = { AI_country_score > AI_best_country_score } }
-					set_temp_variable = { AI_best_country_score = AI_country_score }
-					set_temp_variable = { AI_best_country = AI_selected_country }
+					# Sets the new best country
+					if = { limit = { check_variable = { AI_country_score > AI_best_country_score } }
+						set_temp_variable = { AI_best_country_score = AI_country_score }
+						set_temp_variable = { AI_best_country = AI_selected_country }
+					}
 				}
 			}
 		}

@@ -88,6 +88,14 @@ send_pending_investment_offer = {
 	}
 }
 
+calculate_investment_spendable_treasury = {
+	set_temp_variable = { investment_spendable_treasury = treasury }
+	if = {
+		limit = { ai_race_ai_expansion_permitted = yes }
+		subtract_from_temp_variable = { investment_spendable_treasury = ai_race_ai_savings_target }
+	}
+}
+
 investment_ai_propose_project = {
 	if = {
 		limit = {
@@ -439,8 +447,15 @@ accept_pending_investment_offer = {
 }
 
 commit_pending_investment_offer = {
+	set_temp_variable = { investment_project_started = 0 }
 	FROM = {
-		start_project_two = yes
+		calculate_investment_spendable_treasury = yes
+		set_temp_variable = { investment_offer_cost = project_monetary_cost^-1 }
+		if = {
+			limit = { check_variable = { var = investment_spendable_treasury value = investment_offer_cost compare = greater_than_or_equals } }
+			start_project_two = yes
+		}
+		else = { country_event = investments_event.13 }
 		clr_country_flag = this_investment_offer_pending@PREV
 		clr_country_flag = investments_ai_pending
 	}
