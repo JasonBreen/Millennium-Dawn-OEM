@@ -575,16 +575,21 @@ def _indebted_planner(treasury):
     return race, variables
 
 
-@pytest.mark.parametrize(
-    "treasury,paid", [(153, 0), (154, 0), (158.999, 0), (159, 5), (180, 26)]
-)
-def test_real_debt_repayment_preserves_race_floor_and_reduces_only_excess(
-    treasury, paid
-):
+def _assert_debt_repayment_preserves_floor(treasury, paid):
     race, variables = _indebted_planner(treasury)
     race.run("ai_repay_debt", 1)
     assert variables["treasury"] == pytest.approx(treasury - paid)
     assert variables["debt"] == pytest.approx(400 - paid)
+
+
+DEBT_REPAYMENT_CASES = [(153, 0), (154, 0), (158.999, 0), (159, 5), (180, 26)]
+
+
+@pytest.mark.parametrize("treasury,paid", DEBT_REPAYMENT_CASES)
+def test_real_debt_repayment_preserves_race_floor_and_reduces_only_excess(
+    treasury, paid
+):
+    _assert_debt_repayment_preserves_floor(treasury, paid)
 
 
 @pytest.mark.parametrize(
@@ -1579,16 +1584,11 @@ def test_paid_capacity_damage_selects_recovery_before_expansion_oem(criterion):
     assert variables["ai_race_ai_planning_purchase"] == 0
 
 
-@pytest.mark.parametrize(
-    "treasury,paid", [(153, 0), (154, 0), (158.999, 0), (159, 5), (180, 26)]
-)
+@pytest.mark.parametrize("treasury,paid", DEBT_REPAYMENT_CASES)
 def test_real_debt_repayment_preserves_race_floor_and_reduces_only_excess_oem(
     treasury, paid
 ):
-    race, variables = _indebted_planner(treasury)
-    race.run("ai_repay_debt", 1)
-    assert variables["treasury"] == pytest.approx(treasury - paid)
-    assert variables["debt"] == pytest.approx(400 - paid)
+    _assert_debt_repayment_preserves_floor(treasury, paid)
 
 
 @pytest.mark.parametrize(
