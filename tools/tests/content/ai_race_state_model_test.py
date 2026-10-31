@@ -42,24 +42,7 @@ from shared.suite import build_validator, write_tree
 from validate_localization_encoding import LocalizationValidator
 
 
-def test_race_writes_only_its_state_and_the_economy_expense_hook():
-    effects = _race_text("common/scripted_effects", "[0-9][0-9]_ai_race*.txt")
-    writes = _variable_write_targets(effects)
-
-    assert writes
-    assert all(
-        target.removeprefix("PREV.").startswith("ai_race_")
-        or target.startswith("global.ai_race_")
-        or target == "additional_expenses_rate"
-        for target in writes
-    )
-    assert not any(target.startswith(UPSTREAM_PREFIXES) for target in writes)
-    for name, body in _parse_race_script(effects).items():
-        if "additional_expenses_rate" in _variable_write_targets(
-            _named_block(effects, name)
-        ):
-            assert name == "ai_race_refresh_finance_expense"
-
+def _assert_race_flag_and_array_namespaces(effects):
     country_flags = re.findall(
         r"\b(?:set_country_flag|clr_country_flag)\s*=\s*"
         r"(?:\{\s*flag\s*=\s*)?([A-Za-z0-9_]+)",
@@ -82,8 +65,28 @@ def test_race_writes_only_its_state_and_the_economy_expense_hook():
     assert arrays and all(array.startswith("global.ai_race_") for array in arrays)
 
 
-def test_first_enabled_pulse_publishes_without_advancing_scheduled_state():
-    effects = _race_text("common/scripted_effects")
+def test_race_writes_only_its_state_and_the_economy_expense_hook():
+    effects = _race_text("common/scripted_effects", "[0-9][0-9]_ai_race*.txt")
+    writes = _variable_write_targets(effects)
+
+    assert writes
+    assert all(
+        target.removeprefix("PREV.").startswith("ai_race_")
+        or target.startswith("global.ai_race_")
+        or target == "additional_expenses_rate"
+        for target in writes
+    )
+    assert not any(target.startswith(UPSTREAM_PREFIXES) for target in writes)
+    for name, body in _parse_race_script(effects).items():
+        if "additional_expenses_rate" in _variable_write_targets(
+            _named_block(effects, name)
+        ):
+            assert name == "ai_race_refresh_finance_expense"
+
+    _assert_race_flag_and_array_namespaces(effects)
+
+
+def _assert_initial_pulse_does_not_advance_schedule(effects):
     on_actions = ON_ACTIONS_PATH.read_text(encoding="utf-8")
     initialize = _named_block(effects, "ai_race_initialize_global")
     rebuild = _named_block(effects, "ai_race_rebuild_derived_state")
@@ -105,9 +108,12 @@ def test_first_enabled_pulse_publishes_without_advancing_scheduled_state():
     assert on_actions.count("ai_race_monthly_dispatch = yes") == 1
 
 
-def test_modes_cleanup_and_participant_reentry_have_live_routes():
-    triggers = _race_text("common/scripted_triggers")
+def test_first_enabled_pulse_publishes_without_advancing_scheduled_state():
     effects = _race_text("common/scripted_effects")
+    _assert_initial_pulse_does_not_advance_schedule(effects)
+
+
+def _assert_mode_cleanup_and_reentry_routes(triggers, effects):
     rules = GAME_RULES_PATH.read_text(encoding="utf-8")
     on_actions = ON_ACTIONS_PATH.read_text(encoding="utf-8")
 
@@ -143,11 +149,13 @@ def test_modes_cleanup_and_participant_reentry_have_live_routes():
     assert "name = disabled" in rule
 
 
-def test_capability_rebuild_counts_every_ai_technology_tier():
+def test_modes_cleanup_and_participant_reentry_have_live_routes():
+    triggers = _race_text("common/scripted_triggers")
     effects = _race_text("common/scripted_effects")
-    rebuild = _named_block(effects, "ai_race_rebuild_country_metrics")
+    _assert_mode_cleanup_and_reentry_routes(triggers, effects)
 
-    assert rebuild.count("ai_race_count_ai_technology = yes") == 2
+
+def _assert_all_ai_technology_tiers_are_counted(effects):
     ladder = _named_block(effects, "ai_race_count_ai_technology")
     for tier in range(1, 15):
         assert (
@@ -161,7 +169,15 @@ def test_capability_rebuild_counts_every_ai_technology_tier():
         assert f"has_tech = artificial_intelligence_{tier} }}" in ladder
 
 
-def test_rebuild_is_idempotent_and_quarter_wrapper_owns_replay_mutation():
+def test_capability_rebuild_counts_every_ai_technology_tier():
+    effects = _race_text("common/scripted_effects")
+    rebuild = _named_block(effects, "ai_race_rebuild_country_metrics")
+
+    assert rebuild.count("ai_race_count_ai_technology = yes") == 2
+    _assert_all_ai_technology_tiers_are_counted(effects)
+
+
+def _assert_rebuild_replay_boundaries():
     effects = _race_text("common/scripted_effects")
     metrics = _named_block(effects, "ai_race_rebuild_country_metrics")
     rebuild = _named_block(effects, "ai_race_rebuild_derived_state")
@@ -172,11 +188,6 @@ def test_rebuild_is_idempotent_and_quarter_wrapper_owns_replay_mutation():
     assert not any(
         target.endswith("_stock") for target in _variable_write_targets(metrics)
     )
-    for axis in COUNTRY_CAPABILITIES:
-        reset = f"set_variable = {{ ai_race_{axis} = ai_race_{axis}_stock }}"
-        overlay = f"add_to_variable = {{ ai_race_{axis} = ai_race_{axis}_external }}"
-        assert metrics.index(reset) < metrics.index(overlay)
-
     for scheduled in (
         "global.ai_race_epoch",
         "global.ai_race_last_processed_quarter",
@@ -186,6 +197,34 @@ def test_rebuild_is_idempotent_and_quarter_wrapper_owns_replay_mutation():
     assert "global.ai_race_last_processed_quarter" in dispatch
     assert "ai_race_quarterly_reconcile = yes" not in debug_repair
     assert "ai_race_rebuild_derived_state = yes" in debug_repair
+    return metrics
+
+
+def test_rebuild_is_idempotent_and_quarter_wrapper_owns_replay_mutation():
+    metrics = _assert_rebuild_replay_boundaries()
+    for axis in COUNTRY_CAPABILITIES:
+        reset = f"set_variable = {{ ai_race_{axis} = ai_race_{axis}_stock }}"
+        overlay = f"add_to_variable = {{ ai_race_{axis} = ai_race_{axis}_external }}"
+        assert metrics.index(reset) < metrics.index(overlay)
+
+
+def _assert_ranking_and_quarter_guards(ranking, dispatch):
+    assert "ai_race_sort_participants = yes" in ranking
+    assert "global.ai_race_first_finisher_id" not in ranking
+    assert (
+        "ai_race_effective_capability > global.ai_race_frontier_capability" in ranking
+    )
+    assert (
+        "set_variable = { ai_race_frontier_gap = ai_race_effective_capability }"
+        in ranking
+    )
+    assert (
+        "subtract_from_variable = { ai_race_frontier_gap = global.ai_race_frontier_capability }"
+        in ranking
+    )
+    assert "global.ai_race_last_processed_quarter = ai_race_current_quarter" in dispatch
+    for month in (1, 4, 7, 10):
+        assert f"check_variable = {{ global.month = {month} }}" in dispatch
 
 
 def test_ranking_replay_guards_and_clamps_match_the_documented_bounds():
@@ -213,22 +252,7 @@ def test_ranking_replay_guards_and_clamps_match_the_documented_bounds():
         in repair_global
     )
 
-    assert "ai_race_sort_participants = yes" in ranking
-    assert "global.ai_race_first_finisher_id" not in ranking
-    assert (
-        "ai_race_effective_capability > global.ai_race_frontier_capability" in ranking
-    )
-    assert (
-        "set_variable = { ai_race_frontier_gap = ai_race_effective_capability }"
-        in ranking
-    )
-    assert (
-        "subtract_from_variable = { ai_race_frontier_gap = global.ai_race_frontier_capability }"
-        in ranking
-    )
-    assert "global.ai_race_last_processed_quarter = ai_race_current_quarter" in dispatch
-    for month in (1, 4, 7, 10):
-        assert f"check_variable = {{ global.month = {month} }}" in dispatch
+    _assert_ranking_and_quarter_guards(ranking, dispatch)
 
 
 def test_player_facing_finance_and_shortfall_terms():
@@ -604,7 +628,7 @@ def test_executed_earliest_months_reach_terminal_in_january_2025_without_entry_c
     assert race.events == [(1, "ai_race_news.1")]
 
 
-def test_executed_progress_survives_shortage_and_repair_without_replay():
+def _assert_progress_survives_shortage_and_repair():
     race, country = _enrolled_race(ratios=[0.5] * 6)
     _review_and_commit(race, financing=True)
     race.goto(2016, 2)
@@ -632,6 +656,10 @@ def test_executed_progress_survives_shortage_and_repair_without_replay():
     assert variables["ai_race_effective_capability"] == variables["ai_race_capability"]
     assert variables["ai_race_effective_capability"] == 50
     assert country["ledger"] == ledger
+
+
+def test_executed_progress_survives_shortage_and_repair_without_replay():
+    _assert_progress_survives_shortage_and_repair()
 
 
 @pytest.mark.parametrize("mode", ["full", "outcomes_only", "disabled"])
@@ -1004,87 +1032,18 @@ def test_race_is_the_sole_writer_of_its_persistent_state():
     )
     assert not any(target.startswith(UPSTREAM_PREFIXES) for target in writes)
 
-    country_flags = re.findall(
-        r"\b(?:set_country_flag|clr_country_flag)\s*=\s*"
-        r"(?:\{\s*flag\s*=\s*)?([A-Za-z0-9_]+)",
-        effects,
-    )
-    global_flags = re.findall(
-        r"\b(?:set_global_flag|clr_global_flag)\s*=\s*"
-        r"(?:\{\s*flag\s*=\s*)?([A-Za-z0-9_]+)",
-        effects,
-    )
-    arrays = re.findall(
-        r"\b(?:add_to_array|clear_array)\s*=\s*(?:\{\s*)?([A-Za-z0-9_.]+)",
-        effects,
-    )
-
-    assert country_flags and all(flag.startswith("AI_RACE_") for flag in country_flags)
-    assert global_flags and all(
-        flag.startswith("GLOBAL_ai_race_") for flag in global_flags
-    )
-    assert arrays and all(array.startswith("global.ai_race_") for array in arrays)
+    _assert_race_flag_and_array_namespaces(effects)
 
 
 def test_first_enabled_pulse_publishes_without_advancing_scheduled_state_oem():
     effects = EFFECTS_PATH.read_text(encoding="utf-8")
-    on_actions = ON_ACTIONS_PATH.read_text(encoding="utf-8")
-    initialize = _named_block(effects, "ai_race_initialize_global")
-    rebuild = _named_block(effects, "ai_race_rebuild_derived_state")
-    dispatch = _named_block(effects, "ai_race_monthly_dispatch")
-    quarterly = _named_block(effects, "ai_race_quarterly_reconcile")
-
-    assert initialize.index("set_global_flag = GLOBAL_ai_race_initialized") < (
-        initialize.index("ai_race_rebuild_derived_state = yes")
-    )
-    assert dispatch.index("ai_race_initialize_global = yes") < dispatch.index(
-        "check_variable = { global.month = 1 }"
-    )
-    assert "ai_race_rebuild_country_metrics = yes" in rebuild
-    assert "ai_race_rebuild_frontier_and_ranking = yes" in rebuild
-    assert "global.ai_race_epoch" not in rebuild
-    assert "global.ai_race_last_processed_quarter" not in rebuild
-    assert "ai_race_rebuild_derived_state = yes" in quarterly
-    assert "add_to_variable = { global.ai_race_epoch = 1 }" in quarterly
-    assert on_actions.count("ai_race_monthly_dispatch = yes") == 1
+    _assert_initial_pulse_does_not_advance_schedule(effects)
 
 
 def test_modes_cleanup_and_participant_reentry_have_live_routes_oem():
     triggers = TRIGGERS_PATH.read_text(encoding="utf-8")
     effects = EFFECTS_PATH.read_text(encoding="utf-8")
-    rules = GAME_RULES_PATH.read_text(encoding="utf-8")
-    on_actions = ON_ACTIONS_PATH.read_text(encoding="utf-8")
-
-    full = _named_block(triggers, "ai_race_full_mode")
-    outcomes = _named_block(triggers, "ai_race_outcomes_only_mode")
-    enabled = _named_block(triggers, "ai_race_enabled")
-    eligible = _named_block(triggers, "ai_race_eligible_participant")
-    refresh = _named_block(effects, "ai_race_refresh_participants")
-    dispatch = _named_block(effects, "ai_race_monthly_dispatch")
-    teardown = _named_block(effects, "ai_race_teardown_global")
-    rule = _named_block(rules, "rule_ai_race")
-
-    assert "option = outcomes_only" in full
-    assert "option = disabled" in full
-    assert "option = outcomes_only" in outcomes
-    assert "ai_race_full_mode = yes" in enabled
-    assert "ai_race_outcomes_only_mode = yes" in enabled
-    assert "NOT = { has_country_flag = collapsed_nation }" in eligible
-    assert "original_tag" not in eligible
-    assert "date > 2015.12.31" in eligible
-    assert "has_tech = artificial_intelligence_7" in eligible
-    assert "array = global.ai_race_all_initialized" in refresh
-    assert "array = global.ai_race_all_initialized" in teardown
-    discovery = _named_block(effects, "ai_race_discover_participants")
-    assert "array = global.countries" in discovery
-    assert "ai_race_initialize_country = yes" in discovery
-    assert "ai_race_teardown_global = yes" in dispatch
-    assert "ai_race_clear_country_state = yes" in teardown
-    assert "clr_global_flag = GLOBAL_ai_race_initialized" in teardown
-    assert "ai_race_monthly_dispatch = yes" in on_actions
-    assert "name = full" in rule
-    assert "name = outcomes_only" in rule
-    assert "name = disabled" in rule
+    _assert_mode_cleanup_and_reentry_routes(triggers, effects)
 
 
 def test_country_adapters_use_one_energy_guard_and_all_ai_technology_tiers():
@@ -1101,17 +1060,7 @@ def test_country_adapters_use_one_energy_guard_and_all_ai_technology_tiers():
     assert rebuild.count("ai_race_count_ai_technology = yes") == 2
     generic_adapter = _named_block(effects, "ai_race_generic_adapter")
     assert generic_adapter.count("ai_race_count_ai_technology = yes") == 1
-    ladder = _named_block(effects, "ai_race_count_ai_technology")
-    for tier in range(1, 15):
-        assert (
-            len(
-                re.findall(
-                    rf"\bhas_tech\s*=\s*artificial_intelligence_{tier}\b", effects
-                )
-            )
-            == 1
-        )
-        assert f"has_tech = artificial_intelligence_{tier} }}" in ladder
+    _assert_all_ai_technology_tiers_are_counted(effects)
 
     first_clear = rebuild.index("clear_variable = ai_race_capability_external")
     first_owner_read = rebuild.index("USA_ai_core_frontier_capability")
@@ -1120,16 +1069,7 @@ def test_country_adapters_use_one_energy_guard_and_all_ai_technology_tiers():
 
 
 def test_rebuild_is_idempotent_and_quarter_wrapper_owns_replay_mutation_oem():
-    effects = _race_text("common/scripted_effects")
-    metrics = _named_block(effects, "ai_race_rebuild_country_metrics")
-    rebuild = _named_block(effects, "ai_race_rebuild_derived_state")
-    quarterly = _named_block(effects, "ai_race_quarterly_reconcile")
-    dispatch = _named_block(effects, "ai_race_monthly_dispatch")
-    debug_repair = _named_block(effects, "ai_race_debug_repair_state")
-
-    assert not any(
-        target.endswith("_stock") for target in _variable_write_targets(metrics)
-    )
+    metrics = _assert_rebuild_replay_boundaries()
     for capability in COUNTRY_CAPABILITIES:
         assert f"clear_variable = ai_race_{capability}_external" in metrics
         assert (
@@ -1140,16 +1080,6 @@ def test_rebuild_is_idempotent_and_quarter_wrapper_owns_replay_mutation_oem():
             f"add_to_variable = {{ ai_race_{capability} = ai_race_{capability}_external }}"
             in metrics
         )
-
-    for scheduled in (
-        "global.ai_race_epoch",
-        "global.ai_race_last_processed_quarter",
-    ):
-        assert scheduled not in rebuild
-    assert "add_to_variable = { global.ai_race_epoch = 1 }" in quarterly
-    assert "global.ai_race_last_processed_quarter" in dispatch
-    assert "ai_race_quarterly_reconcile = yes" not in debug_repair
-    assert "ai_race_rebuild_derived_state = yes" in debug_repair
 
 
 def test_ranking_replay_guards_and_clamps_match_the_documented_bounds_oem():
@@ -1185,22 +1115,7 @@ def test_ranking_replay_guards_and_clamps_match_the_documented_bounds_oem():
             in repair_global
         )
 
-    assert "ai_race_sort_participants = yes" in ranking
-    assert "global.ai_race_first_finisher_id" not in ranking
-    assert (
-        "ai_race_effective_capability > global.ai_race_frontier_capability" in ranking
-    )
-    assert (
-        "set_variable = { ai_race_frontier_gap = ai_race_effective_capability }"
-        in ranking
-    )
-    assert (
-        "subtract_from_variable = { ai_race_frontier_gap = global.ai_race_frontier_capability }"
-        in ranking
-    )
-    assert "global.ai_race_last_processed_quarter = ai_race_current_quarter" in dispatch
-    for month in (1, 4, 7, 10):
-        assert f"check_variable = {{ global.month = {month} }}" in dispatch
+    _assert_ranking_and_quarter_guards(ranking, dispatch)
 
 
 def test_debug_and_playable_decisions_have_localisation_and_logging():
@@ -1246,33 +1161,7 @@ def test_debug_and_playable_decisions_have_localisation_and_logging():
 
 
 def test_executed_progress_survives_shortage_and_repair_without_replay_oem():
-    race, country = _enrolled_race(ratios=[0.5] * 6)
-    _review_and_commit(race, financing=True)
-    race.goto(2016, 2)
-    race.run("ai_race_monthly_dispatch", 1)
-    assert country["vars"]["ai_race_stage_months"] == 1
-    ledger = copy.deepcopy(country["ledger"])
-    country["ratios"] = [0] * 6
-    for action in (
-        "ai_race_debug_repair_state",
-        "ai_race_refresh_dashboard",
-        "ai_race_monthly_dispatch",
-    ):
-        race.run(action, 1)
-    reloaded = copy.deepcopy(race)
-    reloaded.run("ai_race_monthly_dispatch", 1)
-    assert reloaded.countries[1]["vars"]["ai_race_stage_months"] == 1
-    assert reloaded.countries[1]["ledger"] == ledger
-    variables = country["vars"]
-    assert variables["ai_race_capability_stock"] == 5
-    assert variables["ai_race_effective_capability"] == pytest.approx(
-        variables["ai_race_capability"] - variables["ai_race_capability_stock"]
-    )
-    country["ratios"] = [1] * 6
-    race.run("ai_race_refresh_dashboard", 1)
-    assert variables["ai_race_effective_capability"] == variables["ai_race_capability"]
-    assert variables["ai_race_effective_capability"] == 50
-    assert country["ledger"] == ledger
+    _assert_progress_survives_shortage_and_repair()
 
 
 def test_anthropic_contribution_runs_on_both_united_states_adapter_paths():

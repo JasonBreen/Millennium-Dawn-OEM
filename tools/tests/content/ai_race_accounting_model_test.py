@@ -710,14 +710,13 @@ def test_script_readiness_uses_all_six_clamped_ratios_and_scales_power_units(
     assert "ai_race_commit_weekly_bill = yes" not in body
 
 
-def test_script_quote_snapshots_gdp_and_divides_principal_into_520_payments(scripts):
+def _assert_offer_quotes_and_payments(scripts):
     body = _compact(_block(scripts["capacity"], "ai_race_refresh_offer"))
     assert "ai_race_refresh_capacity_sample = yes" not in body
     operating = _block(scripts["capacity"], "ai_race_refresh_operating_state")
     _ordered(
         operating, "calculate_energy_use = yes", "ai_race_refresh_capacity_sample = yes"
     )
-    assert operating.count("ai_race_refresh_capacity_sample = yes") == 1
     callers = [scripts["progression"], scripts["actions"]]
     offers = 0
     for text in callers:
@@ -729,7 +728,6 @@ def test_script_quote_snapshots_gdp_and_divides_principal_into_520_payments(scri
             )
             previous = match.end()
             offers += 1
-    assert offers > 0
     for name in ("ai_race_capture_quote", "ai_race_commit_review"):
         entry = _block(scripts["progression"], name)
         _ordered(
@@ -749,6 +747,13 @@ def test_script_quote_snapshots_gdp_and_divides_principal_into_520_payments(scri
         f"ai_race_offer_payment = {{ value = ai_race_offer_principal divide = {WEEKS} }}"
         in body
     )
+    return operating, offers
+
+
+def test_script_quote_snapshots_gdp_and_divides_principal_into_520_payments(scripts):
+    operating, offers = _assert_offer_quotes_and_payments(scripts)
+    assert operating.count("ai_race_refresh_capacity_sample = yes") == 1
+    assert offers > 0
 
 
 def test_script_capacity_counts_controlled_undamaged_buildings_and_net_resources(
@@ -1163,12 +1168,7 @@ def test_live_finance_totals_preserve_inactive_and_final_installments(
 def test_script_quote_snapshots_gdp_and_divides_principal_into_520_payments_oem(
     scripts,
 ):
-    body = _compact(_block(scripts["capacity"], "ai_race_refresh_offer"))
-    assert "ai_race_refresh_capacity_sample = yes" not in body
-    operating = _block(scripts["capacity"], "ai_race_refresh_operating_state")
-    _ordered(
-        operating, "calculate_energy_use = yes", "ai_race_refresh_capacity_sample = yes"
-    )
+    operating, offers = _assert_offer_quotes_and_payments(scripts)
     direct_blocks = list(_direct_blocks(operating))
     full_mode = next(
         block
@@ -1178,37 +1178,7 @@ def test_script_quote_snapshots_gdp_and_divides_principal_into_520_payments_oem(
     assert len(direct_blocks) == 1
     assert full_mode.count("ai_race_refresh_capacity_sample = yes") == 1
     assert not any(name in {"else", "else_if"} for name, _ in direct_blocks)
-    callers = [scripts["progression"], scripts["actions"]]
-    offers = 0
-    for text in callers:
-        previous = 0
-        for match in re.finditer(r"ai_race_refresh_offer = yes", text):
-            assert (
-                "ai_race_refresh_operating_state = yes"
-                in text[previous : match.start()]
-            )
-            previous = match.end()
-            offers += 1
     assert offers == 8
-    for name in ("ai_race_capture_quote", "ai_race_commit_review"):
-        entry = _block(scripts["progression"], name)
-        _ordered(
-            entry,
-            "ai_race_refresh_operating_state = yes",
-            "ai_race_refresh_offer = yes",
-        )
-    assert (
-        "value = 1 subtract = ai_race_offer_readiness multiply = 0.40 add = 0.45"
-        in body
-    )
-    assert (
-        "ai_race_offer_principal = { value = gdp_total multiply = ai_race_offer_rate }"
-        in body
-    )
-    assert (
-        f"ai_race_offer_payment = {{ value = ai_race_offer_principal divide = {WEEKS} }}"
-        in body
-    )
 
 
 def test_script_finance_snapshots_each_package_once_and_keeps_rounding_residue(scripts):

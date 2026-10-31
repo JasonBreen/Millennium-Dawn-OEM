@@ -612,9 +612,11 @@ def test_prepare_workspace_separates_pr_data_from_validation_tooling():
     assert "base-sha" not in valcache["with"]["key"]
 
 
-def test_graphic_database_is_present_throughout_workspace_preparation():
+@pytest.mark.parametrize(
+    "path", ["gfx/interface/equipmentdesigner/graphic_db", "gfx/texticons"]
+)
+def test_graphic_assets_are_present_throughout_workspace_preparation(path):
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
-    path = "gfx/interface/equipmentdesigner/graphic_db"
     checkout = workflow_step("prepare-workspace", "Checkout PR content")
     cache = workflow_step("prepare-workspace", "Restore sparse workspace cache")
     assert path in checkout["with"]["sparse-checkout"].split()

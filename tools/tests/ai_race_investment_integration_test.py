@@ -501,6 +501,12 @@ def test_dispatch_and_acceptance_use_frozen_terms_after_staging_changes():
     assert len(model.project_starts) == 1
 
 
+def _assert_investment_payment(model, investor, receiver, treasury, accepted):
+    assert investor["treasury"] == treasury - (12 if accepted else 0)
+    assert receiver["treasury"] == pytest.approx(99998.8 if accepted else 100000)
+    assert model.project_starts == ([(1, 0)] if accepted else [])
+
+
 @pytest.mark.parametrize(
     "treasury,reserve,accepted", [(1, 100000, False), (100, 99, False), (62, 50, True)]
 )
@@ -512,9 +518,7 @@ def test_acceptance_rechecks_cash_and_reserve_before_charging(
     model.deliver()
     investor.update(treasury=treasury, ai_race_ai_savings_target=reserve)
     model.respond(model.popups[0])
-    assert investor["treasury"] == treasury - (12 if accepted else 0)
-    assert receiver["treasury"] == pytest.approx(99998.8 if accepted else 100000)
-    assert model.project_starts == ([(1, 0)] if accepted else [])
+    _assert_investment_payment(model, investor, receiver, treasury, accepted)
     assert bool(model.influence) is accepted
     assert not pending(model)
     assert "pending_offer_generation^1" not in receiver
@@ -754,9 +758,7 @@ def test_untracked_scripted_offer_rechecks_funds_and_keeps_receiver_snapshot_cos
     model.deliver()
     assert receiver["pending_offer_total_cost"] == 12
     model.respond(model.popups[0])
-    assert investor["treasury"] == treasury - (12 if accepted else 0)
-    assert receiver["treasury"] == pytest.approx(99998.8 if accepted else 100000)
-    assert model.project_starts == ([(1, 0)] if accepted else [])
+    _assert_investment_payment(model, investor, receiver, treasury, accepted)
     assert bool(model.influence) is accepted
     assert any(event[0] == "investments_event.13" for event in model.queue) is (
         not accepted

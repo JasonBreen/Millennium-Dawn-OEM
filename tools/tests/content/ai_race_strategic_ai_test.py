@@ -421,21 +421,7 @@ def test_discovery_counts_only_controlled_undamaged_civilians_and_keeps_paid_cou
     assert race.globals["ai_race_ai_countries"] == [1, 2]
 
 
-@pytest.mark.parametrize(
-    "stage,year,progress,target,earliest",
-    [
-        (0, 2013, 0, 1, 2016),
-        (1, 2016, 0, 2, 2019),
-        (1, 2020, 0, 2, 2023),
-        (2, 2019, 0, 2, 2024),
-        (2, 2021, 23, 2, None),
-        (2, 2021, 24, 3, 2024),
-        (3, 2024, 0, 4, 2025),
-    ],
-)
-def test_target_uses_remaining_paid_work_and_exact_36_month_lookahead(
-    stage, year, progress, target, earliest
-):
+def _assert_target_lookahead(stage, year, progress, target, earliest):
     race, country = _planner(stage=stage, year=year)
     country["vars"]["ai_race_stage_months"] = progress
     _capacity(race, country, max(stage, 1))
@@ -449,10 +435,31 @@ def test_target_uses_remaining_paid_work_and_exact_36_month_lookahead(
         assert variables["ai_race_ai_earliest_entry_month"] == 2024 * 12 + 2
     assert variables.get("ai_race_stage", 0) == stage
     assert variables["ai_race_stage_months"] == progress
+    return variables
 
 
-@pytest.mark.parametrize("criterion", range(6))
-def test_paid_capacity_damage_selects_recovery_before_expansion(criterion):
+TARGET_LOOKAHEAD_CASES = [
+    (0, 2013, 0, 1, 2016),
+    (1, 2016, 0, 2, 2019),
+    (1, 2020, 0, 2, 2023),
+    (2, 2019, 0, 2, 2024),
+    (2, 2021, 23, 2, None),
+    (2, 2021, 24, 3, 2024),
+    (3, 2024, 0, 4, 2025),
+]
+
+
+@pytest.mark.parametrize(
+    "stage,year,progress,target,earliest",
+    TARGET_LOOKAHEAD_CASES,
+)
+def test_target_uses_remaining_paid_work_and_exact_36_month_lookahead(
+    stage, year, progress, target, earliest
+):
+    _assert_target_lookahead(stage, year, progress, target, earliest)
+
+
+def _assert_paid_damage_recovery(criterion):
     race, country = _planner(stage=1, year=2019)
     ratios = [1] * 6
     ratios[criterion] = 0.9
@@ -461,6 +468,12 @@ def test_paid_capacity_damage_selects_recovery_before_expansion(criterion):
     assert country["vars"]["ai_race_ai_target_stage"] == 1
     assert country["vars"]["ai_race_ai_recovery"] == 1
     assert country["vars"]["ai_race_ai_readiness"] == pytest.approx(0.9)
+    return country["vars"]
+
+
+@pytest.mark.parametrize("criterion", range(6))
+def test_paid_capacity_damage_selects_recovery_before_expansion(criterion):
+    _assert_paid_damage_recovery(criterion)
 
 
 @pytest.mark.parametrize("criterion", ["power", "microchips", "composites"])
@@ -959,21 +972,7 @@ def test_balanced_wartime_policy_repairs_paid_supply_but_does_not_expand_civs():
     assert race.condition(race.triggers["ai_race_ai_recovery_permitted"], 1)
 
 
-@pytest.mark.parametrize(
-    "known,year,target,expected",
-    [
-        (0, 2013, 1, 1),
-        (3, 2013, 1, 4),
-        (6, 2013, 1, 0),
-        (6, 2014, 1, 7),
-        (7, 2020, 2, 0),
-        (7, 2018, 3, 0),
-        (7, 2019, 3, 8),
-    ],
-)
-def test_ai_research_selects_first_missing_required_tech_with_one_year_date_limit(
-    known, year, target, expected
-):
+def _assert_required_research_date_limit(known, year, target, expected):
     race, country = _planner(year=year)
     country["vars"].update(
         ai_race_ai_target_stage=target, ai_race_ai_planning_purchase=1
@@ -990,13 +989,38 @@ def test_ai_research_selects_first_missing_required_tech_with_one_year_date_limi
     assert country["techs"] == before
 
 
-def test_research_does_not_skip_a_blocked_prerequisite_to_a_later_available_tech():
+RESEARCH_DATE_CASES = [
+    (0, 2013, 1, 1),
+    (3, 2013, 1, 4),
+    (6, 2013, 1, 0),
+    (6, 2014, 1, 7),
+    (7, 2020, 2, 0),
+    (7, 2018, 3, 0),
+    (7, 2019, 3, 8),
+]
+
+
+@pytest.mark.parametrize(
+    "known,year,target,expected",
+    RESEARCH_DATE_CASES,
+)
+def test_ai_research_selects_first_missing_required_tech_with_one_year_date_limit(
+    known, year, target, expected
+):
+    _assert_required_research_date_limit(known, year, target, expected)
+
+
+def _assert_research_respects_blocked_prerequisite():
     race, country = _planner(year=2020)
     country["vars"].update(ai_race_ai_target_stage=3, ai_race_ai_planning_purchase=1)
     country["techs"].clear()
     country["researchable"] = {"artificial_intelligence_2", "artificial_intelligence_8"}
     race.run("ai_race_ai_choose_research", 1)
     assert country["vars"]["ai_race_ai_research_target"] == 0
+
+
+def test_research_does_not_skip_a_blocked_prerequisite_to_a_later_available_tech():
+    _assert_research_respects_blocked_prerequisite()
 
 
 @pytest.mark.parametrize("year,expected", [(2013, 0), (2014, 106)])
@@ -1009,10 +1033,8 @@ def test_tokenized_support_research_respects_the_first_missing_year(year, expect
     assert country["vars"]["ai_race_ai_support_tech"] == expected
 
 
-def test_runtime_research_tokens_are_synchronized():
-    research_tokens = set(
-        re.findall(r"token:([A-Za-z0-9_]+)", _race_text("common/scripted_effects"))
-    )
+def _assert_research_tokens_registered(effects):
+    research_tokens = set(re.findall(r"token:([A-Za-z0-9_]+)", effects))
     registrations = set()
     for path in (ROOT / "common/synchronized_dynamic_tokens").glob("*.txt"):
         registrations.update(
@@ -1023,7 +1045,11 @@ def test_runtime_research_tokens_are_synchronized():
     assert research_tokens <= registrations
 
 
-def test_support_research_tracks_the_largest_capacity_gap_without_granting_technology():
+def test_runtime_research_tokens_are_synchronized():
+    _assert_research_tokens_registered(_race_text("common/scripted_effects"))
+
+
+def _assert_support_research_tracks_capacity_gap():
     race, country = _planner()
     _capacity(race, country, 1, [0.75, 1, 1, 0.5, 1, 1])
     country["researchable"] = {"basic_computing", "construction1"}
@@ -1031,6 +1057,10 @@ def test_support_research_tracks_the_largest_capacity_gap_without_granting_techn
     assert country["vars"]["ai_race_ai_support_need"] == 4
     assert country["vars"]["ai_race_ai_support_tech"] == 201
     assert "basic_computing" not in country["techs"]
+
+
+def test_support_research_tracks_the_largest_capacity_gap_without_granting_technology():
+    _assert_support_research_tracks_capacity_gap()
 
 
 @pytest.mark.parametrize("stage", range(1, 5))
@@ -1200,7 +1230,7 @@ def test_terminal_country_only_keeps_capacity_recovery_preferences():
     assert country["vars"]["ai_race_ai_savings_target"] == 0
 
 
-def test_owner_order_revalues_savings_after_billing_and_before_discretionary_debt():
+def _assert_savings_owner_order():
     on_actions = (ROOT / "common/on_actions/MD_on_actions.txt").read_text(
         encoding="utf-8"
     )
@@ -1227,11 +1257,14 @@ def test_owner_order_revalues_savings_after_billing_and_before_discretionary_deb
     )
 
 
-def test_planner_economy_guard_matches_the_native_owner_without_a_positive_enable_flag():
+def test_owner_order_revalues_savings_after_billing_and_before_discretionary_debt():
+    _assert_savings_owner_order()
+
+
+def _assert_planner_economy_guard(triggers, effects):
     owner = (ROOT / "common/on_actions/MD_on_actions.txt").read_text(encoding="utf-8")
-    triggers = _race_text("common/scripted_triggers")
     assert "NOT = { has_country_flag = disabled_economic_system }" in owner
-    assert "enabled_economy" not in triggers + _race_text("common/scripted_effects")
+    assert "enabled_economy" not in triggers + effects
     race, country = _planner()
     assert "disabled_economic_system" not in country["flags"]
     assert race.condition(race.triggers["ai_race_ai_expansion_permitted"], 1)
@@ -1241,6 +1274,12 @@ def test_planner_economy_guard_matches_the_native_owner_without_a_positive_enabl
     country["vars"]["ai_race_ai_savings_target"] = 154
     race.run("ai_race_ai_refresh_savings", 1)
     assert country["vars"]["ai_race_ai_savings_target"] == 0
+
+
+def test_planner_economy_guard_matches_the_native_owner_without_a_positive_enable_flag():
+    _assert_planner_economy_guard(
+        _race_text("common/scripted_triggers"), _race_text("common/scripted_effects")
+    )
 
 
 def test_actual_monthly_dispatch_prepares_from_2013_without_starting_the_public_race():
@@ -1380,6 +1419,18 @@ def test_refinery_strategy_uses_prepare_or_recovery_weight_and_aborts_for_humans
     assert not any(race.condition(entry["enable"], 1) for entry in refinery)
 
 
+def _assert_strategies_require_active_plan(enables, plan):
+    race, country = _planner(year=2019)
+    _capacity(race, country, 1, [1, 0.5, 1, 1, 1, 1])
+    race.run("ai_race_ai_update_plan", 1)
+    assert any(race.condition(enable, 1) for enable in enables.values())
+    if plan == "missing":
+        del country["vars"]["ai_race_ai_target_stage"]
+    else:
+        country["vars"]["ai_race_ai_target_stage"] = 0
+    assert not any(race.condition(enable, 1) for enable in enables.values())
+
+
 @pytest.mark.parametrize("plan", ["missing", "dormant"])
 def test_every_strategy_is_installed_only_in_full_mode_and_gated_on_an_active_plan(
     plan,
@@ -1394,15 +1445,7 @@ def test_every_strategy_is_installed_only_in_full_mode_and_gated_on_an_active_pl
         assert key == "check_variable", name
         assert tuple(operand[0]) == ("ai_race_ai_target_stage", ">", "0"), name
         enables[name] = enable
-    race, country = _planner(year=2019)
-    _capacity(race, country, 1, [1, 0.5, 1, 1, 1, 1])
-    race.run("ai_race_ai_update_plan", 1)
-    assert any(race.condition(enable, 1) for enable in enables.values())
-    if plan == "missing":
-        del country["vars"]["ai_race_ai_target_stage"]
-    else:
-        country["vars"]["ai_race_ai_target_stage"] = 0
-    assert not any(race.condition(enable, 1) for enable in enables.values())
+    _assert_strategies_require_active_plan(enables, plan)
 
 
 @pytest.mark.parametrize(
@@ -1454,7 +1497,7 @@ def test_network_strategy_uses_prepare_or_recovery_weight_and_aborts_for_humans(
     assert not any(race.condition(entry["enable"], 1) for entry in network)
 
 
-def test_wartime_support_research_skips_civilian_expansion_for_paid_material_recovery():
+def _assert_wartime_research_prioritizes_paid_recovery():
     race, country = _planner(stage=1, year=2019)
     _capacity(race, country, 1, [0.25, 0.25, 1.5, 0.5, 1, 1])
     country["war"] = True
@@ -1464,6 +1507,10 @@ def test_wartime_support_research_skips_civilian_expansion_for_paid_material_rec
     assert country["vars"]["ai_race_ai_support_tech"] == 201
     assert country["vars"]["ai_race_ai_research_target"] == 0
     assert country["vars"]["ai_race_ai_savings_target"] == 0
+
+
+def test_wartime_support_research_skips_civilian_expansion_for_paid_material_recovery():
+    _assert_wartime_research_prioritizes_paid_recovery()
 
 
 @pytest.mark.parametrize("plants", [0, 1, 2])
@@ -1517,46 +1564,19 @@ CAPACITY_EFFECTS = ROOT / "common/scripted_effects/01_ai_race_capacity_effects.t
 
 @pytest.mark.parametrize(
     "stage,year,progress,target,earliest",
-    [
-        (0, 2013, 0, 1, 2016),
-        (1, 2016, 0, 2, 2019),
-        (1, 2020, 0, 2, 2023),
-        (2, 2019, 0, 2, 2024),
-        (2, 2021, 23, 2, None),
-        (2, 2021, 24, 3, 2024),
-        (3, 2024, 0, 4, 2025),
-    ],
+    TARGET_LOOKAHEAD_CASES,
 )
 def test_target_uses_remaining_paid_work_and_exact_36_month_lookahead_oem(
     stage, year, progress, target, earliest
 ):
-    race, country = _planner(stage=stage, year=year)
-    country["vars"]["ai_race_stage_months"] = progress
-    _capacity(race, country, max(stage, 1))
-    _choose_target(race)
-    variables = country["vars"]
-    assert variables["ai_race_ai_target_stage"] == target
+    variables = _assert_target_lookahead(stage, year, progress, target, earliest)
     assert variables["ai_race_ai_planning_purchase"] == int(target > stage)
-    assert variables["ai_race_ai_recovery"] == 0
-    if earliest:
-        assert variables["ai_race_ai_earliest_entry_month"] == earliest * 12 + 1
-    else:
-        assert variables["ai_race_ai_earliest_entry_month"] == 2024 * 12 + 2
-    assert variables.get("ai_race_stage", 0) == stage
-    assert variables["ai_race_stage_months"] == progress
 
 
 @pytest.mark.parametrize("criterion", range(6))
 def test_paid_capacity_damage_selects_recovery_before_expansion_oem(criterion):
-    race, country = _planner(stage=1, year=2019)
-    ratios = [1] * 6
-    ratios[criterion] = 0.9
-    _capacity(race, country, 1, ratios)
-    _choose_target(race)
-    assert country["vars"]["ai_race_ai_target_stage"] == 1
-    assert country["vars"]["ai_race_ai_recovery"] == 1
-    assert country["vars"]["ai_race_ai_planning_purchase"] == 0
-    assert country["vars"]["ai_race_ai_readiness"] == pytest.approx(0.9)
+    variables = _assert_paid_damage_recovery(criterion)
+    assert variables["ai_race_ai_planning_purchase"] == 0
 
 
 @pytest.mark.parametrize(
@@ -1565,12 +1585,7 @@ def test_paid_capacity_damage_selects_recovery_before_expansion_oem(criterion):
 def test_real_debt_repayment_preserves_race_floor_and_reduces_only_excess_oem(
     treasury, paid
 ):
-    race, country = _planner()
-    variables = country["vars"]
-    variables.update(treasury=treasury, debt=400, debt_ratio=0.4)
-    _capacity(race, country, 1)
-    _choose_target(race)
-    race.run("ai_race_ai_calculate_savings", 1)
+    race, variables = _indebted_planner(treasury)
     race.run("ai_repay_debt", 1)
     assert variables["treasury"] == pytest.approx(treasury - paid)
     assert variables["debt"] == pytest.approx(400 - paid)
@@ -1578,109 +1593,34 @@ def test_real_debt_repayment_preserves_race_floor_and_reduces_only_excess_oem(
 
 @pytest.mark.parametrize(
     "known,year,target,expected",
-    [
-        (0, 2013, 1, 1),
-        (3, 2013, 1, 4),
-        (6, 2013, 1, 0),
-        (6, 2014, 1, 7),
-        (7, 2020, 2, 0),
-        (7, 2018, 3, 0),
-        (7, 2019, 3, 8),
-    ],
+    RESEARCH_DATE_CASES,
 )
 def test_ai_research_selects_first_missing_required_tech_with_one_year_date_limit_oem(
     known, year, target, expected
 ):
-    race, country = _planner(year=year)
-    country["vars"].update(
-        ai_race_ai_target_stage=target, ai_race_ai_planning_purchase=1
-    )
-    country["techs"] = {
-        f"artificial_intelligence_{level}" for level in range(1, known + 1)
-    }
-    country["researchable"] = {
-        f"artificial_intelligence_{level}" for level in range(1, 9)
-    }
-    before = country["techs"].copy()
-    race.run("ai_race_ai_choose_research", 1)
-    assert country["vars"]["ai_race_ai_research_target"] == expected
-    assert country["techs"] == before
+    _assert_required_research_date_limit(known, year, target, expected)
 
 
 def test_research_does_not_skip_a_blocked_prerequisite_to_a_later_available_tech_oem():
-    race, country = _planner(year=2020)
-    country["vars"].update(ai_race_ai_target_stage=3, ai_race_ai_planning_purchase=1)
-    country["techs"].clear()
-    country["researchable"] = {"artificial_intelligence_2", "artificial_intelligence_8"}
-    race.run("ai_race_ai_choose_research", 1)
-    assert country["vars"]["ai_race_ai_research_target"] == 0
+    _assert_research_respects_blocked_prerequisite()
 
 
 def test_runtime_research_tokens_are_synchronized_oem():
-    research_tokens = set(
-        re.findall(r"token:([A-Za-z0-9_]+)", AI_EFFECTS.read_text(encoding="utf-8"))
-    )
-    registrations = set()
-    for path in (ROOT / "common/synchronized_dynamic_tokens").glob("*.txt"):
-        registrations.update(
-            line.split("#", 1)[0].strip()
-            for line in path.read_text(encoding="utf-8").splitlines()
-        )
-    assert research_tokens
-    assert research_tokens <= registrations
+    _assert_research_tokens_registered(AI_EFFECTS.read_text(encoding="utf-8"))
 
 
 def test_support_research_tracks_the_largest_capacity_gap_without_granting_technology_oem():
-    race, country = _planner()
-    _capacity(race, country, 1, [0.75, 1, 1, 0.5, 1, 1])
-    country["researchable"] = {"basic_computing", "construction1"}
-    race.run("ai_race_ai_update_plan", 1)
-    assert country["vars"]["ai_race_ai_support_need"] == 4
-    assert country["vars"]["ai_race_ai_support_tech"] == 201
-    assert "basic_computing" not in country["techs"]
+    _assert_support_research_tracks_capacity_gap()
 
 
 def test_owner_order_revalues_savings_after_billing_and_before_discretionary_debt_oem():
-    on_actions = (ROOT / "common/on_actions/MD_on_actions.txt").read_text(
-        encoding="utf-8"
-    )
-    assert on_actions.index("ingame_update_setup = yes") < on_actions.index(
-        "ai_race_ai_refresh_savings = yes"
-    )
-    assert (
-        on_actions.index("ai_race_commit_weekly_bill = yes")
-        < on_actions.index("ai_race_ai_refresh_savings = yes")
-        < on_actions.index("ai_repay_debt = yes")
-        < on_actions.index("automated_debt_taker = yes")
-    )
-    effects = _parse_race_script(
-        (ROOT / "common/scripted_effects/03_ai_race_progression_effects.txt").read_text(
-            encoding="utf-8"
-        )
-    )
-    monthly = effects["ai_race_run_monthly_work"]
-    keys = [key for key, _, _ in monthly]
-    assert (
-        keys.index("for_each_loop")
-        < keys.index("ai_race_ai_refresh_plans")
-        < keys.index("if")
-    )
+    _assert_savings_owner_order()
 
 
 def test_planner_economy_guard_matches_the_native_owner_without_a_positive_enable_flag_oem():
-    owner = (ROOT / "common/on_actions/MD_on_actions.txt").read_text(encoding="utf-8")
-    triggers = AI_TRIGGERS.read_text(encoding="utf-8")
-    assert "NOT = { has_country_flag = disabled_economic_system }" in owner
-    assert "enabled_economy" not in triggers + AI_EFFECTS.read_text(encoding="utf-8")
-    race, country = _planner()
-    assert "disabled_economic_system" not in country["flags"]
-    assert race.condition(race.triggers["ai_race_ai_expansion_permitted"], 1)
-    country["flags"]["disabled_economic_system"] = None
-    assert not race.condition(race.triggers["ai_race_ai_expansion_permitted"], 1)
-    assert not race.condition(race.triggers["ai_race_ai_country_operable"], 1)
-    country["vars"]["ai_race_ai_savings_target"] = 154
-    race.run("ai_race_ai_refresh_savings", 1)
-    assert country["vars"]["ai_race_ai_savings_target"] == 0
+    _assert_planner_economy_guard(
+        AI_TRIGGERS.read_text(encoding="utf-8"), AI_EFFECTS.read_text(encoding="utf-8")
+    )
 
 
 @pytest.mark.parametrize("plan", ["missing", "dormant"])
@@ -1694,24 +1634,8 @@ def test_every_strategy_is_gated_on_an_active_plan(plan):
         key, _, operand = enable[0]
         assert key == "check_variable", name
         assert tuple(operand[0]) == ("ai_race_ai_target_stage", ">", "0"), name
-    race, country = _planner(year=2019)
-    _capacity(race, country, 1, [1, 0.5, 1, 1, 1, 1])
-    race.run("ai_race_ai_update_plan", 1)
-    assert any(race.condition(enable, 1) for enable in enables.values())
-    if plan == "missing":
-        del country["vars"]["ai_race_ai_target_stage"]
-    else:
-        country["vars"]["ai_race_ai_target_stage"] = 0
-    assert not any(race.condition(enable, 1) for enable in enables.values())
+    _assert_strategies_require_active_plan(enables, plan)
 
 
 def test_wartime_support_research_skips_civilian_expansion_for_paid_material_recovery_oem():
-    race, country = _planner(stage=1, year=2019)
-    _capacity(race, country, 1, [0.25, 0.25, 1.5, 0.5, 1, 1])
-    country["war"] = True
-    country["researchable"] = {"construction1", "internet_2", "basic_computing"}
-    race.run("ai_race_ai_update_plan", 1)
-    assert country["vars"]["ai_race_ai_support_need"] == 4
-    assert country["vars"]["ai_race_ai_support_tech"] == 201
-    assert country["vars"]["ai_race_ai_research_target"] == 0
-    assert country["vars"]["ai_race_ai_savings_target"] == 0
+    _assert_wartime_research_prioritizes_paid_recovery()
