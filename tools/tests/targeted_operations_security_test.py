@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from ai_race_state_model_test import _named_block, _parse_race_script
+from shared.ai_race_test_support import _named_block, _parse_race_script
 from targeted_operations_core_test import TargetScript
 from targeted_operations_helpers_test import TargetedScript
 

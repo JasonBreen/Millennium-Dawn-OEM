@@ -2,7 +2,7 @@ import json
 import re
 from pathlib import Path
 
-from ai_race_state_model_test import _named_block
+from shared.ai_race_test_support import _named_block
 
 ROOT = Path(__file__).resolve().parents[2]
 

@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 import pytest
-from ai_race_state_model_test import _named_block, _parse_race_script
+from shared.ai_race_test_support import _named_block, _parse_race_script
 from stalker_lifecycle_test import ROOT, StalkerScript, _option
 
 EVENTS = "events/DEUSEX_corporate_cold_war.txt"

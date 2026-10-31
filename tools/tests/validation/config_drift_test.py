@@ -612,9 +612,11 @@ def test_prepare_workspace_separates_pr_data_from_validation_tooling():
     assert "base-sha" not in valcache["with"]["key"]
 
 
-def test_graphic_database_is_present_throughout_workspace_preparation():
+@pytest.mark.parametrize(
+    "path", ["gfx/interface/equipmentdesigner/graphic_db", "gfx/texticons"]
+)
+def test_graphic_assets_are_present_throughout_workspace_preparation(path):
     workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
-    path = "gfx/interface/equipmentdesigner/graphic_db"
     checkout = workflow_step("prepare-workspace", "Checkout PR content")
     cache = workflow_step("prepare-workspace", "Restore sparse workspace cache")
     assert path in checkout["with"]["sparse-checkout"].split()
@@ -672,6 +674,10 @@ def test_pull_request_report_only_publishes_an_artifact():
         "needs.detect-changes.outputs.trusted-ref != '' }}"
     )
     assert report["permissions"] == {"contents": "read"}
+    assert all(
+        "write" not in job.get("permissions", {}).values()
+        for job in workflow["jobs"].values()
+    )
     text = CI_WORKFLOW.read_text(encoding="utf-8")
     assert "--post-comment" not in text
     assert "--checks-api" not in text
@@ -696,6 +702,30 @@ def test_pull_request_report_only_publishes_an_artifact():
     publisher = trusted["jobs"]["validation-report"]
     assert publisher["permissions"]["checks"] == "write"
     assert publisher["permissions"]["pull-requests"] == "write"
+
+
+def test_oem_report_has_no_competing_artifact_publisher():
+    assert not (CI_WORKFLOW.parent / "validation-report.yml").exists()
+    checkout = workflow_step("tools-tests", "Checkout tools test tree")
+    assert ".github/workflows/validation-report.yml" in (
+        checkout["with"]["sparse-checkout"].splitlines()
+    )
+    report = workflow_step("report", "Generate validation report")
+    assert "--comment-output" not in report["run"]
+    upload = workflow_step("report", "Upload combined report")
+    assert upload["with"]["path"] == "report.md"
+
+
+def test_empty_report_requires_every_validation_job_to_be_skipped():
+    workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
+    required = workflow["jobs"]["gate"]["needs"]
+    conditions = [
+        f"needs.{job}.result == '{'success' if job == 'detect-changes' else 'skipped'}'"
+        for job in required
+        if job != "report"
+    ]
+    selector = workflow["jobs"]["report"]["env"]["NO_TESTS_SELECTED"]
+    assert " ".join(selector.split()) == "${{ " + " && ".join(conditions) + " }}"
 
 
 def test_suite_step_ids_are_unique():
@@ -1368,13 +1398,20 @@ def test_resolver_refreshes_the_live_head_and_preserves_dispatch_pins(tmp_path, 
         pytest.param("exit 1", id="head unreadable"),
     ],
 )
-def test_pull_request_report_never_posts_comments_or_checks_the_live_head(tmp_path, gh):
+@pytest.mark.parametrize("skipped", ["false", "true"])
+@pytest.mark.parametrize("supports_no_tests", [False, True])
+def test_pull_request_report_never_posts_comments_or_checks_the_live_head(
+    tmp_path, gh, skipped, supports_no_tests
+):
     calls = tmp_path / "calls.txt"
     gh_calls = tmp_path / "gh-calls.txt"
+    report_help = "--baseline-commit"
+    if supports_no_tests:
+        report_help += " --no-tests-selected"
     path = _stub_commands(
         tmp_path,
         gh=f'echo called >> "{gh_calls}"\n{gh}',
-        python3=f'if [ "$2" = --help ]; then echo --baseline-commit; else printf "%s\n" "$@" > "{calls}"; fi',
+        python3=f'if [ "$2" = --help ]; then echo "{report_help}"; else printf "%s\n" "$@" > "{calls}"; fi',
     )
     step = workflow_step("report", "Generate validation report")
     script = substitute_expressions(step["run"], {"github.repository": "o/r"})
@@ -1389,6 +1426,7 @@ def test_pull_request_report_never_posts_comments_or_checks_the_live_head(tmp_pa
         "BASELINE_SHA": _LIVE_BASE,
         "TOOLSHASH": "hash",
         "TOOLING_CHANGED": "false",
+        "NO_TESTS_SELECTED": skipped,
     }
 
     result = run_bash_step(script, tmp_path, env)
@@ -1400,6 +1438,11 @@ def test_pull_request_report_never_posts_comments_or_checks_the_live_head(tmp_pa
     assert arguments[arguments.index("--commit-sha") + 1] == _LIVE_HEAD
     assert arguments[arguments.index("--baseline-commit") + 1] == _LIVE_BASE
     assert not gh_calls.exists()
+    assert "--comment-output" not in arguments
+    assert ("--no-tests-selected" in arguments) is (
+        skipped == "true" and supports_no_tests
+    )
+    assert "GITHUB_TOKEN" not in step["env"]
 
 
 def test_every_fingerprint_site_hashes_the_same_inputs():

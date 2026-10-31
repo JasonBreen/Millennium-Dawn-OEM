@@ -48,6 +48,7 @@ env:
     tutorial/**/*.txt
     gfx/interface/decisions
     gfx/interface/equipmentdesigner/graphic_db
+    gfx/texticons
     map/adjacency_rules.txt
     music
     tools
@@ -216,7 +217,7 @@ jobs:
           for package in pytest-xdist pytest-cov; do
             grep -Fq "\"$package" pyproject.toml || missing+=("$package")
           done
-          # The report and base scan run the head's scripts with these flags.
+          # Keep the head tooling compatible with the validation suite.
           grep -Fq -- --main-tools-baseline \
             tools/generate_validation_report.py ||
             missing+=("--main-tools-baseline")
@@ -427,6 +428,7 @@ jobs:
             tutorial/**/*.txt
             gfx/interface/decisions
             gfx/interface/equipmentdesigner/graphic_db
+            gfx/texticons
             map/adjacency_rules.txt
             music
             *.mod
@@ -450,6 +452,7 @@ jobs:
             tutorial/**/*.txt
             gfx/interface/decisions
             gfx/interface/equipmentdesigner/graphic_db
+            gfx/texticons
             map/adjacency_rules.txt
             music
             *.mod
@@ -608,6 +611,7 @@ jobs:
             bun.lock
             .jscpd.json
             .github/workflows/test-suite.yml
+            .github/workflows/validation-report.yml
             .github/workflows/nightly-pr-validation.yml
             .github/workflows/pr-cache-cleanup.yml
             .github/workflows/validator-cache.yml
@@ -747,6 +751,7 @@ jobs:
             common
             events
             history
+            interface
             localisation/english
             localisation/*/MD_frontend_l_*.yml
           sparse-checkout-cone-mode: false
@@ -1371,6 +1376,15 @@ jobs:
       BASELINE_SHA: >-
         ${{ needs.detect-changes.outputs.baseline-sha || github.sha }}
       TOOLING_CHANGED: ${{ needs.detect-changes.outputs.tooling-changed }}
+      NO_TESTS_SELECTED: >-
+        ${{ needs.detect-changes.result == 'success' &&
+        needs.validate-paths.result == 'skipped' &&
+        needs.prepare-workspace.result == 'skipped' &&
+        needs.tools-tests.result == 'skipped' &&
+        needs.content-tests.result == 'skipped' &&
+        needs.tools-quality.result == 'skipped' &&
+        needs.mod-tests.result == 'skipped' &&
+        needs.docs-quality.result == 'skipped' }}
       VALIDATION_SCOPE: >-
         ${{ needs.detect-changes.outputs.full_suite == 'true' &&
         'full' || 'partial' }}
@@ -1477,6 +1491,10 @@ jobs:
           if grep -Fq -- '--baseline-commit' <<< "$report_help"; then
             args+=(--baseline-commit "$BASELINE_SHA")
           fi
+          if [ "$NO_TESTS_SELECTED" = true ] &&
+              grep -Fq -- '--no-tests-selected' <<< "$report_help"; then
+            args+=(--no-tests-selected)
+          fi
           if [ "$TOOLING_CHANGED" = true ] &&
               grep -Fq -- '--tooling-changed' <<< "$report_help"; then
             args+=(--tooling-changed)
@@ -1505,6 +1523,7 @@ jobs:
         with:
           name: validation-report
           path: report.md
+          if-no-files-found: error
           retention-days: 30
 
   gate:

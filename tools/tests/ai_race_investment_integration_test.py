@@ -7,7 +7,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import pytest
-from ai_race_state_model_test import (
+from shared.ai_race_test_support import (
     RaceScript,
     _extract_block,
     _named_block,
@@ -501,14 +501,30 @@ def test_dispatch_and_acceptance_use_frozen_terms_after_staging_changes():
     assert len(model.project_starts) == 1
 
 
-def test_acceptance_preserves_approval_after_cash_or_reserve_changes():
-    model, investor, _receiver, chosen = world()
+def _assert_investment_payment(model, investor, receiver, treasury, accepted):
+    assert investor["treasury"] == treasury - (12 if accepted else 0)
+    assert receiver["treasury"] == pytest.approx(99998.8 if accepted else 100000)
+    assert model.project_starts == ([(1, 0)] if accepted else [])
+
+
+@pytest.mark.parametrize(
+    "treasury,reserve,accepted", [(1, 100000, False), (100, 99, False), (62, 50, True)]
+)
+def test_acceptance_rechecks_cash_and_reserve_before_charging(
+    treasury, reserve, accepted
+):
+    model, investor, receiver, chosen = world()
     propose(model, chosen)
     model.deliver()
-    investor.update(treasury=1, ai_race_ai_savings_target=100000)
+    investor.update(treasury=treasury, ai_race_ai_savings_target=reserve)
     model.respond(model.popups[0])
-    assert investor["treasury"] == -11
+    _assert_investment_payment(model, investor, receiver, treasury, accepted)
+    assert bool(model.influence) is accepted
     assert not pending(model)
+    assert "pending_offer_generation^1" not in receiver
+    assert any(event[0] == "investments_event.13" for event in model.queue) is (
+        not accepted
+    )
 
 
 def test_two_investors_do_not_overwrite_each_others_terms():
@@ -721,8 +737,13 @@ def test_full_project_slots_do_not_charge_recipient_or_award_influence():
     assert not model.charges and not model.influence
 
 
-def test_untracked_scripted_offer_keeps_original_cost_and_receiver_snapshot_path():
-    model, investor, receiver, _chosen = world(treasury=10, reserve=10000)
+@pytest.mark.parametrize(
+    "treasury,reserve,accepted", [(10, 0, False), (100, 10000, False), (62, 50, True)]
+)
+def test_untracked_scripted_offer_rechecks_funds_and_keeps_receiver_snapshot_cost(
+    treasury, reserve, accepted
+):
+    model, investor, receiver, _chosen = world(treasury=treasury, reserve=reserve)
     investor.update(
         investments_state_target=-100,
         project_monetary_cost_effect=-12,
@@ -737,8 +758,11 @@ def test_untracked_scripted_offer_keeps_original_cost_and_receiver_snapshot_path
     model.deliver()
     assert receiver["pending_offer_total_cost"] == 12
     model.respond(model.popups[0])
-    assert investor["treasury"] == -2
-    assert receiver["treasury"] == pytest.approx(99998.8)
+    _assert_investment_payment(model, investor, receiver, treasury, accepted)
+    assert bool(model.influence) is accepted
+    assert any(event[0] == "investments_event.13" for event in model.queue) is (
+        not accepted
+    )
     assert "pending_offer_total_cost" not in receiver
 
 

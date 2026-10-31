@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 import pytest
-from ai_race_state_model_test import RaceScript, _named_block, _parse_race_script
+from shared.ai_race_test_support import RaceScript, _named_block, _parse_race_script
 from validate_scripted_params import (
     _parse_effect_contracts_from_file,
     _validate_call_sites_in_file,

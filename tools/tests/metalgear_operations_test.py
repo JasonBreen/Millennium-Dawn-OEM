@@ -1,6 +1,6 @@
 import re
 
-from ai_race_state_model_test import ROOT, _named_block
+from shared.ai_race_test_support import ROOT, _named_block
 
 
 def _read(path):
