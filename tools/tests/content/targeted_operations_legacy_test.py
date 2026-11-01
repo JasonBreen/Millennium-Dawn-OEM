@@ -74,6 +74,12 @@ def test_ct_ledger_preserves_main_navigation_and_explicit_top_access():
     ):
         assert condition in legacy_gate
         assert condition in ct_visibility
+    assert "check_variable = { var_open_MD_CT_gui = 2 }" in ct_visibility
+    core_ct = _named_block(
+        source("common/scripted_effects/00_targeted_operations_effects.txt"),
+        "TOP_open_core_ct",
+    )
+    assert "set_variable = { var_open_MD_CT_gui = 2 }" in core_ct
     assert "TOP_open_dossiers = yes" not in legacy_navigation
     for token in (
         "set_variable = { TOP_open = 0 }",
