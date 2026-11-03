@@ -51,7 +51,7 @@ AXES = {
 }
 
 PICTURES = {
-    1: "GFX_ukr_2000",
+    1: "GFX_UKR_Ballot_Box",
     2: "GFX_passenger_plane",
     3: "GFX_generic_factory",
     4: "GFX_news_missilesPointingUp",
@@ -59,7 +59,7 @@ PICTURES = {
     6: "GFX_raid_international_sanctions",
     7: "GFX_stock_market",
     8: "GFX_politics_negotiations",
-    9: "GFX_ukr_army",
+    9: "GFX_UKR_Army_Column_On_The_Move",
     10: "GFX_court",
     11: "GFX_broken_infrastructure",
     12: "GFX_generic_factory",
