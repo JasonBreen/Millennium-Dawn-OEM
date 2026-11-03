@@ -364,9 +364,9 @@ def test_cli_writes_only_the_requested_fixture(tmp_path, monkeypatch, capsys):
     assert "Fixed 1 log id(s) in 1 file(s)" in capsys.readouterr().out
 
 
-def test_cli_skips_non_focus_and_decision_files(tmp_path, monkeypatch, capsys):
-    target = tmp_path / "common/ideas/unrelated.txt"
-    _write(target, "ideas = {}\n")
+def test_cli_skips_files_outside_log_id_scope(tmp_path, monkeypatch, capsys):
+    target = tmp_path / "common/units/unrelated.txt"
+    _write(target, "units = {}\n")
     assert _run(monkeypatch, "--files", str(target)) == 0
-    assert "No focus/decision/event files to process" in capsys.readouterr().out
-    assert target.read_text(encoding="utf-8") == "ideas = {}\n"
+    assert "No focus/decision/event/idea files to process" in capsys.readouterr().out
+    assert target.read_text(encoding="utf-8") == "units = {}\n"
