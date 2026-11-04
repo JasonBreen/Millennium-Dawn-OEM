@@ -25,6 +25,6 @@ USA_focus_2028_democrat_victory
 
 No new corporate-history events, AI Race effects, or new tech tiers. Existing UK/US factory systems and country-level microchip modifiers continue to own their underlying simulation. Focus icons use keys already referenced in the US focus tree. Idea illustrations use pictures already used by USA AI, semiconductor, and presidential agenda ideas.
 
-## Checks performed
+## Verification boundaries
 
-Authoring-time checks: brace balance, unique focus/idea/localization keys, parent references, no duplicate tree coordinates, existing election-parent references, and preservation of existing focus source. Full-mod validators and HOI4 runtime/load testing still need to run on the PR branch.
+Authoring checks cover brace balance, unique focus, idea, and localization keys, parent references, focus coordinates, and preservation of the existing focus source. GitHub CI validates content on every PR head. HOI4 runtime/load testing and in-game focus-tree layout inspection remain manual.
