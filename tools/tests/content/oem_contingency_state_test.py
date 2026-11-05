@@ -150,20 +150,22 @@ class Script:
                 return len(data)
             position = int(self.value(index))
             return data[position] if position < len(data) else 0
-        data, key, scope = self.variable(token)
-        return self.temps.get((scope, key), data.get(key, 0))
+        if token in self.temps:
+            return self.temps[token]
+        data, key, _ = self.variable(token)
+        return data.get(key, 0)
 
     def write(self, name, value, temporary=False):
-        if "^" in name:
+        if temporary:
+            assert "." not in name and "^" not in name, "Use bare scalar temp names"
+            self.temps[name] = value
+        elif "^" in name:
             array, index = name.split("^", 1)
             data, key, _ = self.variable(array)
             data[key][int(self.value(index))] = value
         else:
-            data, key, scope = self.variable(name)
-            if temporary:
-                self.temps[scope, key] = value
-            else:
-                data[key] = value
+            data, key, _ = self.variable(name)
+            data[key] = value
 
     def scoped(self, scope, block, condition=False):
         assert scope in self.countries, f"Invalid country reference: {scope}"
@@ -476,6 +478,80 @@ def world(nuclear="balanced", dms="balanced"):
 def arm(script):
     script.countries["leader"]["vars"]["oem_dms_prepared_country"] = "leader"
     script.run("oem_dms_arm", "leader")
+
+
+@pytest.mark.parametrize(
+    "prefix,expected",
+    [("THIS", 17), ("PREV", 13), ("ROOT", 13), ("FROM", 19), ("global", 23)],
+)
+def test_temporary_values_cross_scopes_while_prefixed_reads_stay_persistent(
+    prefix, expected
+):
+    script = world()
+    script.sender = "attacker"
+    script.globals["probe"] = 23
+    for name, value in (("leader", 13), ("ally1", 17), ("attacker", 19)):
+        script.countries[name]["vars"]["probe"] = value
+    script.countries["leader"]["vars"]["test_recipient"] = "ally1"
+    script.effects["temp_contract"] = parse(f"""
+        set_temp_variable = {{ probe = 7 }}
+        set_temp_variable = {{ only_temp = 31 }}
+        var:test_recipient = {{
+            set_variable = {{ bare_read = probe }}
+            set_variable = {{ persistent_read = {prefix}.probe }}
+            set_variable = {{ missing_read = {prefix}.only_temp }}
+            add_to_temp_variable = {{ probe = 1 }}
+        }}
+        set_variable = {{ updated_read = probe }}
+        """)
+    script.run("temp_contract", "leader")
+    recipient = script.countries["ally1"]["vars"]
+    assert recipient["bare_read"] == 7
+    assert recipient["persistent_read"] == expected
+    assert recipient["missing_read"] == 0
+    assert recipient["probe"] == 17
+    assert script.countries["leader"]["vars"]["updated_read"] == 8
+    assert script.countries["leader"]["vars"]["probe"] == 13
+    script.effects["new_block"] = parse("set_variable = { expired_read = only_temp }")
+    script.run("new_block", "ally1")
+    assert recipient["expired_read"] == 0
+
+
+@pytest.mark.parametrize(
+    "name", ["THIS.probe", "PREV.probe", "ROOT.probe", "global.probe", "probe^0"]
+)
+def test_executor_rejects_unsupported_scoped_or_array_temp_writes(name):
+    script = world()
+    script.effects["invalid_temp"] = parse(f"set_temp_variable = {{ {name} = 1 }}")
+    with pytest.raises(AssertionError, match="Use bare scalar temp names"):
+        script.run("invalid_temp", "leader")
+
+
+@pytest.mark.parametrize("mask", range(8))
+def test_paid_arming_records_three_recipients_and_the_exact_research_mask(mask):
+    script = world()
+    leader = script.countries["leader"]
+    leader["techs"] = [
+        tech
+        for bit, tech in (
+            (1, "construction4"),
+            (2, "construction5"),
+            (4, "construction6"),
+        )
+        if mask & bit
+    ]
+    leader["vars"].update(
+        oem_dms_prepared_country="leader",
+        oem_dms_recipient_limit=0,
+        oem_dms_research_mask=99,
+    )
+    script.take_decision("oem_dms_arm_contingency", "leader")
+    assert leader["political_power"] == 400
+    assert "oem_dms_prepared_country" not in leader["vars"]
+    assert "oem_dms_armed" in leader["ideas"]
+    assert script.globals["oem_dms_recipients"] == ["ally1", "ally2", "ally3"]
+    assert script.globals["oem_dms_recipient_sources"] == ["leader"] * 3
+    assert script.globals["oem_dms_recipient_research"] == [mask] * 3
 
 
 def test_off_has_no_records_equipment_charge_or_events():
@@ -877,6 +953,22 @@ def test_multiple_contingencies_share_four_pending_crisis_slots():
     ] = "other_leader"
     script.run("oem_dms_arm", "other_leader")
     script.run("oem_dms_activate", "other_leader")
+    assert script.globals["oem_dms_recipients"] == [
+        "ally1",
+        "ally2",
+        "ally3",
+        "other1",
+        "other2",
+        "other3",
+    ]
+    for index, name in enumerate(script.globals["oem_dms_recipients"]):
+        variables = script.countries[name]["vars"]
+        assert variables["oem_dms_offer_slot"] == index
+        assert variables["oem_dms_fallen_source"] == (
+            "leader" if index < 3 else "other_leader"
+        )
+    assert script.globals["oem_dms_recipient_enemies"] == ["attacker"] * 6
+    assert script.globals["oem_dms_recipient_research"] == [7, 7, 7, 0, 0, 0]
     for name in members[1:4]:
         script.run("oem_dms_accept", name)
     for name in script.globals["oem_dms_recipients"]:
