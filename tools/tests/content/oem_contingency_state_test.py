@@ -173,22 +173,28 @@ class Script:
         finally:
             self.stack.pop()
 
+    def active_statements(self, block):
+        branch_taken = False
+        for statement in block:
+            key, _, body = statement
+            if key == "if":
+                branch_taken = False
+            elif key not in ("else_if", "else"):
+                yield statement
+                continue
+            if branch_taken:
+                continue
+            if key != "else" and not self.condition(fields(body)["limit"]):
+                continue
+            branch_taken = True
+            yield from self.active_statements(
+                [entry for entry in body if entry[0] != "limit"]
+            )
+
     def condition(self, block):
-        matched = False
-        for key, op, value in block:
-            if key in ("if", "else_if", "else"):
-                if key == "if":
-                    matched = False
-                data = fields(value)
-                if not matched and (key == "else" or self.condition(data["limit"])):
-                    matched = True
-                    if not self.condition(
-                        [entry for entry in value if entry[0] != "limit"]
-                    ):
-                        return False
-            elif not self.check(key, op, value):
-                return False
-        return True
+        return all(
+            self.check(*statement) for statement in self.active_statements(block)
+        )
 
     def check(self, key, op, value):
         country = self.countries[self.current]
@@ -241,8 +247,14 @@ class Script:
             return value in country["ideas"]
         if key in ("has_country_flag", "has_global_flag"):
             flags = country["flags"] if key == "has_country_flag" else self.globals
-            expiry = flags.get(value, -1)
-            return expiry is None or expiry > self.day
+            if value not in flags:
+                return False
+            record = flags[value]
+            if record is None:
+                return True
+            return record["value"] != 0 and (
+                record["expiry"] is None or record["expiry"] > self.day
+            )
         if key.startswith("is_in_") and key != "is_in_faction_with":
             continent = key.removeprefix("is_in_")
             continent = {"the_middle_east": "middle_east", "oceania": "australia"}.get(
@@ -282,17 +294,9 @@ class Script:
         raise AssertionError(f"Unmodeled trigger: {key}")
 
     def execute(self, block):
-        matched = False
-        for key, _, value in block:
+        for key, _, value in self.active_statements(block):
             country = self.countries[self.current]
-            if key in ("if", "else_if", "else"):
-                if key == "if":
-                    matched = False
-                data = fields(value)
-                if not matched and (key == "else" or self.condition(data["limit"])):
-                    matched = True
-                    self.execute([entry for entry in value if entry[0] != "limit"])
-            elif key == "oem_nuclear_devastate_country":
+            if key == "oem_nuclear_devastate_country":
                 self.history.append((self.current, "devastation"))
             elif key in self.effects:
                 self.execute(self.effects[key])
@@ -358,7 +362,12 @@ class Script:
                     else data["flag"]
                 )
                 flags = country["flags"] if key == "set_country_flag" else self.globals
-                flags[flag] = self.day + int(data["days"]) if "days" in data else None
+                flags[flag] = {
+                    "value": int(
+                        data.get("value", "0" if isinstance(value, list) else "1")
+                    ),
+                    "expiry": self.day + int(data["days"]) if "days" in data else None,
+                }
             elif key == "clr_country_flag":
                 country["flags"].pop(value, None)
             elif key == "country_event":
@@ -559,6 +568,21 @@ def test_timeout_then_stale_choice_never_repeats_collapse_or_trade_shock():
     assert script.globals["oem_nuclear_status"] == [2]
     assert script.countries["leader"]["stability"] == pytest.approx(0.4)
     assert script.countries["ally1"]["ideas"].count("oem_nuclear_trade_shock") == 1
+
+
+def test_global_trade_shock_respects_the_shared_cooldown_for_new_countries():
+    script = world()
+    script.strike("attacker", "leader")
+    script.run("oem_nuclear_finish_collapse", "leader")
+    script.country("newcomer")
+    script.day = 10
+    script.strike("attacker", "ally4")
+    script.run("oem_nuclear_finish_collapse", "ally4")
+    assert "oem_nuclear_trade_shock" not in script.countries["newcomer"]["ideas"]
+    script.day = 366
+    script.strike("attacker", "ally3")
+    script.run("oem_nuclear_finish_collapse", "ally3")
+    assert script.countries["newcomer"]["ideas"].count("oem_nuclear_trade_shock") == 1
 
 
 def test_nonnuclear_activation_survives_annexation_and_repeated_callbacks():

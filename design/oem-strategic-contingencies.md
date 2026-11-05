@@ -150,7 +150,7 @@ With both rules Off, no records, timers or periodic processing are created.
 
 Local verification on November 5, 2026:
 
-- The focused contingency suite passes 48 tests.
+- The focused contingency suite passes 49 tests.
 - The broader tools suite initially reported 11,341 passed, 65 skipped and 17 failed.
   All 17 failures reproduced on unchanged `100154673f`. They then passed on the
   feature checkout after providing Git Bash host access, task-local Python command
