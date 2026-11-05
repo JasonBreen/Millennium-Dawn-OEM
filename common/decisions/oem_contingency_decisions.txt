@@ -1,0 +1,206 @@
+oem_contingencies = {
+	oem_dms_escalate_crisis = {
+		icon = generic_research
+		cost = 50
+		visible = { oem_dms_crisis_pending = yes }
+		available = { custom_trigger_tooltip = { tooltip = oem_dms_crisis_target_valid_tt oem_dms_crisis_target_valid = yes } }
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_dms_escalate_crisis"
+			custom_effect_tooltip = oem_dms_crisis_escalate_tt
+			hidden_effect = { oem_dms_issue_wargoal = yes }
+		}
+		ai_will_do = { base = 1 modifier = { factor = 0 has_war = yes } }
+	}
+
+	oem_dms_defuse_crisis = {
+		icon = generic_research
+		visible = { oem_dms_crisis_pending = yes }
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_dms_defuse_crisis"
+			custom_effect_tooltip = oem_dms_crisis_defuse_tt
+			hidden_effect = { oem_dms_close_crisis = yes }
+		}
+		ai_will_do = { base = 3 }
+	}
+
+	oem_dms_prepare = {
+		icon = generic_research
+		cost = 200
+		days_remove = 180
+		days_re_enable = 30
+		visible = {
+			oem_dead_man_switch_enabled = yes
+			is_faction_leader = yes
+			NOT = { check_variable = { oem_dms_prepared_country = THIS } }
+			NOT = { is_in_array = { global.oem_dms_sources = THIS } }
+		}
+		available = {
+			custom_trigger_tooltip = { tooltip = oem_dms_eligibility_tt oem_dms_leader_eligible = yes }
+			custom_trigger_tooltip = { tooltip = oem_dms_capacity_tt check_variable = { global.oem_dms_sources^num < 8 } }
+		}
+		cancel_trigger = { NOT = { oem_dms_leader_eligible = yes } }
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_dms_prepare"
+			add_ideas = oem_dms_preparing
+			custom_effect_tooltip = oem_dms_prepare_tt
+		}
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_dms_prepare"
+			if = { limit = { has_idea = oem_dms_preparing } remove_ideas = oem_dms_preparing }
+			if = { limit = { oem_dms_leader_eligible = yes } set_variable = { oem_dms_prepared_country = THIS } }
+		}
+		cancel_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_dms_prepare"
+			if = { limit = { has_idea = oem_dms_preparing } remove_ideas = oem_dms_preparing }
+		}
+		ai_will_do = { base = 1 modifier = { factor = 0 has_war = yes } }
+	}
+
+	oem_dms_arm_contingency = {
+		icon = generic_research
+		cost = 100
+		visible = { oem_dead_man_switch_enabled = yes check_variable = { oem_dms_prepared_country = THIS } }
+		available = {
+			custom_trigger_tooltip = { tooltip = oem_dms_eligibility_tt oem_dms_leader_eligible = yes }
+			custom_trigger_tooltip = { tooltip = oem_dms_capacity_tt check_variable = { global.oem_dms_sources^num < 8 } }
+			any_of_scopes = {
+				array = faction_members
+				exists = yes
+				NOT = { tag = PREV }
+				NOT = { is_in_array = { global.oem_dms_recipients = THIS } }
+			}
+		}
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_dms_arm_contingency"
+			custom_effect_tooltip = oem_dms_arm_tt
+			hidden_effect = { oem_dms_arm = yes }
+		}
+		ai_will_do = { base = 1 modifier = { factor = 0 has_war = yes } }
+	}
+
+	oem_dms_stand_down = {
+		icon = generic_research
+		cost = 25
+		visible = { oem_dead_man_switch_enabled = yes has_idea = oem_dms_armed }
+		available = {
+			custom_trigger_tooltip = {
+				tooltip = oem_dms_armed_record_tt
+				check_variable = { global.oem_dms_sources^oem_dms_source_slot = THIS }
+				check_variable = { global.oem_dms_status^oem_dms_source_slot = 1 }
+			}
+		}
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_dms_stand_down"
+			if = {
+				limit = {
+					check_variable = { global.oem_dms_sources^oem_dms_source_slot = THIS }
+					check_variable = { global.oem_dms_status^oem_dms_source_slot = 1 }
+				}
+				set_variable = { global.oem_dms_status^oem_dms_source_slot = 3 }
+				if = { limit = { has_idea = oem_dms_armed } remove_ideas = oem_dms_armed }
+			}
+			custom_effect_tooltip = oem_dms_stand_down_tt
+		}
+		ai_will_do = { base = 0 }
+	}
+
+	oem_dms_absorb_archive = {
+		icon = generic_research
+		cost = 50
+		days_remove = 90
+		visible = {
+			oem_dead_man_switch_enabled = yes
+			check_variable = { global.oem_dms_recipients^oem_dms_offer_slot = THIS }
+			check_variable = { global.oem_dms_recipient_status^oem_dms_offer_slot = 2 }
+			check_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot > 0 }
+		}
+		available = {
+			num_of_factories > 9
+			has_capitulated = no
+			custom_trigger_tooltip = { tooltip = oem_dms_research_available_tt oem_dms_research_available = yes }
+		}
+		modifier = { research_speed_factor = -0.1 }
+		complete_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_dms_absorb_archive"
+			custom_effect_tooltip = oem_dms_absorb_archive_tt
+		}
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_dms_absorb_archive"
+			oem_dms_absorb_research = yes
+		}
+		ai_will_do = { base = 5 }
+	}
+
+	oem_dms_contain_successors = {
+		icon = generic_research
+		cost = 200
+		days_remove = 180
+		visible = {
+			oem_dms_successor_active = yes
+			OR = { has_idea = oem_dms_radicalized has_idea = oem_dms_radicalized_chaos }
+		}
+		available = { has_war = no has_stability > 0.29 }
+		cancel_trigger = { has_war = yes }
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_dms_contain_successors"
+			if = {
+				limit = { oem_dms_successor_active = yes }
+				set_variable = { global.oem_dms_recipient_status^oem_dms_offer_slot = 4 }
+				set_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot = 0 }
+				set_variable = { global.oem_dms_recipient_capacity^oem_dms_offer_slot = 0 }
+				set_variable = { global.oem_dms_pulse_scheduled^oem_dms_offer_slot = 0 }
+				oem_dms_close_crisis = yes
+				if = { limit = { has_idea = oem_dms_radicalized } remove_ideas = oem_dms_radicalized }
+				if = { limit = { has_idea = oem_dms_radicalized_chaos } remove_ideas = oem_dms_radicalized_chaos }
+			}
+		}
+		ai_will_do = { base = 5 }
+	}
+
+	oem_dms_support_networks = {
+		icon = generic_research
+		cost = 100
+		days_remove = 90
+		days_re_enable = 180
+		visible = { oem_dms_successor_active = yes }
+		available = {
+			has_capitulated = no
+			num_of_factories > 9
+			custom_trigger_tooltip = { tooltip = oem_dms_support_capacity_tt oem_dms_capacity_below_limit = yes }
+		}
+		modifier = { consumer_goods_factor = 0.05 }
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_dms_support_networks"
+			if = { limit = { has_capitulated = no num_of_factories > 9 } oem_dms_support_capacity = yes }
+		}
+		ai_will_do = { base = 1 modifier = { factor = 0 has_war = no } }
+	}
+
+	oem_nuclear_reconstruct = {
+		icon = generic_research
+		cost = 200
+		days_remove = 365
+		visible = { has_idea = oem_nuclear_collapse }
+		available = { has_war = no has_capitulated = no has_stability > 0.29 }
+		cancel_trigger = { has_war = yes }
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_nuclear_reconstruct"
+			if = { limit = { has_idea = oem_nuclear_collapse } remove_ideas = oem_nuclear_collapse }
+		}
+		ai_will_do = { base = 5 }
+	}
+
+	oem_nuclear_reconstruct_chaos = {
+		icon = generic_research
+		cost = 200
+		days_remove = 730
+		visible = { has_idea = oem_nuclear_collapse_chaos }
+		available = { has_war = no has_capitulated = no has_stability > 0.29 }
+		cancel_trigger = { has_war = yes }
+		remove_effect = {
+			log = "[GetDateText]: [Root.GetName]: Decision oem_nuclear_reconstruct_chaos"
+			if = { limit = { has_idea = oem_nuclear_collapse_chaos } remove_ideas = oem_nuclear_collapse_chaos }
+		}
+		ai_will_do = { base = 5 }
+	}
+}

@@ -1,0 +1,131 @@
+oem_nuclear_collapse_enabled = {
+	NOT = { has_game_rule = { rule = rule_oem_nuclear_collapse option = off } }
+	has_dlc = "Gotterdammerung"
+}
+
+oem_dead_man_switch_enabled = {
+	NOT = { has_game_rule = { rule = rule_oem_dead_man_switch option = off } }
+}
+
+oem_dms_leader_eligible = {
+	exists = yes
+	is_faction_leader = yes
+	is_subject = no
+	has_capitulated = no
+	NOT = { oem_nuclear_response_pending = yes }
+	num_of_factories > 49
+	check_variable = { faction_members^num > 4 }
+	any_of_scopes = {
+		array = faction_members
+		exists = yes
+		NOT = { tag = PREV }
+		OR = {
+			AND = { is_in_africa = yes PREV = { is_in_africa = no } }
+			AND = { is_in_asia = yes PREV = { is_in_asia = no } }
+			AND = { is_in_europe = yes PREV = { is_in_europe = no } }
+			AND = { is_in_north_america = yes PREV = { is_in_north_america = no } }
+			AND = { is_in_south_america = yes PREV = { is_in_south_america = no } }
+			AND = { is_in_the_middle_east = yes PREV = { is_in_the_middle_east = no } }
+			AND = { is_in_oceania = yes PREV = { is_in_oceania = no } }
+		}
+	}
+}
+
+oem_nuclear_response_pending = {
+	oem_nuclear_collapse_enabled = yes
+	is_in_array = { global.oem_nuclear_victims = THIS }
+	check_variable = { global.oem_nuclear_victims^oem_nuclear_slot = THIS }
+	check_variable = { global.oem_nuclear_status^oem_nuclear_slot = 1 }
+}
+
+oem_nuclear_can_retaliate = {
+	oem_nuclear_response_pending = yes
+	is_able_to_use_nuclear_strikes = yes
+	check_variable = { global.oem_nuclear_reserves^oem_nuclear_slot > 0 }
+	var:oem_nuclear_attacker = {
+		exists = yes
+		NOT = { tag = PREV }
+		has_war_with = PREV
+		any_owned_state = { always = yes }
+	}
+}
+
+oem_dms_offer_pending = {
+	oem_dead_man_switch_enabled = yes
+	is_in_array = { global.oem_dms_recipients = THIS }
+	check_variable = { global.oem_dms_recipients^oem_dms_offer_slot = THIS }
+	check_variable = { global.oem_dms_recipient_status^oem_dms_offer_slot = 1 }
+	exists = yes
+	has_capitulated = no
+	num_of_controlled_states > 0
+}
+
+oem_dms_research_available = {
+	OR = {
+		AND = { has_tech = construction3 NOT = { has_tech = construction4 } oem_dms_archive_has_construction4 = yes }
+		AND = { has_tech = construction4 NOT = { has_tech = construction5 } oem_dms_archive_has_construction5 = yes }
+		AND = { has_tech = construction5 NOT = { has_tech = construction6 } oem_dms_archive_has_construction6 = yes }
+	}
+}
+
+oem_dms_archive_has_construction4 = {
+	OR = {
+		check_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot = 1 }
+		check_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot = 3 }
+		check_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot = 5 }
+		check_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot = 7 }
+	}
+}
+
+oem_dms_archive_has_construction5 = {
+	OR = {
+		check_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot = 2 }
+		check_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot = 3 }
+		check_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot = 6 }
+		check_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot = 7 }
+	}
+}
+
+oem_dms_archive_has_construction6 = {
+	check_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot > 3 }
+}
+
+oem_dms_successor_active = {
+	oem_dead_man_switch_enabled = yes
+	is_in_array = { global.oem_dms_recipients = THIS }
+	check_variable = { global.oem_dms_recipients^oem_dms_offer_slot = THIS }
+	check_variable = { global.oem_dms_recipient_status^oem_dms_offer_slot = 2 }
+}
+
+oem_dms_crisis_target_valid = {
+	oem_dms_successor_active = yes
+	check_variable = { global.oem_dms_recipient_enemies^oem_dms_offer_slot > 0 }
+	has_capitulated = no
+	is_subject = no
+	var:global.oem_dms_recipient_enemies^oem_dms_offer_slot = {
+		exists = yes
+		has_capitulated = no
+		NOT = { tag = PREV }
+		NOT = { has_war_with = PREV }
+		NOT = { is_in_faction_with = PREV }
+		NOT = { is_subject_of = PREV }
+		NOT = { has_non_aggression_pact_with = PREV }
+		PREV = {
+			NOT = { is_subject_of = PREV }
+			NOT = { has_wargoal_against = PREV }
+		}
+	}
+}
+
+oem_dms_crisis_pending = {
+	oem_dms_successor_active = yes
+	check_variable = { global.oem_dms_crisis_active^oem_dms_offer_slot = 1 }
+}
+
+oem_dms_capacity_below_limit = {
+	if = {
+		limit = { has_game_rule = { rule = rule_oem_dead_man_switch option = chaos } }
+		check_variable = { global.oem_dms_recipient_capacity^oem_dms_offer_slot < 6 }
+	}
+	else = { check_variable = { global.oem_dms_recipient_capacity^oem_dms_offer_slot < 3 } }
+}
