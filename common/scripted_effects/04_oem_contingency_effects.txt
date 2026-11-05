@@ -1,0 +1,170 @@
+oem_dms_arm = {
+	if = {
+		limit = {
+			oem_dead_man_switch_enabled = yes
+			oem_dms_leader_eligible = yes
+			check_variable = { oem_dms_prepared_country = THIS }
+			NOT = { is_in_array = { global.oem_dms_sources = THIS } }
+			check_variable = { global.oem_dms_sources^num < 8 }
+			any_of_scopes = {
+				array = faction_members
+				exists = yes
+				NOT = { tag = PREV }
+				NOT = { is_in_array = { global.oem_dms_recipients = THIS } }
+			}
+		}
+		set_variable = { oem_dms_source_slot = global.oem_dms_sources^num }
+		add_to_array = { global.oem_dms_sources = THIS }
+		add_to_array = { global.oem_dms_status = 1 }
+		# Archive bits record actual knowledge: Construction IV = 1, V = 2, VI = 4.
+		set_temp_variable = { oem_dms_research_mask = 0 }
+		if = { limit = { has_tech = construction4 } add_to_temp_variable = { oem_dms_research_mask = 1 } }
+		if = { limit = { has_tech = construction5 } add_to_temp_variable = { oem_dms_research_mask = 2 } }
+		if = { limit = { has_tech = construction6 } add_to_temp_variable = { oem_dms_research_mask = 4 } }
+		set_temp_variable = { oem_dms_recipient_limit = global.oem_dms_recipients^num }
+		add_to_temp_variable = { oem_dms_recipient_limit = 3 }
+		for_each_scope_loop = {
+			array = faction_members
+			if = {
+				limit = {
+					exists = yes
+					NOT = { tag = PREV }
+					NOT = { is_in_array = { global.oem_dms_recipients = THIS } }
+					check_variable = { global.oem_dms_recipients^num < PREV.oem_dms_recipient_limit }
+				}
+				add_to_array = { global.oem_dms_recipients = THIS }
+				add_to_array = { global.oem_dms_recipient_sources = PREV }
+				add_to_array = { global.oem_dms_recipient_research = PREV.oem_dms_research_mask }
+				add_to_array = { global.oem_dms_recipient_status = 0 }
+				add_to_array = { global.oem_dms_recipient_enemies = 0 }
+				add_to_array = { global.oem_dms_recipient_capacity = 0 }
+				add_to_array = { global.oem_dms_crisis_active = 0 }
+				add_to_array = { global.oem_dms_pulse_scheduled = 0 }
+				add_to_array = { global.oem_dms_next_pulse_day = 0 }
+			}
+		}
+		clear_variable = oem_dms_prepared_country
+		add_ideas = oem_dms_armed
+	}
+}
+
+# Effect: oem_dms_activate
+# Purpose: Consumes the prepared ledger before dispatching successor offers.
+# Parameters:
+# - oem_dms_enemy (variable): country responsible for the source's collapse
+oem_dms_activate = {
+	if = {
+		limit = { oem_dead_man_switch_enabled = yes }
+		for_each_loop = {
+			array = global.oem_dms_sources
+			index = oem_dms_source_index
+			value = oem_dms_source
+			if = {
+				limit = {
+					check_variable = { oem_dms_source = THIS }
+					check_variable = { global.oem_dms_status^oem_dms_source_index = 1 }
+				}
+				set_variable = { global.oem_dms_status^oem_dms_source_index = 2 }
+				if = { limit = { has_idea = oem_dms_armed } remove_ideas = oem_dms_armed }
+				for_each_loop = {
+					array = global.oem_dms_recipients
+					index = oem_dms_recipient_index
+					value = oem_dms_recipient
+					if = {
+						limit = {
+							check_variable = { global.oem_dms_recipient_sources^oem_dms_recipient_index = THIS }
+							check_variable = { global.oem_dms_recipient_status^oem_dms_recipient_index = 0 }
+						}
+						set_variable = { global.oem_dms_recipient_status^oem_dms_recipient_index = 3 }
+						set_variable = { global.oem_dms_recipient_enemies^oem_dms_recipient_index = oem_dms_enemy }
+						var:oem_dms_recipient = {
+							if = {
+								limit = { exists = yes has_capitulated = no num_of_controlled_states > 0 }
+								set_variable = { oem_dms_offer_slot = PREV.oem_dms_recipient_index }
+								set_variable = { oem_dms_fallen_source = PREV }
+								set_variable = { global.oem_dms_recipient_status^oem_dms_offer_slot = 1 }
+								country_event = oem_contingency.10
+								country_event = { id = oem_contingency.11 days = 14 }
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+oem_dms_accept = {
+	if = {
+		limit = { oem_dms_offer_pending = yes has_political_power > 49 }
+		set_variable = { global.oem_dms_recipient_status^oem_dms_offer_slot = 2 }
+		add_political_power = -50
+		set_variable = { global.oem_dms_recipient_capacity^oem_dms_offer_slot = 3 }
+		if = {
+			limit = { has_game_rule = { rule = rule_oem_dead_man_switch option = chaos } }
+			add_ideas = oem_dms_radicalized_chaos
+			set_variable = { global.oem_dms_recipient_capacity^oem_dms_offer_slot = 6 }
+		}
+		else = { add_ideas = oem_dms_radicalized }
+		oem_dms_schedule_pulse = yes
+	}
+}
+
+oem_dms_decline = {
+	if = {
+		limit = { oem_dms_offer_pending = yes }
+		set_variable = { global.oem_dms_recipient_status^oem_dms_offer_slot = 3 }
+		set_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot = 0 }
+	}
+}
+
+oem_dms_absorb_research = {
+	if = {
+		limit = {
+			oem_dead_man_switch_enabled = yes
+			check_variable = { global.oem_dms_recipients^oem_dms_offer_slot = THIS }
+			check_variable = { global.oem_dms_recipient_status^oem_dms_offer_slot = 2 }
+			check_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot > 0 }
+			num_of_factories > 9
+			has_capitulated = no
+		}
+		set_temp_variable = { oem_dms_absorption_tech = 0 }
+		if = {
+			limit = { has_tech = construction3 NOT = { has_tech = construction4 } oem_dms_archive_has_construction4 = yes }
+			set_temp_variable = { oem_dms_absorption_tech = 4 }
+		}
+		else_if = {
+			limit = { has_tech = construction4 NOT = { has_tech = construction5 } oem_dms_archive_has_construction5 = yes }
+			set_temp_variable = { oem_dms_absorption_tech = 5 }
+		}
+		else_if = {
+			limit = { has_tech = construction5 NOT = { has_tech = construction6 } oem_dms_archive_has_construction6 = yes }
+			set_temp_variable = { oem_dms_absorption_tech = 6 }
+		}
+		set_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot = 0 }
+		if = {
+			limit = { check_variable = { oem_dms_absorption_tech = 4 } }
+			if = {
+				limit = { has_game_rule = { rule = rule_oem_dead_man_switch option = chaos } }
+				add_tech_bonus = { name = oem_dms_archive_bonus bonus = 0.5 uses = 1 technology = construction4 }
+			}
+			else = { add_tech_bonus = { name = oem_dms_archive_bonus bonus = 0.25 uses = 1 technology = construction4 } }
+		}
+		else_if = {
+			limit = { check_variable = { oem_dms_absorption_tech = 5 } }
+			if = {
+				limit = { has_game_rule = { rule = rule_oem_dead_man_switch option = chaos } }
+				add_tech_bonus = { name = oem_dms_archive_bonus bonus = 0.5 uses = 1 technology = construction5 }
+			}
+			else = { add_tech_bonus = { name = oem_dms_archive_bonus bonus = 0.25 uses = 1 technology = construction5 } }
+		}
+		else_if = {
+			limit = { check_variable = { oem_dms_absorption_tech = 6 } }
+			if = {
+				limit = { has_game_rule = { rule = rule_oem_dead_man_switch option = chaos } }
+				add_tech_bonus = { name = oem_dms_archive_bonus bonus = 0.5 uses = 1 technology = construction6 }
+			}
+			else = { add_tech_bonus = { name = oem_dms_archive_bonus bonus = 0.25 uses = 1 technology = construction6 } }
+		}
+	}
+}

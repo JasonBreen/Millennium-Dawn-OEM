@@ -1,0 +1,27 @@
+on_actions = {
+	on_capitulation_immediate = {
+		effect = {
+			oem_nuclear_finish_collapse = yes
+			if = {
+				limit = { oem_dead_man_switch_enabled = yes }
+				set_variable = { oem_dms_enemy = FROM }
+				oem_dms_activate = yes
+			}
+		}
+	}
+
+	# FROM still exists here; resolve without sending an event to an annexed country.
+	on_annex = {
+		effect = {
+			FROM = {
+				oem_nuclear_finish_collapse = yes
+				if = {
+					limit = { oem_dead_man_switch_enabled = yes }
+					set_variable = { oem_dms_enemy = PREV }
+					oem_dms_activate = yes
+				}
+				oem_dms_close_annexed_recipient = yes
+			}
+		}
+	}
+}

@@ -1,0 +1,153 @@
+# Effect: oem_nuclear_stage_strike
+# Purpose: Records the engine's strategic strike in raid scope.
+# Parameters:
+# - actor_country (variable): engine-provided attacking country reference
+# - victim_country (variable): engine-provided defending country reference
+oem_nuclear_stage_strike = {
+	if = {
+		limit = { oem_nuclear_collapse_enabled = yes }
+		var:actor_country = { oem_nuclear_condemn_actor = yes }
+		var:victim_country = {
+			if = {
+				limit = {
+					exists = yes
+					NOT = { is_in_array = { global.oem_nuclear_victims = THIS } }
+					check_variable = { global.oem_nuclear_victims^num < 512 }
+				}
+				set_variable = { oem_nuclear_attacker = PREV.actor_country }
+				oem_nuclear_queue_victim = yes
+			}
+			else_if = {
+				limit = { NOT = { oem_nuclear_response_pending = yes } }
+				oem_nuclear_devastate_country = yes
+			}
+		}
+	}
+}
+
+# Effect: oem_nuclear_queue_victim
+# Purpose: Reserves a response before devastation in defending country scope.
+# Parameters:
+# - oem_nuclear_attacker (variable): incoming attacker's country reference
+oem_nuclear_queue_victim = {
+	if = {
+		limit = {
+			oem_nuclear_collapse_enabled = yes
+			exists = yes
+			NOT = { is_in_array = { global.oem_nuclear_victims = THIS } }
+			check_variable = { global.oem_nuclear_victims^num < 512 }
+			var:oem_nuclear_attacker = { exists = yes NOT = { tag = PREV } }
+		}
+		set_variable = { oem_nuclear_slot = global.oem_nuclear_victims^num }
+		add_to_array = { global.oem_nuclear_victims = THIS }
+		add_to_array = { global.oem_nuclear_attackers = oem_nuclear_attacker }
+		add_to_array = { global.oem_nuclear_status = 1 }
+		add_to_array = { global.oem_nuclear_reserves = 0 }
+		add_to_array = { global.oem_nuclear_prepared = 0 }
+		set_country_flag = has_been_nuked
+		if = {
+			limit = { oem_dead_man_switch_enabled = yes }
+			for_each_loop = {
+				array = global.oem_dms_sources
+				index = oem_nuclear_source_slot
+				value = oem_nuclear_source
+				if = {
+					limit = {
+						check_variable = { oem_nuclear_source = THIS }
+						check_variable = { global.oem_dms_status^oem_nuclear_source_slot = 1 }
+					}
+					set_variable = { global.oem_nuclear_prepared^oem_nuclear_slot = 1 }
+				}
+			}
+		}
+		if = {
+			limit = {
+				has_capitulated = no
+				OR = { has_idea = nuclear_power_def has_idea = nuclear_power_off }
+				is_able_to_use_nuclear_strikes = yes
+				has_equipment = { nuclear_missile_equipment > 0 }
+			}
+			add_equipment_to_stockpile = { type = nuclear_missile_equipment amount = -1 }
+			set_variable = { global.oem_nuclear_reserves^oem_nuclear_slot = 1 }
+		}
+		country_event = oem_contingency.1
+		country_event = { id = oem_contingency.2 days = 7 }
+	}
+}
+
+oem_nuclear_retaliate = {
+	if = {
+		limit = { oem_nuclear_can_retaliate = yes }
+		# Claim the response before a reciprocal strike can queue another event.
+		set_variable = { global.oem_nuclear_reserves^oem_nuclear_slot = 0 }
+		oem_nuclear_condemn_actor = yes
+		var:oem_nuclear_attacker = {
+			if = {
+				limit = {
+					NOT = { is_in_array = { global.oem_nuclear_victims = THIS } }
+					check_variable = { global.oem_nuclear_victims^num < 512 }
+				}
+				set_variable = { oem_nuclear_attacker = PREV }
+				oem_nuclear_queue_victim = yes
+			}
+			else_if = {
+				limit = { NOT = { oem_nuclear_response_pending = yes } }
+				oem_nuclear_devastate_country = yes
+			}
+			PREV = { set_country_flag = nuclear_strategic_strike_against@PREV }
+			set_country_flag = has_been_nuked
+		}
+	}
+	oem_nuclear_finish_collapse = yes
+}
+
+oem_nuclear_devastate_country = {
+	set_country_flag = { flag = state_nuke_check days = 1 value = 1 }
+	every_owned_state = {
+		# Preserve the working raid scopes: the owner launches against its own state.
+		PREV = { launch_nuke = { state = PREV use_nuke = no } }
+		damage_units = { state = THIS damage = 0.6 ratio = yes army = yes navy = yes }
+		add_dynamic_modifier = { modifier = nuclear_fallout days = 1095 }
+	}
+}
+
+oem_nuclear_finish_collapse = {
+	if = {
+		limit = { oem_nuclear_response_pending = yes }
+		set_variable = { global.oem_nuclear_status^oem_nuclear_slot = 2 }
+		# Unused emergency missiles are decommissioned; they cannot fund a later response.
+		set_variable = { global.oem_nuclear_reserves^oem_nuclear_slot = 0 }
+		if = {
+			limit = { check_variable = { global.oem_nuclear_prepared^oem_nuclear_slot = 1 } }
+			set_variable = { oem_dms_enemy = oem_nuclear_attacker }
+			oem_dms_activate = yes
+		}
+		oem_nuclear_devastate_country = yes
+		if = {
+			limit = { has_game_rule = { rule = rule_oem_nuclear_collapse option = chaos } }
+			add_ideas = oem_nuclear_collapse_chaos
+		}
+		else = { add_ideas = oem_nuclear_collapse }
+		add_stability = -0.2
+		if = {
+			limit = { NOT = { has_global_flag = oem_nuclear_trade_shock_cooldown } }
+			set_global_flag = { flag = oem_nuclear_trade_shock_cooldown days = 365 }
+			every_country = {
+				limit = { exists = yes NOT = { has_idea = oem_nuclear_trade_shock } }
+				add_timed_idea = { idea = oem_nuclear_trade_shock days = 365 }
+			}
+		}
+	}
+}
+
+oem_nuclear_condemn_actor = {
+	if = {
+		limit = { exists = yes NOT = { is_in_array = { global.oem_nuclear_condemned = THIS } } }
+		add_to_array = { global.oem_nuclear_condemned = THIS }
+		add_timed_idea = { idea = oem_nuclear_pariah days = 1095 }
+		every_other_country = {
+			limit = { exists = yes }
+			add_opinion_modifier = { target = PREV modifier = oem_nuclear_condemnation }
+		}
+	}
+}

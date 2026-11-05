@@ -1,0 +1,94 @@
+oem_dms_schedule_pulse = {
+	if = {
+		limit = {
+			oem_dms_successor_active = yes
+			check_variable = { global.oem_dms_recipient_capacity^oem_dms_offer_slot > 0 }
+			check_variable = { global.oem_dms_crisis_active^oem_dms_offer_slot = 0 }
+			check_variable = { global.oem_dms_pulse_scheduled^oem_dms_offer_slot = 0 }
+		}
+		set_variable = { global.oem_dms_pulse_scheduled^oem_dms_offer_slot = 1 }
+		set_variable = { global.oem_dms_next_pulse_day^oem_dms_offer_slot = { value = global.num_days add = 90 } }
+		country_event = { id = oem_contingency.20 days = 90 }
+	}
+}
+
+oem_dms_process_pulse = {
+	if = {
+		limit = {
+			oem_dms_successor_active = yes
+			check_variable = { global.oem_dms_pulse_scheduled^oem_dms_offer_slot = 1 }
+			check_variable = { var = global.num_days value = global.oem_dms_next_pulse_day^oem_dms_offer_slot compare = greater_than_or_equals }
+		}
+		set_variable = { global.oem_dms_pulse_scheduled^oem_dms_offer_slot = 0 }
+		if = {
+			limit = {
+				oem_dms_crisis_target_valid = yes
+				check_variable = { global.oem_dms_recipient_capacity^oem_dms_offer_slot > 0 }
+				check_variable = { global.oem_dms_crisis_active^oem_dms_offer_slot = 0 }
+				check_variable = { global.oem_dms_active_crises < 4 }
+			}
+			subtract_from_variable = { global.oem_dms_recipient_capacity^oem_dms_offer_slot = 1 }
+			set_variable = { global.oem_dms_crisis_active^oem_dms_offer_slot = 1 }
+			set_variable = { oem_dms_crisis_enemy = global.oem_dms_recipient_enemies^oem_dms_offer_slot }
+			add_to_variable = { global.oem_dms_active_crises = 1 }
+			country_event = oem_contingency.21
+			country_event = { id = oem_contingency.22 days = 14 }
+		}
+		oem_dms_schedule_pulse = yes
+	}
+}
+
+oem_dms_close_crisis = {
+	if = {
+		limit = {
+			oem_dead_man_switch_enabled = yes
+			check_variable = { global.oem_dms_recipients^oem_dms_offer_slot = THIS }
+			check_variable = { global.oem_dms_crisis_active^oem_dms_offer_slot = 1 }
+		}
+		set_variable = { global.oem_dms_crisis_active^oem_dms_offer_slot = 0 }
+		subtract_from_variable = { global.oem_dms_active_crises = 1 }
+		oem_dms_schedule_pulse = yes
+	}
+}
+
+oem_dms_issue_wargoal = {
+	if = {
+		limit = { oem_dms_crisis_pending = yes oem_dms_crisis_target_valid = yes }
+		oem_dms_close_crisis = yes
+		var:global.oem_dms_recipient_enemies^oem_dms_offer_slot = {
+			PREV = { create_wargoal = { type = puppet_wargoal_focus target = PREV } }
+		}
+	}
+	else = { oem_dms_close_crisis = yes }
+}
+
+oem_dms_support_capacity = {
+	if = {
+		limit = {
+			oem_dms_successor_active = yes
+			oem_dms_capacity_below_limit = yes
+		}
+		add_to_variable = { global.oem_dms_recipient_capacity^oem_dms_offer_slot = 1 }
+		oem_dms_schedule_pulse = yes
+	}
+}
+
+oem_dms_close_annexed_recipient = {
+	if = {
+		limit = { oem_dead_man_switch_enabled = yes is_in_array = { global.oem_dms_recipients = THIS } }
+		for_each_loop = {
+			array = global.oem_dms_recipients
+			index = oem_dms_closed_slot
+			value = oem_dms_closed_country
+			if = {
+				limit = { check_variable = { oem_dms_closed_country = THIS } }
+				set_variable = { oem_dms_offer_slot = oem_dms_closed_slot }
+				set_variable = { global.oem_dms_recipient_status^oem_dms_offer_slot = 4 }
+				set_variable = { global.oem_dms_recipient_research^oem_dms_offer_slot = 0 }
+				set_variable = { global.oem_dms_recipient_capacity^oem_dms_offer_slot = 0 }
+				set_variable = { global.oem_dms_pulse_scheduled^oem_dms_offer_slot = 0 }
+				oem_dms_close_crisis = yes
+			}
+		}
+	}
+}
