@@ -89,6 +89,12 @@ Existing recipients missing at activation are closed without an event. Membershi
 is an arming-time snapshot; former partners receive an optional offer even if their
 later faction membership changes. Crisis diplomacy is rechecked against current state.
 
+Arming limits, research masks and loop indices are temporary values shared across
+country scopes in the current scripted block. Read them by bare name, including
+inside recipient scopes. Explicit country prefixes still select persistent country
+variables. See [Variables](../.claude/docs/hoi4-data-structures.md#variables) and the
+[engine loop reference](../resources/documentation/effects_documentation.md#for_each_loop).
+
 Accepting a legacy costs 50 PP and applies political pressure through modifiers.
 There is no ideology replacement, automatic war declaration, new tag, new unit or
 equipment grant. Declining or ignoring the offer for fourteen days closes it permanently.
@@ -150,7 +156,12 @@ With both rules Off, no records, timers or periodic processing are created.
 
 Local verification on November 5, 2026:
 
-- The focused contingency suite passes 49 tests.
+- The focused contingency suite passes 67 tests. Regressions cover unscoped
+  temporaries versus explicit persistent reads, all eight research masks through
+  paid arming, and six distinct successor slots across two contingencies.
+- Correcting the executor's temporary-variable model exposed 30 failures in the
+  original 49 tests before fixing the three game-script reads. Each bad read was
+  then reintroduced separately in memory and rejected by its regression test.
 - The broader tools suite initially reported 11,341 passed, 65 skipped and 17 failed.
   All 17 failures reproduced on unchanged `100154673f`. They then passed on the
   feature checkout after providing Git Bash host access, task-local Python command
@@ -167,7 +178,8 @@ cadence, replenishment, containment and annexation cleanup. This is script-level
 regression evidence. It is not native engine serialization, scope dispatch or MP proof.
 
 No game was started, interrupted or reconfigured. No playset, installed mod or save
-was changed. No PR was published. New saves using fixed pregame rules are the supported
+was changed. The initial implementation was merged in [OEM PR #570](https://github.com/JasonBreen/Millennium-Dawn-OEM/pull/570).
+New saves using fixed pregame rules are the supported
 test target; no old-save migration or mid-campaign rule changes are supported.
 
 The numbers are conservative implementation assumptions and require gameplay tuning.
@@ -206,6 +218,9 @@ recorded game version, DLC set, exact commit and multiplayer participants.
       remove or ally the aggressor. Verify valid messages, safe missing scopes and diplomacy.
 - [ ] Accept, decline and time out separate successor offers. Test research prerequisites,
       later source research, the 90-day absorption cost and no repeat bonus.
+- [ ] Arm two leaders with different Construction research. Confirm each pays once,
+      reserves at most three partners, and delivers the matching archive and unique
+      ledger slot to every surviving recipient after both leaders collapse.
 - [ ] Exhaust capacity and verify new pulses stop. Fund repeated support in a separate
       uncontained run, and demonstrate recurring choices across resolved wars.
 - [ ] Open crises from multiple contingencies, fill four shared slots, annex a carrier,
