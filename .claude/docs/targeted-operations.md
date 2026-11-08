@@ -346,7 +346,9 @@ at 1366 by 768 and 1920 by 1080. The left side is a persistent combined list. Th
 right side shows the selected subject.
 
 Filters are Active, Cold, All, People, and Organizations. Tabs are Dossier, Package,
-Authority, Custody, Archive, and Security. Organization rows identify class and expose
+Authority, Custody, Archive, and Security. The footer Guide button opens a six-chapter
+player guide in the right pane (`TOP_tab` 7, chapter in `TOP_guide_page`). Selecting a
+dossier leaves it. Guide text that quotes a number must match the script. Organization rows identify class and expose
 members and facilities. Person rows identify office and affiliation. Custody controls
 are unavailable for organizations, and facility controls are unavailable for people.
 
