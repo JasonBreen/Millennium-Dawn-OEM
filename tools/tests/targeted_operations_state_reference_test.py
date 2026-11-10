@@ -173,7 +173,8 @@ def test_numeric_loop_selectors_write_results_to_the_owner_frame():
     assert "global.TOP_state^PREV.TOP_predecessor" in successor
     assert "PREV.TOP_visit_open_candidate = top_visit_person" in visit
     assert "TOP_visit_trigger_state = PREV.TOP_visit_open_state" in visit
-    assert "PREV.TOP_liaison_pair_found = 1" in liaison
+    assert "set_temp_variable = { TOP_liaison_pair_found = 1 }" in liaison
+    assert "PREV.TOP_liaison_pair_found" not in liaison
     assert "PREV.TOP_liaison_pair_until^top_liaison_index" in liaison
     assert "PREV.TOP_linked_first = top_linked_target" in linked
     assert "PREV.TOP_linked_second = top_linked_target" in linked
