@@ -360,8 +360,10 @@ def test_generated_names_and_roles_have_english_localisation(manifest):
     for ident in range(1, manifest["capacity"]):
         assert {
             f"TOP_person_{ident}",
-            f"TOP_drone_{ident}",
-            f"TOP_capture_{ident}",
+            f"raid_type_TOP_drone_{ident}",
+            f"raid_type_TOP_capture_{ident}",
+            f"raid_type_TOP_drone_{ident}_desc",
+            f"raid_type_TOP_capture_{ident}_desc",
         } <= keys
     for target in manifest["targets"]:
         assert f"TOP_person_{target['id']}_role" in keys

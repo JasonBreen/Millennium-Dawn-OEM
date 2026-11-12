@@ -1,6 +1,7 @@
 import re
 from pathlib import Path
 
+import pytest
 from shared.ai_race_test_support import _extract_block, _parse_race_script
 from targeted_operations_authorization_test import ReviewScript
 from targeted_operations_core_test import TargetScript
@@ -80,7 +81,8 @@ def test_focused_collection_relabels_only_axes_that_increase():
     assert variables["TOP_lead_source"][11] == 3
 
 
-def test_liaison_source_changes_only_for_accepted_assessment_and_lead():
+@pytest.mark.parametrize("reported_state", (102, -10737.40616))
+def test_liaison_source_changes_only_for_accepted_assessment_and_lead(reported_state):
     script = TargetScript()
     variables = script.target(11)
     script.globals["TOP_clock"] = 100
@@ -95,7 +97,7 @@ def test_liaison_source_changes_only_for_accepted_assessment_and_lead():
         TOP_liaison_axis_1=50,
         TOP_liaison_axis_2=50,
         TOP_liaison_axis_3=50,
-        TOP_liaison_state=102,
+        TOP_liaison_state=reported_state,
         TOP_liaison_host=3,
         TOP_liaison_age=20,
         TOP_liaison_response_reliability=1,
@@ -115,7 +117,7 @@ def test_liaison_source_changes_only_for_accepted_assessment_and_lead():
         variables[f"TOP_{field}_source"][11]
         for field in ("identity", "location", "pattern", "lead")
     ] == [3, 4, 3, 4]
-    assert variables["TOP_lead_state"][11] == 102
+    assert variables["TOP_lead_state"][11] == reported_state
     assert variables["TOP_view_lead_age"] == 1
 
 
@@ -187,7 +189,10 @@ def test_liaison_age_cache_requires_matching_subject_kind_for_overlapping_ids():
     assert variables["TOP_view_lead_age"] == 88
 
 
-def test_organization_sources_follow_authored_collection_and_liaison_reports():
+@pytest.mark.parametrize("reported_state", (102, -10737.40616))
+def test_organization_sources_follow_authored_collection_and_liaison_reports(
+    reported_state,
+):
     script = TargetScript()
     script.organization_truth(2, state=101, public=True)
     variables = script.countries[1]["vars"]
@@ -215,7 +220,7 @@ def test_organization_sources_follow_authored_collection_and_liaison_reports():
         TOP_liaison_axis_1=50,
         TOP_liaison_axis_2=5,
         TOP_liaison_axis_3=5,
-        TOP_liaison_state=102,
+        TOP_liaison_state=reported_state,
         TOP_liaison_host=3,
         TOP_liaison_age=20,
         TOP_liaison_response_reliability=1,
@@ -227,6 +232,7 @@ def test_organization_sources_follow_authored_collection_and_liaison_reports():
     script.run("TOP_merge_liaison_snapshot", 1)
     assert variables["TOP_org_location_source"][2] == 4
     assert variables["TOP_org_lead_source"][2] == 4
+    assert variables["TOP_org_lead_state"][2] == reported_state
     variables["TOP_view_lead_age"] = 5
     script.run("TOP_merge_liaison_snapshot", 1)
     assert variables["TOP_view_lead_age"] == 1
