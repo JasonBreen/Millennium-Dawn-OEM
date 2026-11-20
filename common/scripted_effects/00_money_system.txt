@@ -804,6 +804,15 @@ calculate_additional_income_rate = {
 	set_variable = { additional_income_base = @base_income_rate }
 	set_variable = { additional_income_rate = additional_income_base }
 
+	if = {
+		limit = { tag = KUW }
+		add_to_variable = { additional_income_rate = global.USA_kuwait_base_weekly_rent }
+	}
+	else_if = {
+		limit = { tag = JAP }
+		add_to_variable = { additional_income_rate = global.USA_okinawa_base_weekly_rent }
+	}
+
 	if = { limit = { has_idea = bitcoin }
 		add_to_variable = { additional_income_rate = global.bitcoin_reserve_income }
 	}
@@ -3410,37 +3419,37 @@ calculate_additional_expense_rate = {
 				check_variable = { leased_civilian_factories > 0 }
 			}
 			set_temp_variable = { lease_civilian_factories_cost = {
-				value = lease_factories_cumulative_cost
-				multiply = gdp_per_capita
-				multiply = 0.001
-				add = { value = lease_factories_cumulative_cost multiply = 0.1 multiply = inflation_on_leases }
-				multiply = leased_civilian_factories
-				divide = leased_factories
-			} }
+					value = lease_factories_cumulative_cost
+					multiply = gdp_per_capita
+					multiply = 0.001
+					add = { value = lease_factories_cumulative_cost multiply = 0.1 multiply = inflation_on_leases }
+					multiply = leased_civilian_factories
+					divide = leased_factories
+				} }
 			set_variable = { lease_civilian_factories_cost_display = lease_civilian_factories_cost }
 			add_to_variable = { additional_expenses_rate = lease_civilian_factories_cost }
 		}
 		if = { limit = { check_variable = { leased_military_factories > 0 } }
 			set_temp_variable = { lease_military_factories_cost = {
-				value = lease_factories_cumulative_cost
-				multiply = gdp_per_capita
-				multiply = 0.001
-				add = { value = lease_factories_cumulative_cost multiply = 0.1 multiply = inflation_on_leases }
-				multiply = leased_military_factories
-				divide = leased_factories
-			} }
+					value = lease_factories_cumulative_cost
+					multiply = gdp_per_capita
+					multiply = 0.001
+					add = { value = lease_factories_cumulative_cost multiply = 0.1 multiply = inflation_on_leases }
+					multiply = leased_military_factories
+					divide = leased_factories
+				} }
 			set_variable = { lease_military_factories_cost_display = lease_military_factories_cost }
 			add_to_variable = { additional_expenses_rate = lease_military_factories_cost }
 		}
 		if = { limit = { check_variable = { leased_dockyards > 0 } }
 			set_temp_variable = { lease_naval_factories_cost = {
-				value = lease_factories_cumulative_cost
-				multiply = gdp_per_capita
-				multiply = 0.001
-				add = { value = lease_factories_cumulative_cost multiply = 0.1 multiply = inflation_on_leases }
-				multiply = leased_dockyards
-				divide = leased_factories
-			} }
+					value = lease_factories_cumulative_cost
+					multiply = gdp_per_capita
+					multiply = 0.001
+					add = { value = lease_factories_cumulative_cost multiply = 0.1 multiply = inflation_on_leases }
+					multiply = leased_dockyards
+					divide = leased_factories
+				} }
 			set_variable = { lease_naval_factories_cost_display = lease_naval_factories_cost }
 			add_to_variable = { additional_expenses_rate = lease_naval_factories_cost }
 		}
@@ -4074,6 +4083,14 @@ calculate_additional_expense_rate = {
 	#Compensate for inflation on the final value
 	set_temp_variable = { additional_expenses_inflation = { value = 1 add = modifier@inflation_cost_multiplier_modifier } }
 	multiply_variable = { additional_expenses_rate = additional_expenses_inflation }
+
+	# Fixed bilateral payments must match the recipient's income.
+	if = {
+		limit = { tag = USA }
+		add_to_variable = { additional_expenses_rate = global.USA_kuwait_base_weekly_rent }
+		add_to_variable = { additional_expenses_rate = global.USA_okinawa_base_weekly_rent }
+	}
+
 	if = {
 		limit = {
 			OR = {
