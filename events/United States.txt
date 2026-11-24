@@ -11812,13 +11812,7 @@ country_event = {
 			remove_ideas = us_public_disorder_five
 			set_country_flag = collapsed_nation
 			USA_collapse_remove_dynamic_modifiers = yes
-			if = {
-				limit = {
-					is_faction_leader = yes
-					has_idea = NATO_member
-				}
-				NATO_promote_new_leader = yes
-			}
+			NATO_promote_new_leader = yes
 			decrease_healthcare_budget = yes
 			decrease_social_spending = yes
 			decrease_policing_budget = yes
@@ -12027,8 +12021,16 @@ country_event = {
 			modify_debt_effect = yes
 			set_temp_variable = { temp_productivity_change = -300 }
 			flat_productivity_change_effect = yes
-			remove_ideas = NATO_member
-			remove_from_faction = USA
+			if = {
+				limit = {
+					OR = {
+						has_idea = NATO_member
+						has_faction_template = faction_template_nato
+					}
+				}
+				NATO_leave = yes
+			}
+			else = { remove_from_faction = USA }
 		}
 		ai_chance = { base = 30 }
 	}
