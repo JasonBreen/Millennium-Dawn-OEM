@@ -32,8 +32,14 @@ operation_collect_political_intelligence = {
 	}
 
 	outcome_execute = {
-		FROM = { save_event_target_as = top_political_intelligence_target }
-		ROOT = { country_event = top_political_intelligence.1 }
+		if = {
+			limit = {
+				ROOT = { TOP_human_offense = yes }
+				FROM = { exists = yes }
+			}
+			# The event inherits the operation target as FROM.FROM.
+			ROOT = { country_event = { id = top_political_intelligence.1 hours = 1 } }
+		}
 	}
 
 	phases = {
