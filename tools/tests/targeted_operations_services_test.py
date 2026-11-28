@@ -126,3 +126,29 @@ def test_national_and_faction_entry_points_do_not_use_counter_terror():
     assert "TOP_open_button" not in international
     assert "TOP_open_dossiers" not in international
     assert "name = \"TOP_open_button\"" not in read("interface/MD_countrymissilesview.gui")
+
+def test_investigation_review_is_calendar_gated_and_filed_only_from_the_report():
+    script = TargetScript()
+    actor = script.countries[1]["vars"]
+    actor.update(top_investigation_cursor=0, top_investigation_sources=[2, 3],
+                 top_investigation_dates=[100, 101], TOP_tab=2)
+    script.triggers["TOP_security_country_eligible"] = [("always", "=", "yes")]
+    script.effects["TOP_refresh_view"] = []
+    script.globals["num_days"] = 113
+    script.run("top_review_investigation", 1)
+    assert actor["TOP_tab"] == 2
+    script.globals["num_days"] = 114
+    script.run("top_review_investigation", 1)
+    assert actor["TOP_tab"] == 8
+    assert actor["top_investigation_cursor"] == 0
+    script.run("top_file_victim_investigation", 1)
+    script.run("top_file_victim_investigation", 1)
+    assert actor["top_investigation_cursor"] == 1
+    assert actor["TOP_tab"] == 2
+    script.run("top_review_investigation", 1)
+    assert actor["TOP_tab"] == 2
+    script.globals["num_days"] = 115
+    script.run("top_review_investigation", 1)
+    script.run("top_file_victim_investigation", 1)
+    assert actor["top_investigation_cursor"] == 2
+    assert actor["TOP_tab"] == 2
