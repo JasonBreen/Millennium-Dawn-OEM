@@ -86,8 +86,7 @@ on_actions = {
 					add_to_variable = { treasury = ROOT.treasury }
 					add_to_variable = { debt = ROOT.debt }
 					add_to_variable = { int_investments = ROOT.int_investments }
-					research_slot_init_for_country = yes
-					# Preserve rocket-site capacity without replacing the overlord's technology tree.
+					# Keep the capacity counter in sync with the transferred rocket-site unlocks.
 					while_loop_effect = {
 						limit = {
 							check_variable = { num_launchers_set < ROOT.num_launchers_set }
@@ -95,6 +94,22 @@ on_actions = {
 						}
 						add_missile_building_level = yes
 					}
+					# Grant only completed technologies the overlord does not already have.
+					set_country_flag = inheriting_subject_technologies
+					for_each_loop = {
+						array = ROOT.researched_techs
+						value = subject_tech
+						index = subject_tech_index
+						if = {
+							limit = { NOT = { has_tech = var:subject_tech } }
+							meta_effect = {
+								text = { set_technology = { [technology] = 1 popup = no } }
+								technology = "[?ROOT.researched_techs^subject_tech_index.GetTokenKey]"
+							}
+						}
+					}
+					clr_country_flag = inheriting_subject_technologies
+					research_slot_init_for_country = yes
 					inherit_special_projects_from_prev = yes
 
 					country_event = overlord.1
