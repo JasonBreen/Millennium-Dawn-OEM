@@ -1,0 +1,33 @@
+add_namespace = top_investigations
+
+country_event = {
+	id = top_investigations.1
+	title = top_investigations.1.t
+	desc = {
+		text = top_investigations.1.d_confirmed
+		trigger = { check_variable = { top_investigation_evidence^top_investigation_cursor = 3 } }
+	}
+	desc = {
+		text = top_investigations.1.d_credible
+		trigger = { check_variable = { top_investigation_evidence^top_investigation_cursor = 2 } }
+	}
+	desc = {
+		text = top_investigations.1.d
+		trigger = { check_variable = { top_investigation_evidence^top_investigation_cursor < 2 } }
+	}
+	picture = GFX_USA_event_cia
+	is_triggered_only = yes
+
+	option = {
+		name = top_investigations.1.a
+		if = {
+			limit = {
+				has_country_flag = top_investigation_report_open
+				check_variable = { top_investigation_cursor < top_investigation_sources^num }
+			}
+			add_to_variable = { top_investigation_cursor = 1 }
+		}
+		clr_country_flag = top_investigation_report_open
+		TOP_refresh_view = yes
+	}
+}

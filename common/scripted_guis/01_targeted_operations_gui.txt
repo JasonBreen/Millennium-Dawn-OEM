@@ -1,16 +1,47 @@
 scripted_gui = {
+	top_national_service_gui = {
+		context_type = player_context
+		parent_window_name = countryintelligenceagencyview
+		window_name = top_national_service_entry
+		visible = { TOP_security_country_eligible = yes has_intelligence_agency = yes }
+		effects = {
+			top_national_service_click = { top_open_national_service = yes }
+		}
+	}
+
+	top_faction_service_gui = {
+		context_type = player_context
+		parent_window_name = countryfactionview
+		window_name = top_faction_service_entry
+		visible = { TOP_country_eligible = yes is_in_faction = yes }
+		effects = {
+			top_faction_service_click = { top_open_faction_service = yes }
+		}
+	}
+
 	TOP_dossiers_gui = {
 		context_type = player_context
 		window_name = TOP_window
 		dirty = TOP_dirty
 		visible = {
 			TOP_enabled = yes
-			has_country_flag = open_MD_countrymissilesview
-			check_variable = { var_open_MD_CT_gui = 2 }
+			if = {
+				limit = { check_variable = { top_faction_desk = 1 } }
+				is_in_faction = yes
+			}
 			check_variable = { TOP_open = 1 }
 		}
 		ai_enabled = { always = no }
 		triggers = {
+			TOP_authority_tab_visible = { NOT = { check_variable = { top_faction_desk = 1 } } }
+			TOP_custody_tab_visible = { NOT = { check_variable = { top_faction_desk = 1 } } }
+			TOP_archive_tab_visible = { NOT = { check_variable = { top_faction_desk = 1 } } }
+			TOP_security_tab_visible = { NOT = { check_variable = { top_faction_desk = 1 } } }
+			top_investigations_visible = {
+				NOT = { check_variable = { top_faction_desk = 1 } }
+				check_variable = { top_investigation_cursor < top_investigation_sources^num }
+			}
+			top_investigations_click_enabled = { top_victim_investigation_ready = yes }
 			TOP_people_heading_visible = { NOT = { check_variable = { TOP_kind_filter = 2 } } }
 			TOP_people_grid_scroll_visible = { NOT = { check_variable = { TOP_kind_filter = 2 } } }
 			TOP_organizations_heading_visible = { NOT = { check_variable = { TOP_kind_filter = 1 } } }
@@ -41,11 +72,11 @@ scripted_gui = {
 			TOP_guide_aftermath_click_enabled = { NOT = { check_variable = { TOP_guide_page = 4 } } }
 			TOP_guide_defense_click_enabled = { NOT = { check_variable = { TOP_guide_page = 5 } } }
 
-			TOP_designate_visible = { check_variable = { TOP_tab = 1 } }
-			TOP_collect_visible = { check_variable = { TOP_tab = 1 } }
-			TOP_pause_visible = { check_variable = { TOP_tab = 1 } }
-			TOP_focus_visible = { check_variable = { TOP_tab = 1 } }
-			TOP_abandon_visible = { check_variable = { TOP_tab = 1 } }
+			TOP_designate_visible = { check_variable = { TOP_tab = 1 } NOT = { check_variable = { top_faction_desk = 1 } } }
+			TOP_collect_visible = { check_variable = { TOP_tab = 1 } NOT = { check_variable = { top_faction_desk = 1 } } }
+			TOP_pause_visible = { check_variable = { TOP_tab = 1 } NOT = { check_variable = { top_faction_desk = 1 } } }
+			TOP_focus_visible = { check_variable = { TOP_tab = 1 } NOT = { check_variable = { top_faction_desk = 1 } } }
+			TOP_abandon_visible = { check_variable = { TOP_tab = 1 } NOT = { check_variable = { top_faction_desk = 1 } } }
 			TOP_liaison_visible = { check_variable = { TOP_tab = 1 } }
 			TOP_liaison_source_visible = { check_variable = { TOP_tab = 1 } }
 			TOP_designate_click_enabled = { OR = { TOP_can_designate = yes TOP_can_designate_organization = yes } }
@@ -107,6 +138,12 @@ scripted_gui = {
 		effects = {
 			TOP_close_click = { set_variable = { TOP_open = 0 } set_variable = { TOP_security_open = 0 } TOP_refresh_view = yes }
 			TOP_refresh_click = { TOP_build_view = yes }
+			top_investigations_click = {
+				if = {
+					limit = { NOT = { check_variable = { top_faction_desk = 1 } } }
+					top_review_investigation = yes
+				}
+			}
 			TOP_history_click = { set_variable = { TOP_tab = 6 } TOP_build_view = yes }
 			TOP_history_back_click = { set_variable = { TOP_tab = 0 } TOP_build_view = yes }
 			TOP_guide_click = { set_variable = { TOP_tab = 7 } set_variable = { TOP_security_open = 0 } TOP_build_view = yes }

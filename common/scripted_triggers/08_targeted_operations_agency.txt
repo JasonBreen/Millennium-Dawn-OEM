@@ -1,0 +1,44 @@
+# Reads top_agency_host in the initiating country.
+top_agency_route_available = {
+	if = {
+		limit = { top_agency_uses_native_route = yes }
+		NOT = { top_agency_case_in_engine = yes }
+	}
+}
+
+# Reads top_agency_host in the initiating country.
+top_agency_uses_native_route = {
+	has_dlc = "La Resistance"
+	has_intelligence_agency = yes
+	check_variable = { top_agency_host > 0 }
+	NOT = { check_variable = { top_agency_host = THIS } }
+}
+
+top_agency_case_in_engine = {
+	check_variable = { top_agency_case_host > 0 }
+	OR = {
+		is_preparing_operation = { target = var:top_agency_case_host operation = operation_execute_targeted_case }
+		is_running_operation = { target = var:top_agency_case_host operation = operation_execute_targeted_case }
+	}
+}
+
+top_agency_case_reserved = {
+	check_variable = { TOP_operation_sequence = top_agency_case_sequence }
+	check_variable = { TOP_operation_subject_kind = top_agency_case_kind }
+	check_variable = { top_agency_case_host > 0 }
+	check_variable = { TOP_operation_sequence > 0 }
+}
+
+# Reads top_agency_callback_host in the initiating country.
+top_agency_case_matches_host = {
+	TOP_human_offense = yes
+	top_agency_case_reserved = yes
+	check_variable = { top_agency_case_host = top_agency_callback_host }
+}
+
+top_victim_investigation_ready = {
+	NOT = { has_country_flag = top_investigation_report_open }
+	check_variable = { top_investigation_cursor < top_investigation_sources^num }
+	set_temp_variable = { top_investigation_report_due = { value = top_investigation_dates^top_investigation_cursor add = 14 } }
+	check_variable = { var = global.TOP_clock value = top_investigation_report_due compare = greater_than_or_equals }
+}

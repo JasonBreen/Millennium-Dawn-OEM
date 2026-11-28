@@ -39,6 +39,8 @@ class TargetScript(TargetedScript):
             "07_targeted_operations_organization_cases.txt",
             "08_targeted_operations_resolution.txt",
             "09_targeted_operations_depth.txt",
+            "10_targeted_operations_investigations.txt",
+            "11_targeted_operations_agency.txt",
             "99_FBC_scripted_effects.txt",
             "99_STALKER_society_effects.txt",
             "99_STALKER_top_effects.txt",
@@ -132,6 +134,13 @@ class TargetScript(TargetedScript):
             "STALKER_top_sircaa_active",
         ):
             self.triggers[name] = [("always", "=", "no")]
+        self.triggers.update(
+            _parse_race_script(
+                (ROOT / "common/scripted_triggers/08_targeted_operations_agency.txt").read_text(
+                    encoding="utf-8"
+                )
+            )
+        )
         self.countries, self.globals, self.temps = {}, {}, {}
         self.scope_stack, self.events = [], []
         self.global_flags, self.external = {}, Counter()

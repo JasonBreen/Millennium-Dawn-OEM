@@ -48,27 +48,19 @@ def test_startup_caches_targeted_operations_rule_in_country_scope():
     )
 
 
-def test_ct_ledger_preserves_main_navigation_and_explicit_top_access():
+def test_ct_ledger_preserves_counter_terror_navigation_without_top():
     missiles_gui = _named_block(
         source("common/scripted_guis/00_missiles_scripted_guis.txt"), "MD_missiles_gui"
     )
     triggers = _named_block(missiles_gui, "triggers")
     gate = _named_block(triggers, "ct_gui_ledger_button_click_enabled")
-    eligibility = _named_block(gate, "OR")
-    for token in (
-        "no_jihadist_government = yes",
-        "TOP_country_eligible = yes",
-        "TOP_security_country_eligible = yes",
-    ):
-        assert token in eligibility
+    assert "no_jihadist_government = yes" in gate
+    assert "TOP_" not in gate
 
     effects = _named_block(missiles_gui, "effects")
     ct_click = _named_block(effects, "ct_gui_ledger_button_click")
     assert "set_variable = { var_open_MD_CT_gui = 2 }" in ct_click
-    top_navigation = _named_block(ct_click, "if")
-    assert "TOP_enabled = yes" in _named_block(top_navigation, "limit")
-    legacy_navigation = _named_block(top_navigation.partition("{")[2], "if")
-    legacy_gate = _named_block(legacy_navigation, "limit")
+    assert "TOP_" not in ct_click
     ct_gui = _named_block(
         source("common/scripted_guis/00_missiles_scripted_guis.txt"), "MD_CT_system_gui"
     )
@@ -77,36 +69,24 @@ def test_ct_ledger_preserves_main_navigation_and_explicit_top_access():
         "NOT = { salafist_caliphate_are_in_power = yes }",
         "NOT = { salafist_caliphate_are_in_coalition = yes }",
     ):
-        assert condition in legacy_gate
         assert condition in ct_visibility
-    assert "TOP_open_dossiers = yes" not in legacy_navigation
-    for token in (
-        "set_variable = { TOP_open = 0 }",
-        "set_variable = { TOP_security_open = 0 }",
-        "TOP_refresh_view = yes",
-    ):
-        assert token in legacy_navigation
-    assert "TOP_open_dossiers = yes" in _named_block(top_navigation, "else")
 
-    assert "TOP_open_dossiers = yes" in _named_block(
-        _named_block(ct_gui, "effects"), "TOP_open_button_click"
-    )
-
-    open_dossiers = _named_block(
-        source("common/scripted_effects/01_targeted_operations_view.txt"),
-        "TOP_open_dossiers",
-    )
+    view = source("common/scripted_effects/01_targeted_operations_view.txt")
+    open_desk = _named_block(view, "top_open_intelligence_desk")
     for token in (
         "set_variable = { TOP_open = 1 }",
         "set_variable = { TOP_security_open = 0 }",
-        "set_variable = { TOP_tab = 0 }",
-        "set_variable = { var_open_MD_CT_gui = 2 }",
-        "TOP_build_view = yes",
     ):
-        assert token in open_dossiers
+        assert token in open_desk
+    assert "var_open_MD_CT_gui" not in open_desk
+    for service, tab in (("national", 2), ("faction", 1)):
+        effect = _named_block(view, f"top_open_{service}_service")
+        assert f"set_variable = {{ TOP_tab = {tab} }}" in effect
+        assert "top_open_intelligence_desk = yes" in effect
+        assert "TOP_build_view = yes" in effect
 
 
-def test_dossiers_button_is_above_the_counter_terror_hitboxes():
+def test_counter_terror_hitboxes_are_not_overlaid_by_a_top_button():
     windows = _parse_race_script(source("interface/MD_countrymissilesview.gui"))[
         "guiTypes"
     ]
@@ -116,9 +96,10 @@ def test_dossiers_button_is_above_the_counter_terror_hitboxes():
         if kind == "containerWindowType"
         and ("name", "=", '"MD_CT_system_window"') in body
     )
-    kind, _, button = ct_window[-1]
-    assert kind == "buttonType"
-    assert ("name", "=", '"TOP_open_button"') in button
+    assert not any(
+        kind == "buttonType" and ("name", "=", '"TOP_open_button"') in body
+        for kind, _, body in ct_window
+    )
     actions = next(
         body
         for kind, _, body in ct_window
@@ -130,7 +111,7 @@ def test_dossiers_button_is_above_the_counter_terror_hitboxes():
     assert all(("maxHeight", "=", "20") in label for label in labels)
 
 
-def test_dossiers_window_is_screen_level_and_scoped_to_counter_terror():
+def test_intelligence_desk_is_screen_level_and_faction_membership_gated():
     gui = _named_block(
         source("common/scripted_guis/01_targeted_operations_gui.txt"),
         "TOP_dossiers_gui",
@@ -146,12 +127,11 @@ def test_dossiers_window_is_screen_level_and_scoped_to_counter_terror():
         "parent_window_token",
         "parent_scripted_gui",
     }.intersection(fields)
-    assert fields["visible"] == [
-        ("TOP_enabled", "=", "yes"),
-        ("has_country_flag", "=", "open_MD_countrymissilesview"),
-        ("check_variable", "=", [("var_open_MD_CT_gui", "=", "2")]),
-        ("check_variable", "=", [("TOP_open", "=", "1")]),
-    ]
+    visible = _named_block(gui, "visible")
+    assert "TOP_enabled = yes" in visible
+    assert "is_in_faction = yes" in visible
+    assert "check_variable = { TOP_open = 1 }" in visible
+    assert "open_MD_countrymissilesview" not in visible
 
     windows = _parse_race_script(source("interface/targeted_operations.gui"))[
         "guiTypes"

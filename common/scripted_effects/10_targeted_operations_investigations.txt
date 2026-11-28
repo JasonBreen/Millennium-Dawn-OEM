@@ -1,0 +1,69 @@
+# Reads TOP_target and TOP_case_result_sequence in the operation actor country.
+top_open_victim_investigation = {
+	set_temp_variable = { top_investigation_victim = TOP_case_protection^TOP_target }
+	if = {
+		limit = { check_variable = { top_investigation_victim = 0 } }
+		set_temp_variable = { top_investigation_victim = TOP_case_host^TOP_target }
+	}
+	if = {
+		limit = {
+			check_variable = { top_investigation_victim > 0 }
+			check_variable = { TOP_case_result_sequence > 0 }
+			NOT = { check_variable = { top_investigation_victim = THIS } }
+		}
+		set_temp_variable = { top_investigation_source = THIS }
+		set_temp_variable = { top_investigation_evidence = TOP_case_attribution^TOP_target }
+		var:top_investigation_victim = {
+			if = {
+				limit = { exists = yes }
+				top_record_victim_investigation = yes
+			}
+		}
+	}
+}
+
+# Reads top_investigation_source and TOP_case_result_sequence in the victim country.
+top_find_victim_investigation = {
+	set_temp_variable = { top_investigation_record = -1 }
+	for_loop_effect = {
+		start = 0
+		end = top_investigation_sources^num
+		compare = less_than
+		value = top_record_index
+		if = {
+			limit = {
+				check_variable = { top_investigation_sources^top_record_index = top_investigation_source }
+				check_variable = { top_investigation_sequences^top_record_index = TOP_case_result_sequence }
+			}
+			set_temp_variable = { top_investigation_record = top_record_index }
+		}
+	}
+}
+
+# Reads top_investigation_source, TOP_case_result_sequence, TOP_target and top_investigation_evidence in the victim country.
+top_record_victim_investigation = {
+	top_find_victim_investigation = yes
+	if = {
+		limit = { check_variable = { top_investigation_record = -1 } }
+		add_to_array = { top_investigation_sources = top_investigation_source }
+		add_to_array = { top_investigation_sequences = TOP_case_result_sequence }
+		add_to_array = { top_investigation_targets = TOP_target }
+		add_to_array = { top_investigation_dates = global.TOP_clock }
+		add_to_array = { top_investigation_evidence = top_investigation_evidence }
+	}
+	else_if = {
+		limit = { check_variable = { top_investigation_evidence > top_investigation_evidence^top_investigation_record } }
+		set_variable = { top_investigation_evidence^top_investigation_record = top_investigation_evidence }
+	}
+}
+
+top_review_investigation = {
+	if = {
+		limit = {
+			TOP_security_country_eligible = yes
+			top_victim_investigation_ready = yes
+		}
+		set_country_flag = top_investigation_report_open
+		country_event = top_investigations.1
+	}
+}

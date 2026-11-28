@@ -39,6 +39,11 @@ class ReviewScript(TargetedScript):
         self.effects.update(core)
         self.effects.update(
             _parse_race_script(
+                source("common/scripted_effects/11_targeted_operations_agency.txt")
+            )
+        )
+        self.effects.update(
+            _parse_race_script(
                 source("common/scripted_effects/04_targeted_operations_cases.txt")
             )
         )
@@ -72,6 +77,11 @@ class ReviewScript(TargetedScript):
             source("common/scripted_triggers/01_targeted_operations_triggers.txt")
         )
         self.triggers.update(core_triggers)
+        self.triggers.update(
+            _parse_race_script(
+                source("common/scripted_triggers/08_targeted_operations_agency.txt")
+            )
+        )
         self.triggers.update(
             _parse_race_script(
                 source(

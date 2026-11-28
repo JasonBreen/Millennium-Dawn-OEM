@@ -37,6 +37,16 @@ class TargetedScript(RaceScript):
         if key == "set_temp_variable":
             self.execute([statement], identifier)
             return True
+        if key == "has_dlc":
+            return operand.strip('"') in getattr(self, "enabled_dlcs", ())
+        if key == "has_intelligence_agency":
+            return self.countries[identifier].get("intelligence_agency", False) == (
+                operand == "yes"
+            )
+        if key in {"is_preparing_operation", "is_running_operation"}:
+            fields = {name: value for name, _, value in operand}
+            host = self.value(fields["target"].removeprefix("var:"), identifier)
+            return (host, fields["operation"]) in self.countries[identifier].get(key, ())
         if key in self.country_trigger_fields:
             actual = self.countries[identifier][self.country_trigger_fields[key]]
             return self.comparisons[comparison](actual, self.value(operand, identifier))
@@ -56,6 +66,8 @@ class TargetedScript(RaceScript):
 
     def execute_statement(self, statement, identifier):
         key, comparison, operand = statement
+        if key == "custom_effect_tooltip":
+            return
         if key in {
             "set_temp_variable",
             "add_to_temp_variable",
