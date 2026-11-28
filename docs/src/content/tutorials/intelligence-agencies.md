@@ -14,7 +14,7 @@ Open **Targeted Ops** in **Intelligence Agency**. Without an agency, use **Open 
 - **Political stability:** In the Agency Operations list, **Collect Political Intelligence** sends the initiating country a private report about the country investigated. It does not authorize action against a person.
 - **Aftermath:** Use **Custody**, **Archive**, and **Security** in National Intelligence. An assassination opens a separate investigation in the victim country's service. The report is ready after 14 days and identifies the other country only if there is credible or confirmed evidence.
 
-Open **Intelligence** in the **Faction** panel to request a report on a known subject from another faction member. The member can decline. Faction liaison does not give the faction authority to start a national operation.
+Use **Liaison** below the top bar to request a report on a known subject from another faction member. The member can decline. Faction liaison does not give the faction authority to start a national operation.
 
 Set the **Targeted Operations** game rule to **Off** to disable these OEM features. This does not disable ordinary Agency operations or Counter-Terror.
 

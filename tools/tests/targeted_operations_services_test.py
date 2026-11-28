@@ -109,9 +109,11 @@ def test_national_and_faction_entry_points_do_not_use_counter_terror():
     assert "parent_window_name = countryintelligenceagencyview" in _named_block(
         gui, "top_national_service_gui"
     )
-    assert "parent_window_name = countryfactionview" in _named_block(
+    assert 'parent_window_name = "faction_button_container"' in _named_block(
         gui, "top_faction_service_gui"
     )
+    desk = read("interface/targeted_operations.gui").split('name = "TOP_window"', 1)[1].split("moveable = yes", 1)[0]
+    assert "origo = center" in desk
     assert "open_MD_countrymissilesview" not in gui
     assert "var_open_MD_CT_gui" not in gui
     security = _named_block(
